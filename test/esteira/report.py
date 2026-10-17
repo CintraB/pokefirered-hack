@@ -78,7 +78,10 @@ def write_report(suite: Suite, out_dir: str, meta: dict) -> str:
     ordered = sorted(suite.results, key=lambda r: _ORDER[r.status])  # estável: ordem de execução
 
     counts = {s: sum(1 for r in suite.results if r.status == s) for s in _ORDER}
-    veredito = "REPROVADA" if counts["falha"] else "aprovada"
+    if meta.get("nao_testada"):
+        veredito = "NÃO TESTADA"
+    else:
+        veredito = "REPROVADA" if counts["falha"] else "aprovada"
     body = []
     if meta.get("nao_testada"):
         body.append('<div class="faixa">ROM NÃO TESTADA</div>')

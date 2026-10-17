@@ -2,7 +2,7 @@
 
 A partir de test/ (no WSL):
     python3 -m esteira rapido   --rom R --elf E [--log L] --out DIR [--only NOME] [--starter X]
-    python3 -m esteira completo --rom R --elf E [--log L] --out DIR [--only NOME] [--starter X]
+    python3 -m esteira completo --rom R --elf E [--rom-test RT --elf-test ET] [--log L] --out DIR ...
     python3 -m esteira aprovar DIR
 
 `rapido` roda a checagem do log de build, a checagem dos textos e os 3 roteiros rápidos numa
@@ -25,7 +25,7 @@ from esteira.check_build import check_build
 from esteira.check_text import check_text
 from esteira.refs import DEFAULT_REFS_DIR, KEY_POINTS, approve_refs, compare_ref
 from esteira.report import write_report
-from esteira.result import Result, Suite
+from esteira.result import Result, StepTimeout, Suite
 from esteira.rotation import STARTERS, next_starter
 from esteira.scenarios import REPO_ROOT, ScenarioContext, open_context
 from esteira.scenarios.quick_catch_save import run_catch_save
@@ -33,33 +33,40 @@ from esteira.scenarios.quick_opening import run_opening
 from esteira.scenarios.quick_route1 import run_route1
 
 REFS_DIR = DEFAULT_REFS_DIR
-STATE_PATH = str(REPO_ROOT / "roms" / "estado-esteira.json")   # produção; testes passam --state
+STATE_PATH = str(REPO_ROOT / "roms" / "estado-esteira.json")   # produção; testes sobrescrevem
 EXCEPTIONS_PATH = REPO_ROOT / "test" / "excecoes.json"
 STATIC_CHECKS = ("build", "texto")
+PLAYABLE, TEST = "playable", "test"   # qual ROM o cenário usa
+DEFAULT_ROM_TEST = str(REPO_ROOT / "pokefirered_switch_test.gba")
+DEFAULT_ELF_TEST = str(REPO_ROOT / "pokefirered_switch_test.elf")
 
 
 @dataclass
 class ScenarioSpec:
     """Um cenário na cadeia de uma sessão de emulador.
 
-    `run(ctx)` continua do estado que o cenário anterior deixou no emulador. `needs` é o
-    checkpoint (OUT/estados/<needs>.ss) de onde ele pode recomeçar (None = começa do boot) e
-    `produces` o checkpoint que ele grava ao terminar.
+    Cenários da mesma ROM (`rom`: PLAYABLE ou TEST) rodam em sequência numa única sessão: o
+    primeiro do grupo começa do boot e `run(ctx)` de cada um continua do estado que o anterior
+    deixou. `needs` é o checkpoint (OUT/estados/<needs>.ss, gravado pelo cenário anterior do
+    mesmo grupo) de onde o cenário pode recomeçar com `--only`; None = só começa do boot.
+    Checkpoints nunca valem entre ROMs diferentes.
     """
     name: str
     run: Callable[[ScenarioContext], None]
-    needs: str | None
-    produces: str | None
+    needs: str | None = None
+    rom: str = PLAYABLE
 
 
 QUICK_SCENARIOS = [
-    ScenarioSpec("abertura", run_opening, None, "rival"),
-    ScenarioSpec("rota1", run_route1, "rival", "encomenda"),
-    ScenarioSpec("captura", run_catch_save, "encomenda", "save"),
+    ScenarioSpec("abertura", run_opening),
+    ScenarioSpec("rota1", run_route1, needs="rival"),
+    ScenarioSpec("captura", run_catch_save, needs="encomenda"),
 ]
 
-# Ponto de registro do modo completo: um cenário novo (full_shiny, Task 11...) entra aqui com
-# uma linha, ex.: ScenarioSpec("shiny", run_shiny, needs="save", produces=None).
+# Ponto de registro do modo completo. Cenário novo = 1 linha na lista (+ o import acima), p.ex.:
+#     ScenarioSpec("shiny", run_full_shiny, rom=TEST),            # ROM de teste, parte do boot
+#     ScenarioSpec("completo1", run_full_x, needs="save"),        # ROM jogável, continua do `save`
+# `rom=TEST` usa --rom-test/--elf-test (padrão: pokefirered_switch_test.gba/.elf na raiz).
 FULL_SCENARIOS: list[ScenarioSpec] = []
 
 
@@ -88,7 +95,7 @@ def _build_unusable(results: list[Result]) -> bool:
 
 
 def _static_checks(args: argparse.Namespace, suite: Suite) -> bool:
-    """Roda build/texto; devolve True se o log mostra que não há ROM utilizável."""
+    """Roda build/texto; devolve True se o log mostra que não há ROM jogável utilizável."""
     exceptions = json.loads(EXCEPTIONS_PATH.read_text(encoding="utf-8"))
     unusable = False
     if args.only in (None, "build"):
@@ -109,13 +116,26 @@ def _static_checks(args: argparse.Namespace, suite: Suite) -> bool:
     return unusable
 
 
-def _chain(specs: list[ScenarioSpec], only: str | None, ctx: ScenarioContext) -> list[ScenarioSpec]:
-    """Cenários a rodar. Com `only`, só até ele, recomeçando do checkpoint se ele existir em OUT
-    (de outra execução, com o mesmo inicial) em vez de repetir o que veio antes."""
+def _groups(specs: list[ScenarioSpec], only: str | None) -> list[tuple[str, list[ScenarioSpec]]]:
+    """Agrupa os cenários por ROM (na ordem da primeira aparição). Com `only`, só o grupo dele,
+    cortado nele (o que vem antes no grupo é pré-requisito)."""
+    if only is not None:
+        spec = next(s for s in specs if s.name == only)
+        group = [s for s in specs if s.rom == spec.rom]
+        return [(spec.rom, group[:group.index(spec) + 1])]
+    order: dict[str, list[ScenarioSpec]] = {}
+    for s in specs:
+        order.setdefault(s.rom, []).append(s)
+    return list(order.items())
+
+
+def _chain(group: list[ScenarioSpec], only: str | None, ctx: ScenarioContext) -> list[ScenarioSpec]:
+    """Cenários do grupo a rodar. Com `only`, o último do grupo é o escolhido; se o checkpoint
+    de que ele precisa existir em OUT (de outra execução, mesmo inicial), recomeça dele em vez de
+    repetir o que veio antes."""
     if only is None:
-        return specs
-    index = next(i for i, s in enumerate(specs) if s.name == only)
-    spec = specs[index]
+        return group
+    spec = group[-1]
     ctl = ctx.controller
     if spec.needs and ctl.checkpoint_path(spec.needs).is_file():
         ctl.restore(spec.needs)
@@ -123,27 +143,38 @@ def _chain(specs: list[ScenarioSpec], only: str | None, ctx: ScenarioContext) ->
         if party and party[0].species == ctx.consts.species(ctx.starter):
             return [spec]
         ctx.emu.reset()   # checkpoint de outro inicial: descarta e roda a cadeia inteira
-    return specs[:index + 1]
+    return group
 
 
-def _run_scenarios(specs: list[ScenarioSpec], ctx: ScenarioContext, only: str | None,
+def _fail_result(spec: ScenarioSpec, exc: Exception) -> Result:
+    tail = "".join(traceback.format_exception(exc)[-3:]).strip()
+    result = Result(f"cenario/{spec.name}", "falha",
+                    f"erro inesperado: {type(exc).__name__}: {exc}\n{tail}")
+    if isinstance(exc, StepTimeout):
+        result.images, result.state = [exc.screenshot_path], exc.state_path
+    return result
+
+
+def _run_scenarios(group: list[ScenarioSpec], ctx: ScenarioContext, only: str | None,
                    tempos: dict[str, float]) -> None:
-    chain = _chain(specs, only, ctx)
+    """Roda a cadeia de um grupo; depois de um cenário com falha, os seguintes viram `aviso`.
+    Só falhas surgidas durante a cadeia contam (as checagens estáticas não interrompem nada)."""
+    chain = _chain(group, only, ctx)
+    suite = ctx.suite
     for pos, spec in enumerate(chain):
-        if ctx.suite.failed():
-            for rest in chain[pos:]:
-                ctx.suite.add(Result(f"cenario/{rest.name}", "aviso",
-                                     "não rodou: um cenário anterior falhou"))
-            return
+        before = sum(1 for r in suite.results if r.status == "falha")
         print(f"[rodando] {spec.name}...", flush=True)
         start = time.monotonic()
         try:
             spec.run(ctx)
         except Exception as exc:  # noqa: BLE001 - qualquer erro vira falha no relatório
-            tail = "".join(traceback.format_exception(exc)[-3:]).strip()
-            ctx.suite.add(Result(f"cenario/{spec.name}", "falha",
-                                 f"erro inesperado: {type(exc).__name__}: {exc}\n{tail}"))
+            suite.add(_fail_result(spec, exc))
         tempos[spec.name] = time.monotonic() - start
+        if sum(1 for r in suite.results if r.status == "falha") > before:
+            for rest in chain[pos + 1:]:
+                suite.add(Result(f"cenario/{rest.name}", "aviso",
+                                 "não rodou: um cenário anterior falhou"))
+            return
 
 
 def _compare_screens(suite: Suite, out: Path, starter: str, since: float) -> None:
@@ -170,7 +201,6 @@ def _print_summary(suite: Suite, meta: dict, report: str) -> None:
 
 def run_mode(args: argparse.Namespace) -> int:
     specs = scenarios_for(args.modo)
-    starter = args.starter or next_starter(args.state)
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
     suite = Suite()
@@ -178,21 +208,31 @@ def run_mode(args: argparse.Namespace) -> int:
     started_wall = time.time()
     start = time.monotonic()
     nao_testada = False
+    starter: str | None = args.starter   # sem --starter, só sai do rodízio quando o emulador roda
 
     unusable = _static_checks(args, suite)
     if args.only in (None, *[s.name for s in specs]):
-        missing = [p for p in (args.rom, args.elf) if not Path(p).is_file()]
-        if unusable or missing:
-            nao_testada = True
-            why = ("o log de build mostra que a ROM não foi gerada" if unusable
-                   else "arquivo não encontrado: " + ", ".join(missing))
-            suite.add(Result("emulador/rom", "falha", f"ROM não testada: {why}"))
-        else:
-            with open_context(args.rom, args.elf, str(out), starter, suite) as ctx:
-                _run_scenarios(specs, ctx, args.only, tempos)
+        roms = {PLAYABLE: (args.rom, args.elf, "ROM jogável"),
+                TEST: (args.rom_test, args.elf_test, "ROM de teste")}
+        for kind, group in _groups(specs, args.only):
+            rom, elf, label = roms[kind]
+            missing = [p for p in (rom, elf) if not Path(p).is_file()]
+            bad_build = unusable and kind == PLAYABLE
+            if bad_build or missing:
+                if kind == PLAYABLE:
+                    nao_testada = True
+                why = ("o log de build mostra que a ROM não foi gerada" if bad_build
+                       else "arquivo não encontrado: " + ", ".join(missing))
+                suite.add(Result(f"emulador/rom-{kind}", "falha", f"{label} não testada: {why}"))
+                continue
+            if starter is None:
+                starter = next_starter(args.state)
+            with open_context(rom, elf, str(out), starter, suite) as ctx:
+                _run_scenarios(group, ctx, args.only, tempos)
+        if starter is not None:
             _compare_screens(suite, out, starter, started_wall)
 
-    meta = {"inicial": starter, "data": datetime.now().strftime("%Y-%m-%d %H:%M"),
+    meta = {"inicial": starter or "-", "data": datetime.now().strftime("%Y-%m-%d %H:%M"),
             "commit": _git_commit(), "modo": args.modo, "tempos": tempos,
             "tempo_total": time.monotonic() - start, "nao_testada": nao_testada}
     (out / "meta.json").write_text(json.dumps(meta, ensure_ascii=False, indent=1) + "\n",
@@ -210,6 +250,9 @@ def build_parser() -> argparse.ArgumentParser:
         p = sub.add_parser(modo, help=text)
         p.add_argument("--rom", required=True)
         p.add_argument("--elf", required=True)
+        p.add_argument("--rom-test", default=DEFAULT_ROM_TEST,
+                       help="ROM de teste (com hooks em C), só para cenários com rom=TEST")
+        p.add_argument("--elf-test", default=DEFAULT_ELF_TEST)
         p.add_argument("--log", help="log do build (make); sem ele só a checagem de texto roda")
         p.add_argument("--out", required=True, help="pasta da execução (relatório, telas, estados)")
         p.add_argument("--only", help="só um item: " + ", ".join(

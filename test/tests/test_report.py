@@ -78,3 +78,20 @@ def test_relatorio_novo_limpa_imagens_antigas(tmp_path):
     old.write_bytes(b"x")
     write_report(Suite(), str(tmp_path), dict(META))
     assert not old.exists()
+
+
+def test_nao_testada_nunca_diz_aprovada(tmp_path):
+    suite = Suite()
+    suite.add(Result("texto/estático", "ok", ""))     # sem nenhuma falha
+    html = read(write_report(suite, str(tmp_path), dict(META, nao_testada=True)))
+    assert "Esteira NÃO TESTADA" in html
+    assert "aprovada" not in html
+
+
+def test_veredito_aprovada_e_reprovada(tmp_path):
+    ok = Suite()
+    ok.add(Result("a", "ok", ""))
+    assert "Esteira aprovada" in read(write_report(ok, str(tmp_path / "1"), dict(META)))
+    bad = Suite()
+    bad.add(Result("a", "falha", "x"))
+    assert "Esteira REPROVADA" in read(write_report(bad, str(tmp_path / "2"), dict(META)))
