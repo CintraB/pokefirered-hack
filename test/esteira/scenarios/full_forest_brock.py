@@ -30,6 +30,7 @@ HP ao inicial e houver Potion na bolsa, usa uma pelo menu START e confere que o 
 máximo (o modo rápido só exercita a cura de 20 inteiros).
 """
 
+import math
 import time
 
 from ..emu import KEY_A, KEY_LEFT, KEY_UP
@@ -51,7 +52,13 @@ BROCK_LEVEL = {"BULBASAUR": 13, "CHARMANDER": 18, "SQUIRTLE": 13}
 RETRAIN_LEVELS = 3
 BROCK_ATTEMPTS = 3
 BROCK_HEAL_BELOW = 0.4
-MAX_TRAIN_BATTLES = 150             # por fase de treino (~1 s cada)
+# Limite de batalhas de um treino, proporcional à EXP pedida: os 3 iniciais são Medium Slow
+# (src/data/pokemon/species_info.h, GROWTH_MEDIUM_SLOW) e o selvagem da Rota 2 (nv2..5) dá a
+# mesma EXP qualquer que seja o nível do inicial — medido ~25 por batalha (Charmander nv11->18:
+# 3056 EXP em 121 batalhas; Bulbasaur nv5->11: 607 em 24). Conta 20 por batalha e 1,5x de folga.
+TRAIN_EXP_PER_BATTLE = 20
+TRAIN_SAFETY = 1.5
+MIN_TRAIN_BATTLES = 30
 TRAIN_HEAL_BELOW = 0.5              # volta ao Centro abaixo disto (inicial)
 MAX_POTIONS = 5                     # o dinheiro todo pode virar Potion antes do Brock
 
@@ -61,6 +68,21 @@ NORTH_GRASS = ((5, 3), (5, 8))
 BROCK_FRONT = (6, 6)                # Brock em (6, 5), olhando para baixo
 AIDE_APPROACH = (45, 22)            # gatilho do assistente em (46, 21..23)
 RUN_START = (40, 21)                # linha 21 de Pewter livre de x=6 a x=41
+
+
+def medium_slow_exp(level: int) -> int:
+    """EXP total do nível (gExperienceTables, GROWTH_MEDIUM_SLOW: 6/5 n³ - 15 n² + 100 n - 140;
+    o nível 1 não importa aqui)."""
+    if level <= 1:
+        return 0
+    return 6 * level ** 3 // 5 - 15 * level ** 2 + 100 * level - 140
+
+
+def train_battle_cap(from_level: int, to_level: int) -> int:
+    """Teto de batalhas para subir de `from_level` a `to_level` (EXP do início do nível atual,
+    então nunca subestima)."""
+    need = max(0, medium_slow_exp(to_level) - medium_slow_exp(from_level))
+    return max(MIN_TRAIN_BATTLES, math.ceil(need / TRAIN_EXP_PER_BATTLE * TRAIN_SAFETY))
 
 
 class ForestBrockScenario(TravelMixin, CatchSaveScenario):
@@ -104,13 +126,14 @@ class ForestBrockScenario(TravelMixin, CatchSaveScenario):
 
     def _train(self, area: str, grass, center: str, level: int) -> str:
         start_level, start_fights = self._starter().level, self.measures["wild_fights"]
+        cap = train_battle_cap(start_level, level)
         start = time.monotonic()
         self.fight_wild = True
         try:
             while self._starter().level < level:
-                if self.measures["wild_fights"] - start_fights >= MAX_TRAIN_BATTLES:
-                    raise AssertionError(f"nv{self._starter().level} depois de "
-                                         f"{MAX_TRAIN_BATTLES} batalhas, esperava nv{level}")
+                if self.measures["wild_fights"] - start_fights >= cap:
+                    raise AssertionError(f"nv{self._starter().level} depois de {cap} batalhas "
+                                         f"(limite), esperava nv{level}")
                 if self._needs_heal():
                     self._heal_at_nearest_center(center)
                 self._go(area)
@@ -123,7 +146,7 @@ class ForestBrockScenario(TravelMixin, CatchSaveScenario):
             self.fight_wild = False
         fights = self.measures["wild_fights"] - start_fights
         detail = (f"nv{start_level} -> nv{self._starter().level} em {fights} batalha(s) "
-                  f"({time.monotonic() - start:.0f} s)")
+                  f"(limite {cap}, {time.monotonic() - start:.0f} s)")
         self.measures["train_log"].append(detail)
         return detail
 

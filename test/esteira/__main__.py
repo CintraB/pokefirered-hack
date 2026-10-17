@@ -312,6 +312,11 @@ def run_mode(args: argparse.Namespace) -> int:
         groups = _groups(specs, args.only)
         scheduled = {s.name for _, group in groups for s in group}
         producers = _save_producers()
+        # o .sav de outra execução não vale se o produtor está nesta: mesmo que ele nem chegue
+        # a rodar (falha antes, ROM ausente), o grupo de teste não pode partir do .sav velho
+        for producer in producers & scheduled:
+            for path in _bridge_paths(out, producer):
+                path.unlink(missing_ok=True)
         for kind, group in groups:
             if kind == HOST:
                 host = ScenarioContext(emu=None, game=None, controller=None, nav=None,

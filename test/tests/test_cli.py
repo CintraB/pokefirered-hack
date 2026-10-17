@@ -421,3 +421,17 @@ def test_nao_testada_escreve_so_o_relatorio_sem_emulador(env, monkeypatch):
     assert json.loads((out / "meta.json").read_text(encoding="utf-8"))["nao_testada"] is True
     assert env.opened == [] and env.ran == []
     assert not state_file().exists()                       # não gasta o rodízio
+
+
+def test_falha_antes_do_produtor_apaga_o_sav_antigo_e_o_shiny_nao_roda(env, monkeypatch, capsys):
+    """Um cap.sav de outra execução não pode alimentar o shiny se nesta o `cap` nem rodou."""
+    bridge_scenarios(env, monkeypatch)
+    assert main(env.argv("completo", "--starter", "BULBASAUR")) == 0  # deixa um cap.sav
+    assert (env.tmp / "out" / "cap.sav").exists()
+    env.ran.clear()
+    set_scenarios(monkeypatch, [env.spec("a", effect=failing), env.spec("cap", needs="x")],
+                  [env.spec("shiny", rom=TEST, save_from="cap"), env.spec("depois", rom=TEST)])
+    assert main(env.argv("completo", "--starter", "BULBASAUR")) == 1
+    assert env.ran == ["a"]
+    assert not (env.tmp / "out" / "cap.sav").exists()
+    assert "[aviso] cenario/shiny: não rodou" in capsys.readouterr().out
