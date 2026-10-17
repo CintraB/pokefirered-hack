@@ -38,14 +38,16 @@ def open_context(rom: str, elf: str, out_dir: str, starter: str,
                  suite: Suite | None = None,
                  save_from: str | None = None) -> Iterator[ScenarioContext]:
     """Liga o emulador com um .sav novo dentro de `out_dir` (nunca em roms/saves/); com
-    `save_from`, o .sav começa como cópia desse arquivo (ex.: o save do modo rápido)."""
+    `save_from`, o .sav começa como cópia desse arquivo (ex.: o save do modo rápido). Se
+    `save_from` já é o próprio OUT/esteira.sav, ele é usado como está (nunca apagado antes da
+    cópia); se não existe, FileNotFoundError sem tocar no .sav da pasta."""
     out = Path(out_dir)
     out.mkdir(parents=True, exist_ok=True)
     save = out / "esteira.sav"
-    if save.exists():
-        save.unlink()
-    if save_from is not None:
-        shutil.copyfile(save_from, save)
+    if save_from is None:
+        save.unlink(missing_ok=True)
+    elif Path(save_from).resolve() != save.resolve():
+        shutil.copyfile(save_from, save)   # abre a origem antes de truncar o destino
     consts = Constants.load(str(REPO_ROOT))
     with Emulator(rom, str(save)) as emu:
         game = Game(emu, Symbols.from_elf(elf), consts, Charmap.load(str(REPO_ROOT)))

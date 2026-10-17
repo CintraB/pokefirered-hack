@@ -344,7 +344,43 @@ def test_version_rom_script_args(tmp_path):
     assert (roms / "3.0" / "relatorio.html").is_file() and (roms / "3.0" / "NAO_TESTADA.txt").is_file()
 
 
+def test_version_rom_never_versions_a_test_build(tmp_path):
+    """A build de teste (TESTBUILD=1) tem os atalhos em C: nunca vira versão, nem chamada direto."""
+    rom = tmp_path / "pokefirered_switch_test.gba"
+    rom.write_bytes(b"T")
+    environ = {**os.environ, "ESTEIRA_ROMS_DIR": str(tmp_path / "roms")}
+    done = subprocess.run(["sh", str(REPO_ROOT / "version_rom.sh"), str(rom), "--untested"],
+                          env=environ, capture_output=True, text=True, cwd=tmp_path)
+    assert done.returncode == 0, done.stderr
+    assert "Not versioning test build" in done.stdout
+    assert not (tmp_path / "roms").exists()
+
+
 # --- Makefile real -----------------------------------------------------------------------------
+
+def _make_dry_run(*args: str) -> str:
+    """`make -n` dos alvos da esteira (estão em RULES_NO_SCAN: não varrem dependências).
+    MAKE=true: o $(MAKE) recursivo só é impresso (um `make -n` o executaria de verdade)."""
+    done = subprocess.run(["make", "-n", *args, "MAKE=true"], cwd=REPO_ROOT,
+                          capture_output=True, text=True, timeout=120)
+    assert done.returncode == 0, done.stderr
+    return done.stdout
+
+
+def test_build_log_name_only_gets_the_test_suffix_with_testbuild_1():
+    """config.mk define TESTBUILD ?= 0: o log da build jogável não pode virar *_test.log."""
+    assert "log=" + str(REPO_ROOT / "build" / "firered_switch.log;") in _make_dry_run("test-quick")
+    assert "/build/firered_switch_test.log;" in _make_dry_run("test-quick", "TESTBUILD=1")
+
+
+def test_test_full_rebuilds_the_test_rom_before_running():
+    lines = _make_dry_run("test-full").splitlines()
+    assert lines[0] == "true firered_switch TESTBUILD=1"
+    run = lines[1]
+    assert "python3 -m esteira completo" in run
+    assert f"--rom-test {REPO_ROOT / 'pokefirered_switch_test.gba'}" in run
+    assert f"--elf-test {REPO_ROOT / 'pokefirered_switch_test.elf'}" in run
+
 
 def _link_copy(dest: Path) -> None:
     """Cópia da árvore com hardlinks (só o que o build precisa): cria rápido, não duplica 250 MB."""

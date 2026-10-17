@@ -31,6 +31,8 @@ class FakeEnv:
         self.restored: list[str] = []
         self.resets = 0
         self.party_species = 1
+        self.save_from: list[str | None] = []         # save_from de cada open_context
+        self.loaded_saves: list[str] = []             # conteúdo do .sav recebido
         for name in ("jogavel.gba", "jogavel.elf", "teste.gba", "teste.elf"):
             (tmp_path / name).write_bytes(b"x")
 
@@ -40,12 +42,13 @@ class FakeEnv:
                 "--rom-test", str(t / "teste.gba"), "--elf-test", str(t / "teste.elf"),
                 "--out", str(t / "out"), *extra]
 
-    def spec(self, name, rom=cli.PLAYABLE, needs=None, effect=None) -> ScenarioSpec:
+    def spec(self, name, rom=cli.PLAYABLE, needs=None, effect=None,
+             save_from=None) -> ScenarioSpec:
         def run(ctx):
             self.ran.append(name)
             if effect:
                 effect(ctx)
-        return ScenarioSpec(name, run, needs=needs, rom=rom)
+        return ScenarioSpec(name, run, needs=needs, rom=rom, save_from=save_from)
 
     def make_ctx(self, rom, starter, suite):
         env = self
@@ -64,9 +67,16 @@ def env(tmp_path, monkeypatch):
     e = FakeEnv(tmp_path)
 
     @contextmanager
-    def fake_open(rom, elf, out, starter, suite=None):
+    def fake_open(rom, elf, out, starter, suite=None, save_from=None):
+        """Como o real: o .sav da sessão é OUT/esteira.sav, gravado ao fechar o emulador
+        (aqui com a ROM e os cenários que rodaram, para os testes conferirem a origem)."""
         e.opened.append((Path(rom).name, starter))
+        e.save_from.append(save_from)
+        if save_from is not None:
+            e.loaded_saves.append(Path(save_from).read_text())
+        first = len(e.ran)
         yield e.make_ctx(Path(rom).name, starter, suite)
+        (Path(out) / "esteira.sav").write_text(f"{Path(rom).name}:{','.join(e.ran[first:])}")
 
     monkeypatch.setattr(cli, "open_context", fake_open)
     monkeypatch.setattr(cli, "check_text", lambda repo, exceptions: [])
@@ -236,6 +246,90 @@ def test_only_de_cenario_da_rom_de_teste_abre_so_esse_grupo(env, monkeypatch):
     assert main(env.argv("completo", "--starter", "BULBASAUR", "--only", "y")) == 0
     assert env.opened == [("teste.gba", "BULBASAUR")]
     assert env.ran == ["x", "y"]
+
+
+# --- save do jogo (.sav) da ROM jogável para a ROM de teste --------------------------------------
+
+def bridge_scenarios(env, monkeypatch, cap_effect=None, extra_playable=()):
+    set_scenarios(monkeypatch, [env.spec("a"), env.spec("cap", needs="x", effect=cap_effect)],
+                  [*extra_playable, env.spec("shiny", rom=TEST, save_from="cap"),
+                   env.spec("depois", rom=TEST)])
+
+
+def test_cenario_de_teste_parte_do_sav_do_grupo_jogavel(env, monkeypatch):
+    bridge_scenarios(env, monkeypatch)
+    assert main(env.argv("completo", "--starter", "SQUIRTLE")) == 0
+    out = env.tmp / "out"
+    assert env.ran == ["a", "cap", "shiny", "depois"]
+    assert env.save_from[0] is None                       # o grupo jogável parte do boot
+    bridge = Path(env.save_from[1])
+    assert bridge.parent == out and bridge.name != "esteira.sav"   # nunca o próprio .sav do OUT
+    assert env.loaded_saves == ["jogavel.gba:a,cap"]       # o .sav do fim da sessão jogável
+    assert json.loads(bridge.with_suffix(".sav.json").read_text())["inicial"] == "SQUIRTLE"
+
+
+def test_rapido_tambem_deixa_o_sav_para_o_only_depois(env, monkeypatch):
+    bridge_scenarios(env, monkeypatch)
+    assert main(env.argv("rapido", "--starter", "SQUIRTLE")) == 0
+    assert (env.tmp / "out" / "cap.sav").read_text() == "jogavel.gba:a,cap"
+
+
+def test_only_de_teste_usa_o_sav_de_execucao_anterior_sem_gastar_o_rodizio(env, monkeypatch):
+    bridge_scenarios(env, monkeypatch)
+    assert main(env.argv("rapido", "--starter", "CHARMANDER")) == 0
+    env.ran.clear()
+    assert main(env.argv("completo", "--only", "shiny")) == 0
+    assert env.ran == ["shiny"]
+    assert env.opened[-1] == ("teste.gba", "CHARMANDER")   # o inicial do .sav, não o do rodízio
+    assert env.loaded_saves[-1] == "jogavel.gba:a,cap"
+    assert not state_file().exists()
+    assert json.loads((env.tmp / "out" / "meta.json").read_text())["inicial"] == "CHARMANDER"
+
+
+def test_only_de_teste_sem_sav_falha_com_mensagem_clara(env, monkeypatch, capsys):
+    bridge_scenarios(env, monkeypatch)
+    assert main(env.argv("completo", "--only", "depois")) == 1
+    assert env.opened == [] and env.ran == []
+    assert not state_file().exists()
+    out = capsys.readouterr().out
+    assert "[falha] cenario/shiny: sem o save do jogo de 'cap'" in out
+    assert "rapido" in out and "Traceback" not in out
+    assert "[aviso] cenario/depois: não rodou" in out
+
+
+def test_produtor_com_falha_nao_deixa_sav_e_o_cenario_de_teste_nao_roda(env, monkeypatch, capsys):
+    bridge_scenarios(env, monkeypatch)
+    main(env.argv("completo", "--starter", "BULBASAUR"))           # deixa um cap.sav antigo
+    env.ran.clear()
+    env.opened.clear()
+    bridge_scenarios(env, monkeypatch, cap_effect=failing)
+    assert main(env.argv("completo", "--starter", "BULBASAUR")) == 1
+    assert env.ran == ["a", "cap"] and [rom for rom, _ in env.opened] == ["jogavel.gba"]
+    assert not (env.tmp / "out" / "cap.sav").exists()              # o antigo não vale mais
+    assert "[aviso] cenario/shiny: não rodou" in capsys.readouterr().out
+
+
+def test_sav_so_vale_se_o_produtor_foi_o_ultimo_da_sessao_jogavel(env, monkeypatch, capsys):
+    bridge_scenarios(env, monkeypatch, extra_playable=[env.spec("mais", needs="save")])
+    assert main(env.argv("completo", "--starter", "BULBASAUR")) == 0   # aviso não reprova
+    assert env.ran == ["a", "cap", "mais"]
+    assert not (env.tmp / "out" / "cap.sav").exists()
+    assert "[aviso] cenario/shiny: não rodou" in capsys.readouterr().out
+
+
+def test_registro_do_cenario_de_shiny():
+    """O shiny roda na ROM de teste a partir do .sav do `captura` (último da ROM jogável); um
+    `save_from` só vale no 1º cenário de um grupo e tem de apontar um cenário da ROM jogável."""
+    specs = cli.scenarios_for("completo")
+    shiny = next(s for s in specs if s.name == "shiny")
+    assert (shiny.rom, shiny.save_from, shiny.needs) == (TEST, "captura", None)
+    playable = [s.name for s in specs if s.rom == cli.PLAYABLE]
+    for spec in specs:
+        if spec.save_from is not None:
+            group = [s for s in specs if s.rom == spec.rom]
+            assert spec.rom == TEST and group[0] is spec
+            assert playable[-1] == spec.save_from
+    assert "shiny" not in [s.name for s in cli.scenarios_for("rapido")]
 
 
 # --- rodízio -----------------------------------------------------------------------------------

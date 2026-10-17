@@ -433,7 +433,7 @@ class CatchSaveScenario(Route1Scenario):
     def _continue_after_reset(self) -> str:
         before = self.measures["before_reset"]
         self.emu.reset()
-        self._title_to_continue("tela de título depois do reset")
+        self._title_to_continue("tela de título depois do reset", shot="save_continue")
         after = self._snapshot()
         diffs = [f"{key}: antes {before[key]!r}, depois {after[key]!r}"
                  for key in before if before[key] != after[key]]
@@ -442,9 +442,11 @@ class CatchSaveScenario(Route1Scenario):
         return (f"time {[(m.nickname, m.level, m.hp) for m in party]}, dinheiro {after['money']}, "
                 f"bolsa {after['bag']}, local {after['location']} {after['player_xy']}")
 
-    def _title_to_continue(self, what: str) -> None:
+    def _title_to_continue(self, what: str, shot: str) -> None:
         """Da abertura/título (depois de ligar ou resetar): START, CONTINUAR com o save do
-        .sav e espera o jogo ficar livre (pulando o diário de viagem)."""
+        .sav e espera o jogo ficar livre (pulando o diário de viagem). A tela do menu principal
+        é gravada como telas/<shot>.png (cada cenário com o seu nome: `save_continue` é o
+        ponto-chave do modo rápido comparado com a referência)."""
         game, syms = self.game, self.game.syms
         self.ctl.wait_until(lambda: "TitleScreen" in game.callback2(), TITLE_TIMEOUT, what)
         self.ctl.press_until(KEY_START, lambda: MAIN_MENU_TASK in self._tasks(),
@@ -452,7 +454,7 @@ class CatchSaveScenario(Route1Scenario):
         status = self.emu.read_u16(syms.addr("gSaveFileStatus"))
         assert status == SAVE_STATUS_OK, (
             f"gSaveFileStatus = {status} depois do reset, esperava SAVE_STATUS_OK")
-        self.measures["continue_shot"] = self._shot("save_continue")
+        self.measures["continue_shot"] = self._shot(shot)
         self.ctl.press_until(KEY_A, lambda: MAIN_MENU_TASK not in self._tasks(), "CONTINUAR")
         playback = syms.addr("gQuestLogPlaybackState")
         spent = 0

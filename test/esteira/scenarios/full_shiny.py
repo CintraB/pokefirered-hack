@@ -6,8 +6,9 @@ Roda na ROM de teste (`pokefirered_switch_test.gba`), que tem a caixa de comando
 Ponto de partida: o save do jogo (.sav) feito no fim do modo rápido (passo 11, no Centro de
 Viridian). Os savestates do modo rápido não servem: são da ROM jogável e o código da build
 de teste fica em outros endereços (a chamada de TestHooks_Run desloca tudo depois de main.o).
-O `ctx_test` tem que ter sido aberto com a ROM/ELF de teste e esse .sav
-(`open_context(..., save_from=<pasta do rápido>/esteira.sav)`); o roteiro liga, CONTINUAR e:
+O CLI (esteira/__main__.py) registra o cenário com `rom=TEST, save_from="captura"`: guarda o
+.sav da sessão jogável como OUT/captura.sav e abre a ROM de teste com uma cópia dele; o
+roteiro liga, CONTINUAR e:
 
 1. 1 000 pares (personalidade, OT ID) fixos: cor (IsMonShiny do jogo e Mon.is_shiny lido do
    Pokémon criado) == fórmula original com limite 8;
@@ -18,29 +19,25 @@ O `ctx_test` tem que ter sido aberto com a ROM/ELF de teste e esse .sav
 6. sai, volta e fala de novo: continua 1;
 7. os mesmos 1 000 pares mantêm a cor depois do charm; taxa com charm (200 000 Pokémon).
 
-Uso avulso (até o CLI do Task 8 registrar o cenário), a partir de test/:
-    python3 -m esteira.scenarios.full_shiny --out out/shiny
-Usa o .sav de OUT/rapido (ou --quick DIR); se ele não existir, roda antes o modo rápido
-(abertura, Rota 1, captura e save) na ROM jogável nessa pasta.
+Uso, a partir de test/ (a mesma pasta OUT precisa ter o .sav do modo rápido):
+    python3 -m esteira rapido   --rom R --elf E --out OUT
+    python3 -m esteira completo --rom R --elf E --out OUT --only shiny
+`python3 -m esteira.scenarios.full_shiny ARGS` é atalho para `python3 -m esteira completo
+--only shiny ARGS`.
 """
 
-import argparse
 import math
 import random
 import sys
-import time
-from pathlib import Path
 
 from ..emu import KEY_A, KEY_B, KEY_DOWN, KEY_UP
 from ..game import POKEMON_SIZE, decode_mon
 from ..hooks import CMD_CHECK_SHINY, CMD_COUNT_SHINIES, CMD_SET_DEX_COMPLETE, Mailbox
-from ..rotation import STARTERS
-from . import REPO_ROOT, ScenarioContext, open_context
-from .base import TEXT_PERIOD, Abort, print_summary
-from .quick_catch_save import CENTER_EXIT, CatchSaveScenario, run_catch_save
-from .quick_opening import run_opening
+from . import ScenarioContext
+from .base import TEXT_PERIOD, Abort
+from .quick_catch_save import CENTER_EXIT, CatchSaveScenario
 from .quick_route1 import (LAB_EXIT, OAK_FRONT, PALLET_LAB_FRONT, ROUTE1_SOUTH_EDGE,
-                           VIRIDIAN_SOUTH_EDGE, run_route1)
+                           VIRIDIAN_SOUTH_EDGE)
 
 # --- expectativas (include/constants/pokemon.h; conferidas em test_shiny_math.py) ----
 SHINY_ODDS = 8                  # shiny se hi(ot)^lo(ot)^hi(pid)^lo(pid) < 8: 1/8192 por sorteio
@@ -134,7 +131,7 @@ class ShinyScenario(CatchSaveScenario):
     # --- início --------------------------------------------------------------------
     def _start(self) -> str:
         self.box = Mailbox(self.ctl)
-        self._title_to_continue("tela de título da build de teste")
+        self._title_to_continue("tela de título da build de teste", shot="shiny_continue")
         consts, game = self.consts, self.game
         self._expect_map("MAP_VIRIDIAN_CITY_POKEMON_CENTER_1F")
         assert game.flag(consts.flag("FLAG_SYS_POKEDEX_GET")), "save sem a Pokédex"
@@ -172,6 +169,10 @@ class ShinyScenario(CatchSaveScenario):
     def _rate(self, with_charm: bool) -> str:
         attempts = ATTEMPTS_WITH_CHARM if with_charm else ATTEMPTS_NO_CHARM
         bag_before = self.game.bag_quantity(self.charm)
+        # o atalho põe/tira o charm durante a contagem; a taxa só vale se a bolsa real já
+        # estiver no estado pedido (o que o jogador teria de verdade)
+        assert bag_before == int(with_charm), (
+            f"charm na bolsa = {bag_before} antes da taxa {'com' if with_charm else 'sem'} charm")
         start = self.emu.frames(0)
         shinies = self.box.call(CMD_COUNT_SHINIES, SHINY_SAMPLES, int(with_charm),
                                 timeout=SHINY_SAMPLES * FRAMES_PER_MON_LIMIT, poll=COUNT_POLL)
@@ -320,43 +321,11 @@ def run_full_shiny(ctx_test: ScenarioContext) -> None:
     ShinyScenario(ctx_test).run()
 
 
-def _quick_save(args) -> Path:
-    """.sav do fim do modo rápido em args.quick; roda o modo rápido na ROM jogável se faltar."""
-    quick = Path(args.quick)
-    save = quick / "esteira.sav"
-    if save.is_file() and (quick / "estados" / "save.ss").is_file():
-        return save
-    with open_context(args.rom, args.elf, str(quick), args.starter) as ctx:
-        run_opening(ctx)
-        if not ctx.suite.failed():
-            run_route1(ctx)
-        if not ctx.suite.failed():
-            run_catch_save(ctx)
-    if ctx.suite.failed():
-        print_summary(ctx.suite, 0, 0)
-        raise SystemExit(f"modo rápido falhou em {quick}; sem save para o cenário de shiny")
-    return save
-
-
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Modo completo: Shiny Charm e taxa de shiny")
-    parser.add_argument("--out", required=True)
-    parser.add_argument("--quick", help="pasta do modo rápido com o esteira.sav (padrão OUT/rapido)")
-    parser.add_argument("--starter", default=STARTERS[0], choices=STARTERS,
-                        help="inicial, se o modo rápido precisar rodar")
-    parser.add_argument("--rom", default=str(REPO_ROOT / "pokefirered_switch.gba"))
-    parser.add_argument("--elf", default=str(REPO_ROOT / "pokefirered_switch.elf"))
-    parser.add_argument("--rom-test", default=str(REPO_ROOT / "pokefirered_switch_test.gba"))
-    parser.add_argument("--elf-test", default=str(REPO_ROOT / "pokefirered_switch_test.elf"))
-    args = parser.parse_args(argv)
-    args.quick = args.quick or str(Path(args.out) / "rapido")
-    start = time.monotonic()
-    save = _quick_save(args)
-    with open_context(args.rom_test, args.elf_test, str(Path(args.out) / "shiny"), args.starter,
-                      save_from=str(save)) as ctx:
-        run_full_shiny(ctx)
-        frames = ctx.emu.frames(0)
-    return print_summary(ctx.suite, time.monotonic() - start, frames)
+    """Atalho para `python3 -m esteira completo --only shiny ARGS` (quem orquestra é o CLI)."""
+    from ..__main__ import main as cli_main
+    return cli_main(["completo", "--only", "shiny",
+                     *(sys.argv[1:] if argv is None else argv)])
 
 
 if __name__ == "__main__":

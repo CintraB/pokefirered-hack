@@ -228,7 +228,7 @@ firered_rev1:           ; @$(MAKE) GAME_VERSION=FIRERED GAME_REVISION=1
 # pipefail (SHELL above) keeps `make` failing when the compile fails. The log is only replaced
 # when the ROM step ran or the build failed, so a "Nothing to be done" run keeps the last real log.
 ESTEIRA_MARKER := [esteira] build finished
-FIRERED_SWITCH_LOG := $(BUILD_DIR)/firered_switch$(if $(TESTBUILD),_test).log
+FIRERED_SWITCH_LOG := $(BUILD_DIR)/firered_switch$(if $(filter 1,$(TESTBUILD)),_test).log
 firered_switch:
 	@mkdir -p $(BUILD_DIR)
 	@$(MAKE) GAME_VERSION=FIRERED GAME_REVISION=10 BUILD_LOG=$(FIRERED_SWITCH_LOG).new 2>&1 | tee $(FIRERED_SWITCH_LOG).new; rc=$$?; \
@@ -413,7 +413,7 @@ endif
 # Test pipeline (test/esteira). `make firered_switch` already runs the quick suite and only
 # versions the ROM if it passes; these targets run it by hand on the ROM at the repo root.
 #   make test-quick                 static checks + 3 quick scripts
-#   make test-full                  quick + full scenarios (needs `make firered_switch TESTBUILD=1`)
+#   make test-full                  rebuilds the test ROM (TESTBUILD=1), then quick + full scenarios
 #   make test-approve [DIR=<run>]   promote the screenshots of a run (default: latest) to references
 #   SKIP_TESTS=1 make firered_switch  versions the ROM without testing (marked NAO_TESTADA.txt)
 ESTEIRA_RUN = out=$(CURDIR)/test/out/$$(date +%Y%m%d-%H%M%S); log=$(CURDIR)/$(FIRERED_SWITCH_LOG); \
@@ -423,8 +423,10 @@ ESTEIRA_RUN = out=$(CURDIR)/test/out/$$(date +%Y%m%d-%H%M%S); log=$(CURDIR)/$(FI
 test-quick:
 	@$(call ESTEIRA_RUN,rapido)
 
+# The full scenarios on the test ROM (pokefirered_switch_test.gba) must never run a stale build.
 test-full:
-	@$(call ESTEIRA_RUN,completo)
+	@$(MAKE) firered_switch TESTBUILD=1
+	@$(call ESTEIRA_RUN,completo) --rom-test $(CURDIR)/pokefirered_switch_test.gba --elf-test $(CURDIR)/pokefirered_switch_test.elf
 
 test-approve:
 	@cd test && python3 -m esteira aprovar "$(if $(DIR),$(abspath $(DIR)),$(shell ls -dt $(CURDIR)/test/out/*/ | head -n 1))"
