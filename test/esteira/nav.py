@@ -254,9 +254,14 @@ class Navigator:
         finally:
             self.emu.keys(0)
         if self.interrupted is None:
-            self.ctl.wait_until(self._player_still, 60, "fim do passo")
-            if self.ctl.script_active():
-                self.interrupted = "script"   # gatilho disparado ao chegar no último tile
+            # um encontro selvagem no último tile trava os controles e o avatar não chega a
+            # ficar parado (a transição da batalha começa no meio da animação do passo)
+            self.ctl.wait_until(lambda: self._player_still() or self.ctl.script_active()
+                                or self.game.in_battle(), 60, "fim do passo")
+            if self.game.in_battle():
+                self.interrupted = "battle"
+            elif self.ctl.script_active():
+                self.interrupted = "script"   # gatilho/encontro disparado no último tile
         return done
 
     def walk_to(self, x: int, y: int, run: bool = False) -> bool:

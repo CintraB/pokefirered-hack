@@ -58,6 +58,17 @@ def test_checkpoint_writes_state(live):
     assert Path(path).parent.name == "estados" and Path(path).suffix == ".ss"
 
 
+def test_restore_returns_to_checkpoint(live):
+    ctl, _game, emu = live
+    ctl.checkpoint("volta")
+    at_checkpoint = emu.frames(0)
+    emu.frames(50)
+    ctl.restore("volta")
+    assert emu.frames(0) == at_checkpoint
+    with pytest.raises(FileNotFoundError):
+        ctl.restore("nao-existe")
+
+
 def test_advance_text_times_out_with_evidence(live):
     ctl, _game, _emu = live
     with pytest.raises(StepTimeout):

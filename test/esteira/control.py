@@ -90,10 +90,21 @@ class Controller:
                                timeout, "menu de golpes da batalha")
 
     # --- savestates ----------------------------------------------------------------
+    def checkpoint_path(self, name: str) -> Path:
+        return self.out_dir / "estados" / f"{name}.ss"
+
     def checkpoint(self, name: str) -> str:
         """Grava um savestate em out_dir/estados/<name>.ss e devolve o caminho."""
-        folder = self.out_dir / "estados"
-        folder.mkdir(parents=True, exist_ok=True)
-        path = str(folder / f"{name}.ss")
-        self.emu.save_state(path)
-        return path
+        path = self.checkpoint_path(name)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        self.emu.save_state(str(path))
+        return str(path)
+
+    def restore(self, name: str) -> str:
+        """Carrega o checkpoint `name` gravado por checkpoint() (soltando todas as teclas)."""
+        path = self.checkpoint_path(name)
+        if not path.is_file():
+            raise FileNotFoundError(f"checkpoint {name!r} não existe: {path}")
+        self.emu.load_state(str(path))
+        self.emu.keys(0)
+        return str(path)

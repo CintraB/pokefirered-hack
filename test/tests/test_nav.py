@@ -212,6 +212,55 @@ def test_walk_to_stops_when_trigger_fires_on_last_tile_of_segment():
     assert len(calls) == 1
 
 
+# --- step com mundo falso: encontro selvagem no último tile ----------------------------
+
+class _StepWorld:
+    """Um passo para a direita a partir de (5,8): o tile muda no quadro `arrive`; os
+    controles travam no quadro `lock` (encontro selvagem) e o avatar nunca volta a ficar
+    parado (tileTransitionState != T_NOT_MOVING), como na transição para a batalha."""
+
+    def __init__(self, arrive: int = 6, lock: int = 9):
+        self.frame = 0
+        self.arrive, self.lock = arrive, lock
+        self.game = SimpleNamespace(location=lambda: PALLET, player_xy=self._xy,
+                                    in_battle=lambda: False,
+                                    syms=SimpleNamespace(addr=lambda name: 0x1000))
+        self.emu = SimpleNamespace(frames=self._frames, keys=lambda mask: None,
+                                   read_u8=lambda addr: 0 if self.frame < 1 else 1)
+
+    def _frames(self, n):
+        self.frame += n
+        return self.frame
+
+    def _xy(self):
+        return (6, 8) if self.frame >= self.arrive else (5, 8)
+
+    def wait_overworld_idle(self, timeout=600):
+        return 0
+
+    def script_active(self):
+        return self.frame >= self.lock
+
+    def wait_until(self, pred, timeout, what):
+        spent = 0
+        while not pred():
+            if spent >= timeout:
+                raise self.timeout_error(what)
+            self._frames(2)
+            spent += 2
+        return spent
+
+    def timeout_error(self, what):
+        return StepTimeout(what, "fake.png", "fake.ss")
+
+
+def test_step_reports_lock_on_last_tile_even_if_player_never_stops():
+    world = _StepWorld()
+    nav = Navigator(world)
+    assert nav.step("right", 1) == 1
+    assert nav.interrupted == "script"
+
+
 # --- step ao vivo: bloqueio com evidência e conexão de mapas -------------------------
 
 

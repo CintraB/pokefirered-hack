@@ -12,7 +12,6 @@ import argparse
 import re
 import sys
 import time
-from pathlib import Path
 from statistics import median
 
 from ..battle import BattleDriver
@@ -20,13 +19,11 @@ from ..emu import KEY_A, KEY_B, KEY_DOWN, KEY_START, KEY_UP
 from ..naming import NamingScreen
 from ..rotation import STARTERS
 from . import REPO_ROOT, ScenarioContext, open_context
+from .base import SCENE_TIMEOUT, TEXT_PERIOD, Abort, Scenario, print_summary
 
 PLAYER_NAME = "TESTE"
 TITLE_TIMEOUT = 6000
 INTRO_TIMEOUT = 30000
-SCENE_TIMEOUT = 6000
-TEXT_PERIOD = 10            # A segurado 2 quadros + 8 soltos
-SETTLE_FRAMES = 30          # overworld tem que ficar livre por tanto tempo seguido
 INSTANT_TEXT_MAX_FRAMES = 2
 SCRIPTED_FRAMES_PER_TILE = 16
 MIN_SCRIPTED_STEPS = 10     # passos seguidos exigidos no trecho medido da escolta do Oak
@@ -37,7 +34,6 @@ OAK_FIRST_TEXT_TASK = "Task_OakSpeech_ThisWorld"
 GENDER_TASK = "Task_OakSpeech_HandleGenderInput"
 RIVAL_NAME_TASK = "Task_OakSpeech_HandleRivalNameInput"
 CONFIRM_NAME_TASK = "Task_OakSpeech_HandleConfirmNameInput"
-YESNO_TASK = "Task_YesNoMenu_HandleInput"
 # Estados do printer que esperam botão (include/text.h, src/text.c RenderText):
 # RENDER_STATE_WAIT, RENDER_STATE_CLEAR (\p) e RENDER_STATE_SCROLL_START (\n no fim da caixa).
 BUTTON_WAIT_STATES = {1, 2, 3}
@@ -56,63 +52,7 @@ def _text_speed_fast() -> int:
     return int(re.search(r"#define\s+OPTIONS_TEXT_SPEED_FAST\s+(\d+)", text).group(1))
 
 
-class _Abort(Exception):
-    """Um passo de fluxo falhou (já registrado na Suite): o resto do roteiro não roda."""
-
-
-class OpeningScenario:
-    def __init__(self, ctx: ScenarioContext):
-        self.ctx = ctx
-        self.emu = ctx.emu
-        self.game = ctx.game
-        self.ctl = ctx.controller
-        self.nav = ctx.nav
-        self.suite = ctx.suite
-        self.consts = ctx.consts
-        self.shots = Path(ctx.out_dir) / "telas"
-        self.measures: dict[str, object] = {}
-
-    # --- utilidades ----------------------------------------------------------------
-    def _press(self, key: int) -> None:
-        self.emu.press(key, hold=2, release=TEXT_PERIOD - 2)
-
-    def _tasks(self) -> set[str]:
-        return self.game.active_tasks()
-
-    def _shot(self, name: str) -> str:
-        self.shots.mkdir(parents=True, exist_ok=True)
-        path = str(self.shots / f"{name}.png")
-        self.emu.screenshot(path)
-        return path
-
-    def _flow(self, name: str, fn) -> None:
-        """Passo de fluxo: falha (tempo esgotado/asserção) vira Result e interrompe o roteiro."""
-        if self.suite.run(name, fn).status == "falha":
-            raise _Abort(name)
-
-    def _settled_idle(self) -> bool:
-        """Overworld livre agora e pelos próximos SETTLE_FRAMES quadros."""
-        if not self.ctl.overworld_idle():
-            return False
-        for _ in range(SETTLE_FRAMES // 2):
-            self.emu.frames(2)
-            if not self.ctl.overworld_idle():
-                return False
-        return True
-
-    def _finish_script(self, what: str, timeout: int = SCENE_TIMEOUT, yesno=None) -> None:
-        """Avança falas com A até o overworld ficar livre; `yesno()` escolhe a tecla de cada
-        pergunta sim/não do script (padrão: A = SIM)."""
-        spent = 0
-        while not self._settled_idle():
-            if spent >= timeout:
-                raise self.ctl.timeout_error(what)
-            if YESNO_TASK in self._tasks():
-                self._press(yesno() if yesno else KEY_A)
-            else:
-                self._press(KEY_A)
-            spent += TEXT_PERIOD
-
+class OpeningScenario(Scenario):
     # --- abertura ------------------------------------------------------------------
     def _boot_to_oak_speech(self) -> None:
         self.ctl.wait_until(lambda: "TitleScreen" in self.game.callback2(), TITLE_TIMEOUT,
@@ -214,11 +154,6 @@ class OpeningScenario:
         self._flow("abertura: jogador no quarto",
                    lambda: self._assert_location("MAP_PALLET_TOWN_PLAYERS_HOUSE_2F"))
         self.ctl.checkpoint("abertura")
-
-    def _assert_location(self, map_name: str) -> str:
-        loc = self.game.location()
-        assert loc == self.consts.map(map_name), f"estou em {loc}, esperava {map_name}"
-        return f"{map_name} em {self.game.player_xy()}"
 
     # --- Oak leva ao laboratório ---------------------------------------------------
     def _walk_to_oak_trigger(self) -> None:
@@ -327,7 +262,7 @@ class OpeningScenario:
         if "starter_shot" in self.measures:
             res.images.append(self.measures["starter_shot"])
         if res.status == "falha":
-            raise _Abort("inicial")
+            raise Abort("inicial")
         self.ctl.checkpoint("inicial")
 
     # --- rival ---------------------------------------------------------------------
@@ -357,7 +292,7 @@ class OpeningScenario:
         if "battle_shot" in self.measures:
             res.images.append(self.measures["battle_shot"])
         if res.status == "falha":
-            raise _Abort("rival")
+            raise Abort("rival")
         self.ctl.checkpoint("rival")
 
     def run(self) -> None:
@@ -366,7 +301,7 @@ class OpeningScenario:
             self.phase_escort()
             self.phase_starter()
             self.phase_rival()
-        except _Abort:
+        except Abort:
             pass
 
 
@@ -388,10 +323,7 @@ def main(argv: list[str] | None = None) -> int:
     with open_context(args.rom, args.elf, args.out, args.starter) as ctx:
         run_opening(ctx)
         frames = ctx.emu.frames(0)
-    for r in ctx.suite.results:
-        print(f"[{r.status}] {r.name}: {r.detail}")
-    print(f"tempo: {time.monotonic() - start:.1f} s, {frames} quadros")
-    return 1 if ctx.suite.failed() else 0
+    return print_summary(ctx.suite, time.monotonic() - start, frames)
 
 
 if __name__ == "__main__":

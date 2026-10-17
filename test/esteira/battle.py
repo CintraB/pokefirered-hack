@@ -10,6 +10,7 @@
 """
 
 import struct
+from typing import Callable
 
 from .control import Controller
 from .emu import KEY_A, KEY_B, KEY_DOWN, KEY_LEFT, KEY_RIGHT, KEY_UP
@@ -35,6 +36,10 @@ ACTION_FIGHT, ACTION_BAG, ACTION_RUN = 0, 1, 3
 MAX_MON_MOVES = 4
 BATTLE_MON_MOVES = 0x0C        # struct BattlePokemon.moves[4] (u16)
 BATTLE_MON_PP = 0x24           # struct BattlePokemon.pp[4] (u8)
+BATTLE_MON_SPECIES = 0x00      # struct BattlePokemon.species (u16)
+BATTLE_MON_HP = 0x28           # struct BattlePokemon.hp (u16)
+BATTLE_MON_LEVEL = 0x2A        # struct BattlePokemon.level (u8)
+BATTLE_MON_SIZE = 0x58         # sizeof(struct BattlePokemon) (nm: gBattleMons = 0x160 = 4 * 0x58)
 
 BAG_POCKET = 0x06              # gBagMenuState.pocket (u16)
 BAG_ITEMS_ABOVE = 0x08         # gBagMenuState.itemsAbove[3] (u16)
@@ -109,6 +114,19 @@ class BattleDriver:
     def _battle_over(self) -> bool:
         return not self.game.in_battle() and self.outcome() != 0
 
+    def _battler_addr(self, battler: int) -> int:
+        return self.syms.addr("gBattleMons") + battler * BATTLE_MON_SIZE
+
+    def battler_hp(self, battler: int) -> int:
+        """gBattleMons[battler].hp (0 = jogador, 1 = oponente em batalha simples)."""
+        return self.emu.read_u16(self._battler_addr(battler) + BATTLE_MON_HP)
+
+    def battler_species_level(self, battler: int) -> tuple[int, int]:
+        """(espécie, nível) de gBattleMons[battler]."""
+        base = self._battler_addr(battler)
+        return (self.emu.read_u16(base + BATTLE_MON_SPECIES),
+                self.emu.read_u8(base + BATTLE_MON_LEVEL))
+
     def _battle_mon(self) -> tuple[list[int], list[int]]:
         raw = self.emu.read(self.syms.addr("gBattleMons"), 0x28)
         moves = list(struct.unpack_from("<4H", raw, BATTLE_MON_MOVES))
@@ -165,13 +183,20 @@ class BattleDriver:
             self._press(KEY_A)
 
     # --- API -----------------------------------------------------------------------
-    def fight_to_end(self, timeout: int = 20000) -> str:
-        """Luta usando sempre o 1º golpe com PP até a batalha acabar: 'win'|'lose'|'fled'."""
+    def fight_to_end(self, timeout: int = 20000,
+                     on_step: Callable[[], None] | None = None) -> str:
+        """Luta usando sempre o 1º golpe com PP até a batalha acabar: 'win'|'lose'|'fled'.
+
+        `on_step()` roda a cada iteração (no máximo TEXT_PERIOD quadros entre duas), para
+        quem quer observar a batalha enquanto ela anda.
+        """
         self.wait_battle_start()
         spent = 0
         while not self._battle_over():
             if spent >= timeout:
                 raise self.ctl.timeout_error("fim da batalha")
+            if on_step is not None:
+                on_step()
             func = self.controller_func()
             if func == ACTION_FUNC:
                 self._choose_action(ACTION_FIGHT)
@@ -203,7 +228,7 @@ class BattleDriver:
             self._handle_event()
             spent += TEXT_PERIOD
 
-    def _wait_action_menu(self, timeout: int = 3000) -> None:
+    def wait_action_menu(self, timeout: int = 3000) -> None:
         """Avança as mensagens (ex.: "Um RATTATA selvagem apareceu!") até o menu de ação."""
         self.wait_battle_start()
         if self._advance_until_menu_or_end("menu de ação da batalha", timeout) == "end":
@@ -211,7 +236,7 @@ class BattleDriver:
 
     def run_away(self, timeout: int = 3000) -> bool:
         """Escolhe FUGIR; True se a batalha terminou em fuga, False se voltou ao menu."""
-        self._wait_action_menu()
+        self.wait_action_menu()
         self._choose_action(ACTION_RUN)
         self.ctl.wait_until(lambda: self.controller_func() != ACTION_FUNC, 60, "saída do menu")
         if self._advance_until_menu_or_end("resultado da fuga", timeout) == "menu":
@@ -229,7 +254,7 @@ class BattleDriver:
         if target is None:
             raise AssertionError(f"item {item_id} não está na bolsa")
         pocket, index = target
-        self._wait_action_menu()
+        self.wait_action_menu()
         self._choose_action(ACTION_BAG)
         bag_ready = lambda: BAG_INPUT_TASK in self.game.active_tasks()
         self.ctl.wait_until(bag_ready, MENU_TIMEOUT, "bolsa aberta")
