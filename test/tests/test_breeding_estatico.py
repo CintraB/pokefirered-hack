@@ -351,7 +351,7 @@ def test_lista_da_loja_mostra_precos_de_5_digitos():
     digits = int(re.search(r"#define SHOP_PRICE_DIGITS (\d+)", shop).group(1))
     body = re.search(r"static void BuyMenuPrintPriceInList\([^;]*?\)\n\{.*?\n\}", shop, re.S).group(0)
     assert "ConvertIntToDecimalStringN(gStringVar1, ItemId_GetPrice(item), STR_CONV_MODE_LEFT_ALIGN, SHOP_PRICE_DIGITS);" in body
-    assert "x = SHOP_PRICE_DIGITS - StringLength(gStringVar1);" in body
+    assert "padding = SHOP_PRICE_DIGITS - 1 - StringLength(gStringVar1);" in body
     assert max(it["price"] for it in ITEMS) < 10 ** digits
     money = (REPO_ROOT / "src" / "money.c").read_text(encoding="utf-8")
     assert "ConvertIntToDecimalStringN(gStringVar1, amount, STR_CONV_MODE_LEFT_ALIGN, 6);" in money
