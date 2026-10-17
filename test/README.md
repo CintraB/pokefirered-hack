@@ -13,7 +13,7 @@ repo.
 | Compilar, testar e versionar a ROM | `make firered_switch -j$(nproc)` | build + ~35 s de teste |
 | Compilar e versionar **sem** testar | `SKIP_TESTS=1 make firered_switch -j$(nproc)` | só o build |
 | Testar de novo a ROM já compilada, sem versionar | `make test-quick` | ~35 s |
-| Teste completo (cenários longos, ROM de teste) | `make test-full` | ~12-17 min (o shiny ~4-9 min, a creche ~4 min) |
+| Teste completo (cenários longos, ROM de teste) | `make test-full` | ~16 min (o shiny ~8 min, a creche ~4 min) |
 | Ver o roteiro rápido numa janela | `make test-watch` | ~ tempo real |
 | Ver as evoluções sem troca (Hack 3) numa janela | `make test-watch CENARIO=evolucoes` | ~9 min (tempo real) |
 | Ver a página EVOLUTION do resumo (Hack 4) numa janela | `make test-watch CENARIO=resumo_evolucao` | ~2 min (tempo real) |
@@ -151,8 +151,8 @@ ROM. Sem o log, só o uso de memória é conferido (o terminal avisa). Deixa os 
 | `ovo` | **ROM de teste** | Hack 6: um ovo de verdade na creche de Four Island, entregue pelo velho, chocado andando e conferido na memória, e a loja de Four Island |
 
 Depende da ROM jogável da raiz (se não existir, vira falha `emulador/rom-playable`). Não grava
-em `roms/`: o resultado fica em `test/out/<data-hora>/`. Rode com o terminal aberto por ~12-17
-min; o shiny leva ~4-9 min disso e a `creche` ~4 min.
+em `roms/`: o resultado fica em `test/out/<data-hora>/`. Rode com o terminal aberto por ~16
+min; o shiny leva ~8 min disso e a `creche` ~4 min.
 
 O `shiny`, o `evolucoes`, o `resumo_evolucao` e o `resumo_ivs` partem do mesmo save do jogo (o `.sav` do fim do
 `captura`), cada um numa **sessão própria** da ROM de teste: um não herda o que o outro fez (o
