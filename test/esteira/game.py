@@ -63,6 +63,12 @@ MAIN_IN_BATTLE = 0x439        # bit 1 do byte (oamLoadDisabled:1, inBattle:1, ..
 # --- struct TextPrinter (include/text.h) -------------------------------------------
 TEXT_PRINTER_SIZE = 0x24      # confere com sizeof(sTextPrinters)==0x480 / 32 janelas no ELF
 TEXT_PRINTER_ACTIVE = 0x1B    # campo `active` (IsTextPrinterActive lê [r1, #27])
+TEXT_PRINTER_STATE = 0x1C     # campo `state` (enum RENDER_STATE_* de include/text.h)
+
+# --- struct Task (include/task.h) --------------------------------------------------
+NUM_TASKS = 16
+TASK_SIZE = 0x28              # func(4) + isActive, prev, next, priority + s16 data[16]
+TASK_IS_ACTIVE = 0x04
 
 
 @dataclass
@@ -159,6 +165,19 @@ class Game:
                     total += qty ^ key
         return total
 
+    def bag_pocket(self, pocket: int) -> list[tuple[int, int]]:
+        """(item, quantidade) de cada slot ocupado do bolso `pocket` (0 = POCKET_ITEMS - 1), na
+        ordem em que a bolsa os lista."""
+        offset, count = SB1_BAG_POCKETS[pocket]
+        sb1, key = self._sb1(), self._key() & 0xFFFF
+        raw = self.emu.read(sb1 + offset, count * 4)
+        slots = []
+        for i in range(count):
+            item, qty = struct.unpack_from("<HH", raw, i * 4)
+            if item:
+                slots.append((item, qty ^ key))
+        return slots
+
     def flag(self, flag_id: int) -> bool:
         byte = self.emu.read_u8(self._sb1() + SB1_FLAGS + flag_id // 8)
         return bool(byte & (1 << (flag_id % 8)))
@@ -186,6 +205,23 @@ class Game:
     def text_printer_active(self, window: int = 0) -> bool:
         base = self.syms.addr("sTextPrinters")
         return bool(self.emu.read_u8(base + window * TEXT_PRINTER_SIZE + TEXT_PRINTER_ACTIVE))
+
+    def text_printer_state(self, window: int = 0) -> int:
+        """`state` do printer da janela (1 = RENDER_STATE_WAIT: esperando botão)."""
+        base = self.syms.addr("sTextPrinters")
+        return self.emu.read_u8(base + window * TEXT_PRINTER_SIZE + TEXT_PRINTER_STATE)
+
+    def active_tasks(self) -> set[str]:
+        """Nomes das funções das tasks ativas em gTasks (0x... se o símbolo não existir)."""
+        raw = self.emu.read(self.syms.addr("gTasks"), NUM_TASKS * TASK_SIZE)
+        names = set()
+        for i in range(NUM_TASKS):
+            entry = raw[i * TASK_SIZE:(i + 1) * TASK_SIZE]
+            if not entry[TASK_IS_ACTIVE]:
+                continue
+            func = struct.unpack_from("<I", entry, 0)[0] & ~1
+            names.add(self.syms.name_at(func) or f"0x{func:08x}")
+        return names
 
     def options_text_speed(self) -> int:
         return self.emu.read_u16(self._sb2() + SB2_OPTIONS) & 0x7

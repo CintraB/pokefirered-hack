@@ -286,8 +286,10 @@ class Navigator:
                     while j < len(route) and route[j] == route[i]:
                         j += 1
                     moved = self.step(route[i], j - i, run)
-                    if moved < j - i:
-                        return False        # interrompido por warp, script ou batalha
+                    if moved < j - i or self.interrupted is not None:
+                        # interrompido por warp, script ou batalha (inclusive gatilho
+                        # disparado no último tile do trecho, com o trecho completo)
+                        return False
                     i = j
                 return self.game.player_xy() == goal
             except StepBlocked as blocked:

@@ -197,6 +197,21 @@ def test_walk_to_reports_interruption_without_error():
     assert nav.walk_to(12, 8) is False
 
 
+def test_walk_to_stops_when_trigger_fires_on_last_tile_of_segment():
+    calls = []
+
+    def step(nav, ctl, pos, direction, n):
+        calls.append((direction, n))
+        moved = _advance(pos, direction, n)
+        nav.interrupted = "script"   # gatilho no último tile do trecho: andou tudo, script assumiu
+        return moved
+
+    nav, _ctl, _pos = _fake_nav(step)
+    # (5,8) -> (12,2): dois trechos (direita e cima); o segundo não pode começar
+    assert nav.walk_to(12, 2) is False
+    assert len(calls) == 1
+
+
 # --- step ao vivo: bloqueio com evidência e conexão de mapas -------------------------
 
 
