@@ -12,6 +12,8 @@ u8 TypeCalc(u16 move, u8 attacker, u8 defender);
 u8 AI_TypeCalc(u16 move, u16 targetSpecies, u8 targetAbility);
 u8 GetBattlerTurnOrderNum(u8 battlerId);
 void SetMoveEffect(bool8 primary, u8 certain);
+void CalcHiddenPower(u8 hpIV, u8 attackIV, u8 defenseIV, u8 speedIV, u8 spAttackIV, u8 spDefenseIV,
+                     u8 *type, u8 *power);
 bool32 IsMonGettingExpSentOut(void);
 void BattleDestroyYesNoCursorAt(void);
 void BattleCreateYesNoCursorAt(void);

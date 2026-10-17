@@ -8500,31 +8500,48 @@ static void Cmd_recoverbasedonsunlight(void)
     }
 }
 
-static void Cmd_hiddenpowercalc(void)
+// Hack: the Hidden Power formula, shared by the move (Cmd_hiddenpowercalc) and the IVs/EVs page
+// of the summary screen, so both always agree.
+void CalcHiddenPower(u8 hpIV, u8 attackIV, u8 defenseIV, u8 speedIV, u8 spAttackIV, u8 spDefenseIV,
+                     u8 *type, u8 *power)
 {
     s32 powerBits, typeBits;
 
-    powerBits = ((gBattleMons[gBattlerAttacker].hpIV & 2) >> 1)
-              | ((gBattleMons[gBattlerAttacker].attackIV & 2) << 0)
-              | ((gBattleMons[gBattlerAttacker].defenseIV & 2) << 1)
-              | ((gBattleMons[gBattlerAttacker].speedIV & 2) << 2)
-              | ((gBattleMons[gBattlerAttacker].spAttackIV & 2) << 3)
-              | ((gBattleMons[gBattlerAttacker].spDefenseIV & 2) << 4);
-    typeBits  = ((gBattleMons[gBattlerAttacker].hpIV & 1) << 0)
-              | ((gBattleMons[gBattlerAttacker].attackIV & 1) << 1)
-              | ((gBattleMons[gBattlerAttacker].defenseIV & 1) << 2)
-              | ((gBattleMons[gBattlerAttacker].speedIV & 1) << 3)
-              | ((gBattleMons[gBattlerAttacker].spAttackIV & 1) << 4)
-              | ((gBattleMons[gBattlerAttacker].spDefenseIV & 1) << 5);
+    powerBits = ((hpIV & 2) >> 1)
+              | ((attackIV & 2) << 0)
+              | ((defenseIV & 2) << 1)
+              | ((speedIV & 2) << 2)
+              | ((spAttackIV & 2) << 3)
+              | ((spDefenseIV & 2) << 4);
+    typeBits  = ((hpIV & 1) << 0)
+              | ((attackIV & 1) << 1)
+              | ((defenseIV & 1) << 2)
+              | ((speedIV & 1) << 3)
+              | ((spAttackIV & 1) << 4)
+              | ((spDefenseIV & 1) << 5);
 
-    gDynamicBasePower = (40 * powerBits) / 63 + 30;
+    *power = (40 * powerBits) / 63 + 30;
 
     // Subtract 3 instead of 1 below because 2 types are excluded (TYPE_NORMAL and TYPE_MYSTERY)
     // The final + 1 skips past Normal, and the following conditional skips TYPE_MYSTERY
-    gBattleStruct->dynamicMoveType = ((NUMBER_OF_MON_TYPES - 3) * typeBits) / 63 + 1;
-    if (gBattleStruct->dynamicMoveType >= TYPE_MYSTERY)
-        gBattleStruct->dynamicMoveType++;
-    gBattleStruct->dynamicMoveType |= F_DYNAMIC_TYPE_1 | F_DYNAMIC_TYPE_2;
+    *type = ((NUMBER_OF_MON_TYPES - 3) * typeBits) / 63 + 1;
+    if (*type >= TYPE_MYSTERY)
+        (*type)++;
+}
+
+static void Cmd_hiddenpowercalc(void)
+{
+    u8 type, power;
+
+    CalcHiddenPower(gBattleMons[gBattlerAttacker].hpIV,
+                    gBattleMons[gBattlerAttacker].attackIV,
+                    gBattleMons[gBattlerAttacker].defenseIV,
+                    gBattleMons[gBattlerAttacker].speedIV,
+                    gBattleMons[gBattlerAttacker].spAttackIV,
+                    gBattleMons[gBattlerAttacker].spDefenseIV,
+                    &type, &power);
+    gDynamicBasePower = power;
+    gBattleStruct->dynamicMoveType = type | F_DYNAMIC_TYPE_1 | F_DYNAMIC_TYPE_2;
 
     gBattlescriptCurrInstr++;
 }

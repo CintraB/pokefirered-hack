@@ -863,6 +863,29 @@ const u8 gText_PokeSum_EvoTradeItem[] = _("Trade + {STR_VAR_2} {RIGHT_ARROW_2} {
 const u8 gText_PokeSum_EvoNotPossible[] = _(" (impossible)");
 const u8 gText_PokeSum_EvoTradedOnly[] = _(" (R/S/E only)");
 const u8 gText_PokeSum_EvoNone[] = _("Does not evolve.");
+const u8 gText_PokeSum_PageName_IvsEvs[] = _("IVs/EVs");
+// IVs/EVs page (GetIvEvPageText in src/pokemon_summary_screen.c)
+const u8 gText_PokeSum_IvTotal[] = _("IV TOTAL");
+const u8 gText_PokeSum_Ev[] = _("EV");
+const u8 gText_PokeSum_HiddenPower[] = _("HIDDEN POWER");
+const u8 gText_PokeSum_StatHp[] = _("HP");
+const u8 gText_PokeSum_StatAttack[] = _("ATTACK");
+const u8 gText_PokeSum_StatDefense[] = _("DEFENSE");
+const u8 gText_PokeSum_StatSpAtk[] = _("SP. ATK");
+const u8 gText_PokeSum_StatSpDef[] = _("SP. DEF");
+const u8 gText_PokeSum_StatSpeed[] = _("SPEED");
+// IV of one stat: 31, 26-30, 16-25, 1-15, 0
+const u8 gText_PokeSum_IvPerfect[] = _("Perfect");
+const u8 gText_PokeSum_IvExcellent[] = _("Excellent");
+const u8 gText_PokeSum_IvVeryGood[] = _("Very good");
+const u8 gText_PokeSum_IvGood[] = _("Good");
+const u8 gText_PokeSum_IvPoor[] = _("Poor");
+// IV total: 186, 151-185, 121-150, 91-120, 0-90
+const u8 gText_PokeSum_IvTotalPerfect[] = _("Perfect");
+const u8 gText_PokeSum_IvTotalOutstanding[] = _("Outstanding");
+const u8 gText_PokeSum_IvTotalAboveAverage[] = _("Above average");
+const u8 gText_PokeSum_IvTotalAverage[] = _("Average");
+const u8 gText_PokeSum_IvTotalBelowAverage[] = _("Below average");
 const u8 gText_TrainerCardName[] = _("NAME: ");
 const u8 gText_TrainerCardIDNo[] = _("IDNo.");
 const u8 gText_TrainerCardMoney[] = _("MONEY");

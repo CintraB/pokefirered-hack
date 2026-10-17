@@ -1204,6 +1204,8 @@ const u32 gSummaryScreen_PageEgg_Tilemap[] = INCBIN_U32("graphics/summary_screen
 // Hack: frame of the EVOLUTION page, one ruled box from row 4 to the bottom built from the
 // tiles of the egg page's TRAINER MEMO box
 const u32 gSummaryScreen_PageEvolution_Tilemap[] = INCBIN_U32("graphics/summary_screen/page_evolution.bin.lz");
+// Hack: frame of the IVs/EVs page, the same box unruled and in the SKILLS yellow
+const u32 gSummaryScreen_PageIvs_Tilemap[] = INCBIN_U32("graphics/summary_screen/page_ivs.bin.lz");
 
 const u16 gUnusedRedPalette[] = INCBIN_U16("graphics/unused/red_palette.gbapal");
 

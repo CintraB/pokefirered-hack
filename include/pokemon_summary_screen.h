@@ -16,12 +16,15 @@ void SetPokemonSummaryScreenMode(u8);
 
 // Text of the EVOLUTION page: one line per gEvolutionTable entry of the species (in table
 // order), or a "does not evolve" line. Lines are separated by '\n'.
-#define EVOLUTION_PAGE_TEXT_SIZE 320
+#define SUMMARY_PAGE_TEXT_SIZE 384  // the hack's pages (EVOLUTION, IVs/EVs), with the terminator
 void GetEvolutionPageText(u8 *dest, u16 species);
+// IVs/EVs page: IV total, % and overall grade; IV, grade and EV per stat; Hidden Power and EV
+// total, one line each. Columns are placed with {SKIP x} codes.
+void GetIvEvPageText(u8 *dest, struct Pokemon *mon);
 
 #if TESTBUILD
 u32 PokeSum_TestGetState(void);
-bool32 PokeSum_TestCopyEvolutionPageText(u8 *dest);
+bool32 PokeSum_TestCopyPageText(u8 *dest);
 #endif
 
 // The Pokemon Summary Screen can operate in different modes. Certain features,
@@ -44,9 +47,10 @@ enum PokemonSummaryScreenPage
     PSS_PAGE_MOVES_INFO,
     PSS_PAGE_UNK4,
     PSS_PAGE_MOVE_DELETER,
-    // Comes after PSS_PAGE_MOVES on screen, but is numbered after the vanilla pages: the page
-    // flip code relies on MOVES_INFO = MOVES + 1.
+    // The hack's pages come after PSS_PAGE_MOVES on screen, but are numbered after the vanilla
+    // pages: the page flip code relies on MOVES_INFO = MOVES + 1.
     PSS_PAGE_EVOLUTION,
+    PSS_PAGE_IVS,       // IVs/EVs, after EVOLUTION on screen
 };
 
 enum PokemonSummaryScreenState3270
