@@ -48,7 +48,8 @@ def test_perguntas_do_menu_de_pokemon_existem():
 def test_telas_da_cena_sao_pontos_comuns_unicos():
     assert len(set(SCREEN_POINTS)) == len(SCREEN_POINTS) == 2 * len(EVO_SHOTS)
     assert {f"evo_{r.slug}" for r in RULES} <= set(EVO_SHOTS)
-    assert refs.SHARED_POINTS == SCREEN_POINTS
+    assert refs.SHARED_POINTS[:len(SCREEN_POINTS)] == SCREEN_POINTS   # depois vêm as do Hack 4
+    assert len(set(refs.SHARED_POINTS)) == len(refs.SHARED_POINTS)
     assert not set(SCREEN_POINTS) & set(refs.KEY_POINTS)
 
 

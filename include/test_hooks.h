@@ -26,9 +26,15 @@ enum
     TEST_CMD_SET_PARTY_MON,     // arg0 = species | level << 16, arg1 = held item | slot << 16 | friendship << 24 (0 = base); result = party count (0 = bad args)
     TEST_CMD_ENABLE_NATIONAL_DEX, // result = IsNationalPokedexEnabled()
     TEST_CMD_EVOLUTION_TARGET,  // arg0 = species | held item << 16, arg1 = mode | level << 8 | evolution item << 16: mon in gEnemyParty[0]; result = GetEvolutionTargetSpecies()
+    TEST_CMD_EVOLUTION_TEXT,    // arg0 = species, arg1 = 0: GetEvolutionPageText(species) / 1: the text the open summary's EVOLUTION page printed, into gTestText; result = its length (0xFFFFFFFF = bad species / no summary)
+    TEST_CMD_SUMMARY_STATE,     // result = page | mode << 8 | isEgg << 16 of the open summary screen (0xFFFFFFFF = none)
+    TEST_CMD_SET_PARTY_EGG,     // arg0 = species, arg1 = slot: an Egg (CreateEgg) in gPlayerParty[slot]; result = party count (0 = bad args)
 };
 
+#define TEST_TEXT_SIZE 320  // EVOLUTION_PAGE_TEXT_SIZE (include/pokemon_summary_screen.h)
+
 extern struct TestMailbox gTestMailbox;
+extern u8 gTestText[TEST_TEXT_SIZE];
 
 void TestHooks_Run(void);
 

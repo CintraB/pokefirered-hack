@@ -418,7 +418,7 @@ endif
 #   make test-watch [FROM=<point>] [STARTER=<X>]
 #                                   watch the quick script in a window (WSLg), real time, with sound;
 #                                   temp save, nothing written to roms/ (not part of the pipeline)
-#   make test-watch CENARIO=evolucoes
+#   make test-watch CENARIO=evolucoes  (or CENARIO=resumo_evolucao)
 #                                   same, but a full-mode scenario on the test ROM (rebuilt first),
 #                                   from the newest quick-run save in test/out/*/captura.sav
 #   SKIP_TESTS=1 make firered_switch  versions the ROM without testing (marked NAO_TESTADA.txt)

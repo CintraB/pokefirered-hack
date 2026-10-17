@@ -51,6 +51,12 @@ WIDTH_RULES: list[tuple[str, str | None, int | None, str]] = [
     ("src/strings.c", "gStartMenuDesc_", 30 * 8 - 2,
      "barra de ajuda do menu Start: sHelpMessageWindowTemplate .width = 30 tiles (src/help_message.c:14), "
      "texto em x = 2 (src/help_message.c:97)"),
+    # Os {STR_VAR_*} medem 0 aqui; as linhas montadas (nível, item, espécie) de toda espécie são
+    # medidas à parte em _evolution_page_results (esteira/evolution_page.py).
+    ("src/strings.c", "gText_PokeSum_Evo", 28 * 8 - 2,
+     "página EVOLUTION do resumo: sWindowTemplates_Evolution[0] .width = 28 tiles "
+     "(src/pokemon_summary_screen.c:918), texto em x = EVOLUTION_PAGE_TEXT_X = 2 "
+     "(src/pokemon_summary_screen.c:908)"),
     # Sem largura determinada (janelas diferentes ou não localizadas): pulados de propósito.
     ("data/text/help_system.inc", None, None,
      "texto renderizado num bitmap de 26 tiles (src/help_system_util.c:588-591) cuja janela de exibição "
@@ -457,9 +463,25 @@ def _scan(root: Path, english_check: bool) -> tuple[list[Result], dict[tuple[str
     return syntax, entries
 
 
+def _evolution_page_results(root: Path) -> list[Result]:
+    """Hack 4: largura de cada linha da página EVOLUTION, montada para toda espécie com os
+    nomes de verdade (os rótulos gText_PokeSum_Evo* sozinhos não dizem o tamanho final). Repo
+    sem os fontes da página (fixtures) não é checado."""
+    from esteira.constants import Constants
+    from esteira.evolution_page import (LINE_WIDTH_PX, SOURCE_FILES, SOURCE_REF,
+                                        check_page_widths)
+    if not all((root / path).is_file() for path in SOURCE_FILES):
+        return []
+    consts = Constants.load(str(root), ["species.h"])
+    return [Result(f"texto/{RULE_WIDTH}", "falha",
+                   f"src/strings.c: página EVOLUTION de {species}: '{line}' com {px} px, limite "
+                   f"{LINE_WIDTH_PX} px ({SOURCE_REF})")
+            for species, line, px in check_page_widths(root, consts)]
+
+
 def check_text(repo: str, exceptions: dict, english_check: bool = False) -> list[Result]:
     syntax, entries = _scan(Path(repo), english_check)
-    results = list(syntax)
+    results = list(syntax) + _evolution_page_results(Path(repo))
     frozen = exceptions.get("text", [])
     applied: set[tuple[str, str, str]] = set()  # exceções que de fato calaram um achado
 

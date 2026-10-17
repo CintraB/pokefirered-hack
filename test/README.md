@@ -16,6 +16,7 @@ repo.
 | Teste completo (cenários longos, ROM de teste) | `make test-full` | ~13 min (o shiny sozinho ~9 min) |
 | Ver o roteiro rápido numa janela | `make test-watch` | ~ tempo real |
 | Ver as evoluções sem troca (Hack 3) numa janela | `make test-watch CENARIO=evolucoes` | ~9 min (tempo real) |
+| Ver a página EVOLUTION do resumo (Hack 4) numa janela | `make test-watch CENARIO=resumo_evolucao` | ~2 min (tempo real) |
 | Aprovar as telas de referência | `make test-approve` | instantâneo |
 | Testes unitários da própria esteira | `python3 -m pytest test -q` | ~5-6 min (~80 s sem os lentos) |
 
@@ -142,14 +143,16 @@ ROM. Sem o log, só o uso de memória é conferido (o terminal avisa). Deixa os 
 | `master` | sem emulador | O branch `master` (pret original) ainda compila idêntico ao original (SHA1), numa worktree temporária em `/tmp` |
 | `shiny` | **ROM de teste** | Shiny Charm e taxa de shiny com/sem o charm (usa atalhos da build de teste) |
 | `evolucoes` | **ROM de teste** | Hack 3, fim das evoluções por troca e da trava da Dex Nacional: Rare Candy/pedra pela bolsa e a cena de evolução de verdade para os 11 Pokémon (nível 37, com/sem item segurado), Bellossom e Crobat, item errado, "passou do 37 sem item" e a troca que não evolui mais, tudo sem a Dex Nacional (veja abaixo) |
+| `resumo_evolucao` | **ROM de teste** | Hack 4, página EVOLUTION do resumo: o texto de todas as 386 espécies, a página pelo menu de verdade (→/←, troca de Pokémon com ↓), ovo e modo de aprender golpe sem a página (veja abaixo) |
 
 Depende da ROM jogável da raiz (se não existir, vira falha `emulador/rom-playable`). Não grava
 em `roms/`: o resultado fica em `test/out/<data-hora>/`. Rode com o terminal aberto por ~13
 min; o shiny leva ~9 min disso.
 
-O `shiny` e o `evolucoes` partem do mesmo save do jogo (o `.sav` do fim do `captura`), cada um
-numa **sessão própria** da ROM de teste: um não herda o que o outro fez (o shiny liga a Dex
-Nacional e ganha o Shiny Charm), e `--only evolucoes` roda só ele (~30 s).
+O `shiny`, o `evolucoes` e o `resumo_evolucao` partem do mesmo save do jogo (o `.sav` do fim do
+`captura`), cada um numa **sessão própria** da ROM de teste: um não herda o que o outro fez (o
+shiny liga a Dex Nacional e ganha o Shiny Charm), e `--only evolucoes` roda só ele (~30 s;
+`--only resumo_evolucao`, ~5 s).
 
 **O cenário `evolucoes`** (`test/esteira/scenarios/full_evolutions.py`; as regras ficam numa
 tabela só, `test/esteira/evolutions.py`). Os atalhos da build de teste só montam o Pokémon no
@@ -175,7 +178,36 @@ Telas antes/depois de cada cena: `telas/evo_<alvo>_antes.png` e `_depois.png`, c
 `test/referencias/COMUM/` (não dependem do inicial). O teste estático
 `test/tests/test_evolucoes_estatico.py` (pytest, sem emulador) confere a tabela de evoluções, o
 método novo no C, que a trava da Dex Nacional não voltou (cena de evolução normal e de troca,
-pedras no menu de Pokémon) e os 6 itens à venda na Celadon Dept. Store 4F por 2100.
+pedras no menu de Pokémon, modo troca de `GetEvolutionTargetSpecies`) e os 6 itens à venda na
+Celadon Dept. Store 4F por 2100.
+
+**O cenário `resumo_evolucao`** (Hack 4; `test/esteira/scenarios/full_summary_evolution.py`).
+O resumo do Pokémon ganhou a 4ª página, **EVOLUTION** (depois de INFO / SKILLS / KNOWN MOVES),
+que lista como a espécie evolui, uma linha por entrada da tabela de evoluções. Quem monta o
+texto é `GetEvolutionPageText` (`src/pokemon_summary_screen.c`); os formatos e o texto
+esperado de cada espécie, gerado em Python dos fontes (`evolution.h`, `species_names.h`,
+`items.json`), ficam em `test/esteira/evolution_page.py`. Os atalhos da build de teste montam o
+time (Eevee, Onix, Slowpoke, Bulbasaur e Tauros nos slots 0-4 e um ovo de Togepi no 5), dão uma
+Rare Candy e leem o estado do resumo (página, modo, ovo) e o texto que a página imprimiu. Ordem:
+
+1. `GetEvolutionPageText` de **todas** as espécies (1..CHIMECHO, sem as OLD_UNOWN) é igual,
+   byte a byte, ao texto esperado;
+2. START > POKéMON > Eevee > RESUMO, → três vezes até a página EVOLUTION (conferida pela
+   página ativa na memória e pelo texto impresso); ← volta para KNOWN MOVES e → de novo;
+3. ↓ na página EVOLUTION troca para Onix, Slowpoke, Bulbasaur e Tauros sem sair da página
+   (texto de cada um); ↓ no Tauros não vai para o ovo;
+4. o resumo do ovo não sai da página INFO com →;
+5. Tauros 18 + Rare Candy quer aprender PURSUIT: SIM abre o resumo de escolher o golpe a
+   esquecer (modo `PSS_MODE_SELECT_MOVE`), onde → não leva à página EVOLUTION; B cancela, SIM
+   desiste de aprender e nenhum golpe muda.
+
+Telas da página: `telas/resumo_evo_<espécie>.png`, comparadas com `test/referencias/COMUM/`
+(e `telas/resumo_evo_escolher_golpe.png`, só registro). O teste `test/tests/test_resumo_evolucao.py`
+(pytest) confere sem emulador os casos fixos (Bulbasaur, Eevee, Onix, Slowpoke, Feebas, Tauros,
+Wurmple, Nincada, Tyrogue), a largura e o tamanho do texto de toda espécie, a ligação com
+`src/strings.c` e o C da página; e, se a ROM de teste estiver em dia, o texto do jogo de todas
+as espécies. A largura das linhas montadas também entra na checagem de **textos do jogo** da
+esteira rápida (veja **Largura do texto**).
 
 ### `make test-approve`
 
@@ -191,8 +223,9 @@ do `meta.json` da execução). Pontos: `nome`, `inicial`, `batalha_rival`, `capt
 `save_continue` (modo rápido) e `bolsa`, `resumo`, `pokedex`, `opcoes`, `cartao`, `pc`, `loja`,
 `mapa` (tour do modo completo). Cada inicial tem o seu conjunto: para aprovar os três, rode a
 esteira uma vez com cada um (`--starter`). As telas da cena de evolução (`evo_*_antes`,
-`evo_*_depois`, do cenário `evolucoes`) não dependem do inicial e vão para
-`test/referencias/COMUM/`, que vale para os três.
+`evo_*_depois`, do cenário `evolucoes`) e da página EVOLUTION (`resumo_evo_*`, do
+`resumo_evolucao`) não dependem do inicial e vão para `test/referencias/COMUM/`, que vale para
+os três.
 
 "Mais recente" é a pasta `test/out/<data-hora>` modificada por último, de qualquer comando;
 confira o `DIR` quando tiver rodado outras coisas. O comando **não confere se a execução
@@ -237,16 +270,19 @@ make test-watch FROM=encomenda STARTER=SQUIRTLE  # começa na captura
 - Precisa do WSLg (Windows 11) e da `libsdl2-dev` (veja Requisitos). Sem janela disponível o
   comando diz para rodar `wsl --update` e `wsl --shutdown` no PowerShell e abrir o WSL de novo.
 
-**Cenário do modo completo numa janela** (`CENARIO=`, hoje só `evolucoes`):
+**Cenário do modo completo numa janela** (`CENARIO=`: `evolucoes` ou `resumo_evolucao`):
 
 ```bash
 make test-watch CENARIO=evolucoes                    # Hack 3: as evoluções, em tempo real
 make test-watch CENARIO=evolucoes STARTER=SQUIRTLE   # usa o save de uma execução com esse inicial
+make test-watch CENARIO=resumo_evolucao              # Hack 4: a página EVOLUTION do resumo
 ```
 
 - Recompila antes a **ROM de teste** (`make firered_switch TESTBUILD=1`, como o `test-full`) e
   roda o cenário nela, na janela, com o mesmo roteiro do modo completo (inclusive as
-  conferências: no fim aparece o resumo de ok/falhas).
+  conferências: no fim aparece o resumo de ok/falhas). No `resumo_evolucao`, a janela fica
+  parada ~2,5 s em cada página EVOLUTION (e no resumo de escolher golpe) para dar tempo de ler;
+  antes, uns 7 s no campo enquanto confere o texto das 386 espécies.
 - Parte de uma **cópia** do save do jogo (`captura.sav`) mais recente em `test/out/*/` — todo
   `make firered_switch` e `make test-quick` deixa um; o inicial é o desse save. Sem nenhum, o
   comando pede para rodar `make test-quick` antes (exit 2). Não grava em `roms/` e não mexe no
@@ -269,7 +305,7 @@ python3 -m esteira rapido --rom ../pokefirered_switch.gba --elf ../pokefirered_s
 | `rapido` | Checagens estáticas + 3 roteiros rápidos |
 | `completo` | O rápido + os cenários de `FULL_SCENARIOS` |
 | `aprovar DIR` | Promove as telas da execução `DIR` a referência |
-| `assistir` | Roteiro rápido (ou, com `--cenario evolucoes`, esse cenário na ROM de teste) numa janela (é o que o `make test-watch` chama) |
+| `assistir` | Roteiro rápido (ou, com `--cenario evolucoes` ou `resumo_evolucao`, esse cenário na ROM de teste) numa janela (é o que o `make test-watch` chama) |
 | `nao-testada --out DIR` | Só o relatório "NÃO TESTADA" (usado por `SKIP_TESTS=1`) |
 
 Opções de `rapido` e `completo` (`--rom`, `--elf` e `--out` são obrigatórios):
@@ -280,11 +316,11 @@ Opções de `rapido` e `completo` (`--rom`, `--elf` e `--out` são obrigatórios
 | `--rom-test`, `--elf-test` | ROM de teste e ELF, só para cenários que usam a build de teste (padrão: `pokefirered_switch_test.*` na raiz) |
 | `--log` | Log do build; sem ele só a checagem de texto roda (a do build vira aviso) |
 | `--out` | Pasta da execução (relatório, telas, estados, vídeo) |
-| `--only NOME` | Só um item: `build`, `texto`, `abertura`, `rota1`, `captura`; no `completo` também `pc`, `telas`, `floresta_brock`, `master`, `shiny`, `evolucoes` |
+| `--only NOME` | Só um item: `build`, `texto`, `abertura`, `rota1`, `captura`; no `completo` também `pc`, `telas`, `floresta_brock`, `master`, `shiny`, `evolucoes`, `resumo_evolucao` |
 | `--starter X` | Força `BULBASAUR`, `CHARMANDER` ou `SQUIRTLE` (não mexe no rodízio) |
 | `--sem-video` | Não grava `video.webp` |
 
-`assistir`: `--starter`, `--from {encomenda,rival}` ou `--cenario evolucoes` (com `--rom-test`/`--elf-test`, padrão os da raiz), `--rom`, `--elf`. Códigos de saída de
+`assistir`: `--starter`, `--from {encomenda,rival}` ou `--cenario {evolucoes,resumo_evolucao}` (com `--rom-test`/`--elf-test`, padrão os da raiz), `--rom`, `--elf`. Códigos de saída de
 `rapido`/`completo`: 0 sem falha (aviso não reprova), 1 com falha.
 
 Exemplos:
@@ -305,7 +341,7 @@ passar sem valer. Regras práticas:
 - passe o mesmo `--starter` da execução original (está no `meta.json`): sem ele a esteira usa o
   inicial da vez no rodízio e, se não for o do checkpoint, descarta o checkpoint e roda a
   cadeia toda;
-- `--only shiny` e `--only evolucoes` precisam do `<OUT>/captura.sav` que o `rapido`/`completo` anterior (mesma
+- `--only shiny`, `--only evolucoes` e `--only resumo_evolucao` precisam do `<OUT>/captura.sav` que o `rapido`/`completo` anterior (mesma
   pasta) deixou; sem ele o resultado é uma falha dizendo o que rodar antes;
 - `--only build` e `--only texto` não usam emulador e não têm esse problema.
 
@@ -428,6 +464,14 @@ maioria de `data/text/*.inc`, 208 px (26 tiles); descrições de itens (`src/dat
 varia ou não foi determinada. A tabela completa, com o motivo de cada uma, está em `WIDTH_RULES`
 em `test/esteira/check_text.py`. Os caracteres ({PLAYER}/{RIVAL} medem 7 letras) e o espaçamento
 entre letras seguem o jogo.
+
+Página EVOLUTION do resumo (Hack 4): os textos `gText_PokeSum_Evo*` de `src/strings.c` têm o
+limite da janela da página, 222 px (28 tiles com o texto em x = 2, `sWindowTemplates_Evolution`
+e `EVOLUTION_PAGE_TEXT_X` em `src/pokemon_summary_screen.c`). Como eles têm `{STR_VAR_*}` (nível,
+item, espécie), que aqui medem 0, a checagem também monta a página de **toda** espécie com os
+nomes de verdade e mede cada linha (`test/esteira/evolution_page.py`): um item ou espécie
+renomeado que estoure a janela reprova como `texto/largura`. Hoje a linha mais larga é a do
+Umbreon, 220 px.
 
 ## Limitações conhecidas
 

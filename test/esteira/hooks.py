@@ -19,12 +19,23 @@ CMD_SET_PARTY_MON = 5       # arg0 = espécie | nível << 16, arg1 = item segura
 CMD_ENABLE_NATIONAL_DEX = 6 # -> IsNationalPokedexEnabled()
 CMD_EVOLUTION_TARGET = 7    # arg0 = espécie | item << 16, arg1 = modo | nível << 8 | item de evolução << 16
                             # -> GetEvolutionTargetSpecies() (Pokémon em gEnemyParty[0])
+CMD_EVOLUTION_TEXT = 8      # arg0 = espécie, arg1 = 0 (GetEvolutionPageText) | 1 (o texto que a página
+                            # EVOLUTION aberta imprimiu) -> tamanho; o texto fica em gTestText
+CMD_SUMMARY_STATE = 9       # -> página | modo << 8 | ovo << 16 do resumo aberto (0xFFFFFFFF = nenhum)
+CMD_SET_PARTY_EGG = 10      # arg0 = espécie, arg1 = slot -> nº no time (ovo de CreateEgg)
 
 # modos de GetEvolutionTargetSpecies (EVO_MODE_* de include/constants/pokemon.h)
 EVO_MODE_NORMAL, EVO_MODE_TRADE, EVO_MODE_ITEM_USE = 0, 1, 2
 
 MAILBOX_SYMBOL = "gTestMailbox"
+TEXT_SYMBOL = "gTestText"   # u8[TEST_TEXT_SIZE], texto no charmap do jogo terminado em 0xFF
 _ARG0, _RESULT, _DONE = 0x04, 0x0C, 0x10
+NO_RESULT = 0xFFFFFFFF
+
+# PSS_PAGE_* e PSS_MODE_* (include/pokemon_summary_screen.h)
+PSS_PAGE_INFO, PSS_PAGE_SKILLS, PSS_PAGE_MOVES, PSS_PAGE_MOVES_INFO = 0, 1, 2, 3
+PSS_PAGE_EVOLUTION = 6
+PSS_MODE_NORMAL, PSS_MODE_SELECT_MOVE = 0, 2
 
 
 class NotATestBuild(AssertionError):
@@ -77,3 +88,27 @@ class Mailbox:
                            mode | level << 8 | evolution_item << 16)
         assert result != 0xFFFFFFFF, f"EVOLUTION_TARGET recusado: espécie {species}, nível {level}"
         return result
+
+    # --- página EVOLUTION do resumo (Hack 4) ---------------------------------------------
+    def evolution_text(self, species: int = 0, from_open_summary: bool = False) -> bytes:
+        """Bytes (charmap do jogo, sem o 0xFF) do texto da página EVOLUTION: o que
+        GetEvolutionPageText monta para `species`, ou o que a página aberta imprimiu."""
+        length = self.call(CMD_EVOLUTION_TEXT, species, int(from_open_summary))
+        assert length != NO_RESULT, ("EVOLUTION_TEXT recusado: " + (
+            "nenhum resumo aberto" if from_open_summary else f"espécie {species}"))
+        data = self.emu.read(self.ctl.game.syms.addr(TEXT_SYMBOL), length + 1)
+        assert data[length] == 0xFF, f"texto de {length} bytes sem terminador: {data.hex()}"
+        return data[:length]
+
+    def summary_state(self) -> tuple[int, int, bool] | None:
+        """(página, modo, ovo) do resumo aberto (PSS_PAGE_*, PSS_MODE_*), ou None."""
+        state = self.call(CMD_SUMMARY_STATE)
+        if state == NO_RESULT:
+            return None
+        return state & 0xFF, (state >> 8) & 0xFF, bool((state >> 16) & 0xFF)
+
+    def set_party_egg(self, slot: int, species: int) -> int:
+        """Põe um ovo de `species` (CreateEgg) em gPlayerParty[slot]; devolve o nº no time."""
+        count = self.call(CMD_SET_PARTY_EGG, species, slot)
+        assert count > slot, f"SET_PARTY_EGG recusado: espécie {species}, slot {slot} (time = {count})"
+        return count

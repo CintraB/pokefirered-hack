@@ -72,6 +72,11 @@ class Emulator:
             encoding="utf-8",
         )
 
+    @property
+    def window(self) -> bool:
+        """Roda numa janela em tempo real (modo assistir): cenários podem pausar para leitura."""
+        return self._window
+
     def _died(self, what: str) -> EmulatorError:
         code = self._proc.returncode
         cls = WindowClosed if code == WINDOW_CLOSED_EXIT else EmulatorError

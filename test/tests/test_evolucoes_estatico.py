@@ -174,3 +174,15 @@ def test_registro_na_pokedex_ao_evoluir_continua_pelo_numero_nacional():
         for flag in ("FLAG_SET_SEEN", "FLAG_SET_CAUGHT"):
             assert (f"GetSetPokedexFlag(SpeciesToNationalPokedexNum(gTasks[taskId]."
                     f"tPostEvoSpecies), {flag})") in body
+
+
+def test_modo_troca_sem_a_trava_da_dex_nacional():
+    """Hack 4 (achado da revisão do Hack 3): o ramo EVO_MODE_TRADE de
+    GetEvolutionTargetSpecies também não tem mais a trava (Scizor, Steelix... só com a Dex
+    Nacional); hoje é código morto (nenhuma evolução por troca sobrou), mas não volta."""
+    body = POKEMON_C[POKEMON_C.index("u16 GetEvolutionTargetSpecies("):]
+    trade = body[body.index("case EVO_MODE_TRADE:"):body.index("case EVO_MODE_ITEM_USE:")]
+    assert "IsNationalPokedexEnabled" not in trade
+    assert "KANTO_SPECIES_END" not in trade
+    item = trade[trade.index("case EVO_TRADE_ITEM:"):]
+    assert "SetMonData(mon, MON_DATA_HELD_ITEM, &heldItem)" in item[:item.index("break;")]

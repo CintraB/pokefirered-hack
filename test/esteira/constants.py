@@ -21,10 +21,11 @@ class Constants:
         self._species_names: dict[int, str] | None = None
 
     @classmethod
-    def load(cls, repo: str) -> "Constants":
+    def load(cls, repo: str, headers: list[str] = _HEADERS) -> "Constants":
+        """`headers`: só esses de include/constants (p.ex. ["species.h"], que não depende do build)."""
         defines: dict[str, str] = {}
         base = Path(repo) / "include" / "constants"
-        for header in _HEADERS:
+        for header in headers:
             path = base / header
             if not path.is_file():
                 raise FileNotFoundError(f"{path} não existe (map_groups.h é gerado pelo build)")

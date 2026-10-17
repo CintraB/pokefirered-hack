@@ -4,17 +4,24 @@
 // Compiles to nothing in the playable ROM: only make firered_switch TESTBUILD=1 defines it.
 #if TESTBUILD
 
+#include "characters.h"
+#include "daycare.h"
 #include "event_data.h"
 #include "field_specials.h"
 #include "item.h"
 #include "pokedex.h"
 #include "pokemon.h"
+#include "pokemon_summary_screen.h"
+#include "string_util.h"
 #include "constants/items.h"
 #include "constants/pokemon.h"
 #include "constants/pokedex.h"
 #include "constants/species.h"
 
+STATIC_ASSERT(TEST_TEXT_SIZE >= EVOLUTION_PAGE_TEXT_SIZE, TestTextHoldsTheEvolutionPage);
+
 struct TestMailbox gTestMailbox;
+EWRAM_DATA u8 gTestText[TEST_TEXT_SIZE] = {0};
 
 // Creates `count` mons through the same path wild encounters use (CreateMonWithNature, with
 // the player as OT) and counts the shiny ones. The Shiny Charm is put in / taken out of the bag
@@ -122,6 +129,32 @@ static u32 EvolutionTarget(u32 arg0, u32 arg1)
     return GetEvolutionTargetSpecies(&gEnemyParty[0], mode, evolutionItem);
 }
 
+// Hack 4: the EVOLUTION page text, either built by the same function the summary screen uses
+// (source 0) or the one the open summary screen printed (source 1), copied to gTestText.
+static u32 EvolutionText(u32 species, u32 source)
+{
+    gTestText[0] = EOS;
+    if (source == 0)
+    {
+        if (species == SPECIES_NONE || species >= NUM_SPECIES)
+            return 0xFFFFFFFF;
+        GetEvolutionPageText(gTestText, species);
+    }
+    else if (!PokeSum_TestCopyEvolutionPageText(gTestText))
+    {
+        return 0xFFFFFFFF;
+    }
+    return StringLength(gTestText);
+}
+
+static u32 SetPartyEgg(u32 species, u32 slot)
+{
+    if (species == SPECIES_NONE || species >= NUM_SPECIES || slot >= PARTY_SIZE || slot > CalculatePlayerPartyCount())
+        return 0;
+    CreateEgg(&gPlayerParty[slot], species, FALSE);
+    return CalculatePlayerPartyCount();
+}
+
 void TestHooks_Run(void)
 {
     u32 result = 0;
@@ -151,6 +184,15 @@ void TestHooks_Run(void)
         break;
     case TEST_CMD_EVOLUTION_TARGET:
         result = EvolutionTarget(gTestMailbox.arg0, gTestMailbox.arg1);
+        break;
+    case TEST_CMD_EVOLUTION_TEXT:
+        result = EvolutionText(gTestMailbox.arg0, gTestMailbox.arg1);
+        break;
+    case TEST_CMD_SUMMARY_STATE:
+        result = PokeSum_TestGetState();
+        break;
+    case TEST_CMD_SET_PARTY_EGG:
+        result = SetPartyEgg(gTestMailbox.arg0, gTestMailbox.arg1);
         break;
     default:
         result = 0xFFFFFFFF;
