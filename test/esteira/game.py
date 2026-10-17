@@ -70,6 +70,16 @@ NUM_TASKS = 16
 TASK_SIZE = 0x28              # func(4) + isActive, prev, next, priority + s16 data[16]
 TASK_IS_ACTIVE = 0x04
 
+# --- struct BattleMove (include/pokemon.h), tabela gBattleMoves no ROM ------------
+BATTLE_MOVE_SIZE = 12         # 9 bytes alinhados a 4 (nm: gBattleMoves = 0x10a4 = 355 * 12)
+BATTLE_MOVE_PP = 4
+
+# --- struct Item (include/item.h), tabela gItems no ROM ----------------------------
+ITEM_SIZE = 0x2C              # nm: gItems = 0x4074 = 375 * 0x2C
+ITEM_PRICE = 0x10             # name[14] + itemId u16 -> price u16
+TASK_DATA = 0x08              # s16 data[16]
+NUM_TASK_DATA = 16
+
 
 @dataclass
 class Mon:
@@ -82,11 +92,18 @@ class Mon:
     ot_id: int
     moves: list[int]
     pp: list[int]
+    pp_bonuses: int = 0           # 2 bits por golpe (PP Up), PokemonSubstruct0.ppBonuses
 
     @property
     def is_shiny(self) -> bool:
         ot, pid = self.ot_id, self.personality
         return ((ot >> 16) ^ (ot & 0xFFFF) ^ (pid >> 16) ^ (pid & 0xFFFF)) < 8
+
+
+def max_pp(base_pp: int, pp_bonuses: int, index: int) -> int:
+    """PP máximo do golpe `index` com os PP Up de `pp_bonuses` (CalculatePPWithBonus)."""
+    ups = (pp_bonuses >> (2 * index)) & 3
+    return base_pp + base_pp * 20 * ups // 100
 
 
 def decode_mon(raw: bytes, charmap: Charmap) -> Mon:
@@ -104,6 +121,7 @@ def decode_mon(raw: bytes, charmap: Charmap) -> Mon:
         return secure[start:start + SUBSTRUCT_SIZE]
 
     species = struct.unpack_from("<H", sub(0), 0)[0]          # PokemonSubstruct0.species
+    pp_bonuses = sub(0)[8]                                     # PokemonSubstruct0.ppBonuses
     moves = list(struct.unpack_from("<4H", sub(1), 0))        # PokemonSubstruct1.moves
     pp = list(struct.unpack_from("<4B", sub(1), 8))           # PokemonSubstruct1.pp
     return Mon(
@@ -116,6 +134,7 @@ def decode_mon(raw: bytes, charmap: Charmap) -> Mon:
         ot_id=ot,
         moves=moves,
         pp=pp,
+        pp_bonuses=pp_bonuses,
     )
 
 
@@ -225,3 +244,26 @@ class Game:
 
     def options_text_speed(self) -> int:
         return self.emu.read_u16(self._sb2() + SB2_OPTIONS) & 0x7
+
+    def move_max_pp(self, mon: Mon, index: int) -> int:
+        """PP cheio do golpe `index` de `mon` (gBattleMoves[move].pp + PP Up); 0 sem golpe."""
+        move = mon.moves[index]
+        if not move:
+            return 0
+        base = self.emu.read_u8(self.syms.addr("gBattleMoves") + move * BATTLE_MOVE_SIZE
+                                + BATTLE_MOVE_PP)
+        return max_pp(base, mon.pp_bonuses, index)
+
+    def item_price(self, item_id: int) -> int:
+        """gItems[item_id].price (preço de compra na loja)."""
+        return self.emu.read_u16(self.syms.addr("gItems") + item_id * ITEM_SIZE + ITEM_PRICE)
+
+    def task_data(self, func_name: str) -> list[int] | None:
+        """data[16] (s16) da 1ª task ativa cuja função é `func_name`; None se não houver."""
+        func = self.syms.addr(func_name)
+        raw = self.emu.read(self.syms.addr("gTasks"), NUM_TASKS * TASK_SIZE)
+        for i in range(NUM_TASKS):
+            entry = raw[i * TASK_SIZE:(i + 1) * TASK_SIZE]
+            if entry[TASK_IS_ACTIVE] and struct.unpack_from("<I", entry, 0)[0] & ~1 == func:
+                return list(struct.unpack_from(f"<{NUM_TASK_DATA}h", entry, TASK_DATA))
+        return None

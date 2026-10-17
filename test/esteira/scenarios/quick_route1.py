@@ -197,9 +197,10 @@ class Route1Scenario(Scenario):
         if self.game.player_xy() not in ROUTE1_GRASS:
             self._walk(*ROUTE1_GRASS[1])
 
-    def _find_wild_battle(self) -> None:
-        """Vai e volta na grama da entrada da Rota 1 até um selvagem aparecer."""
-        top, bottom = ROUTE1_GRASS
+    def _find_wild_battle(self, grass=ROUTE1_GRASS) -> None:
+        """Vai e volta entre os dois tiles de grama `grass` (mesma coluna, o de cima primeiro;
+        padrão: entrada da Rota 1) até um selvagem aparecer."""
+        top, bottom = grass
         for _ in range(MAX_ENCOUNTER_WALKS):
             target = top if self.game.player_xy()[1] > top[1] else bottom
             if self.nav.walk_to(*target):

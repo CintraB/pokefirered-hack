@@ -4,7 +4,7 @@ import struct
 from pathlib import Path
 
 from esteira.charmap import Charmap
-from esteira.game import Mon, decode_mon
+from esteira.game import Mon, decode_mon, max_pp
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
@@ -18,9 +18,10 @@ _ORDERS = [
 ]
 
 
-def build_mon(charmap, pid, ot, species, level, hp, max_hp, nickname, moves, pp) -> bytes:
+def build_mon(charmap, pid, ot, species, level, hp, max_hp, nickname, moves, pp,
+              pp_bonuses=0) -> bytes:
     """Monta os 100 bytes de uma struct Pokemon, encriptando os dados com pid^ot."""
-    growth = struct.pack("<HHIBBH", species, 0, 0, 0, 70, 0)
+    growth = struct.pack("<HHIBBH", species, 0, 0, pp_bonuses, 70, 0)
     attacks = struct.pack("<4H4B", *moves, *pp)
     evs = bytes(12)
     misc = bytes(12)
@@ -63,6 +64,21 @@ def test_decode_all_substruct_orders():
                         nickname="X", moves=[1, 2, 3, 4], pp=[5, 6, 7, 8])
         mon = decode_mon(raw, cm)
         assert (mon.species, mon.moves, mon.pp) == (25, [1, 2, 3, 4], [5, 6, 7, 8]), pid
+
+
+def test_decode_pp_bonuses():
+    cm = Charmap.load(str(REPO_ROOT))
+    raw = build_mon(cm, pid=7, ot=9, species=4, level=6, hp=20, max_hp=21, nickname="X",
+                    moves=[10, 45, 0, 0], pp=[35, 40, 0, 0], pp_bonuses=0b00001101)
+    assert decode_mon(raw, cm).pp_bonuses == 0b00001101
+
+
+def test_max_pp_with_pp_ups():
+    # CalculatePPWithBonus (src/pokemon.c): base + base * 20 * ups / 100, 2 bits por golpe
+    assert max_pp(35, 0, 0) == 35
+    assert max_pp(35, 0b01, 0) == 42
+    assert max_pp(40, 0b1100, 1) == 64
+    assert max_pp(40, 0b1100, 0) == 40
 
 
 def test_is_shiny():

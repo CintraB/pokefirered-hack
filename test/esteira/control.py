@@ -59,6 +59,21 @@ class Controller:
             spent += TEXT_PRESS_PERIOD
         return spent
 
+    def press_until(self, key: int, done: Callable[[], bool], what: str,
+                    tries: int = 10, wait: int = 20) -> None:
+        """Aperta `key` até `done()`; depois de cada toque espera até `wait` quadros pelo
+        efeito antes de repetir (telas em transição ignoram o botão)."""
+        for _ in range(tries):
+            if done():
+                return
+            self.emu.press(key, hold=2, release=2)
+            for _ in range(wait // 2):
+                if done():
+                    return
+                self.emu.frames(2)
+        if not done():
+            raise self.timeout_error(what)
+
     # --- estados do jogo -----------------------------------------------------------
     def script_active(self) -> bool:
         """Há script rodando/pausado ou controles de campo travados (src/script.c)."""

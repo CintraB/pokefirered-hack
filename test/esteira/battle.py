@@ -5,13 +5,17 @@
   src/battle_controller_player.c (HandleInputChooseAction/HandleInputChooseMove).
 - Perguntas sim/não da batalha: identificadas pelo comando apontado por
   gBattlescriptCurrInstr (opcodes tirados de gBattleScriptingCommandsTable no ROM).
-- Bolsa (src/item_menu.c): gBagMenuState {callback, location, bagOpen, pocket u16,
-  itemsAbove[3] u16, cursorPos[3] u16}; menu de Pokémon: gPartyMenu.slotId em +9.
+- Desmaio do próprio Pokémon (data/battle_scripts_1.s, BattleScript_HandleFaintedMon):
+  na selvagem o `yesnobox` pergunta "Usar o próximo Pokémon?" (NÃO = tentar fugir), na de
+  treinador o mesmo comando pergunta se troca antes do oponente (NÃO = seguir). Depois vem
+  a tela de Pokémon (src/party_menu.c): escolhe o 1º vivo e ENVIAR/TROCAR (1ª opção).
+- Bolsa e menu de Pokémon do item: esteira/bag.py.
 """
 
 import struct
 from typing import Callable
 
+from .bag import PARTY_MENU_SLOT_ID, Bag
 from .control import Controller
 from .emu import KEY_A, KEY_B, KEY_DOWN, KEY_LEFT, KEY_RIGHT, KEY_UP
 
@@ -31,6 +35,7 @@ OUTCOME_NAMES = {
     B_OUTCOME_PLAYER_TELEPORTED: "fled",
     B_OUTCOME_MON_FLED: "fled",
 }
+BATTLE_TYPE_TRAINER = 1 << 3
 
 ACTION_FIGHT, ACTION_BAG, ACTION_RUN = 0, 1, 3
 MAX_MON_MOVES = 4
@@ -41,15 +46,11 @@ BATTLE_MON_HP = 0x28           # struct BattlePokemon.hp (u16)
 BATTLE_MON_LEVEL = 0x2A        # struct BattlePokemon.level (u8)
 BATTLE_MON_SIZE = 0x58         # sizeof(struct BattlePokemon) (nm: gBattleMons = 0x160 = 4 * 0x58)
 
-BAG_POCKET = 0x06              # gBagMenuState.pocket (u16)
-BAG_ITEMS_ABOVE = 0x08         # gBagMenuState.itemsAbove[3] (u16)
-BAG_CURSOR_POS = 0x0E          # gBagMenuState.cursorPos[3] (u16)
-NUM_BAG_POCKETS_NO_CASES = 3   # Itens, Itens-chave, Poké Balls
-PARTY_MENU_SLOT_ID = 0x09      # gPartyMenu.slotId (s8)
-
-BAG_INPUT_TASK = "Task_BagMenu_HandleInput"
-BAG_CONTEXT_TASK = "Task_FieldItemContextMenuHandleInput"
+PARTY_MENU_ACTION = 0x0B       # gPartyMenu.action (u8), include/party_menu.h
+PARTY_ACTION_USE_ITEM = 3      # include/constants/party_menu.h
 PARTY_CHOOSE_TASK = "Task_HandleChooseMonInput"
+PARTY_SELECTION_TASK = "Task_HandleSelectionMenuInput"   # ENVIAR/TROCAR, RESUMO, CANCELAR
+BAG_INPUT_TASK = "Task_BagMenu_HandleInput"
 # Nomes das funções do controlador do jogador (gBattlerControllerFuncs[0]). Na 1ª batalha
 # do rival o controlador é o tutorial (battle_controller_oak_old_man.c): o menu de ação tem
 # o mesmo nome (static) e o de golpes é OakOldManHandleInputChooseMove, que chama
@@ -58,7 +59,7 @@ ACTION_FUNC = "HandleInputChooseAction"
 MOVE_FUNC_SUFFIX = "HandleInputChooseMove"
 
 # sim/não da batalha -> tecla: recusa aprender golpe (B = NÃO), confirma "parar de aprender"
-# (A com o cursor em SIM), recusa trocar de Pokémon no modo SHIFT (B = NÃO).
+# (A com o cursor em SIM). O `yesnobox` depende do tipo de batalha (yesno_key).
 YESNO_COMMANDS = {
     "Cmd_yesnoboxlearnmove": KEY_B,
     "Cmd_yesnoboxstoplearningmove": KEY_A,
@@ -71,12 +72,25 @@ TEXT_PERIOD = 10               # A segurado 2 quadros + 8 soltos
 MENU_TIMEOUT = 600
 
 
+def yesno_key(command: str, battle_type_flags: int) -> int:
+    """Tecla que responde o sim/não `command` da batalha.
+
+    `yesnobox` só aparece em BattleScript_HandleFaintedMon: na selvagem é "Usar o próximo
+    Pokémon?" (SIM = A; NÃO tentaria fugir), na de treinador é "trocar antes do oponente?"
+    (NÃO = B, segue com o Pokémon da vez).
+    """
+    if command == "Cmd_yesnobox":
+        return KEY_B if battle_type_flags & BATTLE_TYPE_TRAINER else KEY_A
+    return YESNO_COMMANDS[command]
+
+
 class BattleDriver:
     def __init__(self, controller: Controller):
         self.ctl = controller
         self.game = controller.game
         self.emu = controller.emu
         self.syms = controller.game.syms
+        self.bag = Bag(controller)
         self._opcodes: dict[int, str] | None = None
 
     # --- leitura do estado ---------------------------------------------------------
@@ -110,6 +124,9 @@ class BattleDriver:
 
     def outcome(self) -> int:
         return self.emu.read_u8(self.syms.addr("gBattleOutcome"))
+
+    def battle_type_flags(self) -> int:
+        return self.emu.read_u32(self.syms.addr("gBattleTypeFlags"))
 
     def _battle_over(self) -> bool:
         return not self.game.in_battle() and self.outcome() != 0
@@ -174,23 +191,57 @@ class BattleDriver:
         self._select_grid("gMoveSelectionCursor", usable[0], "golpe")
         self._press(KEY_A)
 
+    def _send_out_replacement(self) -> None:
+        """Tela de Pokémon depois de um desmaio: cursor no 1º vivo e A (abre ENVIAR/TROCAR)."""
+        alive = [i for i, mon in enumerate(self.game.party()) if mon.hp > 0]
+        if not alive:
+            raise self.ctl.timeout_error("tela de Pokémon sem nenhum Pokémon vivo")
+        target = alive[0]
+        slot = self.syms.addr("gPartyMenu") + PARTY_MENU_SLOT_ID
+        for _ in range(8):
+            cur = self.emu.read_u8(slot)
+            if cur == target:
+                break
+            self.ctl.press_until(KEY_DOWN, lambda: self.emu.read_u8(slot) != cur,
+                                 f"cursor da tela de Pokémon no slot {target}")
+        if self.emu.read_u8(slot) != target:
+            raise self.ctl.timeout_error(f"cursor da tela de Pokémon no slot {target}")
+        self.ctl.press_until(KEY_A, lambda: PARTY_CHOOSE_TASK not in self.game.active_tasks(),
+                             f"escolha do Pokémon do slot {target}")
+
     def _handle_event(self) -> None:
-        """Um passo fora dos menus de escolha: responde sim/não ou avança texto com A."""
-        command = self._script_command() if self.game.in_battle() else None
-        if command in YESNO_COMMANDS:
-            self._press(YESNO_COMMANDS[command])
-        else:
+        """Um passo fora dos menus de escolha: tela de Pokémon depois de um desmaio,
+        sim/não, ou avança texto com A."""
+        if not self.game.in_battle():
             self._press(KEY_A)
+            return
+        tasks = self.game.active_tasks()
+        action = self.emu.read_u8(self.syms.addr("gPartyMenu") + PARTY_MENU_ACTION)
+        if PARTY_CHOOSE_TASK in tasks and action != PARTY_ACTION_USE_ITEM:
+            self._send_out_replacement()
+        elif PARTY_SELECTION_TASK in tasks:
+            self._press(KEY_A)          # ENVIAR/TROCAR é a 1ª opção
+        else:
+            command = self._script_command()
+            if command in YESNO_COMMANDS:
+                self._press(yesno_key(command, self.battle_type_flags()))
+            else:
+                self._press(KEY_A)
 
     # --- API -----------------------------------------------------------------------
     def fight_to_end(self, timeout: int = 20000,
                      on_step: Callable[[], None] | None = None) -> str:
-        """Luta usando sempre o 1º golpe com PP até a batalha acabar: 'win'|'lose'|'fled'.
+        """Luta usando sempre o 1º golpe com PP até a batalha acabar.
 
-        `on_step()` roda a cada iteração (no máximo TEXT_PERIOD quadros entre duas), para
-        quem quer observar a batalha enquanto ela anda.
+        Devolve 'win'|'lose'|'fled' (gBattleOutcome), ou 'fainted' quando um Pokémon nosso
+        que começou vivo desmaiou, outro entrou no lugar e a batalha não terminou em
+        derrota (o resultado bruto continua em outcome()). 'lose' = time todo desmaiado.
+
+        `on_step()` roda a cada iteração do laço (entre duas, no máximo um passo de texto ou
+        a escolha de um menu), para quem quer observar a batalha enquanto ela anda.
         """
         self.wait_battle_start()
+        alive = [i for i, mon in enumerate(self.game.party()) if mon.hp > 0]
         spent = 0
         while not self._battle_over():
             if spent >= timeout:
@@ -210,13 +261,19 @@ class BattleDriver:
         outcome = self.outcome()
         if outcome not in OUTCOME_NAMES:
             raise AssertionError(f"batalha terminou com gBattleOutcome={outcome} inesperado")
-        return OUTCOME_NAMES[outcome]
+        name = OUTCOME_NAMES[outcome]
+        party = self.game.party()
+        if name != "lose" and any(i < len(party) and party[i].hp == 0 for i in alive):
+            return "fainted"
+        return name
 
-    def _advance_until_menu_or_end(self, what: str, timeout: int,
-                                   stop=None) -> str:
+    def _advance_until_menu_or_end(self, what: str, timeout: int, stop=None,
+                                   on_step: Callable[[], None] | None = None) -> str:
         """Avança mensagens até: 'menu' (menu de ação), 'end' (fim da batalha) ou 'stop'."""
         spent = 0
         while True:
+            if on_step is not None:
+                on_step()
             if self._battle_over():
                 return "end"
             if stop is not None and stop():
@@ -234,6 +291,16 @@ class BattleDriver:
         if self._advance_until_menu_or_end("menu de ação da batalha", timeout) == "end":
             raise AssertionError("a batalha acabou antes do menu de ação")
 
+    def fight_turn(self, timeout: int = 3000) -> str:
+        """Um turno de LUTAR com o 1º golpe com PP: 'menu' (próximo turno) ou 'end'."""
+        self.wait_action_menu()
+        self._choose_action(ACTION_FIGHT)
+        in_moves = lambda: self.controller_func().endswith(MOVE_FUNC_SUFFIX)
+        self.ctl.wait_until(in_moves, MENU_TIMEOUT, "menu de golpes")
+        self._choose_first_move_with_pp()
+        self.ctl.wait_until(lambda: not in_moves(), 60, "saída do menu de golpes")
+        return self._advance_until_menu_or_end("fim do turno", timeout)
+
     def run_away(self, timeout: int = 3000) -> bool:
         """Escolhe FUGIR; True se a batalha terminou em fuga, False se voltou ao menu."""
         self.wait_action_menu()
@@ -245,81 +312,39 @@ class BattleDriver:
 
     def _open_bag_on_item(self, item_id: int) -> None:
         """Abre a BOLSA pelo menu de ação e põe o cursor sobre `item_id` (sem confirmar)."""
-        target = None
-        for pocket in range(NUM_BAG_POCKETS_NO_CASES):
-            items = [item for item, _qty in self.game.bag_pocket(pocket)]
-            if item_id in items:
-                target = (pocket, items.index(item_id))
-                break
-        if target is None:
-            raise AssertionError(f"item {item_id} não está na bolsa")
-        pocket, index = target
+        self.bag.find(item_id)          # falha cedo se o item não está na bolsa
         self.wait_action_menu()
         self._choose_action(ACTION_BAG)
-        bag_ready = lambda: BAG_INPUT_TASK in self.game.active_tasks()
-        self.ctl.wait_until(bag_ready, MENU_TIMEOUT, "bolsa aberta")
-        state = self.syms.addr("gBagMenuState")
-        current_pocket = lambda: self.emu.read_u16(state + BAG_POCKET)
-        for _ in range(NUM_BAG_POCKETS_NO_CASES):
-            cur = current_pocket()
-            if cur == pocket:
-                break
-            self._press_until(KEY_RIGHT if pocket > cur else KEY_LEFT,
-                              lambda: current_pocket() != cur and bag_ready(), "troca de bolso")
-        if current_pocket() != pocket:
-            raise self.ctl.timeout_error(f"bolso {pocket} da bolsa")
+        self.bag.wait_ready()
+        self.bag.select(item_id)
 
-        def position() -> int:
-            return (self.emu.read_u16(state + BAG_CURSOR_POS + pocket * 2)
-                    + self.emu.read_u16(state + BAG_ITEMS_ABOVE + pocket * 2))
+    def use_item_in_battle(self, item_id: int, slot: int = 0,
+                           timeout: int = 3000) -> int | None:
+        """Usa `item_id` da bolsa no Pokémon `slot` do time e avança até o próximo menu de
+        ação (ou o fim da batalha).
 
-        for _ in range(64):
-            cur = position()
-            if cur == index:
-                return
-            self._press_until(KEY_DOWN if index > cur else KEY_UP,
-                              lambda: position() != cur, "cursor da bolsa")
-        raise self.ctl.timeout_error(f"cursor da bolsa no item {item_id} (posição {position()}, "
-                                     f"esperava {index})")
-
-    def _press_until(self, key: int, done, what: str, tries: int = 10, wait: int = 20) -> None:
-        """Aperta `key` até `done()`; depois de cada toque espera até `wait` quadros pelo
-        efeito antes de repetir (telas em transição ignoram o botão)."""
-        for _ in range(tries):
-            if done():
-                return
-            self.emu.press(key, hold=2, release=2)
-            for _ in range(wait // 2):
-                if done():
-                    return
-                self.emu.frames(2)
-        if not done():
-            raise self.ctl.timeout_error(what)
-
-    def _use_selected_item(self) -> None:
-        """Confirma o item sob o cursor e escolhe USAR no menu de contexto."""
-        in_context = lambda: BAG_CONTEXT_TASK in self.game.active_tasks()
-        self._press_until(KEY_A, in_context, "menu USAR/CANCELAR")
-        self._press_until(KEY_A, lambda: not in_context(), "USAR")   # cursor começa em USAR
-
-    def use_item_in_battle(self, item_id: int, timeout: int = 3000) -> None:
-        """Usa `item_id` da bolsa no Pokémon da frente e avança até o próximo menu de ação
-        (ou o fim da batalha)."""
+        Devolve o HP do Pokémon logo depois do item, antes do golpe do oponente no mesmo
+        turno: o maior valor visto em party()[slot].hp (o menu de Pokémon sobe o HP de 1 em 1
+        na animação, e o golpe só vem depois), ou None se o HP não subiu.
+        """
         self._open_bag_on_item(item_id)
-        self._use_selected_item()
-        party_ready = lambda: PARTY_CHOOSE_TASK in self.game.active_tasks()
-        self.ctl.wait_until(party_ready, MENU_TIMEOUT, "escolha do Pokémon para o item")
-        slot = self.syms.addr("gPartyMenu") + PARTY_MENU_SLOT_ID
-        self._press_until(KEY_LEFT, lambda: self.emu.read_u8(slot) == 0,
-                          "cursor do menu de Pokémon no 1º")
-        self._press_until(KEY_A, lambda: not party_ready(), "item usado no 1º Pokémon")
-        self._advance_until_menu_or_end("volta ao menu depois do item", timeout)
+        self.bag.use_selected()
+        before = self.game.party()[slot].hp
+        highest = [before]
+
+        def watch() -> None:
+            highest[0] = max(highest[0], self.game.party()[slot].hp)
+
+        self.bag.choose_party_slot(slot)
+        self._advance_until_menu_or_end("volta ao menu depois do item", timeout, on_step=watch)
+        return highest[0] if highest[0] > before else None
 
     def throw_ball(self, item_id: int, timeout: int = 3000) -> bool:
         """Lança a bola `item_id`; True se capturou (para na pergunta do apelido, ou no fim
-        da batalha), False se o selvagem escapou da bola e a batalha seguiu."""
+        da batalha), False se o selvagem escapou da bola e a batalha seguiu (ou acabou de
+        outro jeito, ex.: o nosso time todo desmaiou)."""
         self._open_bag_on_item(item_id)
-        self._use_selected_item()
+        self.bag.use_selected()
         self.ctl.wait_until(lambda: self.game.in_battle()
                             and BAG_INPUT_TASK not in self.game.active_tasks()
                             and self.controller_func() != ACTION_FUNC,
