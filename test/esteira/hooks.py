@@ -77,3 +77,18 @@ class Mailbox:
                            mode | level << 8 | evolution_item << 16)
         assert result != 0xFFFFFFFF, f"EVOLUTION_TARGET recusado: espécie {species}, nível {level}"
         return result
+
+
+# --- Hack 6: breeding genético (enum à parte em include/test_hooks.h, a partir de 0x60; ------
+# o uso fica em esteira/breeding.py e scenarios/full_breeding.py / full_egg.py)
+CMD_BREED_SETUP = 0x60      # gTestBreedSetup -> creche (arg0 = 1: ovo pendente) -> compatibilidade (0xFFFFFFFF = pai inválido)
+CMD_BREED_EGGS = 0x61       # arg0 = quantos (<= 64) ovos entregues; registros em gEnemyParty -> quantos
+CMD_EGG_SHINIES = 0x62      # arg0 = quantos, arg1 = com Shiny Charm -> shinies entre as personalidades
+CMD_EGG_PERSONALITY = 0x63  # arg0 = tentativas -> quantos ovos entregues têm a personalidade sorteada
+CMD_PACK_PARTY_MON = 0x64   # arg0 = slot -> registro em gEnemyParty (1; 0 = slot vazio)
+CMD_EGGS_READY = 0x65       # arg0 = contador de passos da creche -> ovos no time (chocam no próximo ciclo)
+CMD_WARP = 0x66             # arg0 = grupo | mapa << 8, arg1 = x | y << 16 -> 1
+CMD_SET_VAR = 0x67          # arg0 = var, arg1 = valor -> VarGet()
+CMD_GAIN_EVS = 0x68         # arg0 = item | espécie derrotada << 16, arg1 = EV do atributo | outros << 8
+                            # | atributo << 16 -> total (os 6 EVs em bytes em gEnemyParty)
+CMD_SPEED_ORDER = 0x69      # arg0/arg1 = velocidade | item << 16 -> GetWhoStrikesFirst (0, 1, 2 empate)

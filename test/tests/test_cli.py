@@ -463,7 +463,7 @@ def test_registro_dos_cenarios_completos():
     jogável do completo continua do checkpoint do anterior; o master roda sem emulador."""
     specs = cli.scenarios_for("completo")
     by_name = {s.name: s for s in specs}
-    for name in ("shiny", "evolucoes"):   # cada um numa sessão própria da ROM de teste
+    for name in ("shiny", "evolucoes", "creche", "ovo"):   # cada um numa sessão própria da ROM de teste
         spec = by_name[name]
         assert (spec.rom, spec.save_from, spec.needs) == (TEST, "captura", None)
     playable = [s.name for s in specs if s.rom == cli.PLAYABLE]
@@ -472,7 +472,7 @@ def test_registro_dos_cenarios_completos():
     assert (by_name["master"].rom, by_name["master"].needs) == (cli.HOST, None)
     groups = cli._groups(specs, None)
     assert [(rom, [s.name for s in g]) for rom, g in groups if rom == TEST] == [
-        (TEST, ["shiny"]), (TEST, ["evolucoes"])]
+        (TEST, ["shiny"]), (TEST, ["evolucoes"]), (TEST, ["creche"]), (TEST, ["ovo"])]
     for spec in specs:
         if spec.save_from is not None:
             assert spec.rom == TEST and any(g[0] is spec for _, g in groups)

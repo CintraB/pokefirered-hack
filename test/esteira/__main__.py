@@ -5,12 +5,12 @@ A partir de test/ (no WSL):
     python3 -m esteira completo --rom R --elf E [--rom-test RT --elf-test ET] [--log L] --out DIR ...
     python3 -m esteira aprovar DIR
     python3 -m esteira nao-testada --out DIR     # SKIP_TESTS=1: só o relatório "NÃO TESTADA"
-    python3 -m esteira assistir [--starter X] [--from CHECKPOINT | --cenario evolucoes] [--rom R --elf E]
+    python3 -m esteira assistir [--starter X] [--from CHECKPOINT | --cenario evolucoes|ovo] [--rom R --elf E]
 
 `rapido` roda a checagem do log de build, a checagem dos textos e os 3 roteiros rápidos numa
 sessão de emulador só. `completo` roda tudo isso e mais os cenários de FULL_SCENARIOS: PC,
 tour de telas e Floresta/Brock continuam a sessão jogável; o `master` compila o master sem
-emulador; o `shiny` e o `evolucoes` usam a ROM de teste (`make firered_switch TESTBUILD=1`),
+emulador; o `shiny`, o `evolucoes`, o `creche` e o `ovo` usam a ROM de teste (`make firered_switch TESTBUILD=1`),
 cada um numa sessão própria que parte do save do `captura`.
 Toda execução com emulador grava OUT/video.webp: a execução inteira (todas as sessões, jogável e
 teste) em WebP animado acelerado (um quadro a cada 8 emulados, 30 fps), embutido no relatório;
@@ -49,6 +49,8 @@ from esteira.result import Result, StepTimeout, Suite
 from esteira.rotation import STARTERS, peek_next_starter, record_starter
 from esteira.scenarios import REPO_ROOT, ScenarioContext, open_context
 from esteira.scenarios.full_evolutions import run_full_evolutions
+from esteira.scenarios.full_breeding import run_full_breeding    # Hack 6
+from esteira.scenarios.full_egg import run_full_egg              # Hack 6
 from esteira.scenarios.full_forest_brock import run_full_forest_brock
 from esteira.scenarios.full_master import run_full_master
 from esteira.scenarios.full_pc import run_full_pc
@@ -125,10 +127,12 @@ FULL_SCENARIOS: list[ScenarioSpec] = [
     ScenarioSpec("master", run_full_master, rom=HOST),
     ScenarioSpec("shiny", run_full_shiny, rom=TEST, save_from="captura"),
     ScenarioSpec("evolucoes", run_full_evolutions, rom=TEST, save_from="captura"),
+    ScenarioSpec("creche", run_full_breeding, rom=TEST, save_from="captura"),   # Hack 6
+    ScenarioSpec("ovo", run_full_egg, rom=TEST, save_from="captura"),          # Hack 6
 ]
 # Cenários do modo completo que o `assistir --cenario` mostra numa janela (ROM de teste, a
 # partir do .sav da ponte). O shiny fica de fora: 400 000 Pokémon em tempo real levariam horas.
-WATCH_FULL_SCENARIOS = ("evolucoes",)
+WATCH_FULL_SCENARIOS = ("evolucoes", "ovo")
 
 
 def scenarios_for(mode: str) -> list[ScenarioSpec]:
