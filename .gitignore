@@ -71,3 +71,9 @@ compile_commands.json
 
 # Versioned ROM builds and emulator saves
 roms/
+
+# Esteira de testes
+test/harness/mgba_runner
+__pycache__/
+.pytest_cache/
+test/out/
