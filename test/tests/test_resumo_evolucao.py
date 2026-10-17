@@ -205,11 +205,11 @@ def test_paginas_e_modos_do_header_batem_com_hooks():
 
 
 def test_pagina_nao_aparece_para_ovo_nem_nos_modos_de_golpe():
-    body = _function(SUMMARY_C, "static bool32 PokeSum_CanShowEvolutionPage(void)")
+    body = _function(SUMMARY_C, "static bool32 PokeSum_CanShowExtraPages(void)")
     assert "isEgg" in body
     assert "PSS_MODE_SELECT_MOVE" in body and "PSS_MODE_FORGET_MOVE" in body
     handler = _function(SUMMARY_C, "static void Task_InputHandler_Info(u8 taskId)")
-    assert "PokeSum_CanShowEvolutionPage()" in handler
+    assert "PokeSum_CanShowExtraPages()" in handler
     # o resumo de ovo não vira página nenhuma (vanilla)
     assert "if (sMonSummaryScreen->isEgg)\n        return FALSE;" in _function(
         SUMMARY_C, "bool32 IsPageFlipInput(u8 direction)")

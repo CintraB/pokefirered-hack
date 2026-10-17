@@ -5,19 +5,19 @@ A partir de test/ (no WSL):
     python3 -m esteira completo --rom R --elf E [--rom-test RT --elf-test ET] [--log L] --out DIR ...
     python3 -m esteira aprovar DIR
     python3 -m esteira nao-testada --out DIR     # SKIP_TESTS=1: só o relatório "NÃO TESTADA"
-    python3 -m esteira assistir [--starter X] [--from CHECKPOINT | --cenario evolucoes|resumo_evolucao] [--rom R --elf E]
+    python3 -m esteira assistir [--starter X] [--from CHECKPOINT | --cenario evolucoes|resumo_evolucao|resumo_ivs] [--rom R --elf E]
 
 `rapido` roda a checagem do log de build, a checagem dos textos e os 3 roteiros rápidos numa
 sessão de emulador só. `completo` roda tudo isso e mais os cenários de FULL_SCENARIOS: PC,
 tour de telas e Floresta/Brock continuam a sessão jogável; o `master` compila o master sem
-emulador; o `shiny`, o `evolucoes` e o `resumo_evolucao` usam a ROM de teste
+emulador; o `shiny`, o `evolucoes`, o `resumo_evolucao` e o `resumo_ivs` usam a ROM de teste
 (`make firered_switch TESTBUILD=1`), cada um numa sessão própria que parte do save do `captura`.
 Toda execução com emulador grava OUT/video.webp: a execução inteira (todas as sessões, jogável e
 teste) em WebP animado acelerado (um quadro a cada 8 emulados, 30 fps), embutido no relatório;
 `--sem-video` desliga (ver esteira/video.py).
 `assistir` é à parte do pipeline: roda os roteiros rápidos numa janela, em tempo real e com som,
 com um save temporário; não gera versão, não mexe em roms/ nem no rodízio de iniciais. Com
-`--cenario evolucoes` (ou `resumo_evolucao`), mostra esse cenário do modo completo na ROM de
+`--cenario evolucoes` (ou `resumo_evolucao`, `resumo_ivs`), mostra esse cenário do modo completo na ROM de
 teste (partindo de uma cópia do captura.sav mais recente de test/out/*/).
 Sai com 0 se nenhum resultado for `falha` (avisos não reprovam) e 1 caso contrário. Sem
 `--starter`, o inicial é o da vez no rodízio (esteira/rotation.py), que só avança quando a
@@ -55,6 +55,7 @@ from esteira.scenarios.full_pc import run_full_pc
 from esteira.scenarios.full_screen_tour import run_full_screen_tour
 from esteira.scenarios.full_shiny import run_full_shiny
 from esteira.scenarios.full_summary_evolution import run_full_summary_evolution
+from esteira.scenarios.full_summary_ivs import run_full_summary_ivs
 from esteira.scenarios.quick_catch_save import run_catch_save
 from esteira.scenarios.quick_opening import run_opening
 from esteira.scenarios.quick_route1 import run_route1
@@ -116,8 +117,8 @@ QUICK_SCENARIOS = [
 # Os jogáveis continuam a sessão do modo rápido, cada um do checkpoint que o anterior deixa
 # (`save` -> `pc` -> `telas`). O shiny parte do .sav gravado logo depois do `captura`
 # (save_from), então os jogáveis seguintes não mudam o ponto de partida dele
-# (test_cli.py::test_registro_dos_cenarios_completos confere a ordem). O `evolucoes` e o
-# `resumo_evolucao` também partem desse .sav, cada um numa sessão própria da ROM de teste
+# (test_cli.py::test_registro_dos_cenarios_completos confere a ordem). O `evolucoes`, o
+# `resumo_evolucao` e o `resumo_ivs` também partem desse .sav, cada um numa sessão própria da ROM de teste
 # (save_from abre sessão nova): rodam sozinhos com `--only <nome>` e não herdam o que o
 # shiny (ou o outro) fez (Dex Nacional, Shiny Charm, time de teste).
 FULL_SCENARIOS: list[ScenarioSpec] = [
@@ -128,10 +129,11 @@ FULL_SCENARIOS: list[ScenarioSpec] = [
     ScenarioSpec("shiny", run_full_shiny, rom=TEST, save_from="captura"),
     ScenarioSpec("evolucoes", run_full_evolutions, rom=TEST, save_from="captura"),
     ScenarioSpec("resumo_evolucao", run_full_summary_evolution, rom=TEST, save_from="captura"),
+    ScenarioSpec("resumo_ivs", run_full_summary_ivs, rom=TEST, save_from="captura"),
 ]
 # Cenários do modo completo que o `assistir --cenario` mostra numa janela (ROM de teste, a
 # partir do .sav da ponte). O shiny fica de fora: 400 000 Pokémon em tempo real levariam horas.
-WATCH_FULL_SCENARIOS = ("evolucoes", "resumo_evolucao")
+WATCH_FULL_SCENARIOS = ("evolucoes", "resumo_evolucao", "resumo_ivs")
 
 
 def scenarios_for(mode: str) -> list[ScenarioSpec]:

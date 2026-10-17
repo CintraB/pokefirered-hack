@@ -18,7 +18,7 @@
 #include "constants/pokedex.h"
 #include "constants/species.h"
 
-STATIC_ASSERT(TEST_TEXT_SIZE >= EVOLUTION_PAGE_TEXT_SIZE, TestTextHoldsTheEvolutionPage);
+STATIC_ASSERT(TEST_TEXT_SIZE >= SUMMARY_PAGE_TEXT_SIZE, TestTextHoldsASummaryPage);
 
 struct TestMailbox gTestMailbox;
 EWRAM_DATA u8 gTestText[TEST_TEXT_SIZE] = {0};
@@ -140,10 +140,36 @@ static u32 EvolutionText(u32 species, u32 source)
             return 0xFFFFFFFF;
         GetEvolutionPageText(gTestText, species);
     }
-    else if (!PokeSum_TestCopyEvolutionPageText(gTestText))
+    else if (!PokeSum_TestCopyPageText(gTestText))
     {
         return 0xFFFFFFFF;
     }
+    return StringLength(gTestText);
+}
+
+// Hack 5: gives these IVs and EVs (the EVs come in gTestText) to gPlayerParty[slot - 1], or to
+// a new mon in gEnemyParty[0] (slot 0), and returns its IVs/EVs page text in gTestText.
+static u32 IvEvText(u32 packedIvs, u32 slot)
+{
+    struct Pokemon *mon = slot == 0 ? &gEnemyParty[0] : &gPlayerParty[slot - 1];
+    u8 evs[NUM_STATS];
+    u8 i;
+
+    if (slot > CalculatePlayerPartyCount())
+        return 0xFFFFFFFF;
+    for (i = 0; i < NUM_STATS; i++)
+        evs[i] = gTestText[i];
+    if (slot == 0)
+        CreateTestMon(mon, SPECIES_BULBASAUR, 50, ITEM_NONE);
+    for (i = 0; i < NUM_STATS; i++)
+    {
+        u8 iv = (packedIvs >> (5 * i)) & 0x1F;
+
+        SetMonData(mon, MON_DATA_HP_IV + i, &iv);
+        SetMonData(mon, MON_DATA_HP_EV + i, &evs[i]);
+    }
+    CalculateMonStats(mon);
+    GetIvEvPageText(gTestText, mon);
     return StringLength(gTestText);
 }
 
@@ -193,6 +219,9 @@ void TestHooks_Run(void)
         break;
     case TEST_CMD_SET_PARTY_EGG:
         result = SetPartyEgg(gTestMailbox.arg0, gTestMailbox.arg1);
+        break;
+    case TEST_CMD_IVEV_TEXT:
+        result = IvEvText(gTestMailbox.arg0, gTestMailbox.arg1);
         break;
     default:
         result = 0xFFFFFFFF;

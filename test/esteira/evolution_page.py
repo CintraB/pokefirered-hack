@@ -124,8 +124,8 @@ def load_item_names(repo: Path) -> dict[str, str]:
 
 
 def text_size(repo: Path) -> int:
-    """EVOLUTION_PAGE_TEXT_SIZE (include/pokemon_summary_screen.h), com o terminador."""
-    m = re.search(r"#define\s+EVOLUTION_PAGE_TEXT_SIZE\s+(\d+)",
+    """SUMMARY_PAGE_TEXT_SIZE (include/pokemon_summary_screen.h), com o terminador."""
+    m = re.search(r"#define\s+SUMMARY_PAGE_TEXT_SIZE\s+(\d+)",
                   (repo / SUMMARY_HEADER).read_text(encoding="utf-8"))
     return int(m.group(1))
 

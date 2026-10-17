@@ -29,9 +29,10 @@ enum
     TEST_CMD_EVOLUTION_TEXT,    // arg0 = species, arg1 = 0: GetEvolutionPageText(species) / 1: the text the open summary's EVOLUTION page printed, into gTestText; result = its length (0xFFFFFFFF = bad species / no summary)
     TEST_CMD_SUMMARY_STATE,     // result = page | mode << 8 | isEgg << 16 of the open summary screen (0xFFFFFFFF = none)
     TEST_CMD_SET_PARTY_EGG,     // arg0 = species, arg1 = slot: an Egg (CreateEgg) in gPlayerParty[slot]; result = party count (0 = bad args)
+    TEST_CMD_IVEV_TEXT,         // arg0 = IVs (5 bits each: HP, Atk, Def, Spe, SpA, SpD), EVs in gTestText[0-5] (same order), arg1 = party slot + 1 (0 = a new mon in gEnemyParty[0]): sets them, GetIvEvPageText into gTestText; result = its length
 };
 
-#define TEST_TEXT_SIZE 320  // EVOLUTION_PAGE_TEXT_SIZE (include/pokemon_summary_screen.h)
+#define TEST_TEXT_SIZE 384  // SUMMARY_PAGE_TEXT_SIZE (include/pokemon_summary_screen.h)
 
 extern struct TestMailbox gTestMailbox;
 extern u8 gTestText[TEST_TEXT_SIZE];

@@ -23,6 +23,8 @@ CMD_EVOLUTION_TEXT = 8      # arg0 = espécie, arg1 = 0 (GetEvolutionPageText) |
                             # EVOLUTION aberta imprimiu) -> tamanho; o texto fica em gTestText
 CMD_SUMMARY_STATE = 9       # -> página | modo << 8 | ovo << 16 do resumo aberto (0xFFFFFFFF = nenhum)
 CMD_SET_PARTY_EGG = 10      # arg0 = espécie, arg1 = slot -> nº no time (ovo de CreateEgg)
+CMD_IVEV_TEXT = 11          # arg0 = IVs (5 bits cada: HP, Atk, Def, Spe, SpA, SpD), EVs em gTestText[0-5],
+                            # arg1 = slot + 1 (0 = um Pokémon novo) -> tamanho do texto da página IVs/EVs
 
 # modos de GetEvolutionTargetSpecies (EVO_MODE_* de include/constants/pokemon.h)
 EVO_MODE_NORMAL, EVO_MODE_TRADE, EVO_MODE_ITEM_USE = 0, 1, 2
@@ -34,7 +36,7 @@ NO_RESULT = 0xFFFFFFFF
 
 # PSS_PAGE_* e PSS_MODE_* (include/pokemon_summary_screen.h)
 PSS_PAGE_INFO, PSS_PAGE_SKILLS, PSS_PAGE_MOVES, PSS_PAGE_MOVES_INFO = 0, 1, 2, 3
-PSS_PAGE_EVOLUTION = 6
+PSS_PAGE_EVOLUTION, PSS_PAGE_IVS = 6, 7
 PSS_MODE_NORMAL, PSS_MODE_SELECT_MOVE = 0, 2
 
 
@@ -106,6 +108,19 @@ class Mailbox:
         if state == NO_RESULT:
             return None
         return state & 0xFF, (state >> 8) & 0xFF, bool((state >> 16) & 0xFF)
+
+    def ivev_text(self, ivs: tuple[int, ...], evs: tuple[int, ...], slot: int | None = None) -> bytes:
+        """Texto (bytes, sem o 0xFF) de GetIvEvPageText para um Pokémon com esses IVs e EVs (na
+        ordem da página: HP, ATK, DEF, SP. ATK, SP. DEF, SPEED). Com `slot`, eles vão para
+        gPlayerParty[slot] (e os atributos são recalculados)."""
+        # a caixa usa a ordem dos MON_DATA_*: HP, Atk, Def, Spe, SpA, SpD
+        order = (0, 1, 2, 5, 3, 4)
+        packed = sum(ivs[j] << (5 * i) for i, j in enumerate(order))
+        addr = self.ctl.game.syms.addr(TEXT_SYMBOL)
+        self.emu.write(addr, bytes(evs[j] for j in order))
+        length = self.call(CMD_IVEV_TEXT, packed, 0 if slot is None else slot + 1)
+        assert length != NO_RESULT, f"IVEV_TEXT recusado: slot {slot}"
+        return self.emu.read(addr, length)
 
     def set_party_egg(self, slot: int, species: int) -> int:
         """Põe um ovo de `species` (CreateEgg) em gPlayerParty[slot]; devolve o nº no time."""

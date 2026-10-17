@@ -17,6 +17,7 @@ repo.
 | Ver o roteiro rápido numa janela | `make test-watch` | ~ tempo real |
 | Ver as evoluções sem troca (Hack 3) numa janela | `make test-watch CENARIO=evolucoes` | ~9 min (tempo real) |
 | Ver a página EVOLUTION do resumo (Hack 4) numa janela | `make test-watch CENARIO=resumo_evolucao` | ~2 min (tempo real) |
+| Ver a página IVs/EVs do resumo (Hack 5) numa janela | `make test-watch CENARIO=resumo_ivs` | ~2 min (tempo real) |
 | Aprovar as telas de referência | `make test-approve` | instantâneo |
 | Testes unitários da própria esteira | `python3 -m pytest test -q` | ~5-6 min (~80 s sem os lentos) |
 
@@ -144,15 +145,16 @@ ROM. Sem o log, só o uso de memória é conferido (o terminal avisa). Deixa os 
 | `shiny` | **ROM de teste** | Shiny Charm e taxa de shiny com/sem o charm (usa atalhos da build de teste) |
 | `evolucoes` | **ROM de teste** | Hack 3, fim das evoluções por troca e da trava da Dex Nacional: Rare Candy/pedra pela bolsa e a cena de evolução de verdade para os 11 Pokémon (nível 37, com/sem item segurado), Bellossom e Crobat, item errado, "passou do 37 sem item" e a troca que não evolui mais, tudo sem a Dex Nacional (veja abaixo) |
 | `resumo_evolucao` | **ROM de teste** | Hack 4, página EVOLUTION do resumo: o texto de todas as 386 espécies, a página pelo menu de verdade (→/←, troca de Pokémon com ↓), ovo e modo de aprender golpe sem a página (veja abaixo) |
+| `resumo_ivs` | **ROM de teste** | Hack 5, página IVs/EVs do resumo: o texto da página para as bordas do design, todos os tipos de Hidden Power e 150 combinações sorteadas, a página pelo menu de verdade (→/←, ↓ entre 5 Pokémon com IVs/EVs escolhidos) e o ovo sem a página (veja abaixo) |
 
 Depende da ROM jogável da raiz (se não existir, vira falha `emulador/rom-playable`). Não grava
 em `roms/`: o resultado fica em `test/out/<data-hora>/`. Rode com o terminal aberto por ~13
 min; o shiny leva ~9 min disso.
 
-O `shiny`, o `evolucoes` e o `resumo_evolucao` partem do mesmo save do jogo (o `.sav` do fim do
+O `shiny`, o `evolucoes`, o `resumo_evolucao` e o `resumo_ivs` partem do mesmo save do jogo (o `.sav` do fim do
 `captura`), cada um numa **sessão própria** da ROM de teste: um não herda o que o outro fez (o
 shiny liga a Dex Nacional e ganha o Shiny Charm), e `--only evolucoes` roda só ele (~30 s;
-`--only resumo_evolucao`, ~5 s).
+`--only resumo_evolucao` e `--only resumo_ivs`, ~5 s cada).
 
 **O cenário `evolucoes`** (`test/esteira/scenarios/full_evolutions.py`; as regras ficam numa
 tabela só, `test/esteira/evolutions.py`). Os atalhos da build de teste só montam o Pokémon no
@@ -201,13 +203,38 @@ Rare Candy e leem o estado do resumo (página, modo, ovo) e o texto que a págin
    esquecer (modo `PSS_MODE_SELECT_MOVE`), onde → não leva à página EVOLUTION; B cancela, SIM
    desiste de aprender e nenhum golpe muda.
 
-Telas da página: `telas/resumo_evo_<espécie>.png`, comparadas com `test/referencias/COMUM/`
-(e `telas/resumo_evo_escolher_golpe.png`, só registro). O teste `test/tests/test_resumo_evolucao.py`
+Telas da página: `telas/resumo_evo_<espécie>.png` e, do Eevee, `telas/resumo_pag_skills.png`,
+`resumo_pag_moves.png` e `resumo_pag_detalhe.png` (os pontos de página do cabeçalho), comparadas
+com `test/referencias/COMUM/` (e `telas/resumo_evo_escolher_golpe.png`, só registro). O teste `test/tests/test_resumo_evolucao.py`
 (pytest) confere sem emulador os casos fixos (Bulbasaur, Eevee, Onix, Slowpoke, Feebas, Tauros,
 Wurmple, Nincada, Tyrogue), a largura e o tamanho do texto de toda espécie, a ligação com
 `src/strings.c` e o C da página; e, se a ROM de teste estiver em dia, o texto do jogo de todas
 as espécies. A largura das linhas montadas também entra na checagem de **textos do jogo** da
 esteira rápida (veja **Largura do texto**).
+
+**O cenário `resumo_ivs`** (Hack 5; `test/esteira/scenarios/full_summary_ivs.py`; design em
+`docs/superpowers/specs/2026-10-17-pagina-ivs-evs-design.md`). A 5ª página do resumo,
+**IVs/EVs** (depois de EVOLUTION, com as mesmas regras: sem ovo, sem os modos de golpe), mostra
+o IV de cada atributo com o nível (31 Perfect, 26-30 Excellent, 16-25 Very good, 1-15 Good, 0
+Poor), o EV de cada um, o total de IVs com % (arredondado) e avaliação geral (186 Perfect,
+151-185 Outstanding, 121-150 Above average, 91-120 Average, 0-90 Below average), o total de
+EVs (/510) e o Hidden Power (tipo e poder, pela mesma função `CalcHiddenPower` que o golpe usa
+em batalha). Quem monta o texto é `GetIvEvPageText`; as contas e o texto esperado, em Python,
+ficam em `test/esteira/ivev_page.py`. O atalho `IVEV_TEXT` da build de teste dá IVs/EVs a um
+Pokémon (novo ou do time) e devolve o texto da página. Ordem:
+
+1. o texto do jogo é igual, byte a byte, ao calculado em Python nas bordas (tudo 31, tudo 0,
+   25/26, 15/16, EVs 510, todos os tipos de Hidden Power) e em 150 combinações sorteadas;
+2. time: Mewtwo (tudo 31, 510 EVs), Magikarp (tudo 0), Eevee (limites), Charizard (Hidden Power
+   70) e Tauros (120, Average) + um ovo; START > POKéMON > SUMMARY, → quatro vezes até IVs/EVs
+   (página ativa na memória e texto impresso); ← volta para EVOLUTION e → de novo;
+3. ↓ na página troca de Pokémon (os 5) sem sair dela; ↓ no último não vai para o ovo;
+4. o resumo do ovo não sai da página INFO com →.
+
+Telas: `telas/resumo_ivs_<espécie>.png`, comparadas com `test/referencias/COMUM/`. O pytest
+`test/tests/test_resumo_ivs.py` confere as contas nos limites do design, a ligação com
+`src/strings.c` e com o C (colunas, janela, `Cmd_hiddenpowercalc` usando `CalcHiddenPower`), a
+largura e, com a ROM de teste em dia, o texto do jogo.
 
 ### `make test-approve`
 
@@ -223,8 +250,8 @@ do `meta.json` da execução). Pontos: `nome`, `inicial`, `batalha_rival`, `capt
 `save_continue` (modo rápido) e `bolsa`, `resumo`, `pokedex`, `opcoes`, `cartao`, `pc`, `loja`,
 `mapa` (tour do modo completo). Cada inicial tem o seu conjunto: para aprovar os três, rode a
 esteira uma vez com cada um (`--starter`). As telas da cena de evolução (`evo_*_antes`,
-`evo_*_depois`, do cenário `evolucoes`) e da página EVOLUTION (`resumo_evo_*`, do
-`resumo_evolucao`) não dependem do inicial e vão para `test/referencias/COMUM/`, que vale para
+`evo_*_depois`, do cenário `evolucoes`) e das páginas novas do resumo (`resumo_evo_*`, `resumo_pag_*`, do
+`resumo_evolucao`; `resumo_ivs_*`, do `resumo_ivs`) não dependem do inicial e vão para `test/referencias/COMUM/`, que vale para
 os três.
 
 "Mais recente" é a pasta `test/out/<data-hora>` modificada por último, de qualquer comando;
@@ -270,19 +297,21 @@ make test-watch FROM=encomenda STARTER=SQUIRTLE  # começa na captura
 - Precisa do WSLg (Windows 11) e da `libsdl2-dev` (veja Requisitos). Sem janela disponível o
   comando diz para rodar `wsl --update` e `wsl --shutdown` no PowerShell e abrir o WSL de novo.
 
-**Cenário do modo completo numa janela** (`CENARIO=`: `evolucoes` ou `resumo_evolucao`):
+**Cenário do modo completo numa janela** (`CENARIO=`: `evolucoes`, `resumo_evolucao` ou `resumo_ivs`):
 
 ```bash
 make test-watch CENARIO=evolucoes                    # Hack 3: as evoluções, em tempo real
 make test-watch CENARIO=evolucoes STARTER=SQUIRTLE   # usa o save de uma execução com esse inicial
 make test-watch CENARIO=resumo_evolucao              # Hack 4: a página EVOLUTION do resumo
+make test-watch CENARIO=resumo_ivs                   # Hack 5: a página IVs/EVs de 5 Pokémon
 ```
 
 - Recompila antes a **ROM de teste** (`make firered_switch TESTBUILD=1`, como o `test-full`) e
   roda o cenário nela, na janela, com o mesmo roteiro do modo completo (inclusive as
   conferências: no fim aparece o resumo de ok/falhas). No `resumo_evolucao`, a janela fica
   parada ~2,5 s em cada página EVOLUTION (e no resumo de escolher golpe) para dar tempo de ler;
-  antes, uns 7 s no campo enquanto confere o texto das 386 espécies.
+  antes, uns 7 s no campo enquanto confere o texto das 386 espécies. No `resumo_ivs`, o mesmo
+  em cada página IVs/EVs, depois de ~4 s conferindo as combinações de IVs/EVs.
 - Parte de uma **cópia** do save do jogo (`captura.sav`) mais recente em `test/out/*/` — todo
   `make firered_switch` e `make test-quick` deixa um; o inicial é o desse save. Sem nenhum, o
   comando pede para rodar `make test-quick` antes (exit 2). Não grava em `roms/` e não mexe no
@@ -305,7 +334,7 @@ python3 -m esteira rapido --rom ../pokefirered_switch.gba --elf ../pokefirered_s
 | `rapido` | Checagens estáticas + 3 roteiros rápidos |
 | `completo` | O rápido + os cenários de `FULL_SCENARIOS` |
 | `aprovar DIR` | Promove as telas da execução `DIR` a referência |
-| `assistir` | Roteiro rápido (ou, com `--cenario evolucoes` ou `resumo_evolucao`, esse cenário na ROM de teste) numa janela (é o que o `make test-watch` chama) |
+| `assistir` | Roteiro rápido (ou, com `--cenario evolucoes`, `resumo_evolucao` ou `resumo_ivs`, esse cenário na ROM de teste) numa janela (é o que o `make test-watch` chama) |
 | `nao-testada --out DIR` | Só o relatório "NÃO TESTADA" (usado por `SKIP_TESTS=1`) |
 
 Opções de `rapido` e `completo` (`--rom`, `--elf` e `--out` são obrigatórios):
@@ -316,11 +345,11 @@ Opções de `rapido` e `completo` (`--rom`, `--elf` e `--out` são obrigatórios
 | `--rom-test`, `--elf-test` | ROM de teste e ELF, só para cenários que usam a build de teste (padrão: `pokefirered_switch_test.*` na raiz) |
 | `--log` | Log do build; sem ele só a checagem de texto roda (a do build vira aviso) |
 | `--out` | Pasta da execução (relatório, telas, estados, vídeo) |
-| `--only NOME` | Só um item: `build`, `texto`, `abertura`, `rota1`, `captura`; no `completo` também `pc`, `telas`, `floresta_brock`, `master`, `shiny`, `evolucoes`, `resumo_evolucao` |
+| `--only NOME` | Só um item: `build`, `texto`, `abertura`, `rota1`, `captura`; no `completo` também `pc`, `telas`, `floresta_brock`, `master`, `shiny`, `evolucoes`, `resumo_evolucao`, `resumo_ivs` |
 | `--starter X` | Força `BULBASAUR`, `CHARMANDER` ou `SQUIRTLE` (não mexe no rodízio) |
 | `--sem-video` | Não grava `video.webp` |
 
-`assistir`: `--starter`, `--from {encomenda,rival}` ou `--cenario {evolucoes,resumo_evolucao}` (com `--rom-test`/`--elf-test`, padrão os da raiz), `--rom`, `--elf`. Códigos de saída de
+`assistir`: `--starter`, `--from {encomenda,rival}` ou `--cenario {evolucoes,resumo_evolucao,resumo_ivs}` (com `--rom-test`/`--elf-test`, padrão os da raiz), `--rom`, `--elf`. Códigos de saída de
 `rapido`/`completo`: 0 sem falha (aviso não reprova), 1 com falha.
 
 Exemplos:
@@ -341,7 +370,7 @@ passar sem valer. Regras práticas:
 - passe o mesmo `--starter` da execução original (está no `meta.json`): sem ele a esteira usa o
   inicial da vez no rodízio e, se não for o do checkpoint, descarta o checkpoint e roda a
   cadeia toda;
-- `--only shiny`, `--only evolucoes` e `--only resumo_evolucao` precisam do `<OUT>/captura.sav` que o `rapido`/`completo` anterior (mesma
+- `--only shiny`, `--only evolucoes`, `--only resumo_evolucao` e `--only resumo_ivs` precisam do `<OUT>/captura.sav` que o `rapido`/`completo` anterior (mesma
   pasta) deixou; sem ele o resultado é uma falha dizendo o que rodar antes;
 - `--only build` e `--only texto` não usam emulador e não têm esse problema.
 
@@ -472,6 +501,12 @@ item, espécie), que aqui medem 0, a checagem também monta a página de **toda*
 nomes de verdade e mede cada linha (`test/esteira/evolution_page.py`): um item ou espécie
 renomeado que estoure a janela reprova como `texto/largura`. Hoje a linha mais larga é a do
 Umbreon, 220 px.
+
+Página IVs/EVs (Hack 5): mesma janela (222 px, `sWindowTemplates_Ivs`, texto em x = 2) para os
+`gText_PokeSum_Iv*`, `Stat*`, `Ev` e `HiddenPower`; as linhas inteiras, com as colunas
+`{SKIP x}`, são montadas para os textos e números mais largos (todos os níveis, avaliações e
+tipos de Hidden Power) e medidas, e uma coluna que encavale na anterior também reprova
+(`check_page_widths` em `test/esteira/ivev_page.py`).
 
 ## Limitações conhecidas
 

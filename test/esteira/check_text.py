@@ -55,8 +55,13 @@ WIDTH_RULES: list[tuple[str, str | None, int | None, str]] = [
     # medidas à parte em _evolution_page_results (esteira/evolution_page.py).
     ("src/strings.c", "gText_PokeSum_Evo", 28 * 8 - 2,
      "página EVOLUTION do resumo: sWindowTemplates_Evolution[0] .width = 28 tiles "
-     "(src/pokemon_summary_screen.c:918), texto em x = EVOLUTION_PAGE_TEXT_X = 2 "
-     "(src/pokemon_summary_screen.c:908)"),
+     "(src/pokemon_summary_screen.c:921), texto em x = EVOLUTION_PAGE_TEXT_X = 2 "
+     "(src/pokemon_summary_screen.c:911)"),
+    # Hack 5: página IVs/EVs (os pedaços de cada linha; a linha inteira, com as colunas, é
+    # medida em _ivev_page_results)
+    *[("src/strings.c", prefix, 28 * 8 - 2, "página IVs/EVs do resumo: sWindowTemplates_Ivs[0] .width = 28 tiles (src/pokemon_summary_screen.c:966), texto em x = IVEV_PAGE_TEXT_X = 2 (src/pokemon_summary_screen.c:957); as linhas montadas são medidas em _ivev_page_results")
+      for prefix in ("gText_PokeSum_Iv", "gText_PokeSum_Stat", "gText_PokeSum_HiddenPower",
+                     "gText_PokeSum_Ev")],
     # Sem largura determinada (janelas diferentes ou não localizadas): pulados de propósito.
     ("data/text/help_system.inc", None, None,
      "texto renderizado num bitmap de 26 tiles (src/help_system_util.c:588-591) cuja janela de exibição "
@@ -479,9 +484,21 @@ def _evolution_page_results(root: Path) -> list[Result]:
             for species, line, px in check_page_widths(root, consts)]
 
 
+def _ivev_page_results(root: Path) -> list[Result]:
+    """Hack 5: largura das linhas da página IVs/EVs (com as colunas {SKIP x}) para os textos e
+    números mais largos possíveis, e colunas que encavalariam. Repo sem os fontes não é checado."""
+    from esteira.ivev_page import LINE_WIDTH_PX, SOURCE_FILES, check_page_widths
+    if not all((root / path).is_file() for path in SOURCE_FILES):
+        return []
+    return [Result(f"texto/{RULE_WIDTH}", "falha",
+                   f"src/strings.c: página IVs/EVs: '{line}'"
+                   + (f" com {px} px, limite {LINE_WIDTH_PX} px" if px else ""))
+            for line, px in check_page_widths(root)]
+
+
 def check_text(repo: str, exceptions: dict, english_check: bool = False) -> list[Result]:
     syntax, entries = _scan(Path(repo), english_check)
-    results = list(syntax) + _evolution_page_results(Path(repo))
+    results = list(syntax) + _evolution_page_results(Path(repo)) + _ivev_page_results(Path(repo))
     frozen = exceptions.get("text", [])
     applied: set[tuple[str, str, str]] = set()  # exceções que de fato calaram um achado
 
