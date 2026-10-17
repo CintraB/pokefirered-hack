@@ -19,9 +19,9 @@ _ORDERS = [
 
 
 def build_mon(charmap, pid, ot, species, level, hp, max_hp, nickname, moves, pp,
-              pp_bonuses=0) -> bytes:
+              pp_bonuses=0, held_item=0) -> bytes:
     """Monta os 100 bytes de uma struct Pokemon, encriptando os dados com pid^ot."""
-    growth = struct.pack("<HHIBBH", species, 0, 0, pp_bonuses, 70, 0)
+    growth = struct.pack("<HHIBBH", species, held_item, 0, pp_bonuses, 70, 0)
     attacks = struct.pack("<4H4B", *moves, *pp)
     evs = bytes(12)
     misc = bytes(12)
@@ -71,6 +71,15 @@ def test_decode_pp_bonuses():
     raw = build_mon(cm, pid=7, ot=9, species=4, level=6, hp=20, max_hp=21, nickname="X",
                     moves=[10, 45, 0, 0], pp=[35, 40, 0, 0], pp_bonuses=0b00001101)
     assert decode_mon(raw, cm).pp_bonuses == 0b00001101
+
+
+def test_decode_held_item():
+    cm = Charmap.load(str(REPO_ROOT))
+    for pid in range(24):   # o item fica na subestrutura growth, em qualquer ordem
+        raw = build_mon(cm, pid=pid, ot=0x1234, species=95, level=36, hp=1, max_hp=2,
+                        nickname="ONIX", moves=[1, 0, 0, 0], pp=[5, 0, 0, 0], held_item=199)
+        mon = decode_mon(raw, cm)
+        assert (mon.species, mon.held_item) == (95, 199), pid
 
 
 def test_max_pp_with_pp_ups():

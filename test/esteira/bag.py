@@ -12,6 +12,9 @@ BAG_ITEMS_ABOVE = 0x08         # gBagMenuState.itemsAbove[3] (u16)
 BAG_CURSOR_POS = 0x0E          # gBagMenuState.cursorPos[3] (u16)
 NUM_BAG_POCKETS_NO_CASES = 3   # Itens, Itens-chave, Poké Balls
 PARTY_MENU_SLOT_ID = 0x09      # gPartyMenu.slotId (s8)
+ITEMMENUACTION_GIVE = 3        # include/constants/item_menu.h
+# struct Menu de src/menu.c: left, top, cursorPos, minCursorPos, maxCursorPos (s8)...
+MENU_CURSOR_POS, MENU_MIN_CURSOR, MENU_MAX_CURSOR = 0x02, 0x03, 0x04
 
 BAG_INPUT_TASK = "Task_BagMenu_HandleInput"
 BAG_CONTEXT_TASK = "Task_FieldItemContextMenuHandleInput"
@@ -73,6 +76,41 @@ class Bag:
         in_context = lambda: BAG_CONTEXT_TASK in self.game.active_tasks()
         self.ctl.press_until(KEY_A, in_context, "menu USAR/CANCELAR")
         self.ctl.press_until(KEY_A, lambda: not in_context(), "USAR")
+
+    def context_actions(self) -> list[int]:
+        """Opções do menu de contexto do item aberto (ITEMMENUACTION_*, na ordem da tela)."""
+        ptr = self.emu.read_u32(self.syms.addr("sContextMenuItemsPtr"))
+        count = self.emu.read_u8(self.syms.addr("sContextMenuNumItems"))
+        return list(self.emu.read(ptr, count)) if ptr else []
+
+    def _menu_cursor_addr(self, options: int) -> int:
+        """&sMenu.cursorPos de src/menu.c. O ELF tem outro `sMenu` estático: vale o que
+        descreve o menu aberto (minCursorPos 0, maxCursorPos = nº de opções - 1)."""
+        found = [a for a in self.syms.addrs("sMenu")
+                 if self.emu.read_u8(a + MENU_MIN_CURSOR) == 0
+                 and self.emu.read_u8(a + MENU_MAX_CURSOR) == options - 1]
+        if len(found) != 1:
+            raise AssertionError(f"não achei o sMenu do menu do item ({len(found)} candidatos)")
+        return found[0] + MENU_CURSOR_POS
+
+    def give_selected(self) -> None:
+        """Confirma o item sob o cursor e escolhe DAR (segurar) no menu de contexto; o jogo
+        abre o menu de Pokémon para escolher quem segura (choose_party_slot)."""
+        in_context = lambda: BAG_CONTEXT_TASK in self.game.active_tasks()
+        self.ctl.press_until(KEY_A, in_context, "menu do item")
+        actions = self.context_actions()
+        assert ITEMMENUACTION_GIVE in actions, f"menu do item sem DAR: {actions}"
+        index = actions.index(ITEMMENUACTION_GIVE)
+        cursor = self._menu_cursor_addr(len(actions))
+        for _ in range(len(actions)):
+            cur = self.emu.read_u8(cursor)
+            if cur == index:
+                break
+            self.ctl.press_until(KEY_DOWN if index > cur else KEY_UP,
+                                 lambda: self.emu.read_u8(cursor) != cur, "cursor do menu do item")
+        if self.emu.read_u8(cursor) != index:
+            raise self.ctl.timeout_error(f"cursor do menu do item em DAR (posição {index})")
+        self.ctl.press_until(KEY_A, lambda: not in_context(), "DAR")
 
     def choose_party_slot(self, slot: int) -> None:
         """No menu de Pokémon aberto pelo item, escolhe o Pokémon `slot` (layout simples:

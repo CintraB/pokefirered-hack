@@ -23,6 +23,9 @@ enum
     TEST_CMD_SET_DEX_COMPLETE,  // every mon HasAllMons() needs seen+caught, National Dex on; result = HasAllMons()
     TEST_CMD_GIVE_ITEM,         // arg0 = item, arg1 = quantity; result = AddBagItem()
     TEST_CMD_CHECK_SHINY,       // arg0 = personality, arg1 = OT ID: gEnemyParty[0] built with them; result = IsMonShiny()
+    TEST_CMD_SET_PARTY_MON,     // arg0 = species | level << 16, arg1 = held item | slot << 16; result = party count (0 = bad args)
+    TEST_CMD_ENABLE_NATIONAL_DEX, // result = IsNationalPokedexEnabled()
+    TEST_CMD_EVOLUTION_TARGET,  // arg0 = species | held item << 16, arg1 = mode | level << 8 | evolution item << 16: mon in gEnemyParty[0]; result = GetEvolutionTargetSpecies()
 };
 
 extern struct TestMailbox gTestMailbox;

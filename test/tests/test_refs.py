@@ -112,3 +112,16 @@ def test_tela_corrompida_vira_aviso(tmp_path):
     shot.write_bytes(b"lixo")
     result = compare_ref("nome", "SQUIRTLE", str(shot), str(refs))
     assert result.status == "aviso" and "ilegível" in result.detail
+
+
+def test_approve_refs_poe_as_telas_comuns_em_COMUM(tmp_path):
+    from esteira.refs import SHARED_POINTS, SHARED_REFS
+    run = tmp_path / "run"
+    make_png(run / "telas" / "nome.png")
+    make_png(run / "telas" / f"{SHARED_POINTS[0]}.png")
+    (run / "meta.json").write_text('{"inicial": "BULBASAUR"}', encoding="utf-8")
+    refs = tmp_path / "refs"
+    copied = approve_refs(str(run), refs_dir=str(refs))
+    assert sorted(Path(p).relative_to(refs).as_posix() for p in copied) == sorted(
+        ["BULBASAUR/nome.png", f"{SHARED_REFS}/{SHARED_POINTS[0]}.png"])
+    assert not (refs / "BULBASAUR" / f"{SHARED_POINTS[0]}.png").exists()

@@ -5,18 +5,20 @@ A partir de test/ (no WSL):
     python3 -m esteira completo --rom R --elf E [--rom-test RT --elf-test ET] [--log L] --out DIR ...
     python3 -m esteira aprovar DIR
     python3 -m esteira nao-testada --out DIR     # SKIP_TESTS=1: só o relatório "NÃO TESTADA"
-    python3 -m esteira assistir [--starter X] [--from CHECKPOINT] [--rom R --elf E]
+    python3 -m esteira assistir [--starter X] [--from CHECKPOINT | --cenario evolucoes] [--rom R --elf E]
 
 `rapido` roda a checagem do log de build, a checagem dos textos e os 3 roteiros rápidos numa
 sessão de emulador só. `completo` roda tudo isso e mais os cenários de FULL_SCENARIOS: PC,
 tour de telas e Floresta/Brock continuam a sessão jogável; o `master` compila o master sem
-emulador; o `shiny` usa a ROM de teste (`make firered_switch TESTBUILD=1`) e parte do save do
-`captura`.
+emulador; o `shiny` e o `evolucoes` usam a ROM de teste (`make firered_switch TESTBUILD=1`),
+cada um numa sessão própria que parte do save do `captura`.
 Toda execução com emulador grava OUT/video.webp: a execução inteira (todas as sessões, jogável e
 teste) em WebP animado acelerado (um quadro a cada 8 emulados, 30 fps), embutido no relatório;
 `--sem-video` desliga (ver esteira/video.py).
 `assistir` é à parte do pipeline: roda os roteiros rápidos numa janela, em tempo real e com som,
-com um save temporário; não gera versão, não mexe em roms/ nem no rodízio de iniciais.
+com um save temporário; não gera versão, não mexe em roms/ nem no rodízio de iniciais. Com
+`--cenario evolucoes`, mostra esse cenário do modo completo na ROM de teste (partindo de uma
+cópia do captura.sav mais recente de test/out/*/).
 Sai com 0 se nenhum resultado for `falha` (avisos não reprovam) e 1 caso contrário. Sem
 `--starter`, o inicial é o da vez no rodízio (esteira/rotation.py), que só avança quando a
 execução termina verde: um vermelho repete o mesmo inicial na próxima.
@@ -40,11 +42,13 @@ from typing import Callable
 from esteira.check_build import check_build
 from esteira.check_text import check_text
 from esteira.emu import EmulatorError, WindowClosed
-from esteira.refs import DEFAULT_REFS_DIR, KEY_POINTS, approve_refs, compare_ref
+from esteira.refs import (DEFAULT_REFS_DIR, KEY_POINTS, SHARED_POINTS, SHARED_REFS, approve_refs,
+                          compare_ref)
 from esteira.report import VIDEO_NAME, write_report
 from esteira.result import Result, StepTimeout, Suite
 from esteira.rotation import STARTERS, peek_next_starter, record_starter
 from esteira.scenarios import REPO_ROOT, ScenarioContext, open_context
+from esteira.scenarios.full_evolutions import run_full_evolutions
 from esteira.scenarios.full_forest_brock import run_full_forest_brock
 from esteira.scenarios.full_master import run_full_master
 from esteira.scenarios.full_pc import run_full_pc
@@ -73,12 +77,14 @@ class ScenarioSpec:
 
     Cenários da mesma ROM (`rom`: PLAYABLE ou TEST) rodam em sequência numa única sessão: o
     primeiro do grupo começa do boot e `run(ctx)` de cada um continua do estado que o anterior
-    deixou. `needs` é o checkpoint (OUT/estados/<needs>.ss, gravado pelo cenário anterior do
-    mesmo grupo) de onde o cenário pode recomeçar com `--only`; None = só começa do boot.
+    deixou. Exceção: um cenário com `save_from` abre uma sessão nova da ROM dele (um grupo
+    próprio, com os que vierem depois sem `save_from`). `needs` é o checkpoint
+    (OUT/estados/<needs>.ss, gravado pelo cenário anterior do mesmo grupo) de onde o cenário
+    pode recomeçar com `--only`; None = só começa do boot.
     Checkpoints nunca valem entre ROMs diferentes. `rom=HOST`: roda fora do emulador (ctx só
     com `suite`, `out_dir` e `starter`; `emu`, `game` etc. são None), sem ROM nem checkpoint.
 
-    `save_from` (só no 1º cenário de um grupo da ROM de teste): nome do cenário da ROM jogável
+    `save_from` (só na ROM de teste; abre um grupo/sessão nova): nome do cenário da ROM jogável
     cujo save do jogo (.sav) a sessão de teste carrega ao ligar — savestates não valem entre
     builds, o .sav vale. Logo que esse cenário termina sem falha, o save do jogo da memória é
     gravado (emu.flush_save) e copiado para OUT/<save_from>.sav (+ OUT/<save_from>.sav.json com
@@ -109,14 +115,20 @@ QUICK_SCENARIOS = [
 # Os jogáveis continuam a sessão do modo rápido, cada um do checkpoint que o anterior deixa
 # (`save` -> `pc` -> `telas`). O shiny parte do .sav gravado logo depois do `captura`
 # (save_from), então os jogáveis seguintes não mudam o ponto de partida dele
-# (test_cli.py::test_registro_dos_cenarios_completos confere a ordem).
+# (test_cli.py::test_registro_dos_cenarios_completos confere a ordem). O `evolucoes` também
+# parte desse .sav, numa sessão própria da ROM de teste (save_from abre sessão nova): roda
+# sozinho com `--only evolucoes` e não herda o que o shiny fez (Dex Nacional, Shiny Charm).
 FULL_SCENARIOS: list[ScenarioSpec] = [
     ScenarioSpec("pc", run_full_pc, needs="save"),
     ScenarioSpec("telas", run_full_screen_tour, needs="pc"),
     ScenarioSpec("floresta_brock", run_full_forest_brock, needs="telas"),
     ScenarioSpec("master", run_full_master, rom=HOST),
     ScenarioSpec("shiny", run_full_shiny, rom=TEST, save_from="captura"),
+    ScenarioSpec("evolucoes", run_full_evolutions, rom=TEST, save_from="captura"),
 ]
+# Cenários do modo completo que o `assistir --cenario` mostra numa janela (ROM de teste, a
+# partir do .sav da ponte). O shiny fica de fora: 400 000 Pokémon em tempo real levariam horas.
+WATCH_FULL_SCENARIOS = ("evolucoes",)
 
 
 def scenarios_for(mode: str) -> list[ScenarioSpec]:
@@ -166,16 +178,22 @@ def _static_checks(args: argparse.Namespace, suite: Suite) -> bool:
 
 
 def _groups(specs: list[ScenarioSpec], only: str | None) -> list[tuple[str, list[ScenarioSpec]]]:
-    """Agrupa os cenários por ROM (na ordem da primeira aparição). Com `only`, só o grupo dele,
+    """Agrupa os cenários em sessões de emulador: por ROM, na ordem da primeira aparição; um
+    cenário com `save_from` abre uma sessão nova da ROM dele. Com `only`, só o grupo dele,
     cortado nele (o que vem antes no grupo é pré-requisito)."""
-    if only is not None:
-        spec = next(s for s in specs if s.name == only)
-        group = [s for s in specs if s.rom == spec.rom]
-        return [(spec.rom, group[:group.index(spec) + 1])]
-    order: dict[str, list[ScenarioSpec]] = {}
+    groups: list[tuple[str, list[ScenarioSpec]]] = []
+    current: dict[str, list[ScenarioSpec]] = {}
     for s in specs:
-        order.setdefault(s.rom, []).append(s)
-    return list(order.items())
+        if s.save_from is not None or s.rom not in current:
+            current[s.rom] = []
+            groups.append((s.rom, current[s.rom]))
+        current[s.rom].append(s)
+    if only is not None:
+        for rom, group in groups:
+            names = [s.name for s in group]
+            if only in names:
+                return [(rom, group[:names.index(only) + 1])]
+    return groups
 
 
 def _chain(group: list[ScenarioSpec], only: str | None, ctx: ScenarioContext) -> list[ScenarioSpec]:
@@ -290,10 +308,13 @@ def _missing_save(producer: str, scheduled: bool, save: Path, out: Path) -> tupl
 
 
 def _compare_screens(suite: Suite, out: Path, starter: str, since: float) -> None:
-    for point in KEY_POINTS:
-        shot = out / "telas" / f"{point}.png"
-        if shot.is_file() and shot.stat().st_mtime >= since:
-            suite.add(compare_ref(point, starter, str(shot), REFS_DIR))
+    """Telas desta execução contra as referências do inicial (e as COMUM, que valem para os
+    três: refs.SHARED_POINTS)."""
+    for points, folder in ((KEY_POINTS, starter), (SHARED_POINTS, SHARED_REFS)):
+        for point in points:
+            shot = out / "telas" / f"{point}.png"
+            if shot.is_file() and shot.stat().st_mtime >= since:
+                suite.add(compare_ref(point, folder, str(shot), REFS_DIR))
 
 
 def _print_summary(suite: Suite, meta: dict, report: str) -> None:
@@ -453,8 +474,25 @@ def _load_watch_checkpoint(ctx: ScenarioContext, name: str, rom: str,
     return None
 
 
+def _find_watch_save(producer: str, wanted: str | None) -> tuple[str, str] | None:
+    """O save do jogo da ponte (`<producer>.sav` + `.sav.json`) mais recente deixado por uma
+    execução em test/out/*/ (o `make test-quick` e todo `make firered_switch` deixam um), do
+    inicial `wanted` (qualquer um, se None). Devolve (caminho, inicial) ou None. O .sav vale
+    entre builds (ao contrário dos savestates): não precisa ser mais novo que a ROM."""
+    found = sorted(Path(WATCH_CHECKPOINT_ROOT).glob(f"*/{producer}.sav"),
+                   key=lambda p: p.stat().st_mtime, reverse=True)
+    for save in found:
+        starter = _bridge_starter(save.with_name(save.name + ".json"))
+        if starter is not None and wanted in (None, starter):
+            return str(save), starter
+    return None
+
+
 def _watch_chain(args: argparse.Namespace) -> list[ScenarioSpec]:
-    """Roteiros rápidos a assistir: todos, ou só os que vêm depois de `--from`."""
+    """O que assistir: o cenário do modo completo de `--cenario`, ou os roteiros rápidos
+    (todos, ou só os que vêm depois de `--from`)."""
+    if args.cenario is not None:
+        return [next(s for s in FULL_SCENARIOS if s.name == args.cenario)]
     if args.checkpoint is None:
         return list(QUICK_SCENARIOS)
     first = next(i for i, s in enumerate(QUICK_SCENARIOS) if s.needs == args.checkpoint)
@@ -463,25 +501,44 @@ def _watch_chain(args: argparse.Namespace) -> list[ScenarioSpec]:
 
 def run_watch(args: argparse.Namespace) -> int:
     """`assistir`: roda o modo rápido com janela. Save temporário (apagado no fim), nada em
-    roms/ e o rodízio de iniciais só é lido, nunca gasto. Sai com 0 (terminou ou a janela foi
-    fechada), 1 (um roteiro falhou) ou 2 (sem janela/ROM/checkpoint)."""
+    roms/ e o rodízio de iniciais só é lido, nunca gasto. Com `--cenario`, roda esse cenário
+    do modo completo na ROM de teste, a partir de uma cópia do save da ponte (o
+    `<save_from>.sav` mais recente de test/out/*/). Sai com 0 (terminou ou a janela foi
+    fechada), 1 (um roteiro falhou) ou 2 (sem janela/ROM/checkpoint/save)."""
     if not _has_display():
         print("assistir precisa de uma janela, mas DISPLAY/WAYLAND_DISPLAY não existem. No WSL o "
               "WSLg fornece isso (Windows 11): rode `wsl --update`, feche o WSL com "
               "`wsl --shutdown` e abra de novo.", file=sys.stderr)
         return 2
-    missing = [p for p in (args.rom, args.elf) if not Path(p).is_file()]
+    chain = _watch_chain(args)
+    if args.cenario is not None:
+        rom, elf, build = args.rom_test, args.elf_test, "make firered_switch TESTBUILD=1"
+    else:
+        rom, elf, build = args.rom, args.elf, "make firered_switch"
+    missing = [p for p in (rom, elf) if not Path(p).is_file()]
     if missing:
-        print("arquivo não encontrado: " + ", ".join(missing) + " (rode `make firered_switch`)",
+        print("arquivo não encontrado: " + ", ".join(missing) + f" (rode `{build}`)",
               file=sys.stderr)
         return 2
     starter = args.starter or peek_next_starter(args.state)
-    chain = _watch_chain(args)
+    save_from = None
+    if args.cenario is not None:
+        producer = chain[0].save_from
+        found = _find_watch_save(producer, args.starter)
+        if found is None:
+            wanted = f" do inicial {args.starter}" if args.starter else ""
+            print(f"nenhum save do jogo '{producer}.sav'{wanted} em {WATCH_CHECKPOINT_ROOT}/*/: "
+                  f"o cenário '{args.cenario}' parte do save do fim do modo rápido; rode "
+                  "`make test-quick` antes.", file=sys.stderr)
+            return 2
+        save_from, starter = found
     out = Path(tempfile.mkdtemp(prefix="esteira-assistir-"))
     suite = Suite()
     code = 0
+    what = f"cenário {args.cenario}" if args.cenario else "roteiro rápido"
     try:
-        with open_context(args.rom, args.elf, str(out), starter, suite, window=True) as ctx:
+        with open_context(rom, elf, str(out), starter, suite, save_from=save_from,
+                          window=True) as ctx:
             if args.checkpoint is not None:
                 try:
                     found = _load_watch_checkpoint(ctx, args.checkpoint, args.rom, args.starter)
@@ -528,7 +585,8 @@ def run_watch(args: argparse.Namespace) -> int:
     if keep:
         print(f"assistir terminou com falha; evidências (telas, estados) em {out}")
         return 1
-    print("assistir terminou: roteiro rápido concluído sem falhas.")
+    oks = sum(1 for r in suite.results if r.status == "ok")
+    print(f"assistir terminou: {what} concluído sem falhas ({oks} ok).")
     return 0
 
 
@@ -578,15 +636,24 @@ def build_parser() -> argparse.ArgumentParser:
         description="Roda os roteiros rápidos (abertura, Rota 1, captura) numa janela do Windows "
                     "(WSLg), em velocidade normal e com som, para você assistir. Fora do "
                     "pipeline: usa um save temporário, não gera versão, não mexe em roms/ nem no "
-                    "rodízio de iniciais. Feche a janela (ou Esc) para encerrar.")
+                    "rodízio de iniciais. Feche a janela (ou Esc) para encerrar. Com --cenario, "
+                    "mostra um cenário do modo completo na ROM de teste.")
     watch.add_argument("--starter", choices=STARTERS,
                        help="inicial a usar; padrão: o da vez no rodízio (sem gastá-lo)")
-    watch.add_argument("--from", dest="checkpoint",
+    start = watch.add_mutually_exclusive_group()
+    start.add_argument("--from", dest="checkpoint",
                        choices=sorted({s.needs for s in QUICK_SCENARIOS if s.needs}),
                        help="começa deste ponto do roteiro rápido, usando o estado mais recente "
                             "deixado por `make test-quick` em test/out/*/estados/ (senão, do boot)")
+    start.add_argument("--cenario", choices=WATCH_FULL_SCENARIOS,
+                       help="em vez do roteiro rápido, este cenário do modo completo na ROM de "
+                            "teste (--rom-test), a partir do save do fim do modo rápido mais "
+                            "recente em test/out/*/ (o inicial é o desse save)")
     watch.add_argument("--rom", default=DEFAULT_ROM, help="ROM jogável (padrão: a da raiz do repo)")
     watch.add_argument("--elf", default=DEFAULT_ELF, help="ELF da ROM jogável (padrão: o da raiz)")
+    watch.add_argument("--rom-test", default=DEFAULT_ROM_TEST,
+                       help="ROM de teste, só com --cenario (padrão: pokefirered_switch_test.gba)")
+    watch.add_argument("--elf-test", default=DEFAULT_ELF_TEST)
     watch.add_argument("--state", default=STATE_PATH, help=argparse.SUPPRESS)
     return parser
 

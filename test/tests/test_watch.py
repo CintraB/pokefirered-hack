@@ -1,5 +1,7 @@
 """Modo `assistir`: janela SDL2 em tempo real (runner `--window`) e o subcomando da esteira."""
 
+import json
+import os
 import shutil
 import subprocess
 import time
@@ -251,6 +253,101 @@ def test_assistir_janela_fechada_encerra_sem_falha(fw, monkeypatch, capsys):
     assert "janela fechada" in capsys.readouterr().out.lower()
 
 
+# --- assistir --cenario (modo completo, ROM de teste) ---------------------------------------------
+
+def _fake_bridge(fw, run: str, starter: str, age: int = 0) -> Path:
+    """Um captura.sav (+ .sav.json) como os que as execuções deixam em test/out/<run>/."""
+    save = fw.tmp / "out-antigo" / run / "captura.sav"
+    save.parent.mkdir(parents=True, exist_ok=True)
+    save.write_text(f"sav de {run}")
+    save.with_name("captura.sav.json").write_text(json.dumps({"inicial": starter}))
+    t = time.time() + 100 + age
+    os.utime(save, (t, t))
+    return save
+
+
+@pytest.fixture
+def fw_full(fw, monkeypatch):
+    """`assistir --cenario evolucoes` com o cenário falso e uma ROM de teste falsa."""
+    (fw.tmp / "teste.gba").write_bytes(b"x")
+    (fw.tmp / "teste.elf").write_bytes(b"x")
+    seen = []
+
+    def run(ctx):
+        fw.ran.append("evolucoes")
+        seen.append(ctx.starter)
+    monkeypatch.setattr(cli, "FULL_SCENARIOS", [
+        ScenarioSpec("shiny", lambda ctx: fw.ran.append("shiny"), rom=cli.TEST, save_from="captura"),
+        ScenarioSpec("evolucoes", run, rom=cli.TEST, save_from="captura")])
+    fw.seen_starters = seen
+    fw.full_argv = lambda *extra: fw.argv("--cenario", "evolucoes",
+                                          "--rom-test", str(fw.tmp / "teste.gba"),
+                                          "--elf-test", str(fw.tmp / "teste.elf"), *extra)
+    return fw
+
+
+def test_assistir_cenario_roda_na_rom_de_teste_com_o_sav_mais_recente(fw_full):
+    _fake_bridge(fw_full, "r1", "BULBASAUR", age=-50)
+    newest = _fake_bridge(fw_full, "r2", "SQUIRTLE")
+    before = _roms_snapshot()
+    assert main(fw_full.full_argv()) == 0
+    assert fw_full.ran == ["evolucoes"]                  # só o cenário pedido, sem o roteiro rápido
+    (opened,) = fw_full.opened
+    assert opened["rom"] == str(fw_full.tmp / "teste.gba") and opened["window"] is True
+    assert opened["save_from"] == str(newest)             # cópia: o open_context copia para o temp
+    assert opened["recorder"] is None
+    assert fw_full.seen_starters == ["SQUIRTLE"]          # o inicial é o do save
+    assert _roms_snapshot() == before and not Path(cli.STATE_PATH).exists()
+    assert not Path(opened["out"]).exists()
+
+
+def test_assistir_cenario_respeita_starter_pedido(fw_full):
+    older = _fake_bridge(fw_full, "r1", "CHARMANDER", age=-50)
+    _fake_bridge(fw_full, "r2", "SQUIRTLE")
+    assert main(fw_full.full_argv("--starter", "CHARMANDER")) == 0
+    assert fw_full.opened[0]["save_from"] == str(older)
+
+
+def test_assistir_cenario_sem_sav_orienta_e_sai_2(fw_full, capsys):
+    assert main(fw_full.full_argv()) == 2
+    err = capsys.readouterr().err
+    assert "captura.sav" in err and "make test-quick" in err
+    assert fw_full.opened == [] and fw_full.ran == []
+
+
+def test_assistir_cenario_sem_rom_de_teste_sai_2(fw_full, capsys):
+    _fake_bridge(fw_full, "r1", "SQUIRTLE")
+    (fw_full.tmp / "teste.gba").unlink()
+    assert main(fw_full.full_argv()) == 2
+    assert "TESTBUILD=1" in capsys.readouterr().err
+    assert fw_full.opened == []
+
+
+def test_assistir_cenario_com_from_e_erro_de_uso(fw_full):
+    with pytest.raises(SystemExit) as exc:
+        main(fw_full.full_argv("--from", "rival"))
+    assert exc.value.code == 2
+
+
+def test_assistir_cenario_desconhecido_e_erro_de_uso(fw_full):
+    with pytest.raises(SystemExit) as exc:
+        main(fw_full.argv("--cenario", "shiny"))   # o shiny não se assiste (horas em tempo real)
+    assert exc.value.code == 2
+
+
+def test_assistir_cenario_com_falha_sai_1(fw_full, monkeypatch, capsys):
+    _fake_bridge(fw_full, "r1", "SQUIRTLE")
+
+    def boom(ctx):
+        ctx.suite.add(Result("evolucoes: x", "falha", "deu errado"))
+    monkeypatch.setattr(cli, "FULL_SCENARIOS", [
+        ScenarioSpec("evolucoes", boom, rom=cli.TEST, save_from="captura")])
+    assert main(fw_full.full_argv()) == 1
+    out = Path(fw_full.opened[0]["out"])
+    assert str(out) in capsys.readouterr().out
+    shutil.rmtree(out, ignore_errors=True)
+
+
 # --- Makefile -------------------------------------------------------------------------------------
 
 def _recipe(target: str) -> str:
@@ -281,6 +378,14 @@ def test_alvo_test_watch_chama_assistir_e_repassa_from_e_starter():
     assert "$(FROM)" in recipe and "$(STARTER)" in recipe
     assert "test-watch" in (REPO_ROOT / "Makefile").read_text(encoding="utf-8").split(
         "RULES_NO_SCAN +=")[1].splitlines()[0]
+
+
+def test_alvo_test_watch_com_cenario_recompila_a_rom_de_teste_antes():
+    recipe = _recipe("test-watch")
+    assert "$(if $(CENARIO),$(MAKE) firered_switch TESTBUILD=1" in recipe
+    assert "--cenario $(CENARIO)" in recipe
+    assert "--rom-test $(CURDIR)/pokefirered_switch_test.gba" in recipe
+    assert recipe.index("TESTBUILD=1") < recipe.index("-m esteira")
 
 
 # --- rodada 1: Ctrl-C, SDL opcional, display, estado inválido -------------------------------------

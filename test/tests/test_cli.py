@@ -360,6 +360,39 @@ def test_cenario_de_teste_parte_do_sav_do_grupo_jogavel(env, monkeypatch):
     assert json.loads(bridge.with_suffix(".sav.json").read_text())["inicial"] == "SQUIRTLE"
 
 
+def test_cada_cenario_com_save_from_abre_sessao_propria(env, monkeypatch):
+    """Dois cenários da ROM de teste com save_from: duas sessões, cada uma ligando a ROM de
+    teste com o mesmo .sav da ponte (o 2º não herda o que o 1º fez)."""
+    set_scenarios(monkeypatch, [env.spec("a"), env.spec("cap", needs="x")],
+                  [env.spec("shiny", rom=TEST, save_from="cap"), env.spec("depois", rom=TEST),
+                   env.spec("evo", rom=TEST, save_from="cap")])
+    assert main(env.argv("completo", "--starter", "SQUIRTLE")) == 0
+    assert env.ran == ["a", "cap", "shiny", "depois", "evo"]
+    assert [rom for rom, _ in env.opened] == ["jogavel.gba", "teste.gba", "teste.gba"]
+    assert env.loaded_saves == ["jogavel.gba:a,cap", "jogavel.gba:a,cap"]
+
+
+def test_falha_numa_sessao_de_teste_nao_pula_a_outra(env, monkeypatch):
+    set_scenarios(monkeypatch, [env.spec("cap")],
+                  [env.spec("shiny", rom=TEST, save_from="cap", effect=failing),
+                   env.spec("depois", rom=TEST), env.spec("evo", rom=TEST, save_from="cap")])
+    assert main(env.argv("completo", "--starter", "SQUIRTLE")) == 1
+    assert env.ran == ["cap", "shiny", "evo"]          # `depois` pulado (mesma sessão do shiny)
+
+
+def test_only_de_sessao_propria_roda_so_ela(env, monkeypatch):
+    bridge = [env.spec("a"), env.spec("cap", needs="x")]
+    tests = [env.spec("shiny", rom=TEST, save_from="cap"), env.spec("evo", rom=TEST, save_from="cap")]
+    set_scenarios(monkeypatch, bridge, tests)
+    assert main(env.argv("rapido", "--starter", "BULBASAUR")) == 0
+    env.ran.clear()
+    env.opened.clear()
+    assert main(env.argv("completo", "--only", "evo")) == 0
+    assert env.ran == ["evo"]                           # sem o shiny antes
+    assert env.opened == [("teste.gba", "BULBASAUR")]
+    assert env.loaded_saves[-1] == "jogavel.gba:a,cap"
+
+
 def test_rapido_tambem_deixa_o_sav_para_o_only_depois(env, monkeypatch):
     bridge_scenarios(env, monkeypatch)
     assert main(env.argv("rapido", "--starter", "SQUIRTLE")) == 0
@@ -430,17 +463,21 @@ def test_registro_dos_cenarios_completos():
     jogável do completo continua do checkpoint do anterior; o master roda sem emulador."""
     specs = cli.scenarios_for("completo")
     by_name = {s.name: s for s in specs}
-    shiny = by_name["shiny"]
-    assert (shiny.rom, shiny.save_from, shiny.needs) == (TEST, "captura", None)
+    for name in ("shiny", "evolucoes"):   # cada um numa sessão própria da ROM de teste
+        spec = by_name[name]
+        assert (spec.rom, spec.save_from, spec.needs) == (TEST, "captura", None)
     playable = [s.name for s in specs if s.rom == cli.PLAYABLE]
     assert playable == ["abertura", "rota1", "captura", "pc", "telas", "floresta_brock"]
     assert [by_name[n].needs for n in playable[3:]] == ["save", "pc", "telas"]
     assert (by_name["master"].rom, by_name["master"].needs) == (cli.HOST, None)
+    groups = cli._groups(specs, None)
+    assert [(rom, [s.name for s in g]) for rom, g in groups if rom == TEST] == [
+        (TEST, ["shiny"]), (TEST, ["evolucoes"])]
     for spec in specs:
         if spec.save_from is not None:
-            group = [s for s in specs if s.rom == spec.rom]
-            assert spec.rom == TEST and group[0] is spec
+            assert spec.rom == TEST and any(g[0] is spec for _, g in groups)
             assert spec.save_from in playable
+    assert set(cli.WATCH_FULL_SCENARIOS) <= {s.name for s in specs if s.save_from}
     rapido = [s.name for s in cli.scenarios_for("rapido")]
     assert rapido == ["abertura", "rota1", "captura"]
 
@@ -623,3 +660,22 @@ def test_only_que_reroda_o_produtor_do_boot_e_falha_antes_apaga_a_ponte(env, mon
     assert main(env.argv("completo", "--starter", "CHARMANDER", "--only", "pc")) == 1
     assert env.ran == ["a"]
     assert not (env.tmp / "out" / "cap.sav").exists()
+
+
+def test_telas_comuns_comparadas_com_COMUM_para_qualquer_inicial(env, monkeypatch):
+    from esteira.refs import SHARED_POINTS, SHARED_REFS
+    point = SHARED_POINTS[0]
+
+    def shot(ctx):
+        telas = Path(ctx.out_dir) / "telas"
+        telas.mkdir(parents=True, exist_ok=True)
+        Image.new("RGB", (4, 4)).save(telas / f"{point}.png")
+        later = time.time() + 2
+        os.utime(telas / f"{point}.png", (later, later))
+    set_scenarios(monkeypatch, [env.spec("a", effect=shot)])
+    ref = Path(cli.REFS_DIR) / SHARED_REFS / f"{point}.png"
+    ref.parent.mkdir(parents=True)
+    Image.new("RGB", (4, 4)).save(ref)
+    for starter in ("BULBASAUR", "SQUIRTLE"):
+        assert main(env.argv("rapido", "--starter", starter)) == 0
+        assert f"igual à referência de {SHARED_REFS}" in html(env)

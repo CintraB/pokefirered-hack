@@ -11,6 +11,7 @@ from pathlib import Path
 
 from PIL import Image, ImageChops
 
+from esteira.evolutions import SCREEN_POINTS as EVOLUTION_POINTS
 from esteira.result import Result
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -19,6 +20,10 @@ DEFAULT_REFS_DIR = "test/referencias"
 # modo rápido e os do tour de telas do modo completo (scenarios/full_screen_tour.py).
 TOUR_POINTS = ("bolsa", "resumo", "pokedex", "opcoes", "cartao", "pc", "loja", "mapa")
 KEY_POINTS = ("nome", "inicial", "batalha_rival", "captura", "save_continue") + TOUR_POINTS
+# Pontos cuja tela não depende do inicial (cena de evolução do cenário `evolucoes`): uma
+# referência só, em test/referencias/COMUM/<ponto>.png, vale para os três.
+SHARED_REFS = "COMUM"
+SHARED_POINTS = EVOLUTION_POINTS
 DIFF_RED = (255, 0, 0)
 # O Pillow acusa PNG quebrado com OSError (UnidentifiedImageError é subclasse, "image file is
 # truncated"), SyntaxError ("broken PNG file") ou ValueError, conforme onde o arquivo está estragado.
@@ -84,7 +89,8 @@ def approve_refs(run_dir: str, starter: str | None = None,
                  refs_dir: str = DEFAULT_REFS_DIR) -> list[str]:
     """Copia os screenshots de pontos-chave de `run_dir/telas/` para as referências do inicial.
 
-    O inicial vem de `starter` ou de `run_dir/meta.json` ("inicial"). Devolve os caminhos copiados.
+    O inicial vem de `starter` ou de `run_dir/meta.json` ("inicial"). Os pontos de
+    SHARED_POINTS vão para `<refs_dir>/COMUM/`. Devolve os caminhos copiados.
     """
     run = Path(run_dir)
     if starter is None:
@@ -95,13 +101,14 @@ def approve_refs(run_dir: str, starter: str | None = None,
     if not starter:
         raise ValueError(f"inicial desconhecido para {run}: sem meta.json com 'inicial' "
                          f"(passe o inicial explicitamente)")
-    target = _refs_root(refs_dir) / starter
     copied: list[str] = []
-    for point in KEY_POINTS:
-        src = run / "telas" / f"{point}.png"
-        if src.is_file():
-            target.mkdir(parents=True, exist_ok=True)
-            dst = target / f"{point}.png"
-            shutil.copyfile(src, dst)
-            copied.append(str(dst))
+    for points, folder in ((KEY_POINTS, starter), (SHARED_POINTS, SHARED_REFS)):
+        target = _refs_root(refs_dir) / folder
+        for point in points:
+            src = run / "telas" / f"{point}.png"
+            if src.is_file():
+                target.mkdir(parents=True, exist_ok=True)
+                dst = target / f"{point}.png"
+                shutil.copyfile(src, dst)
+                copied.append(str(dst))
     return copied

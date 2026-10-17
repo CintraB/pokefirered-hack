@@ -15,6 +15,7 @@ repo.
 | Testar de novo a ROM já compilada, sem versionar | `make test-quick` | ~35 s |
 | Teste completo (cenários longos, ROM de teste) | `make test-full` | ~13 min (o shiny sozinho ~9 min) |
 | Ver o roteiro rápido numa janela | `make test-watch` | ~ tempo real |
+| Ver as evoluções sem troca (Hack 3) numa janela | `make test-watch CENARIO=evolucoes` | ~6 min (tempo real) |
 | Aprovar as telas de referência | `make test-approve` | instantâneo |
 | Testes unitários da própria esteira | `python3 -m pytest test -q` | ~5-6 min (~80 s sem os lentos) |
 
@@ -140,10 +141,38 @@ ROM. Sem o log, só o uso de memória é conferido (o terminal avisa). Deixa os 
 | `floresta_brock` | ROM jogável | Floresta de Viridian, prêmios dos treinadores, Brock (adaptativo), tênis de corrida e ritmo de corrida |
 | `master` | sem emulador | O branch `master` (pret original) ainda compila idêntico ao original (SHA1), numa worktree temporária em `/tmp` |
 | `shiny` | **ROM de teste** | Shiny Charm e taxa de shiny com/sem o charm (usa atalhos da build de teste) |
+| `evolucoes` | **ROM de teste** | Hack 3, fim das evoluções por troca: Rare Candy pela bolsa e a cena de evolução de verdade para os 11 Pokémon (nível 37, com/sem item segurado), item errado, "passou do 37 sem item" e a troca que não evolui mais (veja abaixo) |
 
 Depende da ROM jogável da raiz (se não existir, vira falha `emulador/rom-playable`). Não grava
 em `roms/`: o resultado fica em `test/out/<data-hora>/`. Rode com o terminal aberto por ~13
 min; o shiny leva ~9 min disso.
+
+O `shiny` e o `evolucoes` partem do mesmo save do jogo (o `.sav` do fim do `captura`), cada um
+numa **sessão própria** da ROM de teste: um não herda o que o outro fez (o shiny liga a Dex
+Nacional e ganha o Shiny Charm), e `--only evolucoes` roda só ele (~30 s).
+
+**O cenário `evolucoes`** (`test/esteira/scenarios/full_evolutions.py`; as regras ficam numa
+tabela só, `test/esteira/evolutions.py`). Os atalhos da build de teste só montam o Pokémon no
+time (espécie, nível, item segurado), dão Rare Candies e ligam a Dex Nacional; a subida de
+nível é a de verdade (START > BOLSA > RARE CANDY > USAR) e a cena de evolução roda inteira. Se
+o jogo perguntar sobre golpe novo, o cenário recusa (NÃO para esquecer um golpe, SIM para
+desistir) e confere que nenhum golpe foi esquecido. Ordem:
+
+1. sem a Dex Nacional (como no save): Kadabra, Haunter, Machoke e Graveler 36 → 37 evoluem;
+   Slowpoke 36 sem item vira Slowbro; Onix 36 com Metal Coat abre a cena, mas **o jogo cancela**
+   (regra original do FireRed: espécie de fora de Kanto, como Steelix, só com a Dex Nacional) e
+   ele continua Onix com o item;
+2. com a Dex Nacional (atalho): os 8 casos com item (Slowking, Politoed, Steelix, Scizor,
+   Kingdra, Porygon2, Huntail e Gorebyss) evoluem e o item continua segurado;
+3. Onix 36 com King's Rock (item errado) e Clamperl 36 sem item não evoluem;
+4. Onix 40 sem item sobe para 41 e continua Onix; recebe o Metal Coat pela bolsa (DAR); sobe
+   para 42 e vira Steelix, ainda segurando o Metal Coat;
+5. `GetEvolutionTargetSpecies` no modo troca devolve 0 para os 11, com e sem o item antigo.
+
+Telas antes/depois de cada cena: `telas/evo_<alvo>_antes.png` e `_depois.png`, comparadas com
+`test/referencias/COMUM/` (não dependem do inicial). O teste estático
+`test/tests/test_evolucoes_estatico.py` (pytest, sem emulador) confere a tabela de evoluções, o
+método novo no C e os 6 itens à venda na Celadon Dept. Store 4F por 2100.
 
 ### `make test-approve`
 
@@ -158,7 +187,9 @@ Copia `telas/*.png` dos pontos-chave para `test/referencias/<INICIAL>/<ponto>.pn
 do `meta.json` da execução). Pontos: `nome`, `inicial`, `batalha_rival`, `captura`,
 `save_continue` (modo rápido) e `bolsa`, `resumo`, `pokedex`, `opcoes`, `cartao`, `pc`, `loja`,
 `mapa` (tour do modo completo). Cada inicial tem o seu conjunto: para aprovar os três, rode a
-esteira uma vez com cada um (`--starter`).
+esteira uma vez com cada um (`--starter`). As telas da cena de evolução (`evo_*_antes`,
+`evo_*_depois`, do cenário `evolucoes`) não dependem do inicial e vão para
+`test/referencias/COMUM/`, que vale para os três.
 
 "Mais recente" é a pasta `test/out/<data-hora>` modificada por último, de qualquer comando;
 confira o `DIR` quando tiver rodado outras coisas. O comando **não confere se a execução
@@ -203,6 +234,23 @@ make test-watch FROM=encomenda STARTER=SQUIRTLE  # começa na captura
 - Precisa do WSLg (Windows 11) e da `libsdl2-dev` (veja Requisitos). Sem janela disponível o
   comando diz para rodar `wsl --update` e `wsl --shutdown` no PowerShell e abrir o WSL de novo.
 
+**Cenário do modo completo numa janela** (`CENARIO=`, hoje só `evolucoes`):
+
+```bash
+make test-watch CENARIO=evolucoes                    # Hack 3: as evoluções, em tempo real
+make test-watch CENARIO=evolucoes STARTER=SQUIRTLE   # usa o save de uma execução com esse inicial
+```
+
+- Recompila antes a **ROM de teste** (`make firered_switch TESTBUILD=1`, como o `test-full`) e
+  roda o cenário nela, na janela, com o mesmo roteiro do modo completo (inclusive as
+  conferências: no fim aparece o resumo de ok/falhas).
+- Parte de uma **cópia** do save do jogo (`captura.sav`) mais recente em `test/out/*/` — todo
+  `make firered_switch` e `make test-quick` deixa um; o inicial é o desse save. Sem nenhum, o
+  comando pede para rodar `make test-quick` antes (exit 2). Não grava em `roms/` e não mexe no
+  rodízio.
+- `CENARIO=` e `FROM=` não combinam. O `shiny` não está disponível aqui: 400 000 Pokémon em
+  tempo real levariam horas.
+
 ## Usando a esteira direto (`python3 -m esteira`)
 
 Os `make test-*` são atalhos para isto. Dentro do WSL, a partir de `test/`:
@@ -218,7 +266,7 @@ python3 -m esteira rapido --rom ../pokefirered_switch.gba --elf ../pokefirered_s
 | `rapido` | Checagens estáticas + 3 roteiros rápidos |
 | `completo` | O rápido + os cenários de `FULL_SCENARIOS` |
 | `aprovar DIR` | Promove as telas da execução `DIR` a referência |
-| `assistir` | Roteiro rápido numa janela (é o que o `make test-watch` chama) |
+| `assistir` | Roteiro rápido (ou, com `--cenario evolucoes`, esse cenário na ROM de teste) numa janela (é o que o `make test-watch` chama) |
 | `nao-testada --out DIR` | Só o relatório "NÃO TESTADA" (usado por `SKIP_TESTS=1`) |
 
 Opções de `rapido` e `completo` (`--rom`, `--elf` e `--out` são obrigatórios):
@@ -229,11 +277,11 @@ Opções de `rapido` e `completo` (`--rom`, `--elf` e `--out` são obrigatórios
 | `--rom-test`, `--elf-test` | ROM de teste e ELF, só para cenários que usam a build de teste (padrão: `pokefirered_switch_test.*` na raiz) |
 | `--log` | Log do build; sem ele só a checagem de texto roda (a do build vira aviso) |
 | `--out` | Pasta da execução (relatório, telas, estados, vídeo) |
-| `--only NOME` | Só um item: `build`, `texto`, `abertura`, `rota1`, `captura`; no `completo` também `pc`, `telas`, `floresta_brock`, `master`, `shiny` |
+| `--only NOME` | Só um item: `build`, `texto`, `abertura`, `rota1`, `captura`; no `completo` também `pc`, `telas`, `floresta_brock`, `master`, `shiny`, `evolucoes` |
 | `--starter X` | Força `BULBASAUR`, `CHARMANDER` ou `SQUIRTLE` (não mexe no rodízio) |
 | `--sem-video` | Não grava `video.webp` |
 
-`assistir`: `--starter`, `--from {encomenda,rival}`, `--rom`, `--elf`. Códigos de saída de
+`assistir`: `--starter`, `--from {encomenda,rival}` ou `--cenario evolucoes` (com `--rom-test`/`--elf-test`, padrão os da raiz), `--rom`, `--elf`. Códigos de saída de
 `rapido`/`completo`: 0 sem falha (aviso não reprova), 1 com falha.
 
 Exemplos:
@@ -254,7 +302,7 @@ passar sem valer. Regras práticas:
 - passe o mesmo `--starter` da execução original (está no `meta.json`): sem ele a esteira usa o
   inicial da vez no rodízio e, se não for o do checkpoint, descarta o checkpoint e roda a
   cadeia toda;
-- `--only shiny` precisa do `<OUT>/captura.sav` que o `rapido`/`completo` anterior (mesma
+- `--only shiny` e `--only evolucoes` precisam do `<OUT>/captura.sav` que o `rapido`/`completo` anterior (mesma
   pasta) deixou; sem ele o resultado é uma falha dizendo o que rodar antes;
 - `--only build` e `--only texto` não usam emulador e não têm esse problema.
 
@@ -329,7 +377,8 @@ sudo apt install libsdl2-dev     # OPCIONAL: só para o make test-watch (janela)
    `needs` é o checkpoint de onde o cenário pode recomeçar com `--only`. Cenários da mesma ROM
    rodam em sequência numa sessão só, **na ordem da lista**, cada um continuando do estado que o
    anterior deixou. Se o cenário usa o `.sav` do jogo, veja `save_from` na docstring de
-   `ScenarioSpec`.
+   `ScenarioSpec` (um cenário com `save_from` abre uma sessão nova da ROM de teste, como o
+   `shiny` e o `evolucoes`; para assistir numa janela, acrescente-o em `WATCH_FULL_SCENARIOS`).
 4. Atualize o teste `test_registro_dos_cenarios_completos` em `test/tests/test_cli.py` (ele
    confere a ordem e as dependências) e escreva um teste em `test/tests/test_<nome>.py`.
 5. Se o cenário tira screenshots que devem ser comparados, grave em `<OUT>/telas/<ponto>.png` e

@@ -418,6 +418,9 @@ endif
 #   make test-watch [FROM=<point>] [STARTER=<X>]
 #                                   watch the quick script in a window (WSLg), real time, with sound;
 #                                   temp save, nothing written to roms/ (not part of the pipeline)
+#   make test-watch CENARIO=evolucoes
+#                                   same, but a full-mode scenario on the test ROM (rebuilt first),
+#                                   from the newest quick-run save in test/out/*/captura.sav
 #   SKIP_TESTS=1 make firered_switch  versions the ROM without testing (marked NAO_TESTADA.txt)
 # Every target that runs the emulator first brings the runner (test/harness) up to date, so a
 # stale runner never kills a run (Emulator refuses a runner older than its source).
@@ -442,9 +445,12 @@ test-full:
 
 # Watch mode: the playable ROM at the repo root, in a window. Not a pipeline step (no log, no
 # test/out run folder, no roms/ writes); the runner is rebuilt first like in the other targets.
+# CENARIO=<name> watches that full-mode scenario on the test ROM instead (rebuilt first, like
+# test-full: it must never run a stale build).
 test-watch:
+	@$(if $(CENARIO),$(MAKE) firered_switch TESTBUILD=1,true)
 	@$(ESTEIRA_RUNNER)
-	@cd test && python3 -m esteira assistir --rom $(CURDIR)/pokefirered_switch.gba --elf $(CURDIR)/pokefirered_switch.elf $(if $(FROM),--from $(FROM)) $(if $(STARTER),--starter $(STARTER))
+	@cd test && python3 -m esteira assistir --rom $(CURDIR)/pokefirered_switch.gba --elf $(CURDIR)/pokefirered_switch.elf $(if $(CENARIO),--cenario $(CENARIO) --rom-test $(CURDIR)/pokefirered_switch_test.gba --elf-test $(CURDIR)/pokefirered_switch_test.elf) $(if $(FROM),--from $(FROM)) $(if $(STARTER),--starter $(STARTER))
 
 test-approve:
 	@cd test && python3 -m esteira aprovar "$(if $(DIR),$(abspath $(DIR)),$(shell ls -dt $(ESTEIRA_RUNS_DIR)/[0-9]*-[0-9]*/ 2>/dev/null | head -n 1))"

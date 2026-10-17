@@ -5,10 +5,12 @@
 #if TESTBUILD
 
 #include "event_data.h"
+#include "field_specials.h"
 #include "item.h"
 #include "pokedex.h"
 #include "pokemon.h"
 #include "constants/items.h"
+#include "constants/pokemon.h"
 #include "constants/pokedex.h"
 #include "constants/species.h"
 
@@ -67,6 +69,55 @@ static u32 CheckShiny(u32 personality, u32 otId)
     return IsMonShiny(&gEnemyParty[0]);
 }
 
+// Evolution tests: a mon the player could own (player as OT, fixed IVs) with a fixed
+// personality that is never shiny for this player, so the evolution scene looks the same on
+// every run.
+#define TEST_MON_FIXED_IV 15
+
+static void CreateTestMon(struct Pokemon *mon, u16 species, u8 level, u16 heldItem)
+{
+    u32 otId = GetPlayerTrainerId();
+    // shiny value = hi(ot) ^ lo(ot) ^ hi(pid) ^ lo(pid) = 0x100, far from the shiny range
+    u32 personality = (((otId >> 16) ^ (otId & 0xFFFF) ^ 0x100) & 0xFFFF) << 16;
+
+    CreateMon(mon, species, level, TEST_MON_FIXED_IV, TRUE, personality, OT_ID_PLAYER_ID, 0);
+    SetMonData(mon, MON_DATA_HELD_ITEM, &heldItem);
+}
+
+static bool32 IsValidTestMon(u16 species, u8 level)
+{
+    return species != SPECIES_NONE && species < NUM_SPECIES && level != 0 && level <= MAX_LEVEL;
+}
+
+// Puts the mon in gPlayerParty[slot] (a filled slot or the first free one).
+static u32 SetPartyMon(u32 arg0, u32 arg1)
+{
+    u16 species = arg0 & 0xFFFF;
+    u8 level = (arg0 >> 16) & 0xFF;
+    u16 heldItem = arg1 & 0xFFFF;
+    u8 slot = (arg1 >> 16) & 0xFF;
+
+    if (!IsValidTestMon(species, level) || slot >= PARTY_SIZE || slot > CalculatePlayerPartyCount())
+        return 0;
+    CreateTestMon(&gPlayerParty[slot], species, level, heldItem);
+    return CalculatePlayerPartyCount();
+}
+
+// GetEvolutionTargetSpecies() for a mon built in gEnemyParty[0], in any mode (trade included).
+static u32 EvolutionTarget(u32 arg0, u32 arg1)
+{
+    u16 species = arg0 & 0xFFFF;
+    u16 heldItem = arg0 >> 16;
+    u8 mode = arg1 & 0xFF;
+    u8 level = (arg1 >> 8) & 0xFF;
+    u16 evolutionItem = arg1 >> 16;
+
+    if (!IsValidTestMon(species, level))
+        return 0xFFFFFFFF;
+    CreateTestMon(&gEnemyParty[0], species, level, heldItem);
+    return GetEvolutionTargetSpecies(&gEnemyParty[0], mode, evolutionItem);
+}
+
 void TestHooks_Run(void)
 {
     u32 result = 0;
@@ -86,6 +137,16 @@ void TestHooks_Run(void)
         break;
     case TEST_CMD_CHECK_SHINY:
         result = CheckShiny(gTestMailbox.arg0, gTestMailbox.arg1);
+        break;
+    case TEST_CMD_SET_PARTY_MON:
+        result = SetPartyMon(gTestMailbox.arg0, gTestMailbox.arg1);
+        break;
+    case TEST_CMD_ENABLE_NATIONAL_DEX:
+        EnableNationalPokedex();
+        result = IsNationalPokedexEnabled();
+        break;
+    case TEST_CMD_EVOLUTION_TARGET:
+        result = EvolutionTarget(gTestMailbox.arg0, gTestMailbox.arg1);
         break;
     default:
         result = 0xFFFFFFFF;

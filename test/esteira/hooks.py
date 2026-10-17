@@ -14,6 +14,13 @@ CMD_COUNT_SHINIES = 1       # arg0 = quantos, arg1 = com Shiny Charm (0/1) -> n�
 CMD_SET_DEX_COMPLETE = 2    # -> HasAllMons()
 CMD_GIVE_ITEM = 3           # arg0 = item, arg1 = quantidade -> AddBagItem()
 CMD_CHECK_SHINY = 4         # arg0 = personalidade, arg1 = OT ID -> IsMonShiny() (em gEnemyParty[0])
+CMD_SET_PARTY_MON = 5       # arg0 = espécie | nível << 16, arg1 = item segurado | slot << 16 -> nº no time
+CMD_ENABLE_NATIONAL_DEX = 6 # -> IsNationalPokedexEnabled()
+CMD_EVOLUTION_TARGET = 7    # arg0 = espécie | item << 16, arg1 = modo | nível << 8 | item de evolução << 16
+                            # -> GetEvolutionTargetSpecies() (Pokémon em gEnemyParty[0])
+
+# modos de GetEvolutionTargetSpecies (EVO_MODE_* de include/constants/pokemon.h)
+EVO_MODE_NORMAL, EVO_MODE_TRADE, EVO_MODE_ITEM_USE = 0, 1, 2
 
 MAILBOX_SYMBOL = "gTestMailbox"
 _ARG0, _RESULT, _DONE = 0x04, 0x0C, 0x10
@@ -46,3 +53,23 @@ class Mailbox:
             self.emu.frames(poll)
             spent += poll
         return self.emu.read_u32(self.addr + _RESULT)
+
+    # --- atalhos dos testes de evolução (Hack 3) ---------------------------------------
+    def set_party_mon(self, slot: int, species: int, level: int, held_item: int = 0) -> int:
+        """Põe o Pokémon em gPlayerParty[slot] (o jogador como OT, personalidade fixa nunca
+        shiny); devolve o nº de Pokémon no time. AssertionError se o jogo recusar."""
+        count = self.call(CMD_SET_PARTY_MON, species | level << 16, held_item | slot << 16)
+        assert count > slot, (f"SET_PARTY_MON recusado: espécie {species}, nível {level}, "
+                              f"item {held_item}, slot {slot} (time = {count})")
+        return count
+
+    def enable_national_dex(self) -> bool:
+        return bool(self.call(CMD_ENABLE_NATIONAL_DEX))
+
+    def evolution_target(self, species: int, mode: int, level: int = 36, held_item: int = 0,
+                         evolution_item: int = 0) -> int:
+        """GetEvolutionTargetSpecies() de um Pokémon montado em gEnemyParty[0] (0 = não evolui)."""
+        result = self.call(CMD_EVOLUTION_TARGET, species | held_item << 16,
+                           mode | level << 8 | evolution_item << 16)
+        assert result != 0xFFFFFFFF, f"EVOLUTION_TARGET recusado: espécie {species}, nível {level}"
+        return result
