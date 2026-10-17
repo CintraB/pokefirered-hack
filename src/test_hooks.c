@@ -89,17 +89,21 @@ static bool32 IsValidTestMon(u16 species, u8 level)
     return species != SPECIES_NONE && species < NUM_SPECIES && level != 0 && level <= MAX_LEVEL;
 }
 
-// Puts the mon in gPlayerParty[slot] (a filled slot or the first free one).
+// Puts the mon in gPlayerParty[slot] (a filled slot or the first free one). A nonzero
+// friendship replaces the species' base friendship (friendship evolutions).
 static u32 SetPartyMon(u32 arg0, u32 arg1)
 {
     u16 species = arg0 & 0xFFFF;
     u8 level = (arg0 >> 16) & 0xFF;
     u16 heldItem = arg1 & 0xFFFF;
     u8 slot = (arg1 >> 16) & 0xFF;
+    u8 friendship = arg1 >> 24;
 
     if (!IsValidTestMon(species, level) || slot >= PARTY_SIZE || slot > CalculatePlayerPartyCount())
         return 0;
     CreateTestMon(&gPlayerParty[slot], species, level, heldItem);
+    if (friendship != 0)
+        SetMonData(&gPlayerParty[slot], MON_DATA_FRIENDSHIP, &friendship);
     return CalculatePlayerPartyCount();
 }
 

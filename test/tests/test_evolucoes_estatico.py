@@ -136,3 +136,41 @@ def test_precos_dos_6_itens_iguais_aos_das_pedras():
     price = {i["itemId"]: i["price"] for i in data["items"]}
     assert {i: price[i] for i in SHOP_NEW_ITEMS} == {i: SHOP_PRICE for i in SHOP_NEW_ITEMS}
     assert {price[s] for s in SHOP_STONES} == {SHOP_PRICE}
+
+
+# --- sem a trava da Dex Nacional (decisão do Cintra) --------------------------------------------
+
+EVOLUTION_SCENE_C = (REPO_ROOT / "src" / "evolution_scene.c").read_text(encoding="utf-8")
+PARTY_MENU_C = (REPO_ROOT / "src" / "party_menu.c").read_text(encoding="utf-8")
+
+
+def _function(source: str, signature: str) -> str:
+    """Corpo de uma função C (da assinatura até a `}` na coluna 0)."""
+    start = source.index(signature + "\n{")   # a definição, não o protótipo
+    return source[start:source.index("\n}\n", start)]
+
+
+@pytest.mark.parametrize("task", ["static void Task_EvolutionScene(u8 taskId)",
+                                  "static void Task_TradeEvolutionScene(u8 taskId)"])
+def test_cena_de_evolucao_nao_cancela_especie_de_fora_de_kanto(task):
+    body = _function(EVOLUTION_SCENE_C, task)
+    assert "IsNationalPokedexEnabled" not in body
+    assert "SPECIES_MEW" not in body
+
+
+def test_pedra_de_evolucao_nao_e_recusada_sem_a_dex_nacional():
+    body = _function(PARTY_MENU_C, "static void CB2_DoUseItemAnim(void)")
+    assert "StartUseItemAnim_CantEvolve" not in body
+    assert "MonCanEvolve" not in PARTY_MENU_C
+    assert "KANTO_DEX_COUNT" not in PARTY_MENU_C
+
+
+def test_registro_na_pokedex_ao_evoluir_continua_pelo_numero_nacional():
+    """A cena marca vista/capturada pelo número nacional (cabe nas flags da Dex mesmo antes da
+    Dex Nacional: o vetor tem o tamanho da Nacional)."""
+    for task in ("static void Task_EvolutionScene(u8 taskId)",
+                 "static void Task_TradeEvolutionScene(u8 taskId)"):
+        body = _function(EVOLUTION_SCENE_C, task)
+        for flag in ("FLAG_SET_SEEN", "FLAG_SET_CAUGHT"):
+            assert (f"GetSetPokedexFlag(SpeciesToNationalPokedexNum(gTasks[taskId]."
+                    f"tPostEvoSpecies), {flag})") in body

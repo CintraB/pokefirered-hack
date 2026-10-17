@@ -3,25 +3,29 @@
 As regras (esteira/evolutions.py): Kadabra, Haunter, Machoke e Graveler evoluem no nível 37;
 Slowpoke e Poliwhirl (King's Rock), Onix e Scyther (Metal Coat), Seadra (Dragon Scale),
 Porygon (Up-Grade) e Clamperl (DeepSeaTooth/DeepSeaScale) evoluem em qualquer subida de nível
-a partir do 37 segurando o item, que não é consumido. Troca não evolui mais nenhum deles.
+a partir do 37 segurando o item, que não é consumido. Troca não evolui mais nenhum deles. E
+não há mais a trava da Dex Nacional: qualquer evolução (inclusive para espécies de fora de
+Kanto, como Steelix, Bellossom e Crobat) acontece em qualquer ponto do jogo.
 
-Ponto de partida: o .sav do fim do modo rápido (Centro de Viridian), como o `shiny`; o CLI
-abre uma sessão própria da ROM de teste para este cenário (`save_from="captura"`). Os
-atalhos da build de teste (esteira/hooks.py) só montam o Pokémon (espécie, nível, item
-segurado), dão itens à bolsa, ligam a Dex Nacional e consultam GetEvolutionTargetSpecies no
-modo troca. A SUBIDA DE NÍVEL é a de verdade: START > BOLSA > RARE CANDY > USAR > Pokémon,
-e a cena de evolução roda inteira (perguntas de golpe novo são recusadas: NÃO para esquecer
-um golpe, SIM para desistir). O Metal Coat do caso "passou do 37" é dado pela bolsa (DAR).
+Ponto de partida: o .sav do fim do modo rápido (Centro de Viridian, SEM a Dex Nacional), como o
+`shiny`; o CLI abre uma sessão própria da ROM de teste para este cenário
+(`save_from="captura"`). Os atalhos da build de teste (esteira/hooks.py) só montam o Pokémon
+(espécie, nível, item segurado, amizade), dão itens à bolsa e consultam
+GetEvolutionTargetSpecies no modo troca. A SUBIDA DE NÍVEL é a de verdade: START > BOLSA >
+RARE CANDY > USAR > Pokémon (a pedra também: SUN STONE > USAR), e a cena de evolução roda
+inteira (perguntas de golpe novo são recusadas: NÃO para esquecer um golpe, SIM para desistir).
+O Metal Coat do caso "passou do 37" é dado pela bolsa (DAR). Tudo sem a Dex Nacional:
 
-1. sem a Dex Nacional (como no save): os 4 sem item e o Slowpoke sem item (Slowbro) evoluem;
-   Onix + Metal Coat abre a cena, mas o jogo a cancela (regra original do FireRed: espécie de
-   fora de Kanto só com a Dex Nacional) e ele continua Onix segurando o item;
-2. atalho liga a Dex Nacional; os 8 casos com item evoluem e o item continua segurado;
+1. os 12 casos das regras evoluem (os 4 sem item; os 8 com item, que continua segurado) e o
+   Slowpoke 36 sem item vira Slowbro;
+2. de fora de Kanto por outros caminhos: Gloom + Sun Stone (pela bolsa) -> Bellossom e
+   Golbat com amizade alta + Rare Candy -> Crobat;
 3. Onix + King's Rock (item errado) e Clamperl sem item não evoluem;
-4. Onix 40 sem item sobe para 41 e continua Onix; recebe o Metal Coat pela bolsa; sobe para
-   42 e vira Steelix, ainda segurando o Metal Coat;
+4. Onix 39 sem item sobe para 40 e continua Onix; recebe o Metal Coat pela bolsa; sobe para
+   41 e vira Steelix, ainda segurando o Metal Coat (o exemplo do Cintra);
 5. modo troca devolve 0 para os 11, com e sem o item antigo (e conferências do atalho:
-   Water Stone ainda faz Poliwrath, Everstone ainda segura).
+   Water Stone ainda faz Poliwrath, Everstone ainda segura);
+6. no fim a Dex Nacional continua desligada.
 
 Telas antes/depois de cada cena: OUT/telas/evo_<alvo>_antes.png/_depois.png, comparadas com
 test/referencias/COMUM/ (diferença é só aviso).
@@ -60,6 +64,7 @@ PARTY_REPLACE_MOVE_YESNO = "Task_HandleReplaceMoveYesNoInput"     # esquecer um 
 PARTY_STOP_LEARNING_YESNO = "Task_HandleStopLearningMoveYesNoInput"  # desistir? -> SIM
 
 RARE_CANDIES = 30
+CROBAT_FRIENDSHIP = 250             # EVO_FRIENDSHIP pede >= 220
 CANDY_TIMEOUT = 5000                # Rare Candy + cena de evolução inteira (~1 000 quadros)
 EVO_POLL = 2
 
@@ -86,7 +91,8 @@ class EvolutionsScenario(CatchSaveScenario):
         """Nome dos itens que o cenário usa (o número, para qualquer outro)."""
         if item_id == 0:
             return "nada"
-        known = {r.item for r in RULES if r.item} | {"ITEM_RARE_CANDY", "ITEM_EVERSTONE"}
+        known = {r.item for r in RULES if r.item} | {"ITEM_RARE_CANDY", "ITEM_EVERSTONE",
+                                                      "ITEM_SUN_STONE"}
         names = {self.consts.item(n): n.removeprefix("ITEM_") for n in known}
         return names.get(item_id, f"item {item_id}")
 
@@ -104,15 +110,16 @@ class EvolutionsScenario(CatchSaveScenario):
         party = self.game.party()
         assert party, "save sem Pokémon no time"
         self.slot = min(len(party), 5)      # o 1º lugar livre (ou o último, com o time cheio)
-        for item, qty in (("ITEM_RARE_CANDY", RARE_CANDIES), ("ITEM_METAL_COAT", 1)):
+        for item, qty in (("ITEM_RARE_CANDY", RARE_CANDIES), ("ITEM_METAL_COAT", 1),
+                          ("ITEM_SUN_STONE", 1)):
             assert self.box.call(CMD_GIVE_ITEM, self.consts.item(item), qty) == 1, \
                 f"AddBagItem({item}, {qty}) falhou"
         self.menu.open_start_menu()
         self.menu.choose(STARTMENU_BAG)
         self.bag.wait_ready()
         return (f"CONTINUAR no Centro de Viridian; time de {len(party)}, Pokémon de teste no "
-                f"slot {self.slot}; {RARE_CANDIES} Rare Candy e 1 Metal Coat na bolsa; "
-                "Dex Nacional desligada")
+                f"slot {self.slot}; {RARE_CANDIES} Rare Candy, 1 Metal Coat e 1 Sun Stone na "
+                "bolsa; Dex Nacional desligada")
 
     # --- Rare Candy pelo menu, com a cena de evolução ------------------------------
     def _drive_evolution_scene(self, info: dict, shot: str | None) -> None:
@@ -139,17 +146,17 @@ class EvolutionsScenario(CatchSaveScenario):
         else:
             self.emu.frames(EVO_POLL)           # nada de botão na animação (B cancela)
 
-    def _rare_candy(self, shot: str | None = None) -> dict:
-        """Usa uma Rare Candy no Pokémon de teste pela bolsa (já aberta) e conduz o que vier
-        (subida de nível, golpes, cena de evolução) até a bolsa voltar."""
+    def _use_item(self, item_id: int, shot: str | None = None) -> dict:
+        """Usa o item (Rare Candy ou pedra) no Pokémon de teste pela bolsa (já aberta) e
+        conduz o que vier (subida de nível, golpes, cena de evolução) até a bolsa voltar."""
         info: dict = {"scene": False, "recusas": 0}
-        self.bag.select(self.candy)
+        self.bag.select(item_id)
         self.bag.use_selected()
         self.bag.choose_party_slot(self.slot)
         spent = 0
         while not self.bag.ready():
             if spent >= CANDY_TIMEOUT:
-                raise self.ctl.timeout_error("bolsa de volta depois da Rare Candy")
+                raise self.ctl.timeout_error(f"bolsa de volta depois de usar o item {item_id}")
             before = self.emu.frames(0)
             tasks = self._tasks()
             if EVO_TASK in tasks or self.game.callback2() == "CB2_EvolutionSceneUpdate":
@@ -169,29 +176,37 @@ class EvolutionsScenario(CatchSaveScenario):
 
     # --- casos ---------------------------------------------------------------------
     def _case(self, name: str, species: str, level: int, item: str | None, expect: str,
-              shot: str | None = None, set_mon: bool = True) -> None:
-        """Monta o Pokémon (ou usa o que está no slot), usa uma Rare Candy e confere espécie,
-        nível, item segurado, se a cena abriu e que nenhum golpe foi esquecido."""
+              shot: str | None = None, set_mon: bool = True, use: str = "ITEM_RARE_CANDY",
+              friendship: int = 0) -> None:
+        """Monta o Pokémon (ou usa o que está no slot), usa uma Rare Candy (ou a pedra `use`)
+        e confere espécie, nível, item segurado, o item usado gasto, se a cena abriu e que
+        nenhum golpe foi esquecido."""
         info: dict = {}
 
         def run() -> str:
             want_item, want_species = self._item(item), self._sp(expect)
+            used = self.consts.item(use)
+            want_level = level + 1 if used == self.candy else level
             if set_mon:
-                self.box.set_party_mon(self.slot, self._sp(species), level, want_item)
+                self.box.set_party_mon(self.slot, self._sp(species), level, want_item,
+                                       friendship)
             mon = self._mon()
             assert (mon.species, mon.level, mon.held_item) == (self._sp(species), level, want_item), \
                 f"Pokémon de teste {self._name(mon.species)} nv {mon.level} item {mon.held_item}"
             moves_before = {m for m in mon.moves if m}
-            info.update(self._rare_candy(shot))
+            stock = self.game.bag_quantity(used)
+            info.update(self._use_item(used, shot))
             after = self._mon()
             evolved = want_species != mon.species
             detail = (f"{self._name(mon.species)} nv {level} segurando "
-                      f"{self._item_name(want_item)} -> "
+                      f"{self._item_name(want_item)}, {self._item_name(used)} -> "
                       f"{self._name(after.species)} nv {after.level} segurando "
                       f"{self._item_name(after.held_item)}; cena de evolução: "
                       f"{'sim' if info['scene'] else 'não'}; perguntas de golpe recusadas: "
                       f"{info['recusas']}")
-            assert after.level == level + 1, f"nível {after.level}, esperava {level + 1}: {detail}"
+            assert self.game.bag_quantity(used) == stock - 1, \
+                f"{self._item_name(used)} na bolsa: {stock} -> {self.game.bag_quantity(used)}"
+            assert after.level == want_level, f"nível {after.level}, esperava {want_level}: {detail}"
             assert after.species == want_species, f"esperava {expect}: {detail}"
             assert after.held_item == want_item, f"item segurado mudou: {detail}"
             if evolved:
@@ -218,15 +233,14 @@ class EvolutionsScenario(CatchSaveScenario):
         assert self.game.bag_quantity(coat) == qty - 1, "o Metal Coat não saiu da bolsa"
         return f"{self._name(mon.species)} nv {mon.level} agora segura o Metal Coat (pela bolsa)"
 
-    def _enable_national_dex(self) -> str:
-        assert self.box.enable_national_dex(), "IsNationalPokedexEnabled() = 0 depois do atalho"
-        assert self._national_dex(), "FLAG_SYS_NATIONAL_DEX desligada depois do atalho"
-        return "Dex Nacional ligada (IsNationalPokedexEnabled() = 1)"
+    def _still_no_national_dex(self) -> str:
+        assert not self._national_dex(), "a Dex Nacional foi ligada durante o cenário"
+        return ("Dex Nacional continua desligada: todas as evoluções acima aconteceram sem ela "
+                "(sem a trava original de espécies de fora de Kanto)")
 
     def _trade_never_evolves(self) -> str:
         """GetEvolutionTargetSpecies(mon, EVO_MODE_TRADE) = 0 para os 11, sem item e com o
-        item que antes os fazia evoluir na troca (Dex Nacional ligada: no jogo original todos
-        evoluiriam)."""
+        item que antes os fazia evoluir na troca."""
         wrong, checked = [], 0
         for species in SPECIES:
             for item in (None, *OLD_TRADE_ITEMS[species]):
@@ -274,40 +288,41 @@ class EvolutionsScenario(CatchSaveScenario):
         try:
             self._flow("evolucoes: CONTINUAR com o save do modo rápido na build de teste",
                        self._start)
-            # 1. sem a Dex Nacional
-            for rule in RULES[:4]:
-                self._case(f"{self._label(rule)} (sem item, sem Dex Nacional)",
-                           rule.species, HOLD_ITEM_LEVEL - 1, None, rule.target,
-                           shot=f"evo_{rule.slug}")
+            # 1. as regras, sem a Dex Nacional (como no save)
+            for rule in RULES:
+                kept = " (item continua segurado)" if rule.item else ""
+                self._case(f"{self._label(rule)}{kept}, sem Dex Nacional", rule.species,
+                           HOLD_ITEM_LEVEL - 1, rule.item, rule.target, shot=f"evo_{rule.slug}")
             self._case("Slowpoke 36 sem item -> Rare Candy -> Slowbro", "SPECIES_SLOWPOKE",
                        HOLD_ITEM_LEVEL - 1, None, "SPECIES_SLOWBRO", shot="evo_slowbro")
-            self._case("sem a Dex Nacional, Onix 36 + Metal Coat: a cena cancela (Steelix é "
-                       "de fora de Kanto) e continua Onix com o item", "SPECIES_ONIX",
-                       HOLD_ITEM_LEVEL - 1, "ITEM_METAL_COAT", "SPECIES_ONIX",
-                       shot="evo_steelix_sem_dex")
-            # 2. com a Dex Nacional
-            self._flow("evolucoes: atalho liga a Dex Nacional", self._enable_national_dex)
-            for rule in RULES[4:]:
-                self._case(f"{self._label(rule)} (item continua segurado)", rule.species,
-                           HOLD_ITEM_LEVEL - 1, rule.item, rule.target, shot=f"evo_{rule.slug}")
+            # 2. fora de Kanto por pedra e por amizade, sem a Dex Nacional
+            self._case("Gloom + Sun Stone (pela bolsa) -> Bellossom, sem Dex Nacional",
+                       "SPECIES_GLOOM", 30, None, "SPECIES_BELLOSSOM", shot="evo_bellossom",
+                       use="ITEM_SUN_STONE")
+            self._case(f"Golbat 30 com amizade {CROBAT_FRIENDSHIP} -> Rare Candy -> Crobat, "
+                       "sem Dex Nacional", "SPECIES_GOLBAT", 30, None, "SPECIES_CROBAT",
+                       shot="evo_crobat", friendship=CROBAT_FRIENDSHIP)
             # 3. item errado / sem item
             self._case("Onix 36 + King's Rock (item errado) -> Rare Candy -> continua Onix",
                        "SPECIES_ONIX", HOLD_ITEM_LEVEL - 1, "ITEM_KINGS_ROCK", "SPECIES_ONIX")
             self._case("Clamperl 36 sem item -> Rare Candy -> continua Clamperl",
                        "SPECIES_CLAMPERL", HOLD_ITEM_LEVEL - 1, None, "SPECIES_CLAMPERL")
-            # 4. passou do 37 sem item
-            self._case("Onix 40 sem item -> Rare Candy -> continua Onix no 41", "SPECIES_ONIX",
-                       40, None, "SPECIES_ONIX")
-            self._flow("evolucoes: Onix 41 recebe o Metal Coat pela bolsa (DAR)",
+            # 4. passou do 37 sem item (o exemplo do Cintra: Onix 40 + Metal Coat -> 41 Steelix)
+            self._case("Onix 39 sem item -> Rare Candy -> continua Onix no 40", "SPECIES_ONIX",
+                       39, None, "SPECIES_ONIX")
+            self._flow("evolucoes: Onix 40 recebe o Metal Coat pela bolsa (DAR)",
                        self._give_metal_coat)
-            self._case("Onix 41 + Metal Coat -> Rare Candy -> Steelix no 42, ainda com o "
-                       "Metal Coat", "SPECIES_ONIX", 41, "ITEM_METAL_COAT", "SPECIES_STEELIX",
-                       shot="evo_steelix_nivel42", set_mon=False)
+            self._case("Onix 40 + Metal Coat -> Rare Candy -> Steelix no 41, ainda com o "
+                       "Metal Coat", "SPECIES_ONIX", 40, "ITEM_METAL_COAT", "SPECIES_STEELIX",
+                       shot="evo_steelix_nivel41", set_mon=False)
             # 5. troca
             self.suite.run("evolucoes: atalho de consulta responde (nível, Everstone, pedra)",
                            self._hook_sanity)
             self.suite.run("evolucoes: troca não evolui nenhum dos 11 (com e sem o item antigo)",
                            self._trade_never_evolves)
+            # 6. tudo isso sem a Dex Nacional
+            self.suite.run("evolucoes: Dex Nacional continua desligada no fim",
+                           self._still_no_national_dex)
             self._flow("evolucoes: fecha a bolsa e volta ao jogo", self._close_bag)
         except Abort:
             pass

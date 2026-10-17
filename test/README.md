@@ -141,7 +141,7 @@ ROM. Sem o log, só o uso de memória é conferido (o terminal avisa). Deixa os 
 | `floresta_brock` | ROM jogável | Floresta de Viridian, prêmios dos treinadores, Brock (adaptativo), tênis de corrida e ritmo de corrida |
 | `master` | sem emulador | O branch `master` (pret original) ainda compila idêntico ao original (SHA1), numa worktree temporária em `/tmp` |
 | `shiny` | **ROM de teste** | Shiny Charm e taxa de shiny com/sem o charm (usa atalhos da build de teste) |
-| `evolucoes` | **ROM de teste** | Hack 3, fim das evoluções por troca: Rare Candy pela bolsa e a cena de evolução de verdade para os 11 Pokémon (nível 37, com/sem item segurado), item errado, "passou do 37 sem item" e a troca que não evolui mais (veja abaixo) |
+| `evolucoes` | **ROM de teste** | Hack 3, fim das evoluções por troca e da trava da Dex Nacional: Rare Candy/pedra pela bolsa e a cena de evolução de verdade para os 11 Pokémon (nível 37, com/sem item segurado), Bellossom e Crobat, item errado, "passou do 37 sem item" e a troca que não evolui mais, tudo sem a Dex Nacional (veja abaixo) |
 
 Depende da ROM jogável da raiz (se não existir, vira falha `emulador/rom-playable`). Não grava
 em `roms/`: o resultado fica em `test/out/<data-hora>/`. Rode com o terminal aberto por ~13
@@ -153,26 +153,29 @@ Nacional e ganha o Shiny Charm), e `--only evolucoes` roda só ele (~30 s).
 
 **O cenário `evolucoes`** (`test/esteira/scenarios/full_evolutions.py`; as regras ficam numa
 tabela só, `test/esteira/evolutions.py`). Os atalhos da build de teste só montam o Pokémon no
-time (espécie, nível, item segurado), dão Rare Candies e ligam a Dex Nacional; a subida de
-nível é a de verdade (START > BOLSA > RARE CANDY > USAR) e a cena de evolução roda inteira. Se
-o jogo perguntar sobre golpe novo, o cenário recusa (NÃO para esquecer um golpe, SIM para
-desistir) e confere que nenhum golpe foi esquecido. Ordem:
+time (espécie, nível, item segurado, amizade) e dão Rare Candies, Metal Coat e Sun Stone; a
+subida de nível é a de verdade (START > BOLSA > RARE CANDY > USAR; a pedra também, pela bolsa)
+e a cena de evolução roda inteira. Se o jogo perguntar sobre golpe novo, o cenário recusa (NÃO
+para esquecer um golpe, SIM para desistir) e confere que nenhum golpe foi esquecido. Tudo
+**sem a Dex Nacional** (como no save): o hack tirou a trava original do FireRed que cancelava
+evoluções para espécies de fora de Kanto (Crobat, Steelix...) antes dela. Ordem:
 
-1. sem a Dex Nacional (como no save): Kadabra, Haunter, Machoke e Graveler 36 → 37 evoluem;
-   Slowpoke 36 sem item vira Slowbro; Onix 36 com Metal Coat abre a cena, mas **o jogo cancela**
-   (regra original do FireRed: espécie de fora de Kanto, como Steelix, só com a Dex Nacional) e
-   ele continua Onix com o item;
-2. com a Dex Nacional (atalho): os 8 casos com item (Slowking, Politoed, Steelix, Scizor,
-   Kingdra, Porygon2, Huntail e Gorebyss) evoluem e o item continua segurado;
+1. os 12 casos das regras evoluem: Kadabra, Haunter, Machoke e Graveler 36 → 37; Slowking,
+   Politoed, Steelix, Scizor, Kingdra, Porygon2, Huntail e Gorebyss, com o item continuando
+   segurado; e Slowpoke 36 sem item vira Slowbro;
+2. de fora de Kanto por outros caminhos: Gloom + Sun Stone (pela bolsa) → Bellossom; Golbat com
+   amizade 250 + Rare Candy → Crobat;
 3. Onix 36 com King's Rock (item errado) e Clamperl 36 sem item não evoluem;
-4. Onix 40 sem item sobe para 41 e continua Onix; recebe o Metal Coat pela bolsa (DAR); sobe
-   para 42 e vira Steelix, ainda segurando o Metal Coat;
-5. `GetEvolutionTargetSpecies` no modo troca devolve 0 para os 11, com e sem o item antigo.
+4. Onix 39 sem item sobe para 40 e continua Onix; recebe o Metal Coat pela bolsa (DAR); sobe
+   para 41 e vira Steelix, ainda segurando o Metal Coat;
+5. `GetEvolutionTargetSpecies` no modo troca devolve 0 para os 11, com e sem o item antigo;
+6. no fim a Dex Nacional continua desligada.
 
 Telas antes/depois de cada cena: `telas/evo_<alvo>_antes.png` e `_depois.png`, comparadas com
 `test/referencias/COMUM/` (não dependem do inicial). O teste estático
 `test/tests/test_evolucoes_estatico.py` (pytest, sem emulador) confere a tabela de evoluções, o
-método novo no C e os 6 itens à venda na Celadon Dept. Store 4F por 2100.
+método novo no C, que a trava da Dex Nacional não voltou (cena de evolução normal e de troca,
+pedras no menu de Pokémon) e os 6 itens à venda na Celadon Dept. Store 4F por 2100.
 
 ### `make test-approve`
 

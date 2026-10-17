@@ -58,14 +58,14 @@ OLD_TRADE_ITEMS: dict[str, tuple[str, ...]] = {
     s: tuple(r.item for r in RULES if r.species == s and r.item) for s in SPECIES}
 
 # Telas da cena de evolução gravadas pelo cenário `evolucoes` (OUT/telas/<nome>_antes.png e
-# _depois.png): uma por evolução das regras, mais o Slowbro (Slowpoke sem item), o Steelix
-# cancelado sem a Dex Nacional e o Steelix do "passou do 37 sem item" (nível 42). Não dependem
+# _depois.png): uma por evolução das regras, mais o Slowbro (Slowpoke sem item), o Bellossom
+# (Sun Stone), o Crobat (amizade) e o Steelix do "passou do 37 sem item" (nível 41). Não dependem
 # do inicial: as referências ficam em test/referencias/COMUM/ (refs.py).
 EVO_SHOTS = tuple(f"evo_{r.slug}" for r in RULES) + (
-    "evo_slowbro", "evo_steelix_sem_dex", "evo_steelix_nivel42")
+    "evo_slowbro", "evo_bellossom", "evo_crobat", "evo_steelix_nivel41")
 SCREEN_POINTS = tuple(f"{name}_{when}" for name in EVO_SHOTS for when in ("antes", "depois"))
 
-SHOP_LABEL ="CeladonCity_DepartmentStore_4F_Items"
+SHOP_LABEL = "CeladonCity_DepartmentStore_4F_Items"
 SHOP_SCRIPT = Path("data/maps/CeladonCity_DepartmentStore_4F/scripts.inc")
 SHOP_STONES = ("ITEM_FIRE_STONE", "ITEM_THUNDER_STONE", "ITEM_WATER_STONE", "ITEM_LEAF_STONE")
 SHOP_NEW_ITEMS = ("ITEM_KINGS_ROCK", "ITEM_METAL_COAT", "ITEM_DRAGON_SCALE", "ITEM_UP_GRADE",
