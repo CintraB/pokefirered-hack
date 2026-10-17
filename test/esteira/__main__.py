@@ -203,13 +203,14 @@ def _run_scenarios(group: list[ScenarioSpec], ctx: ScenarioContext, only: str | 
     chain = _chain(group, only, ctx)
     suite = ctx.suite
     out = Path(ctx.out_dir)
+    for spec in chain:   # produtor na cadeia que vai rodar: o .sav antigo não vale mais,
+        if spec.name in bridges:   # mesmo que a cadeia pare antes dele
+            for path in _bridge_paths(out, spec.name):
+                path.unlink(missing_ok=True)
     for pos, spec in enumerate(chain):
         before = sum(1 for r in suite.results if r.status == "falha")
         print(f"[rodando] {spec.name}...", flush=True)
         start = time.monotonic()
-        if spec.name in bridges:   # vai ser refeito agora: o .sav antigo não vale
-            for path in _bridge_paths(out, spec.name):
-                path.unlink(missing_ok=True)
         try:
             spec.run(ctx)
         except Exception as exc:  # noqa: BLE001 - qualquer erro vira falha no relatório
@@ -312,11 +313,14 @@ def run_mode(args: argparse.Namespace) -> int:
         groups = _groups(specs, args.only)
         scheduled = {s.name for _, group in groups for s in group}
         producers = _save_producers()
-        # o .sav de outra execução não vale se o produtor está nesta: mesmo que ele nem chegue
-        # a rodar (falha antes, ROM ausente), o grupo de teste não pode partir do .sav velho
-        for producer in producers & scheduled:
-            for path in _bridge_paths(out, producer):
-                path.unlink(missing_ok=True)
+        # Execução inteira: o .sav de outra execução não vale se o produtor está nesta, mesmo
+        # que ele nem chegue a rodar (falha antes, ROM ausente) — o grupo de teste não pode
+        # partir do .sav velho. Com --only o grupo jogável pode recomeçar de um checkpoint
+        # depois do produtor: aí quem apaga é _run_scenarios, pela cadeia que vai rodar mesmo.
+        if args.only is None:
+            for producer in producers & scheduled:
+                for path in _bridge_paths(out, producer):
+                    path.unlink(missing_ok=True)
         for kind, group in groups:
             if kind == HOST:
                 host = ScenarioContext(emu=None, game=None, controller=None, nav=None,

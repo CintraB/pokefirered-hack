@@ -435,3 +435,36 @@ def test_falha_antes_do_produtor_apaga_o_sav_antigo_e_o_shiny_nao_roda(env, monk
     assert env.ran == ["a"]
     assert not (env.tmp / "out" / "cap.sav").exists()
     assert "[aviso] cenario/shiny: não rodou" in capsys.readouterr().out
+
+
+def test_only_de_cenario_depois_do_produtor_com_checkpoint_mantem_a_ponte(env, monkeypatch):
+    """`--only pc` recomeça do checkpoint e não roda o `cap`: o cap.sav válido da execução
+    anterior continua, e um `--only shiny` depois parte dele."""
+    playable = [env.spec("a"), env.spec("cap", needs="x"), env.spec("pc", needs="save")]
+    tests = [env.spec("shiny", rom=TEST, save_from="cap")]
+    set_scenarios(monkeypatch, playable, tests)
+    assert main(env.argv("completo", "--starter", "CHARMANDER")) == 0
+    bridge = env.tmp / "out" / "cap.sav"
+    assert bridge.read_text() == "jogavel.gba:a,cap"
+    env.ran.clear()
+    env.checkpoints = {"save"}
+    assert main(env.argv("completo", "--starter", "CHARMANDER", "--only", "pc")) == 0
+    assert env.ran == ["pc"] and env.restored == ["save"]
+    assert bridge.read_text() == "jogavel.gba:a,cap"
+    env.ran.clear()
+    assert main(env.argv("completo", "--only", "shiny")) == 0
+    assert env.ran == ["shiny"] and env.loaded_saves[-1] == "jogavel.gba:a,cap"
+
+
+def test_only_que_reroda_o_produtor_do_boot_e_falha_antes_apaga_a_ponte(env, monkeypatch):
+    """Sem checkpoint, `--only pc` roda a cadeia do boot: o `cap` vai rodar, então o cap.sav
+    velho não vale mais, mesmo que a cadeia pare antes dele."""
+    playable = [env.spec("a"), env.spec("cap", needs="x"), env.spec("pc", needs="save")]
+    set_scenarios(monkeypatch, playable, [env.spec("shiny", rom=TEST, save_from="cap")])
+    assert main(env.argv("completo", "--starter", "CHARMANDER")) == 0
+    env.ran.clear()
+    set_scenarios(monkeypatch, [env.spec("a", effect=failing)] + playable[1:],
+                  [env.spec("shiny", rom=TEST, save_from="cap")])
+    assert main(env.argv("completo", "--starter", "CHARMANDER", "--only", "pc")) == 1
+    assert env.ran == ["a"]
+    assert not (env.tmp / "out" / "cap.sav").exists()
