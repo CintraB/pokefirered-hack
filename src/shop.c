@@ -596,26 +596,33 @@ static void BuyMenuPrintItemDescriptionAndShowItemIcon(s32 item, bool8 onInit, s
     }
 }
 
-// Prices up to 5 digits (the Destiny Knot costs 10000, Hack 6), right-aligned: the column starts
-// one digit further left than the original 4-digit one (0x69).
+// Prices up to 5 digits (the Destiny Knot costs 10000, Hack 6). Up to 4 digits they print as in
+// the original game (padded to 4, at 0x69); a 5-digit price starts one digit further left, so
+// all of them end at the same column.
 #define SHOP_PRICE_DIGITS 5
-#define SHOP_PRICE_X (0x69 - SHOP_PRICE_DIGIT_WIDTH)
+#define SHOP_PRICE_X 0x69
 #define SHOP_PRICE_DIGIT_WIDTH 6
 
 static void BuyMenuPrintPriceInList(u8 windowId, u32 item, u8 y)
 {
-    s32 x;
+    s32 x, padding;
     u8 *loc;
 
     if (item != INDEX_CANCEL)
     {
         ConvertIntToDecimalStringN(gStringVar1, ItemId_GetPrice(item), STR_CONV_MODE_LEFT_ALIGN, SHOP_PRICE_DIGITS);
-        x = SHOP_PRICE_DIGITS - StringLength(gStringVar1);
+        padding = SHOP_PRICE_DIGITS - 1 - StringLength(gStringVar1);
+        x = SHOP_PRICE_X;
+        if (padding < 0)
+        {
+            x -= SHOP_PRICE_DIGIT_WIDTH * -padding;
+            padding = 0;
+        }
         loc = gStringVar4;
-        while (x-- != 0)
+        while (padding-- != 0)
             *loc++ = 0;
         StringExpandPlaceholders(loc, gText_PokedollarVar1);
-        BuyMenuPrint(windowId, FONT_SMALL, gStringVar4, SHOP_PRICE_X, y, 0, 0, TEXT_SKIP_DRAW, 1);
+        BuyMenuPrint(windowId, FONT_SMALL, gStringVar4, x, y, 0, 0, TEXT_SKIP_DRAW, 1);
     }
 }
 
