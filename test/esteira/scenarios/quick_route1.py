@@ -19,21 +19,14 @@ import sys
 import time
 
 from ..battle import OUTCOME_NAMES, BattleDriver
-from ..emu import KEY_A, KEY_B, KEY_UP
+from ..emu import KEY_A, KEY_UP
 from ..healthbox import HealthboxReader
-from ..nav import DIRECTIONS
 from ..result import Result
 from ..rotation import STARTERS
 from . import REPO_ROOT, ScenarioContext, open_context
 from .base import Abort, Scenario, print_summary
+from .pace import WALK_FRAMES_PER_TILE, measure_frames_per_tile
 from .quick_opening import run_opening
-
-# Ritmo do jogador movido por input (src/event_object_movement.c: sSpeedPlayerWalkStepFuncs
-# e sSpeedPlayerRunStepFuncs); medido por mudança de tile em player_xy().
-WALK_FRAMES_PER_TILE = 11
-RUN_FRAMES_PER_TILE = 5
-PACE_STEPS = 5              # intervalos medidos (6 mudanças de tile seguidas)
-PACE_TIMEOUT = 300
 
 # Coordenadas tiradas de data/maps/*/map.json e dos layouts (grades conferidas com nav.py).
 LAB_EXIT = (6, 11)                  # laboratório: warps em (5..7, 12), sai com "down"
@@ -219,70 +212,35 @@ class Route1Scenario(Scenario):
         raise AssertionError(f"nenhum selvagem em {MAX_ENCOUNTER_WALKS} idas e voltas na grama")
 
     # --- cronômetro de passos ------------------------------------------------------
-    def _measure_pace(self, direction: str, run: bool) -> list[int]:
-        """Segura a direção (com B se `run`) e devolve os quadros entre mudanças de tile."""
-        self.ctl.wait_overworld_idle()
-        mask = DIRECTIONS[direction][2] | (KEY_B if run else 0)
-        last = self.game.player_xy()
-        changes: list[int] = []
-        frame = 0
-        self.emu.keys(mask)
-        try:
-            while len(changes) < PACE_STEPS + 1:
-                if frame >= PACE_TIMEOUT:
-                    raise self.ctl.timeout_error(f"passos {direction} para o cronômetro")
-                self.emu.frames(1)
-                frame += 1
-                if self.ctl.script_active() or self.game.in_battle():
-                    raise AssertionError("script/batalha durante a medição dos passos")
-                pos = self.game.player_xy()
-                if pos != last:
-                    changes.append(frame)
-                    last = pos
-        finally:
-            self.emu.keys(0)
-        self.ctl.wait_until(self.nav._player_still, 60, "fim do passo medido")
-        return [b - a for a, b in zip(changes, changes[1:])]
-
     def _leave_lab(self) -> None:
         self._walk(*LAB_EXIT)
         self._warp("down", "MAP_PALLET_TOWN")
         self._walk(*PACE_START)
 
     def phase_pace(self) -> None:
+        """Andar por input a 11 quadros/tile. Correr (5) não é medido aqui: o tênis só vem
+        em Pewter e o modo completo (Task 11) mede com measure_run_frames_per_tile()."""
         self._flow("rota1: saída do laboratório", self._leave_lab)
 
         def check_walk() -> str:
-            steps = self._measure_pace("left", run=False)
+            steps = measure_frames_per_tile(self.ctx, "left")
             assert steps and all(d == WALK_FRAMES_PER_TILE for d in steps), (
                 f"andando: {steps} quadros/tile, esperava {WALK_FRAMES_PER_TILE}")
             return f"{len(steps)} passos andando: {steps} quadros/tile"
 
         self.suite.run(f"rota1: andar por input a {WALK_FRAMES_PER_TILE} quadros/tile",
                        check_walk)
-
-        run_name = f"rota1: correr (B segurado) a {RUN_FRAMES_PER_TILE} quadros/tile"
         if self.game.flag(self.consts.flag("FLAG_SYS_B_DASH")):
-            def check_run() -> str:
-                steps = self._measure_pace("right", run=True)
-                assert steps and all(d == RUN_FRAMES_PER_TILE for d in steps), (
-                    f"correndo: {steps} quadros/tile, esperava {RUN_FRAMES_PER_TILE}")
-                return f"{len(steps)} passos correndo: {steps} quadros/tile"
-            self.suite.run(run_name, check_run)
             return
 
         def check_b_without_shoes() -> str:
-            steps = self._measure_pace("right", run=True)
+            steps = measure_frames_per_tile(self.ctx, "right", run=True)
             assert steps and all(d == WALK_FRAMES_PER_TILE for d in steps), (
                 f"sem o tênis, B segurado: {steps} quadros/tile, esperava {WALK_FRAMES_PER_TILE}")
             return f"{len(steps)} passos com B segurado: {steps} quadros/tile"
 
         self.suite.run("rota1: sem o tênis de corrida, B segurado anda a "
                        f"{WALK_FRAMES_PER_TILE} quadros/tile", check_b_without_shoes)
-        self.suite.add(Result(run_name, "aviso", (
-            "não medido: FLAG_SYS_B_DASH desligada nesta etapa — o tênis de corrida só é "
-            "entregue em Pewter (data/maps/PewterCity/scripts.inc) e o modo rápido não "
-            "escreve na RAM")))
 
     # --- Rota 1: vitória com HP conferido e fuga -----------------------------------
     def _fight_watching_hp(self) -> str:
@@ -321,9 +279,9 @@ class Route1Scenario(Scenario):
                   f"(antes, depois, mostrado): {hits}")
         if wrong_start or wrong_hits:
             return Result(name, "falha", f"healthbox diverge do HP do time — {detail}", images)
-        if not hits:
-            return Result(name, "aviso", f"nenhum golpe recebido em {len(starts)} batalha(s); "
-                                         f"só o início foi conferido — {detail}", images)
+        if not hits:   # sem golpe recebido a barra não foi conferida: não pode passar como ok
+            return Result(name, "falha", f"nenhum golpe recebido em {len(starts)} batalha(s); "
+                                         f"a barra não pôde ser conferida — {detail}", images)
         return Result(name, "ok", detail, images)
 
     def _flee(self) -> str:
@@ -392,11 +350,14 @@ class Route1Scenario(Scenario):
         self._warp(None, "MAP_PALLET_TOWN_PROFESSOR_OAKS_LAB")
 
     def _deliver_parcel(self) -> str:
+        consts, game = self.consts, self.game
+        ball = consts.item("ITEM_POKE_BALL")
+        assert not game.flag(consts.flag("FLAG_SYS_POKEDEX_GET")), "Pokédex já recebida antes"
+        assert game.bag_quantity(ball) == 0, "já havia Poké Balls antes da entrega"
         self._walk(*OAK_FRONT)
         self._talk(KEY_UP, "cena da Pokédex", DEX_SCENE_TIMEOUT)
-        consts, game = self.consts, self.game
         dex = game.flag(consts.flag("FLAG_SYS_POKEDEX_GET"))
-        balls = game.bag_quantity(consts.item("ITEM_POKE_BALL"))
+        balls = game.bag_quantity(ball)
         parcel = game.bag_quantity(consts.item("ITEM_OAKS_PARCEL"))
         assert dex, "FLAG_SYS_POKEDEX_GET desligada depois de falar com o Oak"
         assert parcel == 0, f"a encomenda continua na bolsa (x{parcel})"
