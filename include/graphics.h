@@ -3083,6 +3083,8 @@ extern const u32 gItemIcon_SilverPowder[];
 extern const u32 gItemIconPalette_SilverPowder[];
 extern const u32 gItemIcon_AmuletCoin[];
 extern const u32 gItemIconPalette_AmuletCoin[];
+extern const u32 gItemIcon_ShinyCharm[];
+extern const u32 gItemIconPalette_ShinyCharm[];
 extern const u32 gItemIcon_CleanseTag[];
 extern const u32 gItemIconPalette_CleanseTag[];
 extern const u32 gItemIcon_SoulDew[];

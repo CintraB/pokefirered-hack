@@ -102,6 +102,16 @@ PokedexRating_Text_YouveCompletedDex::
 	.string "It's magnificent!\n"
 	.string "Truly, this is a fantastic feat!$"
 
+PokedexRating_Text_TakeShinyCharm::
+	.string "As thanks for all your hard work,\n"
+	.string "I want you to have this.$"
+
+PokedexRating_Text_ShinyCharmExplanation::
+	.string "That SHINY CHARM is said to make\n"
+	.string "shiny POKéMON appear more often.\p"
+	.string "Rare, sparkling POKéMON are out\n"
+	.string "there waiting for you, {PLAYER}!$"
+
 PokedexRating_Text_Wroooaaarrr::
 	.string "Wroooooooaaaaaarrrr!$"
 

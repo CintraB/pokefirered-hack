@@ -1848,34 +1848,49 @@ void UpdateHealthboxAttribute(u8 healthboxSpriteId, struct Pokemon *mon, u8 elem
 
 s32 MoveBattleBar(u8 battlerId, u8 healthboxSpriteId, u8 whichBar, u8 unused)
 {
-    s32 currentBarValue;
+    s32 currentBarValue = -1;
+    // Bars move two steps on every other frame, ~1.5x the original speed
+    u8 steps = (gMain.vblankCounter2 & 1) ? 2 : 1;
+    u8 step;
 
-    if (whichBar == HEALTH_BAR)
+    for (step = 0; step < steps; step++)
     {
-        currentBarValue = CalcNewBarValue(gBattleSpritesDataPtr->battleBars[battlerId].maxValue,
-                                          gBattleSpritesDataPtr->battleBars[battlerId].oldValue,
-                                          gBattleSpritesDataPtr->battleBars[battlerId].receivedValue,
-                                          &gBattleSpritesDataPtr->battleBars[battlerId].currValue,
-                                          B_HEALTHBAR_NUM_TILES,
-                                          1);
-    }
-    else // exp bar
-    {
-        u16 increment = GetReceivedValueInPixels(gBattleSpritesDataPtr->battleBars[battlerId].oldValue,
-                                                   gBattleSpritesDataPtr->battleBars[battlerId].receivedValue,
-                                                   gBattleSpritesDataPtr->battleBars[battlerId].maxValue,
-                                                   B_EXPBAR_NUM_TILES);
+        s32 barValue;
 
-        if (increment == 0)
-            increment = 1;
-        increment = abs(gBattleSpritesDataPtr->battleBars[battlerId].receivedValue / increment);
+        if (whichBar == HEALTH_BAR)
+        {
+            barValue = CalcNewBarValue(gBattleSpritesDataPtr->battleBars[battlerId].maxValue,
+                                              gBattleSpritesDataPtr->battleBars[battlerId].oldValue,
+                                              gBattleSpritesDataPtr->battleBars[battlerId].receivedValue,
+                                              &gBattleSpritesDataPtr->battleBars[battlerId].currValue,
+                                              B_HEALTHBAR_NUM_TILES,
+                                              1);
+        }
+        else // exp bar
+        {
+            u16 increment = GetReceivedValueInPixels(gBattleSpritesDataPtr->battleBars[battlerId].oldValue,
+                                                       gBattleSpritesDataPtr->battleBars[battlerId].receivedValue,
+                                                       gBattleSpritesDataPtr->battleBars[battlerId].maxValue,
+                                                       B_EXPBAR_NUM_TILES);
 
-        currentBarValue = CalcNewBarValue(gBattleSpritesDataPtr->battleBars[battlerId].maxValue,
-                                          gBattleSpritesDataPtr->battleBars[battlerId].oldValue,
-                                          gBattleSpritesDataPtr->battleBars[battlerId].receivedValue,
-                                          &gBattleSpritesDataPtr->battleBars[battlerId].currValue,
-                                          B_EXPBAR_NUM_TILES,
-                                          increment);
+            if (increment == 0)
+                increment = 1;
+            increment = abs(gBattleSpritesDataPtr->battleBars[battlerId].receivedValue / increment);
+
+            barValue = CalcNewBarValue(gBattleSpritesDataPtr->battleBars[battlerId].maxValue,
+                                              gBattleSpritesDataPtr->battleBars[battlerId].oldValue,
+                                              gBattleSpritesDataPtr->battleBars[battlerId].receivedValue,
+                                              &gBattleSpritesDataPtr->battleBars[battlerId].currValue,
+                                              B_EXPBAR_NUM_TILES,
+                                              increment);
+        }
+
+        // A finished bar on the extra step reports -1 next frame, so the final value is shown first
+        if (barValue == -1 && step != 0)
+            break;
+        currentBarValue = barValue;
+        if (barValue == -1)
+            break;
     }
 
     if (whichBar == EXP_BAR || (whichBar == HEALTH_BAR && !gBattleSpritesDataPtr->battlerData[battlerId].hpNumbersNoBars))

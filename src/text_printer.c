@@ -112,6 +112,14 @@ bool16 AddTextPrinter(struct TextPrinterTemplate *textSubPrinter, u8 speed, void
     return TRUE;
 }
 
+// The "Fast" text speed option prints instantly: printers at full speed render
+// every character up to the next pause (button wait, scroll, delay) in one frame.
+static bool8 IsInstantTextPrinter(struct TextPrinter *textPrinter)
+{
+    return textPrinter->textSpeed == 0
+        && gSaveBlock2Ptr->optionsTextSpeed == OPTIONS_TEXT_SPEED_FAST;
+}
+
 void RunTextPrinters(void)
 {
     int i;
@@ -121,6 +129,17 @@ void RunTextPrinters(void)
         if (sTextPrinters[i].active)
         {
             u16 renderCmd = RenderFont(&sTextPrinters[i]);
+
+            if (renderCmd == RENDER_PRINT && IsInstantTextPrinter(&sTextPrinters[i]))
+            {
+                u16 nextCmd;
+
+                while ((nextCmd = RenderFont(&sTextPrinters[i])) == RENDER_PRINT)
+                    ;
+                if (nextCmd == RENDER_FINISH)
+                    sTextPrinters[i].active = FALSE;
+            }
+
             switch (renderCmd)
             {
             case RENDER_PRINT:

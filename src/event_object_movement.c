@@ -161,6 +161,8 @@ enum {
     MOVE_SPEED_FAST_2, // water current / bicycle
     MOVE_SPEED_FASTER, // going down cycling road on bicycle
     MOVE_SPEED_FASTEST,
+    MOVE_SPEED_PLAYER_WALK, // player walking by input, ~1.5x MOVE_SPEED_NORMAL
+    MOVE_SPEED_PLAYER_RUN,  // player running by input, ~1.5x MOVE_SPEED_FAST_1
 };
 
 enum {
@@ -5322,17 +5324,27 @@ void InitNpcForMovement(struct ObjectEvent *objectEvent, struct Sprite *sprite, 
     sprite->data[2] = 1;
 }
 
+// The player walks and runs ~1.5x faster when moved by input. Scripted movement
+// keeps the original pace so cutscenes stay in sync with NPCs.
+static bool8 IsPlayerMovingByInput(struct ObjectEvent *objectEvent)
+{
+    return objectEvent->isPlayer && !ScriptContext_IsEnabled();
+}
+
 void InitMovementNormal(struct ObjectEvent *objectEvent, struct Sprite *sprite, u8 direction, u8 speed)
 {
     u8 (*functions[NELEMS(sDirectionAnimFuncsBySpeed)])(u8);
     memcpy(functions, sDirectionAnimFuncsBySpeed, sizeof sDirectionAnimFuncsBySpeed);
+    if (speed == MOVE_SPEED_NORMAL && IsPlayerMovingByInput(objectEvent))
+        speed = MOVE_SPEED_PLAYER_WALK;
     InitNpcForMovement(objectEvent, sprite, direction, speed);
     SetStepAnimHandleAlternation(objectEvent, sprite, functions[speed](objectEvent->facingDirection));
 }
 
 void StartRunningAnim(struct ObjectEvent *objectEvent, struct Sprite *sprite, u8 direction)
 {
-    InitNpcForMovement(objectEvent, sprite, direction, MOVE_SPEED_FAST_1);
+    u8 speed = IsPlayerMovingByInput(objectEvent) ? MOVE_SPEED_PLAYER_RUN : MOVE_SPEED_FAST_1;
+    InitNpcForMovement(objectEvent, sprite, direction, speed);
     SetStepAnimHandleAlternation(objectEvent, sprite, GetRunningDirectionAnimNum(objectEvent->facingDirection));
 }
 
@@ -8914,12 +8926,38 @@ static const SpriteStepFunc sSpeedFastestStepFuncs[] = {
     Step8
 };
 
+// 16 pixels in 11 frames (normal walk takes 16)
+static const SpriteStepFunc sSpeedPlayerWalkStepFuncs[] = {
+    Step1,
+    Step2,
+    Step1,
+    Step2,
+    Step1,
+    Step2,
+    Step1,
+    Step2,
+    Step1,
+    Step2,
+    Step1
+};
+
+// 16 pixels in 5 frames (normal run takes 8)
+static const SpriteStepFunc sSpeedPlayerRunStepFuncs[] = {
+    Step3,
+    Step3,
+    Step4,
+    Step3,
+    Step3
+};
+
 static const SpriteStepFunc *const sNpcStepFuncTables[] = {
     [MOVE_SPEED_NORMAL]  = sSpeedNormalStepFuncs,
     [MOVE_SPEED_FAST_1]  = sSpeedFast1StepFuncs,
     [MOVE_SPEED_FAST_2]  = sSpeedFast2StepFuncs,
     [MOVE_SPEED_FASTER]  = sSpeedFasterStepFuncs,
     [MOVE_SPEED_FASTEST] = sSpeedFastestStepFuncs,
+    [MOVE_SPEED_PLAYER_WALK] = sSpeedPlayerWalkStepFuncs,
+    [MOVE_SPEED_PLAYER_RUN]  = sSpeedPlayerRunStepFuncs,
 };
 
 static const s16 sStepTimes[] = {
@@ -8928,6 +8966,8 @@ static const s16 sStepTimes[] = {
     [MOVE_SPEED_FAST_2]  = NELEMS(sSpeedFast2StepFuncs),
     [MOVE_SPEED_FASTER]  = NELEMS(sSpeedFasterStepFuncs),
     [MOVE_SPEED_FASTEST] = NELEMS(sSpeedFastestStepFuncs),
+    [MOVE_SPEED_PLAYER_WALK] = NELEMS(sSpeedPlayerWalkStepFuncs),
+    [MOVE_SPEED_PLAYER_RUN]  = NELEMS(sSpeedPlayerRunStepFuncs),
 };
 
 bool8 NpcTakeStep(struct Sprite *sprite)

@@ -71,8 +71,20 @@ PokedexRating_EventScript_DexIncomplete::
 PokedexRating_EventScript_DexComplete::
 	setflag FLAG_OAK_SAW_DEX_COMPLETION
 	msgbox PokedexRating_Text_YouveCompletedDex
+	call_if_unset FLAG_OAKS_RATING_IS_VIA_PC, PokedexRating_EventScript_TryGiveShinyCharm
 	goto PokedexRating_EventScript_EndRating
 	end
+
+@ Only given in person, once the National Dex is complete (mythicals excluded, see HasAllMons)
+PokedexRating_EventScript_TryGiveShinyCharm::
+	goto_if_set FLAG_GOT_SHINY_CHARM, PokedexRating_EventScript_ShinyCharmDone
+	msgbox PokedexRating_Text_TakeShinyCharm
+	giveitem ITEM_SHINY_CHARM
+	goto_if_eq VAR_RESULT, FALSE, PokedexRating_EventScript_ShinyCharmDone
+	setflag FLAG_GOT_SHINY_CHARM
+	msgbox PokedexRating_Text_ShinyCharmExplanation
+PokedexRating_EventScript_ShinyCharmDone::
+	return
 
 PokedexRating_EventScript_EndRating::
 	special RestoreHelpContext

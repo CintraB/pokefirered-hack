@@ -1752,6 +1752,23 @@ void ZeroEnemyPartyMons(void)
         ZeroMonData(&gEnemyParty[i]);
 }
 
+static u32 GetPlayerOtId(void)
+{
+    return gSaveBlock2Ptr->playerTrainerId[0]
+         | (gSaveBlock2Ptr->playerTrainerId[1] << 8)
+         | (gSaveBlock2Ptr->playerTrainerId[2] << 16)
+         | (gSaveBlock2Ptr->playerTrainerId[3] << 24);
+}
+
+// Shininess depends on personality and OT ID, so better shiny odds come from extra
+// personality rolls instead of raising SHINY_ODDS (which would change existing mons).
+static u32 GetShinyRerolls(void)
+{
+    if (CheckBagHasItem(ITEM_SHINY_CHARM, 1))
+        return SHINY_CHARM_REROLLS;
+    return SHINY_BASE_REROLLS;
+}
+
 void CreateMon(struct Pokemon *mon, u16 species, u8 level, u8 fixedIV, u8 hasFixedPersonality, u32 fixedPersonality, u8 otIdType, u32 fixedOtId)
 {
     u32 arg;
@@ -1773,9 +1790,17 @@ void CreateBoxMon(struct BoxPokemon *boxMon, u16 species, u8 level, u8 fixedIV, 
     ZeroBoxMonData(boxMon);
 
     if (hasFixedPersonality)
+    {
         personality = fixedPersonality;
+    }
     else
+    {
+        u32 rolls = (otIdType == OT_ID_PLAYER_ID) ? GetShinyRerolls() : 0;
+
         personality = Random32();
+        while (rolls-- != 0 && GET_SHINY_VALUE(GetPlayerOtId(), personality) >= SHINY_ODDS)
+            personality = Random32();
+    }
 
     SetBoxMonData(boxMon, MON_DATA_PERSONALITY, &personality);
 
@@ -1864,12 +1889,17 @@ void CreateBoxMon(struct BoxPokemon *boxMon, u16 species, u8 level, u8 fixedIV, 
 void CreateMonWithNature(struct Pokemon *mon, u16 species, u8 level, u8 fixedIV, u8 nature)
 {
     u32 personality;
+    u32 rolls = GetShinyRerolls();
 
     do
     {
-        personality = Random32();
+        do
+        {
+            personality = Random32();
+        }
+        while (nature != GetNatureFromPersonality(personality));
     }
-    while (nature != GetNatureFromPersonality(personality));
+    while (rolls-- != 0 && GET_SHINY_VALUE(GetPlayerOtId(), personality) >= SHINY_ODDS);
 
     CreateMon(mon, species, level, fixedIV, TRUE, personality, OT_ID_PLAYER_ID, 0);
 }

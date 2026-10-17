@@ -661,6 +661,8 @@ static bool8 (*const sDirectionAnimFuncsBySpeed[])(u8) = {
     [MOVE_SPEED_FAST_2] = GetMoveDirectionFastAnimNum,
     [MOVE_SPEED_FASTER] = GetMoveDirectionFasterAnimNum,
     [MOVE_SPEED_FASTEST] = GetMoveDirectionFastestAnimNum,
+    [MOVE_SPEED_PLAYER_WALK] = GetMoveDirectionAnimNum,
+    [MOVE_SPEED_PLAYER_RUN] = GetRunningDirectionAnimNum,
 };
 
 static bool8 (*const sMovementActionFuncs_WalkSlowestDown[])(struct ObjectEvent *, struct Sprite *) = {

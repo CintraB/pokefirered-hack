@@ -183,6 +183,9 @@
 
 // Shiny odds
 #define SHINY_ODDS 8 // Actual probability is SHINY_ODDS/65536
+// Extra personality rolls for new mons: each one adds about 1/8192 to the shiny chance
+#define SHINY_BASE_REROLLS 1  // ~1/4096
+#define SHINY_CHARM_REROLLS 3 // ~1/2048 while holding the Shiny Charm
 
 #define MAX_LEVEL 100
 
