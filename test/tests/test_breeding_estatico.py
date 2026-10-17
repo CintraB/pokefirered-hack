@@ -339,3 +339,20 @@ def test_sorteio_acerta_natureza_e_habilidade_e_e_uniforme(ability):
         c = next(c for c in range(50) if c % 25 == nature and c % 2 == ability)
         want = (2**32 - 1 - c) // 50 + 1
     assert pairs == want
+
+
+# --- preços de 5 dígitos na loja ------------------------------------------------------------
+
+def test_lista_da_loja_mostra_precos_de_5_digitos():
+    """BuyMenuPrintPriceInList convertia com 4 dígitos: 10000 virava "?0000". A lista agora
+    usa SHOP_PRICE_DIGITS dígitos, e todo item à venda cabe; a janela de quantidade e a caixa
+    de dinheiro (PrintMoneyAmount, 6 dígitos) cabem o total máximo (o dinheiro, até 999999)."""
+    shop = (REPO_ROOT / "src" / "shop.c").read_text(encoding="utf-8")
+    digits = int(re.search(r"#define SHOP_PRICE_DIGITS (\d+)", shop).group(1))
+    body = re.search(r"static void BuyMenuPrintPriceInList\([^;]*?\)\n\{.*?\n\}", shop, re.S).group(0)
+    assert "ConvertIntToDecimalStringN(gStringVar1, ItemId_GetPrice(item), STR_CONV_MODE_LEFT_ALIGN, SHOP_PRICE_DIGITS);" in body
+    assert "x = SHOP_PRICE_DIGITS - StringLength(gStringVar1);" in body
+    assert max(it["price"] for it in ITEMS) < 10 ** digits
+    money = (REPO_ROOT / "src" / "money.c").read_text(encoding="utf-8")
+    assert "ConvertIntToDecimalStringN(gStringVar1, amount, STR_CONV_MODE_LEFT_ALIGN, 6);" in money
+    assert "#define MAX_MONEY 999999" in money

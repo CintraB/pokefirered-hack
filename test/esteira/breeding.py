@@ -435,3 +435,8 @@ def egg_moves(repo: Path, species: str) -> list[str]:
     text = (repo / "src" / "data" / "pokemon" / "egg_moves.h").read_text(encoding="utf-8")
     m = re.search(rf"egg_moves\({species.removeprefix('SPECIES_')},\s*(.*?)\)", text, re.S)
     return [] if m is None else [mv.strip() for mv in m.group(1).split(",") if mv.strip()]
+
+# telas da loja de Four Island (cenário `ovo`), com referência em test/referencias/COMUM/: a
+# lista com o cursor no Destiny Knot (preço de 5 dígitos) e a janela de quantidade dele
+SHOP_SCREEN_POINTS = ("loja_four_island", "loja_four_island_quantidade")
+SHOP_MONEY = 50_000

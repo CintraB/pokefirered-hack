@@ -202,7 +202,10 @@ de teste, a partir do `captura.sav`:
   jogador até o velho da creche em Four Island; daí é o jogo: SIM para o ovo, o ovo é
   conferido, o atalho zera os ciclos que faltam e o jogador **anda** até ele chocar (cena
   inteira, apelido recusado); o filhote tem de ser o ovo (personalidade, IVs, golpes, natureza,
-  habilidade, gênero). Telas `ovo_recebido`, `ovo_chocando` e `ovo_chocado` (sem referência).
+  habilidade, gênero). Por fim entra na loja de Four Island (dinheiro posto pelo atalho) e confere
+  os 8 itens de empurrão e os preços. Telas `ovo_recebido`, `ovo_chocando` e `ovo_chocado` (sem
+  referência) e `loja_four_island`/`loja_four_island_quantidade` (preço de 5 dígitos do Destiny
+  Knot), comparadas com `test/referencias/COMUM/`.
   Numa janela: `make test-watch CENARIO=ovo` (~1,5 min em tempo real).
 
 O teste estático `test/tests/test_breeding_estatico.py` confere as probabilidades do C contra o

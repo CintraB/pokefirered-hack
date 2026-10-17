@@ -137,6 +137,7 @@ static u32 EvolutionTarget(u32 arg0, u32 arg1)
 // GiveEggFromDaycare, the same path as the daycare man's script. Results (2 words per egg, see
 // PackMonRecord) go to TEST_BREED_RESULTS: gEnemyParty is unused outside battle.
 struct TestBreedSetup gTestBreedSetup;
+STATIC_ASSERT(sizeof(struct TestBreedParent) == 24, TestBreedParentLayoutMatchesTheRunner) // test/esteira/breeding.py PARENT_FORMAT
 
 #define TEST_BREED_RESULTS ((u32 *)gEnemyParty)
 

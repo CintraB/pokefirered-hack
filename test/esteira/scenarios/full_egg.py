@@ -14,8 +14,12 @@ creche. Daí em diante é o jogo:
    o jogador ANDA até o ovo chocar, a cena inteira roda e o apelido é recusado (NÃO);
 4. o filhote é o ovo: mesma personalidade, IVs, golpes, natureza, habilidade, gênero e shiny;
    nível 5, não é mais ovo, apelido = nome da espécie.
+5. na loja de Four Island (dinheiro posto pelo atalho): os 8 itens de empurrão à venda com os
+   preços certos; telas da lista com o cursor no Destiny Knot (₽10000, 5 dígitos) e da janela de
+   quantidade, com referência em test/referencias/COMUM.
 
-Telas: telas/ovo_recebido.png, ovo_chocando.png e ovo_chocado.png (sem referência).
+Telas: telas/ovo_recebido.png, ovo_chocando.png e ovo_chocado.png (sem referência) e as duas da
+loja (SHOP_SCREEN_POINTS de esteira/breeding.py, comparadas com COMUM).
 Numa janela, em tempo real: `make test-watch CENARIO=ovo`.
 
 Uso, a partir de test/ (a pasta OUT precisa do captura.sav de um `rapido`/`completo`):
@@ -24,13 +28,17 @@ Uso, a partir de test/ (a pasta OUT precisa do captura.sav de um `rapido`/`compl
 
 import sys
 
-from ..breeding import CONFIGS, NATURES, Record, egg_moves, header_defines, unpack_records
-from ..emu import KEY_B, KEY_UP
+from ..breeding import (CONFIGS, NATURES, PRICES, SHOP_MONEY, SHOP_SCREEN_POINTS, Record, egg_moves,
+                        header_defines, unpack_records)
+from ..emu import KEY_A, KEY_B, KEY_DOWN, KEY_LEFT, KEY_UP
+from ..game import SB1_MONEY
 from ..game import POKEMON_SIZE, decode_mon
 from ..hooks import CMD_EGGS_READY, CMD_PACK_PARTY_MON, CMD_SET_VAR, CMD_WARP
 from . import REPO_ROOT, ScenarioContext
 from .base import TEXT_PERIOD, Abort
 from .full_breeding import BreedingScenario
+from .quick_catch_save import (BUY_MENU_TASK, BUY_QUANTITY_TASK, MART_CLERK_FRONT, SHOP_MENU_TASK,
+                               SHOP_TIMEOUT)
 
 CONFIG = CONFIGS[0]                 # Rattata x Rattata com golpes de ovo (esteira/breeding.py)
 DAYCARE_MAN_FRONT = (16, 15)        # o velho fica em (16, 14) com um ovo pendente
@@ -38,6 +46,11 @@ STEPS_BEFORE_CYCLE = 245            # a creche conta até 255: 10 passos até o 
 WALK_LIMIT = 40
 HATCH_TIMEOUT = 6000
 EGG_HATCH_CALLBACKS = ("CB2_EggHatch_0", "CB2_EggHatch_1")
+FOUR_ISLAND_MART_FRONT = (22, 27)  # porta da loja em (22, 26)
+# pelo lado do Centro: o lago à direita (x 21-25, y 17-20) não é bloqueio para a navegação
+TO_MART = ((14, 16), (14, 22), (19, 22), (19, 27), FOUR_ISLAND_MART_FRONT)
+NEW_STOCK = ("ITEM_EVERSTONE", "ITEM_DESTINY_KNOT", "ITEM_POWER_WEIGHT", "ITEM_POWER_BRACER",
+             "ITEM_POWER_BELT", "ITEM_POWER_LENS", "ITEM_POWER_BAND", "ITEM_POWER_ANKLET")
 
 
 class EggScenario(BreedingScenario):
@@ -152,6 +165,53 @@ class EggScenario(BreedingScenario):
                 f"{NATURES[after.nature]}, habilidade {after.ability}, gênero {after.gender}, "
                 f"golpes {mon.moves}")
 
+    # --- a loja de Four Island (preços de 5 dígitos) ------------------------------------
+    def _set_money(self, amount: int) -> None:
+        """Dinheiro do jogador (u32 XOR encryptionKey): escrita na RAM, só na ROM de teste."""
+        self.emu.write(self.game._sb1() + SB1_MONEY,
+                       (amount ^ self.game._key()).to_bytes(4, "little"))
+
+    def _shop_cursor_to(self, index: int) -> None:
+        for _ in range(len(self._shop_items()) + 1):
+            cur = self._shop_cursor()
+            if cur == index:
+                return
+            self.ctl.press_until(KEY_DOWN if index > cur else KEY_UP,
+                                 lambda: self._shop_cursor() != cur, "cursor da loja")
+        raise self.ctl.timeout_error(f"cursor da loja em {self._shop_cursor()}, esperava {index}")
+
+    def _mart(self) -> str:
+        self._set_money(SHOP_MONEY)
+        for point in TO_MART:
+            self._walk(*point)
+        self._warp("up", "MAP_FOUR_ISLAND_MART")
+        self._walk(*MART_CLERK_FRONT)
+        self.emu.hold(KEY_LEFT, 4)
+        self.ctl.wait_until(self.nav._player_still, 60, "jogador parado diante do balconista")
+        self._press(KEY_A)
+        self.ctl.wait_until(lambda: SHOP_MENU_TASK in self._tasks(), SHOP_TIMEOUT,
+                            "menu COMPRAR/VENDER/SAIR")
+        self.ctl.press_until(KEY_A, lambda: BUY_MENU_TASK in self._tasks(), "lista de compras",
+                             tries=5, wait=120)
+        items = self._shop_items()
+        stock = [self.consts.item(name) for name in NEW_STOCK]
+        assert items[-len(stock):] == stock, f"lista da loja {items}"
+        prices = {name: self.game.item_price(self.consts.item(name)) for name in NEW_STOCK}
+        assert prices == {name: PRICES[name] for name in NEW_STOCK}, f"preços no ROM {prices}"
+        self._shop_cursor_to(items.index(self.consts.item("ITEM_DESTINY_KNOT")))
+        self.emu.frames(10)
+        self.measures["loja"] = [self._shot(SHOP_SCREEN_POINTS[0])]
+        self.ctl.press_until(KEY_A, lambda: BUY_QUANTITY_TASK in self._tasks(),
+                             "quantidade do Destiny Knot", tries=5, wait=120)
+        self.emu.frames(10)
+        self.measures["loja"].append(self._shot(SHOP_SCREEN_POINTS[1]))
+        self.ctl.press_until(KEY_B, lambda: BUY_MENU_TASK in self._tasks(), "volta à lista")
+        self._leave_shop()
+        assert self.game.money() == SHOP_MONEY, "o dinheiro mudou sem comprar nada"
+        return (f"loja de Four Island vende {', '.join(n.removeprefix('ITEM_') for n in NEW_STOCK)}"
+                f" a {sorted(set(prices.values()))}; telas da lista (cursor no Destiny Knot, "
+                "₽10000) e da quantidade comparadas com test/referencias/COMUM")
+
     def run(self) -> None:
         try:
             self._flow("ovo: CONTINUAR com o save do modo rápido na build de teste", self._start)
@@ -171,6 +231,9 @@ class EggScenario(BreedingScenario):
                 raise Abort("chocar")
             self.suite.run("ovo: o filhote é o ovo (personalidade, IVs, golpes...)",
                            self._check_hatched)
+            res = self.suite.run("ovo: loja de Four Island vende os itens de empurrão "
+                                 "(preço de 5 dígitos)", self._mart)
+            res.images += self.measures.get("loja", [])
         except Abort:
             pass
 
