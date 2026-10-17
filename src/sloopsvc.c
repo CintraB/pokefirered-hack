@@ -20,6 +20,8 @@ COMMON_DATA struct RfuLinkStatus *gSloopRfuLinkStatus = NULL;
 // Syscall functions for the extra syscalls handled by the Sloop emulator.
 #define SLOOP_SVC_CLOBBERS "r0", "r1", "r2", "r3", "memory"
 
+#if !SWITCH_GBA_COMPAT
+
 // Unreferenced. Sets a flag to true (default true) (svc_41 sets it to false)
 void svc_40(void) {
     asm volatile("swi 0x40");
@@ -289,6 +291,43 @@ void svc_SetActivity(u32 activity) {
 void svc_IncrementLinkError(void) {
     asm volatile("swi 0x62");
 }
+
+#else // SWITCH_GBA_COMPAT
+
+// GBA-compatible stand-ins for the Sloop syscalls. Saving goes through flash in
+// save.c instead; everything else answers like "no emulator feature present".
+
+void svc_40(void) {}
+void svc_41(void) {}
+void svc_47(void) {}
+void svc_42(void) {}
+u32 svc_49(void) { return 0; }
+void svc_45_rfu_link_status(void) {}
+u32 svc_4a(void) { return 0; }
+void svc_43(u16 pid) {}
+void svc_44(void) {}
+u32 svc_53(void) { return 0; }
+u32 svc_51(void) { return 0; }
+u32 svc_4b(void) { return 0; }
+void svc_WriteSector(u8 sector, u8* data) {}
+void svc_ReplaceSector(u8 sector, u8* data) {}
+void svc_FinishSave(void) {}
+
+// Communication is always allowed: there are no parental controls to ask.
+u32 svc_CommsAllowedByParentalControls(void) { return TRUE; }
+
+// Zero means "no bad words found", so the text is accepted unchanged.
+u32 svc_BadWordCheck(u8* str) { return 0; }
+
+void svc_4f(u32 arg) {}
+u32 svc_50(void) { return 0; }
+void svc_SetSaveBlock2(struct SaveBlock2* saveBlock2) {}
+void svc_stubbed(void) {}
+void svc_SetStarter(u32 species) {}
+void svc_SetActivity(u32 activity) {}
+void svc_IncrementLinkError(void) {}
+
+#endif // SWITCH_GBA_COMPAT
 
 
 #endif

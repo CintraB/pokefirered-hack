@@ -14,6 +14,15 @@
 #define NDEBUG
 #endif
 
+// Revision 10 talks to the Switch emulator ("Sloop") through extra SWIs that do not
+// exist on real hardware or regular emulators: saving never reaches flash and the
+// naming screen's bad word check rejects every name. Set this to 1 to write saves to
+// flash like the cartridge and stub the remaining Sloop calls; set to 0 for the
+// original (matching) behavior.
+#ifndef SWITCH_GBA_COMPAT
+#define SWITCH_GBA_COMPAT 1
+#endif
+
 // Fire Red likely forgot to define NDEBUG/NOAGBPRN before release, leading
 // to the inclusion of asserts in the retail ROM.
 // Revision 10 disabled asserts in some other way, but isagbprint/etc is still present there.

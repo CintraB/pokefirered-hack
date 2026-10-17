@@ -213,7 +213,7 @@ static u8 HandleWriteSectorNBytes(u8 sectorId, u8 *data, u16 size)
 
 static u8 TryWriteSector(u8 sectorNum, u8 *data)
 {
-#if REVISION >= 0xA
+#if REVISION >= 0xA && !SWITCH_GBA_COMPAT
     svc_WriteSector(sectorNum, data);
     SetDamagedSectorBits(DISABLE, sectorNum);
     return SAVE_STATUS_OK;
@@ -319,7 +319,7 @@ static u8 HandleReplaceSector(u16 sectorId, const struct SaveSectorLocation *loc
 
     gSaveDataBufferPtr->checksum = CalculateChecksum(data, size);
 
-#if REVISION >= 0xA
+#if REVISION >= 0xA && !SWITCH_GBA_COMPAT
     svc_ReplaceSector(sectorNum, (u8*)gSaveDataBufferPtr);
     SetDamagedSectorBits(DISABLE, sectorNum);
     return SAVE_STATUS_OK;
