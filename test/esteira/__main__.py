@@ -24,6 +24,7 @@ import argparse
 import json
 import os
 import shutil
+import signal
 import subprocess
 import sys
 import tempfile
@@ -406,9 +407,10 @@ def run_mode(args: argparse.Namespace) -> int:
 # --- assistir: os roteiros rápidos numa janela, em tempo real -------------------------------------
 
 def _has_display() -> bool:
-    """Há onde abrir a janela (WSLg define DISPLAY/WAYLAND_DISPLAY; SDL_VIDEODRIVER=dummy
-    serve aos testes)."""
-    return any(os.environ.get(v) for v in ("DISPLAY", "WAYLAND_DISPLAY", "SDL_VIDEODRIVER"))
+    """Há onde abrir a janela: WSLg define DISPLAY/WAYLAND_DISPLAY. SDL_VIDEODRIVER só vale
+    como `dummy` (testes, sem tela); qualquer outro driver precisa de um display de verdade."""
+    return (any(os.environ.get(v) for v in ("DISPLAY", "WAYLAND_DISPLAY"))
+            or os.environ.get("SDL_VIDEODRIVER") == "dummy")
 
 
 def _load_watch_checkpoint(ctx: ScenarioContext, name: str, rom: str,
@@ -420,7 +422,12 @@ def _load_watch_checkpoint(ctx: ScenarioContext, name: str, rom: str,
     found = [p for p in Path(WATCH_CHECKPOINT_ROOT).glob(f"*/estados/{name}.ss")
              if p.stat().st_mtime >= rom_time]
     for path in sorted(found, key=lambda p: p.stat().st_mtime, reverse=True):
-        ctx.emu.load_state(str(path))
+        try:
+            ctx.emu.load_state(str(path))
+        except WindowClosed:
+            raise
+        except EmulatorError:   # estado corrompido ou incompatível: tenta o próximo
+            continue
         ctx.emu.keys(0)
         party = ctx.game.party()
         for starter in STARTERS:
@@ -459,10 +466,14 @@ def run_watch(args: argparse.Namespace) -> int:
     try:
         with open_context(args.rom, args.elf, str(out), starter, suite, window=True) as ctx:
             if args.checkpoint is not None:
-                found = _load_watch_checkpoint(ctx, args.checkpoint, args.rom, args.starter)
+                try:
+                    found = _load_watch_checkpoint(ctx, args.checkpoint, args.rom, args.starter)
+                except WindowClosed:
+                    print("janela fechada: assistir encerrado.")
+                    return 0
                 if found is None:
                     wanted = f" do inicial {args.starter}" if args.starter else ""
-                    print(f"nenhum estado '{args.checkpoint}'{wanted} recente em "
+                    print(f"nenhum estado '{args.checkpoint}'{wanted} utilizável em "
                           f"{WATCH_CHECKPOINT_ROOT}/*/estados/ (de uma execução depois do último "
                           "build da ROM): rode `make test-quick` antes, ou assista sem --from.",
                           file=sys.stderr)
@@ -478,6 +489,8 @@ def run_watch(args: argparse.Namespace) -> int:
                     print("janela fechada: assistir encerrado.")
                     return 0
                 except EmulatorError as exc:
+                    if exc.returncode == -signal.SIGINT:   # Ctrl-C matou o runner antes do Python
+                        raise KeyboardInterrupt from exc
                     print(f"o emulador terminou: {exc}", file=sys.stderr)
                     code = 1
                     break

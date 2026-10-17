@@ -281,3 +281,181 @@ def test_alvo_test_watch_chama_assistir_e_repassa_from_e_starter():
     assert "$(FROM)" in recipe and "$(STARTER)" in recipe
     assert "test-watch" in (REPO_ROOT / "Makefile").read_text(encoding="utf-8").split(
         "RULES_NO_SCAN +=")[1].splitlines()[0]
+
+
+# --- rodada 1: Ctrl-C, SDL opcional, display, estado inválido -------------------------------------
+
+import os
+import signal
+import sys
+
+HARNESS = REPO_ROOT / "test" / "harness"
+
+
+def _runner_procs(marker: str) -> list[str]:
+    """Linhas de comando dos processos vivos que citam `marker` (Linux: /proc)."""
+    found = []
+    for entry in Path("/proc").iterdir():
+        if entry.name.isdigit():
+            try:
+                cmd = (entry / "cmdline").read_bytes().replace(b"\0", b" ").decode(errors="replace")
+            except OSError:
+                continue
+            if marker in cmd and "mgba_runner" in cmd:
+                found.append(cmd)
+    return found
+
+
+@pytest.mark.parametrize("round_", range(3))
+def test_ctrl_c_em_assistir_sai_130_limpa_o_temp_e_nao_deixa_runner(rom_path, tmp_path, round_):
+    if not (REPO_ROOT / "pokefirered_switch.elf").is_file():
+        pytest.skip("pokefirered_switch.elf ausente")
+    env = {**os.environ, "SDL_VIDEODRIVER": "dummy", "SDL_AUDIODRIVER": "dummy",
+           "TMPDIR": str(tmp_path), "PYTHONUNBUFFERED": "1"}
+    proc = subprocess.Popen([sys.executable, "-m", "esteira", "assistir", "--starter", "BULBASAUR"],
+                            cwd=REPO_ROOT / "test", env=env, start_new_session=True,
+                            stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+    try:
+        for line in proc.stdout:   # espera o primeiro roteiro começar
+            if "[assistindo] abertura" in line:
+                break
+        else:
+            pytest.fail("assistir terminou antes de começar o roteiro")
+        time.sleep(1.0 + round_ * 0.4)
+        os.killpg(proc.pid, signal.SIGINT)   # como o Ctrl-C do terminal: grupo inteiro
+        rest = proc.stdout.read()
+        code = proc.wait(timeout=30)
+    finally:
+        if proc.poll() is None:
+            os.killpg(proc.pid, signal.SIGKILL)
+            proc.wait()
+    assert code == 130, rest
+    assert "Traceback" not in rest, rest
+    assert list(tmp_path.glob("esteira-assistir-*")) == []
+    assert _runner_procs(str(tmp_path)) == []
+
+
+@pytest.fixture(scope="module")
+def no_sdl_runner(tmp_path_factory):
+    """Runner compilado como numa máquina sem SDL2: um `sdl2-config` que falha vem antes no PATH."""
+    if shutil.which("cc") is None:
+        pytest.skip("sem compilador")
+    work = tmp_path_factory.mktemp("sem-sdl")
+    fake = work / "bin"
+    fake.mkdir()
+    (fake / "sdl2-config").write_text("#!/bin/sh\nexit 127\n")
+    (fake / "sdl2-config").chmod(0o755)
+    harness = work / "harness"
+    harness.mkdir()
+    for name in ("Makefile", "mgba_runner.c"):
+        shutil.copy(HARNESS / name, harness / name)
+    env = {**os.environ, "PATH": f"{fake}:{os.environ['PATH']}"}
+    done = subprocess.run(["make", "-C", str(harness)], env=env, capture_output=True, text=True,
+                          timeout=300)
+    assert done.returncode == 0, done.stderr
+    assert "-DUSE_SDL" not in done.stdout
+    clean = subprocess.run(["make", "-C", str(harness), "clean"], env=env, capture_output=True,
+                           text=True, timeout=60)
+    assert clean.returncode == 0 and clean.stderr == ""   # sem erro de shell por falta do SDL
+    subprocess.run(["make", "-C", str(harness)], env=env, capture_output=True, timeout=300,
+                   check=True)
+    return harness / "mgba_runner"
+
+
+def test_runner_sem_sdl_recusa_window_com_codigo_2(no_sdl_runner, tmp_path):
+    done = subprocess.run([str(no_sdl_runner), "x.gba", "--save", str(tmp_path / "s.sav"),
+                           "--window"], capture_output=True, text=True, timeout=30)
+    assert done.returncode == 2
+    assert "sem SDL2" in done.stderr and "libsdl2-dev" in done.stderr
+
+
+def test_emulator_window_em_runner_sem_sdl_explica(no_sdl_runner, rom_path, tmp_save, monkeypatch):
+    monkeypatch.setattr(emu_mod, "RUNNER", no_sdl_runner)
+    monkeypatch.setattr(emu_mod, "RUNNER_SRC", no_sdl_runner.with_suffix(".c"))
+    with pytest.raises(EmulatorError, match="libsdl2-dev"):
+        with Emulator(rom_path, tmp_save, window=True) as emu:
+            emu.frames(1)
+
+
+def test_makefile_do_runner_sem_sdl2_config_no_path_nao_liga_sdl(tmp_path):
+    empty = tmp_path / "vazio"
+    empty.mkdir()
+    done = subprocess.run([shutil.which("make"), "-n", "-B", "-C", str(HARNESS)],
+                          env={"PATH": str(empty)}, capture_output=True, text=True, timeout=60)
+    assert done.returncode == 0, done.stderr
+    assert "-DUSE_SDL" not in done.stdout and "SDL2" not in done.stdout
+    assert done.stderr == ""
+
+
+def test_makefile_do_runner_com_sdl2_liga_sdl():
+    if shutil.which("sdl2-config") is None:
+        pytest.skip("sdl2-config ausente")
+    done = subprocess.run(["make", "-n", "-B", "-C", str(HARNESS)], capture_output=True,
+                          text=True, timeout=60)
+    assert "-DUSE_SDL" in done.stdout and "-lSDL2" in done.stdout
+
+
+def test_display_exige_display_real_ou_driver_dummy(fw, monkeypatch, capsys):
+    for var in DISPLAY_VARS:
+        monkeypatch.delenv(var, raising=False)
+    monkeypatch.setenv("SDL_VIDEODRIVER", "x11")   # sozinho não é display
+    assert main(fw.argv()) == 2
+    assert "DISPLAY" in capsys.readouterr().err
+    monkeypatch.setenv("WAYLAND_DISPLAY", "wayland-0")
+    assert main(fw.argv("--starter", "SQUIRTLE")) == 0
+
+
+def test_assistir_from_com_estado_invalido_explica_sem_traceback(fw, monkeypatch, capsys):
+    _fake_checkpoint(fw, "r1", "rival")
+
+    def bad_load(path):
+        raise EmulatorError("state_load: estado inválido em " + path)
+
+    @contextmanager
+    def open_bad(rom, elf, out, starter, suite=None, save_from=None, recorder=None, window=False):
+        with fw_open(rom, elf, out, starter, suite, save_from, recorder, window) as ctx:
+            ctx.emu.load_state = bad_load
+            yield ctx
+
+    fw_open = cli.open_context
+    monkeypatch.setattr(cli, "open_context", open_bad)
+    assert main(fw.argv("--from", "rival")) == 2
+    err = capsys.readouterr().err
+    assert "rival" in err and "make test-quick" in err and "Traceback" not in err
+    assert fw.ran == []
+
+
+class DyingProc:
+    """Runner que morre (SDL_QUIT do Ctrl-C, código 3) justo quando o `quit` vai ser enviado."""
+
+    def __init__(self, code):
+        self.code = code
+        self.returncode = None
+        self.stdin = SimpleNamespace(write=self._broken, flush=self._broken, close=self._broken)
+        self.stdout = SimpleNamespace(readline=lambda: "", close=lambda: None)
+
+    def _broken(self, *a):
+        raise BrokenPipeError
+
+    def poll(self):
+        return self.returncode
+
+    def wait(self, timeout=None):
+        self.returncode = self.code
+        return self.code
+
+
+@pytest.mark.parametrize("code", [3, -2, 1])
+def test_close_tolera_runner_morrendo(rom_path, tmp_save, code):
+    emu = Emulator(rom_path, tmp_save)
+    emu.close()
+    emu._proc = DyingProc(code)
+    emu.close()   # não pode lançar (substituiria o KeyboardInterrupt do Ctrl-C)
+    emu.close()
+
+
+def test_sigint_do_runner_com_python_no_meio_do_frames_vira_keyboard_interrupt(fw, monkeypatch):
+    def killed(ctx):
+        raise EmulatorError("runner encerrado (código -2) durante 'frames'", returncode=-signal.SIGINT)
+    monkeypatch.setattr(cli, "QUICK_SCENARIOS", [fw.spec("abertura", effect=killed)])
+    assert main(fw.argv("--starter", "SQUIRTLE")) == 130

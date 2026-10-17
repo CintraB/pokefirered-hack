@@ -33,7 +33,9 @@
 #include <mgba-util/png-io.h>
 #include <mgba-util/vfs.h>
 
+#ifdef USE_SDL /* definido pelo Makefile quando há libsdl2-dev; sem ele --window não existe */
 #include <SDL.h>
+#endif
 
 #include <ctype.h>
 #include <errno.h>
@@ -274,6 +276,8 @@ static void ReplyError(const char *fmt, ...)
 
 /* ---------- janela (--window) ---------- */
 
+#ifdef USE_SDL
+
 static struct mCore *sCore;
 
 static struct {
@@ -298,6 +302,9 @@ static void WindowPresent(void)
 
 static bool WindowOpen(struct mCore *core)
 {
+    /* Sem os handlers do SDL: Ctrl-C/SIGTERM matam o runner como no modo headless, em vez de
+     * virarem SDL_QUIT (que o faria sair com o código 3 de "janela fechada" no meio do Ctrl-C). */
+    SDL_SetHint(SDL_HINT_NO_SIGNAL_HANDLERS, "1");
     if (SDL_Init(SDL_INIT_VIDEO) != 0) {
         fprintf(stderr, "mgba_runner: SDL_Init falhou: %s\n", SDL_GetError());
         return false;
@@ -400,6 +407,18 @@ static void WindowAfterFrame(void)
     }
 }
 
+static void WindowClose(void)
+{
+    if (!sWin.on)
+        return;
+    if (sWin.audio)
+        SDL_CloseAudioDevice(sWin.audio);
+    SDL_DestroyTexture(sWin.tex);
+    SDL_DestroyRenderer(sWin.ren);
+    SDL_DestroyWindow(sWin.win);
+    SDL_Quit();
+}
+
 /* Um quadro do jogo; no modo janela, também o mostra e segura o ritmo. */
 static void RunOneFrame(struct mCore *core)
 {
@@ -407,6 +426,15 @@ static void RunOneFrame(struct mCore *core)
     if (sWin.on)
         WindowAfterFrame();
 }
+
+#else /* sem SDL2: só o modo headless */
+
+static void RunOneFrame(struct mCore *core)
+{
+    core->runFrame(core);
+}
+
+#endif
 
 /* ---------- comandos ---------- */
 
@@ -662,6 +690,13 @@ int main(int argc, char **argv)
     }
     if (argc != 4 || strcmp(argv[2], "--save") != 0)
         return Usage(argv[0]);
+#ifndef USE_SDL
+    if (window) {
+        fprintf(stderr, "mgba_runner: runner compilado sem SDL2; instale libsdl2-dev e rode "
+                        "make -C test/harness\n");
+        return 2;
+    }
+#endif
     const char *romPath = argv[1];
     const char *savePath = argv[3];
 
@@ -699,11 +734,13 @@ int main(int argc, char **argv)
     }
     core->reset(core);
 
+#ifdef USE_SDL
     sCore = core;
     if (window && !WindowOpen(core)) {
         core->deinit(core);
         return 1;
     }
+#endif
 
     char *line = NULL;
     size_t cap = 0;
@@ -748,15 +785,10 @@ int main(int argc, char **argv)
     /* deinit descarrega o ROM e fecha o .sav (mapeado com MAP_SHARED), gravando-o.
      * Fim do stdin sem "quit" também grava o save, mas não responde. */
     core->deinit(core);
+#ifdef USE_SDL
     sCore = NULL;
-    if (sWin.on) {
-        if (sWin.audio)
-            SDL_CloseAudioDevice(sWin.audio);
-        SDL_DestroyTexture(sWin.tex);
-        SDL_DestroyRenderer(sWin.ren);
-        SDL_DestroyWindow(sWin.win);
-        SDL_Quit();
-    }
+    WindowClose();
+#endif
     if (quit)
         ReplyOk();
     return 0;

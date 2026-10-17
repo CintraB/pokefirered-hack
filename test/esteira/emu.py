@@ -28,10 +28,15 @@ KEY_L = 512
 
 
 WINDOW_CLOSED_EXIT = 3   # código de saída do runner quando a janela (--window) é fechada
+NO_WINDOW_EXIT = 2       # --window num runner compilado sem SDL2 (ou argumentos inválidos)
 
 
 class EmulatorError(RuntimeError):
-    """O runner respondeu {"ok": false} ou morreu."""
+    """O runner respondeu {"ok": false} ou morreu (`returncode`: o código de saída dele, se morreu)."""
+
+    def __init__(self, message: str = "", returncode: int | None = None):
+        super().__init__(message)
+        self.returncode = returncode
 
 
 class WindowClosed(EmulatorError):
@@ -52,6 +57,7 @@ class Emulator:
         if window and recorder is not None:
             raise ValueError("janela (assistir) e gravação de vídeo não combinam: use um só")
         self.recorder = recorder
+        self._window = window
         self._emulated = 0   # quadros avançados por frames() nesta sessão (posição no vídeo)
         if not RUNNER.is_file():
             raise FileNotFoundError(f"{RUNNER} não existe; rode `make -C test/harness`")
@@ -69,7 +75,11 @@ class Emulator:
     def _died(self, what: str) -> EmulatorError:
         code = self._proc.returncode
         cls = WindowClosed if code == WINDOW_CLOSED_EXIT else EmulatorError
-        return cls(f"runner encerrado (código {code}){what}")
+        msg = f"runner encerrado (código {code}){what}"
+        if self._window and code == NO_WINDOW_EXIT:
+            msg += ("; o runner não abriu a janela (compilado sem SDL2?): instale libsdl2-dev e "
+                    "rode `make -C test/harness`")
+        return cls(msg, returncode=code)
 
     def _send(self, cmd: str, **args) -> dict:
         if self._proc.poll() is not None:
@@ -167,13 +177,24 @@ class Emulator:
         self._send("flush_save")
 
     def close(self) -> None:
-        """Grava o .sav e encerra o runner. Pode ser chamado mais de uma vez."""
+        """Grava o .sav e encerra o runner. Pode ser chamado mais de uma vez. Tolera runner já
+        morto ou morrendo (Ctrl-C no terminal atinge o grupo todo): nunca lança por causa disso,
+        senão substituiria a exceção que está saindo do `with` (o KeyboardInterrupt)."""
         if self._proc.poll() is None:
             try:
                 self._send("quit")
+            except EmulatorError:
+                pass
             finally:
-                self._proc.stdin.close()
-                self._proc.wait(timeout=10)
+                try:
+                    self._proc.stdin.close()
+                except OSError:   # BrokenPipeError ao descarregar o buffer num pipe fechado
+                    pass
+                try:
+                    self._proc.wait(timeout=10)
+                except subprocess.TimeoutExpired:
+                    self._proc.kill()
+                    self._proc.wait()
         self._proc.stdout.close()
 
     def __enter__(self) -> "Emulator":
