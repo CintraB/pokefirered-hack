@@ -1520,6 +1520,7 @@ extern const u8 gText_PokeSum_EvoLevelFreeSlot[];
 extern const u8 gText_PokeSum_EvoTrade[];
 extern const u8 gText_PokeSum_EvoTradeItem[];
 extern const u8 gText_PokeSum_EvoNotPossible[];
+extern const u8 gText_PokeSum_EvoTradedOnly[];
 extern const u8 gText_PokeSum_EvoNone[];
 extern const u8 gText_PokeSum_DexNoUnknown[];
 extern const u8 gText_PokeSum_Item_None[];

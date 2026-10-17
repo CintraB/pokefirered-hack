@@ -2569,7 +2569,7 @@ void GetEvolutionPageText(u8 *dest, u16 species)
     {
         const struct Evolution *evo = &gEvolutionTable[species][i];
         const u8 *line;
-        bool8 possible = TRUE;
+        const u8 *suffix = NULL; // evolutions this game alone can't trigger
 
         ConvertIntToDecimalStringN(gStringVar1, evo->param, STR_CONV_MODE_LEFT_ALIGN, 3);
         gStringVar2[0] = EOS;
@@ -2596,16 +2596,17 @@ void GetEvolutionPageText(u8 *dest, u16 species)
         // FireRed has no clock: GetEvolutionTargetSpecies skips the day/night evolutions
         case EVO_FRIENDSHIP_DAY:
             line = gText_PokeSum_EvoFriendshipDay;
-            possible = FALSE;
+            suffix = gText_PokeSum_EvoNotPossible;
             break;
         case EVO_FRIENDSHIP_NIGHT:
             line = gText_PokeSum_EvoFriendshipNight;
-            possible = FALSE;
+            suffix = gText_PokeSum_EvoNotPossible;
             break;
-        // Nothing in FireRed raises beauty (no Pokéblocks)
+        // Nothing in FireRed raises beauty (no Pokéblocks), but a Feebas traded from R/S/E
+        // with enough beauty still evolves on level up
         case EVO_BEAUTY:
             line = gText_PokeSum_EvoBeauty;
-            possible = FALSE;
+            suffix = gText_PokeSum_EvoTradedOnly;
             break;
         case EVO_LEVEL_ATK_GT_DEF:
             line = gText_PokeSum_EvoAtkGtDef;
@@ -2638,8 +2639,8 @@ void GetEvolutionPageText(u8 *dest, u16 species)
         if (end != dest)
             *end++ = CHAR_NEWLINE;
         end = StringExpandPlaceholders(end, line);
-        if (!possible)
-            end = StringCopy(end, gText_PokeSum_EvoNotPossible);
+        if (suffix != NULL)
+            end = StringCopy(end, suffix);
     }
 
     if (end == dest)
@@ -3514,9 +3515,10 @@ static u8 PokeSum_BufferOtName_IsEqualToCurrentOwner(struct Pokemon * mon)
 #define PAGE_PROGRESS_BASE_TILE_NUM (345)
 
 // The page dots in the header bar (BG3 tiles, top row; the bottom row comes from PageProgressBottomTile).
-// Hack: 4 pages (INFO, SKILLS, MOVES, EVOLUTION) drawn over columns 11-18 instead of 3 over 13-18;
-// columns 11 and 12 are the plain bar of the base tilemap when nothing else is drawn there.
-#define PAGE_PROGRESS_LEFT    11
+// Hack: 4 pages (INFO, SKILLS, MOVES, EVOLUTION) drawn over columns 12-19 instead of 3 over 13-18;
+// column 12 is the plain bar and 19 the blue bar of the base tilemap; 11 stays free so the
+// longest page name ("POKéMON SKILLS", 84 px from x = 4) keeps a gap before the first dot.
+#define PAGE_PROGRESS_LEFT    12
 #define PAGE_PROGRESS_WIDTH   8
 #define PROGRESS_BAR          1   // plain bar, left (beige) part
 #define PROGRESS_BAR_END_BLUE 2   // plain bar, right (blue) part; same tile on both rows
@@ -3543,10 +3545,10 @@ static const u8 sPageProgress_Skills[PAGE_PROGRESS_WIDTH]    = {PROGRESS_PREV, P
 static const u8 sPageProgress_Moves[PAGE_PROGRESS_WIDTH]     = {PROGRESS_PREV, PROGRESS_BAR,        PROGRESS_PREV, PROGRESS_BAR,  PROGRESS_CUR,  PROGRESS_TEAL_START, PROGRESS_NEXT, PROGRESS_TEAL_END};
 static const u8 sPageProgress_Evolution[PAGE_PROGRESS_WIDTH] = {PROGRESS_PREV, PROGRESS_BAR,        PROGRESS_PREV, PROGRESS_BAR,  PROGRESS_PREV, PROGRESS_BAR,        PROGRESS_CUR,  PROGRESS_BEIGE_END};
 static const u8 sPageProgress_MovesInfo[PAGE_PROGRESS_WIDTH] = {PROGRESS_PREV, PROGRESS_BAR,        PROGRESS_PREV, PROGRESS_BAR,  PROGRESS_DETAIL, PROGRESS_TEAL_START, PROGRESS_NEXT, PROGRESS_TEAL_END};
-// Only the detail dot: learning or forgetting a move, no other page
-static const u8 sPageProgress_SelectMove[PAGE_PROGRESS_WIDTH] = {PROGRESS_BAR, PROGRESS_BAR, PROGRESS_BAR, PROGRESS_BAR, PROGRESS_BAR, PROGRESS_BAR, PROGRESS_DETAIL, PROGRESS_BEIGE_END};
-// Eggs have only the INFO page
-static const u8 sPageProgress_Egg[PAGE_PROGRESS_WIDTH] = {PROGRESS_BAR, PROGRESS_BAR, PROGRESS_CUR, PROGRESS_BEIGE_END, PROGRESS_BAR_END_BLUE, PROGRESS_BAR_END_BLUE, PROGRESS_BAR_END_BLUE, PROGRESS_BAR_END_BLUE};
+// Only the detail dot: learning or forgetting a move, no other page (where vanilla draws it)
+static const u8 sPageProgress_SelectMove[PAGE_PROGRESS_WIDTH] = {PROGRESS_BAR, PROGRESS_BAR, PROGRESS_BAR, PROGRESS_BAR, PROGRESS_BAR, PROGRESS_DETAIL, PROGRESS_BEIGE_END, PROGRESS_BAR_END_BLUE};
+// Eggs have only the INFO page (where vanilla draws it)
+static const u8 sPageProgress_Egg[PAGE_PROGRESS_WIDTH] = {PROGRESS_BAR, PROGRESS_CUR, PROGRESS_BEIGE_END, PROGRESS_BAR_END_BLUE, PROGRESS_BAR_END_BLUE, PROGRESS_BAR_END_BLUE, PROGRESS_BAR_END_BLUE, PROGRESS_BAR_END_BLUE};
 
 static void PokeSum_DrawPageProgressTiles(void)
 {
@@ -5213,7 +5215,12 @@ static s8 SeekToNextMonInSingleParty(s8 direction)
 
 static u8 PokeSum_CanSeekToMon(struct Pokemon * partyMons)
 {
-    if (GetMonData(partyMons, MON_DATA_SPECIES) != SPECIES_NONE && (sMonSummaryScreen->curPageIndex != PSS_PAGE_INFO || !GetMonData(partyMons, MON_DATA_IS_EGG)))
+    if (GetMonData(partyMons, MON_DATA_SPECIES) == SPECIES_NONE)
+        return FALSE;
+    // Hack: the EVOLUTION page has nothing to show for an Egg
+    if (sMonSummaryScreen->curPageIndex == PSS_PAGE_EVOLUTION)
+        return !GetMonData(partyMons, MON_DATA_IS_EGG);
+    if (sMonSummaryScreen->curPageIndex != PSS_PAGE_INFO || !GetMonData(partyMons, MON_DATA_IS_EGG))
         return TRUE;
 
     return FALSE;

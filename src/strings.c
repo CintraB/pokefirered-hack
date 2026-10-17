@@ -861,6 +861,7 @@ const u8 gText_PokeSum_EvoLevelFreeSlot[] = _("{LV_2} {STR_VAR_1}, free slot {RI
 const u8 gText_PokeSum_EvoTrade[] = _("Trade {RIGHT_ARROW_2} {STR_VAR_3}");
 const u8 gText_PokeSum_EvoTradeItem[] = _("Trade + {STR_VAR_2} {RIGHT_ARROW_2} {STR_VAR_3}");
 const u8 gText_PokeSum_EvoNotPossible[] = _(" (impossible)");
+const u8 gText_PokeSum_EvoTradedOnly[] = _(" (R/S/E only)");
 const u8 gText_PokeSum_EvoNone[] = _("Does not evolve.");
 const u8 gText_TrainerCardName[] = _("NAME: ");
 const u8 gText_TrainerCardIDNo[] = _("IDNo.");
