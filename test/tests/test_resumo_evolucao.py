@@ -17,7 +17,7 @@ from esteira import hooks
 from esteira.check_text import WIDTH_RULES, _evolution_page_results, check_text, width_limit
 from esteira.constants import Constants
 from esteira.evolution_page import (ARROW, LINE_WIDTH_PX, LV, MAX_LINES, NO_EVOLUTION,
-                                    NOT_POSSIBLE, SCREEN_POINTS, SHOWCASE, SOURCE_FILES, TEXT_X,
+                                    NOT_POSSIBLE, PAGE_POINTS, SCREEN_POINTS, TRADED_ONLY, SHOWCASE, SOURCE_FILES, TEXT_X,
                                     WINDOW_WIDTH_PX, EvolutionPage, check_page_widths,
                                     evolution_line, text_size)
 from esteira.refs import SHARED_POINTS
@@ -44,7 +44,7 @@ FIXED = {
     "SPECIES_ONIX": [f"{LV} 37 + METAL COAT {ARROW} STEELIX"],
     "SPECIES_SLOWPOKE": [f"{LV} 37 {ARROW} SLOWBRO",
                          f"{LV} 37 + KING'S ROCK {ARROW} SLOWKING"],
-    "SPECIES_FEEBAS": [f"High beauty {ARROW} MILOTIC (impossible)"],
+    "SPECIES_FEEBAS": [f"High beauty {ARROW} MILOTIC (R/S/E only)"],
     "SPECIES_TAUROS": ["Does not evolve."],
     "SPECIES_WURMPLE": [f"{LV} 7 (random) {ARROW} SILCOON",
                         f"{LV} 7 (random) {ARROW} CASCOON"],
@@ -136,24 +136,28 @@ def test_formatos_de_strings_c_batem_com_o_python():
         "EVO_LEVEL_SHEDINJA": "gText_PokeSum_EvoLevelFreeSlot",
         "EVO_TRADE": "gText_PokeSum_EvoTrade", "EVO_TRADE_ITEM": "gText_PokeSum_EvoTradeItem",
     }
-    impossible = {"EVO_FRIENDSHIP_DAY", "EVO_FRIENDSHIP_NIGHT", "EVO_BEAUTY"}
+    suffixes = {"EVO_FRIENDSHIP_DAY": "gText_PokeSum_EvoNotPossible",
+                "EVO_FRIENDSHIP_NIGHT": "gText_PokeSum_EvoNotPossible",
+                "EVO_BEAUTY": "gText_PokeSum_EvoTradedOnly"}
     for method, label in by_method.items():
         item = method in ("EVO_ITEM", "EVO_LEVEL_HOLD_ITEM", "EVO_TRADE_ITEM")
         param = "ITEM_METAL_COAT" if item else "20"
         level = "37" if method == "EVO_LEVEL_HOLD_ITEM" else param
         c_line = (t[label].replace("{STR_VAR_1}", level).replace("{STR_VAR_2}", "METAL COAT")
                   .replace("{STR_VAR_3}", "STEELIX"))
-        if method in impossible:
-            c_line += t["gText_PokeSum_EvoNotPossible"]
+        if method in suffixes:
+            c_line += t[suffixes[method]]
         assert evolution_line(method, param, "SPECIES_STEELIX", PAGE.species_names,
                               PAGE.item_names) == c_line, method
         case = re.search(rf"case {method}:(?:\s*case \w+:)*(.*?)break;",
                          _function(SUMMARY_C, "void GetEvolutionPageText(u8 *dest, u16 species)"),
                          re.S)
         assert case and label in case.group(1), f"{method} sem {label} em GetEvolutionPageText"
-        assert ("possible = FALSE" in case.group(1)) == (method in impossible), method
+        suffix = re.search(r"suffix = (\w+);", case.group(1))
+        assert (suffix and suffix.group(1)) == suffixes.get(method), method
     assert t["gText_PokeSum_EvoNone"] == NO_EVOLUTION
     assert t["gText_PokeSum_EvoNotPossible"] == NOT_POSSIBLE
+    assert t["gText_PokeSum_EvoTradedOnly"] == TRADED_ONLY
 
 
 def test_janela_e_constantes_do_c_batem_com_o_python():
@@ -246,7 +250,7 @@ def test_checagem_de_texto_sem_os_fontes_nao_mede_e_com_os_reais_passa(tmp_path)
 # --- cenário e telas ---------------------------------------------------------------------------
 
 def test_telas_da_pagina_sao_comuns_aos_iniciais():
-    assert set(SCREEN_POINTS) <= set(SHARED_POINTS)
+    assert set(SCREEN_POINTS) | set(PAGE_POINTS) <= set(SHARED_POINTS)
     assert SCREEN_POINTS == tuple(f"resumo_evo_{s[8:].lower()}" for s in SHOWCASE)
 
 

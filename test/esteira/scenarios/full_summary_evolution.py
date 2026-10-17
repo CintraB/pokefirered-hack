@@ -19,7 +19,8 @@ leem o estado do resumo (página, modo, ovo) e o texto da página; o resto é pe
    resumo no modo de escolher golpe (PSS_MODE_SELECT_MOVE), onde → não leva à página EVOLUTION;
    B cancela e SIM desiste de aprender.
 
-Telas da página: OUT/telas/resumo_evo_<espécie>.png (referência em test/referencias/COMUM/,
+Telas da página: OUT/telas/resumo_evo_<espécie>.png, e das páginas SKILLS, KNOWN MOVES e detalhe
+do golpe do Eevee (resumo_pag_*, pelos 4 pontos de página) (referência em test/referencias/COMUM/,
 diferença é só aviso). No modo assistir (janela), cada página fica parada READ_PAUSE quadros.
 
 Uso, a partir de test/ (a pasta OUT precisa do captura.sav de um `rapido`/`completo`):
@@ -31,7 +32,7 @@ import sys
 
 from ..bag import Bag
 from ..emu import KEY_A, KEY_B, KEY_DOWN, KEY_LEFT, KEY_RIGHT
-from ..evolution_page import SCREEN_POINTS, SHOWCASE, EvolutionPage
+from ..evolution_page import PAGE_POINTS, SCREEN_POINTS, SHOWCASE, EvolutionPage
 from ..field_menu import STARTMENU_BAG, STARTMENU_POKEMON
 from ..hooks import (CMD_GIVE_ITEM, PSS_MODE_SELECT_MOVE, PSS_PAGE_EVOLUTION, PSS_PAGE_INFO,
                      PSS_PAGE_MOVES, PSS_PAGE_MOVES_INFO, Mailbox)
@@ -42,6 +43,7 @@ from .quick_catch_save import CatchSaveScenario
 SUMMARY_CB = "CB2_RunPokemonSummaryScreen"
 SUMMARY_TASK = "Task_InputHandler_Info"
 SELECT_MOVE_TASK = "Task_InputHandler_SelectOrForgetMove"
+DETAIL_TASK = "Task_HandleInput_SelectMove"             # detalhe do golpe (A em KNOWN MOVES)
 FLIP_TASK = "Task_PokeSum_FlipPages"
 SWITCH_TASK = "Task_PokeSum_SwitchDisplayedPokemon"
 PARTY_CHOOSE_TASK = "Task_HandleChooseMonInput"
@@ -190,17 +192,34 @@ class SummaryEvolutionScenario(CatchSaveScenario):
         self._open_summary(0)
         assert self._state()[0] == PSS_PAGE_INFO, "o resumo não abriu na página INFO"
         self._flip(KEY_RIGHT, 1, "página SKILLS")
+        shots = [self._page_shot(PAGE_POINTS[0])]
         self._flip(KEY_RIGHT, PSS_PAGE_MOVES, "página KNOWN MOVES")
+        shots.append(self._page_shot(PAGE_POINTS[1]))
         self._flip(KEY_RIGHT, PSS_PAGE_EVOLUTION, "página EVOLUTION")
-        return "INFO -> SKILLS -> KNOWN MOVES -> EVOLUTION com →; " + \
-            self._check_page(SHOWCASE[0], SCREEN_POINTS[0])
+        return (f"INFO -> SKILLS -> KNOWN MOVES -> EVOLUTION com → (telas {', '.join(shots)}); "
+                + self._check_page(SHOWCASE[0], SCREEN_POINTS[0]))
+
+    def _page_shot(self, name: str) -> str:
+        self.emu.frames(SETTLE)
+        path = self._shot(name)
+        self._pause_to_read()
+        return path
 
     def _back_and_forth(self) -> str:
         self._flip(KEY_LEFT, PSS_PAGE_MOVES, "← de volta para KNOWN MOVES")
+        # A: detalhe do golpe (4 pontos, o laranja no lugar do KNOWN MOVES); B volta
+        self.ctl.press_until(KEY_A, lambda: (self._state() or (None,))[0] == PSS_PAGE_MOVES_INFO,
+                             "detalhe do golpe", tries=3, wait=FLIP_WAIT)
+        self._wait_summary("detalhe do golpe", DETAIL_TASK)
+        detail = self._page_shot(PAGE_POINTS[2])
+        self.ctl.press_until(KEY_B, lambda: (self._state() or (None,))[0] == PSS_PAGE_MOVES,
+                             "volta do detalhe do golpe", tries=3, wait=FLIP_WAIT)
+        self._wait_summary("KNOWN MOVES de novo")
         self._flip(KEY_RIGHT, PSS_PAGE_EVOLUTION, "→ de novo para EVOLUTION")
         got, want = self.box.evolution_text(from_open_summary=True), self._expected(SHOWCASE[0])
         assert got == want, f"texto depois de voltar: '{self._read(got)}'"
-        return "← volta para KNOWN MOVES e → leva de novo para EVOLUTION (texto do Eevee)"
+        return ("← volta para KNOWN MOVES; A/B no detalhe do golpe (tela em "
+                f"{detail}); → leva de novo para EVOLUTION (texto do Eevee)")
 
     def _next_mon(self, index: int) -> str:
         """↓ na página EVOLUTION: o Pokémon seguinte, sem sair da página."""

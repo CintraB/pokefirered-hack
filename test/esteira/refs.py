@@ -11,6 +11,7 @@ from pathlib import Path
 
 from PIL import Image, ImageChops
 
+from esteira.evolution_page import PAGE_POINTS as SUMMARY_PAGE_POINTS
 from esteira.evolution_page import SCREEN_POINTS as EVOLUTION_PAGE_POINTS
 from esteira.evolutions import SCREEN_POINTS as EVOLUTION_POINTS
 from esteira.result import Result
@@ -25,7 +26,7 @@ KEY_POINTS = ("nome", "inicial", "batalha_rival", "captura", "save_continue") + 
 # EVOLUTION do resumo do cenário `resumo_evolucao`): uma referência só, em
 # test/referencias/COMUM/<ponto>.png, vale para os três.
 SHARED_REFS = "COMUM"
-SHARED_POINTS = EVOLUTION_POINTS + EVOLUTION_PAGE_POINTS
+SHARED_POINTS = EVOLUTION_POINTS + EVOLUTION_PAGE_POINTS + SUMMARY_PAGE_POINTS
 DIFF_RED = (255, 0, 0)
 # O Pillow acusa PNG quebrado com OSError (UnidentifiedImageError é subclasse, "image file is
 # truncated"), SyntaxError ("broken PNG file") ou ValueError, conforme onde o arquivo está estragado.

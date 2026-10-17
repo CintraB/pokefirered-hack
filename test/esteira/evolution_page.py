@@ -14,14 +14,15 @@ Formatos (➡ = {RIGHT_ARROW_2}, "Lv" = {LV_2}, os glifos do jogo):
     EVO_LEVEL_HOLD_ITEM             Lv 37 + METAL COAT ➡ STEELIX   (nível fixo 37 do Hack 3)
     EVO_FRIENDSHIP                  High friendship ➡ CROBAT
     EVO_FRIENDSHIP_DAY / _NIGHT     Day friendship ➡ ESPEON (impossible)
-    EVO_BEAUTY                      High beauty ➡ MILOTIC (impossible)
+    EVO_BEAUTY                      High beauty ➡ MILOTIC (R/S/E only)
     EVO_LEVEL_ATK_GT/EQ/LT_DEF      Lv 20, ATK > DEF ➡ HITMONLEE
     EVO_LEVEL_SILCOON / _CASCOON    Lv 7 (random) ➡ SILCOON
     EVO_LEVEL_SHEDINJA              Lv 20, free slot ➡ SHEDINJA
     EVO_TRADE / EVO_TRADE_ITEM      Trade ➡ X / Trade + ITEM ➡ X   (não sobrou nenhuma no jogo)
 "Impossible": no FireRed os casos de dia/noite estão comentados em GetEvolutionTargetSpecies
-(src/pokemon.c, sem relógio) e nada sobe a beleza (sem Pokéblocks; MON_DATA_BEAUTY só é
-escrito ao copiar dados de batalha por link).
+(src/pokemon.c, sem relógio). "R/S/E only": nada no FireRed sobe a beleza (sem Pokéblocks;
+MON_DATA_BEAUTY só é escrito ao copiar dados de batalha por link), mas um Feebas trazido de
+Ruby/Sapphire/Emerald com beleza alta evolui ao subir de nível (o método continua no jogo).
 """
 
 import json
@@ -35,8 +36,11 @@ from .evolutions import EVOLUTION_TABLE, HOLD_ITEM_LEVEL, load_evolution_table
 LV = "{LV_2}"
 ARROW = "{RIGHT_ARROW_2}"
 NOT_POSSIBLE = " (impossible)"
+TRADED_ONLY = " (R/S/E only)"
 NO_EVOLUTION = "Does not evolve."
-IMPOSSIBLE_METHODS = frozenset({"EVO_FRIENDSHIP_DAY", "EVO_FRIENDSHIP_NIGHT", "EVO_BEAUTY"})
+# sufixo das evoluções que o jogo sozinho não dispara
+SUFFIXES = {"EVO_FRIENDSHIP_DAY": NOT_POSSIBLE, "EVO_FRIENDSHIP_NIGHT": NOT_POSSIBLE,
+            "EVO_BEAUTY": TRADED_ONLY}
 
 # Janela do texto: sWindowTemplates_Evolution[0] (.tilemapLeft = 1, .width = 28 tiles) e o texto
 # em x = EVOLUTION_PAGE_TEXT_X = 2 (src/pokemon_summary_screen.c); 13 tiles de altura com 16 px
@@ -61,6 +65,9 @@ POKEMON_NAME_LENGTH = 10          # GetSpeciesName copia no máximo isso (includ
 SHOWCASE = ("SPECIES_EEVEE", "SPECIES_ONIX", "SPECIES_SLOWPOKE", "SPECIES_BULBASAUR",
             "SPECIES_TAUROS")
 SCREEN_POINTS = tuple(f"resumo_evo_{s.removeprefix('SPECIES_').lower()}" for s in SHOWCASE)
+# As outras páginas do Eevee, pelos 4 pontos de página novos do cabeçalho (e o título
+# "POKéMON SKILLS", que termina a 2 px do 1º ponto)
+PAGE_POINTS = ("resumo_pag_skills", "resumo_pag_moves", "resumo_pag_detalhe")
 
 NEWLINE = 0xFE                    # '\n' no charmap
 EXTRA_SYMBOL = 0xF9               # {LV_2}, {RIGHT_ARROW_2}: F9 xx, largura = tabela[0x100 | xx]
@@ -92,7 +99,7 @@ def evolution_line(method: str, param: str, target: str, species_names: dict[str
     if method not in lines:
         return None
     line = lines[method]()
-    return line + NOT_POSSIBLE if method in IMPOSSIBLE_METHODS else line
+    return line + SUFFIXES.get(method, "")
 
 
 def page_text(entries: list[tuple[str, str, str]], species_names: dict[str, str],
