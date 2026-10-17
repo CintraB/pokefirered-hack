@@ -36,6 +36,7 @@
 #include "constants/hold_effects.h"
 #include "constants/battle_move_effects.h"
 #include "constants/union_room.h"
+#include "constants/daycare.h"
 
 #define SPECIES_TO_HOENN(name)      [SPECIES_##name - 1] = HOENN_DEX_##name
 #define SPECIES_TO_NATIONAL(name)   [SPECIES_##name - 1] = NATIONAL_DEX_##name
@@ -1886,20 +1887,49 @@ void CreateBoxMon(struct BoxPokemon *boxMon, u16 species, u8 level, u8 fixedIV, 
     GiveBoxMonInitialMoveset(boxMon);
 }
 
-void CreateMonWithNature(struct Pokemon *mon, u16 species, u8 level, u8 fixedIV, u8 nature)
+// Uniform among the personalities with this nature and, unless abilityNum is ABILITY_NUM_ANY,
+// this ability slot (personality & 1), without trying ~25-50 random ones: the low half is free
+// (but for bit 0), and the high half is one of the 2621-2622 values that complete the nature.
+// personality % 25 = (high * 11 + low) % 25, since 65536 % 25 = 11, and 11 * 16 % 25 = 1. A
+// (low, k) pair whose high half would not fit is redrawn whole, so every match is equally likely.
+#define PERSONALITY_HIGH_SLOTS 2622 // ceil(65536 / NUM_NATURES)
+static u32 RandomPersonalityWithNature(u8 nature, u8 abilityNum)
+{
+    u32 low, first, k;
+
+    do
+    {
+        low = Random();
+        if (abilityNum != ABILITY_NUM_ANY)
+            low = (low & ~1) | abilityNum;
+        first = ((nature + NUM_NATURES - low % NUM_NATURES) * 16) % NUM_NATURES;
+        k = Random() & 0xFFF;
+    }
+    while (k >= PERSONALITY_HIGH_SLOTS || first + NUM_NATURES * k > 0xFFFF);
+
+    return ((first + NUM_NATURES * k) << 16) | low;
+}
+
+// Personality for a new mon of the player with the given nature (and ability slot, see above).
+// Gender and the rest stay as in the wild; the shiny rerolls are the same as CreateBoxMon's
+// (GetShinyRerolls). Wild mons (CreateMonWithNature) and daycare eggs both use it.
+u32 GetPlayerMonPersonality(u8 nature, u8 abilityNum)
 {
     u32 personality;
     u32 rolls = GetShinyRerolls();
 
     do
     {
-        do
-        {
-            personality = Random32();
-        }
-        while (nature != GetNatureFromPersonality(personality));
+        personality = RandomPersonalityWithNature(nature, abilityNum);
     }
     while (rolls-- != 0 && GET_SHINY_VALUE(GetPlayerOtId(), personality) >= SHINY_ODDS);
+
+    return personality;
+}
+
+void CreateMonWithNature(struct Pokemon *mon, u16 species, u8 level, u8 fixedIV, u8 nature)
+{
+    u32 personality = GetPlayerMonPersonality(nature, ABILITY_NUM_ANY);
 
     CreateMon(mon, species, level, fixedIV, TRUE, personality, OT_ID_PLAYER_ID, 0);
 }
@@ -5614,6 +5644,9 @@ void MonGainEVs(struct Pokemon *mon, u16 defeatedSpecies)
 
         if (holdEffect == HOLD_EFFECT_MACHO_BRACE)
             evIncrease *= 2;
+        // Power items: a flat bonus in their stat (not doubled by Pokerus)
+        if (holdEffect == HOLD_EFFECT_POWER_ITEM && ItemId_GetHoldEffectParam(heldItem) == i)
+            evIncrease += POWER_ITEM_EV_BONUS;
 
         if (totalEVs + (s16)evIncrease > MAX_TOTAL_EVS)
             evIncrease = ((s16)evIncrease + MAX_TOTAL_EVS) - (totalEVs + evIncrease);

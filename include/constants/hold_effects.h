@@ -68,5 +68,8 @@
 #define HOLD_EFFECT_METAL_POWDER   64
 #define HOLD_EFFECT_THICK_CLUB     65
 #define HOLD_EFFECT_STICK          66
+// Hack 6 (breeding): Power items (holdEffectParam = STAT_*) and the Destiny Knot
+#define HOLD_EFFECT_POWER_ITEM     67
+#define HOLD_EFFECT_DESTINY_KNOT   68
 
 #endif // GUARD_HOLD_EFFECTS_H

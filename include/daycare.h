@@ -29,4 +29,9 @@ void EggHatch(void);
 u8 GetEggStepsToSubtract(void);
 bool8 ShouldEggHatch(void);
 
+#if TESTBUILD
+u32 TestHooks_RollEggPersonalities(u32 count, u32 otId, u32 *shinies);
+u8 TestHooks_DaycareCompatibility(void);
+#endif
+
 #endif // GUARD_DAYCARE_H

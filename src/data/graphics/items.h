@@ -424,6 +424,15 @@ const u32 gItemIcon_AmuletCoin[] = INCBIN_U32("graphics/items/icons/amulet_coin.
 const u32 gItemIconPalette_AmuletCoin[] = INCBIN_U32("graphics/items/icon_palettes/amulet_coin.gbapal.lz");
 const u32 gItemIcon_ShinyCharm[] = INCBIN_U32("graphics/items/icons/shiny_charm.4bpp.lz");
 const u32 gItemIconPalette_ShinyCharm[] = INCBIN_U32("graphics/items/icon_palettes/shiny_charm.gbapal.lz");
+const u32 gItemIcon_DestinyKnot[] = INCBIN_U32("graphics/items/icons/destiny_knot.4bpp.lz");
+const u32 gItemIconPalette_DestinyKnot[] = INCBIN_U32("graphics/items/icon_palettes/destiny_knot.gbapal.lz");
+const u32 gItemIcon_PowerItem[] = INCBIN_U32("graphics/items/icons/power_item.4bpp.lz");
+const u32 gItemIconPalette_PowerWeight[] = INCBIN_U32("graphics/items/icon_palettes/power_weight.gbapal.lz");
+const u32 gItemIconPalette_PowerBracer[] = INCBIN_U32("graphics/items/icon_palettes/power_bracer.gbapal.lz");
+const u32 gItemIconPalette_PowerBelt[] = INCBIN_U32("graphics/items/icon_palettes/power_belt.gbapal.lz");
+const u32 gItemIconPalette_PowerLens[] = INCBIN_U32("graphics/items/icon_palettes/power_lens.gbapal.lz");
+const u32 gItemIconPalette_PowerBand[] = INCBIN_U32("graphics/items/icon_palettes/power_band.gbapal.lz");
+const u32 gItemIconPalette_PowerAnklet[] = INCBIN_U32("graphics/items/icon_palettes/power_anklet.gbapal.lz");
 
 const u32 gItemIcon_CleanseTag[] = INCBIN_U32("graphics/items/icons/cleanse_tag.4bpp.lz");
 const u32 gItemIconPalette_CleanseTag[] = INCBIN_U32("graphics/items/icon_palettes/cleanse_tag.gbapal.lz");
