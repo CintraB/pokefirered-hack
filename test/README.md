@@ -48,8 +48,8 @@ Os relatórios são arquivos normais do Windows: abra o `relatorio.html` com dup
 
 1. Compila a ROM. O log do build é guardado em `build/firered_switch.log`.
 2. Roda a **esteira rápida** (~35 s) em `test/out/<data-hora>/`:
-   - **log do build**: erro de compilação, aviso novo do compilador, ou EWRAM/IWRAM em 100% ou
-     mais reprovam;
+   - **log do build**: erro de compilação, aviso novo do compilador, do assembler ou do linker, ou
+     EWRAM/IWRAM em 100% ou mais reprovam;
    - **textos do jogo**: caractere fora do charmap, falta de terminador, linha larga demais
      para a caixa, sintaxe;
    - **3 roteiros no emulador**: `abertura` (nome, inicial, batalha do rival), `rota1`
@@ -60,7 +60,7 @@ Os relatórios são arquivos normais do Windows: abra o `relatorio.html` com dup
 | Resultado | O que faz | Como reconhecer |
 |---|---|---|
 | **Verde** (exit 0) | Copia a ROM e o relatório para `roms/<N>.0/` (próximo número livre). | `Versioned ... -> roms/N.0/` |
-| **Vermelho** (teste reprovou) | Copia a execução inteira para `roms/ultima-falha/` (substitui a anterior), **apaga a ROM** e sai com erro. O próximo `make firered_switch` refaz a ROM e **testa de novo**. | `[esteira] REPROVADA: ROM removida; relatório em roms/ultima-falha/relatorio.html` |
+| **Vermelho** (teste reprovou) | Copia a execução inteira para `roms/ultima-falha/` (substitui a anterior), **apaga a ROM** e sai com erro. O próximo `make firered_switch` refaz a ROM (recompilando o que deu aviso de build) e **testa de novo**. | `[esteira] REPROVADA: ROM removida; relatorio em roms/ultima-falha/relatorio.html` |
 | **Falha de infraestrutura** (a esteira nem chegou a concluir: sem Python, Ctrl-C, crash sem relatório, log de build incompleto, runner do emulador sem compilar) | **Não versiona** e **não mexe** em `ultima-falha`. Apaga a ROM (o próximo make retesta) e sai com erro. | `[esteira] falha de infraestrutura: <motivo>` |
 
 Diferença prática: "vermelho" quer dizer que o jogo tem um problema, e o relatório mostra qual.
@@ -92,29 +92,39 @@ vermelha **ROM NÃO TESTADA**. Serve para quando você precisa da ROM agora; tes
 
 Mantenha o `relatorio.html` junto das pastas/arquivos `img/` e `video.webp`: a página os
 referencia por caminho relativo. `meta.json` tem inicial usado, data, commit, modo, tempos e se a
-ROM foi testada. `roms/` e `test/out/` não vão para o Git. **`test/out/` nunca é limpa
-sozinha** (hoje passa de 280 MB): apague pastas antigas à mão quando quiser.
+ROM foi testada. `roms/` e `test/out/` não vão para o Git. **`test/out/` guarda só as 15
+execuções mais novas**: no fim de cada `make firered_switch` as pastas `<data-hora>` mais antigas
+são apagadas (inclusive as dos `make test-*`). O resto de `test/out/` (por exemplo `fixtures/`,
+o cache de um teste unitário) nunca é tocado. Para guardar uma execução, copie-a para fora.
 
 ### Rodízio de iniciais
 
-Cada execução com emulador usa um inicial diferente, em ordem: Bulbasaur, Charmander, Squirtle,
-Bulbasaur... O `roms/estado-esteira.json` guarda o **último usado** (`{"inicial": "SQUIRTLE"}`);
-o próximo é o seguinte da lista. Arquivo ausente ou ilegível recomeça em Bulbasaur. O inicial só
-é gasto quando o emulador realmente roda: `--starter X` (e `make test-watch`) não gastam o
-rodízio. Note que um reteste depois de uma reprovação usa o **próximo** inicial, não o mesmo.
-Para forçar um: `python3 -m esteira rapido ... --starter CHARMANDER` (veja abaixo).
+As execuções usam os iniciais em ordem: Bulbasaur, Charmander, Squirtle, Bulbasaur... O
+`roms/estado-esteira.json` guarda o último inicial de uma execução **verde**
+(`{"inicial": "SQUIRTLE"}`); a execução seguinte usa o próximo da lista. Arquivo ausente ou
+ilegível recomeça em Bulbasaur.
+
+- **O rodízio só avança quando a execução termina verde.** Uma reprovação (ou falha de
+  infraestrutura) **repete o mesmo inicial** na próxima: um bug que só aparece com um inicial
+  não some no reteste só porque o inicial trocou. Corrija e rode de novo; o inicial muda quando
+  passar. Se precisar da ROM antes, `SKIP_TESTS=1` (que não mexe no rodízio).
+- `--starter X` e o `make test-watch` não mexem no rodízio. Para forçar um:
+  `python3 -m esteira rapido ... --starter CHARMANDER` (veja abaixo).
 
 ## Comandos manuais
 
-Rodam sobre a ROM que já está na raiz (`pokefirered_switch.gba`) e **não versionam nada**. Todos
-recompilam antes o runner do emulador (`test/harness`) se ele estiver desatualizado.
+Rodam sobre a ROM que já está na raiz (`pokefirered_switch.gba`) e **não versionam nada**. Os que
+usam o emulador (todos menos o `test-approve`) recompilam antes o runner do emulador
+(`test/harness`) se ele estiver desatualizado.
 
 ### `make test-quick`
 
 Os mesmos testes do `make firered_switch` (checagem do log, dos textos e os 3 roteiros),
-~35 s, resultado em `test/out/<data-hora>/`. Usa `build/firered_switch.log` se existir; sem o
-log, a checagem do build é pulada com aviso. Deixa os savestates em `estados/`, que o
-`make test-watch --from` aproveita.
+~35 s, resultado em `test/out/<data-hora>/`. Usa o `build/firered_switch.log` do último build
+tratado como no pipeline (`test/build_log.sh`): cortado na marca de fim de build e completado
+com o uso de memória do link (`build/firered_switch/memory.txt`) quando o último make só refez a
+ROM. Sem o log, só o uso de memória é conferido (o terminal avisa). Deixa os savestates em
+`estados/`, que o `make test-watch --from` aproveita.
 
 ### `make test-full`
 
@@ -150,9 +160,9 @@ do `meta.json` da execução). Pontos: `nome`, `inicial`, `batalha_rival`, `capt
 `mapa` (tour do modo completo). Cada inicial tem o seu conjunto: para aprovar os três, rode a
 esteira uma vez com cada um (`--starter`).
 
-"Mais recente" é a pasta de `test/out/` modificada por último, qualquer que seja; confira o
-`DIR` quando tiver rodado outras coisas. O comando **não confere se a execução passou**: quem
-decide se a tela está certa é você.
+"Mais recente" é a pasta `test/out/<data-hora>` modificada por último, de qualquer comando;
+confira o `DIR` quando tiver rodado outras coisas. O comando **não confere se a execução
+passou**: quem decide se a tela está certa é você.
 
 Diferença de tela **nunca reprova** a ROM: vira *aviso* no relatório, com três imagens (a atual,
 a referência e o diff com os pixels diferentes em vermelho). Sem referência também é só aviso.
@@ -220,7 +230,7 @@ Opções de `rapido` e `completo` (`--rom`, `--elf` e `--out` são obrigatórios
 | `--log` | Log do build; sem ele só a checagem de texto roda (a do build vira aviso) |
 | `--out` | Pasta da execução (relatório, telas, estados, vídeo) |
 | `--only NOME` | Só um item: `build`, `texto`, `abertura`, `rota1`, `captura`; no `completo` também `pc`, `telas`, `floresta_brock`, `master`, `shiny` |
-| `--starter X` | Força `BULBASAUR`, `CHARMANDER` ou `SQUIRTLE` (não gasta o rodízio) |
+| `--starter X` | Força `BULBASAUR`, `CHARMANDER` ou `SQUIRTLE` (não mexe no rodízio) |
 | `--sem-video` | Não grava `video.webp` |
 
 `assistir`: `--starter`, `--from {encomenda,rival}`, `--rom`, `--elf`. Códigos de saída de
@@ -241,14 +251,16 @@ desde então, o estado é de outro código e o teste pode falhar de jeitos estra
 passar sem valer. Regras práticas:
 
 - só reuse a pasta `--out` se a ROM não mudou desde aquela execução;
-- passe o mesmo `--starter` da execução original (está no `meta.json`): sem ele a esteira gasta o
-  rodízio e, se o inicial não for o do checkpoint, descarta o checkpoint e roda a cadeia toda;
+- passe o mesmo `--starter` da execução original (está no `meta.json`): sem ele a esteira usa o
+  inicial da vez no rodízio e, se não for o do checkpoint, descarta o checkpoint e roda a
+  cadeia toda;
 - `--only shiny` precisa do `<OUT>/captura.sav` que o `rapido`/`completo` anterior (mesma
   pasta) deixou; sem ele o resultado é uma falha dizendo o que rodar antes;
 - `--only build` e `--only texto` não usam emulador e não têm esse problema.
 
-O vídeo (`video.webp`) grava a execução inteira, acelerado 4x (um quadro a cada 8 emulados, 30
-fps), com teto de 25 MB, e é embutido no relatório. Problema para gravar é só aviso. Com
+O vídeo (`video.webp`) grava a execução inteira acelerada, tipicamente 4x (um quadro a cada 8
+emulados, 30 fps; execuções longas descartam quadros para caber no teto de 25 MB), e é embutido
+no relatório. Problema para gravar é só aviso. Com
 `--only` de item sem emulador não há vídeo.
 
 ## Testes unitários da esteira
@@ -357,9 +369,10 @@ Como funciona:
 **Largura do texto** (regra `largura`): cada fonte de texto tem a sua largura útil em px, tirada
 dos templates de janela do código. As principais: diálogos de mapa (`data/maps/*/text.inc`) e a
 maioria de `data/text/*.inc`, 208 px (26 tiles); descrições de itens (`src/data/items.json`),
-200 px; Quest Log e barra de ajuda do menu Start, 238 px. Textos que não são diálogo (menus,
+200 px; Quest Log (`src/data/text/quest_log.h`) e barra de ajuda do menu Start (os
+`gStartMenuDesc_*` de `src/strings.c`), 238 px. Textos que não são diálogo (menus, o resto de
 `strings.c`, nomes, `help_system`, `new_game_intro`, `fame_checker`, `pokedude`, `pc_transfer`,
-`save`, `pokedex_rating`, braille, `src/data/text/*.h`) **não têm checagem de largura**: a janela
+`save`, `pokedex_rating`, braille, o resto de `src/data/text/*.h`) **não têm checagem de largura**: a janela
 varia ou não foi determinada. A tabela completa, com o motivo de cada uma, está em `WIDTH_RULES`
 em `test/esteira/check_text.py`. Os caracteres ({PLAYER}/{RIVAL} medem 7 letras) e o espaçamento
 entre letras seguem o jogo.
@@ -376,7 +389,16 @@ entre letras seguem o jogo.
 - **O modo completo depende da ROM jogável compilada na raiz**: ela é a base do rápido, do
   `pc`/`telas`/`floresta_brock` e do `.sav` que o `shiny` usa. A ROM de teste é recompilada pelo
   `make test-full`, a jogável não.
-- A cada `make firered_switch` o inicial muda (rodízio): um vermelho que só aparece com um inicial
-  pode ser um bug específico dele; reproduza com `--starter`.
+- **Vermelho raro no modo rápido**: a `rota1` confere a barra de HP num golpe recebido e luta até
+  8 batalhas selvagens esperando levar um. Sem nenhum golpe nas 8 ela reprova (a barra não foi
+  conferida). Com 4 batalhas isso dava ~0,08% das execuções; com 8 é bem mais raro. Se acontecer
+  (o detalhe diz "nenhum golpe recebido"), rode de novo.
+- **O inicial só muda quando a execução passa** (rodízio): um vermelho repete o mesmo inicial até
+  ser corrigido. Um vermelho que só aparece com um inicial pode ser um bug específico dele;
+  reproduza com `--starter`.
+- **`make -O`/`--output-sync` não é suportado** no `make firered_switch`: a esteira espera a marca
+  de fim de build chegar ao log (pelo `tee`) antes de testar, e com a saída agrupada ela só é
+  escrita depois que a regra termina; o resultado é "falha de infraestrutura: o log do build ...
+  não chegou ao fim". Use `-j` normal.
 - O `make test-watch` não faz parte da esteira e não testa nada além de assistir; o relatório e a
   versão só existem para `make firered_switch`.

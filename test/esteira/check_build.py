@@ -9,10 +9,29 @@ from esteira.result import Result
 _MEMORY = re.compile(r"^\s*(EWRAM|IWRAM):\s+(\d+) B\s+(\d+ [KMG]?B)\s+([\d.]+)%\s*$")
 _REGIONS = ("EWRAM", "IWRAM")
 
-# Mensagens do compilador/linker/make; exige o ':' antes para não pegar nomes de arquivo
-# como `src/error_message.c`.
-_ERROR = re.compile(r"(?:^|[:\s])(?:fatal error|error):\s|overflowed by|\*\*\* ")  # `make: *** ...`
+# Mensagens do compilador/linker; exige o ':' antes para não pegar nomes de arquivo como
+# `src/error_message.c`.
+_ERROR = re.compile(r"(?:^|[:\s])(?:fatal error|error):\s|overflowed by")
 _WARNING = re.compile(r"(?:^|[:\s])warning:\s")
+# Com arquivo e linha, em qualquer caixa: o `as` escreve "Warning:"/"Error:", e o C e o data/*.s
+# chegam a ele por pipe, então o arquivo é "{standard input}" (`{standard input}:12: Warning: ...`).
+_LOCATED = re.compile(r"^\s*[^:\s][^:]*:\d+:(?:\d+:)?\s*(fatal error|error|warning)\s*:", re.I)
+# Erros do make: `make[1]: *** [Makefile:9: x] Error 1`, `make: *** No rule...  Stop.`,
+# `Makefile:12: *** missing separator.  Stop.`. Um `*** ` qualquer não (a própria esteira imprime
+# `*** ROM NÃO TESTADA ... ***`).
+_MAKE_ERROR = re.compile(r"^\s*(?:\S*make(?:\[\d+\])?|[^\s:]+:\d+): \*\*\* ")
+
+
+def _kind(line: str) -> str | None:
+    """Classifica uma linha do log: "erro", "aviso" ou None."""
+    located = _LOCATED.match(line)
+    if located:
+        return "aviso" if located.group(1).lower() == "warning" else "erro"
+    if _ERROR.search(line) or _MAKE_ERROR.match(line):
+        return "erro"
+    if _WARNING.search(line):
+        return "aviso"
+    return None
 
 
 def check_build(log_path: str, exceptions: dict) -> list[Result]:
@@ -33,9 +52,11 @@ def check_build(log_path: str, exceptions: dict) -> list[Result]:
         mem = _MEMORY.match(line)
         if mem:
             usage[mem.group(1)] = (mem.group(2), mem.group(3), mem.group(4))
-        elif _ERROR.search(line):
+            continue
+        kind = _kind(line)
+        if kind == "erro":
             results.append(Result("build/erro", "falha", text))
-        elif _WARNING.search(line) and not any(a and a in text for a in allowed):
+        elif kind == "aviso" and not any(a and a in text for a in allowed):
             results.append(Result("build/aviso", "falha", f"aviso de build novo: {text}"))
 
     for region in _REGIONS:

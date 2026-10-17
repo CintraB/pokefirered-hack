@@ -1,7 +1,9 @@
 """Inicial em rodízio entre execuções: Bulbasaur -> Charmander -> Squirtle -> Bulbasaur...
 
 O estado fica num JSON fora do Git (em produção, roms/estado-esteira.json; testes usam
-um caminho temporário).
+um caminho temporário) com o último inicial de uma execução VERDE. A execução espia o da vez
+(peek_next_starter) e só o grava (record_starter) se terminar verde: um vermelho repete o mesmo
+inicial na próxima, para que um bug de um inicial só não "passe" trocando de inicial.
 """
 
 import json
@@ -22,20 +24,18 @@ def _last_starter(path: Path) -> str | None:
 
 
 def peek_next_starter(state_path: str) -> str:
-    """O inicial da vez, SEM gravar nada (o modo `assistir` não gasta o rodízio)."""
+    """O inicial da vez, SEM gravar nada.
+
+    Arquivo ausente, ilegível ou com valor desconhecido recomeça em Bulbasaur.
+    """
     last = _last_starter(Path(state_path))
     return STARTERS[0] if last is None else STARTERS[(STARTERS.index(last) + 1) % len(STARTERS)]
 
 
-def next_starter(state_path: str) -> str:
-    """Devolve o inicial da vez e o grava como último escolhido.
-
-    Arquivo ausente, ilegível ou com valor desconhecido recomeça em Bulbasaur.
-    """
+def record_starter(state_path: str, starter: str) -> None:
+    """Grava `starter` como o último usado (o próximo peek devolve o seguinte)."""
     path = Path(state_path)
-    starter = peek_next_starter(state_path)
     path.parent.mkdir(parents=True, exist_ok=True)
     tmp = path.with_name(path.name + ".tmp")
     tmp.write_text(json.dumps({STATE_KEY: starter}, ensure_ascii=False) + "\n", encoding="utf-8")
     os.replace(tmp, path)
-    return starter

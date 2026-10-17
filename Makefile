@@ -421,9 +421,13 @@ endif
 #   SKIP_TESTS=1 make firered_switch  versions the ROM without testing (marked NAO_TESTADA.txt)
 # Every target that runs the emulator first brings the runner (test/harness) up to date, so a
 # stale runner never kills a run (Emulator refuses a runner older than its source).
+# Runs go to $(ESTEIRA_RUNS_DIR)/<date-time>/. The build log is prepared by test/build_log.sh, as
+# in test/pipeline.sh: cut at the end-of-build marker (what follows is the pipeline's own output)
+# plus the linker's memory usage (build/<name>/memory.txt) when the last make only re-ran objcopy.
 ESTEIRA_RUNNER = $(MAKE) -s -C test/harness
-ESTEIRA_RUN =out=$(CURDIR)/test/out/$$(date +%Y%m%d-%H%M%S); log=$(CURDIR)/$(FIRERED_SWITCH_LOG); \
-	logarg=""; if [ -f "$$log" ]; then logarg="--log $$log"; fi; \
+ESTEIRA_RUNS_DIR := $(CURDIR)/test/out
+ESTEIRA_RUN =out=$(ESTEIRA_RUNS_DIR)/$$(date +%Y%m%d-%H%M%S); mkdir -p $$out; logarg=""; \
+	if sh test/build_log.sh $(abspath $(FIRERED_SWITCH_LOG)) $(abspath $(FIRERED_SWITCH_LOG:.log=))/memory.txt $$out/build.log; then logarg="--log $$out/build.log"; fi; \
 	cd test && python3 -m esteira $(1) --rom $(CURDIR)/pokefirered_switch.gba --elf $(CURDIR)/pokefirered_switch.elf $$logarg --out $$out
 
 test-quick:
@@ -443,7 +447,7 @@ test-watch:
 	@cd test && python3 -m esteira assistir --rom $(CURDIR)/pokefirered_switch.gba --elf $(CURDIR)/pokefirered_switch.elf $(if $(FROM),--from $(FROM)) $(if $(STARTER),--starter $(STARTER))
 
 test-approve:
-	@cd test && python3 -m esteira aprovar "$(if $(DIR),$(abspath $(DIR)),$(shell ls -dt $(CURDIR)/test/out/*/ | head -n 1))"
+	@cd test && python3 -m esteira aprovar "$(if $(DIR),$(abspath $(DIR)),$(shell ls -dt $(ESTEIRA_RUNS_DIR)/[0-9]*-[0-9]*/ 2>/dev/null | head -n 1))"
 
 # Symbol file (`make syms`)
 $(SYM): $(ELF)

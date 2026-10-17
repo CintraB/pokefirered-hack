@@ -78,3 +78,37 @@ def test_approve_refs_sem_inicial_conhecido_falha(tmp_path):
         assert "inicial" in str(exc)
     else:
         raise AssertionError("deveria exigir o inicial")
+
+
+def test_referencia_corrompida_vira_aviso(tmp_path):
+    """PNG quebrado (disco, cópia interrompida) não pode derrubar a esteira: é aviso."""
+    refs = tmp_path / "refs"
+    shot = make_png(tmp_path / "run" / "nome.png")
+    bad = refs / "SQUIRTLE" / "nome.png"
+    bad.parent.mkdir(parents=True)
+    for content in (b"isto nao e um png", b"\x89PNG\r\n\x1a\n" + b"\0" * 40):
+        bad.write_bytes(content)
+        result = compare_ref("nome", "SQUIRTLE", shot, str(refs))
+        assert result.status == "aviso", content
+        assert "referência ilegível" in result.detail
+        assert shot in result.images
+
+
+def test_png_truncado_vira_aviso(tmp_path):
+    refs = tmp_path / "refs"
+    good = Path(make_png(refs / "SQUIRTLE" / "nome.png"))
+    data = good.read_bytes()
+    good.write_bytes(data[:len(data) // 2])                  # cabeçalho bom, dados cortados
+    shot = make_png(tmp_path / "run" / "nome.png")
+    result = compare_ref("nome", "SQUIRTLE", shot, str(refs))
+    assert result.status == "aviso" and "referência ilegível" in result.detail
+
+
+def test_tela_corrompida_vira_aviso(tmp_path):
+    refs = tmp_path / "refs"
+    make_png(refs / "SQUIRTLE" / "nome.png")
+    shot = tmp_path / "run" / "nome.png"
+    shot.parent.mkdir(parents=True)
+    shot.write_bytes(b"lixo")
+    result = compare_ref("nome", "SQUIRTLE", str(shot), str(refs))
+    assert result.status == "aviso" and "ilegível" in result.detail

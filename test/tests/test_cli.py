@@ -1,6 +1,8 @@
 """CLI da esteira sem emulador: cenários falsos, agrupamento por ROM, rodízio, aprovação."""
 
 import json
+import os
+import time
 from contextlib import contextmanager
 from pathlib import Path
 from types import SimpleNamespace
@@ -490,6 +492,78 @@ def test_rodizio_nao_avanca_sem_emulador(env, monkeypatch):
     (env.tmp / "jogavel.gba").write_bytes(b"x")
     main(env.argv("rapido", "--starter", "SQUIRTLE"))      # roda, mas não gasta o rodízio
     assert not state_file().exists()
+
+
+def test_rodizio_so_avanca_quando_a_execucao_termina_verde(env, monkeypatch):
+    """Vermelho repete o inicial: um bug de um inicial só não some trocando de inicial."""
+    set_scenarios(monkeypatch, [env.spec("a", effect=failing)])
+    assert main(env.argv("rapido")) == 1
+    assert main(env.argv("rapido")) == 1
+    assert not state_file().exists()
+    set_scenarios(monkeypatch, [env.spec("a")])
+    assert main(env.argv("rapido")) == 0
+    assert json.loads(state_file().read_text())["inicial"] == "BULBASAUR"
+    assert main(env.argv("rapido")) == 0
+    assert [s for _, s in env.opened] == ["BULBASAUR"] * 3 + ["CHARMANDER"]
+    assert json.loads(state_file().read_text())["inicial"] == "CHARMANDER"
+
+
+def test_rodizio_nao_avanca_com_falha_estatica_nem_com_crash(env, monkeypatch):
+    set_scenarios(monkeypatch, [env.spec("a")])
+    monkeypatch.setattr(cli, "check_text",
+                        lambda repo, exceptions: [Result("texto/x", "falha", "largo demais")])
+    assert main(env.argv("rapido")) == 1                   # emulador rodou, mas a execução é vermelha
+    assert not state_file().exists()
+    monkeypatch.setattr(cli, "check_text", lambda repo, exceptions: [])
+
+    def boom(*args, **kwargs):
+        raise RuntimeError("relatório quebrou")
+    monkeypatch.setattr(cli, "write_report", boom)
+    with pytest.raises(RuntimeError):
+        main(env.argv("rapido"))                            # crash: infraestrutura, não verde
+    assert not state_file().exists()
+
+
+def test_rodizio_com_dois_grupos_vermelho_no_segundo_nao_avanca(env, monkeypatch):
+    set_scenarios(monkeypatch, [env.spec("a")], [env.spec("b", rom=TEST, effect=failing)])
+    assert main(env.argv("completo")) == 1
+    assert [s for _, s in env.opened] == ["BULBASAUR", "BULBASAUR"]
+    assert not state_file().exists()
+
+
+# --- erros inesperados nas checagens estáticas e nas referências -------------------------------
+
+def test_excecao_nas_checagens_estaticas_vira_falha_com_relatorio(env, monkeypatch, capsys):
+    """Um bug na checagem (ou excecoes.json quebrado) reprova com diagnóstico, não com traceback
+    solto (que o pipeline trataria como falha de infraestrutura a cada build)."""
+    set_scenarios(monkeypatch, [env.spec("a")])
+
+    def boom(repo, exceptions):
+        raise KeyError("rótulo")
+    monkeypatch.setattr(cli, "check_text", boom)
+    assert main(env.argv("rapido", "--starter", "BULBASAUR")) == 1
+    assert env.ran == ["a"]                                  # os roteiros rodam mesmo assim
+    page = html(env)
+    assert "REPROVADA" in page and "KeyError" in page and "Traceback" in page
+    out = capsys.readouterr().out
+    assert "[falha] esteira/checagens-estáticas: erro inesperado: KeyError" in out
+
+
+def test_referencia_corrompida_vira_aviso_e_nao_derruba_a_esteira(env, monkeypatch, tmp_path):
+    def shot(ctx):
+        telas = Path(ctx.out_dir) / "telas"
+        telas.mkdir(parents=True, exist_ok=True)
+        Image.new("RGB", (4, 4)).save(telas / "nome.png")
+        # o mtime do arquivo vem de um relógio grosso (ms) e esta execução falsa leva menos que
+        # isso: garante que a tela conta como "desta execução"
+        later = time.time() + 2
+        os.utime(telas / "nome.png", (later, later))
+    set_scenarios(monkeypatch, [env.spec("a", effect=shot)])
+    ref = Path(cli.REFS_DIR) / "BULBASAUR" / "nome.png"
+    ref.parent.mkdir(parents=True)
+    ref.write_bytes(b"\x89PNG\r\n\x1a\n corrompido")
+    assert main(env.argv("rapido", "--starter", "BULBASAUR")) == 0
+    assert "referência ilegível" in html(env)
 
 
 def test_nao_testada_escreve_so_o_relatorio_sem_emulador(env, monkeypatch):

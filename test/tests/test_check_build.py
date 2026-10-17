@@ -89,3 +89,41 @@ def test_words_in_file_names_are_not_warnings(tmp_path):
 def test_missing_log_file_fails(tmp_path):
     failed = by_status(check_build(str(tmp_path / "nao_existe.log"), {}), "falha")
     assert len(failed) == 1 and "log" in failed[0].detail
+
+
+# --- as (GNU assembler) e make --------------------------------------------------------------
+# O C (agbcc | as) e o data/*.s (preproc | cpp | as) chegam ao `as` por pipe: o arquivo vira
+# "{standard input}" e o as escreve "Warning:"/"Error:" com maiúscula.
+
+def test_gas_warning_from_a_pipe_fails(tmp_path):
+    log = ("{standard input}: Assembler messages:\n"
+           "{standard input}:1234: Warning: value 0x1ff truncated to 0xff\n")
+    failed = by_status(check_build(write_log(tmp_path, log + OK_LOG), {}), "falha")
+    assert len(failed) == 1
+    assert failed[0].name == "build/aviso" and "truncated" in failed[0].detail
+
+
+def test_gas_error_with_file_and_line_fails(tmp_path):
+    log = "data/event_scripts.s:30: Error: bad expression\n"
+    failed = by_status(check_build(write_log(tmp_path, log + OK_LOG), {}), "falha")
+    assert [r.name for r in failed] == ["build/erro"]
+
+
+def test_gas_warning_listed_as_exception_is_ignored(tmp_path):
+    warn = "asm/crt0.s:12: Warning: ignoring changed section attributes\n"
+    exceptions = {"build_warnings": ["ignoring changed section attributes"]}
+    assert by_status(check_build(write_log(tmp_path, warn + OK_LOG), exceptions), "falha") == []
+
+
+def test_make_errors_in_all_forms_fail(tmp_path):
+    for line in ("make[1]: *** [Makefile:401: pokefirered_switch.elf] Error 1",
+                 "Makefile:12: *** missing separator.  Stop.",
+                 "make: *** [firered_switch] Interrupt"):
+        failed = by_status(check_build(write_log(tmp_path, line + "\n" + OK_LOG), {}), "falha")
+        assert [r.name for r in failed] == ["build/erro"], line
+
+
+def test_triple_asterisk_of_other_programs_is_not_a_make_error(tmp_path):
+    """Saída da própria esteira (uma execução anterior no mesmo log) não é erro de build."""
+    log = "*** ROM NÃO TESTADA: o emulador não rodou ***\n*** destaque qualquer ***\n"
+    assert by_status(check_build(write_log(tmp_path, log + OK_LOG), {}), "falha") == []

@@ -17,7 +17,9 @@ teste) em WebP animado acelerado (um quadro a cada 8 emulados, 30 fps), embutido
 `--sem-video` desliga (ver esteira/video.py).
 `assistir` é à parte do pipeline: roda os roteiros rápidos numa janela, em tempo real e com som,
 com um save temporário; não gera versão, não mexe em roms/ nem no rodízio de iniciais.
-Sai com 0 se nenhum resultado for `falha` (avisos não reprovam) e 1 caso contrário.
+Sai com 0 se nenhum resultado for `falha` (avisos não reprovam) e 1 caso contrário. Sem
+`--starter`, o inicial é o da vez no rodízio (esteira/rotation.py), que só avança quando a
+execução termina verde: um vermelho repete o mesmo inicial na próxima.
 """
 
 import argparse
@@ -41,7 +43,7 @@ from esteira.emu import EmulatorError, WindowClosed
 from esteira.refs import DEFAULT_REFS_DIR, KEY_POINTS, approve_refs, compare_ref
 from esteira.report import VIDEO_NAME, write_report
 from esteira.result import Result, StepTimeout, Suite
-from esteira.rotation import STARTERS, next_starter, peek_next_starter
+from esteira.rotation import STARTERS, peek_next_starter, record_starter
 from esteira.scenarios import REPO_ROOT, ScenarioContext, open_context
 from esteira.scenarios.full_forest_brock import run_full_forest_brock
 from esteira.scenarios.full_master import run_full_master
@@ -338,7 +340,14 @@ def run_mode(args: argparse.Namespace) -> int:
     video_path.unlink(missing_ok=True)
     recorder = None if args.sem_video else VideoRecorder()
 
-    unusable = _static_checks(args, suite)
+    try:
+        unusable = _static_checks(args, suite)
+    except Exception as exc:  # noqa: BLE001 - bug numa checagem reprova com diagnóstico no relatório
+        unusable = False      # (um traceback solto viraria "falha de infraestrutura" a cada build)
+        suite.add(Result("esteira/checagens-estáticas", "falha",
+                         f"erro inesperado: {type(exc).__name__}: {exc}\n"
+                         f"{traceback.format_exc().strip()}"))
+    rotated = False   # o inicial veio do rodízio: só é gravado se a execução terminar verde
     if args.only in (None, *[s.name for s in specs]):
         roms = {PLAYABLE: (args.rom, args.elf, "ROM jogável"),
                 TEST: (args.rom_test, args.elf_test, "ROM de teste")}
@@ -383,7 +392,8 @@ def run_mode(args: argparse.Namespace) -> int:
                 if starter is None:   # o inicial é o do .sav (não gasta o rodízio)
                     starter = _bridge_starter(info)
             if starter is None:
-                starter = next_starter(args.state)
+                starter = peek_next_starter(args.state)
+                rotated = True
             bridges = producers if kind == PLAYABLE else set()
             with open_context(rom, elf, str(out), starter, suite, save_from=save_from,
                               recorder=recorder) as ctx:
@@ -401,7 +411,14 @@ def run_mode(args: argparse.Namespace) -> int:
                                    encoding="utf-8")
     report = write_report(suite, str(out), meta)
     _print_summary(suite, meta, report)
-    return 1 if suite.failed() else 0
+    if suite.failed():
+        return 1
+    if rotated:   # verde: o próximo é o seguinte do rodízio (vermelho repete este inicial)
+        try:
+            record_starter(args.state, starter)
+        except OSError as exc:
+            print(f"aviso: rodízio de iniciais não gravado em {args.state}: {exc}", file=sys.stderr)
+    return 0
 
 
 # --- assistir: os roteiros rápidos numa janela, em tempo real -------------------------------------
@@ -547,7 +564,8 @@ def build_parser() -> argparse.ArgumentParser:
         p.add_argument("--only", help="só um item: " + ", ".join(
             STATIC_CHECKS + tuple(s.name for s in scenarios_for(modo))))
         p.add_argument("--starter", choices=STARTERS,
-                       help="força o inicial (não gasta o rodízio); padrão: o da vez")
+                       help="força o inicial (não mexe no rodízio); padrão: o da vez, que "
+                            "só avança se a execução passar")
         p.add_argument("--sem-video", action="store_true",
                        help=f"não grava {VIDEO_NAME} (a execução inteira em vídeo acelerado)")
         p.add_argument("--state", default=STATE_PATH, help=argparse.SUPPRESS)

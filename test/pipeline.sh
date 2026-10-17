@@ -14,7 +14,9 @@
 #       incompleto) -> "falha de infraestrutura": nao versiona, nao mexe em ultima-falha,
 #       APAGA a ROM (o proximo make retesta) e sai 1
 # A ROM e apagada em todo caminho que nao versiona: sem isso o make diria "Nothing to be done" e
-# uma ROM sem teste pareceria pronta. O ELF fica (o uso de memoria do ld esta em memory.txt).
+# uma ROM sem teste pareceria pronta. O ELF fica (o uso de memoria do ld esta em memory.txt),
+# salvo num vermelho com aviso/erro de build que nao e de um src/*.c (ver drop_stale_objects).
+# No fim, test/out/ fica so com as KEEP_RUNS execucoes mais novas (pastas <data-hora>).
 #
 # Variaveis opcionais (usadas pelos testes e pelo Makefile):
 #   BUILD_LOG         log do build (o tee do Makefile); a esteira so le depois da marca de fim
@@ -54,8 +56,21 @@ esteira=${ESTEIRA_CMD:-python3 -m esteira}
 
 out_base=${ESTEIRA_OUT_BASE:-$root/test/out}
 mkdir -p "$out_base"
-out="$(cd "$out_base" && pwd)/$(date +%Y%m%d-%H%M%S)"
+out_base=$(cd "$out_base" && pwd)
+out="$out_base/$(date +%Y%m%d-%H%M%S)"
 mkdir -p "$out"
+
+# test/out/ nao cresce sem limite: ao sair (qualquer caminho), ficam as KEEP_RUNS pastas de
+# execucao mais novas. So entram na conta as pastas <data-hora> (as do pipeline e dos make
+# test-*); fixtures/ e qualquer outra coisa nunca sao tocadas.
+KEEP_RUNS=15
+prune_runs() {
+    ls -1 "$out_base" | grep -E '^[0-9]{8}-[0-9]{6}$' | sort -r | tail -n +$((KEEP_RUNS + 1)) \
+        | while read -r old; do
+        if [ -d "$out_base/$old" ]; then rm -rf "${out_base:?}/$old"; fi
+    done
+}
+trap prune_runs EXIT
 
 # Roda a esteira a partir de test/ (os caminhos que ela recebe sao absolutos).
 run_esteira() {
@@ -82,10 +97,9 @@ fi
 rom_abs=$(cd "$(dirname "$rom")" && pwd)/$base
 elf_abs=${rom_abs%.gba}.elf
 
-# Log para a esteira: o do build (cortado na marca de fim, o resto e saida da propria esteira),
-# mais o uso de memoria do ld guardado em memory.txt se o log desta execucao nao o traz (make
-# interrompido: so o objcopy rodou de novo).
-log_args=""
+# Log para a esteira (test/build_log.sh, o mesmo do make test-quick): o do build cortado na marca
+# de fim, mais o uso de memoria do ld guardado em memory.txt se o log desta execucao nao o traz
+# (so o objcopy rodou de novo). O log chega pelo tee do Makefile: espera a marca antes.
 log_file="$out/build.log"
 if [ -n "${BUILD_LOG:-}" ]; then
     waited=0
@@ -97,17 +111,10 @@ if [ -n "${BUILD_LOG:-}" ]; then
     if ! grep -qF "$marker" "$BUILD_LOG" 2>/dev/null; then
         infra_failure "o log do build ($BUILD_LOG) nao chegou ao fim em ${ESTEIRA_LOG_WAIT:-15} s; log possivelmente incompleto"
     fi
-    awk -v m="$marker" '{ print } index($0, m) { exit }' "$BUILD_LOG" > "$log_file"
-    if ! grep -qE '^[[:space:]]*EWRAM:' "$log_file" && [ -f "$memory_file" ]; then
-        cat "$memory_file" >> "$log_file"
-    fi
+fi
+log_args=""
+if sh "$root/test/build_log.sh" "${BUILD_LOG:-}" "$memory_file" "$log_file"; then
     log_args="--log $log_file"
-else
-    echo "[esteira] sem log de build: checagens de compilação puladas; use make firered_switch"
-    if [ -f "$memory_file" ]; then
-        cp "$memory_file" "$log_file"
-        log_args="--log $log_file"
-    fi
 fi
 
 # O runner do emulador (C) tem de estar na versao do fonte: um binario velho nao tem os comandos
@@ -133,18 +140,38 @@ if [ $status -ne 1 ] || [ ! -f "$out/relatorio.html" ]; then
     infra_failure "a esteira terminou com código $status sem concluir o relatório"
 fi
 
-# Reprovada de verdade: guarda a execucao e tira a ROM do caminho. Os objetos dos arquivos
-# citados no log saem junto (senao os avisos de compilacao nao reaparecem no reteste: o make
-# so relinkaria e o log novo sairia limpo).
+# Reprovada: o reteste tem de refazer o que deu aviso/erro no log do build, senao eles nao
+# reaparecem (o make so relinkaria, ou so rodaria o objcopy, e o log novo sairia limpo):
+#  - src/*.c citado no log: o .o dele;
+#  - qualquer outro aviso/erro (o as por pipe diz "{standard input}:N: Warning:", sem o arquivo;
+#    .s, .inc, cabecalho, ld): todos os objetos que este build gerou (os "-o <obj>.o" do log)
+#    e o ELF (o ld roda de novo e reimprime os avisos dele e o uso de memoria).
+drop_stale_objects() {
+    grep -oE '(^|[^A-Za-z0-9_./-])src/[A-Za-z0-9_./-]+\.c:' "$log_file" | grep -oE 'src/[A-Za-z0-9_./-]+\.c' \
+        | sort -u | while read -r src; do
+        rm -f "$obj_dir/${src%.c}.o"
+    done
+    if grep -iE '(^|[:[:space:]])(fatal error|error|warning)[[:space:]]*:' "$log_file" \
+            | grep -qvE '^src/[A-Za-z0-9_./-]+\.c:[0-9]+:'; then
+        grep -oE -- '-o [^ ]+\.o( |$)' "$log_file" | sed 's/^-o //; s/ $//' | sort -u \
+            | while read -r obj; do
+            rel=${obj#*/"$name"/}          # build/<nome>/data/x.o -> data/x.o
+            case "$rel" in
+                "$obj"|*..*) continue ;;    # fora de build/<nome>/
+            esac
+            rm -f "$obj_dir/$rel"
+        done
+        rm -f "$elf_abs"
+    fi
+}
+
+# Reprovada de verdade: guarda a execucao e tira a ROM do caminho.
 rm -rf "$roms_dir/ultima-falha"
 mkdir -p "$roms_dir"
 cp -r "$out" "$roms_dir/ultima-falha"
 rm -f "$rom"
 if [ -n "${BUILD_LOG:-}" ]; then
-    grep -oE '(^|[^A-Za-z0-9_./-])src/[A-Za-z0-9_./-]+\.c:' "$log_file" | grep -oE 'src/[A-Za-z0-9_./-]+\.c' \
-        | sort -u | while read -r src; do
-        rm -f "$obj_dir/${src%.c}.o"
-    done
+    drop_stale_objects
 fi
 echo "[esteira] REPROVADA: ROM removida; relatorio em $roms_dir/ultima-falha/relatorio.html" >&2
 exit 1

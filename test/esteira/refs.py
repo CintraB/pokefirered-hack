@@ -20,6 +20,9 @@ DEFAULT_REFS_DIR = "test/referencias"
 TOUR_POINTS = ("bolsa", "resumo", "pokedex", "opcoes", "cartao", "pc", "loja", "mapa")
 KEY_POINTS = ("nome", "inicial", "batalha_rival", "captura", "save_continue") + TOUR_POINTS
 DIFF_RED = (255, 0, 0)
+# O Pillow acusa PNG quebrado com OSError (UnidentifiedImageError é subclasse, "image file is
+# truncated"), SyntaxError ("broken PNG file") ou ValueError, conforme onde o arquivo está estragado.
+_UNREADABLE = (OSError, SyntaxError, ValueError)
 
 
 def _refs_root(refs_dir: str) -> Path:
@@ -40,8 +43,24 @@ def compare_ref(name: str, starter: str, img_path: str, refs_dir: str = DEFAULT_
         return Result(label, "aviso",
                       f"sem referência para {starter}/{name} (aprove com `esteira aprovar`)",
                       [img_path])
-    with Image.open(img_path) as shot_img, Image.open(ref_path) as ref_img:
-        shot, ref = shot_img.convert("RGB"), ref_img.convert("RGB")
+    try:
+        return _compare(label, starter, img_path, ref_path)
+    except _UNREADABLE as exc:   # PNG corrompido/truncado (ou disco): aviso, nunca derruba a esteira
+        return Result(label, "aviso", f"não consegui comparar com a referência de {starter}: {exc}",
+                      [img_path, str(ref_path)])
+
+
+def _open_rgb(path: str | Path, what: str) -> Image.Image:
+    try:
+        with Image.open(path) as img:
+            return img.convert("RGB")
+    except _UNREADABLE as exc:
+        raise OSError(f"{what} ilegível ({path}): {type(exc).__name__}: {exc}") from exc
+
+
+def _compare(label: str, starter: str, img_path: str, ref_path: Path) -> Result:
+    shot = _open_rgb(img_path, "tela")
+    ref = _open_rgb(ref_path, "referência")
     if shot.size != ref.size:
         return Result(label, "aviso",
                       f"tamanho diferente: tela {shot.size}, referência {ref.size}",

@@ -47,7 +47,7 @@ OAK_FRONT = (6, 4)                  # Oak em (6, 3), olhando para baixo
 
 MAX_INTERRUPTIONS = 20      # encontros/falas tolerados num mesmo trajeto
 MAX_ENCOUNTER_WALKS = 200   # idas e voltas na grama procurando um selvagem
-MAX_WIN_BATTLES = 4         # batalhas até receber ao menos um golpe
+MAX_WIN_BATTLES = 8         # batalhas até receber ao menos um golpe (nenhum nas 8: falha)
 MAX_FLEE_BATTLES = 3
 MAX_RUN_TRIES = 5
 HEAL_BELOW = 0.5            # fração do HP máximo abaixo da qual a Mamãe cura

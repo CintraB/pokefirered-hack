@@ -373,6 +373,142 @@ def test_version_rom_never_versions_a_test_build(tmp_path):
     assert not (tmp_path / "roms").exists()
 
 
+
+
+def test_red_with_assembler_warning_rebuilds_everything_this_build_assembled(env):
+    """`as` por pipe diz "{standard input}:N: Warning:" (sem o arquivo): o reteste tem de montar
+    de novo o que este build montou e relinkar, senão o aviso some e o vermelho vira verde."""
+    obj_dir = env.tmp / "build" / "firered_switch"
+    data_obj = obj_dir / "data" / "event_scripts.o"
+    c_obj = obj_dir / "src" / "foo.o"
+    asm_obj = obj_dir / "asm" / "crt0.o"
+    untouched = obj_dir / "src" / "nao_compilado.o"
+    for obj in (data_obj, c_obj, asm_obj, untouched):
+        obj.parent.mkdir(parents=True, exist_ok=True)
+        obj.write_bytes(b"o")
+    log = env.tmp / "build.log"
+    log.write_text(
+        "tools/preproc/preproc data/event_scripts.s charmap.txt | cpp -I include - | "
+        "tools/preproc/preproc -ie data/event_scripts.s charmap.txt | arm-none-eabi-as "
+        "-mcpu=arm7tdmi -o build/firered_switch/data/event_scripts.o\n"
+        "tools/agbcc/bin/agbcc <flags> -o build/firered_switch/src/foo.o src/foo.c\n"
+        "arm-none-eabi-as -mcpu=arm7tdmi -o build/firered_switch/asm/crt0.o asm/crt0.s\n"
+        "{standard input}: Assembler messages:\n"
+        "{standard input}:1234: Warning: value 0x1ff truncated to 0xff\n"
+        f"{MARKER}\n", encoding="utf-8")
+    assert env.run(FAKE_EXIT="1", BUILD_LOG=str(log), ESTEIRA_OBJ_DIR=str(obj_dir)).returncode != 0
+    assert not data_obj.exists() and not c_obj.exists() and not asm_obj.exists()
+    assert untouched.exists()
+    assert not env.elf.exists()           # ld relinka (e reimprime o uso de memória)
+
+
+def test_red_with_only_c_warnings_keeps_the_elf_and_other_objects(env):
+    obj_dir = env.tmp / "build" / "firered_switch"
+    other = obj_dir / "data" / "x.o"
+    other.parent.mkdir(parents=True)
+    other.write_bytes(b"o")
+    log = env.tmp / "build.log"
+    log.write_text("arm-none-eabi-as -o build/firered_switch/data/x.o data/x.s\n"
+                   "tools/agbcc/bin/agbcc <flags> -o build/firered_switch/src/foo.o src/foo.c\n"
+                   f"src/foo.c:10: warning: algo\n{MARKER}\n", encoding="utf-8")
+    assert env.run(FAKE_EXIT="1", BUILD_LOG=str(log), ESTEIRA_OBJ_DIR=str(obj_dir)).returncode != 0
+    assert other.exists() and env.elf.exists()
+
+
+def test_red_without_warnings_deletes_no_objects(env):
+    obj_dir = env.tmp / "build" / "firered_switch"
+    obj = obj_dir / "data" / "x.o"
+    obj.parent.mkdir(parents=True)
+    obj.write_bytes(b"o")
+    log = env.tmp / "build.log"
+    log.write_text("arm-none-eabi-as -o build/firered_switch/data/x.o data/x.s\n"
+                   f"{MARKER}\n[falha] abertura: Warning: citado pela esteira\n", encoding="utf-8")
+    assert env.run(FAKE_EXIT="1", BUILD_LOG=str(log), ESTEIRA_OBJ_DIR=str(obj_dir)).returncode != 0
+    assert obj.exists() and env.elf.exists()
+
+
+@pytest.mark.parametrize("outcome", [{}, {"FAKE_EXIT": "1"}, {"FAKE_EXIT": "130"},
+                                     {"SKIP_TESTS": "1"}])
+def test_keeps_only_the_newest_15_runs(env, outcome):
+    """test/out/ não cresce sem limite: só as pastas de execução (data-hora) entram na conta."""
+    old = [f"202001{d:02d}-120000" for d in range(1, 21)]          # 20 execuções antigas
+    for name in old:
+        (env.out / name / "telas").mkdir(parents=True)
+    others = ["fixtures", "stress-BULBASAUR-0", "pipeline-copia-77", "20200101-1200",
+              "x20200101-120000"]
+    for name in others:
+        (env.out / name).mkdir(parents=True)
+    (env.out / "20200102-120000.log").write_text("arquivo solto", encoding="utf-8")
+    env.run(**outcome)
+    runs = sorted(p.name for p in env.out.iterdir()
+                  if p.is_dir() and len(p.name) == 15 and p.name[8] == "-")
+    assert len(runs) == 15
+    assert runs[:-1] == old[-14:]                    # as 14 mais novas das antigas + esta execução
+    assert runs[-1] > old[-1]
+    for name in others:
+        assert (env.out / name).is_dir(), name
+    assert (env.out / "20200102-120000.log").is_file()
+
+
+# --- make test-quick / test-full (ESTEIRA_RUN do Makefile) ----------------------------------------
+
+def _make_test_quick(tmp: Path, build_dir: Path, runs: Path) -> subprocess.CompletedProcess:
+    """`make test-quick` de verdade, com o python3 trocado pelo CHECKER (só check_build sobre o
+    --log recebido), o build em `build_dir` e as execuções em `runs` (nada no repo real)."""
+    checker = tmp / "checker.py"
+    checker.write_text(CHECKER, encoding="utf-8", newline="\n")
+    bin_dir = tmp / "bin"
+    bin_dir.mkdir(exist_ok=True)
+    fake = bin_dir / "python3"
+    fake.write_text(f'#!/bin/sh\nexec {sys.executable} {checker} {REPO_ROOT / "test"} "$@"\n',
+                    encoding="utf-8", newline="\n")
+    fake.chmod(0o755)
+    environ = {**os.environ, "PATH": f"{bin_dir}:{os.environ['PATH']}"}
+    return subprocess.run(["make", "test-quick", f"BUILD_DIR={build_dir}", "ESTEIRA_RUNNER=true",
+                           f"ESTEIRA_RUNS_DIR={runs}"], cwd=REPO_ROOT, env=environ,
+                          capture_output=True, text=True, timeout=120)
+
+
+def test_test_quick_after_interruption_has_memory_data_and_ignores_old_output(tmp_path):
+    """Como test_retest_after_interruption_has_memory_data, no `make test-quick`: o log de um
+    build que só rodou o objcopy (reteste depois de vermelho, SKIP_TESTS, Ctrl-C) não traz
+    EWRAM/IWRAM, e depois da marca vem a saída da esteira daquela vez (`*** ... ***`)."""
+    build_dir = tmp_path / "build"
+    build_dir.mkdir()
+    runs = tmp_path / "runs"
+    (build_dir / "firered_switch.log").write_text(
+        "arm-none-eabi-objcopy -O binary x.elf x.gba\n"
+        f"{MARKER}\n*** ROM NÃO TESTADA: o emulador não rodou ***\n"
+        "src/velho.c:1: warning: de uma execução anterior\n", encoding="utf-8")
+
+    # controle: sem memory.txt o log "só objcopy" reprova
+    done = _make_test_quick(tmp_path, build_dir, runs)
+    assert done.returncode != 0, done.stdout + done.stderr
+
+    memory = build_dir / "firered_switch" / "memory.txt"
+    memory.parent.mkdir(parents=True, exist_ok=True)
+    memory.write_text(MEMORY, encoding="utf-8")
+    done = _make_test_quick(tmp_path, build_dir, runs)
+    assert done.returncode == 0, done.stdout + done.stderr
+    newest = sorted(runs.iterdir())[-1]        # (as duas execuções podem cair no mesmo segundo)
+    seen = (newest / "build.log").read_text(encoding="utf-8")
+    assert "EWRAM:" in seen and "NÃO TESTADA" not in seen and "velho.c" not in seen
+
+
+def test_build_log_script_without_log_uses_only_the_memory_file(tmp_path):
+    memory = tmp_path / "memory.txt"
+    dest = tmp_path / "build.log"
+    script = REPO_ROOT / "test" / "build_log.sh"
+    done = subprocess.run(["sh", str(script), str(tmp_path / "nao-existe.log"), str(memory),
+                           str(dest)], capture_output=True, text=True)
+    assert done.returncode == 1 and not dest.exists()
+    assert "sem log de build" in done.stdout
+    memory.write_text(MEMORY, encoding="utf-8")
+    done = subprocess.run(["sh", str(script), "", str(memory), str(dest)], capture_output=True,
+                          text=True)
+    assert done.returncode == 0 and dest.read_text(encoding="utf-8") == MEMORY
+
+
 # --- Makefile real -----------------------------------------------------------------------------
 
 def _make_dry_run(*args: str) -> str:
@@ -386,8 +522,23 @@ def _make_dry_run(*args: str) -> str:
 
 def test_build_log_name_only_gets_the_test_suffix_with_testbuild_1():
     """config.mk define TESTBUILD ?= 0: o log da build jogável não pode virar *_test.log."""
-    assert "log=" + str(REPO_ROOT / "build" / "firered_switch.log;") in _make_dry_run("test-quick")
-    assert "/build/firered_switch_test.log;" in _make_dry_run("test-quick", "TESTBUILD=1")
+    build = REPO_ROOT / "build"
+    assert (f"sh test/build_log.sh {build / 'firered_switch.log'} "
+            f"{build / 'firered_switch' / 'memory.txt'} ") in _make_dry_run("test-quick")
+    assert (f"sh test/build_log.sh {build / 'firered_switch_test.log'} "
+            f"{build / 'firered_switch_test' / 'memory.txt'} ") in _make_dry_run("test-quick",
+                                                                                "TESTBUILD=1")
+
+
+def test_test_approve_defaults_to_the_newest_run_folder_only(tmp_path):
+    """fixtures/ (cache dos testes) e restos em test/out/ não são execuções para aprovar."""
+    run = tmp_path / "20261017-030544"
+    run.mkdir()
+    for other in ("fixtures", "stress-BULBASAUR-0"):
+        (tmp_path / other).mkdir()
+        os.utime(tmp_path / other, (run.stat().st_mtime + 60,) * 2)
+    out = _make_dry_run("test-approve", f"ESTEIRA_RUNS_DIR={tmp_path}")
+    assert f'aprovar "{run}/"' in out
 
 
 def test_test_full_rebuilds_the_test_rom_before_running():

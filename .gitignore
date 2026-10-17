@@ -77,3 +77,4 @@ test/harness/mgba_runner
 __pycache__/
 .pytest_cache/
 test/out/
+test/fixtures/*.tmp
