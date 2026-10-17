@@ -271,3 +271,15 @@ def test_rodizio_nao_avanca_sem_emulador(env, monkeypatch):
     (env.tmp / "jogavel.gba").write_bytes(b"x")
     main(env.argv("rapido", "--starter", "SQUIRTLE"))      # roda, mas não gasta o rodízio
     assert not state_file().exists()
+
+
+def test_nao_testada_escreve_so_o_relatorio_sem_emulador(env, monkeypatch):
+    """`nao-testada` (SKIP_TESTS=1): relatório com a faixa NÃO TESTADA, sem emulador nem checagens."""
+    set_scenarios(monkeypatch, [env.spec("a")])
+    out = env.tmp / "saida"
+    assert main(["nao-testada", "--out", str(out)]) == 0
+    html = (out / "relatorio.html").read_text(encoding="utf-8")
+    assert "ROM NÃO TESTADA" in html and "Esteira NÃO TESTADA" in html
+    assert json.loads((out / "meta.json").read_text(encoding="utf-8"))["nao_testada"] is True
+    assert env.opened == [] and env.ran == []
+    assert not state_file().exists()                       # não gasta o rodízio

@@ -9,6 +9,7 @@ sintaxe numa cópia do repositório) e é lento.
 import os
 import shutil
 import subprocess
+import sys
 from pathlib import Path
 
 import pytest
@@ -17,7 +18,16 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 PIPELINE = REPO_ROOT / "test" / "pipeline.sh"
 SWITCH = "pokefirered_switch.gba"
 
-# Esteira falsa: grava os argumentos recebidos, cria o relatório em --out e sai com FAKE_EXIT.
+MARKER = "[esteira] build finished"
+MEMORY = """Memory region         Used Size  Region Size  %age Used
+           EWRAM:      261036 B       256 KB     99.58%
+           IWRAM:       30096 B        32 KB     91.85%
+             ROM:    15404028 B        32 MB     45.91%
+"""
+
+# Esteira falsa: grava os argumentos recebidos, cria o relatório em --out e sai com FAKE_EXIT
+# (FAKE_NO_REPORT=1: sai sem relatório, como um crash). Se o log recebido já tinha a marca de fim
+# de build quando a esteira COMEÇOU, grava $FAKE_ARGS.marker.
 FAKE_ESTEIRA = r"""#!/bin/sh
 echo "$@" > "$FAKE_ARGS"
 out=""
@@ -29,11 +39,28 @@ while [ $# -gt 0 ]; do
 done
 # como a esteira de verdade: roda em outro diretório, então os caminhos têm de ser legíveis daqui
 if [ -n "$log" ] && [ ! -f "$log" ]; then echo "log ilegivel: $log" >&2; exit 3; fi
+if [ -n "$log" ] && grep -qF "[esteira] build finished" "$log"; then echo yes > "$FAKE_ARGS.marker"; fi
+if [ "${FAKE_NO_REPORT:-0}" = 1 ]; then exit "${FAKE_EXIT:-0}"; fi
 mkdir -p "$out/img"
 echo "<html>relatorio</html>" > "$out/relatorio.html"
 echo png > "$out/img/tela.png"
 echo "estado grande" > "$out/estado.ss"
 exit "${FAKE_EXIT:-0}"
+"""
+
+
+# Esteira "semi-real": só a checagem de build de verdade (check_build) sobre o --log recebido.
+CHECKER = r"""
+import sys
+from pathlib import Path
+sys.path.insert(0, sys.argv[1])
+from esteira.check_build import check_build
+args = sys.argv[2:]
+log, out = args[args.index("--log") + 1], args[args.index("--out") + 1]
+results = check_build(log, {})
+Path(out).mkdir(parents=True, exist_ok=True)
+(Path(out) / "relatorio.html").write_text("<html>" + repr(results) + "</html>", encoding="utf-8")
+sys.exit(1 if any(r.status == "falha" for r in results) else 0)
 """
 
 
@@ -101,9 +128,11 @@ def test_esteira_receives_rom_elf_log_and_out(env):
     assert args[0] == "rapido"
     assert args[args.index("--rom") + 1] == str(env.rom)
     assert args[args.index("--elf") + 1] == str(env.elf)
-    assert args[args.index("--log") + 1] == str(log)
     out = Path(args[args.index("--out") + 1])
     assert out.parent == env.out and (out / "relatorio.html").is_file()
+    # a esteira lê uma cópia do log (cortada na marca) guardada junto da execução
+    assert Path(args[args.index("--log") + 1]) == out / "build.log"
+    assert "compilou" in (out / "build.log").read_text(encoding="utf-8")
 
 
 def test_relative_paths_still_work_after_the_esteira_changes_directory(env):
@@ -118,36 +147,112 @@ def test_relative_paths_still_work_after_the_esteira_changes_directory(env):
     assert (env.roms / "1.0" / "relatorio.html").is_file()
 
 
-def test_without_build_log_no_log_argument(env):
-    assert env.run().returncode == 0
+def test_without_build_log_warns_and_passes_no_log_argument(env):
+    result = env.run()
+    assert result.returncode == 0
     assert "--log" not in env.args_file.read_text(encoding="utf-8").split()
+    assert "sem log de build: checagens de compilação puladas; use make firered_switch" \
+        in result.stdout
+
+
+def test_without_build_log_still_checks_memory_from_the_linker_file(env):
+    memory = env.tmp / "build" / "firered_switch" / "memory.txt"
+    memory.parent.mkdir(parents=True)
+    memory.write_text(MEMORY, encoding="utf-8")
+    result = env.run()
+    assert result.returncode == 0
+    args = env.args_file.read_text(encoding="utf-8").split()
+    assert "EWRAM:" in Path(args[args.index("--log") + 1]).read_text(encoding="utf-8")
+    assert "sem log de build" in result.stdout
 
 
 def test_waits_for_the_build_to_finish_writing_the_log(env):
     """O log chega pelo `tee`: a esteira só roda depois da marca de fim de build."""
     log = env.tmp / "build.log"
     log.write_text("compilando...\n", encoding="utf-8")
-    writer = subprocess.Popen(
-        ["sh", "-c", f"sleep 1; echo '[esteira] build finished' >> {log}"])
+    writer = subprocess.Popen(["sh", "-c", f"sleep 1; echo '{MARKER}' >> {log}"])
     try:
         result = env.run(BUILD_LOG=str(log), ESTEIRA_LOG_WAIT="20")
     finally:
         writer.wait()
-    assert result.returncode == 0
-    # a esteira falsa só roda depois que o log ficou completo; o pipeline não pode ter pulado a espera
-    assert "build finished" in log.read_text(encoding="utf-8")
-    assert env.args_file.is_file()
+    assert result.returncode == 0, result.stderr
+    # a marca já estava no log que a esteira recebeu quando ela COMEÇOU: o pipeline esperou
+    assert (env.tmp / "args.txt.marker").read_text(encoding="utf-8").strip() == "yes"
+
+
+def test_log_that_never_finishes_fails_closed(env):
+    """Sem a marca de fim o log pode estar incompleto: nada de testar nem versionar."""
+    log = env.tmp / "build.log"
+    log.write_text("compilando...\n", encoding="utf-8")
+    result = env.run(BUILD_LOG=str(log), ESTEIRA_LOG_WAIT="1")
+    assert result.returncode != 0
+    assert "falha de infraestrutura" in result.stderr
+    assert not env.args_file.exists()                # a esteira nem rodou
+    assert env.versions() == []
+    assert not (env.roms / "ultima-falha").exists()
+    assert not env.rom.exists()                      # o próximo make retesta
 
 
 def test_red_keeps_failure_deletes_rom_and_fails(env):
     result = env.run(FAKE_EXIT="1")
     assert result.returncode != 0
+    assert "REPROVADA" in result.stderr and "infraestrutura" not in result.stderr
     assert env.versions() == []
     failure = env.roms / "ultima-falha"
     assert (failure / "relatorio.html").is_file()
     assert (failure / "estado.ss").is_file()         # a falha guarda tudo para depurar
     assert not env.rom.exists()                      # sem ROM: o próximo make refaz e retesta
-    assert not env.elf.exists()                      # o ld precisa rodar de novo (uso de memória no log)
+    assert env.elf.exists()                          # o ELF fica: a memória do ld está em memory.txt
+
+
+@pytest.mark.parametrize("code, no_report", [("127", "0"), ("130", "0"), ("2", "0"), ("1", "1")])
+def test_infrastructure_failure_is_not_a_test_failure(env, code, no_report):
+    """python ausente (127), Ctrl-C (130), crash sem relatório: não versiona, não vira ultima-falha."""
+    (env.roms / "ultima-falha").mkdir(parents=True)
+    (env.roms / "ultima-falha" / "velho.txt").write_text("falha real anterior", encoding="utf-8")
+    result = env.run(FAKE_EXIT=code, FAKE_NO_REPORT=no_report)
+    assert result.returncode != 0
+    assert "falha de infraestrutura" in result.stderr and f"código {code}" in result.stderr
+    assert env.versions() == []
+    assert (env.roms / "ultima-falha" / "velho.txt").exists()   # não sobrescreve a falha real
+    assert not env.rom.exists()                      # sem ROM o próximo make retesta
+    assert env.elf.exists()
+
+
+def test_retest_after_interruption_has_memory_data(env):
+    """Ctrl-C: o make apaga só a ROM, o objcopy roda sem o ld e o log sai sem EWRAM/IWRAM.
+
+    O uso de memória vem de build/<nome>/memory.txt (gravado no link): com a esteira de verdade
+    (check_build) não pode haver falha espúria."""
+    checker = env.tmp / "checker.py"
+    checker.write_text(CHECKER, encoding="utf-8", newline="\n")
+    cmd = f"{sys.executable} {checker} {REPO_ROOT / 'test'}"
+    log = env.tmp / "build.log"
+    log.write_text(f"arm-none-eabi-objcopy -O binary x.elf x.gba\n{MARKER}\n", encoding="utf-8")
+
+    # controle: sem memory.txt o log "só objcopy" reprova (era o bug)
+    assert env.run(BUILD_LOG=str(log), ESTEIRA_CMD=cmd).returncode != 0
+    assert env.versions() == []
+
+    memory = env.tmp / "build" / "firered_switch" / "memory.txt"
+    memory.parent.mkdir(parents=True)
+    memory.write_text(MEMORY, encoding="utf-8")
+    env.rom.write_bytes(b"ROM")
+    result = env.run(BUILD_LOG=str(log), ESTEIRA_CMD=cmd)
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert env.versions() == ["1.0"]
+
+
+def test_memory_file_is_not_duplicated_when_the_log_already_has_it(env):
+    log = env.tmp / "build.log"
+    log.write_text(f"{MEMORY}{MARKER}\n", encoding="utf-8")
+    memory = env.tmp / "build" / "firered_switch" / "memory.txt"
+    memory.parent.mkdir(parents=True)
+    memory.write_text(MEMORY.replace("99.58", "10.00"), encoding="utf-8")
+    assert env.run(BUILD_LOG=str(log)).returncode == 0
+    args = env.args_file.read_text(encoding="utf-8").split()
+    seen = Path(args[args.index("--log") + 1]).read_text(encoding="utf-8")
+    assert seen.count("EWRAM:") == 1 and "99.58" in seen
 
 
 def test_red_replaces_previous_failure_and_does_not_touch_versions(env):
@@ -168,21 +273,32 @@ def test_red_deletes_objects_of_files_named_in_the_log(env):
     obj.write_bytes(b"o")
     other.write_bytes(b"o")
     log = env.tmp / "build.log"
-    log.write_text("src/foo.c:10: warning: algo\n[esteira] build finished\n", encoding="utf-8")
+    # o que vem depois da marca é da própria esteira (ela cita arquivos que não são do build)
+    log.write_text(f"src/foo.c:10: warning: algo\n{MARKER}\nsrc/bar.c:3: citado pela esteira\n",
+                   encoding="utf-8")
     assert env.run(FAKE_EXIT="1", BUILD_LOG=str(log),
                    ESTEIRA_OBJ_DIR=str(env.tmp / "build" / "firered_switch")).returncode != 0
     assert not obj.exists()
     assert other.exists()
 
 
-def test_skip_tests_versions_as_untested(env):
+def test_skip_tests_versions_with_a_not_tested_report(env):
     result = env.run(SKIP_TESTS="1")
     assert result.returncode == 0
-    assert not env.args_file.exists()                # a esteira nem rodou
+    args = env.args_file.read_text(encoding="utf-8").split()
+    assert args[0] == "nao-testada" and "rapido" not in args   # sem emulador, sem checagens
+    assert "--rom" not in args
     version = env.roms / "1.0"
     assert (version / SWITCH).is_file()
     assert (version / "NAO_TESTADA.txt").is_file()
-    assert not (version / "relatorio.html").exists()
+    assert (version / "relatorio.html").is_file()    # o relatório "NÃO TESTADA" vai junto
+
+
+def test_skip_tests_still_versions_if_the_report_cannot_be_written(env):
+    result = env.run(SKIP_TESTS="1", FAKE_EXIT="127", FAKE_NO_REPORT="1")
+    assert result.returncode == 0
+    assert (env.roms / "1.0" / "NAO_TESTADA.txt").is_file()
+    assert not (env.roms / "1.0" / "relatorio.html").exists()
 
 
 def test_compare_build_does_nothing(env):
@@ -243,6 +359,7 @@ def _link_copy(dest: Path) -> None:
         "out", "__pycache__", "fixtures", "tests", "harness", ".pytest_cache"))
 
 
+@pytest.mark.slow
 @pytest.mark.skipif(os.environ.get("ESTEIRA_SKIP_SLOW") == "1", reason="ESTEIRA_SKIP_SLOW=1")
 def test_compile_error_makes_make_fail():
     """Um erro de sintaxe no C reprova `make firered_switch` (nunca pode parecer verde)."""

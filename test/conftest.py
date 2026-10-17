@@ -8,6 +8,11 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 SWITCH_ROM = REPO_ROOT / "pokefirered_switch.gba"
 
 
+def pytest_configure(config) -> None:
+    config.addinivalue_line(
+        "markers", "slow: compila de verdade (minutos); ESTEIRA_SKIP_SLOW=1 pula")
+
+
 @pytest.fixture
 def rom_path() -> str:
     """Caminho absoluto da ROM Switch; pula o teste se ela não foi compilada."""

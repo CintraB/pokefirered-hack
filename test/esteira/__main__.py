@@ -4,6 +4,7 @@ A partir de test/ (no WSL):
     python3 -m esteira rapido   --rom R --elf E [--log L] --out DIR [--only NOME] [--starter X]
     python3 -m esteira completo --rom R --elf E [--rom-test RT --elf-test ET] [--log L] --out DIR ...
     python3 -m esteira aprovar DIR
+    python3 -m esteira nao-testada --out DIR     # SKIP_TESTS=1: só o relatório "NÃO TESTADA"
 
 `rapido` roda a checagem do log de build, a checagem dos textos e os 3 roteiros rápidos numa
 sessão de emulador só. `completo` roda tudo isso e mais os cenários de FULL_SCENARIOS.
@@ -242,6 +243,21 @@ def run_mode(args: argparse.Namespace) -> int:
     return 1 if suite.failed() else 0
 
 
+def write_untested_report(out_dir: str) -> str:
+    """Relatório só com a faixa NÃO TESTADA (SKIP_TESTS=1): sem emulador e sem checagens."""
+    out = Path(out_dir)
+    out.mkdir(parents=True, exist_ok=True)
+    suite = Suite()
+    suite.add(Result("esteira/pulada", "aviso",
+                     "testes pulados (SKIP_TESTS=1): esta ROM não foi testada"))
+    meta = {"inicial": "-", "data": datetime.now().strftime("%Y-%m-%d %H:%M"),
+            "commit": _git_commit(), "modo": "nao-testada", "tempos": {}, "tempo_total": 0.0,
+            "nao_testada": True}
+    (out / "meta.json").write_text(json.dumps(meta, ensure_ascii=False, indent=1) + "\n",
+                                   encoding="utf-8")
+    return write_report(suite, str(out), meta)
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="esteira", description="Esteira de testes da ROM hack")
     sub = parser.add_subparsers(dest="modo", required=True)
@@ -260,6 +276,8 @@ def build_parser() -> argparse.ArgumentParser:
         p.add_argument("--starter", choices=STARTERS,
                        help="força o inicial (não gasta o rodízio); padrão: o da vez")
         p.add_argument("--state", default=STATE_PATH, help=argparse.SUPPRESS)
+    untested = sub.add_parser("nao-testada", help="só o relatório NÃO TESTADA (SKIP_TESTS=1)")
+    untested.add_argument("--out", required=True)
     approve = sub.add_parser("aprovar", help="promove as telas de uma execução a referência")
     approve.add_argument("dir")
     return parser
@@ -268,6 +286,9 @@ def build_parser() -> argparse.ArgumentParser:
 def main(argv: list[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
+    if args.modo == "nao-testada":
+        print(f"ROM NÃO TESTADA (sem emulador); relatório: {write_untested_report(args.out)}")
+        return 0
     if args.modo == "aprovar":
         try:
             copied = approve_refs(args.dir, refs_dir=REFS_DIR)

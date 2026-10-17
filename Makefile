@@ -393,10 +393,13 @@ endif
 # Final rules
 
 # Elf from object files
+# The linker's memory usage is also kept in $(OBJ_DIR)/memory.txt (written only when the link
+# succeeds): the test pipeline reads it when an interrupted run deleted only the ROM and make
+# just re-runs objcopy, leaving the build log without the EWRAM/IWRAM lines.
 LDFLAGS = -Map ../../$(MAP)
 $(ELF): $(LD_SCRIPT) $(LD_SCRIPT_DEPS) $(OBJS)
-	@cd $(OBJ_DIR) && $(LD) $(LDFLAGS) -T ../../$< --print-memory-usage -o ../../$@ $(OBJS_REL) $(LIB) | cat
-	@echo "cd $(OBJ_DIR) && $(LD) $(LDFLAGS) -T ../../$< --print-memory-usage -o ../../$@ <objs> <libs> | cat"
+	@cd $(OBJ_DIR) && $(LD) $(LDFLAGS) -T ../../$< --print-memory-usage -o ../../$@ $(OBJS_REL) $(LIB) | tee memory.txt.new && mv -f memory.txt.new memory.txt
+	@echo "cd $(OBJ_DIR) && $(LD) $(LDFLAGS) -T ../../$< --print-memory-usage -o ../../$@ <objs> <libs> | tee memory.txt"
 	$(FIX) $@ -t"$(TITLE)" -c$(GAME_CODE) -m$(MAKER_CODE) -r$(GAME_REVISION) --silent
 
 # Builds the rom from the elf file
