@@ -16,6 +16,7 @@
 #include "save_failed_screen.h"
 #include "quest_log.h"
 #include "sloopsvc.h"
+#include "test_hooks.h"
 
 extern u32 intr_main[];
 
@@ -210,6 +211,10 @@ void AgbMain()
                 gLinkTransferringData = FALSE;
             }
         }
+
+#if TESTBUILD
+        TestHooks_Run();
+#endif
 
         PlayTimeCounter_Update();
         MapMusicMain();

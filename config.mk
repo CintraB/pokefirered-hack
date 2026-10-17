@@ -56,3 +56,12 @@ endif
 ifeq ($(GAME_LANGUAGE),ENGLISH)
   GAME_CODE  := $(GAME_CODE)E
 endif
+
+# Test-only build with the test pipeline's RAM shortcuts (src/test_hooks.c):
+# make firered_switch TESTBUILD=1 -> pokefirered_switch_test.gba. Never versioned into roms/.
+TESTBUILD ?= 0
+ifeq ($(TESTBUILD),1)
+  BUILD_NAME := $(BUILD_NAME)_test
+  # The Makefile assigns CPPFLAGS after including this file, so append per object instead
+  %.o: CPPFLAGS += -DTESTBUILD=1
+endif

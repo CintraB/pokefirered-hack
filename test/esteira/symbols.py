@@ -42,6 +42,10 @@ class Symbols:
             raise ValueError(f"símbolo ambíguo {name!r}: {[hex(a) for a in addrs]}")
         return addrs[0]
 
+    def addrs(self, name: str) -> list[int]:
+        """Todos os endereços com esse nome (estáticos homônimos de arquivos diferentes)."""
+        return sorted(set(self._by_name.get(name, [])))
+
     def name_at(self, addr: int) -> str | None:
         """Símbolo que começa exatamente em `addr` (None se não houver)."""
         return self._by_addr.get(addr)
