@@ -48,9 +48,10 @@ def _build_master(repo: Path, runner, tmp_root: Path, log: Path) -> str:
                                  f"'{EXPECTED}' (log: {log}):\n{_tail(output)}")
         return f"`make {TARGET}` no {BRANCH} (worktree em {tree}): {EXPECTED}"
     finally:
+        # sem `git worktree prune`: rodando no WSL ele apaga o registro das worktrees criadas
+        # pelo Git do Windows (caminhos C:/... não existem para o Git do WSL)
         runner([*git, "worktree", "remove", "--force", str(tree)],
                capture_output=True, text=True, timeout=GIT_TIMEOUT)
-        runner([*git, "worktree", "prune"], capture_output=True, text=True, timeout=GIT_TIMEOUT)
         shutil.rmtree(base, ignore_errors=True)
 
 

@@ -72,3 +72,11 @@ def test_master_falha_se_a_worktree_nao_pode_ser_criada(repo, tmp_path):
     [result] = run(repo, tmp_path, runner)
     assert result.status == "falha" and "invalid reference" in result.detail
     assert not any(c[0] == "make" for c in runner.calls)
+
+
+def test_master_nao_roda_worktree_prune(repo, tmp_path):
+    """`git worktree prune` no WSL apagaria o registro das worktrees criadas pelo Git do
+    Windows (o caminho C:/... não existe para o Git do WSL)."""
+    runner = FakeRunner("pokefirered_switch.gba: OK\n")
+    run(repo, tmp_path, runner)
+    assert not any("prune" in c for c in runner.calls)
