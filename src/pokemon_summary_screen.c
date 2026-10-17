@@ -37,6 +37,7 @@
 
 // needs conflicting header to match (curIndex is s8 in the function, but has to be defined as u8 here)
 extern s16 SeekToNextMonInBox(struct BoxPokemon * boxMons, u8 curIndex, u8 maxIndex, u8 flags);
+extern const struct Evolution gEvolutionTable[][EVOS_PER_MON];
 
 static void BufferSelectedMonData(struct Pokemon * mon);
 static void CB2_SetUpPSS(void);
@@ -139,6 +140,10 @@ static void PokeSum_DestroyMonMarkingsSprite(void);
 static void PokeSum_UpdateMonMarkingsAnim(void);
 static s8 SeekToNextMonInSingleParty(s8 direction);
 static s8 SeekToNextMonInMultiParty(s8 direction);
+static bool32 PokeSum_CanShowEvolutionPage(void);
+static u8 PokeSum_GetPageBeforeFlip(void);
+static void PokeSum_HideSpritesForEvolutionPage(void);
+static void PrintEvolutionPage(void);
 
 struct PokemonSummaryScreenData
 {
@@ -242,6 +247,10 @@ struct PokemonSummaryScreenData
 
     u8 ALIGNED(4) lastPageFlipDirection; /* 0x3300 */
     u8 ALIGNED(4) unk3304; /* 0x3304 */
+
+    // EVOLUTION page (after the vanilla fields so their offsets don't move)
+    bool8 leavingEvolutionPage; // set while flipping from EVOLUTION back to MOVES
+    u8 evolutionText[EVOLUTION_PAGE_TEXT_SIZE];
 };
 
 struct Struct203B144
@@ -332,6 +341,7 @@ extern const u32 gSummaryScreen_PageMoves_Tilemap[];
 extern const u32 gSummaryScreen_PageInfo_Tilemap[];
 extern const u32 gSummaryScreen_PageMovesInfo_Tilemap[];
 extern const u32 gSummaryScreen_PageEgg_Tilemap[];
+extern const u32 gSummaryScreen_PageEvolution_Tilemap[];
 extern const u16 gSummaryScreen_Bg_Pal[];
 extern const u32 gSummaryScreen_Bg_Gfx[];
 extern const u16 gSummaryScreen_HpExpBar_Pal[];
@@ -892,6 +902,53 @@ static const struct WindowTemplate sWindowTemplates_Moves[] =
     },
 };
 
+// EVOLUTION page: one text window over the ruled box of page_evolution.bin (rows 6-18, ruled
+// lines every 16 px starting at the bottom of row 7); the other three are empty, like the
+// unused ones of the INFO page.
+#define EVOLUTION_PAGE_TEXT_X       2
+#define EVOLUTION_PAGE_TEXT_Y       3
+#define EVOLUTION_PAGE_LINE_SPACING 2   // FONT_NORMAL is 14 px tall: one line per ruled line
+
+static const struct WindowTemplate sWindowTemplates_Evolution[] =
+{
+    [POKESUM_WIN_RIGHT_PANE - 3] = {
+        .bg = 0,
+        .tilemapLeft = 1,
+        .tilemapTop = 6,
+        .width = 28,
+        .height = 13,
+        .paletteNum = 6,
+        .baseBlock = 0x0001
+    },
+    [POKESUM_WIN_TRAINER_MEMO - 3] = {
+        .bg = 0,
+        .tilemapLeft = 0,
+        .tilemapTop = 0,
+        .width = 0,
+        .height = 0,
+        .paletteNum = 0,
+        .baseBlock = 0x0000
+    },
+    [5 - 3] = {
+        .bg = 0,
+        .tilemapLeft = 0,
+        .tilemapTop = 0,
+        .width = 0,
+        .height = 0,
+        .paletteNum = 0,
+        .baseBlock = 0x0000
+    },
+    [6 - 3] = {
+        .bg = 0,
+        .tilemapLeft = 0,
+        .tilemapTop = 0,
+        .width = 0,
+        .height = 0,
+        .paletteNum = 0,
+        .baseBlock = 0x0000
+    },
+};
+
 static const struct WindowTemplate sWindowTemplates_Dummy[] = 
 {
     {
@@ -985,6 +1042,7 @@ void ShowPokemonSummaryScreen(struct Pokemon * party, u8 cursorPos, u8 lastIdx, 
     }
 
     sLastViewedMonIndex = cursorPos;
+    sMonSummaryScreen->evolutionText[0] = EOS;
 
     sMoveSelectionCursorPos = 0;
     sMoveSwapCursorPos = 0;
@@ -1132,13 +1190,17 @@ static void Task_InputHandler_Info(u8 taskId)
                     sMonSummaryScreen->lastPageFlipDirection = 1;
                     return;
                 }
-                else if (sMonSummaryScreen->curPageIndex < PSS_PAGE_MOVES)
+                else if (sMonSummaryScreen->curPageIndex < PSS_PAGE_MOVES
+                      || (sMonSummaryScreen->curPageIndex == PSS_PAGE_MOVES && PokeSum_CanShowEvolutionPage()))
                 {
                     PlaySE(SE_SELECT);
                     HideBg(0);
                     sMonSummaryScreen->pageFlipDirection = 1;
                     PokeSum_RemoveWindows(sMonSummaryScreen->curPageIndex);
-                    sMonSummaryScreen->curPageIndex++;
+                    if (sMonSummaryScreen->curPageIndex == PSS_PAGE_MOVES)
+                        sMonSummaryScreen->curPageIndex = PSS_PAGE_EVOLUTION;
+                    else
+                        sMonSummaryScreen->curPageIndex++;
                     sMonSummaryScreen->state3270 = PSS_STATE3270_FLIPPAGES;
                 }
                 return;
@@ -1156,7 +1218,15 @@ static void Task_InputHandler_Info(u8 taskId)
                     HideBg(0);
                     sMonSummaryScreen->pageFlipDirection = 0;
                     PokeSum_RemoveWindows(sMonSummaryScreen->curPageIndex);
-                    sMonSummaryScreen->curPageIndex--;
+                    if (sMonSummaryScreen->curPageIndex == PSS_PAGE_EVOLUTION)
+                    {
+                        sMonSummaryScreen->curPageIndex = PSS_PAGE_MOVES;
+                        sMonSummaryScreen->leavingEvolutionPage = TRUE;
+                    }
+                    else
+                    {
+                        sMonSummaryScreen->curPageIndex--;
+                    }
                     sMonSummaryScreen->state3270 = PSS_STATE3270_FLIPPAGES;
                 }
                 return;
@@ -1238,7 +1308,10 @@ static void Task_PokeSum_FlipPages(u8 taskId)
     {
     case 0:
         PokeSum_HideSpritesBeforePageFlip();
-        PokeSum_ShowSpritesBeforePageFlip();
+        // Back from EVOLUTION, the MOVES sprites (mon pic etc.) wait until the EVOLUTION box
+        // has slid off the left half of the screen (case 7)
+        if (!sMonSummaryScreen->leavingEvolutionPage)
+            PokeSum_ShowSpritesBeforePageFlip();
         sMonSummaryScreen->lockMovesFlag = TRUE;
         sMonSummaryScreen->inhibitPageFlipInput = TRUE;
         PokeSum_UpdateWin1ActiveFlag(sMonSummaryScreen->curPageIndex);
@@ -1247,7 +1320,8 @@ static void Task_PokeSum_FlipPages(u8 taskId)
     case 1:
         if (sMonSummaryScreen->curPageIndex != PSS_PAGE_MOVES_INFO)
         {
-            if (!(sMonSummaryScreen->curPageIndex == PSS_PAGE_MOVES && sMonSummaryScreen->pageFlipDirection == 0))
+            if (!(sMonSummaryScreen->curPageIndex == PSS_PAGE_MOVES && sMonSummaryScreen->pageFlipDirection == 0)
+                || sMonSummaryScreen->leavingEvolutionPage)
             {
                 FillBgTilemapBufferRect_Palette0(0, 0, 0, 0, 30, 20);
                 CopyBgTilemapBufferToVram(0);
@@ -1290,6 +1364,8 @@ static void Task_PokeSum_FlipPages(u8 taskId)
 
         break;
     case 7:
+        if (sMonSummaryScreen->leavingEvolutionPage)
+            PokeSum_ShowSpritesBeforePageFlip();
         PokeSum_PrintRightPaneText();
         if (sMonSummaryScreen->curPageIndex != PSS_PAGE_MOVES_INFO)
             PokeSum_PrintBottomPaneText();
@@ -1323,6 +1399,7 @@ static void Task_PokeSum_FlipPages(u8 taskId)
         data[0] = 0;
         sMonSummaryScreen->lockMovesFlag = FALSE;
         sMonSummaryScreen->inhibitPageFlipInput = FALSE;
+        sMonSummaryScreen->leavingEvolutionPage = FALSE;
         return;
     }
 
@@ -1612,14 +1689,23 @@ static void PokeSum_InitBgCoordsBeforePageFlips(void)
 
 }
 
+// The page a flip in progress is leaving (curPageIndex is already the destination). The vanilla
+// pages are numbered in screen order (INFO, SKILLS, MOVES, then MOVES_INFO as MOVES' detail),
+// but EVOLUTION, shown after MOVES, is numbered after all of them.
+static u8 PokeSum_GetPageBeforeFlip(void)
+{
+    if (sMonSummaryScreen->curPageIndex == PSS_PAGE_EVOLUTION)
+        return PSS_PAGE_MOVES;
+    if (sMonSummaryScreen->leavingEvolutionPage)
+        return PSS_PAGE_EVOLUTION;
+    if (sMonSummaryScreen->pageFlipDirection == 1)
+        return sMonSummaryScreen->curPageIndex - 1;
+    return sMonSummaryScreen->curPageIndex + 1;
+}
+
 static void PokeSum_HideSpritesBeforePageFlip(void)
 {
-    u8 newPage;
-
-    if (sMonSummaryScreen->pageFlipDirection == 1)
-        newPage = sMonSummaryScreen->curPageIndex - 1;
-    else
-        newPage = sMonSummaryScreen->curPageIndex + 1;
+    u8 newPage = PokeSum_GetPageBeforeFlip();
 
     switch (newPage)
     {
@@ -1653,12 +1739,7 @@ static void PokeSum_HideSpritesBeforePageFlip(void)
 
 static void PokeSum_ShowSpritesBeforePageFlip(void)
 {
-    u8 newPage;
-
-    if (sMonSummaryScreen->pageFlipDirection == 1)
-        newPage = sMonSummaryScreen->curPageIndex - 1;
-    else
-        newPage = sMonSummaryScreen->curPageIndex + 1;
+    u8 newPage = PokeSum_GetPageBeforeFlip();
 
     switch (newPage)
     {
@@ -1674,15 +1755,17 @@ static void PokeSum_ShowSpritesBeforePageFlip(void)
             ShowOrHideHpBarObjs(FALSE);
             ShowOrHideExpBarObjs(FALSE);
         }
-        else
+        else if (sMonSummaryScreen->curPageIndex == PSS_PAGE_MOVES_INFO)
         {
             ShoworHideMoveSelectionCursor(FALSE);
             HideShowPokerusIcon(FALSE);
             PokeSum_ShowOrHideMonIconSprite(FALSE);
             HideShowShinyStar(FALSE);
         }
+        // MOVES -> EVOLUTION: the EVOLUTION page shows no sprites
 
         break;
+    case PSS_PAGE_EVOLUTION: // EVOLUTION -> MOVES: the MOVES sprites come back
     case PSS_PAGE_MOVES_INFO:
         PokeSum_ShowOrHideMonPicSprite(FALSE);
         PokeSum_ShowOrHideMonMarkingsSprite(FALSE);
@@ -1825,14 +1908,11 @@ static void PokeSum_UpdateBgPriorityForPageFlip(u8 setBg0Priority, u8 keepBg1Bg2
     SetGpuReg(REG_OFFSET_BG2CNT, (GetGpuReg(REG_OFFSET_BG2CNT) & (u16)~3) | bg2Priority);
 }
 
+// The page frames alternate between BG1 and BG2 in screen order: INFO and MOVES on one,
+// SKILLS, MOVES_INFO and EVOLUTION (the pages next to MOVES) on the other.
 static void PokeSum_CopyNewBgTilemapBeforePageFlip_2(void)
 {
-    u8 newPage;
-
-    if (sMonSummaryScreen->pageFlipDirection == 1)
-        newPage = sMonSummaryScreen->curPageIndex - 1;
-    else
-        newPage = sMonSummaryScreen->curPageIndex + 1;
+    u8 newPage = PokeSum_GetPageBeforeFlip();
 
     switch (newPage)
     {
@@ -1847,13 +1927,16 @@ static void PokeSum_CopyNewBgTilemapBeforePageFlip_2(void)
 
         break;
     case PSS_PAGE_MOVES:
-        if (sMonSummaryScreen->pageFlipDirection == 1)
+        if (sMonSummaryScreen->curPageIndex == PSS_PAGE_EVOLUTION)
+            CopyToBgTilemapBuffer(sMonSummaryScreen->infoAndMovesPageBgNum, gSummaryScreen_PageEvolution_Tilemap, 0, 0);
+        else if (sMonSummaryScreen->pageFlipDirection == 1)
             CopyToBgTilemapBuffer(sMonSummaryScreen->infoAndMovesPageBgNum, gSummaryScreen_PageMovesInfo_Tilemap, 0, 0);
         else
             CopyToBgTilemapBuffer(sMonSummaryScreen->infoAndMovesPageBgNum, gSummaryScreen_PageSkills_Tilemap, 0, 0);
 
         break;
     case PSS_PAGE_MOVES_INFO:
+    case PSS_PAGE_EVOLUTION:
         CopyToBgTilemapBuffer(sMonSummaryScreen->skillsPageBgNum, gSummaryScreen_PageMoves_Tilemap, 0, 0);
         break;
     }
@@ -1861,12 +1944,7 @@ static void PokeSum_CopyNewBgTilemapBeforePageFlip_2(void)
 
 static void PokeSum_CopyNewBgTilemapBeforePageFlip(void)
 {
-    u8 newPage;
-
-    if (sMonSummaryScreen->pageFlipDirection == 1)
-        newPage = sMonSummaryScreen->curPageIndex - 1;
-    else
-        newPage = sMonSummaryScreen->curPageIndex + 1;
+    u8 newPage = PokeSum_GetPageBeforeFlip();
 
     switch (newPage)
     {
@@ -1876,6 +1954,8 @@ static void PokeSum_CopyNewBgTilemapBeforePageFlip(void)
     case PSS_PAGE_SKILLS:
         break;
     case PSS_PAGE_MOVES:
+        if (sMonSummaryScreen->curPageIndex == PSS_PAGE_EVOLUTION)
+            break; // EVOLUTION keeps the background of the INFO/SKILLS/MOVES pages
         if (sMonSummaryScreen->pageFlipDirection == 1)
             CopyToBgTilemapBuffer(3, sBgTilemap_MovesPage, 0, 0);
         else
@@ -2457,10 +2537,159 @@ static void PokeSum_PrintRightPaneText(void)
     case PSS_PAGE_MOVES_INFO:
         PrintMovesPage();
         break;
+    case PSS_PAGE_EVOLUTION:
+        PrintEvolutionPage();
+        break;
     }
 
     PutWindowTilemap(sMonSummaryScreen->windowIds[POKESUM_WIN_RIGHT_PANE]);
 }
+
+// Shown only for a mon (not an Egg) in the modes where the pages can be flipped: the move
+// selection modes (learning or forgetting a move) never leave the move list.
+static bool32 PokeSum_CanShowEvolutionPage(void)
+{
+    if (sMonSummaryScreen->isEgg)
+        return FALSE;
+    if (sMonSummaryScreen->mode == PSS_MODE_SELECT_MOVE || sMonSummaryScreen->mode == PSS_MODE_FORGET_MOVE)
+        return FALSE;
+    return TRUE;
+}
+
+void GetEvolutionPageText(u8 *dest, u16 species)
+{
+    u8 *end = dest;
+    u8 i;
+
+    *dest = EOS;
+    if (species == SPECIES_NONE || species >= NUM_SPECIES)
+        return;
+
+    for (i = 0; i < EVOS_PER_MON; i++)
+    {
+        const struct Evolution *evo = &gEvolutionTable[species][i];
+        const u8 *line;
+        bool8 possible = TRUE;
+
+        ConvertIntToDecimalStringN(gStringVar1, evo->param, STR_CONV_MODE_LEFT_ALIGN, 3);
+        gStringVar2[0] = EOS;
+        GetSpeciesName(gStringVar3, evo->targetSpecies);
+
+        switch (evo->method)
+        {
+        case EVO_LEVEL:
+        case EVO_LEVEL_NINJASK:
+            line = gText_PokeSum_EvoLevel;
+            break;
+        case EVO_ITEM:
+            CopyItemName(evo->param, gStringVar2);
+            line = gText_PokeSum_EvoItem;
+            break;
+        case EVO_LEVEL_HOLD_ITEM:
+            ConvertIntToDecimalStringN(gStringVar1, EVO_HOLD_ITEM_LEVEL, STR_CONV_MODE_LEFT_ALIGN, 3);
+            CopyItemName(evo->param, gStringVar2);
+            line = gText_PokeSum_EvoLevelHoldItem;
+            break;
+        case EVO_FRIENDSHIP:
+            line = gText_PokeSum_EvoFriendship;
+            break;
+        // FireRed has no clock: GetEvolutionTargetSpecies skips the day/night evolutions
+        case EVO_FRIENDSHIP_DAY:
+            line = gText_PokeSum_EvoFriendshipDay;
+            possible = FALSE;
+            break;
+        case EVO_FRIENDSHIP_NIGHT:
+            line = gText_PokeSum_EvoFriendshipNight;
+            possible = FALSE;
+            break;
+        // Nothing in FireRed raises beauty (no Pokéblocks)
+        case EVO_BEAUTY:
+            line = gText_PokeSum_EvoBeauty;
+            possible = FALSE;
+            break;
+        case EVO_LEVEL_ATK_GT_DEF:
+            line = gText_PokeSum_EvoAtkGtDef;
+            break;
+        case EVO_LEVEL_ATK_EQ_DEF:
+            line = gText_PokeSum_EvoAtkEqDef;
+            break;
+        case EVO_LEVEL_ATK_LT_DEF:
+            line = gText_PokeSum_EvoAtkLtDef;
+            break;
+        case EVO_LEVEL_SILCOON:
+        case EVO_LEVEL_CASCOON:
+            line = gText_PokeSum_EvoLevelRandom;
+            break;
+        // Comes along with Ninjask if the party has room (CreateShedinja, src/evolution_scene.c)
+        case EVO_LEVEL_SHEDINJA:
+            line = gText_PokeSum_EvoLevelFreeSlot;
+            break;
+        case EVO_TRADE:
+            line = gText_PokeSum_EvoTrade;
+            break;
+        case EVO_TRADE_ITEM:
+            CopyItemName(evo->param, gStringVar2);
+            line = gText_PokeSum_EvoTradeItem;
+            break;
+        default: // no evolution in this slot
+            continue;
+        }
+
+        if (end != dest)
+            *end++ = CHAR_NEWLINE;
+        end = StringExpandPlaceholders(end, line);
+        if (!possible)
+            end = StringCopy(end, gText_PokeSum_EvoNotPossible);
+    }
+
+    if (end == dest)
+        StringCopy(dest, gText_PokeSum_EvoNone);
+}
+
+static void PrintEvolutionPage(void)
+{
+    if (sMonSummaryScreen->isEgg)
+        return;
+
+    GetEvolutionPageText(sMonSummaryScreen->evolutionText, GetMonData(&sMonSummaryScreen->currentMon, MON_DATA_SPECIES));
+    AddTextPrinterParameterized4(sMonSummaryScreen->windowIds[POKESUM_WIN_RIGHT_PANE], FONT_NORMAL,
+                                 EVOLUTION_PAGE_TEXT_X, EVOLUTION_PAGE_TEXT_Y,
+                                 0, EVOLUTION_PAGE_LINE_SPACING,
+                                 sLevelNickTextColors[0], TEXT_SKIP_DRAW,
+                                 sMonSummaryScreen->evolutionText);
+}
+
+// The EVOLUTION page covers the left half of the screen, where the MOVES page shows the mon
+// picture and its markings, ball, status, Pokérus and shiny icons.
+static void PokeSum_HideSpritesForEvolutionPage(void)
+{
+    PokeSum_ShowOrHideMonPicSprite(TRUE);
+    PokeSum_ShowOrHideMonMarkingsSprite(TRUE);
+    ShowOrHideBallIconObj(TRUE);
+    ShowOrHideStatusIcon(TRUE);
+    HideShowPokerusIcon(TRUE);
+    HideShowShinyStar(TRUE);
+}
+
+#if TESTBUILD
+// Test build only (src/test_hooks.c): curPageIndex | mode << 8 | isEgg << 16, or 0xFFFFFFFF
+// while no summary screen is open.
+u32 PokeSum_TestGetState(void)
+{
+    if (sMonSummaryScreen == NULL)
+        return 0xFFFFFFFF;
+    return sMonSummaryScreen->curPageIndex | (sMonSummaryScreen->mode << 8) | (sMonSummaryScreen->isEgg << 16);
+}
+
+// The text the open EVOLUTION page printed (FALSE if no summary screen is open)
+bool32 PokeSum_TestCopyEvolutionPageText(u8 *dest)
+{
+    if (sMonSummaryScreen == NULL)
+        return FALSE;
+    StringCopy(dest, sMonSummaryScreen->evolutionText);
+    return TRUE;
+}
+#endif
 
 static void PrintInfoPage(void)
 {
@@ -2962,6 +3191,11 @@ static void PokeSum_PrintPageHeaderText(u8 curPageIndex)
         PokeSum_PrintControlsString(gText_PokeSum_Controls_PickDelete);
         PrintMonLevelNickOnWindow2(gText_PokeSum_NoData);
         break;
+    case PSS_PAGE_EVOLUTION:
+        PokeSum_PrintPageName(gText_PokeSum_PageName_Evolution);
+        PokeSum_PrintControlsString(gText_PokeSum_Controls_PagePrev);
+        PrintMonLevelNickOnWindow2(gText_PokeSum_NoData);
+        break;
     default:
         break;
     }
@@ -3211,6 +3445,9 @@ static void PokeSum_AddWindows(u8 curPageIndex)
         case PSS_PAGE_MOVES_INFO:
             sMonSummaryScreen->windowIds[i + 3] = AddWindow(&sWindowTemplates_Moves[i]);
             break;
+        case PSS_PAGE_EVOLUTION:
+            sMonSummaryScreen->windowIds[i + 3] = AddWindow(&sWindowTemplates_Evolution[i]);
+            break;
         }
 }
 
@@ -3236,6 +3473,9 @@ static void PokeSum_SetHelpContext(void)
     case PSS_PAGE_MOVES:
     case PSS_PAGE_MOVES_INFO:
         SetHelpContext(HELPCONTEXT_POKEMON_MOVES);
+        break;
+    case PSS_PAGE_EVOLUTION:
+        SetHelpContext(HELPCONTEXT_POKEMON_INFO);
         break;
     }
 }
@@ -3273,85 +3513,71 @@ static u8 PokeSum_BufferOtName_IsEqualToCurrentOwner(struct Pokemon * mon)
 
 #define PAGE_PROGRESS_BASE_TILE_NUM (345)
 
+// The page dots in the header bar (BG3 tiles, top row; the bottom row comes from PageProgressBottomTile).
+// Hack: 4 pages (INFO, SKILLS, MOVES, EVOLUTION) drawn over columns 11-18 instead of 3 over 13-18;
+// columns 11 and 12 are the plain bar of the base tilemap when nothing else is drawn there.
+#define PAGE_PROGRESS_LEFT    11
+#define PAGE_PROGRESS_WIDTH   8
+#define PROGRESS_BAR          1   // plain bar, left (beige) part
+#define PROGRESS_BAR_END_BLUE 2   // plain bar, right (blue) part; same tile on both rows
+#define PROGRESS_TEAL_START   16  // beige -> teal
+#define PROGRESS_CUR          17  // current page
+#define PROGRESS_NEXT         18  // page further right
+#define PROGRESS_TEAL         20
+#define PROGRESS_TEAL_END     21  // teal -> blue
+#define PROGRESS_BEIGE_END    48  // beige -> blue
+#define PROGRESS_PREV         49  // page further left
+#define PROGRESS_DETAIL       50  // the move detail (MOVES_INFO)
+
+static u16 PageProgressBottomTile(u8 top)
+{
+    if (top == PROGRESS_BAR)
+        return 19;
+    if (top == PROGRESS_BAR_END_BLUE)
+        return PROGRESS_BAR_END_BLUE;
+    return top + 16;
+}
+
+static const u8 sPageProgress_Info[PAGE_PROGRESS_WIDTH]      = {PROGRESS_CUR,  PROGRESS_TEAL_START, PROGRESS_NEXT, PROGRESS_TEAL, PROGRESS_NEXT, PROGRESS_TEAL,       PROGRESS_NEXT, PROGRESS_TEAL_END};
+static const u8 sPageProgress_Skills[PAGE_PROGRESS_WIDTH]    = {PROGRESS_PREV, PROGRESS_BAR,        PROGRESS_CUR,  PROGRESS_TEAL_START, PROGRESS_NEXT, PROGRESS_TEAL, PROGRESS_NEXT, PROGRESS_TEAL_END};
+static const u8 sPageProgress_Moves[PAGE_PROGRESS_WIDTH]     = {PROGRESS_PREV, PROGRESS_BAR,        PROGRESS_PREV, PROGRESS_BAR,  PROGRESS_CUR,  PROGRESS_TEAL_START, PROGRESS_NEXT, PROGRESS_TEAL_END};
+static const u8 sPageProgress_Evolution[PAGE_PROGRESS_WIDTH] = {PROGRESS_PREV, PROGRESS_BAR,        PROGRESS_PREV, PROGRESS_BAR,  PROGRESS_PREV, PROGRESS_BAR,        PROGRESS_CUR,  PROGRESS_BEIGE_END};
+static const u8 sPageProgress_MovesInfo[PAGE_PROGRESS_WIDTH] = {PROGRESS_PREV, PROGRESS_BAR,        PROGRESS_PREV, PROGRESS_BAR,  PROGRESS_DETAIL, PROGRESS_TEAL_START, PROGRESS_NEXT, PROGRESS_TEAL_END};
+// Only the detail dot: learning or forgetting a move, no other page
+static const u8 sPageProgress_SelectMove[PAGE_PROGRESS_WIDTH] = {PROGRESS_BAR, PROGRESS_BAR, PROGRESS_BAR, PROGRESS_BAR, PROGRESS_BAR, PROGRESS_BAR, PROGRESS_DETAIL, PROGRESS_BEIGE_END};
+// Eggs have only the INFO page
+static const u8 sPageProgress_Egg[PAGE_PROGRESS_WIDTH] = {PROGRESS_BAR, PROGRESS_BAR, PROGRESS_CUR, PROGRESS_BEIGE_END, PROGRESS_BAR_END_BLUE, PROGRESS_BAR_END_BLUE, PROGRESS_BAR_END_BLUE, PROGRESS_BAR_END_BLUE};
+
 static void PokeSum_DrawPageProgressTiles(void)
 {
+    const u8 *tiles;
+    u8 i;
+
     switch (sMonSummaryScreen->curPageIndex)
     {
     case PSS_PAGE_INFO:
-        if (!sMonSummaryScreen->isEgg)
-        {
-            FillBgTilemapBufferRect(3, 17 + PAGE_PROGRESS_BASE_TILE_NUM, 13, 0, 1, 1, 0);
-            FillBgTilemapBufferRect(3, 33 + PAGE_PROGRESS_BASE_TILE_NUM, 13, 1, 1, 1, 0);
-            FillBgTilemapBufferRect(3, 16 + PAGE_PROGRESS_BASE_TILE_NUM, 14, 0, 1, 1, 0);
-            FillBgTilemapBufferRect(3, 32 + PAGE_PROGRESS_BASE_TILE_NUM, 14, 1, 1, 1, 0);
-            FillBgTilemapBufferRect(3, 18 + PAGE_PROGRESS_BASE_TILE_NUM, 15, 0, 1, 1, 0);
-            FillBgTilemapBufferRect(3, 34 + PAGE_PROGRESS_BASE_TILE_NUM, 15, 1, 1, 1, 0);
-            FillBgTilemapBufferRect(3, 20 + PAGE_PROGRESS_BASE_TILE_NUM, 16, 0, 1, 1, 0);
-            FillBgTilemapBufferRect(3, 36 + PAGE_PROGRESS_BASE_TILE_NUM, 16, 1, 1, 1, 0);
-            FillBgTilemapBufferRect(3, 18 + PAGE_PROGRESS_BASE_TILE_NUM, 17, 0, 1, 1, 0);
-            FillBgTilemapBufferRect(3, 34 + PAGE_PROGRESS_BASE_TILE_NUM, 17, 1, 1, 1, 0);
-            FillBgTilemapBufferRect(3, 21 + PAGE_PROGRESS_BASE_TILE_NUM, 18, 0, 1, 1, 0);
-            FillBgTilemapBufferRect(3, 37 + PAGE_PROGRESS_BASE_TILE_NUM, 18, 1, 1, 1, 0);
-        }
-        else
-        {
-            FillBgTilemapBufferRect(3, 17 + PAGE_PROGRESS_BASE_TILE_NUM, 13, 0, 1, 1, 0);
-            FillBgTilemapBufferRect(3, 33 + PAGE_PROGRESS_BASE_TILE_NUM, 13, 1, 1, 1, 0);
-            FillBgTilemapBufferRect(3, 48 + PAGE_PROGRESS_BASE_TILE_NUM, 14, 0, 1, 1, 0);
-            FillBgTilemapBufferRect(3, 64 + PAGE_PROGRESS_BASE_TILE_NUM, 14, 1, 1, 1, 0);
-            FillBgTilemapBufferRect(3,  2 + PAGE_PROGRESS_BASE_TILE_NUM, 15, 0, 4, 2, 0);
-        }
+        tiles = sMonSummaryScreen->isEgg ? sPageProgress_Egg : sPageProgress_Info;
         break;
     case PSS_PAGE_SKILLS:
-        FillBgTilemapBufferRect(3, 49 + PAGE_PROGRESS_BASE_TILE_NUM, 13, 0, 1, 1, 0);
-        FillBgTilemapBufferRect(3, 65 + PAGE_PROGRESS_BASE_TILE_NUM, 13, 1, 1, 1, 0);
-        FillBgTilemapBufferRect(3,  1 + PAGE_PROGRESS_BASE_TILE_NUM, 14, 0, 1, 1, 0);
-        FillBgTilemapBufferRect(3, 19 + PAGE_PROGRESS_BASE_TILE_NUM, 14, 1, 1, 1, 0);
-        FillBgTilemapBufferRect(3, 17 + PAGE_PROGRESS_BASE_TILE_NUM, 15, 0, 1, 1, 0);
-        FillBgTilemapBufferRect(3, 33 + PAGE_PROGRESS_BASE_TILE_NUM, 15, 1, 1, 1, 0);
-        FillBgTilemapBufferRect(3, 16 + PAGE_PROGRESS_BASE_TILE_NUM, 16, 0, 1, 1, 0);
-        FillBgTilemapBufferRect(3, 32 + PAGE_PROGRESS_BASE_TILE_NUM, 16, 1, 1, 1, 0);
-        FillBgTilemapBufferRect(3, 18 + PAGE_PROGRESS_BASE_TILE_NUM, 17, 0, 1, 1, 0);
-        FillBgTilemapBufferRect(3, 34 + PAGE_PROGRESS_BASE_TILE_NUM, 17, 1, 1, 1, 0);
-        FillBgTilemapBufferRect(3, 21 + PAGE_PROGRESS_BASE_TILE_NUM, 18, 0, 1, 1, 0);
-        FillBgTilemapBufferRect(3, 37 + PAGE_PROGRESS_BASE_TILE_NUM, 18, 1, 1, 1, 0);
+        tiles = sPageProgress_Skills;
         break;
     case PSS_PAGE_MOVES:
-        FillBgTilemapBufferRect(3, 49 + PAGE_PROGRESS_BASE_TILE_NUM, 13, 0, 1, 1, 0);
-        FillBgTilemapBufferRect(3, 65 + PAGE_PROGRESS_BASE_TILE_NUM, 13, 1, 1, 1, 0);
-        FillBgTilemapBufferRect(3,  1 + PAGE_PROGRESS_BASE_TILE_NUM, 14, 0, 1, 1, 0);
-        FillBgTilemapBufferRect(3, 19 + PAGE_PROGRESS_BASE_TILE_NUM, 14, 1, 1, 1, 0);
-        FillBgTilemapBufferRect(3, 49 + PAGE_PROGRESS_BASE_TILE_NUM, 15, 0, 1, 1, 0);
-        FillBgTilemapBufferRect(3, 65 + PAGE_PROGRESS_BASE_TILE_NUM, 15, 1, 1, 1, 0);
-        FillBgTilemapBufferRect(3,  1 + PAGE_PROGRESS_BASE_TILE_NUM, 16, 0, 1, 1, 0);
-        FillBgTilemapBufferRect(3, 19 + PAGE_PROGRESS_BASE_TILE_NUM, 16, 1, 1, 1, 0);
-        FillBgTilemapBufferRect(3, 17 + PAGE_PROGRESS_BASE_TILE_NUM, 17, 0, 1, 1, 0);
-        FillBgTilemapBufferRect(3, 33 + PAGE_PROGRESS_BASE_TILE_NUM, 17, 1, 1, 1, 0);
-        FillBgTilemapBufferRect(3, 48 + PAGE_PROGRESS_BASE_TILE_NUM, 18, 0, 1, 1, 0);
-        FillBgTilemapBufferRect(3, 64 + PAGE_PROGRESS_BASE_TILE_NUM, 18, 1, 1, 1, 0);
+        tiles = sPageProgress_Moves;
         break;
     case PSS_PAGE_MOVES_INFO:
-        if (sMonSummaryScreen->mode == PSS_MODE_SELECT_MOVE)
-        {
-            FillBgTilemapBufferRect(3,  1 + PAGE_PROGRESS_BASE_TILE_NUM, 13, 0, 4, 1, 0);
-            FillBgTilemapBufferRect(3, 19 + PAGE_PROGRESS_BASE_TILE_NUM, 13, 1, 4, 1, 0);
-        }
-        else
-        {
-            FillBgTilemapBufferRect(3, 49 + PAGE_PROGRESS_BASE_TILE_NUM, 13, 0, 1, 1, 0);
-            FillBgTilemapBufferRect(3, 65 + PAGE_PROGRESS_BASE_TILE_NUM, 13, 1, 1, 1, 0);
-            FillBgTilemapBufferRect(3,  1 + PAGE_PROGRESS_BASE_TILE_NUM, 14, 0, 1, 1, 0);
-            FillBgTilemapBufferRect(3, 19 + PAGE_PROGRESS_BASE_TILE_NUM, 14, 1, 1, 1, 0);
-            FillBgTilemapBufferRect(3, 49 + PAGE_PROGRESS_BASE_TILE_NUM, 15, 0, 1, 1, 0);
-            FillBgTilemapBufferRect(3, 65 + PAGE_PROGRESS_BASE_TILE_NUM, 15, 1, 1, 1, 0);
-            FillBgTilemapBufferRect(3,  1 + PAGE_PROGRESS_BASE_TILE_NUM, 16, 0, 1, 1, 0);
-            FillBgTilemapBufferRect(3, 19 + PAGE_PROGRESS_BASE_TILE_NUM, 16, 1, 1, 1, 0);
-        }
-        FillBgTilemapBufferRect(3, 50 + PAGE_PROGRESS_BASE_TILE_NUM, 17, 0, 1, 1, 0);
-        FillBgTilemapBufferRect(3, 66 + PAGE_PROGRESS_BASE_TILE_NUM, 17, 1, 1, 1, 0);
-        FillBgTilemapBufferRect(3, 48 + PAGE_PROGRESS_BASE_TILE_NUM, 18, 0, 1, 1, 0);
-        FillBgTilemapBufferRect(3, 64 + PAGE_PROGRESS_BASE_TILE_NUM, 18, 1, 1, 1, 0);
+        tiles = sMonSummaryScreen->mode == PSS_MODE_SELECT_MOVE ? sPageProgress_SelectMove : sPageProgress_MovesInfo;
         break;
+    case PSS_PAGE_EVOLUTION:
+        tiles = sPageProgress_Evolution;
+        break;
+    default:
+        return;
+    }
+
+    for (i = 0; i < PAGE_PROGRESS_WIDTH; i++)
+    {
+        FillBgTilemapBufferRect(3, tiles[i] + PAGE_PROGRESS_BASE_TILE_NUM, PAGE_PROGRESS_LEFT + i, 0, 1, 1, 0);
+        FillBgTilemapBufferRect(3, PageProgressBottomTile(tiles[i]) + PAGE_PROGRESS_BASE_TILE_NUM, PAGE_PROGRESS_LEFT + i, 1, 1, 1, 0);
     }
 }
 
@@ -5150,6 +5376,8 @@ static void Task_PokeSum_SwitchDisplayedPokemon(u8 taskId)
         if (!Overworld_LinkRecvQueueLengthMoreThan2() && !IsLinkRecvQueueAtOverworldMax())
         {
             PokeSum_CreateSprites();
+            if (sMonSummaryScreen->curPageIndex == PSS_PAGE_EVOLUTION)
+                PokeSum_HideSpritesForEvolutionPage();
             PokeSum_TryPlayMonCry();
             sMonSummaryScreen->switchMonTaskState++;
         }
@@ -5170,6 +5398,7 @@ static void PokeSum_UpdateWin1ActiveFlag(u8 curPageIndex)
     case PSS_PAGE_INFO:
     case PSS_PAGE_SKILLS:
     case PSS_PAGE_MOVES:
+    case PSS_PAGE_EVOLUTION:
         SetGpuReg(REG_OFFSET_DISPCNT, GetGpuReg(REG_OFFSET_DISPCNT) | DISPCNT_WIN1_ON);
         break;
     default:

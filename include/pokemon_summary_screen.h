@@ -14,6 +14,16 @@ u8 GetLastViewedMonIndex(void);
 void ShowPokemonSummaryScreen(struct Pokemon * party, u8 cursorPos, u8 lastIdx, void (*callback)(void), u8 a4);
 void SetPokemonSummaryScreenMode(u8);
 
+// Text of the EVOLUTION page: one line per gEvolutionTable entry of the species (in table
+// order), or a "does not evolve" line. Lines are separated by '\n'.
+#define EVOLUTION_PAGE_TEXT_SIZE 320
+void GetEvolutionPageText(u8 *dest, u16 species);
+
+#if TESTBUILD
+u32 PokeSum_TestGetState(void);
+bool32 PokeSum_TestCopyEvolutionPageText(u8 *dest);
+#endif
+
 // The Pokemon Summary Screen can operate in different modes. Certain features,
 // such as move re-ordering, are available in the different modes.
 enum PokemonSummaryScreenMode
@@ -34,6 +44,9 @@ enum PokemonSummaryScreenPage
     PSS_PAGE_MOVES_INFO,
     PSS_PAGE_UNK4,
     PSS_PAGE_MOVE_DELETER,
+    // Comes after PSS_PAGE_MOVES on screen, but is numbered after the vanilla pages: the page
+    // flip code relies on MOVES_INFO = MOVES + 1.
+    PSS_PAGE_EVOLUTION,
 };
 
 enum PokemonSummaryScreenState3270
