@@ -34,7 +34,7 @@ from ..emu import KEY_A, KEY_B, KEY_UP
 from ..game import POKEMON_SIZE, decode_mon
 from ..hooks import CMD_CHECK_SHINY, CMD_COUNT_SHINIES, CMD_SET_DEX_COMPLETE, Mailbox
 from . import ScenarioContext
-from .base import Abort
+from .base import TEXT_PERIOD, Abort
 from .pc_menu import MULTICHOICE_TASK, PC_MENU_OAK, PC_TIMEOUT, PcMenuMixin
 from .quick_catch_save import CENTER_EXIT, CatchSaveScenario
 from .quick_route1 import (LAB_EXIT, OAK_FRONT, PALLET_LAB_FRONT, ROUTE1_SOUTH_EDGE,
@@ -197,9 +197,15 @@ class ShinyScenario(PcMenuMixin, CatchSaveScenario):
         # "Acessou o PC do PROF. OAK" e a pergunta: só o PC do Oak abre um sim/não aqui
         self.ctl.advance_text(lambda: self._tasks_has(YESNO_TASK), PC_TIMEOUT,
                               "pergunta do PC do Oak (avaliar a Pokédex?)")
-        self._press(KEY_A)              # SIM
-        self.ctl.advance_text(lambda: self._tasks_has(MULTICHOICE_TASK), RATING_TIMEOUT,
-                              "fim da avaliação pelo PC (volta ao menu do PC)")
+        self.ctl.press_until(KEY_A, lambda: not self._tasks_has(YESNO_TASK), "SIM no PC do Oak")
+        # B avança a avaliação: um A que caísse no quadro em que o menu do PC volta escolheria o
+        # PC do BILL; um B ali só fecha o PC (dependia da fase dos quadros, Hack 6)
+        spent = 0
+        while not (self._tasks_has(MULTICHOICE_TASK) or self.ctl.overworld_idle()):
+            if spent >= RATING_TIMEOUT:
+                raise self.ctl.timeout_error("fim da avaliação pelo PC (volta ao menu do PC)")
+            self._press(KEY_B)
+            spent += TEXT_PERIOD
         self.ctl.press_until(KEY_B, lambda: not self._tasks_has(MULTICHOICE_TASK),
                              "PC desligado")
         self.ctl.wait_overworld_idle(PC_TIMEOUT)   # sem falas aqui: A reabriria o PC

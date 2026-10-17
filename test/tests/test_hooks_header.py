@@ -10,12 +10,20 @@ FIELD_SIZES = {"u32": 4}
 
 
 def _commands() -> dict[str, int]:
-    """TEST_CMD_* do enum (sem inicializadores explícitos: valor = posição)."""
-    body = re.search(r"enum\s*\{(.*?)\};", HEADER, re.S).group(1)
-    body = re.sub(r"//[^\n]*", "", body)
-    names = [n.strip() for n in body.split(",") if n.strip()]
-    assert all(re.fullmatch(r"TEST_CMD_\w+", n) for n in names), names
-    return {name: value for value, name in enumerate(names)}
+    """TEST_CMD_* de todos os enums (valor = anterior + 1; `= N` explícito recomeça em N)."""
+    cmds: dict[str, int] = {}
+    for body in re.findall(r"enum\s*\{(.*?)\};", HEADER, re.S):
+        body = re.sub(r"//[^\n]*", "", body)
+        value = 0
+        for entry in (e.strip() for e in body.split(",") if e.strip()):
+            m = re.fullmatch(r"(TEST_CMD_\w+)(?:\s*=\s*(0x[0-9A-Fa-f]+|\d+))?", entry)
+            assert m, entry
+            if m.group(2):
+                value = int(m.group(2), 0)
+            assert m.group(1) not in cmds and value not in cmds.values(), entry
+            cmds[m.group(1)] = value
+            value += 1
+    return cmds
 
 
 def _offsets() -> dict[str, int]:

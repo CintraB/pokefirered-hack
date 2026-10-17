@@ -5,19 +5,20 @@ A partir de test/ (no WSL):
     python3 -m esteira completo --rom R --elf E [--rom-test RT --elf-test ET] [--log L] --out DIR ...
     python3 -m esteira aprovar DIR
     python3 -m esteira nao-testada --out DIR     # SKIP_TESTS=1: só o relatório "NÃO TESTADA"
-    python3 -m esteira assistir [--starter X] [--from CHECKPOINT | --cenario evolucoes|resumo_evolucao|resumo_ivs] [--rom R --elf E]
+    python3 -m esteira assistir [--starter X] [--from CHECKPOINT | --cenario evolucoes|resumo_evolucao|resumo_ivs|ovo] [--rom R --elf E]
 
 `rapido` roda a checagem do log de build, a checagem dos textos e os 3 roteiros rápidos numa
 sessão de emulador só. `completo` roda tudo isso e mais os cenários de FULL_SCENARIOS: PC,
 tour de telas e Floresta/Brock continuam a sessão jogável; o `master` compila o master sem
-emulador; o `shiny`, o `evolucoes`, o `resumo_evolucao` e o `resumo_ivs` usam a ROM de teste
-(`make firered_switch TESTBUILD=1`), cada um numa sessão própria que parte do save do `captura`.
+emulador; o `shiny`, o `evolucoes`, o `resumo_evolucao`, o `resumo_ivs`, o `creche` e o `ovo` usam a
+ROM de teste (`make firered_switch TESTBUILD=1`), cada um numa sessão própria que parte do save do
+`captura`.
 Toda execução com emulador grava OUT/video.webp: a execução inteira (todas as sessões, jogável e
 teste) em WebP animado acelerado (um quadro a cada 8 emulados, 30 fps), embutido no relatório;
 `--sem-video` desliga (ver esteira/video.py).
 `assistir` é à parte do pipeline: roda os roteiros rápidos numa janela, em tempo real e com som,
 com um save temporário; não gera versão, não mexe em roms/ nem no rodízio de iniciais. Com
-`--cenario evolucoes` (ou `resumo_evolucao`, `resumo_ivs`), mostra esse cenário do modo completo na ROM de
+`--cenario evolucoes` (ou `resumo_evolucao`, `resumo_ivs`, `ovo`), mostra esse cenário do modo completo na ROM de
 teste (partindo de uma cópia do captura.sav mais recente de test/out/*/).
 Sai com 0 se nenhum resultado for `falha` (avisos não reprovam) e 1 caso contrário. Sem
 `--starter`, o inicial é o da vez no rodízio (esteira/rotation.py), que só avança quando a
@@ -49,6 +50,8 @@ from esteira.result import Result, StepTimeout, Suite
 from esteira.rotation import STARTERS, peek_next_starter, record_starter
 from esteira.scenarios import REPO_ROOT, ScenarioContext, open_context
 from esteira.scenarios.full_evolutions import run_full_evolutions
+from esteira.scenarios.full_breeding import run_full_breeding    # Hack 6
+from esteira.scenarios.full_egg import run_full_egg              # Hack 6
 from esteira.scenarios.full_forest_brock import run_full_forest_brock
 from esteira.scenarios.full_master import run_full_master
 from esteira.scenarios.full_pc import run_full_pc
@@ -130,10 +133,13 @@ FULL_SCENARIOS: list[ScenarioSpec] = [
     ScenarioSpec("evolucoes", run_full_evolutions, rom=TEST, save_from="captura"),
     ScenarioSpec("resumo_evolucao", run_full_summary_evolution, rom=TEST, save_from="captura"),
     ScenarioSpec("resumo_ivs", run_full_summary_ivs, rom=TEST, save_from="captura"),
+    ScenarioSpec("creche", run_full_breeding, rom=TEST, save_from="captura"),   # Hack 6
+    ScenarioSpec("ovo", run_full_egg, rom=TEST, save_from="captura"),          # Hack 6
 ]
 # Cenários do modo completo que o `assistir --cenario` mostra numa janela (ROM de teste, a
-# partir do .sav da ponte). O shiny fica de fora: 400 000 Pokémon em tempo real levariam horas.
-WATCH_FULL_SCENARIOS = ("evolucoes", "resumo_evolucao", "resumo_ivs")
+# partir do .sav da ponte). O shiny e o creche ficam de fora: centenas de milhares de sorteios
+# em tempo real levariam horas.
+WATCH_FULL_SCENARIOS = ("evolucoes", "resumo_evolucao", "resumo_ivs", "ovo")
 
 
 def scenarios_for(mode: str) -> list[ScenarioSpec]:

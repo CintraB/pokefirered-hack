@@ -13,11 +13,12 @@ repo.
 | Compilar, testar e versionar a ROM | `make firered_switch -j$(nproc)` | build + ~35 s de teste |
 | Compilar e versionar **sem** testar | `SKIP_TESTS=1 make firered_switch -j$(nproc)` | só o build |
 | Testar de novo a ROM já compilada, sem versionar | `make test-quick` | ~35 s |
-| Teste completo (cenários longos, ROM de teste) | `make test-full` | ~13 min (o shiny sozinho ~9 min) |
+| Teste completo (cenários longos, ROM de teste) | `make test-full` | ~12-17 min (o shiny ~4-9 min, a creche ~4 min) |
 | Ver o roteiro rápido numa janela | `make test-watch` | ~ tempo real |
 | Ver as evoluções sem troca (Hack 3) numa janela | `make test-watch CENARIO=evolucoes` | ~9 min (tempo real) |
 | Ver a página EVOLUTION do resumo (Hack 4) numa janela | `make test-watch CENARIO=resumo_evolucao` | ~2 min (tempo real) |
 | Ver a página IVs/EVs do resumo (Hack 5) numa janela | `make test-watch CENARIO=resumo_ivs` | ~2 min (tempo real) |
+| Ver um ovo da creche chocar (Hack 6) numa janela | `make test-watch CENARIO=ovo` | ~1,5 min (tempo real) |
 | Aprovar as telas de referência | `make test-approve` | instantâneo |
 | Testes unitários da própria esteira | `python3 -m pytest test -q` | ~5-6 min (~80 s sem os lentos) |
 
@@ -146,10 +147,12 @@ ROM. Sem o log, só o uso de memória é conferido (o terminal avisa). Deixa os 
 | `evolucoes` | **ROM de teste** | Hack 3, fim das evoluções por troca e da trava da Dex Nacional: Rare Candy/pedra pela bolsa e a cena de evolução de verdade para os 11 Pokémon (nível 37, com/sem item segurado), Bellossom e Crobat, item errado, "passou do 37 sem item" e a troca que não evolui mais, tudo sem a Dex Nacional (veja abaixo) |
 | `resumo_evolucao` | **ROM de teste** | Hack 4, página EVOLUTION do resumo: o texto de todas as 386 espécies, a página pelo menu de verdade (→/←, troca de Pokémon com ↓), ovo e modo de aprender golpe sem a página (veja abaixo) |
 | `resumo_ivs` | **ROM de teste** | Hack 5, página IVs/EVs do resumo: o texto da página para as bordas do design, todos os tipos de Hidden Power e 150 combinações sorteadas, a página pelo menu de verdade (→/←, ↓ entre 5 Pokémon com IVs/EVs escolhidos) e o ovo sem a página (veja abaixo) |
+| `creche` | **ROM de teste** | Hack 6, breeding genético: ~21 000 ovos pelo caminho real da creche comparados com a distribuição exata das regras (IVs, natureza, habilidade, golpes de ovo, gênero, itens), taxa de shiny dos ovos com/sem charm e os Power items em batalha (veja abaixo) |
+| `ovo` | **ROM de teste** | Hack 6: um ovo de verdade na creche de Four Island, entregue pelo velho, chocado andando e conferido na memória, e a loja de Four Island |
 
 Depende da ROM jogável da raiz (se não existir, vira falha `emulador/rom-playable`). Não grava
-em `roms/`: o resultado fica em `test/out/<data-hora>/`. Rode com o terminal aberto por ~13
-min; o shiny leva ~9 min disso.
+em `roms/`: o resultado fica em `test/out/<data-hora>/`. Rode com o terminal aberto por ~12-17
+min; o shiny leva ~4-9 min disso e a `creche` ~4 min.
 
 O `shiny`, o `evolucoes`, o `resumo_evolucao` e o `resumo_ivs` partem do mesmo save do jogo (o `.sav` do fim do
 `captura`), cada um numa **sessão própria** da ROM de teste: um não herda o que o outro fez (o
@@ -236,6 +239,39 @@ Telas: `telas/resumo_ivs_<espécie>.png`, comparadas com `test/referencias/COMUM
 `src/strings.c` e com o C (colunas, janela, `Cmd_hiddenpowercalc` usando `CalcHiddenPower`), a
 largura e, com a ROM de teste em dia, o texto do jogo.
 
+**Hack 6, breeding genético: `creche` e `ovo`** (`test/esteira/scenarios/full_breeding.py` e
+`full_egg.py`; as regras e o modelo exato ficam numa tabela só, `test/esteira/breeding.py`,
+e as probabilidades do C em `include/constants/daycare.h`). Cada um numa sessão própria da ROM
+de teste, a partir do `captura.sav`:
+
+- `creche` (~3,7 min): para 9 pares de pais (sem item, Everstone + Destiny Knot, Power items
+  diferentes e iguais, dois Everstones, Ditto como mãe e como pai, pai de uma habilidade só,
+  sem gênero + Ditto) o atalho põe os dois na creche de verdade e gera ~21 000 ovos pelo
+  caminho real (ovo pendente + `GiveEggFromDaycare`, o mesmo do velho da creche). Confere contra
+  a distribuição **exata** das regras: IVs (qui-quadrado dos 32 valores e média de cada
+  atributo), natureza (qui-quadrado das 25 e a frequência da natureza de cada pai), habilidade
+  60/40 com 10% de mutação e o pai "sem informação" (Ditto/uma habilidade só), golpes de ovo
+  60%/40%/76% e gênero sem viés. Depois: o ovo entregue tem exatamente a personalidade que a
+  rotina de sorteio dá a partir do mesmo RNG, a taxa de shiny dessa rotina com e sem o Shiny
+  Charm (400 000 cada, ±3σ, ~1/4096 e ~1/2048) e os Power items em batalha (`MonGainEVs` com +8
+  no atributo e os limites 255/510; `GetWhoStrikesFirst` com a Velocidade pela metade).
+  Proporções usam ±4σ e as distribuições qui-quadrado com p ≥ 1e-5 (muitas checagens: o falso
+  vermelho total fica perto de 1%, metade dele no shiny a ±3σ, como no `shiny`).
+- `ovo` (~5 s): atalhos montam os pais com um ovo pendente, pulam a cena do rival e levam o
+  jogador até o velho da creche em Four Island; daí é o jogo: SIM para o ovo, o ovo é
+  conferido, o atalho zera os ciclos que faltam e o jogador **anda** até ele chocar (cena
+  inteira, apelido recusado); o filhote tem de ser o ovo (personalidade, IVs, golpes, natureza,
+  habilidade, gênero). Por fim entra na loja de Four Island (dinheiro posto pelo atalho) e confere
+  os 8 itens de empurrão e os preços. Telas `ovo_recebido`, `ovo_chocando` e `ovo_chocado` (sem
+  referência) e `loja_four_island`/`loja_four_island_quantidade` (preço de 5 dígitos do Destiny
+  Knot), comparadas com `test/referencias/COMUM/`.
+  Numa janela: `make test-watch CENARIO=ovo` (~1,5 min em tempo real).
+
+O teste estático `test/tests/test_breeding_estatico.py` confere as probabilidades do C contra o
+design, os 7 itens novos (slots 53-59, preço, efeito, ícone 24×24 4bpp e paleta JASC CRLF), a
+Everstone a ₽7000, a loja de Four Island e o próprio modelo (contra uma simulação independente
+das regras, com poder para reprovar uma regra errada).
+
 ### `make test-approve`
 
 Promove as telas de uma execução a **screenshots de referência**:
@@ -297,13 +333,14 @@ make test-watch FROM=encomenda STARTER=SQUIRTLE  # começa na captura
 - Precisa do WSLg (Windows 11) e da `libsdl2-dev` (veja Requisitos). Sem janela disponível o
   comando diz para rodar `wsl --update` e `wsl --shutdown` no PowerShell e abrir o WSL de novo.
 
-**Cenário do modo completo numa janela** (`CENARIO=`: `evolucoes`, `resumo_evolucao` ou `resumo_ivs`):
+**Cenário do modo completo numa janela** (`CENARIO=`: `evolucoes`, `resumo_evolucao`, `resumo_ivs` ou `ovo`):
 
 ```bash
 make test-watch CENARIO=evolucoes                    # Hack 3: as evoluções, em tempo real
 make test-watch CENARIO=evolucoes STARTER=SQUIRTLE   # usa o save de uma execução com esse inicial
 make test-watch CENARIO=resumo_evolucao              # Hack 4: a página EVOLUTION do resumo
 make test-watch CENARIO=resumo_ivs                   # Hack 5: a página IVs/EVs de 5 Pokémon
+make test-watch CENARIO=ovo                          # Hack 6: o ovo entregue e chocando (~1,5 min)
 ```
 
 - Recompila antes a **ROM de teste** (`make firered_switch TESTBUILD=1`, como o `test-full`) e
@@ -316,7 +353,7 @@ make test-watch CENARIO=resumo_ivs                   # Hack 5: a página IVs/EVs
   `make firered_switch` e `make test-quick` deixa um; o inicial é o desse save. Sem nenhum, o
   comando pede para rodar `make test-quick` antes (exit 2). Não grava em `roms/` e não mexe no
   rodízio.
-- `CENARIO=` e `FROM=` não combinam. O `shiny` não está disponível aqui: 400 000 Pokémon em
+- `CENARIO=` e `FROM=` não combinam. O `shiny` e o `creche` não estão disponíveis aqui: 400 000 Pokémon em
   tempo real levariam horas.
 
 ## Usando a esteira direto (`python3 -m esteira`)
@@ -345,11 +382,11 @@ Opções de `rapido` e `completo` (`--rom`, `--elf` e `--out` são obrigatórios
 | `--rom-test`, `--elf-test` | ROM de teste e ELF, só para cenários que usam a build de teste (padrão: `pokefirered_switch_test.*` na raiz) |
 | `--log` | Log do build; sem ele só a checagem de texto roda (a do build vira aviso) |
 | `--out` | Pasta da execução (relatório, telas, estados, vídeo) |
-| `--only NOME` | Só um item: `build`, `texto`, `abertura`, `rota1`, `captura`; no `completo` também `pc`, `telas`, `floresta_brock`, `master`, `shiny`, `evolucoes`, `resumo_evolucao`, `resumo_ivs` |
+| `--only NOME` | Só um item: `build`, `texto`, `abertura`, `rota1`, `captura`; no `completo` também `pc`, `telas`, `floresta_brock`, `master`, `shiny`, `evolucoes`, `resumo_evolucao`, `resumo_ivs`, `creche`, `ovo` |
 | `--starter X` | Força `BULBASAUR`, `CHARMANDER` ou `SQUIRTLE` (não mexe no rodízio) |
 | `--sem-video` | Não grava `video.webp` |
 
-`assistir`: `--starter`, `--from {encomenda,rival}` ou `--cenario {evolucoes,resumo_evolucao,resumo_ivs}` (com `--rom-test`/`--elf-test`, padrão os da raiz), `--rom`, `--elf`. Códigos de saída de
+`assistir`: `--starter`, `--from {encomenda,rival}` ou `--cenario {evolucoes,resumo_evolucao,resumo_ivs,ovo}` (com `--rom-test`/`--elf-test`, padrão os da raiz), `--rom`, `--elf`. Códigos de saída de
 `rapido`/`completo`: 0 sem falha (aviso não reprova), 1 com falha.
 
 Exemplos:
@@ -370,7 +407,7 @@ passar sem valer. Regras práticas:
 - passe o mesmo `--starter` da execução original (está no `meta.json`): sem ele a esteira usa o
   inicial da vez no rodízio e, se não for o do checkpoint, descarta o checkpoint e roda a
   cadeia toda;
-- `--only shiny`, `--only evolucoes`, `--only resumo_evolucao` e `--only resumo_ivs` precisam do `<OUT>/captura.sav` que o `rapido`/`completo` anterior (mesma
+- `--only shiny`, `--only evolucoes`, `--only resumo_evolucao`, `--only resumo_ivs`, `--only creche` e `--only ovo` precisam do `<OUT>/captura.sav` que o `rapido`/`completo` anterior (mesma
   pasta) deixou; sem ele o resultado é uma falha dizendo o que rodar antes;
 - `--only build` e `--only texto` não usam emulador e não têm esse problema.
 
@@ -514,6 +551,10 @@ tipos de Hidden Power) e medidas, e uma coluna que encavale na anterior também 
   padrão do esperado. Isso dá **~0,6% de falso vermelho por execução completa** (duas medições,
   com e sem charm). Um vermelho só no `shiny`, com a taxa perto do limite da faixa, vale rodar de novo
   (`--only shiny`, veja o cuidado com `--only`) antes de investigar.
+- **Testes estatísticos do breeding** (`creche`): ~60 checagens de proporção a ±4σ, ~20 qui-quadrados
+  (p ≥ 1e-5) e as duas taxas de shiny dos ovos a ±3σ dão **~1% de falso vermelho** por execução.
+  Um vermelho isolado num item do `creche`, perto do limite, vale rodar de novo (`--only creche`)
+  antes de investigar.
 - **Brock no modo completo** é adaptativo, mas **probabilístico**: treina até um nível e tenta
   algumas vezes; com azar nos golpes/RNG pode perder todas as tentativas e reprovar sem que o jogo
   tenha problema.

@@ -28,6 +28,9 @@
 #include "field_fadetransition.h"
 #include "trade.h"
 #include "constants/daycare.h"
+#include "constants/hold_effects.h"
+#include "daycare.h"
+#include "item.h"
 #include "constants/region_map_sections.h"
 
 // Combination of RSE's Day-Care (re-used on Four Island), FRLG's Day-Care, and egg_hatch.c
@@ -53,7 +56,7 @@ struct EggHatchData
 
 // this file's functions
 static void ClearDaycareMonMail(struct DayCareMail *mail);
-static void SetInitialEggData(struct Pokemon *mon, u16 species, struct DayCare *daycare);
+static void SetInitialEggData(struct Pokemon *mon, u16 species, u32 personality);
 static u8 GetDaycareCompatibilityScore(struct DayCare *daycare);
 static void DaycarePrintMonInfo(u8 windowId, u32 daycareSlotId, u8 y);
 
@@ -676,77 +679,13 @@ static u16 GetEggSpecies(u16 species)
 
     return species;
 }
-//
-//static s32 GetSlotToInheritNature(struct DayCare *daycare)
-//{
-//    u32 species[DAYCARE_MON_COUNT];
-//    s32 i;
-//    s32 dittoCount;
-//    s32 slot = -1;
-//
-//    // search for female gender
-//    for (i = 0; i < DAYCARE_MON_COUNT; i++)
-//    {
-//        if (GetBoxMonGender(&daycare->mons[i].mon) == MON_FEMALE)
-//            slot = i;
-//    }
-//
-//    // search for ditto
-//    for (dittoCount = 0, i = 0; i < DAYCARE_MON_COUNT; i++)
-//    {
-//        species[i] = GetBoxMonData(&daycare->mons[i].mon, MON_DATA_SPECIES);
-//        if (species[i] == SPECIES_DITTO)
-//            dittoCount++, slot = i;
-//    }
-//
-//    // coin flip on ...two Dittos
-//    if (dittoCount == 2)
-//    {
-//        if (Random() >= USHRT_MAX / 2)
-//            slot = 0;
-//        else
-//            slot = 1;
-//    }
-//
-//    // nature inheritance only if holds everstone
-//    if (GetBoxMonData(&daycare->mons[slot].mon, MON_DATA_HELD_ITEM) != ITEM_EVERSTONE
-//        || Random() >= USHRT_MAX / 2)
-//    {
-//        return -1;
-//    }
-//
-//    return slot;
-//}
 
+// The original (commented-out) Everstone nature roll that lived here is replaced by the
+// genetic rules below: see InheritNature and GetEggPersonality (Hack 6).
 static void _TriggerPendingDaycareEgg(struct DayCare *daycare)
 {
-//    s32 natureSlot;
-//    s32 natureTries = 0;
-//
-//    SeedRng2(gMain.vblankCounter2);
-//    natureSlot = GetSlotToInheritNature(daycare);
-//
-//    if (natureSlot < 0)
-//    {
-//        daycare->offspringPersonality = (Random2() << 0x10) | ((Random() % 0xfffe) + 1);
-//    }
-//    else
-//    {
-//        u8 wantedNature = GetNatureFromPersonality(GetBoxMonData(&daycare->mons[natureSlot].mon, MON_DATA_PERSONALITY, NULL));
-//        u32 personality;
-//
-//        do
-//        {
-//            personality = (Random2() << 0x10) | (Random());
-//            if (wantedNature == GetNatureFromPersonality(personality) && personality != 0)
-//                break; // we found a personality with the same nature
-//
-//            natureTries++;
-//        } while (natureTries <= 2400);
-//
-//        daycare->offspringPersonality = personality;
-//    }
-
+    // Only marks the egg as pending (nonzero) and picks Nidoran/Volbeat by EGG_GENDER_MALE: the
+    // egg's personality is rolled when it is handed over (GetEggPersonality).
     daycare->offspringPersonality = ((Random()) % 0xFFFE) + 1;
     FlagSet(FLAG_PENDING_DAYCARE_EGG);
 }
@@ -767,84 +706,158 @@ static void TriggerPendingDaycareMaleEgg(void)
     _TriggerPendingDaycareMaleEgg(&gSaveBlock1Ptr->daycare);
 }
 
-// Removes the selected index from the given IV list and shifts the remaining
-// elements to the left.
-static void RemoveIVIndexFromList(u8 *ivs, u8 selectedIv)
-{
-    s32 i, j;
-    u8 temp[NUM_STATS];
+// --- Genetic breeding (Hack 6) -----------------------------------------------------------
+// The egg looks like its parents, with variation and mutation, and held items only push the
+// odds (docs/superpowers/specs/2026-10-17-breeding-genetico-design.md). Every probability is
+// in include/constants/daycare.h. Father and mother are the roles DetermineEggSpeciesAndParentSlots
+// gives: male and female; Ditto takes the missing one (the mother next to a male or genderless
+// mon, the father next to a female).
 
-    ivs[selectedIv] = 0xFF;
-    for (i = 0; i < NUM_STATS; i++)
+static bool8 RandomPercent(u8 percent)
+{
+    return Random() % 100 < percent;
+}
+
+// Uniform in [-spread, spread]
+static s32 RandomSpread(u8 spread)
+{
+    return (s32)(Random() % (2 * spread + 1)) - spread;
+}
+
+static u8 GetBoxMonHoldEffect(struct BoxPokemon *mon)
+{
+    return ItemId_GetHoldEffect(GetBoxMonData(mon, MON_DATA_HELD_ITEM));
+}
+
+static bool8 HoldsPowerItemFor(struct BoxPokemon *mon, u8 stat)
+{
+    u16 item = GetBoxMonData(mon, MON_DATA_HELD_ITEM);
+
+    return ItemId_GetHoldEffect(item) == HOLD_EFFECT_POWER_ITEM && ItemId_GetHoldEffectParam(item) == stat;
+}
+
+static u8 InheritIV(u8 stat, struct BoxPokemon *father, struct BoxPokemon *mother, bool8 destinyKnot)
+{
+    u8 fatherIV = GetBoxMonData(father, MON_DATA_HP_IV + stat);
+    u8 motherIV = GetBoxMonData(mother, MON_DATA_HP_IV + stat);
+    bool8 fatherPower = HoldsPowerItemFor(father, stat);
+    bool8 motherPower = HoldsPowerItemFor(mother, stat);
+    s32 iv;
+
+    // Power item of this stat: copy that parent's IV exactly (both: either one)
+    if ((fatherPower || motherPower) && RandomPercent(BREED_IV_POWER_ITEM_CHANCE))
     {
-        temp[i] = ivs[i];
+        if (fatherPower && motherPower)
+            return (Random() & 1) ? fatherIV : motherIV;
+        return fatherPower ? fatherIV : motherIV;
     }
 
-    j = 0;
-    for (i = 0; i < NUM_STATS; i++)
+    if (RandomPercent(BREED_IV_MUTATION_CHANCE))
+        return Random() % (MAX_IV_MASK + 1);
+
+    if (RandomPercent(BREED_IV_ONE_PARENT_CHANCE))
     {
-        if (temp[i] != 0xFF)
-            ivs[j++] = temp[i];
+        if (destinyKnot)
+            iv = max(fatherIV, motherIV);
+        else
+            iv = (Random() & 1) ? fatherIV : motherIV;
+        iv += RandomSpread(BREED_IV_ONE_PARENT_SPREAD);
+    }
+    else
+    {
+        iv = (fatherIV + motherIV + 1) / 2;
+        iv += RandomSpread(destinyKnot ? BREED_IV_AVERAGE_SPREAD_KNOT : BREED_IV_AVERAGE_SPREAD);
+    }
+
+    if (iv < 0)
+        iv = 0;
+    if (iv > MAX_IV_MASK)
+        iv = MAX_IV_MASK;
+    return iv;
+}
+
+static void InheritIVs(struct Pokemon *egg, struct BoxPokemon *father, struct BoxPokemon *mother)
+{
+    u8 stat, iv;
+    bool8 destinyKnot = GetBoxMonHoldEffect(father) == HOLD_EFFECT_DESTINY_KNOT
+                     || GetBoxMonHoldEffect(mother) == HOLD_EFFECT_DESTINY_KNOT;
+
+    for (stat = 0; stat < NUM_STATS; stat++)
+    {
+        iv = InheritIV(stat, father, mother, destinyKnot);
+        SetMonData(egg, MON_DATA_HP_IV + stat, &iv);
     }
 }
 
-static void InheritIVs(struct Pokemon *egg, struct DayCare *daycare)
+// nature = raised stat * NUM_NATURE_STATS + lowered stat; the neutral ones raise and lower the same
+static u8 InheritNature(struct BoxPokemon *father, struct BoxPokemon *mother)
 {
-    u8 i;
-    u8 selectedIvs[INHERITED_IV_COUNT];
-    u8 availableIVs[NUM_STATS];
-    u8 whichParent[NELEMS(selectedIvs)];
-    u8 iv;
+    u8 fatherNature = GetBoxMonData(father, MON_DATA_PERSONALITY) % NUM_NATURES;
+    u8 motherNature = GetBoxMonData(mother, MON_DATA_PERSONALITY) % NUM_NATURES;
+    bool8 fatherStone = GetBoxMonData(father, MON_DATA_HELD_ITEM) == ITEM_EVERSTONE;
+    bool8 motherStone = GetBoxMonData(mother, MON_DATA_HELD_ITEM) == ITEM_EVERSTONE;
+    u8 raised, lowered;
 
-    // Initialize a list of IV indices.
-    for (i = 0; i < NUM_STATS; i++)
+    if ((fatherStone || motherStone) && RandomPercent(BREED_NATURE_EVERSTONE_CHANCE))
     {
-        availableIVs[i] = i;
+        if (fatherStone && motherStone)
+            return (Random() & 1) ? fatherNature : motherNature;
+        return fatherStone ? fatherNature : motherNature;
     }
 
-    // Select the 3 IVs that will be inherited.
-    for (i = 0; i < NELEMS(selectedIvs); i++)
-    {
-        // Randomly pick an IV from the available list and stop from being chosen again.
-        selectedIvs[i] = availableIVs[Random() % (NUM_STATS - i)];
-        RemoveIVIndexFromList(availableIVs, selectedIvs[i]);
-    }
+    if (RandomPercent(BREED_NATURE_MUTATION_CHANCE))
+        return Random() % NUM_NATURES;
 
-    // Determine which parent each of the selected IVs should inherit from.
-    for (i = 0; i < NELEMS(selectedIvs); i++)
-    {
-        whichParent[i] = Random() % DAYCARE_MON_COUNT;
-    }
+    raised = ((Random() & 1) ? fatherNature : motherNature) / NUM_NATURE_STATS;
+    lowered = ((Random() & 1) ? fatherNature : motherNature) % NUM_NATURE_STATS;
+    if (raised == lowered) // any neutral nature
+        return (Random() % NUM_NATURE_STATS) * (NUM_NATURE_STATS + 1);
+    return raised * NUM_NATURE_STATS + lowered;
+}
 
-    // Set each of inherited IVs on the egg mon.
-    for (i = 0; i < NELEMS(selectedIvs); i++)
+// A parent of a species with a single ability (Ditto included) carries no ability slot.
+static bool8 HasAbilitySlot(struct BoxPokemon *mon)
+{
+    return gSpeciesInfo[GetBoxMonData(mon, MON_DATA_SPECIES)].abilities[1] != ABILITY_NONE;
+}
+
+static u8 InheritAbilityNum(u16 eggSpecies, struct BoxPokemon *father, struct BoxPokemon *mother)
+{
+    bool8 fatherSlot = HasAbilitySlot(father);
+    bool8 motherSlot = HasAbilitySlot(mother);
+
+    if (gSpeciesInfo[eggSpecies].abilities[1] == ABILITY_NONE)
+        return ABILITY_NUM_ANY;
+    if ((!fatherSlot && !motherSlot) || RandomPercent(BREED_ABILITY_MUTATION_CHANCE))
+        return Random() & 1;
+    if (fatherSlot && (!motherSlot || RandomPercent(BREED_ABILITY_FATHER_CHANCE)))
+        return GetBoxMonData(father, MON_DATA_ABILITY_NUM);
+    return GetBoxMonData(mother, MON_DATA_ABILITY_NUM);
+}
+
+// Drawn when the egg is handed over: nature, ability slot and shininess come from the same
+// personality, so it is rolled with all of them at once (GetPlayerMonPersonality).
+static u32 GetEggPersonality(u16 eggSpecies, struct BoxPokemon *father, struct BoxPokemon *mother)
+{
+    u8 nature = InheritNature(father, mother);
+    u8 abilityNum = InheritAbilityNum(eggSpecies, father, mother);
+
+    return GetPlayerMonPersonality(nature, abilityNum);
+}
+
+static void TryPassEggMove(struct Pokemon *egg, u16 move, u16 numEggMoves, u8 chance)
+{
+    u16 i;
+
+    if (move == MOVE_NONE)
+        return;
+    for (i = 0; i < numEggMoves; i++)
     {
-        switch (selectedIvs[i])
+        if (move == sHatchedEggEggMoves[i])
         {
-            case 0:
-                iv = GetBoxMonData(&daycare->mons[whichParent[i]].mon, MON_DATA_HP_IV);
-                SetMonData(egg, MON_DATA_HP_IV, &iv);
-                break;
-            case 1:
-                iv = GetBoxMonData(&daycare->mons[whichParent[i]].mon, MON_DATA_ATK_IV);
-                SetMonData(egg, MON_DATA_ATK_IV, &iv);
-                break;
-            case 2:
-                iv = GetBoxMonData(&daycare->mons[whichParent[i]].mon, MON_DATA_DEF_IV);
-                SetMonData(egg, MON_DATA_DEF_IV, &iv);
-                break;
-            case 3:
-                iv = GetBoxMonData(&daycare->mons[whichParent[i]].mon, MON_DATA_SPEED_IV);
-                SetMonData(egg, MON_DATA_SPEED_IV, &iv);
-                break;
-            case 4:
-                iv = GetBoxMonData(&daycare->mons[whichParent[i]].mon, MON_DATA_SPATK_IV);
-                SetMonData(egg, MON_DATA_SPATK_IV, &iv);
-                break;
-            case 5:
-                iv = GetBoxMonData(&daycare->mons[whichParent[i]].mon, MON_DATA_SPDEF_IV);
-                SetMonData(egg, MON_DATA_SPDEF_IV, &iv);
-                break;
+            if (RandomPercent(chance) && GiveMoveToMon(egg, move) == MON_HAS_MAX_MOVES)
+                DeleteFirstMoveAndGiveMoveToMon(egg, move);
+            return;
         }
     }
 }
@@ -913,25 +926,12 @@ static void BuildEggMoveset(struct Pokemon *egg, struct BoxPokemon *father, stru
 
     numEggMoves = GetEggMoves(egg, sHatchedEggEggMoves);
 
+    // Egg moves (Hack 6): each one a parent knows passes on independently, more often from the
+    // father; the father's first, in his move order, as before.
     for (i = 0; i < MAX_MON_MOVES; i++)
-    {
-        if (sHatchedEggFatherMoves[i] != MOVE_NONE)
-        {
-            for (j = 0; j < numEggMoves; j++)
-            {
-                if (sHatchedEggFatherMoves[i] == sHatchedEggEggMoves[j])
-                {
-                    if (GiveMoveToMon(egg, sHatchedEggFatherMoves[i]) == MON_HAS_MAX_MOVES)
-                        DeleteFirstMoveAndGiveMoveToMon(egg, sHatchedEggFatherMoves[i]);
-                    break;
-                }
-            }
-        }
-        else
-        {
-            break;
-        }
-    }
+        TryPassEggMove(egg, sHatchedEggFatherMoves[i], numEggMoves, BREED_EGG_MOVE_FATHER_CHANCE);
+    for (i = 0; i < MAX_MON_MOVES; i++)
+        TryPassEggMove(egg, sHatchedEggMotherMoves[i], numEggMoves, BREED_EGG_MOVE_MOTHER_CHANCE);
     for (i = 0; i < MAX_MON_MOVES; i++)
     {
         if (sHatchedEggFatherMoves[i] != MOVE_NONE)
@@ -1066,12 +1066,15 @@ static void _GiveEggFromDaycare(struct DayCare *daycare)
     u16 species;
     u8 parentSlots[DAYCARE_MON_COUNT];
     bool8 isEgg;
+    struct BoxPokemon *father, *mother;
 
     species = DetermineEggSpeciesAndParentSlots(daycare, parentSlots);
     AlterEggSpeciesWithIncenseItem(&species, daycare);
-    SetInitialEggData(&egg, species, daycare);
-    InheritIVs(&egg, daycare);
-    BuildEggMoveset(&egg, &daycare->mons[parentSlots[1]].mon, &daycare->mons[parentSlots[0]].mon);
+    mother = &daycare->mons[parentSlots[0]].mon;
+    father = &daycare->mons[parentSlots[1]].mon;
+    SetInitialEggData(&egg, species, GetEggPersonality(species, father, mother));
+    InheritIVs(&egg, father, mother);
+    BuildEggMoveset(&egg, father, mother);
 
     /*if (species == SPECIES_PICHU)
         GiveVoltTackleIfLightBall(&egg, daycare);*/
@@ -1111,14 +1114,12 @@ void CreateEgg(struct Pokemon *mon, u16 species, bool8 setHotSpringsLocation)
     SetMonData(mon, MON_DATA_IS_EGG, &isEgg);
 }
 
-static void SetInitialEggData(struct Pokemon *mon, u16 species, struct DayCare *daycare)
+static void SetInitialEggData(struct Pokemon *mon, u16 species, u32 personality)
 {
-    u32 personality;
     u16 ball;
     u8 metLevel;
     u8 language;
 
-    personality = daycare->offspringPersonality | (Random() << 16);
     CreateMon(mon, species, EGG_HATCH_LEVEL, USE_RANDOM_IVS, TRUE, personality, OT_ID_PLAYER_ID, 0);
     metLevel = 0;
     ball = ITEM_POKE_BALL;
@@ -1134,6 +1135,33 @@ void GiveEggFromDaycare(void)
 {
     _GiveEggFromDaycare(&gSaveBlock1Ptr->daycare);
 }
+
+#if TESTBUILD
+// Test pipeline (src/test_hooks.c): rolls `count` egg personalities in a row exactly as
+// _GiveEggFromDaycare does (it is the first thing that uses the RNG there), counting the shiny
+// ones for `otId` into *shinies; returns the last. The species (slow to find) is looked up once.
+u32 TestHooks_RollEggPersonalities(u32 count, u32 otId, u32 *shinies)
+{
+    struct DayCare *daycare = &gSaveBlock1Ptr->daycare;
+    u8 parentSlots[DAYCARE_MON_COUNT];
+    u16 species = DetermineEggSpeciesAndParentSlots(daycare, parentSlots);
+    u32 personality = 0;
+
+    AlterEggSpeciesWithIncenseItem(&species, daycare);
+    while (count-- != 0)
+    {
+        personality = GetEggPersonality(species, &daycare->mons[parentSlots[1]].mon, &daycare->mons[parentSlots[0]].mon);
+        if (GET_SHINY_VALUE(otId, personality) < SHINY_ODDS)
+            (*shinies)++;
+    }
+    return personality;
+}
+
+u8 TestHooks_DaycareCompatibility(void)
+{
+    return GetDaycareCompatibilityScore(&gSaveBlock1Ptr->daycare);
+}
+#endif
 
 static bool8 TryProduceOrHatchEgg(struct DayCare *daycare)
 {

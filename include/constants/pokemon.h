@@ -187,6 +187,9 @@
 #define SHINY_BASE_REROLLS 1  // ~1/4096
 #define SHINY_CHARM_REROLLS 3 // ~1/2048 while holding the Shiny Charm
 
+// GetPlayerMonPersonality: no requirement on the ability slot
+#define ABILITY_NUM_ANY 0xFF
+
 #define MAX_LEVEL 100
 
 #define OT_ID_PLAYER_ID       0
