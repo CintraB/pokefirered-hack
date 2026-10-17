@@ -1,6 +1,7 @@
 """Navegação: BFS sobre o map.bin real e leitura de layouts/tilesets."""
 
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
@@ -9,7 +10,9 @@ from esteira.constants import Constants
 from esteira.control import Controller
 from esteira.emu import KEY_A, KEY_START, Emulator
 from esteira.game import Game
-from esteira.nav import LEDGE_BEHAVIORS, MapGrid, Navigator, find_route, load_map_grid
+from esteira.nav import (LEDGE_BEHAVIORS, MAX_REPLANS, MapGrid, Navigator, StepBlocked, find_route,
+                         load_map_grid)
+from esteira.result import StepTimeout, Suite
 from esteira.symbols import Symbols
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -112,3 +115,156 @@ def test_navigator_live_bedroom_to_town(rom_path, tmp_save, tmp_path):
         # contornando a casa até a porta do rival e entrando nela (porta tem colisão)
         assert nav.walk_to(15, 8, run=True)
         assert nav.go_through_warp() == consts.map("MAP_PALLET_TOWN_RIVALS_HOUSE")
+
+
+# --- walk_to: replanejamento quando um NPC bloqueia (Controller/Game falsos) -----------
+
+class _FakeCtl:
+    def __init__(self):
+        self.game = SimpleNamespace(location=lambda: PALLET)
+        self.emu = SimpleNamespace(frames=self._frames)
+        self.waited = 0
+        self.failures = []
+
+    def _frames(self, n):
+        self.waited += n
+
+    def timeout_error(self, what):
+        self.failures.append(what)
+        return StepTimeout(what, "fake.png", "fake.ss")
+
+
+def _fake_nav(step_fn):
+    ctl = _FakeCtl()
+    pos = [5, 8]
+    ctl.game.player_xy = lambda: tuple(pos)
+    nav = Navigator(ctl)
+    nav.step = lambda direction, n=1, run=False: step_fn(nav, ctl, pos, direction, n)
+    return nav, ctl, pos
+
+
+def _advance(pos, direction, n):
+    dx, dy = DELTA[direction]
+    pos[0] += dx * n
+    pos[1] += dy * n
+    return n
+
+
+def test_walk_to_replans_around_blocking_npc():
+    calls = []
+
+    def step(nav, ctl, pos, direction, n):
+        calls.append((tuple(pos), direction, n))
+        if len(calls) == 1:  # um NPC está em (6,8), logo à direita do início
+            raise StepBlocked("npc", "fake.png", "fake.ss", moved=0, tile=(6, 8))
+        return _advance(pos, direction, n)
+
+    nav, ctl, pos = _fake_nav(step)
+    assert nav.walk_to(12, 8) is True
+    assert tuple(pos) == (12, 8)
+    assert calls[0][1] == "right"                 # primeira rota: reta pela rua
+    assert ctl.waited == 30                       # esperou o NPC sair
+    first_replanned = calls[1]
+    assert first_replanned[0] == (5, 8) and first_replanned[1] != "right"  # (6,8) bloqueado
+    walked = [(5, 8)]
+    for _start, d, n in calls[1:]:
+        for _ in range(n):
+            walked.append((walked[-1][0] + DELTA[d][0], walked[-1][1] + DELTA[d][1]))
+    assert (6, 8) not in walked
+
+
+def test_walk_to_gives_up_with_evidence_after_max_replans():
+    count = []
+
+    def step(nav, ctl, pos, direction, n):
+        count.append(1)
+        dx, dy = DELTA[direction]
+        raise StepBlocked("npc", "fake.png", "fake.ss", moved=0, tile=(pos[0] + dx, pos[1] + dy))
+
+    nav, ctl, pos = _fake_nav(step)
+    with pytest.raises(StepTimeout) as info:
+        nav.walk_to(12, 8)
+    assert len(count) == MAX_REPLANS
+    assert info.value.screenshot_path == "fake.png" and info.value.state_path == "fake.ss"
+    assert "NPC bloqueando" in info.value.what and ctl.failures
+
+
+def test_walk_to_reports_interruption_without_error():
+    def step(nav, ctl, pos, direction, n):
+        return _advance(pos, direction, 1)  # um tile a menos que o pedido: script assumiu
+
+    nav, _ctl, _pos = _fake_nav(step)
+    assert nav.walk_to(12, 8) is False
+
+
+# --- step ao vivo: bloqueio com evidência e conexão de mapas -------------------------
+
+
+
+@pytest.fixture
+def town(rom_path, tmp_save, tmp_path):
+    """Novo jogo, já em PalletTown (6,8), na rua em frente à casa."""
+    elf = REPO_ROOT / "pokefirered_switch.elf"
+    if not elf.is_file():
+        pytest.skip(f"ELF não encontrado: {elf}")
+    consts = Constants.load(str(REPO_ROOT))
+    with Emulator(rom_path, tmp_save) as emu:
+        game = Game(emu, Symbols.from_elf(str(elf)), consts, Charmap.load(str(REPO_ROOT)))
+        ctl = Controller(emu, game, str(tmp_path / "out"))
+        nav = Navigator(ctl)
+        _new_game_overworld(ctl, game, emu)
+        assert nav.walk_to(10, 2)
+        nav.go_through_warp()
+        assert nav.walk_to(4, 8)
+        assert nav.go_through_warp() == consts.map("MAP_PALLET_TOWN")
+        yield SimpleNamespace(emu=emu, game=game, ctl=ctl, nav=nav, consts=consts)
+
+
+def test_blocked_direct_step_is_step_timeout_with_evidence_and_falha(town):
+    nav, game = town.nav, town.game
+    assert nav.walk_to(5, 8)
+    # (5,7) é parede da casa: andar para cima não sai do lugar
+    with pytest.raises(StepTimeout) as info:
+        nav.step("up")
+    exc = info.value
+    assert isinstance(exc, StepBlocked) and exc.tile == (5, 7) and exc.moved == 0
+    assert Path(exc.screenshot_path).is_file() and Path(exc.state_path).is_file()
+    assert game.player_xy() == (5, 8)
+
+    suite = Suite()
+    suite.run("passo bloqueado", lambda: nav.step("up"))
+    (res,) = suite.results
+    assert res.status == "falha" and suite.failed()
+    assert len(res.images) == 1 and Path(res.images[0]).is_file()
+    assert "bloqueado" in res.detail
+
+
+def test_step_reports_oak_trigger_as_script_interruption(town):
+    nav, game = town.nav, town.game
+    assert nav.walk_to(12, 2)
+    # coord event do Oak em (12,1): script assume ao pisar nele (e step informa, sem erro)
+    moved = nav.step("up", 3)
+    assert moved == 1 and nav.interrupted == "script"
+    assert game.player_xy() == (12, 1)
+    assert game.location() == town.consts.map("MAP_PALLET_TOWN")
+    assert town.ctl.script_active()
+
+
+def test_step_crosses_map_connection_to_route1(town):
+    nav, game, emu, consts = town.nav, town.game, town.emu, town.consts
+    # desliga o gatilho do Oak (VAR_MAP_SCENE_PALLET_TOWN_OAK=0x4050 != 0), senão o script
+    # o para em (12,1). SaveBlock1.vars começa em 0x1000 (include/global.h).
+    sb1 = emu.read_u32(town.game.syms.addr("gSaveBlock1Ptr"))
+    emu.write(sb1 + 0x1000 + (0x4050 - 0x4000) * 2, (1).to_bytes(2, "little"))
+    assert nav.walk_to(12, 2)
+    route1 = consts.map("MAP_ROUTE1")
+    height = load_map_grid(str(REPO_ROOT), *route1).height
+    # 12,1 -> 12,0 -> (cruza a conexão) -> Route 1 na linha de baixo
+    assert nav.step("up", 3) == 3 and nav.interrupted is None
+    assert game.location() == route1
+    assert game.player_xy() == (12, height - 1)
+    # e o passo continua normalmente no mapa novo, também com a conexão no meio de um n maior
+    assert nav.step("down", 1) == 1 and game.location() == consts.map("MAP_PALLET_TOWN")
+    assert game.player_xy() == (12, 0)
+    assert nav.step("up", 4) == 4 and game.location() == route1
+    assert game.player_xy() == (12, height - 4)   # y=-1 vira height-1; mais 3 tiles

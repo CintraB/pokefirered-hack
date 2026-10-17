@@ -20,6 +20,7 @@ from pathlib import Path
 
 from .control import Controller
 from .emu import KEY_B, KEY_DOWN, KEY_LEFT, KEY_RIGHT, KEY_UP
+from .result import StepTimeout
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
@@ -60,11 +61,16 @@ STALL_FRAMES = 48       # sem mudar de tile por tanto tempo segurando a direçã
 MAX_REPLANS = 6          # tentativas de walk_to com NPC/obstáculo no caminho
 
 
-class StepBlocked(RuntimeError):
-    """O jogador não saiu do lugar (NPC, parede inesperada...)."""
+class StepBlocked(StepTimeout):
+    """O jogador não saiu do lugar (NPC, parede inesperada...), com evidências salvas.
 
-    def __init__(self, message: str, moved: int, tile: tuple[int, int]):
-        super().__init__(message)
+    É um StepTimeout: se escapar de `walk_to`, a Suite o registra como `falha` com screenshot e
+    savestate. `walk_to` o captura para replanejar.
+    """
+
+    def __init__(self, what: str, screenshot_path: str, state_path: str,
+                 moved: int, tile: tuple[int, int]):
+        super().__init__(what, screenshot_path, state_path)
         self.moved = moved   # tiles já andados antes de travar
         self.tile = tile     # tile que não pôde ser ocupado
 
@@ -180,9 +186,21 @@ class Navigator:
         self.ctl = controller
         self.game = controller.game
         self.emu = controller.emu
+        # Por que o último step() parou antes de andar tudo: None (andou tudo), "script"
+        # (script/warp/fade assumiu os controles) ou "battle".
+        self.interrupted: str | None = None
+
+    def _fail(self, what: str, cls: type = StepTimeout, **extra) -> StepTimeout:
+        """Falha de navegação com evidências (screenshot + savestate), pronta para `raise`."""
+        base = self.ctl.timeout_error(what)
+        return cls(what, base.screenshot_path, base.state_path, **extra)
 
     def _grid(self) -> MapGrid:
-        return load_map_grid(str(REPO_ROOT), *self.game.location())
+        loc = self.game.location()
+        try:
+            return load_map_grid(str(REPO_ROOT), *loc)
+        except (KeyError, IndexError, StopIteration, OSError) as exc:
+            raise self._fail(f"dados de navegação do mapa {loc} ({exc!r})") from exc
 
     def _player_still(self) -> bool:
         base = self.game.syms.addr("gPlayerAvatar")
@@ -191,39 +209,54 @@ class Navigator:
     def step(self, direction: str, n: int = 1, run: bool = False) -> int:
         """Anda `n` tiles na direção, conferindo cada mudança de tile; devolve quantos andou.
 
-        Para antes se o mapa mudar (warp), um script/batalha assumir o controle (devolve < n);
-        levanta StepBlocked se não sair do lugar e AssertionError se cair em tile inesperado.
+        - Cruzar uma conexão de mapas (ex.: PalletTown -> Route 1) é transparente: `pos` e
+          `location` mudam no mesmo quadro, o tile conta e o passo segue no mapa novo.
+        - Se um script/warp/fade ou uma batalha assumir os controles, para e devolve < n com
+          `self.interrupted` = "script" ou "battle" (confira `game.location()` para warps).
+        - Sem sair do lugar por STALL_FRAMES (NPC/parede) ou caindo em tile inesperado,
+          levanta StepBlocked / StepTimeout, ambos com evidências salvas.
         """
         dx, dy, key = DIRECTIONS[direction]
         mask = key | (KEY_B if run else 0)
+        self.interrupted = None
         self.ctl.wait_overworld_idle()
-        start_loc = self.game.location()
+        loc = self.game.location()
         x, y = self.game.player_xy()
         done, stalled = 0, 0
         self.emu.keys(mask)
         try:
             while done < n:
                 self.emu.frames(1)
-                if self.game.location() != start_loc or self.ctl.script_active() \
-                        or self.game.in_battle():
+                if self.game.in_battle():
+                    self.interrupted = "battle"
+                    break
+                if self.ctl.script_active():
+                    self.interrupted = "script"
                     break
                 pos = self.game.player_xy()
-                if pos == (x, y):
+                new_loc = self.game.location()
+                if pos == (x, y) and new_loc == loc:
                     stalled += 1
                     if stalled >= STALL_FRAMES:
-                        raise StepBlocked(f"bloqueado ao andar {direction} de {(x, y)}",
-                                          done, (x + dx, y + dy))
+                        raise self._fail(
+                            f"passo {direction} de {(x, y)} em {loc} bloqueado (NPC/parede?)",
+                            StepBlocked, moved=done, tile=(x + dx, y + dy))
                     continue
-                expected = (x + dx, y + dy)
-                assert pos == expected, (
-                    f"andando {direction} de {(x, y)} esperava {expected}, estou em {pos}")
-                x, y = pos
+                if new_loc == loc:
+                    expected = (x + dx, y + dy)
+                    if pos != expected:
+                        raise self._fail(f"passo {direction} de {(x, y)}: esperava tile "
+                                         f"{expected}, estou em {pos}")
+                # (conexão: mudar de mapa sem script ativo; pos já vem nas coordenadas do novo)
+                loc, x, y = new_loc, pos[0], pos[1]
                 done += 1
                 stalled = 0
         finally:
             self.emu.keys(0)
-        if self.game.location() == start_loc:
+        if self.interrupted is None:
             self.ctl.wait_until(self._player_still, 60, "fim do passo")
+            if self.ctl.script_active():
+                self.interrupted = "script"   # gatilho disparado ao chegar no último tile
         return done
 
     def walk_to(self, x: int, y: int, run: bool = False) -> bool:
@@ -293,9 +326,10 @@ class Navigator:
             # sobre o warp: a direção vem do comportamento (arrow warps e escadas direcionais)
             direction = WARP_TILE_DIRECTION.get(grid.behaviors[py * grid.width + px])
             if direction is None:
-                raise ValueError(f"jogador sobre o warp {(px, py)}: informe a direção")
+                raise self._fail(f"jogador sobre o warp {(px, py)} sem direção conhecida: "
+                                 "informe a direção em go_through_warp()")
             return direction
         near = [name for name, (dx, dy, _k) in DIRECTIONS.items() if (px + dx, py + dy) in grid.warps]
         if not near:
-            raise ValueError(f"nenhum warp ao lado de {(px, py)}")
+            raise self._fail(f"nenhum warp ao lado de {(px, py)} em {self.game.location()}")
         return near[0]
