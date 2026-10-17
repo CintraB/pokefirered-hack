@@ -5138,6 +5138,13 @@ u16 GetEvolutionTargetSpecies(struct Pokemon *mon, u8 type, u16 evolutionItem)
                 if (gEvolutionTable[species][i].param <= beauty)
                     targetSpecies = gEvolutionTable[species][i].targetSpecies;
                 break;
+            // Replaces the trade evolutions: checked on every level up from EVO_HOLD_ITEM_LEVEL
+            // on, and the held item is kept. No break out of the loop: the last matching entry
+            // wins, so Slowpoke's King's Rock entry comes after its plain level one.
+            case EVO_LEVEL_HOLD_ITEM:
+                if (EVO_HOLD_ITEM_LEVEL <= level && gEvolutionTable[species][i].param == heldItem)
+                    targetSpecies = gEvolutionTable[species][i].targetSpecies;
+                break;
             }
         }
         break;

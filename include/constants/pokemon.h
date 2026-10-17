@@ -281,6 +281,9 @@
 #define EVO_LEVEL_NINJASK    13 // Pokémon reaches the specified level (special value for Ninjask)
 #define EVO_LEVEL_SHEDINJA   14 // Pokémon reaches the specified level (special value for Shedinja)
 #define EVO_BEAUTY           15 // Pokémon levels up with beauty ≥ specified value
+#define EVO_LEVEL_HOLD_ITEM  16 // Pokémon levels up at EVO_HOLD_ITEM_LEVEL or higher while holding the specified item (the item is kept)
+
+#define EVO_HOLD_ITEM_LEVEL  37 // fixed level for EVO_LEVEL_HOLD_ITEM (it replaced the trade evolutions)
 
 #define EVOS_PER_MON 5
 
