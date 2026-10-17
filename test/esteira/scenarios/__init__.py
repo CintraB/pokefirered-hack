@@ -3,6 +3,7 @@
 Todo cenário recebe um `ScenarioContext` (`ctx`) e só aperta botões e lê memória.
 """
 
+import shutil
 from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
@@ -34,13 +35,17 @@ class ScenarioContext:
 
 @contextmanager
 def open_context(rom: str, elf: str, out_dir: str, starter: str,
-                 suite: Suite | None = None) -> Iterator[ScenarioContext]:
-    """Liga o emulador com um .sav novo dentro de `out_dir` (nunca em roms/saves/)."""
+                 suite: Suite | None = None,
+                 save_from: str | None = None) -> Iterator[ScenarioContext]:
+    """Liga o emulador com um .sav novo dentro de `out_dir` (nunca em roms/saves/); com
+    `save_from`, o .sav começa como cópia desse arquivo (ex.: o save do modo rápido)."""
     out = Path(out_dir)
     out.mkdir(parents=True, exist_ok=True)
     save = out / "esteira.sav"
     if save.exists():
         save.unlink()
+    if save_from is not None:
+        shutil.copyfile(save_from, save)
     consts = Constants.load(str(REPO_ROOT))
     with Emulator(rom, str(save)) as emu:
         game = Game(emu, Symbols.from_elf(elf), consts, Charmap.load(str(REPO_ROOT)))

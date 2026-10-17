@@ -432,10 +432,21 @@ class CatchSaveScenario(Route1Scenario):
 
     def _continue_after_reset(self) -> str:
         before = self.measures["before_reset"]
-        game, syms = self.game, self.game.syms
         self.emu.reset()
-        self.ctl.wait_until(lambda: "TitleScreen" in game.callback2(), TITLE_TIMEOUT,
-                            "tela de título depois do reset")
+        self._title_to_continue("tela de título depois do reset")
+        after = self._snapshot()
+        diffs = [f"{key}: antes {before[key]!r}, depois {after[key]!r}"
+                 for key in before if before[key] != after[key]]
+        assert not diffs, "estado diferente depois de reset + CONTINUAR: " + " | ".join(diffs)
+        party = after["party"]
+        return (f"time {[(m.nickname, m.level, m.hp) for m in party]}, dinheiro {after['money']}, "
+                f"bolsa {after['bag']}, local {after['location']} {after['player_xy']}")
+
+    def _title_to_continue(self, what: str) -> None:
+        """Da abertura/título (depois de ligar ou resetar): START, CONTINUAR com o save do
+        .sav e espera o jogo ficar livre (pulando o diário de viagem)."""
+        game, syms = self.game, self.game.syms
+        self.ctl.wait_until(lambda: "TitleScreen" in game.callback2(), TITLE_TIMEOUT, what)
         self.ctl.press_until(KEY_START, lambda: MAIN_MENU_TASK in self._tasks(),
                              "menu principal", tries=20, wait=60)
         status = self.emu.read_u16(syms.addr("gSaveFileStatus"))
@@ -454,13 +465,6 @@ class CatchSaveScenario(Route1Scenario):
             else:
                 self.emu.frames(TEXT_PERIOD)
             spent += TEXT_PERIOD
-        after = self._snapshot()
-        diffs = [f"{key}: antes {before[key]!r}, depois {after[key]!r}"
-                 for key in before if before[key] != after[key]]
-        assert not diffs, "estado diferente depois de reset + CONTINUAR: " + " | ".join(diffs)
-        party = after["party"]
-        return (f"time {[(m.nickname, m.level, m.hp) for m in party]}, dinheiro {after['money']}, "
-                f"bolsa {after['bag']}, local {after['location']} {after['player_xy']}")
 
     def phase_save(self) -> None:
         res = self.suite.run("save: salvar pelo menu START", self._save)
