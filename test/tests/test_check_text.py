@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from esteira.check_text import check_text
+from esteira.check_text import check_text, compute_baseline, fingerprint
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
@@ -27,7 +27,7 @@ def put(repo, rel, text):
     path.write_text(text, encoding="utf-8")
 
 
-def inc(repo, body, rel="data/text/fixture.inc"):
+def inc(repo, body, rel="data/text/pc.inc"):
     put(repo, rel, body)
 
 
@@ -161,30 +161,142 @@ def test_glyph_placeholder_counts_its_glyph_width(repo):
 
 # ---- exceções ------------------------------------------------------------------------------
 
+def frozen(repo, label=None, rule=None, file="data/text/pc.inc"):
+    """Exceções congeladas (com fingerprint) dos problemas atuais, filtradas por rótulo/regra."""
+    return {"text": [e for e in compute_baseline(str(repo))
+                     if e["file"] == file and label in (None, e["label"]) and rule in (None, e["rule"])]}
+
+
 def test_listed_exception_silences_exactly_that_item(repo):
     inc(repo, 'Text_Fixture::\n\t.string "Ação$"\n\nText_Other::\n\t.string "Ação$"\n')
-    exceptions = {"text": [{"file": "data/text/fixture.inc", "label": "Text_Fixture", "rule": "charmap"}]}
-    failed = failures(run(repo, exceptions))
+    failed = failures(run(repo, frozen(repo, "Text_Fixture", "charmap")))
     assert len(failed) == 1 and "Text_Other" in failed[0].detail
 
 
 def test_exception_is_per_rule(repo):
     inc(repo, 'Text_Fixture::\n\t.string "Ação"\n')  # charmap + terminador
-    exceptions = {"text": [{"file": "data/text/fixture.inc", "label": "Text_Fixture", "rule": "charmap"}]}
-    failed = failures(run(repo, exceptions))
+    failed = failures(run(repo, frozen(repo, rule="charmap")))
     assert len(failed) == 1 and "terminador" in failed[0].detail
 
 
 def test_exception_silences_everything_for_all_three_rules(repo):
     inc(repo, 'Text_Fixture::\n\t.string "Ação' + "W" * 60 + '"\n')
-    exceptions = {"text": [{"file": "data/text/fixture.inc", "label": "Text_Fixture", "rule": r}
-                           for r in ("charmap", "terminador", "largura")]}
+    exceptions = frozen(repo)
+    assert {e["rule"] for e in exceptions["text"]} == {"charmap", "terminador", "largura"}
     assert run(repo, exceptions) == []
+
+
+def test_width_exception_records_measured_value_and_fingerprint(repo):
+    inc(repo, 'Text_Fixture::\n\t.string "' + "W" * 40 + '$"\n')
+    (exc,) = frozen(repo)["text"]
+    assert exc["rule"] == "largura" and exc["valor"] == 240
+    assert exc["fingerprint"] == fingerprint(("W" * 40 + "$",))
+
+
+def test_exception_applies_while_text_is_unchanged(repo):
+    inc(repo, 'Text_Fixture::\n\t.string "' + "W" * 60 + '$"\n')
+    exceptions = frozen(repo)
+    assert run(repo, exceptions) == []
+    assert run(repo, exceptions) == []  # estável entre rodadas
+
+
+def test_changed_text_that_still_overflows_fails_again(repo):
+    inc(repo, 'Text_Fixture::\n\t.string "' + "W" * 60 + '$"\n')
+    exceptions = frozen(repo)
+    inc(repo, 'Text_Fixture::\n\t.string "' + "M" * 50 + '$"\n')  # outro texto, ainda largo demais
+    results = run(repo, exceptions)
+    assert len(failures(results)) == 1 and "largura" in failures(results)[0].detail
+    assert [r.name for r in results if r.status == "aviso"] == ["texto/obsoleta"]
+
+
+def test_changed_text_that_now_fits_is_ok_and_exception_is_reported_obsolete(repo):
+    inc(repo, 'Text_Fixture::\n\t.string "' + "W" * 60 + '$"\n')
+    exceptions = frozen(repo)
+    inc(repo, 'Text_Fixture::\n\t.string "curto$"\n')
+    results = run(repo, exceptions)
+    assert failures(results) == []
+    assert len(results) == 1 and results[0].status == "aviso" and results[0].name == "texto/obsoleta"
+    assert "Text_Fixture" in results[0].detail and "mudou" in results[0].detail
+
+
+def test_exception_for_missing_label_is_reported_obsolete(repo):
+    inc(repo, 'Text_Fixture::\n\t.string "' + "W" * 60 + '$"\n')
+    exceptions = frozen(repo)
+    inc(repo, 'Text_Other::\n\t.string "oi$"\n')
+    results = run(repo, exceptions)
+    assert len(results) == 1 and results[0].name == "texto/obsoleta" and "não existe mais" in results[0].detail
+
+
+def test_exception_whose_problem_is_gone_without_text_change_is_obsolete(repo):
+    inc(repo, 'Text_Fixture::\n\t.string "' + "W" * 60 + '$"\n')
+    exceptions = frozen(repo)
+    exceptions["text"][0]["valor"] = 999  # medida congelada diferente da atual
+    results = run(repo, exceptions)
+    assert len(failures(results)) == 1  # o achado volta a valer
+    assert any(r.name == "texto/obsoleta" for r in results)
+
+
+def test_baseline_roundtrip_is_clean(repo):
+    inc(repo, 'Text_A::\n\t.string "Ação' + "W" * 60 + '"\n\nText_B::\n\t.string "ok$"\n')
+    put(repo, "src/data/text/quest_log.h", 'const u8 gText_Q[] = _("' + "W" * 60 + '");\n')
+    baseline = {"text": compute_baseline(str(repo))}
+    assert len(baseline["text"]) == 4
+    assert run(repo, baseline) == []
 
 
 def test_exceptions_dict_without_text_key_is_accepted(repo):
     inc(repo, 'Text_Fixture::\n\t.string "ABC$"\n')
     assert run(repo, {}) == []
+
+
+# ---- largura por fonte ---------------------------------------------------------------------
+
+def test_source_without_known_window_is_not_width_checked(repo):
+    inc(repo, 'Text_Fixture::\n\t.string "' + "W" * 60 + '$"\n', rel="data/text/help_system.inc")
+    put(repo, "src/strings.c", 'const u8 gText_Menu[] = _("' + "W" * 60 + '");\n')
+    put(repo, "src/data/text/move_names.h", 'const u8 gX[] = _("' + "W" * 60 + '");\n')
+    assert run(repo) == []
+
+
+def test_skipped_source_still_gets_charmap_and_terminator_checks(repo):
+    inc(repo, 'Text_Fixture::\n\t.string "Ação"\n', rel="data/text/help_system.inc")
+    assert len(failures(run(repo))) == 2
+
+
+def test_item_description_limit_is_200(repo):
+    put(repo, "src/data/items.json", json.dumps({"items": [
+        {"itemId": "ITEM_OK", "description_english": "A" * 33},       # 198 px
+        {"itemId": "ITEM_BAD", "description_english": "A" * 34},      # 204 px
+    ]}))
+    failed = failures(run(repo))
+    assert len(failed) == 1 and "ITEM_BAD" in failed[0].detail and "limite 200" in failed[0].detail
+
+
+def test_quest_log_limit_is_238(repo):
+    put(repo, "src/data/text/quest_log.h",
+        'const u8 gText_Ok[] = _("' + "A" * 39 + '");\nconst u8 gText_Bad[] = _("' + "A" * 40 + '");\n')
+    failed = failures(run(repo))
+    assert len(failed) == 1 and "gText_Bad" in failed[0].detail and "limite 238" in failed[0].detail
+
+
+def test_start_menu_description_label_is_measured_in_strings_c(repo):
+    put(repo, "src/strings.c",
+        'const u8 gStartMenuDesc_Bag[] = _("' + "A" * 40 + '");\n'      # 240 > 238
+        'const u8 gText_Other[] = _("' + "A" * 60 + '");\n')            # sem janela conhecida
+    failed = failures(run(repo))
+    assert len(failed) == 1 and "gStartMenuDesc_Bag" in failed[0].detail
+
+
+def test_gas_if_else_endif_branches_stay_in_one_block(repo):
+    inc(repo, 'Text_Fixture::\n\t.string "linha\\n"\n\t.if REVISION < 1\n\t.string "ramo um$"\n'
+              '\t.else\n\t.string "ramo dois$"\n\t.endif\n\nText_Next::\n\t.string "ok$"\n')
+    assert run(repo) == []
+
+
+def test_gas_branch_without_terminator_still_fails(repo):
+    inc(repo, 'Text_Fixture::\n\t.if REVISION < 1\n\t.string "ramo um$"\n\t.else\n\t.string "ramo dois"\n\t.endif\n')
+    failed = failures(run(repo))
+    assert len(failed) == 1 and "terminador" in failed[0].detail
 
 
 # ---- outras fontes de texto ----------------------------------------------------------------
@@ -220,7 +332,7 @@ def test_c_comments_are_ignored(repo):
 
 
 def test_c_long_line_in_strings_c(repo):
-    put(repo, "src/strings.c", 'const u8 gText_Wide[] = _("' + "W" * 60 + '");\n')
+    put(repo, "src/data/text/quest_log.h", 'const u8 gText_Wide[] = _("' + "W" * 60 + '");\n')
     failed = failures(run(repo))
     assert len(failed) == 1 and "largura" in failed[0].detail
 
@@ -267,7 +379,8 @@ def test_english_check_accepts_portuguese_without_accents(repo):
 
 def test_english_exception_is_respected(repo):
     inc(repo, 'Text_Fixture::\n\t.string "You are the best$"\n')
-    exceptions = {"text": [{"file": "data/text/fixture.inc", "label": "Text_Fixture", "rule": "ingles"}]}
+    exceptions = {"text": [{"file": "data/text/pc.inc", "label": "Text_Fixture", "rule": "ingles",
+                            "fingerprint": fingerprint(("You are the best$",))}]}
     assert run(repo, exceptions, english_check=True) == []
 
 
@@ -275,4 +388,5 @@ def test_english_exception_is_respected(repo):
 
 def test_real_repo_has_no_unfrozen_failures():
     exceptions = json.loads((REPO_ROOT / "test" / "excecoes.json").read_text(encoding="utf-8"))
-    assert failures(check_text(str(REPO_ROOT), exceptions)) == []
+    results = check_text(str(REPO_ROOT), exceptions)
+    assert results == [], [r.detail for r in results[:5]]  # nem falha nova, nem exceção obsoleta

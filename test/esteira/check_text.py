@@ -1,10 +1,21 @@
 """Checagem estática dos textos do jogo: charmap, terminador, largura da caixa e inglês residual.
 
-Só devolve problemas (`falha`, ou `aviso` para o inglês residual); texto sem problema não gera
-`Result`. Cada achado é identificado por (arquivo, rótulo, regra); os que estiverem em
-`exceptions["text"]` (`test/excecoes.json`) são pré-existentes e ficam calados.
+Só devolve problemas (`falha`, ou `aviso` para o inglês residual e para exceções obsoletas); texto
+sem problema não gera `Result`.
+
+Exceções (`exceptions["text"]`, em `test/excecoes.json`) congelam problemas pré-existentes. Cada
+uma é um objeto com:
+  file, label, rule  - qual achado (arquivo relativo ao repo com `/`, rótulo, regra);
+  fingerprint        - sha1 (16 primeiros hex) do texto cru do rótulo na hora do congelamento;
+  valor              - medida congelada (px da linha mais larga, só para a regra `largura`).
+A exceção só cala o achado enquanto o fingerprint (e o valor) batem com o texto atual: texto
+alterado volta a ser checado normalmente. Exceção cujo rótulo sumiu, cujo texto mudou ou cujo
+problema desapareceu vira `aviso` "exceção obsoleta", para a lista poder encolher.
+`compute_baseline(repo)` gera a lista de exceções para os problemas atuais.
 """
 
+import fnmatch
+import hashlib
 import json
 import re
 from dataclasses import dataclass
@@ -13,10 +24,47 @@ from typing import Iterator
 
 from esteira.result import Result
 
-# Largura útil da caixa de diálogo padrão: sStandardTextBox_WindowTemplates (src/new_menu_helpers.c)
-# tem .width = 26 tiles de 8 px e o texto começa em x = 0.
-BOX_WIDTH_PX = 26 * 8
 PLAYER_NAME_CHARS = 7  # {PLAYER}/{RIVAL}: nome de até 7 letras
+
+# Largura útil (px) por fonte de texto, derivada dos templates de janela do repo. A primeira regra
+# que casar (arquivo e, se houver, prefixo de rótulo) vale; `None` = largura não determinada com
+# segurança, a regra de largura é pulada (nem falha nem aviso). Fonte sem regra também é pulada.
+# O espaçamento entre letras (`letterSpacing`) não conta: só é somado a texto japonês (src/text.c:854).
+DIALOG_WIDTH_PX = 26 * 8
+_DIALOG = ("diálogo padrão: sStandardTextBox_WindowTemplates .width = 26 tiles (src/new_menu_helpers.c:40), "
+           "texto em x = 0 (src/new_menu_helpers.c:411)")
+_DIALOG_INC = ("aide", "berries", "competitive_brothers", "day_care", "eon_ticket", "flavor_text",
+               "ingame_trade", "itemfinder", "obtain_item", "pc", "poke_mart", "route23", "safari_zone",
+               "seagallop", "sign_lady", "surf", "trainer_card", "trainers", "white_out")
+WIDTH_RULES: list[tuple[str, str | None, int | None, str]] = [
+    # (padrão do arquivo, prefixo do rótulo, px, de onde vem)
+    ("data/maps/*/text.inc", None, DIALOG_WIDTH_PX, _DIALOG),
+    *[(f"data/text/{name}.inc", None, DIALOG_WIDTH_PX, _DIALOG + "; usado só via msgbox/message")
+      for name in _DIALOG_INC],
+    ("src/data/items.json", None, 200,
+     "janela de descrição da mochila: sDefaultBagWindowsStd[1].width = 25 tiles (src/bag.c:34), texto em "
+     "x = 0 (src/item_menu.c:756); as descrições originais medem no máx. 198 px. Lojas, TM case e "
+     "bolsa de frutas usam outras janelas e não são modeladas"),
+    ("src/data/text/quest_log.h", None, 30 * 8 - 2,
+     "janela de descrição do Quest Log: DESC_WIN_WIDTH = DISPLAY_WIDTH / 8 = 30 tiles (src/quest_log.c:40,163), "
+     "texto em x = 2 (src/quest_log.c:1039)"),
+    ("src/strings.c", "gStartMenuDesc_", 30 * 8 - 2,
+     "barra de ajuda do menu Start: sHelpMessageWindowTemplate .width = 30 tiles (src/help_message.c:14), "
+     "texto em x = 2 (src/help_message.c:97)"),
+    # Sem largura determinada (janelas diferentes ou não localizadas): pulados de propósito.
+    ("data/text/help_system.inc", None, None,
+     "texto renderizado num bitmap de 26 tiles (src/help_system_util.c:588-591) cuja janela de exibição "
+     "não foi determinada"),
+    ("data/text/new_game_intro.inc", None, None, "janelas variadas de src/oak_speech.c"),
+    ("data/text/fame_checker.inc", None, None, "janelas de src/fame_checker.c não verificadas"),
+    ("data/text/pokedude.inc", None, None, "janela de batalha não verificada"),
+    ("data/text/pc_transfer.inc", None, None, "usado também em batalha/naming screen; janela não verificada"),
+    ("data/text/save.inc", None, None, "usado por src/start_menu.c; janela não verificada"),
+    ("data/text/pokedex_rating.inc", None, None, "usado por src/prof_pc.c; janela não verificada"),
+    ("data/text/braille.inc", None, None, "texto braille, janela própria"),
+    ("src/strings.c", None, None, "menus e janelas diversos"),
+    ("src/data/text/*.h", None, None, "nomes, descrições e textos de janelas diversas"),
+]
 
 # Regras (usadas em `excecoes.json`)
 RULE_CHARMAP = "charmap"
@@ -24,6 +72,7 @@ RULE_TERMINATOR = "terminador"
 RULE_WIDTH = "largura"
 RULE_SYNTAX = "sintaxe"
 RULE_ENGLISH = "ingles"
+RULE_OBSOLETE = "obsoleta"
 
 _NAME_PLACEHOLDERS = ("PLAYER", "RIVAL")
 
@@ -37,7 +86,7 @@ _NUMBER = re.compile(r"^(?:0[xX][0-9A-Fa-f]+|\d+)$")
 _BREAKS = {"n": "\\n", "l": "\\l", "p": "\\p"}
 
 _ENGLISH_WORDS = re.compile(
-    r"\b(?:the|you|your|and|with|this|that|have|what|are|for|from|will|can|not|was|were|there|they)\b",
+    r"\b(?:the|you|your|and|with|this|that|have|what|are|from|will|can|not|was|were|there|they)\b",
     re.IGNORECASE)
 _ACCENTED = re.compile(r"[ÀÁÂÃÄÇÈÉÊËÌÍÎÏÑÒÓÔÕÖÙÚÛÜàáâãäçèéêëìíîïñòóôõöùúûü]")
 
@@ -108,7 +157,7 @@ _STRING_LINE = re.compile(r'^\s*\.string\s+"((?:[^"\\]|\\.)*)"\s*(?:@.*)?$')
 _LABEL_LINE = re.compile(r"^\s*([A-Za-z_][A-Za-z0-9_]*)::?\s*(?:@.*)?$")
 
 
-_CONDITIONAL = re.compile(r"^#\s*(if|ifdef|ifndef|elif|else|endif)\b")
+_CONDITIONAL = re.compile(r"^[#.]\s*(if\w*|elif|elseif|else|endif)\b")  # cpp (#if) e gas (.if)
 
 
 def _variants(parts: list[tuple[tuple[tuple[int, int], ...], str]]) -> tuple[str, ...]:
@@ -306,9 +355,26 @@ def _tokenize(text: str) -> Iterator[tuple[str, str]]:
             i += 1
 
 
-def _analyze(text: str, needs_terminator: bool, env: _Env) -> list[tuple[str, str]]:
-    """Problemas do texto como (regra, descrição)."""
-    problems: list[tuple[str, str]] = []
+def width_limit(file: str, label: str) -> int | None:
+    """Largura útil em px da caixa onde o texto aparece, ou None se não foi determinada."""
+    for pattern, prefix, px, _source in WIDTH_RULES:
+        if fnmatch.fnmatchcase(file, pattern) and (prefix is None or label.startswith(prefix)):
+            return px
+    return None
+
+
+def fingerprint(texts: tuple[str, ...]) -> str:
+    """Impressão digital do texto cru de um rótulo (todas as variantes de #if/.if)."""
+    return hashlib.sha1("\x00".join(texts).encode("utf-8")).hexdigest()[:16]
+
+
+# problema: (regra, descrição, valor medido ou None)
+_Problem = tuple[str, str, int | None]
+
+
+def _analyze(text: str, needs_terminator: bool, limit: int | None, env: _Env) -> list[_Problem]:
+    """Problemas do texto; `limit` é a largura útil em px (None = não medir)."""
+    problems: list[_Problem] = []
     bad_chars: list[str] = []
     bad_words: list[str] = []
     widest = 0
@@ -350,13 +416,13 @@ def _analyze(text: str, needs_terminator: bool, env: _Env) -> list[tuple[str, st
 
     for ch in bad_chars:
         shown = ch if ch.startswith("escape") or ch.startswith("'{'") else f"'{ch}'"
-        problems.append((RULE_CHARMAP, f"caractere fora do charmap: {shown}"))
+        problems.append((RULE_CHARMAP, f"caractere fora do charmap: {shown}", None))
     for word in bad_words:
-        problems.append((RULE_CHARMAP, f"placeholder fora do charmap: {{{word}}}"))
+        problems.append((RULE_CHARMAP, f"placeholder fora do charmap: {{{word}}}", None))
     if needs_terminator and not ends_with_terminator:
-        problems.append((RULE_TERMINATOR, "terminador ausente: bloco .string não termina em '$'"))
-    if widest > BOX_WIDTH_PX:
-        problems.append((RULE_WIDTH, f"largura excedida: linha com {widest} px, limite {BOX_WIDTH_PX} px"))
+        problems.append((RULE_TERMINATOR, "terminador ausente: bloco .string não termina em '$'", None))
+    if limit is not None and widest > limit:
+        problems.append((RULE_WIDTH, f"largura excedida: linha com {widest} px, limite {limit} px", widest))
     return problems
 
 
@@ -368,21 +434,81 @@ def _english_problem(text: str) -> bool:
 
 # ---- ponto de entrada ----------------------------------------------------------------------
 
-def check_text(repo: str, exceptions: dict, english_check: bool = False) -> list[Result]:
-    root = Path(repo)
+def _entry_problems(entry: _Entry, env: _Env, english_check: bool) -> list[_Problem]:
+    limit = width_limit(entry.file, entry.label)
+    found = dict.fromkeys(p for text in entry.texts
+                          for p in _analyze(text, entry.needs_terminator, limit, env))
+    problems = list(found)
+    if english_check and any(_english_problem(text) for text in entry.texts):
+        problems.append((RULE_ENGLISH, "possível texto em inglês sem tradução", None))
+    return problems
+
+
+def _scan(root: Path, english_check: bool) -> tuple[list[Result], dict[tuple[str, str], tuple[str, list[_Problem]]]]:
+    """(resultados de sintaxe, {(arquivo, rótulo): (fingerprint, problemas)})."""
     env = _load_env(root)
-    frozen = {(e["file"], e["label"], e["rule"]) for e in exceptions.get("text", [])}
-    results: list[Result] = []
+    syntax: list[Result] = []
+    entries: dict[tuple[str, str], tuple[str, list[_Problem]]] = {}
     for entry in _sources(root):
         if isinstance(entry, Result):
-            results.append(entry)
+            syntax.append(entry)
             continue
-        found = dict.fromkeys(p for text in entry.texts for p in _analyze(text, entry.needs_terminator, env))
-        for rule, detail in found:
-            if (entry.file, entry.label, rule) not in frozen:
-                results.append(Result(f"texto/{rule}", "falha", f"{entry.file}: {entry.label}: {detail}"))
-        if english_check and (entry.file, entry.label, RULE_ENGLISH) not in frozen \
-                and any(_english_problem(text) for text in entry.texts):
-            results.append(Result(f"texto/{RULE_ENGLISH}", "aviso",
-                                  f"{entry.file}: {entry.label}: possível texto em inglês sem tradução"))
+        entries[(entry.file, entry.label)] = (fingerprint(entry.texts), _entry_problems(entry, env, english_check))
+    return syntax, entries
+
+
+def check_text(repo: str, exceptions: dict, english_check: bool = False) -> list[Result]:
+    syntax, entries = _scan(Path(repo), english_check)
+    results = list(syntax)
+    frozen = exceptions.get("text", [])
+    applied: set[tuple[str, str, str]] = set()  # exceções que de fato calaram um achado
+
+    silenced: dict[tuple[str, str, str], dict] = {}
+    for exc in frozen:
+        key = (exc["file"], exc["label"])
+        if key not in entries or exc["rule"] == RULE_ENGLISH and not english_check:
+            continue
+        if exc.get("fingerprint") != entries[key][0]:
+            continue
+        silenced[(exc["file"], exc["label"], exc["rule"])] = exc
+
+    for (file, label), (_fp, problems) in entries.items():
+        for rule, detail, value in problems:
+            exc = silenced.get((file, label, rule))
+            if exc is not None and exc.get("valor") in (None, value):
+                applied.add((file, label, rule))
+                continue
+            status = "aviso" if rule == RULE_ENGLISH else "falha"
+            results.append(Result(f"texto/{rule}", status, f"{file}: {label}: {detail}"))
+
+    for exc in frozen:
+        file, label, rule = exc["file"], exc["label"], exc["rule"]
+        if rule == RULE_ENGLISH and not english_check:
+            continue
+        if (file, label, rule) in applied:
+            continue
+        if (file, label) not in entries:
+            why = "o rótulo não existe mais"
+        elif exc.get("fingerprint") != entries[(file, label)][0]:
+            why = "o texto mudou desde o congelamento"
+        else:
+            why = "o problema não ocorre mais (ou mudou de valor)"
+        results.append(Result(f"texto/{RULE_OBSOLETE}", "aviso",
+                              f"exceção obsoleta ({rule}) em {file}: {label}: {why}; remova-a de excecoes.json"))
     return results
+
+
+def compute_baseline(repo: str) -> list[dict]:
+    """Exceções (ordenadas) que congelam todos os problemas de texto atuais (sem o inglês residual)."""
+    syntax, entries = _scan(Path(repo), english_check=False)
+    if syntax:
+        raise ValueError(f"linhas .string não reconhecidas: {[r.detail for r in syntax]}")
+    baseline = []
+    for (file, label), (fp, problems) in sorted(entries.items()):
+        for rule, _detail, value in sorted(problems, key=lambda p: p[0]):
+            exc = {"file": file, "label": label, "rule": rule, "fingerprint": fp}
+            if value is not None:
+                exc["valor"] = value
+            if exc not in baseline:
+                baseline.append(exc)
+    return baseline
