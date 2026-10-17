@@ -24,6 +24,13 @@ MON_HP = 0x56                 # Pokemon.hp (u16)
 MON_MAX_HP = 0x58             # Pokemon.maxHP (u16)
 SUBSTRUCT_SIZE = 12           # NUM_SUBSTRUCT_BYTES
 PARTY_SIZE = 6
+BOX_MON_SIZE = 80             # sizeof(struct BoxPokemon)
+BOX_MON_FLAGS = 0x13          # isBadEgg:1, hasSpecies:1, isEgg:1 ...
+BOX_HAS_SPECIES = 0x02
+
+# --- struct PokemonStorage (include/pokemon_storage_system.h) ----------------------
+STORAGE_BOXES = 0x0004        # boxes[TOTAL_BOXES_COUNT][IN_BOX_COUNT], alinhado a 4 (boxNames em 0x8344)
+IN_BOX_COUNT = 30
 
 # Posição de cada tipo de subestrutura (0=growth, 1=attacks, 2=EVs, 3=misc) dentro de
 # `secure`, em função de personality % 24. Tabela SUBSTRUCT_CASE(n,v1,v2,v3,v4) de
@@ -164,6 +171,21 @@ class Game:
         raw = self.emu.read(base, POKEMON_SIZE * count) if count else b""
         return [decode_mon(raw[i * POKEMON_SIZE:(i + 1) * POKEMON_SIZE], self.charmap)
                 for i in range(count)]
+
+    def box_mons(self, box: int) -> list[Mon | None]:
+        """Os IN_BOX_COUNT slots da caixa `box` do PC (0 = CAIXA 1); None = slot vazio. Só os
+        campos da BoxPokemon valem (nível/HP ficam 0: o PC não guarda a parte de batalha)."""
+        storage = self.emu.read_u32(self.syms.addr("gPokemonStoragePtr"))
+        raw = self.emu.read(storage + STORAGE_BOXES + box * IN_BOX_COUNT * BOX_MON_SIZE,
+                            IN_BOX_COUNT * BOX_MON_SIZE)
+        mons: list[Mon | None] = []
+        for i in range(IN_BOX_COUNT):
+            data = raw[i * BOX_MON_SIZE:(i + 1) * BOX_MON_SIZE]
+            if not data[BOX_MON_FLAGS] & BOX_HAS_SPECIES:
+                mons.append(None)
+            else:
+                mons.append(decode_mon(data.ljust(POKEMON_SIZE, b"\0"), self.charmap))
+        return mons
 
     def player_name(self) -> str:
         raw = self.emu.read(self._sb2() + SB2_PLAYER_NAME, PLAYER_NAME_LENGTH + 1)

@@ -30,11 +30,12 @@ import math
 import random
 import sys
 
-from ..emu import KEY_A, KEY_B, KEY_DOWN, KEY_UP
+from ..emu import KEY_A, KEY_B, KEY_UP
 from ..game import POKEMON_SIZE, decode_mon
 from ..hooks import CMD_CHECK_SHINY, CMD_COUNT_SHINIES, CMD_SET_DEX_COMPLETE, Mailbox
 from . import ScenarioContext
-from .base import TEXT_PERIOD, Abort
+from .base import Abort
+from .pc_menu import MULTICHOICE_TASK, PC_MENU_OAK, PC_TIMEOUT, PcMenuMixin
 from .quick_catch_save import CENTER_EXIT, CatchSaveScenario
 from .quick_route1 import (LAB_EXIT, OAK_FRONT, PALLET_LAB_FRONT, ROUTE1_SOUTH_EDGE,
                            VIRIDIAN_SOUTH_EDGE)
@@ -50,15 +51,7 @@ SIGMAS = 3
 FRAMES_PER_MON_LIMIT = 6
 COUNT_POLL = 60
 
-# --- mapas (data/maps/*/map.json e layouts, grades conferidas com nav.py) ------------
-CENTER_PC_FRONT = (11, 2)       # PC (MB_PC) em (11, 1) no Centro de Viridian
-PC_MENU_OAK = 2                 # CreatePCMenu: alguém/BILL, <jogador>, OAK, (HALL), DESLIGAR
-MULTICHOICE_TASK = "Task_MultichoiceMenu_HandleInput"
 YESNO_TASK = "Task_YesNoMenu_HandleInput"
-MENU_CURSOR = 2                 # src/menu.c struct Menu {left, top, cursorPos (s8), min, max, ...}
-MENU_MIN_CURSOR = 3
-
-PC_TIMEOUT = 600
 RATING_TIMEOUT = 4000
 OAK_TIMEOUT = 8000
 
@@ -112,7 +105,7 @@ def _fmt(x: float) -> str:
     return f"{x:.1f}".replace(".", ",")
 
 
-class ShinyScenario(CatchSaveScenario):
+class ShinyScenario(PcMenuMixin, CatchSaveScenario):
     def __init__(self, ctx: ScenarioContext):
         super().__init__(ctx)
         self.box: Mailbox | None = None
@@ -199,12 +192,7 @@ class ShinyScenario(CatchSaveScenario):
 
     def _pc_rating(self) -> str:
         """PC do Centro > PC do PROF. OAK > SIM: avaliação com FLAG_OAKS_RATING_IS_VIA_PC."""
-        self._walk(*CENTER_PC_FRONT)
-        self.emu.hold(KEY_UP, 4)
-        self.ctl.wait_until(self.nav._player_still, 60, "jogador parado diante do PC")
-        self._press(KEY_A)
-        self.ctl.advance_text(lambda: self._tasks_has(MULTICHOICE_TASK), PC_TIMEOUT,
-                              "menu do PC")
+        self._open_pc_menu()
         self._choose_menu_item(PC_MENU_OAK)
         # "Acessou o PC do PROF. OAK" e a pergunta: só o PC do Oak abre um sim/não aqui
         self.ctl.advance_text(lambda: self._tasks_has(YESNO_TASK), PC_TIMEOUT,
@@ -216,30 +204,6 @@ class ShinyScenario(CatchSaveScenario):
                              "PC desligado")
         self.ctl.wait_overworld_idle(PC_TIMEOUT)   # sem falas aqui: A reabriria o PC
         return self._charm_state()
-
-    def _menu_cursor_addr(self) -> int:
-        """Endereço do cursor do menu aberto: `sMenu.cursorPos` de src/menu.c. Há outro
-        estático `sMenu` no ELF; o certo é o que tem minCursorPos 0 e maxCursorPos = itens - 1
-        (CreatePCMenuWindow: 5 itens com FLAG_SYS_GAME_CLEAR, senão 4)."""
-        items = 5 if self.game.flag(self.consts.flag("FLAG_SYS_GAME_CLEAR")) else 4
-        found = [addr for addr in self.game.syms.addrs("sMenu")
-                 if tuple(self.emu.read(addr + MENU_MIN_CURSOR, 2)) == (0, items - 1)]
-        assert len(found) == 1, f"sMenu do menu do PC ambíguo/ausente: {[hex(a) for a in found]}"
-        return found[0] + MENU_CURSOR
-
-    def _choose_menu_item(self, index: int) -> None:
-        """Com o menu de múltipla escolha aberto, leva o cursor até `index` e aperta A."""
-        addr = self._menu_cursor_addr()
-        for _ in range(index + 1):
-            cur = self.emu.read_u8(addr)
-            if cur == index:
-                break
-            self.ctl.press_until(KEY_DOWN if index > cur else KEY_UP,
-                                 lambda: self.emu.read_u8(addr) != cur, "cursor do menu do PC")
-        if self.emu.read_u8(addr) != index:
-            raise self.ctl.timeout_error(f"cursor do menu do PC em {self.emu.read_u8(addr)}, "
-                                         f"esperava {index}")
-        self._press(KEY_A)
 
     def _check_pc_gave_nothing(self) -> str:
         saw = self.game.flag(self.consts.flag("FLAG_OAK_SAW_DEX_COMPLETION"))

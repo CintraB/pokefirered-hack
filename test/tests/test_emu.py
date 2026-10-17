@@ -52,6 +52,27 @@ def test_state_roundtrip(rom_path, tmp_save, tmp_path):
     assert first.tobytes() == second.tobytes()
 
 
+FLASH_SIZE = 128 * 1024   # FLASH1M_V103 (pokefirered usa flash de 1 Mbit)
+
+
+def test_flush_save_writes_the_ram_save_while_running(rom_path, tmp_path):
+    """Savestate com o save do jogo (0x11) carregado numa sessão cujo .sav tem 0x22: o mGBA
+    guarda o save carregado só na memória até fechar; flush_save grava no .sav na hora."""
+    first, second = tmp_path / "a.sav", tmp_path / "b.sav"
+    first.write_bytes(b"\x11" * FLASH_SIZE)
+    second.write_bytes(b"\x22" * FLASH_SIZE)
+    state = str(tmp_path / "com-save.ss")
+    with Emulator(rom_path, str(first)) as emu:
+        emu.frames(10)
+        emu.save_state(state)
+    with Emulator(rom_path, str(second)) as emu:
+        emu.frames(10)
+        emu.load_state(state)
+        emu.flush_save()
+        assert second.read_bytes() == b"\x11" * FLASH_SIZE
+        emu.frames(1)                      # o emulador continua rodando depois do flush
+
+
 def test_save_file_goes_to_given_path(rom_path, tmp_save):
     before = _saves_snapshot()
     emu = Emulator(rom_path, tmp_save)

@@ -14,6 +14,7 @@
  *   {"cmd":"state_save","path":"x.ss"}
  *   {"cmd":"state_load","path":"x.ss"}
  *   {"cmd":"reset"}
+ *   {"cmd":"flush_save"}                (grava agora no .sav o save do jogo que está na memória)
  *   {"cmd":"quit"}                      (grava o .sav e sai)
  */
 #include <mgba/flags.h> /* define USE_PNG antes de png-io.h */
@@ -30,6 +31,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 #define SCREEN_W 240
 #define SCREEN_H 160
@@ -409,6 +411,41 @@ static void CmdStateLoad(struct mCore *core, const struct Command *cmd)
     ReplyOk();
 }
 
+/* O mGBA só garante o .sav em disco ao fechar (deinit). Aqui a cópia do save do jogo que está
+ * na memória (savedataClone) é escrita por cima do .sav da sessão, sem truncar nem trocar o
+ * arquivo (o mGBA o mantém mapeado), com fsync antes de responder. */
+static void CmdFlushSave(struct mCore *core, const char *savePath)
+{
+    void *sram = NULL;
+    size_t size = core->savedataClone(core, &sram);
+    if (!size || !sram) {
+        free(sram);
+        ReplyError("flush_save: o jogo ainda não tem save na memória");
+        return;
+    }
+    int fd = open(savePath, O_WRONLY | O_CREAT, 0644);
+    if (fd < 0) {
+        free(sram);
+        ReplyError("flush_save: não abriu %s", savePath);
+        return;
+    }
+    size_t done = 0;
+    while (done < size) {
+        ssize_t n = write(fd, (const char *)sram + done, size - done);
+        if (n <= 0)
+            break;
+        done += (size_t)n;
+    }
+    bool ok = done == size && fsync(fd) == 0;
+    close(fd);
+    free(sram);
+    if (!ok) {
+        ReplyError("flush_save: falha ao gravar %s", savePath);
+        return;
+    }
+    ReplyOk();
+}
+
 /* ---------- main ---------- */
 
 static int Usage(const char *argv0)
@@ -488,7 +525,9 @@ int main(int argc, char **argv)
         else if (strcmp(name, "reset") == 0) {
             core->reset(core);
             ReplyOk();
-        } else if (strcmp(name, "quit") == 0)
+        } else if (strcmp(name, "flush_save") == 0)
+            CmdFlushSave(core, savePath);
+        else if (strcmp(name, "quit") == 0)
             quit = true;
         else
             ReplyError("comando desconhecido: %s", name);

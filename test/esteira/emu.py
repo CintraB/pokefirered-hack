@@ -108,6 +108,11 @@ class Emulator:
     def reset(self) -> None:
         self._send("reset")
 
+    def flush_save(self) -> None:
+        """Grava agora no .sav o save do jogo que está na memória do emulador (sem isso o mGBA
+        só grava ao fechar, e um save vindo de savestate fica só na memória até lá)."""
+        self._send("flush_save")
+
     def close(self) -> None:
         """Grava o .sav e encerra o runner. Pode ser chamado mais de uma vez."""
         if self._proc.poll() is None:

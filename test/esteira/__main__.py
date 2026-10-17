@@ -7,8 +7,10 @@ A partir de test/ (no WSL):
     python3 -m esteira nao-testada --out DIR     # SKIP_TESTS=1: só o relatório "NÃO TESTADA"
 
 `rapido` roda a checagem do log de build, a checagem dos textos e os 3 roteiros rápidos numa
-sessão de emulador só. `completo` roda tudo isso e mais os cenários de FULL_SCENARIOS (o
-`shiny` usa a ROM de teste, `make firered_switch TESTBUILD=1`, e parte do save do `captura`).
+sessão de emulador só. `completo` roda tudo isso e mais os cenários de FULL_SCENARIOS: PC,
+tour de telas e Floresta/Brock continuam a sessão jogável; o `master` compila o master sem
+emulador; o `shiny` usa a ROM de teste (`make firered_switch TESTBUILD=1`) e parte do save do
+`captura`.
 Sai com 0 se nenhum resultado for `falha` (avisos não reprovam) e 1 caso contrário.
 """
 
@@ -31,6 +33,10 @@ from esteira.report import write_report
 from esteira.result import Result, StepTimeout, Suite
 from esteira.rotation import STARTERS, next_starter
 from esteira.scenarios import REPO_ROOT, ScenarioContext, open_context
+from esteira.scenarios.full_forest_brock import run_full_forest_brock
+from esteira.scenarios.full_master import run_full_master
+from esteira.scenarios.full_pc import run_full_pc
+from esteira.scenarios.full_screen_tour import run_full_screen_tour
 from esteira.scenarios.full_shiny import run_full_shiny
 from esteira.scenarios.quick_catch_save import run_catch_save
 from esteira.scenarios.quick_opening import run_opening
@@ -40,7 +46,7 @@ REFS_DIR = DEFAULT_REFS_DIR
 STATE_PATH = str(REPO_ROOT / "roms" / "estado-esteira.json")   # produção; testes sobrescrevem
 EXCEPTIONS_PATH = REPO_ROOT / "test" / "excecoes.json"
 STATIC_CHECKS = ("build", "texto")
-PLAYABLE, TEST = "playable", "test"   # qual ROM o cenário usa
+PLAYABLE, TEST, HOST = "playable", "test", "host"   # ROM do cenário (HOST: sem emulador)
 DEFAULT_ROM_TEST = str(REPO_ROOT / "pokefirered_switch_test.gba")
 DEFAULT_ELF_TEST = str(REPO_ROOT / "pokefirered_switch_test.elf")
 
@@ -53,14 +59,17 @@ class ScenarioSpec:
     primeiro do grupo começa do boot e `run(ctx)` de cada um continua do estado que o anterior
     deixou. `needs` é o checkpoint (OUT/estados/<needs>.ss, gravado pelo cenário anterior do
     mesmo grupo) de onde o cenário pode recomeçar com `--only`; None = só começa do boot.
-    Checkpoints nunca valem entre ROMs diferentes.
+    Checkpoints nunca valem entre ROMs diferentes. `rom=HOST`: roda fora do emulador (ctx só
+    com `suite`, `out_dir` e `starter`; `emu`, `game` etc. são None), sem ROM nem checkpoint.
 
     `save_from` (só no 1º cenário de um grupo da ROM de teste): nome do cenário da ROM jogável
     cujo save do jogo (.sav) a sessão de teste carrega ao ligar — savestates não valem entre
-    builds, o .sav vale. Quando a sessão jogável fecha e esse cenário foi o último a rodar nela,
-    sem falha, o .sav dela é guardado em OUT/<save_from>.sav (+ OUT/<save_from>.sav.json com o
-    inicial); o grupo jogável roda antes (ordem de FULL_SCENARIOS). Se o cenário estava na
-    execução e não deixou o .sav, o grupo de teste vira `aviso` "não rodou". Com `--only` de um
+    builds, o .sav vale. Logo que esse cenário termina sem falha, o save do jogo da memória é
+    gravado (emu.flush_save) e copiado para OUT/<save_from>.sav (+ OUT/<save_from>.sav.json com
+    o inicial), antes dos cenários jogáveis seguintes (que podem salvar o jogo ou mudar de
+    mapa); se a cópia falhar, o cenário vira `falha`. O grupo jogável roda antes (ordem de
+    FULL_SCENARIOS). Se o cenário estava na execução e não deixou o .sav, o grupo de teste vira
+    `aviso` "não rodou". Com `--only` de um
     cenário da ROM de teste, usa o OUT/<save_from>.sav de uma execução anterior na mesma pasta
     (`rapido` também o deixa); sem ele, `falha` explicando o que rodar.
     """
@@ -81,9 +90,15 @@ QUICK_SCENARIOS = [
 #     ScenarioSpec("x", run_full_x, rom=TEST),                    # ROM de teste, parte do boot
 #     ScenarioSpec("completo1", run_full_y, needs="save"),        # ROM jogável, continua do `save`
 # `rom=TEST` usa --rom-test/--elf-test (padrão: pokefirered_switch_test.gba/.elf na raiz).
-# O shiny parte do .sav do fim do `captura` (save_from): ele tem de continuar sendo o último
-# cenário da ROM jogável (test_cli.py::test_registro_do_cenario_de_shiny confere).
+# Os jogáveis continuam a sessão do modo rápido, cada um do checkpoint que o anterior deixa
+# (`save` -> `pc` -> `telas`). O shiny parte do .sav gravado logo depois do `captura`
+# (save_from), então os jogáveis seguintes não mudam o ponto de partida dele
+# (test_cli.py::test_registro_dos_cenarios_completos confere a ordem).
 FULL_SCENARIOS: list[ScenarioSpec] = [
+    ScenarioSpec("pc", run_full_pc, needs="save"),
+    ScenarioSpec("telas", run_full_screen_tour, needs="pc"),
+    ScenarioSpec("floresta_brock", run_full_forest_brock, needs="telas"),
+    ScenarioSpec("master", run_full_master, rom=HOST),
     ScenarioSpec("shiny", run_full_shiny, rom=TEST, save_from="captura"),
 ]
 
@@ -180,27 +195,38 @@ def _not_run(suite: Suite, specs: list[ScenarioSpec],
 
 
 def _run_scenarios(group: list[ScenarioSpec], ctx: ScenarioContext, only: str | None,
-                   tempos: dict[str, float]) -> tuple[list[str], bool]:
+                   tempos: dict[str, float], bridges: set[str] = frozenset()) -> None:
     """Roda a cadeia de um grupo; depois de um cenário com falha, os seguintes viram `aviso`.
     Só falhas surgidas durante a cadeia contam (as checagens estáticas não interrompem nada).
-    Devolve os cenários que rodaram, em ordem, e se algum deles falhou."""
+    Um cenário de `bridges` que termina sem falha deixa o .sav da ponte (_write_bridge); se a
+    ponte não puder ser gravada, ele vira `falha`."""
     chain = _chain(group, only, ctx)
     suite = ctx.suite
-    ran: list[str] = []
+    out = Path(ctx.out_dir)
     for pos, spec in enumerate(chain):
         before = sum(1 for r in suite.results if r.status == "falha")
         print(f"[rodando] {spec.name}...", flush=True)
         start = time.monotonic()
-        ran.append(spec.name)
+        if spec.name in bridges:   # vai ser refeito agora: o .sav antigo não vale
+            for path in _bridge_paths(out, spec.name):
+                path.unlink(missing_ok=True)
         try:
             spec.run(ctx)
         except Exception as exc:  # noqa: BLE001 - qualquer erro vira falha no relatório
             suite.add(_fail_result(spec, exc))
+        failed = sum(1 for r in suite.results if r.status == "falha") > before
+        if spec.name in bridges and not failed:
+            try:
+                _write_bridge(ctx, spec.name)
+            except Exception as exc:  # noqa: BLE001 - sem a ponte o produtor reprova
+                suite.add(Result(f"cenario/{spec.name}", "falha",
+                                 "save do jogo para a ROM de teste não gravado: "
+                                 f"{type(exc).__name__}: {exc}"))
+                failed = True
         tempos[spec.name] = time.monotonic() - start
-        if sum(1 for r in suite.results if r.status == "falha") > before:
+        if failed:
             _not_run(suite, chain[pos + 1:])
-            return ran, True
-    return ran, False
+            return
 
 
 # --- save do jogo (.sav) da ROM jogável para a ROM de teste (ScenarioSpec.save_from) --------
@@ -216,14 +242,16 @@ def _bridge_paths(out: Path, producer: str) -> tuple[Path, Path]:
     return out / f"{producer}.sav", out / f"{producer}.sav.json"
 
 
-def _keep_session_save(out: Path, producer: str, starter: str) -> None:
-    """Depois que a sessão jogável fechou (o .sav só é gravado ao fechar o emulador)."""
-    session = out / "esteira.sav"
-    if not session.is_file():
-        return
+def _write_bridge(ctx: ScenarioContext, producer: str) -> None:
+    """Grava no OUT/esteira.sav o save do jogo da memória (o mGBA só garante isso ao fechar)
+    e o copia para OUT/<producer>.sav, com o inicial ao lado."""
+    out = Path(ctx.out_dir)
+    ctx.emu.flush_save()
     save, info = _bridge_paths(out, producer)
-    shutil.copyfile(session, save)
-    info.write_text(json.dumps({"inicial": starter}) + "\n", encoding="utf-8")
+    tmp = save.with_name(save.name + ".tmp")
+    shutil.copyfile(out / "esteira.sav", tmp)
+    tmp.replace(save)
+    info.write_text(json.dumps({"inicial": ctx.starter}) + "\n", encoding="utf-8")
 
 
 def _bridge_starter(info: Path) -> str | None:
@@ -237,7 +265,7 @@ def _bridge_starter(info: Path) -> str | None:
 def _missing_save(producer: str, scheduled: bool, save: Path, out: Path) -> tuple[str, str]:
     if scheduled:
         return "aviso", (f"não rodou: o cenário '{producer}' não deixou o save do jogo nesta "
-                         "execução (falhou, não rodou ou não foi o último da ROM jogável)")
+                         "execução (falhou ou não rodou)")
     return "falha", (f"sem o save do jogo de '{producer}' ({save}): a ROM de teste parte do .sav "
                      "da ROM jogável (savestates não valem entre builds); rode antes "
                      f"`python3 -m esteira rapido --out {out}` (mesma pasta) ou o `completo` "
@@ -284,10 +312,13 @@ def run_mode(args: argparse.Namespace) -> int:
         groups = _groups(specs, args.only)
         scheduled = {s.name for _, group in groups for s in group}
         producers = _save_producers()
-        for producer in producers & scheduled:   # vai ser refeito agora: o .sav antigo não vale
-            for path in _bridge_paths(out, producer):
-                path.unlink(missing_ok=True)
         for kind, group in groups:
+            if kind == HOST:
+                host = ScenarioContext(emu=None, game=None, controller=None, nav=None,
+                                       suite=suite, consts=None, out_dir=str(out),
+                                       starter=starter or "-")
+                _run_scenarios(group, host, args.only, tempos)
+                continue
             rom, elf, label = roms[kind]
             missing = [p for p in (rom, elf) if not Path(p).is_file()]
             bad_build = unusable and kind == PLAYABLE
@@ -312,10 +343,9 @@ def run_mode(args: argparse.Namespace) -> int:
                     starter = _bridge_starter(info)
             if starter is None:
                 starter = next_starter(args.state)
+            bridges = producers if kind == PLAYABLE else set()
             with open_context(rom, elf, str(out), starter, suite, save_from=save_from) as ctx:
-                ran, failed = _run_scenarios(group, ctx, args.only, tempos)
-            if kind == PLAYABLE and ran and not failed and ran[-1] in producers:
-                _keep_session_save(out, ran[-1], starter)
+                _run_scenarios(group, ctx, args.only, tempos, bridges)
         if starter is not None:
             _compare_screens(suite, out, starter, started_wall)
 

@@ -71,6 +71,39 @@ NUM_BATTLE_COMMANDS = 256
 TEXT_PERIOD = 10               # A segurado 2 quadros + 8 soltos
 MENU_TIMEOUT = 600
 
+# Escolha do golpe pelo dano esperado (move_policy="best")
+BATTLE_MON_TYPES = 0x21        # struct BattlePokemon.type1, type2 (u8)
+BATTLE_MOVE_SIZE = 12          # struct BattleMove (include/pokemon.h), tabela gBattleMoves
+BATTLE_MOVE_POWER, BATTLE_MOVE_TYPE, BATTLE_MOVE_ACCURACY = 1, 2, 3
+TYPE_FORESIGHT, TYPE_ENDTABLE = 0xFE, 0xFF     # include/battle_main.h
+TYPE_TABLE_SIZE = 336                          # gTypeEffectiveness[336]
+STAB = 1.5
+
+
+def parse_type_table(raw: bytes) -> dict[tuple[int, int], float]:
+    """gTypeEffectiveness (triplas atacante, defensor, multiplicador x10) até TYPE_ENDTABLE.
+    O marcador TYPE_FORESIGHT só separa as imunidades que a Foresight anula."""
+    table: dict[tuple[int, int], float] = {}
+    for i in range(0, len(raw) - 2, 3):
+        atk, dfn, mul = raw[i], raw[i + 1], raw[i + 2]
+        if atk == TYPE_ENDTABLE:
+            break
+        if atk != TYPE_FORESIGHT:
+            table[(atk, dfn)] = mul / 10
+    return table
+
+
+def move_score(power: int, move_type: int, accuracy: int, attacker: tuple[int, int],
+               defender: tuple[int, int], table: dict[tuple[int, int], float]) -> float:
+    """Dano esperado relativo: poder x STAB x efetividade (tipo repetido conta uma vez) x
+    precisão (0 = nunca erra). Golpe de status (poder 0) dá 0."""
+    if power == 0:
+        return 0
+    score = power * (STAB if move_type in attacker else 1)
+    for dfn in dict.fromkeys(defender):
+        score *= table.get((move_type, dfn), 1.0)
+    return score * (accuracy / 100 if accuracy else 1)
+
 
 def yesno_key(command: str, battle_type_flags: int) -> int:
     """Tecla que responde o sim/não `command` da batalha.
@@ -92,6 +125,13 @@ class BattleDriver:
         self.syms = controller.game.syms
         self.bag = Bag(controller)
         self._opcodes: dict[int, str] | None = None
+        self._types: dict[tuple[int, int], float] | None = None
+        # "first": sempre o 1º golpe com PP (ritmo de botões do modo rápido e das fixtures);
+        # "best": o de maior dano esperado contra o oponente (move_scores).
+        self.move_policy = "first"
+        # (item, fração): em fight_to_end, usa o item no Pokémon em campo abaixo da fração
+        self.heal: tuple[int, float] | None = None
+        self.healed: list[tuple[int, int, int | None]] = []   # (slot, HP antes, HP depois)
 
     # --- leitura do estado ---------------------------------------------------------
     def _opcode_names(self) -> dict[int, str]:
@@ -184,12 +224,58 @@ class BattleDriver:
         self._press(KEY_A)
 
     def _choose_first_move_with_pp(self) -> None:
+        """O 1º golpe com PP (move_policy "first") ou o de maior dano esperado ("best")."""
         moves, pp = self._battle_mon()
         usable = [i for i in range(MAX_MON_MOVES) if moves[i] and pp[i] > 0]
         if not usable:
             raise self.ctl.timeout_error(f"nenhum golpe com PP (golpes={moves}, pp={pp})")
-        self._select_grid("gMoveSelectionCursor", usable[0], "golpe")
+        target = usable[0]
+        if self.move_policy == "best":
+            scores = self.move_scores()
+            target = max(usable, key=lambda i: (scores[i], -i))
+        self._select_grid("gMoveSelectionCursor", target, "golpe")
         self._press(KEY_A)
+
+    def _type_table(self) -> dict[tuple[int, int], float]:
+        if self._types is None:
+            self._types = parse_type_table(self.emu.read(self.syms.addr("gTypeEffectiveness"),
+                                                         TYPE_TABLE_SIZE))
+        return self._types
+
+    def move_scores(self) -> list[float]:
+        """move_score() de cada golpe do nosso Pokémon em campo contra o oponente (batalha
+        simples: gBattleMons[0] contra gBattleMons[1])."""
+        ours = self.emu.read(self._battler_addr(0), BATTLE_MON_SIZE)
+        theirs = self.emu.read(self._battler_addr(1), BATTLE_MON_SIZE)
+        moves = struct.unpack_from("<4H", ours, BATTLE_MON_MOVES)
+        attacker = tuple(ours[BATTLE_MON_TYPES:BATTLE_MON_TYPES + 2])
+        defender = tuple(theirs[BATTLE_MON_TYPES:BATTLE_MON_TYPES + 2])
+        table = self._type_table()
+        moves_table = self.syms.addr("gBattleMoves")
+        scores = []
+        for move in moves:
+            data = self.emu.read(moves_table + move * BATTLE_MOVE_SIZE, BATTLE_MOVE_SIZE)
+            scores.append(move_score(data[BATTLE_MOVE_POWER], data[BATTLE_MOVE_TYPE],
+                                     data[BATTLE_MOVE_ACCURACY], attacker, defender, table)
+                          if move else 0)
+        return scores
+
+    def active_slot(self) -> int:
+        """Posição no time do nosso Pokémon em campo (gBattlerPartyIndexes[0])."""
+        return self.emu.read_u16(self.syms.addr("gBattlerPartyIndexes"))
+
+    def _should_heal(self) -> bool:
+        """`heal` = (item, fração): o Pokémon em campo está abaixo da fração do HP máximo e
+        ainda há o item na bolsa."""
+        if self.heal is None:
+            return False
+        item, fraction = self.heal
+        slot = self.active_slot()
+        party = self.game.party()
+        if slot >= len(party) or self.game.bag_quantity(item) == 0:
+            return False
+        mon = party[slot]
+        return 0 < mon.hp < mon.max_hp * fraction
 
     def _send_out_replacement(self) -> None:
         """Tela de Pokémon depois de um desmaio: cursor no 1º vivo e A (abre ENVIAR/TROCAR)."""
@@ -231,7 +317,9 @@ class BattleDriver:
     # --- API -----------------------------------------------------------------------
     def fight_to_end(self, timeout: int = 20000,
                      on_step: Callable[[], None] | None = None) -> str:
-        """Luta usando sempre o 1º golpe com PP até a batalha acabar.
+        """Luta até a batalha acabar com o golpe de `move_policy` (padrão: o 1º com PP); com
+        `heal`, usa o item no Pokémon em campo quando o HP cai da fração (registra em
+        `healed`).
 
         Devolve 'win'|'lose'|'fled' (gBattleOutcome), ou 'fainted' quando um Pokémon nosso
         que começou vivo desmaiou, outro entrou no lugar e a batalha não terminou em
@@ -249,7 +337,12 @@ class BattleDriver:
             if on_step is not None:
                 on_step()
             func = self.controller_func()
-            if func == ACTION_FUNC:
+            if func == ACTION_FUNC and self._should_heal():
+                slot = self.active_slot()
+                before = self.game.party()[slot].hp
+                after = self.use_item_in_battle(self.heal[0], slot)
+                self.healed.append((slot, before, after))
+            elif func == ACTION_FUNC:
                 self._choose_action(ACTION_FIGHT)
             elif func.endswith(MOVE_FUNC_SUFFIX):
                 self._choose_first_move_with_pp()

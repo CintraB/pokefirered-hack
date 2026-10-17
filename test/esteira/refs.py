@@ -15,8 +15,10 @@ from esteira.result import Result
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_REFS_DIR = "test/referencias"
-# Nomes dos arquivos em OUT/telas/<ponto>.png gravados pelos cenários nos pontos-chave.
-KEY_POINTS = ("nome", "inicial", "batalha_rival", "captura", "save_continue")
+# Nomes dos arquivos em OUT/telas/<ponto>.png gravados pelos cenários nos pontos-chave: os do
+# modo rápido e os do tour de telas do modo completo (scenarios/full_screen_tour.py).
+TOUR_POINTS = ("bolsa", "resumo", "pokedex", "opcoes", "cartao", "pc", "loja", "mapa")
+KEY_POINTS = ("nome", "inicial", "batalha_rival", "captura", "save_continue") + TOUR_POINTS
 DIFF_RED = (255, 0, 0)
 
 

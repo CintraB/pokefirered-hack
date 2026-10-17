@@ -105,3 +105,33 @@ def test_constants_from_headers():
     assert c.item("ITEM_POTION") == 13
     assert c.flag("FLAG_SYS_POKEDEX_GET") >= 0x800  # SYS_FLAGS + 0x29
     assert c.map("MAP_PALLET_TOWN") == (3, 0)
+
+
+def test_box_mons_reads_the_boxes_of_the_pc():
+    """Game.box_mons: struct PokemonStorage {u8 currentBox; BoxPokemon boxes[14][30]} (80 bytes
+    por Pokémon) atrás de gPokemonStoragePtr; slot vazio (hasSpecies = 0) vira None."""
+    from types import SimpleNamespace
+
+    from esteira.game import BOX_MON_SIZE, Game, IN_BOX_COUNT
+
+    cm = Charmap.load(str(REPO_ROOT))
+    storage = 0x02029314
+    mem = bytearray(4 + 14 * IN_BOX_COUNT * BOX_MON_SIZE)
+    mon = bytearray(build_mon(cm, pid=0x0BADF00D, ot=0x11112222, species=16, level=3, hp=15,
+                              max_hp=15, nickname="ESTEIRA", moves=[33, 0, 0, 0], pp=[35, 0, 0, 0]))
+    mon[0x13] = 0x02                                    # hasSpecies
+    slot = 4 + (1 * IN_BOX_COUNT + 2) * BOX_MON_SIZE      # caixa 2 (índice 1), posição 2
+    mem[slot:slot + BOX_MON_SIZE] = mon[:BOX_MON_SIZE]
+
+    def read(addr, n):
+        off = addr - storage
+        return bytes(mem[off:off + n])
+
+    ptr = 0x03005008
+    emu = SimpleNamespace(read=read, read_u32=lambda a: storage if a == ptr else 0)
+    syms = SimpleNamespace(addr=lambda name: {"gPokemonStoragePtr": ptr}[name])
+    game = Game(emu, syms, None, cm)
+    assert game.box_mons(0) == [None] * IN_BOX_COUNT
+    box = game.box_mons(1)
+    assert [i for i, m in enumerate(box) if m is not None] == [2]
+    assert (box[2].species, box[2].personality, box[2].nickname) == (16, 0x0BADF00D, "ESTEIRA")

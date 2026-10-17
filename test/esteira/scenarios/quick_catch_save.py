@@ -430,10 +430,10 @@ class CatchSaveScenario(Route1Scenario):
         self.measures["before_reset"] = self._snapshot()
         return f"gSaveAttemptStatus = {status} (SAVE_STATUS_OK) em {self.game.location()}"
 
-    def _continue_after_reset(self) -> str:
+    def _continue_after_reset(self, shot: str = "save_continue") -> str:
         before = self.measures["before_reset"]
         self.emu.reset()
-        self._title_to_continue("tela de título depois do reset", shot="save_continue")
+        self._title_to_continue("tela de título depois do reset", shot=shot)
         after = self._snapshot()
         diffs = [f"{key}: antes {before[key]!r}, depois {after[key]!r}"
                  for key in before if before[key] != after[key]]

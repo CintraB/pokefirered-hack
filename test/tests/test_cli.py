@@ -33,6 +33,7 @@ class FakeEnv:
         self.party_species = 1
         self.save_from: list[str | None] = []         # save_from de cada open_context
         self.loaded_saves: list[str] = []             # conteúdo do .sav recebido
+        self.flush_error: Exception | None = None     # flush_save() levanta isto, se definido
         for name in ("jogavel.gba", "jogavel.elf", "teste.gba", "teste.elf"):
             (tmp_path / name).write_bytes(b"x")
 
@@ -50,16 +51,23 @@ class FakeEnv:
                 effect(ctx)
         return ScenarioSpec(name, run, needs=needs, rom=rom, save_from=save_from)
 
-    def make_ctx(self, rom, starter, suite):
+    def make_ctx(self, rom, starter, suite, out=None, first=0):
         env = self
+
+        def flush_save():
+            """Como o runner: grava no .sav da sessão o save do jogo do momento."""
+            if env.flush_error is not None:
+                raise env.flush_error
+            (Path(out) / "esteira.sav").write_text(f"{rom}:{','.join(env.ran[first:])}")
         controller = SimpleNamespace(
             checkpoint_path=lambda n: SimpleNamespace(is_file=lambda: n in env.checkpoints),
             restore=lambda n: env.restored.append(n))
         return SimpleNamespace(
-            suite=suite, controller=controller, starter=starter, rom=rom,
+            suite=suite, controller=controller, starter=starter, rom=rom, out_dir=str(out),
             game=SimpleNamespace(party=lambda: [SimpleNamespace(species=env.party_species)]),
             consts=SimpleNamespace(species=lambda s: 1),
-            emu=SimpleNamespace(reset=lambda: setattr(env, "resets", env.resets + 1)))
+            emu=SimpleNamespace(reset=lambda: setattr(env, "resets", env.resets + 1),
+                                flush_save=flush_save))
 
 
 @pytest.fixture
@@ -68,14 +76,15 @@ def env(tmp_path, monkeypatch):
 
     @contextmanager
     def fake_open(rom, elf, out, starter, suite=None, save_from=None):
-        """Como o real: o .sav da sessão é OUT/esteira.sav, gravado ao fechar o emulador
-        (aqui com a ROM e os cenários que rodaram, para os testes conferirem a origem)."""
+        """Como o real: o .sav da sessão é OUT/esteira.sav, gravado ao fechar o emulador e
+        por emu.flush_save() (aqui com a ROM e os cenários que já rodaram, para os testes
+        conferirem a origem)."""
         e.opened.append((Path(rom).name, starter))
         e.save_from.append(save_from)
         if save_from is not None:
             e.loaded_saves.append(Path(save_from).read_text())
         first = len(e.ran)
-        yield e.make_ctx(Path(rom).name, starter, suite)
+        yield e.make_ctx(Path(rom).name, starter, suite, out, first)
         (Path(out) / "esteira.sav").write_text(f"{Path(rom).name}:{','.join(e.ran[first:])}")
 
     monkeypatch.setattr(cli, "open_context", fake_open)
@@ -309,27 +318,62 @@ def test_produtor_com_falha_nao_deixa_sav_e_o_cenario_de_teste_nao_roda(env, mon
     assert "[aviso] cenario/shiny: não rodou" in capsys.readouterr().out
 
 
-def test_sav_so_vale_se_o_produtor_foi_o_ultimo_da_sessao_jogavel(env, monkeypatch, capsys):
+def test_sav_e_o_do_fim_do_produtor_mesmo_com_cenarios_jogaveis_depois(env, monkeypatch):
+    """O .sav da ponte é gravado logo que o produtor termina ok: cenários jogáveis depois dele
+    (que salvam o jogo ou andam para outro mapa) não mudam o ponto de partida da ROM de teste."""
     bridge_scenarios(env, monkeypatch, extra_playable=[env.spec("mais", needs="save")])
-    assert main(env.argv("completo", "--starter", "BULBASAUR")) == 0   # aviso não reprova
-    assert env.ran == ["a", "cap", "mais"]
+    assert main(env.argv("completo", "--starter", "BULBASAUR")) == 0
+    assert env.ran == ["a", "cap", "mais", "shiny", "depois"]
+    assert (env.tmp / "out" / "cap.sav").read_text() == "jogavel.gba:a,cap"
+    assert env.loaded_saves == ["jogavel.gba:a,cap"]
+
+
+def test_produtor_ok_sem_ponte_gravada_e_falha(env, monkeypatch, capsys):
+    from esteira.emu import EmulatorError
+    env.flush_error = EmulatorError("flush_save: disco cheio")
+    bridge_scenarios(env, monkeypatch, extra_playable=[env.spec("mais", needs="save")])
+    assert main(env.argv("completo", "--starter", "BULBASAUR")) == 1
+    assert env.ran == ["a", "cap"]
+    out = capsys.readouterr().out
+    assert "[falha] cenario/cap: save do jogo para a ROM de teste não gravado" in out
+    assert "disco cheio" in out
+    assert "[aviso] cenario/shiny: não rodou" in out
     assert not (env.tmp / "out" / "cap.sav").exists()
-    assert "[aviso] cenario/shiny: não rodou" in capsys.readouterr().out
 
 
-def test_registro_do_cenario_de_shiny():
-    """O shiny roda na ROM de teste a partir do .sav do `captura` (último da ROM jogável); um
-    `save_from` só vale no 1º cenário de um grupo e tem de apontar um cenário da ROM jogável."""
+def test_registro_dos_cenarios_completos():
+    """Modo completo: o shiny roda na ROM de teste a partir do .sav do `captura` (gravado logo
+    que o `captura` termina, então os cenários jogáveis seguintes não interferem); cada cenário
+    jogável do completo continua do checkpoint do anterior; o master roda sem emulador."""
     specs = cli.scenarios_for("completo")
-    shiny = next(s for s in specs if s.name == "shiny")
+    by_name = {s.name: s for s in specs}
+    shiny = by_name["shiny"]
     assert (shiny.rom, shiny.save_from, shiny.needs) == (TEST, "captura", None)
     playable = [s.name for s in specs if s.rom == cli.PLAYABLE]
+    assert playable == ["abertura", "rota1", "captura", "pc", "telas", "floresta_brock"]
+    assert [by_name[n].needs for n in playable[3:]] == ["save", "pc", "telas"]
+    assert (by_name["master"].rom, by_name["master"].needs) == (cli.HOST, None)
     for spec in specs:
         if spec.save_from is not None:
             group = [s for s in specs if s.rom == spec.rom]
             assert spec.rom == TEST and group[0] is spec
-            assert playable[-1] == spec.save_from
-    assert "shiny" not in [s.name for s in cli.scenarios_for("rapido")]
+            assert spec.save_from in playable
+    rapido = [s.name for s in cli.scenarios_for("rapido")]
+    assert rapido == ["abertura", "rota1", "captura"]
+
+
+def test_cenario_host_roda_sem_emulador(env, monkeypatch):
+    seen = []
+    set_scenarios(monkeypatch, [env.spec("a")],
+                  [ScenarioSpec("m", lambda ctx: seen.append((ctx.emu, ctx.out_dir)),
+                                rom=cli.HOST)])
+    assert main(env.argv("completo", "--starter", "BULBASAUR")) == 0
+    assert env.opened == [("jogavel.gba", "BULBASAUR")]       # só a sessão jogável
+    assert seen == [(None, str(env.tmp / "out"))]
+    (env.tmp / "jogavel.gba").unlink()                         # nem precisa de ROM
+    seen.clear()
+    assert main(env.argv("completo", "--starter", "BULBASAUR", "--only", "m")) == 0
+    assert seen == [(None, str(env.tmp / "out"))]
 
 
 # --- rodízio -----------------------------------------------------------------------------------

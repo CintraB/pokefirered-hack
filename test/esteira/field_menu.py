@@ -10,12 +10,17 @@ from .bag import Bag
 from .control import Controller
 from .emu import KEY_A, KEY_B, KEY_DOWN, KEY_START, KEY_UP
 
+STARTMENU_POKEDEX = 0
+STARTMENU_POKEMON = 1
 STARTMENU_BAG = 2
+STARTMENU_PLAYER = 3
 STARTMENU_SAVE = 4
+STARTMENU_OPTION = 5
 MAX_STARTMENU_ITEMS = 9
 SAVE_STATUS_OK = 1
 
 START_MENU_TASK = "Task_StartMenuHandleInput"
+START_MENU_INPUT = "StartCB_HandleInput"
 # menu de Pokémon e a animação "POTION foi usada em X" (src/pokemon_special_anim.c)
 ITEM_USE_CALLBACKS = {"CB2_UpdatePartyMenu", "CB2_PSA"}
 TEXT_PERIOD = 10
@@ -38,9 +43,21 @@ class FieldMenu:
     def start_menu_open(self) -> bool:
         return START_MENU_TASK in self.game.active_tasks()
 
+    def accepting_input(self) -> bool:
+        """O menu START lê os botões: Task_StartMenuHandleInput no estado 1 (data[0]), que
+        chama sStartMenuCallback = StartCB_HandleInput a cada quadro. Só o ponteiro não basta:
+        ele fica com StartCB_HandleInput de quando o menu foi fechado com B, e no 1º quadro da
+        task (estado 0) um A apertado se perde."""
+        data = self.game.task_data(START_MENU_TASK)
+        if data is None or data[0] != 1:
+            return False
+        ptr = self.emu.read_u32(self.syms.addr("sStartMenuCallback"))
+        return self.syms.name_at(ptr & ~1) == START_MENU_INPUT
+
     def open_start_menu(self) -> None:
         self.ctl.wait_overworld_idle()
         self.ctl.press_until(KEY_START, self.start_menu_open, "menu START aberto")
+        self.ctl.wait_until(self.accepting_input, MENU_TIMEOUT, "menu START pronto")
 
     def entries(self) -> list[int]:
         count = self.emu.read_u8(self.syms.addr("sNumStartMenuItems"))
@@ -62,7 +79,9 @@ class FieldMenu:
         if self.emu.read_u8(addr) != index:
             raise self.ctl.timeout_error(f"cursor do menu START em {self.emu.read_u8(addr)}, "
                                          f"esperava {index}")
-        self._press(KEY_A)
+        # um A pode se perder (visto ao vivo depois de batalha): repete até o menu agir
+        self.ctl.press_until(KEY_A, lambda: not self.start_menu_open() or not self.accepting_input(),
+                             f"entrada {entry} do menu START escolhida", tries=3, wait=30)
 
     def close_start_menu(self) -> None:
         self.ctl.press_until(KEY_B, lambda: not self.start_menu_open(), "menu START fechado")
