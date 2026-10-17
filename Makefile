@@ -132,7 +132,7 @@ MAKEFLAGS += --no-print-directory
 ALL_BUILDS := firered firered_rev1 firered_rev10 leafgreen leafgreen_rev1 leafgreen_rev10
 ALL_BUILDS += $(ALL_BUILDS:%=%_modern)
 
-RULES_NO_SCAN += clean clean-assets tidy generated clean-generated
+RULES_NO_SCAN += clean clean-assets tidy generated clean-generated test-quick test-full test-approve
 .PHONY: all rom modern compare $(ALL_BUILDS) $(ALL_BUILDS:%=compare_%)
 .PHONY: $(RULES_NO_SCAN)
 
@@ -224,7 +224,16 @@ tidy:
 # "friendly" target names for convenience sake
 firered:                ; @$(MAKE) GAME_VERSION=FIRERED
 firered_rev1:           ; @$(MAKE) GAME_VERSION=FIRERED GAME_REVISION=1
-firered_switch:          ; @$(MAKE) GAME_VERSION=FIRERED GAME_REVISION=10
+# The Switch build is logged (tee) so the test pipeline can check the compiler/linker output.
+# pipefail (SHELL above) keeps `make` failing when the compile fails. The log is only replaced
+# when the ROM step ran or the build failed, so a "Nothing to be done" run keeps the last real log.
+ESTEIRA_MARKER := [esteira] build finished
+FIRERED_SWITCH_LOG := $(BUILD_DIR)/firered_switch$(if $(TESTBUILD),_test).log
+firered_switch:
+	@mkdir -p $(BUILD_DIR)
+	@$(MAKE) GAME_VERSION=FIRERED GAME_REVISION=10 BUILD_LOG=$(FIRERED_SWITCH_LOG).new 2>&1 | tee $(FIRERED_SWITCH_LOG).new; rc=$$?; \
+	if [ $$rc -ne 0 ] || grep -qF "$(ESTEIRA_MARKER)" $(FIRERED_SWITCH_LOG).new; then mv -f $(FIRERED_SWITCH_LOG).new $(FIRERED_SWITCH_LOG); else rm -f $(FIRERED_SWITCH_LOG).new; fi; \
+	exit $$rc
 leafgreen:              ; @$(MAKE) GAME_VERSION=LEAFGREEN
 leafgreen_rev1:         ; @$(MAKE) GAME_VERSION=LEAFGREEN GAME_REVISION=1
 leafgreen_switch:        ; @$(MAKE) GAME_VERSION=LEAFGREEN GAME_REVISION=10
@@ -394,8 +403,28 @@ $(ELF): $(LD_SCRIPT) $(LD_SCRIPT_DEPS) $(OBJS)
 $(ROM): $(ELF)
 	$(OBJCOPY) -O binary --gap-fill 0xFF --pad-to 0x9000000 $< $@
 ifneq ($(COMPARE),1)
-	@sh version_rom.sh $@
+	@echo "$(ESTEIRA_MARKER)"
+	@BUILD_LOG="$(BUILD_LOG)" SKIP_TESTS="$(SKIP_TESTS)" sh test/pipeline.sh $@
 endif
+
+# Test pipeline (test/esteira). `make firered_switch` already runs the quick suite and only
+# versions the ROM if it passes; these targets run it by hand on the ROM at the repo root.
+#   make test-quick                 static checks + 3 quick scripts
+#   make test-full                  quick + full scenarios (needs `make firered_switch TESTBUILD=1`)
+#   make test-approve [DIR=<run>]   promote the screenshots of a run (default: latest) to references
+#   SKIP_TESTS=1 make firered_switch  versions the ROM without testing (marked NAO_TESTADA.txt)
+ESTEIRA_RUN = out=$(CURDIR)/test/out/$$(date +%Y%m%d-%H%M%S); log=$(CURDIR)/$(FIRERED_SWITCH_LOG); \
+	logarg=""; if [ -f "$$log" ]; then logarg="--log $$log"; fi; \
+	cd test && python3 -m esteira $(1) --rom $(CURDIR)/pokefirered_switch.gba --elf $(CURDIR)/pokefirered_switch.elf $$logarg --out $$out
+
+test-quick:
+	@$(call ESTEIRA_RUN,rapido)
+
+test-full:
+	@$(call ESTEIRA_RUN,completo)
+
+test-approve:
+	@cd test && python3 -m esteira aprovar "$(if $(DIR),$(abspath $(DIR)),$(shell ls -dt $(CURDIR)/test/out/*/ | head -n 1))"
 
 # Symbol file (`make syms`)
 $(SYM): $(ELF)
