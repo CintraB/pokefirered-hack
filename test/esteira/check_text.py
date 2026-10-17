@@ -1,0 +1,388 @@
+"""Checagem estática dos textos do jogo: charmap, terminador, largura da caixa e inglês residual.
+
+Só devolve problemas (`falha`, ou `aviso` para o inglês residual); texto sem problema não gera
+`Result`. Cada achado é identificado por (arquivo, rótulo, regra); os que estiverem em
+`exceptions["text"]` (`test/excecoes.json`) são pré-existentes e ficam calados.
+"""
+
+import json
+import re
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Iterator
+
+from esteira.result import Result
+
+# Largura útil da caixa de diálogo padrão: sStandardTextBox_WindowTemplates (src/new_menu_helpers.c)
+# tem .width = 26 tiles de 8 px e o texto começa em x = 0.
+BOX_WIDTH_PX = 26 * 8
+PLAYER_NAME_CHARS = 7  # {PLAYER}/{RIVAL}: nome de até 7 letras
+
+# Regras (usadas em `excecoes.json`)
+RULE_CHARMAP = "charmap"
+RULE_TERMINATOR = "terminador"
+RULE_WIDTH = "largura"
+RULE_SYNTAX = "sintaxe"
+RULE_ENGLISH = "ingles"
+
+_NAME_PLACEHOLDERS = ("PLAYER", "RIVAL")
+
+# Linhas de charmap: `'A' = BB`, `'\'' = B4`, `PKMN = 53 54`, `'\n' = FE @ comentário`
+_CHAR_ENTRY = re.compile(r"^'(\\.|[^'\\])'\s*=\s*((?:[0-9A-Fa-f]{2}\s*)+?)\s*(?:@.*)?$")
+_NAME_ENTRY = re.compile(r"^([A-Za-z_][A-Za-z0-9_]*)\s*=\s*((?:[0-9A-Fa-f]{2}\s*)+?)\s*(?:@.*)?$")
+_JAPANESE_SECTION = "@ Hiragana"  # o que vem depois é só japonês/constantes (cores, sons...)
+_NUMBER = re.compile(r"^(?:0[xX][0-9A-Fa-f]+|\d+)$")
+
+# Quebras de linha de texto: o resto da string continua numa linha nova da caixa
+_BREAKS = {"n": "\\n", "l": "\\l", "p": "\\p"}
+
+_ENGLISH_WORDS = re.compile(
+    r"\b(?:the|you|your|and|with|this|that|have|what|are|for|from|will|can|not|was|were|there|they)\b",
+    re.IGNORECASE)
+_ACCENTED = re.compile(r"[ÀÁÂÃÄÇÈÉÊËÌÍÎÏÑÒÓÔÕÖÙÚÛÜàáâãäçèéêëìíîïñòóôõöùúûü]")
+
+
+@dataclass
+class _Entry:
+    file: str
+    label: str
+    texts: tuple[str, ...]  # variantes do texto cru (escapes `\n`, `\p` e `{...}` como no fonte)
+    needs_terminator: bool
+
+
+@dataclass
+class _Env:
+    chars: set[str]                 # todo caractere aceito (latino + japonês)
+    latin_width: dict[str, int]     # largura em px dos caracteres da fonte latina
+    names: set[str]                 # nomes de macro/placeholder definidos no charmap
+    glyph_macros: dict[str, int]    # macros que imprimem glifos ({PKMN}, {LV}...) -> largura
+    name_width: int                 # largura de {PLAYER}/{RIVAL}
+
+
+# ---- ambiente: charmap e tabela de larguras ------------------------------------------------
+
+def _load_widths(repo: Path) -> list[int]:
+    source = (repo / "src" / "text.c").read_text(encoding="utf-8")
+    m = re.search(r"sFontNormalLatinGlyphWidths\[\]\s*=\s*\{(.*?)\};", source, re.S)
+    if not m:
+        raise RuntimeError("sFontNormalLatinGlyphWidths não encontrada em src/text.c")
+    return [int(n) for n in re.findall(r"\d+", m.group(1))]
+
+
+def _load_env(repo: Path) -> _Env:
+    widths = _load_widths(repo)
+    chars: set[str] = set()
+    latin_width: dict[str, int] = {}
+    names: set[str] = set()
+    glyph_macros: dict[str, int] = {}
+    latin = True
+    for raw in (repo / "charmap.txt").read_text(encoding="utf-8").splitlines():
+        line = raw.strip()
+        if line.startswith(_JAPANESE_SECTION):
+            latin = False
+        m = _CHAR_ENTRY.match(line)
+        if m:
+            ch = m.group(1)
+            if ch.startswith("\\"):
+                if ch != "\\'":
+                    continue  # '\n', '\l', '\p' são quebras de linha, tratadas à parte
+                ch = "'"
+            chars.add(ch)
+            first = int(m.group(2).split()[0], 16)
+            if latin:
+                latin_width.setdefault(ch, widths[first])
+            continue
+        m = _NAME_ENTRY.match(line)
+        if m:
+            names.add(m.group(1))
+            data = bytes.fromhex(m.group(2).replace(" ", ""))
+            if latin and all(b < 0xF7 for b in data):
+                glyph_macros[m.group(1)] = sum(widths[b] for b in data)
+    name_width = PLAYER_NAME_CHARS * max(w for ch, w in latin_width.items() if ch.isalnum() and ch.isascii())
+    return _Env(chars, latin_width, names, glyph_macros, name_width)
+
+
+# ---- extração dos textos -------------------------------------------------------------------
+
+_STRING_LINE = re.compile(r'^\s*\.string\s+"((?:[^"\\]|\\.)*)"\s*(?:@.*)?$')
+_LABEL_LINE = re.compile(r"^\s*([A-Za-z_][A-Za-z0-9_]*)::?\s*(?:@.*)?$")
+
+
+_CONDITIONAL = re.compile(r"^#\s*(if|ifdef|ifndef|elif|else|endif)\b")
+
+
+def _variants(parts: list[tuple[tuple[tuple[int, int], ...], str]]) -> tuple[str, ...]:
+    """Textos possíveis de um bloco: um por combinação de ramos de `#if/#else` (em geral, um só)."""
+    ids = sorted({i for conds, _ in parts for i, _branch in conds})
+    combos: list[dict[int, int]] = [{}]
+    for i in ids:
+        branches = sorted({b for conds, _ in parts for j, b in conds if j == i})
+        combos = [{**c, i: b} for c in combos for b in branches]
+    texts = ["".join(t for conds, t in parts if all(c[i] == b for i, b in conds)) for c in combos]
+    return tuple(dict.fromkeys(texts))
+
+
+def _extract_inc(repo: Path, path: Path) -> Iterator[_Entry | Result]:
+    """Blocos de `.string` consecutivos sob o mesmo rótulo viram um texto só.
+
+    Ramos de `#ifdef/#else/#endif` dentro do bloco são analisados cada um como um texto próprio.
+    """
+    rel = path.relative_to(repo).as_posix()
+    label = None
+    parts: list[tuple[tuple[tuple[int, int], ...], str]] = []
+    block_label = None
+    open_conditionals: list[list[int]] = []  # [linha do #if, ramo atual]
+
+    def flush() -> Iterator[_Entry]:
+        nonlocal parts, block_label
+        if parts:
+            yield _Entry(rel, block_label or "?", _variants(parts), True)
+        parts, block_label = [], None
+
+    for number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
+        label_match = _LABEL_LINE.match(line)
+        if label_match:
+            yield from flush()
+            label = label_match.group(1)
+            continue
+        stripped = line.strip()
+        cpp = _CONDITIONAL.match(stripped)
+        if cpp:
+            kind = cpp.group(1)
+            if kind.startswith("if"):
+                open_conditionals.append([number, 0])
+            elif kind == "endif":
+                if open_conditionals:
+                    open_conditionals.pop()
+            elif open_conditionals:
+                open_conditionals[-1][1] += 1
+        elif stripped.startswith(".string"):
+            string_match = _STRING_LINE.match(line)
+            if not string_match:
+                yield Result(f"texto/{RULE_SYNTAX}", "falha",
+                             f"{rel}:{number}: linha .string não reconhecida: {stripped}")
+                continue
+            if not parts:
+                block_label = label or f"linha {number}"
+            parts.append((tuple((i, b) for i, b in open_conditionals), string_match.group(1)))
+        elif stripped and not stripped.startswith("@"):
+            yield from flush()  # outra diretiva (.align, .byte...) encerra o bloco
+    yield from flush()
+
+
+def _scan_c_strings(source: str) -> Iterator[tuple[int, str]]:
+    """Acha cada `_( "..." "..." )` fora de comentários; devolve (posição do `_(`, texto cru)."""
+    i, n = 0, len(source)
+    while i < n:
+        c = source[i]
+        if source.startswith("//", i):
+            i = source.find("\n", i)
+            i = n if i < 0 else i
+        elif source.startswith("/*", i):
+            end = source.find("*/", i + 2)
+            i = n if end < 0 else end + 2
+        elif c == '"':
+            i = _skip_literal(source, i)
+        elif c == "_" and source.startswith("_(", i) and (i == 0 or not (source[i - 1].isalnum()
+                                                                        or source[i - 1] == "_")):
+            parsed = _parse_underscore_call(source, i + 2)
+            if parsed is not None:
+                text, end = parsed
+                yield i, text
+                i = end
+                continue
+            i += 2
+        else:
+            i += 1
+
+
+def _skip_literal(source: str, i: int) -> int:
+    i += 1
+    while i < len(source) and source[i] != '"':
+        i += 2 if source[i] == "\\" else 1
+    return i + 1
+
+
+def _parse_underscore_call(source: str, i: int) -> tuple[str, int] | None:
+    """Lê os literais seguidos (concatenação de strings C) até o `)`; None se não for só literais."""
+    parts: list[str] = []
+    n = len(source)
+    while i < n:
+        c = source[i]
+        if c.isspace():
+            i += 1
+        elif source.startswith("//", i):
+            i = source.find("\n", i)
+            if i < 0:
+                return None
+        elif source.startswith("/*", i):
+            end = source.find("*/", i + 2)
+            if end < 0:
+                return None
+            i = end + 2
+        elif c == '"':
+            end = _skip_literal(source, i)
+            parts.append(source[i + 1:end - 1])
+            i = end
+        elif c == ")":
+            return ("".join(parts), i + 1) if parts else None
+        else:
+            return None
+    return None
+
+
+_INDEX_LABEL = re.compile(r"(?:^|[\n,{])\s*\[\s*([A-Za-z_]\w*)\s*\]\s*(?:\[[^\]]*\]\s*)*=\s*$")
+_VAR_LABEL = re.compile(r"([A-Za-z_]\w*)\s*(?:\[[^\]]*\]\s*)*=\s*$")
+
+
+def _c_label(source: str, pos: int, fallback: str) -> str:
+    """Rótulo de um `_(`: o índice (`[MOVE_X] = _(`) ou a variável (`gText_X[] = _(`)."""
+    context = source[max(0, pos - 200):pos]
+    m = _INDEX_LABEL.search(context) or _VAR_LABEL.search(context)
+    return m.group(1) if m else fallback
+
+
+def _extract_c(repo: Path, path: Path) -> Iterator[_Entry]:
+    rel = path.relative_to(repo).as_posix()
+    source = path.read_text(encoding="utf-8")
+    counter: dict[str, int] = {}
+    for pos, text in _scan_c_strings(source):
+        line = source.count("\n", 0, pos) + 1
+        label = _c_label(source, pos, f"linha {line}")
+        counter[label] = counter.get(label, 0) + 1
+        if counter[label] > 1:
+            label = f"{label}#{counter[label]}"
+        yield _Entry(rel, label, (text,), False)
+
+
+def _extract_items(repo: Path, path: Path) -> Iterator[_Entry]:
+    rel = path.relative_to(repo).as_posix()
+    for item in json.loads(path.read_text(encoding="utf-8")).get("items", []):
+        text = item.get("description_english")
+        if text is not None:
+            yield _Entry(rel, item.get("itemId", "?"), (text,), False)
+
+
+def _sources(repo: Path) -> Iterator[_Entry | Result]:
+    for path in sorted((repo / "data" / "text").glob("*.inc")):
+        yield from _extract_inc(repo, path)
+    for path in sorted((repo / "data" / "maps").glob("*/text.inc")):
+        yield from _extract_inc(repo, path)
+    strings_c = repo / "src" / "strings.c"
+    if strings_c.is_file():
+        yield from _extract_c(repo, strings_c)
+    for path in sorted((repo / "src" / "data" / "text").glob("*.h")):
+        yield from _extract_c(repo, path)
+    items = repo / "src" / "data" / "items.json"
+    if items.is_file():
+        yield from _extract_items(repo, items)
+
+
+# ---- análise de um texto -------------------------------------------------------------------
+
+def _tokenize(text: str) -> Iterator[tuple[str, str]]:
+    """('char', c) | ('break', '') | ('ph', conteúdo) | ('bad', descrição)."""
+    i, n = 0, len(text)
+    while i < n:
+        c = text[i]
+        if c == "\\" and i + 1 < n:
+            nxt = text[i + 1]
+            if nxt in _BREAKS:
+                yield "break", ""
+            elif nxt == '"':
+                yield "char", '"'
+            else:
+                yield "bad", f"escape desconhecido \\{nxt}"
+            i += 2
+        elif c == "{":
+            end = text.find("}", i)
+            if end < 0:
+                yield "bad", "'{' sem '}'"
+                return
+            yield "ph", text[i + 1:end]
+            i = end + 1
+        else:
+            yield "char", c
+            i += 1
+
+
+def _analyze(text: str, needs_terminator: bool, env: _Env) -> list[tuple[str, str]]:
+    """Problemas do texto como (regra, descrição)."""
+    problems: list[tuple[str, str]] = []
+    bad_chars: list[str] = []
+    bad_words: list[str] = []
+    widest = 0
+    width = 0
+    latin_only = True
+    ends_with_terminator = False
+
+    def close_line() -> None:
+        nonlocal widest, width, latin_only
+        if latin_only:
+            widest = max(widest, width)
+        width, latin_only = 0, True
+
+    for kind, value in _tokenize(text):
+        ends_with_terminator = False
+        if kind == "break":
+            close_line()
+        elif kind == "bad":
+            bad_chars.append(value)
+        elif kind == "char":
+            if value not in env.chars:
+                if value not in bad_chars:
+                    bad_chars.append(value)
+            elif value == "$":
+                ends_with_terminator = True  # terminador (FF): não ocupa largura
+            elif value in env.latin_width:
+                width += env.latin_width[value]
+            else:
+                latin_only = False  # japonês: outra fonte/tabela, não dá para medir aqui
+        else:  # placeholder `{PALAVRA arg ...}`
+            for word in value.split():
+                if word in _NAME_PLACEHOLDERS:
+                    width += env.name_width
+                elif word in env.glyph_macros:
+                    width += env.glyph_macros[word]
+                elif word not in env.names and not _NUMBER.match(word):
+                    bad_words.append(word)
+    close_line()
+
+    for ch in bad_chars:
+        shown = ch if ch.startswith("escape") or ch.startswith("'{'") else f"'{ch}'"
+        problems.append((RULE_CHARMAP, f"caractere fora do charmap: {shown}"))
+    for word in bad_words:
+        problems.append((RULE_CHARMAP, f"placeholder fora do charmap: {{{word}}}"))
+    if needs_terminator and not ends_with_terminator:
+        problems.append((RULE_TERMINATOR, "terminador ausente: bloco .string não termina em '$'"))
+    if widest > BOX_WIDTH_PX:
+        problems.append((RULE_WIDTH, f"largura excedida: linha com {widest} px, limite {BOX_WIDTH_PX} px"))
+    return problems
+
+
+def _english_problem(text: str) -> bool:
+    """Sem acento (fora o 'é' de POKéMON) e com palavra inglesa comum."""
+    plain = text.replace("POKé", "POKE")
+    return not _ACCENTED.search(plain) and bool(_ENGLISH_WORDS.search(plain))
+
+
+# ---- ponto de entrada ----------------------------------------------------------------------
+
+def check_text(repo: str, exceptions: dict, english_check: bool = False) -> list[Result]:
+    root = Path(repo)
+    env = _load_env(root)
+    frozen = {(e["file"], e["label"], e["rule"]) for e in exceptions.get("text", [])}
+    results: list[Result] = []
+    for entry in _sources(root):
+        if isinstance(entry, Result):
+            results.append(entry)
+            continue
+        found = dict.fromkeys(p for text in entry.texts for p in _analyze(text, entry.needs_terminator, env))
+        for rule, detail in found:
+            if (entry.file, entry.label, rule) not in frozen:
+                results.append(Result(f"texto/{rule}", "falha", f"{entry.file}: {entry.label}: {detail}"))
+        if english_check and (entry.file, entry.label, RULE_ENGLISH) not in frozen \
+                and any(_english_problem(text) for text in entry.texts):
+            results.append(Result(f"texto/{RULE_ENGLISH}", "aviso",
+                                  f"{entry.file}: {entry.label}: possível texto em inglês sem tradução"))
+    return results
