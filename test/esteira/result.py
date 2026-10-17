@@ -21,6 +21,7 @@ class Result:
     status: Literal["ok", "falha", "aviso"]
     detail: str
     images: list[str] = field(default_factory=list)
+    state: str | None = None   # savestate de depuração (StepTimeout), quando houver
 
 
 class Suite:
@@ -39,7 +40,7 @@ class Suite:
             ret = fn()
         except StepTimeout as exc:
             result = Result(name, "falha", str(exc),
-                            [exc.screenshot_path])
+                            [exc.screenshot_path], state=exc.state_path)
         except AssertionError as exc:
             result = Result(name, "falha", f"asserção falhou: {exc}")
         else:

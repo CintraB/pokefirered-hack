@@ -441,7 +441,7 @@ class CatchSaveScenario(Route1Scenario):
         status = self.emu.read_u16(syms.addr("gSaveFileStatus"))
         assert status == SAVE_STATUS_OK, (
             f"gSaveFileStatus = {status} depois do reset, esperava SAVE_STATUS_OK")
-        self.measures["continue_shot"] = self._shot("continuar")
+        self.measures["continue_shot"] = self._shot("save_continue")
         self.ctl.press_until(KEY_A, lambda: MAIN_MENU_TASK not in self._tasks(), "CONTINUAR")
         playback = syms.addr("gQuestLogPlaybackState")
         spent = 0
