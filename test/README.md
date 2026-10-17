@@ -15,7 +15,7 @@ repo.
 | Testar de novo a ROM já compilada, sem versionar | `make test-quick` | ~35 s |
 | Teste completo (cenários longos, ROM de teste) | `make test-full` | ~13 min (o shiny sozinho ~9 min) |
 | Ver o roteiro rápido numa janela | `make test-watch` | ~ tempo real |
-| Ver as evoluções sem troca (Hack 3) numa janela | `make test-watch CENARIO=evolucoes` | ~6 min (tempo real) |
+| Ver as evoluções sem troca (Hack 3) numa janela | `make test-watch CENARIO=evolucoes` | ~8 min (tempo real) |
 | Aprovar as telas de referência | `make test-approve` | instantâneo |
 | Testes unitários da própria esteira | `python3 -m pytest test -q` | ~5-6 min (~80 s sem os lentos) |
 
