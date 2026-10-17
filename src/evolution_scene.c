@@ -636,18 +636,8 @@ static void Task_EvolutionScene(u8 taskId)
     u32 var;
     struct Pokemon* mon = &gPlayerParty[gTasks[taskId].tPartyId];
 
-    // Automatically cancel if the Pokemon would evolve into a species you have not
-    // yet unlocked, such as Crobat.
-    if (!IsNationalPokedexEnabled()
-        && gTasks[taskId].tState == EVOSTATE_WAIT_CYCLE_MON_SPRITE
-        && gTasks[taskId].tPostEvoSpecies > SPECIES_MEW)
-    {
-        gTasks[taskId].tState = EVOSTATE_CANCEL;
-        gTasks[taskId].tEvoWasStopped = TRUE;
-        gTasks[sEvoGraphicsTaskId].tEvoStopped = TRUE;
-        StopBgAnimation();
-        return;
-    }
+    // Hack: the original auto-cancel of evolutions into non-Kanto species (e.g. Crobat)
+    // before the National Dex was removed; any evolution can happen at any time.
 
     // check if B Button was held, so the evolution gets stopped
     if (gMain.heldKeys == B_BUTTON
@@ -1094,20 +1084,8 @@ static void Task_TradeEvolutionScene(u8 taskId)
     u32 var = 0;
     struct Pokemon* mon = &gPlayerParty[gTasks[taskId].tPartyId];
 
-    // Automatically cancel if the Pokemon would evolve into a species you have not
-    // yet unlocked, such as Crobat.
-    if (!IsNationalPokedexEnabled()
-        && gTasks[taskId].tState == T_EVOSTATE_WAIT_CYCLE_MON_SPRITE
-        && gTasks[taskId].tPostEvoSpecies > SPECIES_MEW)
-    {
-        gTasks[taskId].tState = EVOSTATE_TRY_LEARN_MOVE;
-        gTasks[taskId].tEvoWasStopped = TRUE;
-        if (gTasks[sEvoGraphicsTaskId].isActive)
-        {
-            gTasks[sEvoGraphicsTaskId].tEvoStopped = TRUE;
-            StopBgAnimation();
-        }
-    }
+    // Hack: no auto-cancel of evolutions into non-Kanto species before the National Dex
+    // (see Task_EvolutionScene).
 
     switch (gTasks[taskId].tState)
     {

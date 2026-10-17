@@ -397,7 +397,6 @@ static void ItemUseCB_RestorePP(u8 taskId, TaskFunc func);
 static void ItemUseCB_ReplaceMoveWithTMHM(u8 taskId, TaskFunc func);
 static void Task_ReplaceMoveWithTMHM(u8 taskId);
 static void CB2_UseEvolutionStone(void);
-static bool8 MonCanEvolve(void);
 
 static EWRAM_DATA struct PartyMenuInternal *sPartyMenuInternal = NULL;
 EWRAM_DATA struct PartyMenu gPartyMenu = {0};
@@ -4268,13 +4267,9 @@ static void Task_DoUseItemAnim(u8 taskId)
 
 static void CB2_DoUseItemAnim(void)
 {
+    // Hack: evolution stones work on non-Kanto targets (e.g. Bellossom) before the National Dex.
     if (CheckIfItemIsTMHMOrEvolutionStone(gSpecialVar_ItemId) == 2) // Evolution stone
-    {
-        if (MonCanEvolve() == TRUE)
-            StartUseItemAnim_Normal(gPartyMenu.slotId, gSpecialVar_ItemId, CB2_UseEvolutionStone);
-        else
-            StartUseItemAnim_CantEvolve(gPartyMenu.slotId, gSpecialVar_ItemId, gPartyMenu.exitCallback);
-    }
+        StartUseItemAnim_Normal(gPartyMenu.slotId, gSpecialVar_ItemId, CB2_UseEvolutionStone);
     else
         StartUseItemAnim_Normal(gPartyMenu.slotId, gSpecialVar_ItemId, CB2_UseItem);
 }
@@ -5313,15 +5308,6 @@ static void CB2_UseEvolutionStone(void)
     ExecuteTableBasedItemEffect_(gPartyMenu.slotId, gSpecialVar_ItemId, 0);
     ItemUse_SetQuestLogEvent(QL_EVENT_USED_ITEM, &gPlayerParty[gPartyMenu.slotId], gSpecialVar_ItemId, 0xFFFF);
     RemoveBagItem(gSpecialVar_ItemId, 1);
-}
-
-static bool8 MonCanEvolve(void)
-{
-    if (!IsNationalPokedexEnabled()
-     && GetEvolutionTargetSpecies(&gPlayerParty[gPartyMenu.slotId], EVO_MODE_ITEM_USE, gSpecialVar_ItemId) > KANTO_DEX_COUNT)
-        return FALSE;
-    else
-        return TRUE;
 }
 
 u8 GetItemEffectType(u16 item)
