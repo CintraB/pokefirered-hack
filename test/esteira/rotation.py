@@ -21,14 +21,19 @@ def _last_starter(path: Path) -> str | None:
     return last if last in STARTERS else None
 
 
+def peek_next_starter(state_path: str) -> str:
+    """O inicial da vez, SEM gravar nada (o modo `assistir` não gasta o rodízio)."""
+    last = _last_starter(Path(state_path))
+    return STARTERS[0] if last is None else STARTERS[(STARTERS.index(last) + 1) % len(STARTERS)]
+
+
 def next_starter(state_path: str) -> str:
     """Devolve o inicial da vez e o grava como último escolhido.
 
     Arquivo ausente, ilegível ou com valor desconhecido recomeça em Bulbasaur.
     """
     path = Path(state_path)
-    last = _last_starter(path)
-    starter = STARTERS[0] if last is None else STARTERS[(STARTERS.index(last) + 1) % len(STARTERS)]
+    starter = peek_next_starter(state_path)
     path.parent.mkdir(parents=True, exist_ok=True)
     tmp = path.with_name(path.name + ".tmp")
     tmp.write_text(json.dumps({STATE_KEY: starter}, ensure_ascii=False) + "\n", encoding="utf-8")

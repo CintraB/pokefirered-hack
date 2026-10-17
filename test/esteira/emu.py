@@ -27,17 +27,30 @@ KEY_R = 256
 KEY_L = 512
 
 
+WINDOW_CLOSED_EXIT = 3   # código de saída do runner quando a janela (--window) é fechada
+
+
 class EmulatorError(RuntimeError):
     """O runner respondeu {"ok": false} ou morreu."""
+
+
+class WindowClosed(EmulatorError):
+    """Quem assistia fechou a janela do modo --window (o runner gravou o .sav e saiu)."""
 
 
 class Emulator:
     """Uma instância do mGBA rodando `rom` com o save em `save` (nunca em roms/saves/)."""
 
-    def __init__(self, rom: str, save: str, recorder: "VideoRecorder | None" = None):
+    def __init__(self, rom: str, save: str, recorder: "VideoRecorder | None" = None,
+                 window: bool = False):
         """`recorder`: se dado, recebe uma tela a cada `recorder.grab_every` quadros emulados,
         em TODA chamada que avança o jogo (frames/hold/press, inclusive as feitas direto por
-        helpers de cenário), sem passo extra para quem chama."""
+        helpers de cenário), sem passo extra para quem chama.
+
+        `window`: o runner abre uma janela SDL2 e emula em tempo real (~59,73 quadros/s) com
+        áudio (modo `assistir`); não combina com `recorder` (o vídeo é do modo automático)."""
+        if window and recorder is not None:
+            raise ValueError("janela (assistir) e gravação de vídeo não combinam: use um só")
         self.recorder = recorder
         self._emulated = 0   # quadros avançados por frames() nesta sessão (posição no vídeo)
         if not RUNNER.is_file():
@@ -46,26 +59,32 @@ class Emulator:
             raise FileNotFoundError(f"{RUNNER} é mais velho que {RUNNER_SRC.name}; "
                                     "rode `make -C test/harness`")
         self._proc = subprocess.Popen(
-            [str(RUNNER), str(rom), "--save", str(save)],
+            [str(RUNNER), str(rom), "--save", str(save), *(["--window"] if window else [])],
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
             text=True,
             encoding="utf-8",
         )
 
+    def _died(self, what: str) -> EmulatorError:
+        code = self._proc.returncode
+        cls = WindowClosed if code == WINDOW_CLOSED_EXIT else EmulatorError
+        return cls(f"runner encerrado (código {code}){what}")
+
     def _send(self, cmd: str, **args) -> dict:
         if self._proc.poll() is not None:
-            raise EmulatorError(f"runner encerrado (código {self._proc.returncode})")
+            raise self._died("")
         line = json.dumps({"cmd": cmd, **args}, ensure_ascii=False)
         try:
             self._proc.stdin.write(line + "\n")
             self._proc.stdin.flush()
         except BrokenPipeError as exc:
-            raise EmulatorError("runner encerrado") from exc
+            self._proc.wait()
+            raise self._died("") from exc
         reply = self._proc.stdout.readline()
         if not reply:
             self._proc.wait()
-            raise EmulatorError(f"runner encerrado (código {self._proc.returncode}) durante {cmd!r}")
+            raise self._died(f" durante {cmd!r}")
         data = json.loads(reply)
         if not data.get("ok"):
             raise EmulatorError(f"{cmd}: {data.get('error')}")

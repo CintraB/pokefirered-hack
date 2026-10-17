@@ -132,7 +132,7 @@ MAKEFLAGS += --no-print-directory
 ALL_BUILDS := firered firered_rev1 firered_rev10 leafgreen leafgreen_rev1 leafgreen_rev10
 ALL_BUILDS += $(ALL_BUILDS:%=%_modern)
 
-RULES_NO_SCAN += clean clean-assets tidy generated clean-generated test-quick test-full test-approve
+RULES_NO_SCAN += clean clean-assets tidy generated clean-generated test-quick test-full test-approve test-watch
 .PHONY: all rom modern compare $(ALL_BUILDS) $(ALL_BUILDS:%=compare_%)
 .PHONY: $(RULES_NO_SCAN)
 
@@ -415,18 +415,32 @@ endif
 #   make test-quick                 static checks + 3 quick scripts
 #   make test-full                  rebuilds the test ROM (TESTBUILD=1), then quick + full scenarios
 #   make test-approve [DIR=<run>]   promote the screenshots of a run (default: latest) to references
+#   make test-watch [FROM=<point>] [STARTER=<X>]
+#                                   watch the quick script in a window (WSLg), real time, with sound;
+#                                   temp save, nothing written to roms/ (not part of the pipeline)
 #   SKIP_TESTS=1 make firered_switch  versions the ROM without testing (marked NAO_TESTADA.txt)
-ESTEIRA_RUN = out=$(CURDIR)/test/out/$$(date +%Y%m%d-%H%M%S); log=$(CURDIR)/$(FIRERED_SWITCH_LOG); \
+# Every target that runs the emulator first brings the runner (test/harness) up to date, so a
+# stale runner never kills a run (Emulator refuses a runner older than its source).
+ESTEIRA_RUNNER = $(MAKE) -s -C test/harness
+ESTEIRA_RUN =out=$(CURDIR)/test/out/$$(date +%Y%m%d-%H%M%S); log=$(CURDIR)/$(FIRERED_SWITCH_LOG); \
 	logarg=""; if [ -f "$$log" ]; then logarg="--log $$log"; fi; \
 	cd test && python3 -m esteira $(1) --rom $(CURDIR)/pokefirered_switch.gba --elf $(CURDIR)/pokefirered_switch.elf $$logarg --out $$out
 
 test-quick:
+	@$(ESTEIRA_RUNNER)
 	@$(call ESTEIRA_RUN,rapido)
 
 # The full scenarios on the test ROM (pokefirered_switch_test.gba) must never run a stale build.
 test-full:
 	@$(MAKE) firered_switch TESTBUILD=1
+	@$(ESTEIRA_RUNNER)
 	@$(call ESTEIRA_RUN,completo) --rom-test $(CURDIR)/pokefirered_switch_test.gba --elf-test $(CURDIR)/pokefirered_switch_test.elf
+
+# Watch mode: the playable ROM at the repo root, in a window. Not a pipeline step (no log, no
+# test/out run folder, no roms/ writes); the runner is rebuilt first like in the other targets.
+test-watch:
+	@$(ESTEIRA_RUNNER)
+	@cd test && python3 -m esteira assistir --rom $(CURDIR)/pokefirered_switch.gba --elf $(CURDIR)/pokefirered_switch.elf $(if $(FROM),--from $(FROM)) $(if $(STARTER),--starter $(STARTER))
 
 test-approve:
 	@cd test && python3 -m esteira aprovar "$(if $(DIR),$(abspath $(DIR)),$(shell ls -dt $(CURDIR)/test/out/*/ | head -n 1))"

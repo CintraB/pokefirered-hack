@@ -3,7 +3,12 @@
  * JSON lidos do stdin, uma linha por comando, respondendo uma linha JSON no
  * stdout: {"ok":true,...} ou {"ok":false,"error":"..."}.
  *
- * Uso: mgba_runner <rom.gba> --save <arquivo.sav>
+ * Uso: mgba_runner <rom.gba> --save <arquivo.sav> [--window]
+ *
+ * --window (modo "assistir"): abre uma janela SDL2 (escala 3x, redimensionável), limita a
+ * emulação a ~59,73 quadros/s (tempo real) e toca o áudio se houver dispositivo. Fechar a
+ * janela (ou Esc) grava o .sav e encerra o runner com código 3. Sem --window nada disso existe:
+ * roda sem limite de velocidade e sem iniciar o SDL. O protocolo abaixo é o mesmo nos dois modos.
  *
  * Comandos:
  *   {"cmd":"frames","n":N}              -> {"ok":true,"frame":F}
@@ -22,10 +27,13 @@
  */
 #include <mgba/flags.h> /* define USE_PNG antes de png-io.h */
 #include <mgba/core/core.h>
+#include <mgba/core/blip_buf.h>
 #include <mgba/core/log.h>
 #include <mgba/core/serialize.h>
 #include <mgba-util/png-io.h>
 #include <mgba-util/vfs.h>
+
+#include <SDL.h>
 
 #include <ctype.h>
 #include <errno.h>
@@ -40,6 +48,10 @@
 #define SCREEN_H 160
 #define MAX_READ_LEN (16 * 1024 * 1024)
 #define STATE_FLAGS (SAVESTATE_SAVEDATA | SAVESTATE_RTC)
+#define WINDOW_SCALE 3
+#define GBA_FPS 59.7275 /* 16777216 Hz / 280896 ciclos por quadro */
+#define AUDIO_RATE 48000
+#define WINDOW_CLOSED_EXIT 3 /* o emu.py reconhece este código como "janela fechada" */
 
 static color_t sVideoBuffer[SCREEN_W * SCREEN_H];
 
@@ -260,6 +272,142 @@ static void ReplyError(const char *fmt, ...)
     fflush(stdout);
 }
 
+/* ---------- janela (--window) ---------- */
+
+static struct mCore *sCore;
+
+static struct {
+    bool on;
+    SDL_Window *win;
+    SDL_Renderer *ren;
+    SDL_Texture *tex;
+    SDL_AudioDeviceID audio;
+    int audioRate;
+    blip_t *left, *right;
+    uint64_t next; /* contador de alta resolução em que o próximo quadro deve terminar */
+    bool started;
+} sWin;
+
+static void WindowPresent(void)
+{
+    SDL_UpdateTexture(sWin.tex, NULL, sVideoBuffer, SCREEN_W * (int)sizeof(color_t));
+    SDL_RenderClear(sWin.ren);
+    SDL_RenderCopy(sWin.ren, sWin.tex, NULL, NULL);
+    SDL_RenderPresent(sWin.ren);
+}
+
+static bool WindowOpen(struct mCore *core)
+{
+    if (SDL_Init(SDL_INIT_VIDEO) != 0) {
+        fprintf(stderr, "mgba_runner: SDL_Init falhou: %s\n", SDL_GetError());
+        return false;
+    }
+    SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "0"); /* pixels nítidos, sem suavização */
+    sWin.win = SDL_CreateWindow("pokefirered (assistir) - feche a janela para encerrar",
+                                SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+                                SCREEN_W * WINDOW_SCALE, SCREEN_H * WINDOW_SCALE,
+                                SDL_WINDOW_RESIZABLE);
+    sWin.ren = sWin.win ? SDL_CreateRenderer(sWin.win, -1, 0) : NULL;
+    sWin.tex = sWin.ren ? SDL_CreateTexture(sWin.ren, SDL_PIXELFORMAT_ABGR8888,
+                                            SDL_TEXTUREACCESS_STREAMING, SCREEN_W, SCREEN_H)
+                        : NULL;
+    if (!sWin.tex) {
+        fprintf(stderr, "mgba_runner: não abriu a janela: %s\n", SDL_GetError());
+        return false;
+    }
+    SDL_RenderSetLogicalSize(sWin.ren, SCREEN_W, SCREEN_H); /* mantém a proporção ao redimensionar */
+
+    /* Áudio é opcional: sem dispositivo (ou sem PulseAudio no WSL) o jogo roda mudo. */
+    if (SDL_InitSubSystem(SDL_INIT_AUDIO) == 0) {
+        SDL_AudioSpec want, have;
+        SDL_zero(want);
+        want.freq = AUDIO_RATE;
+        want.format = AUDIO_S16SYS;
+        want.channels = 2;
+        want.samples = 1024;
+        sWin.audio = SDL_OpenAudioDevice(NULL, 0, &want, &have, 0);
+        if (sWin.audio) {
+            sWin.audioRate = have.freq;
+            sWin.left = core->getAudioChannel(core, 0);
+            sWin.right = core->getAudioChannel(core, 1);
+            blip_set_rates(sWin.left, core->frequency(core), have.freq);
+            blip_set_rates(sWin.right, core->frequency(core), have.freq);
+            SDL_PauseAudioDevice(sWin.audio, 0);
+        }
+    }
+    if (!sWin.audio)
+        fprintf(stderr, "mgba_runner: sem áudio (%s); seguindo sem som\n", SDL_GetError());
+
+    sWin.on = true;
+    WindowPresent(); /* tela preta já na abertura */
+    fprintf(stderr, "mgba_runner: janela aberta (vídeo %s, áudio %s)\n", SDL_GetCurrentVideoDriver(),
+            sWin.audio ? SDL_GetCurrentAudioDriver() : "desligado");
+    return true;
+}
+
+/* Janela fechada: grava o .sav (deinit) e encerra. A esteira lê o código 3. */
+static void WindowClosedExit(void)
+{
+    if (sCore)
+        sCore->deinit(sCore);
+    exit(WINDOW_CLOSED_EXIT);
+}
+
+static void WindowAudio(void)
+{
+    if (!sWin.audio)
+        return;
+    short buf[4096 * 2];
+    int avail = blip_samples_avail(sWin.left);
+    while (avail > 0) {
+        int n = avail > 4096 ? 4096 : avail;
+        blip_read_samples(sWin.left, buf, n, 1);
+        blip_read_samples(sWin.right, buf + 1, n, 1);
+        /* mais de ~250 ms na fila = o jogo está adiantado (ou o som travou): descarta */
+        if (SDL_GetQueuedAudioSize(sWin.audio) < (Uint32)(sWin.audioRate / 4 * 4))
+            SDL_QueueAudio(sWin.audio, buf, (Uint32)n * 4);
+        avail -= n;
+    }
+}
+
+/* Depois de cada quadro: mostra a tela, toca o som, trata eventos e espera o relógio de 59,73 Hz.
+ * Se a esteira ficar para trás (>100 ms) o relógio é reiniciado em vez de acelerar para compensar. */
+static void WindowAfterFrame(void)
+{
+    WindowPresent();
+    WindowAudio();
+    SDL_Event ev;
+    while (SDL_PollEvent(&ev)) {
+        if (ev.type == SDL_QUIT || (ev.type == SDL_KEYDOWN && ev.key.keysym.sym == SDLK_ESCAPE))
+            WindowClosedExit();
+    }
+    uint64_t freq = SDL_GetPerformanceFrequency();
+    uint64_t period = (uint64_t)((double)freq / GBA_FPS);
+    uint64_t now = SDL_GetPerformanceCounter();
+    if (!sWin.started || now > sWin.next + freq / 10) {
+        sWin.started = true;
+        sWin.next = now;
+    }
+    sWin.next += period;
+    for (;;) {
+        now = SDL_GetPerformanceCounter();
+        if (now >= sWin.next)
+            break;
+        uint64_t leftUs = (sWin.next - now) * 1000000 / freq;
+        if (leftUs > 2000)
+            SDL_Delay((Uint32)((leftUs - 1000) / 1000));
+        /* o último ~1 ms fica em espera ativa, para o ritmo não oscilar */
+    }
+}
+
+/* Um quadro do jogo; no modo janela, também o mostra e segura o ritmo. */
+static void RunOneFrame(struct mCore *core)
+{
+    core->runFrame(core);
+    if (sWin.on)
+        WindowAfterFrame();
+}
+
 /* ---------- comandos ---------- */
 
 /* Escreve a tela atual (SCREEN_W x SCREEN_H, RGB, 3 bytes por pixel) em base64 no stdout. */
@@ -302,7 +450,7 @@ static void CmdFrames(struct mCore *core, const struct Command *cmd)
     GetInt(cmd, "phase", &phase);
     if (every <= 0) {
         for (long long i = 0; i < n; i++)
-            core->runFrame(core);
+            RunOneFrame(core);
         printf("{\"ok\":true,\"frame\":%u}\n", core->frameCounter(core));
         fflush(stdout);
         return;
@@ -311,7 +459,7 @@ static void CmdFrames(struct mCore *core, const struct Command *cmd)
     printf("{\"ok\":true,\"shots\":[");
     bool first = true;
     for (long long i = 1; i <= n; i++) {
-        core->runFrame(core);
+        RunOneFrame(core);
         if ((phase + i) % every == 0) {
             fputs(first ? "\"" : ",\"", stdout);
             PrintFrameBase64();
@@ -501,12 +649,17 @@ static void CmdFlushSave(struct mCore *core, const char *savePath)
 
 static int Usage(const char *argv0)
 {
-    fprintf(stderr, "uso: %s <rom.gba> --save <arquivo.sav>\n", argv0);
+    fprintf(stderr, "uso: %s <rom.gba> --save <arquivo.sav> [--window]\n", argv0);
     return 2;
 }
 
 int main(int argc, char **argv)
 {
+    bool window = false;
+    if (argc == 5 && strcmp(argv[4], "--window") == 0) {
+        window = true;
+        argc = 4;
+    }
     if (argc != 4 || strcmp(argv[2], "--save") != 0)
         return Usage(argv[0]);
     const char *romPath = argv[1];
@@ -545,6 +698,12 @@ int main(int argc, char **argv)
         return 1;
     }
     core->reset(core);
+
+    sCore = core;
+    if (window && !WindowOpen(core)) {
+        core->deinit(core);
+        return 1;
+    }
 
     char *line = NULL;
     size_t cap = 0;
@@ -589,6 +748,15 @@ int main(int argc, char **argv)
     /* deinit descarrega o ROM e fecha o .sav (mapeado com MAP_SHARED), gravando-o.
      * Fim do stdin sem "quit" também grava o save, mas não responde. */
     core->deinit(core);
+    sCore = NULL;
+    if (sWin.on) {
+        if (sWin.audio)
+            SDL_CloseAudioDevice(sWin.audio);
+        SDL_DestroyTexture(sWin.tex);
+        SDL_DestroyRenderer(sWin.ren);
+        SDL_DestroyWindow(sWin.win);
+        SDL_Quit();
+    }
     if (quit)
         ReplyOk();
     return 0;

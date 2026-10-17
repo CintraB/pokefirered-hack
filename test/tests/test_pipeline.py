@@ -393,7 +393,8 @@ def test_build_log_name_only_gets_the_test_suffix_with_testbuild_1():
 def test_test_full_rebuilds_the_test_rom_before_running():
     lines = _make_dry_run("test-full").splitlines()
     assert lines[0] == "true firered_switch TESTBUILD=1"
-    run = lines[1]
+    assert lines[1] == "true -s -C test/harness"   # runner em dia antes do emulador
+    run = lines[2]
     assert "python3 -m esteira completo" in run
     assert f"--rom-test {REPO_ROOT / 'pokefirered_switch_test.gba'}" in run
     assert f"--elf-test {REPO_ROOT / 'pokefirered_switch_test.elf'}" in run

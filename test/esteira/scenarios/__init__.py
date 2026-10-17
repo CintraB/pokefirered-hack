@@ -38,12 +38,13 @@ class ScenarioContext:
 def open_context(rom: str, elf: str, out_dir: str, starter: str,
                  suite: Suite | None = None,
                  save_from: str | None = None,
-                 recorder: VideoRecorder | None = None) -> Iterator[ScenarioContext]:
+                 recorder: VideoRecorder | None = None,
+                 window: bool = False) -> Iterator[ScenarioContext]:
     """Liga o emulador com um .sav novo dentro de `out_dir` (nunca em roms/saves/); com
     `save_from`, o .sav começa como cópia desse arquivo (ex.: o save do modo rápido). Se
     `save_from` já é o próprio OUT/esteira.sav, ele é usado como está (nunca apagado antes da
     cópia); se não existe, FileNotFoundError sem tocar no .sav da pasta. `recorder`: grava a
-    sessão inteira no vídeo (ver Emulator)."""
+    sessão inteira no vídeo (ver Emulator). `window`: janela em tempo real (modo assistir)."""
     out = Path(out_dir)
     out.mkdir(parents=True, exist_ok=True)
     save = out / "esteira.sav"
@@ -52,7 +53,7 @@ def open_context(rom: str, elf: str, out_dir: str, starter: str,
     elif Path(save_from).resolve() != save.resolve():
         shutil.copyfile(save_from, save)   # abre a origem antes de truncar o destino
     consts = Constants.load(str(REPO_ROOT))
-    with Emulator(rom, str(save), recorder=recorder) as emu:
+    with Emulator(rom, str(save), recorder=recorder, window=window) as emu:
         game = Game(emu, Symbols.from_elf(elf), consts, Charmap.load(str(REPO_ROOT)))
         controller = Controller(emu, game, str(out))
         yield ScenarioContext(emu=emu, game=game, controller=controller,

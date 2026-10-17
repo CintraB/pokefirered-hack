@@ -5,6 +5,7 @@ A partir de test/ (no WSL):
     python3 -m esteira completo --rom R --elf E [--rom-test RT --elf-test ET] [--log L] --out DIR ...
     python3 -m esteira aprovar DIR
     python3 -m esteira nao-testada --out DIR     # SKIP_TESTS=1: só o relatório "NÃO TESTADA"
+    python3 -m esteira assistir [--starter X] [--from CHECKPOINT] [--rom R --elf E]
 
 `rapido` roda a checagem do log de build, a checagem dos textos e os 3 roteiros rápidos numa
 sessão de emulador só. `completo` roda tudo isso e mais os cenários de FULL_SCENARIOS: PC,
@@ -14,14 +15,18 @@ emulador; o `shiny` usa a ROM de teste (`make firered_switch TESTBUILD=1`) e par
 Toda execução com emulador grava OUT/video.webp: a execução inteira (todas as sessões, jogável e
 teste) em WebP animado acelerado (um quadro a cada 8 emulados, 30 fps), embutido no relatório;
 `--sem-video` desliga (ver esteira/video.py).
+`assistir` é à parte do pipeline: roda os roteiros rápidos numa janela, em tempo real e com som,
+com um save temporário; não gera versão, não mexe em roms/ nem no rodízio de iniciais.
 Sai com 0 se nenhum resultado for `falha` (avisos não reprovam) e 1 caso contrário.
 """
 
 import argparse
 import json
+import os
 import shutil
 import subprocess
 import sys
+import tempfile
 import time
 import traceback
 from dataclasses import dataclass
@@ -31,10 +36,11 @@ from typing import Callable
 
 from esteira.check_build import check_build
 from esteira.check_text import check_text
+from esteira.emu import EmulatorError, WindowClosed
 from esteira.refs import DEFAULT_REFS_DIR, KEY_POINTS, approve_refs, compare_ref
 from esteira.report import VIDEO_NAME, write_report
 from esteira.result import Result, StepTimeout, Suite
-from esteira.rotation import STARTERS, next_starter
+from esteira.rotation import STARTERS, next_starter, peek_next_starter
 from esteira.scenarios import REPO_ROOT, ScenarioContext, open_context
 from esteira.scenarios.full_forest_brock import run_full_forest_brock
 from esteira.scenarios.full_master import run_full_master
@@ -53,6 +59,9 @@ STATIC_CHECKS = ("build", "texto")
 PLAYABLE, TEST, HOST = "playable", "test", "host"   # ROM do cenário (HOST: sem emulador)
 DEFAULT_ROM_TEST = str(REPO_ROOT / "pokefirered_switch_test.gba")
 DEFAULT_ELF_TEST = str(REPO_ROOT / "pokefirered_switch_test.elf")
+DEFAULT_ROM = str(REPO_ROOT / "pokefirered_switch.gba")
+DEFAULT_ELF = str(REPO_ROOT / "pokefirered_switch.elf")
+WATCH_CHECKPOINT_ROOT = REPO_ROOT / "test" / "out"   # onde as execuções deixam estados/<ponto>.ss
 
 
 @dataclass
@@ -394,6 +403,105 @@ def run_mode(args: argparse.Namespace) -> int:
     return 1 if suite.failed() else 0
 
 
+# --- assistir: os roteiros rápidos numa janela, em tempo real -------------------------------------
+
+def _has_display() -> bool:
+    """Há onde abrir a janela (WSLg define DISPLAY/WAYLAND_DISPLAY; SDL_VIDEODRIVER=dummy
+    serve aos testes)."""
+    return any(os.environ.get(v) for v in ("DISPLAY", "WAYLAND_DISPLAY", "SDL_VIDEODRIVER"))
+
+
+def _load_watch_checkpoint(ctx: ScenarioContext, name: str, rom: str,
+                           wanted: str | None) -> str | None:
+    """Carrega no emulador o checkpoint `name` mais recente deixado por uma execução em
+    test/out/*/estados/ (ignora os mais velhos que a ROM: savestate vale só para o mesmo build)
+    cujo inicial seja `wanted` (qualquer um, se None). Devolve o inicial, ou None."""
+    rom_time = Path(rom).stat().st_mtime
+    found = [p for p in Path(WATCH_CHECKPOINT_ROOT).glob(f"*/estados/{name}.ss")
+             if p.stat().st_mtime >= rom_time]
+    for path in sorted(found, key=lambda p: p.stat().st_mtime, reverse=True):
+        ctx.emu.load_state(str(path))
+        ctx.emu.keys(0)
+        party = ctx.game.party()
+        for starter in STARTERS:
+            if party and party[0].species == ctx.consts.species(starter) and wanted in (None, starter):
+                return starter
+    return None
+
+
+def _watch_chain(args: argparse.Namespace) -> list[ScenarioSpec]:
+    """Roteiros rápidos a assistir: todos, ou só os que vêm depois de `--from`."""
+    if args.checkpoint is None:
+        return list(QUICK_SCENARIOS)
+    first = next(i for i, s in enumerate(QUICK_SCENARIOS) if s.needs == args.checkpoint)
+    return QUICK_SCENARIOS[first:]
+
+
+def run_watch(args: argparse.Namespace) -> int:
+    """`assistir`: roda o modo rápido com janela. Save temporário (apagado no fim), nada em
+    roms/ e o rodízio de iniciais só é lido, nunca gasto. Sai com 0 (terminou ou a janela foi
+    fechada), 1 (um roteiro falhou) ou 2 (sem janela/ROM/checkpoint)."""
+    if not _has_display():
+        print("assistir precisa de uma janela, mas DISPLAY/WAYLAND_DISPLAY não existem. No WSL o "
+              "WSLg fornece isso (Windows 11): rode `wsl --update`, feche o WSL com "
+              "`wsl --shutdown` e abra de novo.", file=sys.stderr)
+        return 2
+    missing = [p for p in (args.rom, args.elf) if not Path(p).is_file()]
+    if missing:
+        print("arquivo não encontrado: " + ", ".join(missing) + " (rode `make firered_switch`)",
+              file=sys.stderr)
+        return 2
+    starter = args.starter or peek_next_starter(args.state)
+    chain = _watch_chain(args)
+    out = Path(tempfile.mkdtemp(prefix="esteira-assistir-"))
+    suite = Suite()
+    code = 0
+    try:
+        with open_context(args.rom, args.elf, str(out), starter, suite, window=True) as ctx:
+            if args.checkpoint is not None:
+                found = _load_watch_checkpoint(ctx, args.checkpoint, args.rom, args.starter)
+                if found is None:
+                    wanted = f" do inicial {args.starter}" if args.starter else ""
+                    print(f"nenhum estado '{args.checkpoint}'{wanted} recente em "
+                          f"{WATCH_CHECKPOINT_ROOT}/*/estados/ (de uma execução depois do último "
+                          "build da ROM): rode `make test-quick` antes, ou assista sem --from.",
+                          file=sys.stderr)
+                    return 2
+                ctx.starter = found
+            print(f"[assistindo] inicial {ctx.starter}; feche a janela (ou Esc) para encerrar",
+                  flush=True)
+            for spec in chain:
+                print(f"[assistindo] {spec.name}...", flush=True)
+                try:
+                    spec.run(ctx)
+                except WindowClosed:
+                    print("janela fechada: assistir encerrado.")
+                    return 0
+                except EmulatorError as exc:
+                    print(f"o emulador terminou: {exc}", file=sys.stderr)
+                    code = 1
+                    break
+                except Exception as exc:  # noqa: BLE001 - qualquer erro vira falha no resumo
+                    suite.add(_fail_result(spec, exc))
+                if suite.failed():
+                    break
+    except KeyboardInterrupt:
+        print("interrompido (Ctrl-C).")
+        return 130
+    finally:
+        keep = code != 0 or suite.failed()
+        if not keep:
+            shutil.rmtree(out, ignore_errors=True)
+    for r in suite.results:
+        if r.status != "ok":
+            print(f"[{r.status}] {r.name}: {r.detail.splitlines()[0] if r.detail else ''}")
+    if keep:
+        print(f"assistir terminou com falha; evidências (telas, estados) em {out}")
+        return 1
+    print("assistir terminou: roteiro rápido concluído sem falhas.")
+    return 0
+
+
 def write_untested_report(out_dir: str) -> str:
     """Relatório só com a faixa NÃO TESTADA (SKIP_TESTS=1): sem emulador e sem checagens."""
     out = Path(out_dir)
@@ -434,6 +542,21 @@ def build_parser() -> argparse.ArgumentParser:
     untested.add_argument("--out", required=True)
     approve = sub.add_parser("aprovar", help="promove as telas de uma execução a referência")
     approve.add_argument("dir")
+    watch = sub.add_parser(
+        "assistir", help="roda o roteiro rápido numa janela, em velocidade normal, com som",
+        description="Roda os roteiros rápidos (abertura, Rota 1, captura) numa janela do Windows "
+                    "(WSLg), em velocidade normal e com som, para você assistir. Fora do "
+                    "pipeline: usa um save temporário, não gera versão, não mexe em roms/ nem no "
+                    "rodízio de iniciais. Feche a janela (ou Esc) para encerrar.")
+    watch.add_argument("--starter", choices=STARTERS,
+                       help="inicial a usar; padrão: o da vez no rodízio (sem gastá-lo)")
+    watch.add_argument("--from", dest="checkpoint",
+                       choices=sorted({s.needs for s in QUICK_SCENARIOS if s.needs}),
+                       help="começa deste ponto do roteiro rápido, usando o estado mais recente "
+                            "deixado por `make test-quick` em test/out/*/estados/ (senão, do boot)")
+    watch.add_argument("--rom", default=DEFAULT_ROM, help="ROM jogável (padrão: a da raiz do repo)")
+    watch.add_argument("--elf", default=DEFAULT_ELF, help="ELF da ROM jogável (padrão: o da raiz)")
+    watch.add_argument("--state", default=STATE_PATH, help=argparse.SUPPRESS)
     return parser
 
 
@@ -443,6 +566,8 @@ def main(argv: list[str] | None = None) -> int:
     if args.modo == "nao-testada":
         print(f"ROM NÃO TESTADA (sem emulador); relatório: {write_untested_report(args.out)}")
         return 0
+    if args.modo == "assistir":
+        return run_watch(args)
     if args.modo == "aprovar":
         try:
             copied = approve_refs(args.dir, refs_dir=REFS_DIR)
