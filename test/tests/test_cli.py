@@ -34,6 +34,7 @@ class FakeEnv:
         self.save_from: list[str | None] = []         # save_from de cada open_context
         self.loaded_saves: list[str] = []             # conteúdo do .sav recebido
         self.flush_error: Exception | None = None     # flush_save() levanta isto, se definido
+        self.recorders: list = []                     # recorder de cada open_context
         for name in ("jogavel.gba", "jogavel.elf", "teste.gba", "teste.elf"):
             (tmp_path / name).write_bytes(b"x")
 
@@ -75,12 +76,13 @@ def env(tmp_path, monkeypatch):
     e = FakeEnv(tmp_path)
 
     @contextmanager
-    def fake_open(rom, elf, out, starter, suite=None, save_from=None):
+    def fake_open(rom, elf, out, starter, suite=None, save_from=None, recorder=None):
         """Como o real: o .sav da sessão é OUT/esteira.sav, gravado ao fechar o emulador e
         por emu.flush_save() (aqui com a ROM e os cenários que já rodaram, para os testes
         conferirem a origem)."""
         e.opened.append((Path(rom).name, starter))
         e.save_from.append(save_from)
+        e.recorders.append(recorder)
         if save_from is not None:
             e.loaded_saves.append(Path(save_from).read_text())
         first = len(e.ran)
@@ -136,6 +138,50 @@ def test_only_desconhecido_e_erro_de_uso(tmp_path):
     with pytest.raises(SystemExit) as exc:
         main(["rapido", "--rom", "x", "--elf", "y", "--out", str(tmp_path), "--only", "inexistente"])
     assert exc.value.code == 2
+
+
+# --- vídeo da execução -----------------------------------------------------------------------
+
+def feed_video(env, frames=20):
+    def effect(ctx):
+        for i in range(frames):
+            env.recorders[-1].capture(Image.new("RGB", (240, 160), (i * 10, 0, 0)))
+    return effect
+
+
+def test_video_da_execucao_vai_para_out_e_para_o_relatorio(env, monkeypatch):
+    set_scenarios(monkeypatch, [env.spec("a", effect=feed_video(env))])
+    assert main(env.argv("rapido", "--starter", "BULBASAUR")) == 0
+    video = env.tmp / "out" / "video.webp"
+    with Image.open(video) as v:
+        assert v.is_animated and v.n_frames == 3     # 20 quadros, um a cada 8
+    assert '<img src="video.webp"' in html(env)
+    meta = json.loads((env.tmp / "out" / "meta.json").read_text(encoding="utf-8"))
+    assert "vídeo (codificação)" in meta["tempos"]
+
+
+def test_um_gravador_so_para_todas_as_sessoes(env, monkeypatch):
+    set_scenarios(monkeypatch, [env.spec("a")],
+                  [env.spec("t", rom=cli.TEST)])
+    assert main(env.argv("completo", "--starter", "BULBASAUR")) == 0
+    assert len(env.recorders) == 2 and env.recorders[0] is env.recorders[1] is not None
+
+
+def test_sem_video_nao_grava_nem_embute(env, monkeypatch):
+    set_scenarios(monkeypatch, [env.spec("a")])
+    assert main(env.argv("rapido", "--starter", "BULBASAUR", "--sem-video")) == 0
+    assert env.recorders == [None]
+    assert not (env.tmp / "out" / "video.webp").exists()
+    assert "video.webp" not in html(env)
+
+
+def test_video_de_execucao_anterior_na_mesma_pasta_nao_vale(env, monkeypatch):
+    (env.tmp / "out").mkdir()
+    (env.tmp / "out" / "video.webp").write_bytes(b"velho")
+    set_scenarios(monkeypatch, [env.spec("a")])     # não captura nenhum quadro
+    assert main(env.argv("rapido", "--starter", "BULBASAUR")) == 0
+    assert not (env.tmp / "out" / "video.webp").exists()
+    assert "video.webp" not in html(env)
 
 
 # --- falhas e códigos de saída -----------------------------------------------------------------

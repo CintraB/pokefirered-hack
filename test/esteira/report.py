@@ -6,6 +6,8 @@ from pathlib import Path
 
 from esteira.result import Result, Suite
 
+VIDEO_NAME = "video.webp"   # WebP animado ao lado do relatório (esteira.video)
+
 _ORDER = {"falha": 0, "aviso": 1, "ok": 2}
 _LABEL = {"falha": "FALHA", "aviso": "AVISO", "ok": "OK"}
 
@@ -24,6 +26,7 @@ main{max-width:1000px;margin:0 auto;padding:16px}
 .ev{font-size:.85em;color:#555}
 .imgs img{image-rendering:pixelated;width:240px;margin:4px 6px 0 0;border:1px solid #bbb}
 table{border-collapse:collapse}td,th{padding:2px 12px;text-align:left}
+.video{margin:0 0 16px}.video img{image-rendering:pixelated;width:720px;max-width:100%;border:1px solid #bbb}
 """
 
 
@@ -99,6 +102,9 @@ def write_report(suite: Suite, out_dir: str, meta: dict) -> str:
     body.append("</div>")
     body.append(f'<div class="resumo">Esteira {veredito}: {counts["falha"]} falha(s), '
                 f'{counts["aviso"]} aviso(s), {counts["ok"]} ok</div>')
+    if (out / VIDEO_NAME).is_file():
+        body.append(f'<div class="video"><img src="{VIDEO_NAME}" alt="Vídeo da execução '
+                    '(acelerado)"></div>')
     body.extend(_result_html(r, mapping) for r in ordered)
     body.append("</main>")
 

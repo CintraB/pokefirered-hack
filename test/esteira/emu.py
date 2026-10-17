@@ -9,6 +9,8 @@ from pathlib import Path
 
 from PIL import Image
 
+from .video import VideoRecorder
+
 RUNNER = Path(__file__).resolve().parent.parent / "harness" / "mgba_runner"
 
 KEY_A = 1
@@ -30,7 +32,12 @@ class EmulatorError(RuntimeError):
 class Emulator:
     """Uma instância do mGBA rodando `rom` com o save em `save` (nunca em roms/saves/)."""
 
-    def __init__(self, rom: str, save: str):
+    def __init__(self, rom: str, save: str, recorder: "VideoRecorder | None" = None):
+        """`recorder`: se dado, recebe uma tela a cada `recorder.grab_every` quadros emulados,
+        em TODA chamada que avança o jogo (frames/hold/press, inclusive as feitas direto por
+        helpers de cenário), sem passo extra para quem chama."""
+        self.recorder = recorder
+        self._emulated = 0   # quadros avançados por frames() nesta sessão (posição no vídeo)
         if not RUNNER.is_file():
             raise FileNotFoundError(f"{RUNNER} não existe; rode `make -C test/harness`")
         self._proc = subprocess.Popen(
@@ -61,7 +68,16 @@ class Emulator:
 
     def frames(self, n: int) -> int:
         """Avança n quadros; devolve o contador de quadros do core."""
-        return self._send("frames", n=n)["frame"]
+        rec = self.recorder
+        if rec is None or n <= 0:
+            return self._send("frames", n=n)["frame"]
+        every, start = rec.grab_every, self._emulated
+        data = self._send("frames", n=n, every=every, phase=start % every)
+        self._emulated = start + n
+        first = start + every - start % every   # primeira posição múltipla de `every` após start
+        for i, shot in enumerate(data["shots"]):
+            rec.add_base64(first + i * every, shot)
+        return data["frame"]
 
     def keys(self, mask: int) -> None:
         """Mantém `mask` pressionado até a próxima chamada de keys()."""

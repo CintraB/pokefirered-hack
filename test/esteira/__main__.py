@@ -11,6 +11,9 @@ sessão de emulador só. `completo` roda tudo isso e mais os cenários de FULL_S
 tour de telas e Floresta/Brock continuam a sessão jogável; o `master` compila o master sem
 emulador; o `shiny` usa a ROM de teste (`make firered_switch TESTBUILD=1`) e parte do save do
 `captura`.
+Toda execução com emulador grava OUT/video.webp: a execução inteira (todas as sessões, jogável e
+teste) em WebP animado acelerado (um quadro a cada 8 emulados, 30 fps), embutido no relatório;
+`--sem-video` desliga (ver esteira/video.py).
 Sai com 0 se nenhum resultado for `falha` (avisos não reprovam) e 1 caso contrário.
 """
 
@@ -29,7 +32,7 @@ from typing import Callable
 from esteira.check_build import check_build
 from esteira.check_text import check_text
 from esteira.refs import DEFAULT_REFS_DIR, KEY_POINTS, approve_refs, compare_ref
-from esteira.report import write_report
+from esteira.report import VIDEO_NAME, write_report
 from esteira.result import Result, StepTimeout, Suite
 from esteira.rotation import STARTERS, next_starter
 from esteira.scenarios import REPO_ROOT, ScenarioContext, open_context
@@ -41,6 +44,7 @@ from esteira.scenarios.full_shiny import run_full_shiny
 from esteira.scenarios.quick_catch_save import run_catch_save
 from esteira.scenarios.quick_opening import run_opening
 from esteira.scenarios.quick_route1 import run_route1
+from esteira.video import VideoRecorder
 
 REFS_DIR = DEFAULT_REFS_DIR
 STATE_PATH = str(REPO_ROOT / "roms" / "estado-esteira.json")   # produção; testes sobrescrevem
@@ -295,6 +299,19 @@ def _print_summary(suite: Suite, meta: dict, report: str) -> None:
     print(f"relatório: {report}")
 
 
+def _save_video(recorder: VideoRecorder, path: Path, suite: Suite,
+                tempos: dict[str, float]) -> None:
+    """Codifica o vídeo da execução; problema aqui é aviso (o vídeo é conveniência, não teste)."""
+    start = time.monotonic()
+    try:
+        recorder.save(str(path))
+    except Exception as exc:  # noqa: BLE001
+        path.unlink(missing_ok=True)
+        suite.add(Result("video/gravacao", "aviso", f"vídeo não gravado: {type(exc).__name__}: {exc}"))
+        return
+    tempos["vídeo (codificação)"] = time.monotonic() - start
+
+
 def run_mode(args: argparse.Namespace) -> int:
     specs = scenarios_for(args.modo)
     out = Path(args.out)
@@ -305,6 +322,11 @@ def run_mode(args: argparse.Namespace) -> int:
     start = time.monotonic()
     nao_testada = False
     starter: str | None = args.starter   # sem --starter, só sai do rodízio quando o emulador roda
+    # Um vídeo só por execução, com todas as sessões de emulador em sequência (jogável e teste);
+    # o de uma execução anterior na mesma pasta não vale.
+    video_path = out / VIDEO_NAME
+    video_path.unlink(missing_ok=True)
+    recorder = None if args.sem_video else VideoRecorder()
 
     unusable = _static_checks(args, suite)
     if args.only in (None, *[s.name for s in specs]):
@@ -353,10 +375,14 @@ def run_mode(args: argparse.Namespace) -> int:
             if starter is None:
                 starter = next_starter(args.state)
             bridges = producers if kind == PLAYABLE else set()
-            with open_context(rom, elf, str(out), starter, suite, save_from=save_from) as ctx:
+            with open_context(rom, elf, str(out), starter, suite, save_from=save_from,
+                              recorder=recorder) as ctx:
                 _run_scenarios(group, ctx, args.only, tempos, bridges)
         if starter is not None:
             _compare_screens(suite, out, starter, started_wall)
+
+    if recorder is not None and len(recorder):
+        _save_video(recorder, video_path, suite, tempos)
 
     meta = {"inicial": starter or "-", "data": datetime.now().strftime("%Y-%m-%d %H:%M"),
             "commit": _git_commit(), "modo": args.modo, "tempos": tempos,
@@ -372,6 +398,7 @@ def write_untested_report(out_dir: str) -> str:
     """Relatório só com a faixa NÃO TESTADA (SKIP_TESTS=1): sem emulador e sem checagens."""
     out = Path(out_dir)
     out.mkdir(parents=True, exist_ok=True)
+    (out / VIDEO_NAME).unlink(missing_ok=True)   # vídeo de outra execução não vale
     suite = Suite()
     suite.add(Result("esteira/pulada", "aviso",
                      "testes pulados (SKIP_TESTS=1): esta ROM não foi testada"))
@@ -400,6 +427,8 @@ def build_parser() -> argparse.ArgumentParser:
             STATIC_CHECKS + tuple(s.name for s in scenarios_for(modo))))
         p.add_argument("--starter", choices=STARTERS,
                        help="força o inicial (não gasta o rodízio); padrão: o da vez")
+        p.add_argument("--sem-video", action="store_true",
+                       help=f"não grava {VIDEO_NAME} (a execução inteira em vídeo acelerado)")
         p.add_argument("--state", default=STATE_PATH, help=argparse.SUPPRESS)
     untested = sub.add_parser("nao-testada", help="só o relatório NÃO TESTADA (SKIP_TESTS=1)")
     untested.add_argument("--out", required=True)

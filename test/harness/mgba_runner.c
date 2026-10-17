@@ -7,7 +7,10 @@
  *
  * Comandos:
  *   {"cmd":"frames","n":N}              -> {"ok":true,"frame":F}
- *   {"cmd":"keys","mask":M}             (mantido até o próximo "keys")
+ *   {"cmd":"frames","n":N,"every":E,"phase":P}
+ *                                       -> {"ok":true,"shots":["<base64 RGB>",...],"frame":F}
+ *                                          (uma tela a cada E quadros, para o vídeo da esteira)
+ *   {"cmd":"keys","mask":M}           (mantido até o próximo "keys")
  *   {"cmd":"read","addr":A,"len":L}     -> {"ok":true,"hex":"..."}
  *   {"cmd":"write","addr":A,"hex":"..."}
  *   {"cmd":"screenshot","path":"x.png"} (PNG 240x160)
@@ -259,16 +262,64 @@ static void ReplyError(const char *fmt, ...)
 
 /* ---------- comandos ---------- */
 
+/* Escreve a tela atual (SCREEN_W x SCREEN_H, RGB, 3 bytes por pixel) em base64 no stdout. */
+static void PrintFrameBase64(void)
+{
+    static const char b64[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+    static uint8_t rgb[SCREEN_W * SCREEN_H * 3];
+    static char out[(sizeof(rgb) / 3) * 4 + 1];
+    for (size_t i = 0; i < SCREEN_W * SCREEN_H; i++) {
+        uint32_t c = sVideoBuffer[i]; /* mGBA 32 bits: bytes R, G, B, X (little-endian) */
+        rgb[i * 3] = (uint8_t)(c & 0xFF);
+        rgb[i * 3 + 1] = (uint8_t)((c >> 8) & 0xFF);
+        rgb[i * 3 + 2] = (uint8_t)((c >> 16) & 0xFF);
+    }
+    char *o = out;
+    for (size_t i = 0; i < sizeof(rgb); i += 3) {
+        uint32_t v = (uint32_t)rgb[i] << 16 | (uint32_t)rgb[i + 1] << 8 | rgb[i + 2];
+        *o++ = b64[v >> 18];
+        *o++ = b64[(v >> 12) & 63];
+        *o++ = b64[(v >> 6) & 63];
+        *o++ = b64[v & 63];
+    }
+    *o = '\0';
+    fputs(out, stdout);
+}
+
+/* "every" (>0) e "phase" (opcionais): depois de cada quadro i (1..n) com (phase + i) % every == 0,
+ * guarda a tela; a resposta traz "shots":["<base64 RGB 240x160>", ...] (vídeo da esteira). */
 static void CmdFrames(struct mCore *core, const struct Command *cmd)
 {
-    long long n;
+    long long n, every = 0, phase = 0;
     if (!GetInt(cmd, "n", &n) || n < 0) {
         ReplyError("frames: campo \"n\" inteiro >= 0 obrigatório");
         return;
     }
-    for (long long i = 0; i < n; i++)
+    if (GetInt(cmd, "every", &every) && every <= 0) {
+        ReplyError("frames: \"every\" deve ser > 0");
+        return;
+    }
+    GetInt(cmd, "phase", &phase);
+    if (every <= 0) {
+        for (long long i = 0; i < n; i++)
+            core->runFrame(core);
+        printf("{\"ok\":true,\"frame\":%u}\n", core->frameCounter(core));
+        fflush(stdout);
+        return;
+    }
+    /* o stdout do protocolo recebe uma linha só: monta o JSON aos poucos */
+    printf("{\"ok\":true,\"shots\":[");
+    bool first = true;
+    for (long long i = 1; i <= n; i++) {
         core->runFrame(core);
-    printf("{\"ok\":true,\"frame\":%u}\n", core->frameCounter(core));
+        if ((phase + i) % every == 0) {
+            fputs(first ? "\"" : ",\"", stdout);
+            PrintFrameBase64();
+            fputc('"', stdout);
+            first = false;
+        }
+    }
+    printf("],\"frame\":%u}\n", core->frameCounter(core));
     fflush(stdout);
 }
 

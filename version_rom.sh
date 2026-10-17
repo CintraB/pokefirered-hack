@@ -2,7 +2,7 @@
 # Copies a freshly built ROM into roms/<N>.0/, creating the next numbered folder.
 # Called by test/pipeline.sh (via the Makefile) after every non-compare ROM build.
 #   version_rom.sh <rom> [<report dir>] [--untested]
-# <report dir>: test report (relatorio.html, img/, meta.json) copied into the version folder.
+# <report dir>: test report (relatorio.html, img/, meta.json, video.webp) copied into the version folder.
 # --untested: the tests did not run; marks the version with NAO_TESTADA.txt.
 set -e
 
@@ -29,7 +29,7 @@ for arg in "$@"; do
     if [ "$arg" = "--untested" ]; then untested=1; else report="$arg"; fi
 done
 if [ -n "$report" ]; then
-    for item in relatorio.html img meta.json; do
+    for item in relatorio.html img meta.json video.webp; do
         if [ -e "$report/$item" ]; then cp -r "$report/$item" "$dir/$next.0/"; fi
     done
 fi

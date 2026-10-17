@@ -8,6 +8,7 @@ from typing import Callable
 from .emu import KEY_A, Emulator
 from .game import Game
 from .result import StepTimeout
+from .video import VideoRecorder
 
 __all__ = ["Controller", "StepTimeout"]
 
@@ -20,9 +21,12 @@ TEXT_PRESS_PERIOD = 10   # advance_text: A segurado 2 quadros + 8 soltos
 
 
 class Controller:
-    def __init__(self, emu: Emulator, game: Game, out_dir: str):
+    def __init__(self, emu: Emulator, game: Game, out_dir: str,
+                 recorder: VideoRecorder | None = None):
         self.emu = emu
         self.game = game
+        if recorder is not None:   # a gravação mora no Emulator: cobre também quem chama emu direto
+            emu.recorder = recorder
         self.out_dir = Path(out_dir)
         self.out_dir.mkdir(parents=True, exist_ok=True)
         self._failures = 0

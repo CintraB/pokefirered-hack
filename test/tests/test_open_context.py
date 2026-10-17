@@ -15,7 +15,7 @@ def booted(monkeypatch):
     seen: list[bytes | None] = []
 
     @contextmanager
-    def fake_emulator(rom, save):
+    def fake_emulator(rom, save, recorder=None):
         seen.append(Path(save).read_bytes() if Path(save).exists() else None)
         yield SimpleNamespace()
 
