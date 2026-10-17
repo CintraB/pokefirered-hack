@@ -85,7 +85,8 @@ class Env:
         full = {k: v for k, v in os.environ.items()
                 if k not in ("COMPARE", "SKIP_TESTS", "BUILD_LOG")}
         full.update({"ESTEIRA_CMD": f"sh {self.fake}", "ESTEIRA_ROMS_DIR": str(self.roms),
-                     "ESTEIRA_OUT_BASE": str(self.out), "FAKE_ARGS": str(self.args_file)})
+                     "ESTEIRA_OUT_BASE": str(self.out), "FAKE_ARGS": str(self.args_file),
+                     "ESTEIRA_RUNNER_MAKE": "true"})
         full.update(env)
         return subprocess.run(["sh", str(PIPELINE), str(rom or self.rom)], capture_output=True,
                               text=True, cwd=self.tmp, env=full, timeout=60)
@@ -112,6 +113,22 @@ def test_green_creates_version_with_report(env):
     assert not (version / "NAO_TESTADA.txt").exists()
     assert not (version / "estado.ss").exists()      # estados de depuração não vão para a versão
     assert env.rom.is_file()                         # ROM do raiz continua lá
+
+
+def test_runner_do_emulador_e_atualizado_antes_da_esteira(env):
+    """O runner (C) é refeito se o fonte mudou, antes de a esteira rodar."""
+    marker = env.tmp / "runner-made"
+    result = env.run(ESTEIRA_RUNNER_MAKE=f"touch {marker}")
+    assert result.returncode == 0, result.stderr
+    assert marker.is_file()
+
+
+def test_falha_ao_compilar_o_runner_e_falha_de_infraestrutura(env):
+    result = env.run(ESTEIRA_RUNNER_MAKE="false")
+    assert result.returncode == 1
+    assert "runner do emulador" in result.stderr
+    assert env.versions() == [] and not env.rom.exists()
+    assert not env.args_file.exists()        # a esteira nem rodou
 
 
 def test_green_numbers_after_existing_versions(env):

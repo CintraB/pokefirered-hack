@@ -381,7 +381,7 @@ def run_mode(args: argparse.Namespace) -> int:
         if starter is not None:
             _compare_screens(suite, out, starter, started_wall)
 
-    if recorder is not None and len(recorder):
+    if recorder is not None and recorder.has_activity():
         _save_video(recorder, video_path, suite, tempos)
 
     meta = {"inicial": starter or "-", "data": datetime.now().strftime("%Y-%m-%d %H:%M"),

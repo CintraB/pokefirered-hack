@@ -1,6 +1,9 @@
 """Vídeo da execução: gravador de WebP animado, gancho no Emulator e embutido no relatório."""
 
 import base64
+import os
+import queue
+import threading
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -95,6 +98,88 @@ def test_sem_codificador_incremental_usa_a_api_publica(tmp_path, monkeypatch):
         assert video.n_frames == 13
 
 
+def _valid_webp(path, frames):
+    with Image.open(path) as video:
+        assert video.format == "WEBP" and video.n_frames == frames
+
+
+def feed(rec, n=100):
+    for i in range(n):
+        rec.capture(synthetic(i))
+
+
+@pytest.mark.parametrize("error", [TypeError("assinatura nova"), AttributeError("sem getim")])
+def test_codificador_interno_que_falha_cai_na_api_publica(tmp_path, monkeypatch, error):
+    """Qualquer exceção do WebPAnimEncoder (não só ImportError) abandona o incremental."""
+    def broken(*args, **kwargs):
+        raise error
+    monkeypatch.setattr("esteira.video._webp", SimpleNamespace(WebPAnimEncoder=broken))
+    rec = VideoRecorder(every=8)
+    feed(rec)
+    _valid_webp(rec.save(str(tmp_path / "v.webp")), 13)
+
+
+def test_stream_add_que_falha_durante_a_execucao_cai_na_api_publica(tmp_path, monkeypatch):
+    def broken(self, img):
+        raise AttributeError("getim sumiu")
+    monkeypatch.setattr("esteira.video._Stream.add", broken)
+    rec = VideoRecorder(every=8)
+    feed(rec)
+    # a API interna falha também na regravação: o fallback público é quem entrega o arquivo
+    _valid_webp(rec.save(str(tmp_path / "v.webp")), 13)
+    assert rec._incremental is False
+
+
+def test_finish_que_falha_cai_na_api_publica(tmp_path, monkeypatch):
+    def broken(self):
+        raise TypeError("assemble mudou")
+    monkeypatch.setattr("esteira.video._Stream.finish", broken)
+    rec = VideoRecorder(every=8)
+    feed(rec)
+    _valid_webp(rec.save(str(tmp_path / "v.webp")), 13)
+
+
+def test_erro_da_thread_de_fundo_reaparece_em_save(tmp_path, monkeypatch):
+    rec = VideoRecorder(every=8)
+
+    def boom(pos, rgb, size):
+        raise ValueError("zlib quebrou")
+    monkeypatch.setattr(rec, "_ingest", boom)
+    feed(rec, 20)
+    with pytest.raises(ValueError, match="zlib quebrou"):
+        rec.save(str(tmp_path / "v.webp"))
+
+
+def test_gravador_com_falha_recusa_quadros_e_save_explica(tmp_path):
+    rec = VideoRecorder(every=8)
+    feed(rec, 20)
+    rec.fail(KeyError("shots"))
+    feed(rec, 20)
+    assert len(rec) == 3     # nada entrou depois da falha
+    with pytest.raises(RuntimeError, match="interrompida"):
+        rec.save(str(tmp_path / "v.webp"))
+
+
+def test_thread_que_nao_inicia_nao_fica_gravada(monkeypatch):
+    rec = VideoRecorder(every=1)
+
+    def no_start(self):
+        raise RuntimeError("cannot start new thread")
+    monkeypatch.setattr(threading.Thread, "start", no_start)
+    with pytest.raises(RuntimeError):
+        rec.capture(synthetic(0))
+    assert rec._thread is None
+
+
+def test_fila_cheia_com_thread_morta_nao_trava():
+    rec = VideoRecorder(every=1)
+    rec._queue = queue.Queue(maxsize=1)
+    rec._queue.put(("x", b"", (1, 1)))
+    rec._thread = SimpleNamespace(is_alive=lambda: False)
+    with pytest.raises(RuntimeError, match="morreu"):
+        rec.capture(synthetic(0))
+
+
 def test_decimar_depois_de_codificar_regrava_so_com_os_quadros_que_ficaram(tmp_path):
     rec = VideoRecorder(every=1, memory_budget=1_000_000)
     for i in range(40):
@@ -175,6 +260,64 @@ def test_emulator_acompanha_o_every_depois_de_decimar():
     assert runner.calls[-1]["every"] == 4          # a 1ª chamada ainda usou o ritmo original
     emu.frames(10)
     assert runner.calls[-1]["every"] == rec.grab_every
+
+
+class NoShotsRunner(FakeRunner):
+    """Runner velho: ignora every/phase e responde sem "shots"."""
+
+    def send(self, cmd, **args):
+        reply = super().send(cmd, **args)
+        reply.pop("shots", None)
+        return reply
+
+
+def test_runner_sem_suporte_a_telas_desliga_o_video_mas_a_execucao_segue():
+    rec = VideoRecorder(every=8)
+    emu, _ = make_emulator(rec)
+    runner = NoShotsRunner()
+    emu._send = runner.send
+    assert emu.frames(20) == 20          # não levanta KeyError
+    assert rec.failure is not None
+    assert emu.frames(5) == 25
+    assert "every" not in runner.calls[-1]   # depois da falha, pedidos simples
+
+
+def test_erro_do_gravador_dentro_de_frames_nao_derruba_a_execucao():
+    rec = VideoRecorder(every=8)
+
+    def boom(pos, data):
+        raise OSError("disco cheio")
+    rec.add_base64 = boom
+    emu, runner = make_emulator(rec)
+    assert emu.frames(100) == 100
+    assert isinstance(rec.failure, OSError)
+    assert emu.frames(10) == 110
+    assert "every" not in runner.calls[-1]
+
+
+def test_frames_grande_e_dividido_em_pedacos_com_as_mesmas_telas():
+    big_rec = VideoRecorder(every=8)
+    big, big_runner = make_emulator(big_rec)
+    big.frames(1000)
+    small_rec = VideoRecorder(every=8)
+    small, _ = make_emulator(small_rec)
+    for _ in range(100):
+        small.frames(10)
+    assert max(call["n"] for call in big_runner.calls) <= emu_module.RECORD_CHUNK
+    assert len(big_runner.calls) == 4         # 256 + 256 + 256 + 232
+    assert big_rec.positions() == small_rec.positions() == list(range(8, 1001, 8))
+    assert [f for _, f in big_rec._frames] == [f for _, f in small_rec._frames]
+
+
+def test_runner_mais_velho_que_o_fonte_e_recusado(tmp_path, monkeypatch):
+    runner, src = tmp_path / "mgba_runner", tmp_path / "mgba_runner.c"
+    runner.write_bytes(b"")
+    src.write_text("// novo", encoding="utf-8")
+    os.utime(runner, (1_000_000, 1_000_000))
+    monkeypatch.setattr(emu_module, "RUNNER", runner)
+    monkeypatch.setattr(emu_module, "RUNNER_SRC", src)
+    with pytest.raises(FileNotFoundError, match="make -C test/harness"):
+        emu_module.Emulator("r.gba", str(tmp_path / "s.sav"))
 
 
 def test_controller_com_recorder_liga_o_gancho_no_emulator():

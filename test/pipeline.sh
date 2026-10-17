@@ -23,6 +23,7 @@
 #   ESTEIRA_OUT_BASE  pasta das execucoes (padrao: test/out)
 #   ESTEIRA_OBJ_DIR   objetos do build e memory.txt (padrao: build/<nome do build>)
 #   ESTEIRA_LOG_WAIT  segundos esperando a marca de fim no BUILD_LOG (padrao: 15)
+#   ESTEIRA_RUNNER_MAKE  comando que deixa o runner do emulador em dia (padrao: make -s -C test/harness)
 
 rom="$1"
 if [ -z "$rom" ]; then
@@ -107,6 +108,15 @@ else
         cp "$memory_file" "$log_file"
         log_args="--log $log_file"
     fi
+fi
+
+# O runner do emulador (C) tem de estar na versao do fonte: um binario velho nao tem os comandos
+# novos (p.ex. o video) e a esteira rodaria degradada. No-op quando ja esta em dia.
+runner_make=${ESTEIRA_RUNNER_MAKE:-make -s -C "$root/test/harness"}
+# shellcheck disable=SC2086  # runner_make e uma lista de palavras de proposito
+if ! $runner_make > "$out/runner-build.log" 2>&1; then
+    tail -n 20 "$out/runner-build.log" >&2
+    infra_failure "nao consegui compilar o runner do emulador (make -C test/harness)"
 fi
 
 echo "[esteira] testando $base (esteira rapida, ~35 s)..."

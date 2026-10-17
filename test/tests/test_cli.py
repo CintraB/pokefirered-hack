@@ -160,6 +160,41 @@ def test_video_da_execucao_vai_para_out_e_para_o_relatorio(env, monkeypatch):
     assert "vídeo (codificação)" in meta["tempos"]
 
 
+def test_save_do_video_que_falha_vira_aviso_sem_mudar_o_codigo_de_saida(env, monkeypatch):
+    def broken(self, path):
+        raise OSError("sem espaço")
+    monkeypatch.setattr(cli.VideoRecorder, "save", broken)
+    set_scenarios(monkeypatch, [env.spec("a", effect=feed_video(env))])
+    assert main(env.argv("rapido", "--starter", "BULBASAUR")) == 0
+    page = html(env)
+    assert "video/gravacao" in page and "vídeo não gravado" in page and "sem espaço" in page
+    assert not (env.tmp / "out" / "video.webp").exists()
+    assert "video.webp" not in page
+
+
+def test_video_com_falha_nao_esconde_a_falha_do_cenario(env, monkeypatch):
+    def effect(ctx):
+        feed_video(env)(ctx)
+        env.recorders[-1].fail(KeyError("shots"))
+        failing(ctx)
+    set_scenarios(monkeypatch, [env.spec("a", effect=effect)])
+    assert main(env.argv("rapido", "--starter", "BULBASAUR")) == 1
+    page = html(env)
+    assert "video/gravacao" in page and "interrompida" in page and "deu errado" in page
+
+
+def test_erro_da_thread_do_video_vira_aviso(env, monkeypatch):
+    def boom(*args):
+        raise ValueError("zlib")
+
+    def effect(ctx):
+        monkeypatch.setattr(env.recorders[-1], "_ingest", boom)
+        feed_video(env)(ctx)
+    set_scenarios(monkeypatch, [env.spec("a", effect=effect)])
+    assert main(env.argv("rapido", "--starter", "BULBASAUR")) == 0
+    assert "video/gravacao" in html(env)
+
+
 def test_um_gravador_so_para_todas_as_sessoes(env, monkeypatch):
     set_scenarios(monkeypatch, [env.spec("a")],
                   [env.spec("t", rom=cli.TEST)])

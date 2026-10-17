@@ -6,8 +6,11 @@ o vídeo passa a 4x a velocidade do jogo).
 Custo: a compressão do quadro e a codificação WebP (~1,5 ms por quadro) rodam numa thread de
 fundo durante a execução, em paralelo com o emulador (o codificador do Pillow solta o GIL), para
 o vídeo custar pouco tempo a mais; `save()` só espera o que sobrou na fila. A codificação
-incremental usa `PIL._webp.WebPAnimEncoder` (API interna do Pillow); se ela não existir ou mudar,
-`save()` cai na API pública (`Image.save(save_all=True)`), que só é mais lenta e gasta mais memória.
+incremental usa `PIL._webp.WebPAnimEncoder` (API interna do Pillow); se ela não existir ou
+qualquer chamada a ela falhar (assinatura diferente, `getim` ausente...), o incremental é
+abandonado e `save()` cai na API pública (`Image.save(save_all=True)`), que só é mais lenta e gasta
+mais memória. Falha do gravador (`fail()`, chamada pelo Emulator se receber telas inválidas do
+runner) não derruba a execução: `save()` é que avisa.
 
 Tetos (os três resolvidos aumentando `every`, ou seja, descartando metade dos quadros guardados):
 - quantidade: mais de `max_frames` quadros (estimativa do que cabe em `max_bytes`);
@@ -91,8 +94,10 @@ class VideoRecorder:
         # Estado abaixo: só a thread de fundo escreve (leitura segura depois de _flush()).
         self._frames: list[tuple[int, bytes]] = []   # (posição em quadros emulados, zlib(RGB))
         self._bytes = 0
-        self._stream: _Stream | None = None if _webp is None else _Stream(quality)
-        self._error: Exception | None = None
+        self._incremental = _webp is not None    # False depois de qualquer falha do incremental
+        self._stream: _Stream | None = _Stream(quality) if self._incremental else None
+        self._error: Exception | None = None     # erro da thread de fundo
+        self.failure: Exception | None = None    # o Emulator desistiu de gravar (ver fail())
         self._queue: queue.Queue = queue.Queue(maxsize=QUEUE_DEPTH)
         self._thread: threading.Thread | None = None
 
@@ -105,6 +110,12 @@ class VideoRecorder:
     def __len__(self) -> int:
         self._flush()
         return len(self._frames)
+
+    def has_activity(self) -> bool:
+        """Há o que gravar ou o que avisar (quadros, falha do Emulator ou erro da thread): só uma
+        execução sem nenhuma sessão de emulador fica sem vídeo e sem aviso."""
+        self._flush()
+        return bool(self._frames or self.failure or self._error)
 
     def positions(self) -> list[int]:
         """Posições (quadros emulados) dos quadros guardados."""
@@ -126,11 +137,26 @@ class VideoRecorder:
         if pos % self.every == 0:
             self._submit(pos, base64.b64decode(data), SCREEN_SIZE)
 
+    def fail(self, exc: Exception) -> None:
+        """Quem alimenta o gravador desistiu (ex.: telas inválidas): para de aceitar quadros e o
+        `save()` seguinte levanta RuntimeError com o motivo."""
+        if self.failure is None:
+            self.failure = exc
+
     def _submit(self, pos: int, rgb: bytes, size: tuple[int, int]) -> None:
+        if self.failure is not None:
+            return
         if self._thread is None:
-            self._thread = threading.Thread(target=self._work, name="video", daemon=True)
-            self._thread.start()
-        self._queue.put((pos, rgb, size))
+            thread = threading.Thread(target=self._work, name="video", daemon=True)
+            thread.start()   # só vale depois de iniciar de verdade
+            self._thread = thread
+        while True:
+            try:
+                self._queue.put((pos, rgb, size), timeout=1)
+                return
+            except queue.Full:
+                if not self._thread.is_alive():
+                    raise RuntimeError("a thread do vídeo morreu") from None
 
     def _flush(self) -> None:
         self._queue.join()
@@ -155,10 +181,17 @@ class VideoRecorder:
         self._frames.append((pos, packed))
         self._bytes += len(packed)
         if self._stream is not None:
-            self._stream.add(self._image(rgb))
+            try:
+                self._stream.add(self._image(rgb))
+            except Exception:  # noqa: BLE001 - API interna do Pillow: cai na pública em save()
+                self._drop_incremental()
         while ((self._bytes > self.memory_budget or len(self._frames) > self.max_frames)
                and len(self._frames) > 1):
             self._decimate()
+
+    def _drop_incremental(self) -> None:
+        self._incremental = False
+        self._stream = None
 
     def _decimate(self) -> None:
         """Dobra `every`: fica só com os quadros em posição múltipla do novo espaçamento. O
@@ -183,11 +216,14 @@ class VideoRecorder:
 
     def _encode_all(self) -> bytes:
         """Codifica os quadros guardados do zero."""
-        if _webp is not None:
-            stream = _Stream(self.quality)
-            for img in self._images():
-                stream.add(img)
-            return stream.finish()
+        if self._incremental:
+            try:
+                stream = _Stream(self.quality)
+                for img in self._images():
+                    stream.add(img)
+                return stream.finish()
+            except Exception:  # noqa: BLE001 - API interna do Pillow mudou: usa a pública
+                self._drop_incremental()
         images = list(self._images())   # API pública do Pillow: precisa de todos na memória
         import io
         buf = io.BytesIO()
@@ -200,6 +236,8 @@ class VideoRecorder:
         aumenta `every` (descarta metade dos quadros) e grava de novo, até caber. Sem quadros:
         ValueError."""
         self._flush()
+        if self.failure is not None:
+            raise RuntimeError(f"gravação do vídeo interrompida: {self.failure!r}") from self.failure
         if self._error is not None:
             raise self._error
         if not self._frames:
@@ -207,7 +245,10 @@ class VideoRecorder:
         stream, self._stream = self._stream, None
         data = None
         if stream is not None and stream.count == len(self._frames):
-            data = stream.finish()   # codificado durante a execução
+            try:
+                data = stream.finish()   # codificado durante a execução
+            except Exception:  # noqa: BLE001
+                self._drop_incremental()
         while True:
             if data is None:
                 data = self._encode_all()

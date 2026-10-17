@@ -12,6 +12,8 @@ from PIL import Image
 from .video import VideoRecorder
 
 RUNNER = Path(__file__).resolve().parent.parent / "harness" / "mgba_runner"
+RUNNER_SRC = RUNNER.with_suffix(".c")
+RECORD_CHUNK = 256   # quadros por pedido `frames` quando gravando vídeo (limita o tamanho da resposta)
 
 KEY_A = 1
 KEY_B = 2
@@ -40,6 +42,9 @@ class Emulator:
         self._emulated = 0   # quadros avançados por frames() nesta sessão (posição no vídeo)
         if not RUNNER.is_file():
             raise FileNotFoundError(f"{RUNNER} não existe; rode `make -C test/harness`")
+        if RUNNER_SRC.is_file() and RUNNER_SRC.stat().st_mtime > RUNNER.stat().st_mtime + 1:
+            raise FileNotFoundError(f"{RUNNER} é mais velho que {RUNNER_SRC.name}; "
+                                    "rode `make -C test/harness`")
         self._proc = subprocess.Popen(
             [str(RUNNER), str(rom), "--save", str(save)],
             stdin=subprocess.PIPE,
@@ -69,14 +74,27 @@ class Emulator:
     def frames(self, n: int) -> int:
         """Avança n quadros; devolve o contador de quadros do core."""
         rec = self.recorder
-        if rec is None or n <= 0:
+        if rec is None or rec.failure is not None or n <= 0:
             return self._send("frames", n=n)["frame"]
+        frame = 0
+        while n > 0:   # em pedaços: a resposta carrega ~154 KB por tela
+            frame = self._frames_recording(rec, min(n, RECORD_CHUNK))
+            n -= RECORD_CHUNK
+        return frame
+
+    def _frames_recording(self, rec: "VideoRecorder", n: int) -> int:
+        """Um pedaço de `frames` com telas na grade do gravador. Problema com o vídeo (runner
+        sem suporte, tela inválida) desliga a gravação (`rec.fail`), nunca a execução."""
         every, start = rec.grab_every, self._emulated
         data = self._send("frames", n=n, every=every, phase=start % every)
         self._emulated = start + n
-        first = start + every - start % every   # primeira posição múltipla de `every` após start
-        for i, shot in enumerate(data["shots"]):
-            rec.add_base64(first + i * every, shot)
+        try:
+            shots = data["shots"]
+            first = start + every - start % every   # 1ª posição múltipla de `every` após start
+            for i, shot in enumerate(shots):
+                rec.add_base64(first + i * every, shot)
+        except Exception as exc:  # noqa: BLE001
+            rec.fail(exc)
         return data["frame"]
 
     def keys(self, mask: int) -> None:
