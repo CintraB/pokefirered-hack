@@ -45,8 +45,60 @@ def U(file: str, context: str, px: int | None, source: str, **kw) -> UsageRule:
     return UsageRule(file, context, px, source, **kw)
 
 
+class SharedRow(NamedTuple):
+    """Dois textos na mesma linha: um a partir de `start_px`, outro alinhado à direita em
+    `edge_px`. A soma tem de caber (cada um sozinho já tem a sua regra em USAGE_RULES)."""
+    file: str
+    start_px: int
+    left: str                  # rótulo(s) do texto da esquerda (fnmatch)
+    right: str                 # rótulo do texto alinhado à direita
+    right_suffix: str          # o que o código põe depois dele (ex.: o número da página)
+    edge_px: int
+    font: str
+    source: str
+
+
+SHARED_ROWS: list[SharedRow] = [
+    SharedRow("src/strings.c", 8, "gText_Cry", "gText_NextDataCancel", "", 236, "small",
+              "barra de baixo da entrada da Pokédex: \"{START_BUTTON}Grito\" em x = 8 e os controles alinhados à "
+              "direita em 236 (src/pokedex_screen.c:2962-2963, :2297-2299)"),
+    SharedRow("src/strings.c", 8, "gText_Cry", "gText_CancelPreviousData", "", 236, "small",
+              "barra de baixo do mapa de área: \"{START_BUTTON}Grito\" em x = 8 e os controles alinhados à "
+              "direita em 236 (src/pokedex_screen.c:3142-3143, :2297-2299)"),
+    SharedRow("src/strings.c", 8, "gText_DexCategory_*", "gText_Page", "99/99", 232, "normal",
+              "título da categoria em x = 8 e \"PÁG. xx/xx\" alinhado à direita em 232 na janela 0 "
+              "(src/pokedex_screen.c:2380-2381, :2357-2364, :3439-3447)"),
+]
+
+
 # Chamadas que montam menu/lista: o texto que passa por elas tem de cair numa regra específica
 MENU_CALL = re.compile(r"^call:\w*(?:Menu|List|PrintTextArray|ActionText|Multichoice)\w*$")
+# Menu montado à mão: AddTextPrinterParameterized* numa função que também põe o cursor de menu
+# (menu do PC, Seagallop: src/script_menu.c:986-1036, :1236-1289)
+MENU_PRINT = re.compile(r"^call:AddTextPrinterParameterized\d?$")
+_MENU_INIT = re.compile(r"\b(?:Menu_InitCursor\w*|InitMenu\w*|CreateMCMenuInputHandlerTask|ListMenuInit\w*|"
+                        r"MultichoiceGrid_InitCursor|CreateYesNoMenu\w*)\s*\(")
+_FUNC_BODY = re.compile(r"^[A-Za-z_][\w \t*]*\([^;{}()]*(?:\([^()]*\)[^;{}()]*)*\)\s*\{", re.M)
+
+
+def menu_function_labels(source: str, labels: set[str]) -> set[str]:
+    """Rótulos usados dentro de uma função que também abre um cursor de menu: impressos um a
+    um como itens de um menu montado à mão."""
+    out: set[str] = set()
+    for m in _FUNC_BODY.finditer(source):
+        depth, i = 0, m.end() - 1
+        while i < len(source):
+            if source[i] == "{":
+                depth += 1
+            elif source[i] == "}":
+                depth -= 1
+                if depth == 0:
+                    break
+            i += 1
+        body = source[m.end():i]
+        if _MENU_INIT.search(body):
+            out |= set(re.findall(r"[A-Za-z_]\w*", body)) & labels
+    return out
 
 
 # Textos que só aparecem nos modelos do Easy Chat que o FRLG não abre (sobras do R/S/E)
@@ -309,9 +361,33 @@ USAGE_RULES: list[UsageRule] = [
       "mensagem do e-Reader: janela 1 do Presente Misterioso, 28 tiles (src/mystery_gift_menu.c:97-101)"),
     U("src/mystery_event_script.c", "*", DIALOG_PX, _DIALOG),
     # -- multiescolha de script --
-    U("src/script_menu.c", "*", 214,
-      "multiescolha: a janela cresce com o texto, (largura + 9) / 8 + 1 tiles, e se desloca para caber em 28 "
-      "(src/script_menu.c:736-738): largura <= 214 px (com left = 0 a borda já sai da tela)", unica=True),
+    U("src/script_menu.c", "table:sMultichoiceList_TrainerSchoolWhiteboard", 6 * 8,
+      "quadro da Escola de Treinadores (src/script_menu.c:94-101): grade de 3 colunas "
+      "(data/maps/ViridianCity_School/scripts.inc:56), "
+      "célula de (GetMenuWidthFromList + 1) * 8 px com o texto em x = 8 (src/script_menu.c:680-693, :930-937; "
+      "src/menu.c:580-591); a janela começa no tile 8 (src/script_menu.c:1193-1195) e a borda tem de caber no "
+      "29, logo 3 células <= 21 tiles e o texto <= 6 tiles = 48 px"),
+    U("src/script_menu.c", "table:sMultichoiceList_*", 214,
+      "multiescolha vertical: a janela cresce com o texto, com (largura + 9) / 8 + 1 de largura em tiles, e se "
+      "desloca para caber em 28 (src/script_menu.c:736-738): largura <= 214 px (com left = 0 a borda já sai da tela)"),
+    *(U("src/script_menu.c", "call:AddTextPrinterParameterized", 13 * 8 - 8,
+        "menu do PC: janela de 13 tiles antes da Pokédex (src/script_menu.c:993-999), texto em "
+        "x = cursorWidth = 8 (src/script_menu.c:988, :1025, :1028-1030; src/new_menu_helpers.c:147)", label=lb)
+      for lb in ("gText_SomeoneSPc", "gText_BillSPc", "gText_LogOff")),
+    *(U("src/script_menu.c", "call:AddTextPrinterParameterized", 14 * 8 - 8,
+        "menu do PC com a Pokédex: janela de 14 tiles (src/script_menu.c:996-997), texto em x = 8 "
+        "(src/script_menu.c:1011-1012, :1024)", label=lb) for lb in ("gText_ProfOakSPc", "gText_HallOfFame_2")),
+    U("src/script_menu.c", "call:*", 13 * 8 - 8,
+      "\"PC de {PLAYER}\" no menu do PC: janela de 13 tiles (src/script_menu.c:993-999), texto em x = 8 "
+      "(src/script_menu.c:1031-1032)", label="gText_SPc"),
+    U("src/script_menu.c", "table:sSeagallopDestStrings", 11 * 8 - 8,
+      "menu do Seagallop: janela de 11 tiles (src/script_menu.c:1267), texto em x = cursorWidth = 8 "
+      "(src/script_menu.c:1265, :1274)"),
+    *(U("src/script_menu.c", "call:AddTextPrinterParameterized", 11 * 8 - 8,
+        "\"Outro\"/\"Sair\" do menu do Seagallop: janela de 11 tiles (src/script_menu.c:1267), texto em x = 8 "
+        "(src/script_menu.c:1283-1285)", label=lb) for lb in ("gText_Other", "gOtherText_Exit")),
+    U("src/script_menu.c", "table:gStdStringPtrs", DIALOG_PX,
+      _DIALOG + "; vai para {STR_VAR_n} pelo bufferstdstring (src/scrcmd.c:1693, src/script_menu.c:574)"),
     U("src/field_specials.c", "table:sFloorNamePointers", 56,
       "andar do elevador: alinhado à direita em x = 56 (src/field_specials.c:1108)"),
     U("src/field_specials.c", "call:AddTextPrinterParameterized", 7 * 8,
@@ -337,8 +413,8 @@ USAGE_RULES: list[UsageRule] = [
       "nome na lista do Fame Checker: FCWINDOWID_LIST 8 tiles (src/fame_checker.c:476-484), item_X = 8 "
       "(src/fame_checker.c:1436), rótulo da lista (src/fame_checker.c:1566)"),
     U("src/fame_checker.c", "code", 8 * 8 - 8,
-      "\"Cancelar\" da lista do Fame Checker: FCWINDOWID_LIST 8 tiles, item_X = 8 (src/fame_checker.c:1436, "
-      ":1573)", label="gFameCheckerText_Cancel"),
+      "\"Cancelar\" da lista do Fame Checker: FCWINDOWID_LIST 8 tiles (src/fame_checker.c:476-484), item_X = 8 "
+      "(src/fame_checker.c:1436, :1573)", label="gFameCheckerText_Cancel"),
     U("src/fame_checker.c", "code", 188,
       "ajuda de botões: FONT_SMALL alinhado à direita em 188 na FCWINDOWID_UIHELP (src/fame_checker.c:1078-1087)",
       font="small", label="gFameCheckerText_*UI"),
@@ -364,6 +440,9 @@ USAGE_RULES: list[UsageRule] = [
       "título da tela de nome: WIN_TEXT_ENTRY_BOX 16 tiles (src/naming_screen.c:355-360), x = 1 "
       "(src/naming_screen.c:1710)"),
     U("src/naming_screen.c", "*", 30 * 8, "barra da tela de nome: WIN_BANNER 30 tiles (src/naming_screen.c:364-368)"),
+    U("src/clear_save_data_screen.c", "call:AddTextPrinterParameterized4", 23 * 8,
+      "apagar o save: mensagem na janela 1 de 23 tiles (src/clear_save_data_screen.c:45-53), x = 0 "
+      "(src/clear_save_data_screen.c:109, :141)"),
     U("src/clear_save_data_screen.c", "*", DIALOG_PX, _DIALOG),
     U("src/save_failed_screen.c", "*", DIALOG_PX, _DIALOG),
     U("src/hall_of_fame.c", "call:AddTextPrinterParameterized4", 17 * 8 - 4,
@@ -474,9 +553,12 @@ USAGE_RULES: list[UsageRule] = [
     U("src/pokemon_special_anim_scene.c", "*", 28 * 8,
       "mensagem do uso de item: janela de 28 tiles (src/pokemon_special_anim_scene.c:86-90)"),
     # -- Easy Chat --
-    U("src/data/easy_chat/*", "table:*", 28 * 8 - 128,
-      "palavra do Easy Chat: a coluna da direita começa em x = 128 (src/easy_chat_3.c:1673) na janela de 28 tiles "
-      "(src/easy_chat_3.c:259-263): 96 px"),
+    U("src/data/easy_chat/*", "table:*", (24 * 8 - 2 * 17) // 2,
+      "palavra do Easy Chat na moldura da frase: 2 palavras por linha, cada uma depois de um {CLEAR 17} "
+      "(PrintECFields, src/easy_chat_3.c:1424-1472), na moldura de 24 tiles dos tipos que o FRLG abre "
+      "(sPhraseFrameDimensions[0] e [2], src/easy_chat_3.c:170-185): 17 + p1 + 17 + p2 <= 192, logo 79 px; "
+      "é mais estreito que a coluna da lista de palavras, x = 128 (src/easy_chat_3.c:1673) na janela de 28 tiles "
+      "(src/easy_chat_3.c:259-263), 96 px"),
     U("src/easy_chat.c", "table:sEasyChatGroupNamePointers", 84,
       "nome de grupo do Easy Chat (src/easy_chat.c:552): colunas a cada 84 px (src/easy_chat_3.c:1587)"),
     U("src/easy_chat.c", "*", 84,
@@ -626,3 +708,20 @@ def repo_uses(repo) -> dict[str, set[tuple[str, str]]]:
     texts = {rel: (root / rel).read_text(encoding="utf-8") for rel, kind in ct._source_files(root)
              if kind == "c" or rel in ct._USAGE_SCRIPTS}
     return usage_index(texts, labels)
+
+
+def repo_menu_uses(repo, uses: dict[str, set[tuple[str, str]]]) -> set[tuple[str, str, str]]:
+    """(arquivo, contexto, rótulo) dos usos que montam menu: tabela, chamada de menu/lista
+    (`MENU_CALL`) ou AddTextPrinterParameterized* numa função que abre cursor de menu."""
+    from pathlib import Path
+    root = Path(repo)
+    printed: dict[str, set[str]] = defaultdict(set)
+    for label, us in uses.items():
+        for file, ctx in us:
+            if MENU_PRINT.match(ctx):
+                printed[file].add(label)
+    in_menu = {(file, label) for file, labels in printed.items()
+               for label in menu_function_labels((root / file).read_text(encoding="utf-8"), labels)}
+    return {(file, ctx, label) for label, us in uses.items() for file, ctx in us
+            if ctx.startswith("table:") or MENU_CALL.match(ctx)
+            or (MENU_PRINT.match(ctx) and (file, label) in in_menu)}

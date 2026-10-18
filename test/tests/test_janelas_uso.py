@@ -9,7 +9,8 @@ from pathlib import Path
 import pytest
 
 from esteira.check_text import check_text, coverage_kind, effective_rules
-from esteira.janelas_uso import MENU_CALL, USAGE_RULES, c_contexts, match, repo_uses
+from esteira.janelas_uso import (MENU_CALL, MENU_PRINT, USAGE_RULES, c_contexts, match, menu_function_labels,
+                                 repo_menu_uses, repo_uses)
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 W60 = "W" * 60
@@ -121,7 +122,7 @@ def test_easy_chat_words_fit_the_word_column(repo):
         + '");\nconst struct EasyChatWordInfo gEasyChatGroup_Actions[] = {\n'
         '    { .text = sEasyChatWord_Ok, },\n    { .text = sEasyChatWord_Bad, },\n};\n')
     (failed,) = failures(run(repo))
-    assert "sEasyChatWord_Bad" in failed.detail and "limite 96 px" in failed.detail
+    assert "sEasyChatWord_Bad" in failed.detail and "limite 79 px" in failed.detail
 
 
 # ---- repo real -----------------------------------------------------------------------------
@@ -142,7 +143,7 @@ def test_real_families_have_their_windows(real_rules):
     assert px(real_rules, "src/strings.c", "gText_DoWhatWithPokemon") == 128    # grupo
     assert px(real_rules, "src/strings.c", "gText_PokeSum_Controls_Page") == 84    # resumo
     assert px(real_rules, "src/strings.c", "gText_RegionMap_AreaDesc_ViridianForest") == 198
-    assert px(real_rules, "src/data/easy_chat/easy_chat_group_actions.h", "sEasyChatWord_Meets") == 96
+    assert px(real_rules, "src/data/easy_chat/easy_chat_group_actions.h", "sEasyChatWord_Meets") == 79
     assert px(real_rules, "src/battle_message.c", "gText_MoveInterfacePP") == 24
 
 
@@ -159,6 +160,18 @@ def test_real_screens_reviewed_in_round_2(real_rules, label, expected):
     assert expected in {r.px for r in real_rules[("src/strings.c", label)]}       # a janela revista entra na conta
 
 
+@pytest.mark.parametrize("label, expected", [
+    ("gText_Slp", 48), ("gOtherText_Exit", 48),                 # grade do quadro da Escola de Treinadores
+    ("gText_SomeoneSPc", 96), ("gText_LogOff", 96), ("gText_SPc", 96), ("gText_ProfOakSPc", 104),
+    ("gText_HallOfFame_2", 104),                                  # menu do PC
+    ("gText_SevenIsland", 80), ("gText_Other", 80),              # Seagallop
+    ("gText_Boulderbadge", 208),                                  # gStdStringPtrs -> {STR_VAR}
+    ("gText_ClearAllSaveData", 184),
+])
+def test_real_screens_reviewed_in_round_3(real_rules, label, expected):
+    assert expected in {r.px for r in real_rules[("src/strings.c", label)]}
+
+
 def test_real_union_room_chat_default_phrase_fits_the_save_buffer(real_rules):
     (rule,) = [r for r in real_rules[("src/strings.c", "gText_Hello")] if r.chars is not None]
     assert rule.chars == 20                     # registeredTexts[][21] (include/global.h)
@@ -173,21 +186,53 @@ def test_real_strings_c_is_measured(real_rules):
 
 
 def test_table_and_menu_uses_never_fall_into_a_generic_rule():
-    """Texto de tabela ou de chamada de menu/lista não pode ganhar a janela de uma regra-pega-tudo
-    do arquivo: cada um desses usos tem regra própria (ou a tela tem janela única)."""
-    loose = []
-    for label, uses in repo_uses(REPO_ROOT).items():
-        for file, ctx in uses:
-            rule = match(file, ctx, label)
-            assert rule is not None, (file, ctx, label)
-            if (ctx.startswith("table:") or MENU_CALL.match(ctx)) and rule.generic:
-                loose.append((file, ctx, label, rule.px))
+    """Texto de tabela, de chamada de menu/lista ou de menu montado à mão não pode ganhar a janela
+    de uma regra-pega-tudo do arquivo: cada um desses usos tem regra própria (ou a tela tem janela
+    única)."""
+    uses = repo_uses(REPO_ROOT)
+    for label, us in uses.items():
+        for file, ctx in us:
+            assert match(file, ctx, label) is not None, (file, ctx, label)
+    menu = repo_menu_uses(REPO_ROOT, uses)
+    assert ("src/script_menu.c", "call:AddTextPrinterParameterized", "gText_LogOff") in menu      # menu do PC
+    assert ("src/script_menu.c", "call:AddTextPrinterParameterized", "gText_Other") in menu       # Seagallop
+    loose = sorted((file, ctx, label, rule.px) for file, ctx, label in menu
+                   if (rule := match(file, ctx, label)).generic)
     assert loose == [], loose[:10]
+
+
+def test_texts_sharing_a_row_must_not_overlap(repo):
+    # 8 + "Grito" + controles (alinhados à direita em 236) na barra de baixo da Pokédex
+    strings_c(repo, ("gText_Cry", "{START_BUTTON}GRITO"), ("gText_NextDataCancel", "W" * 45),
+              ("gText_DexCategory_SeaPkmn", "POKéMON DO MAR"), ("gText_Page", "PÁG."))
+    (failed,) = failures(run(repo))
+    assert "gText_Cry" in failed.detail and "gText_NextDataCancel" in failed.detail
+    strings_c(repo, ("gText_Cry", "{START_BUTTON}GRITO"), ("gText_NextDataCancel", "{A_BUTTON}PRÓXIMO"),
+              ("gText_DexCategory_SeaPkmn", "W" * 30), ("gText_Page", "PÁG."))
+    (failed,) = failures(run(repo))
+    assert "gText_DexCategory_SeaPkmn" in failed.detail and "gText_Page" in failed.detail
+
+
+def test_shared_rows_cite_the_lines_that_print_them():
+    from esteira.janelas_uso import SHARED_ROWS
+    for row in SHARED_ROWS:
+        texts = [_cited_text(p, a, b) for p, a, b in _cited_ranges(row.source)]
+        right = "sDexCategoryNamePtrs" if row.left.startswith("gText_DexCategory") else row.left
+        assert any(right in t for t in texts) and any(f"{row.edge_px}" in t for t in texts), row
+
+
+def test_menu_printed_by_hand_is_recognized():
+    src = ('static void CreateMenu(void)\n{\n    AddTextPrinterParameterized(w, 2, gText_A, 8, 2, 0, NULL);\n'
+           '    Menu_InitCursor(w, 2, 0, 2, 16, 1, 0);\n}\n'
+           'static void Message(void)\n{\n    AddTextPrinterParameterized(w, 2, gText_B, 0, 2, 0, NULL);\n}\n')
+    assert menu_function_labels(src, {"gText_A", "gText_B"}) == {"gText_A"}
+    assert MENU_PRINT.match("call:AddTextPrinterParameterized4") and not MENU_PRINT.match("call:AddTextPrinterFoo")
 
 
 def test_generic_rule_flag():
     assert match("src/credits.c", "code", "x").generic is False             # tela de janela única
-    assert match("src/script_menu.c", "table:sMultichoiceLists", "x").generic is False
+    assert match("src/script_menu.c", "table:sMultichoiceList_YesNo", "x").generic is False
+    assert match("src/script_menu.c", "code", "x") is None                  # sem pega-tudo na multiescolha
     assert match("src/daycare.c", "code", "x").generic is True
     assert MENU_CALL.match("call:StringCopy") is None and MENU_CALL.match("call:DisplayPartyMenuMessage")
     assert bool(MENU_CALL.match("call:AddTextPrinterForListMenu")) and bool(MENU_CALL.match("call:PrintTextArray"))
@@ -195,7 +240,7 @@ def test_generic_rule_flag():
 
 _CHECKED_FILES = ("src/pokedex_screen.c", "src/union_room", "src/data/union_room.h", "src/fame_checker.c",
                   "src/easy_chat", "src/data/easy_chat/", "src/script_menu.c")
-_TILES = re.compile(r"(\d+) tiles(?: cada)? \(((?:src|include)/[\w./-]+\.[ch]):(\d+)(?:-(\d+))?")
+_TILES = re.compile(r"\b(\d+) tiles\b")
 _CITE = re.compile(r"((?:src|include|data)/[\w./-]+\.(?:c|h|inc|s)):(\d+)(?:-(\d+))?((?:, :\d+(?:-\d+)?)*)")
 
 
@@ -211,14 +256,37 @@ def _cited_text(path, first, last):
     return "\n".join(lines[first - 1:last])
 
 
+def _window_citation_errors(source):
+    """Cada "N tiles" seguido de citação (sem ";" no meio, como em "janela de 6 tiles com o texto
+    em x = 8 (arquivo:linha)") tem de cair num trecho que define a largura N."""
+    errors = []
+    for m in _TILES.finditer(source):
+        cite = _CITE.search(source, m.end())           # a primeira citação depois de "N tiles"
+        if cite is None or ";" in source[m.end():cite.start()]:
+            continue                                   # conta sem citação própria
+        n = m.group(1)
+        width = re.compile(rf"(?i:\w*width)\s*=\s*{n}\b|\b(?:CreateWindowFromRect|SetWindowTemplateFields|"
+                           rf"CreateWindowTemplate)\([^)]*\b{n}\s*,|#define\s+\w*WIDTH\w*\s+\(?{n}\b")
+        texts = [_cited_text(p, a, b) for p, a, b in _cited_ranges(cite.group(0))]
+        if not any(width.search(t) for t in texts):
+            errors.append((m.group(0), cite.group(0)))
+    return errors
+
+
+def test_window_citation_checker_needs_the_width_itself():
+    ok = "janela de 6 tiles com o texto em x = 8 (src/union_room_chat_display.c:940-956)"
+    assert _window_citation_errors(ok) == []
+    # o trecho tem "8," (x do texto) mas não define largura 8: antes passava
+    bad = "janela de 8 tiles (src/union_room_chat_display.c:955-956)"
+    assert _window_citation_errors(bad) == [("8 tiles", "src/union_room_chat_display.c:955-956")]
+
+
 @pytest.mark.parametrize("rule", [r for r in USAGE_RULES if r.file.startswith(_CHECKED_FILES)],
                          ids=lambda r: f"{r.file}|{r.context}|{r.label}")
 def test_cited_window_is_the_one_that_receives_the_text(rule):
     """Nas telas revistas, a janela citada tem a largura dita e o trecho de uso citado mostra o
     texto (a chamada, a tabela ou o rótulo) indo para ela."""
-    for tiles, path, first, last in _TILES.findall(rule.source):
-        text = _cited_text(path, int(first), int(last or first))
-        assert re.search(rf"\bwidth\s*=\s*{tiles}\b|\b{tiles}\s*,", text), (rule.source, path, first)
+    assert _window_citation_errors(rule.source) == []
     if rule.px is None and rule.chars is None:
         return
     names = {rule.label} if rule.label != "*" and not any(c in rule.label for c in "*?[") else set()

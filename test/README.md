@@ -702,12 +702,17 @@ contém, `table:sCursorOptions`; outro código, `code`) e mede contra a janela d
 (`USAGE_RULES`, com arquivo:linha). O texto tem de caber em todas; o achado diz qual janela
 estourou. Texto sem uso nenhum é "texto morto" e fica sem medida. Fonte sem janela determinável
 tem regra explícita com o motivo (braille, naturezas, descrições de enfeite, teclados); um teste
-garante que nenhum texto cai fora das regras. Texto de tabela ou de chamada de menu/lista
-(`MENU_CALL`) não pode cair na regra-pega-tudo do arquivo (contexto e rótulo `"*"`): tem regra
-própria, ou a regra é marcada `unica=True` (tela de janela única: multiescolha, créditos). Nas
-telas revistas (Pokédex, Union Room, Fame Checker, Easy Chat, multiescolha) um teste confere que
-a janela citada tem a largura dita e que o trecho citado mostra o texto indo para ela. Modelos
-do Easy Chat que o FRLG não abre (batalha, bardo, entrevista, frase da moda) são texto morto.
+garante que nenhum texto cai fora das regras. Texto de tabela, de chamada de menu/lista
+(`MENU_CALL`) ou de menu montado à mão (`AddTextPrinterParameterized*` numa função que abre cursor
+de menu, como o menu do PC e o do Seagallop) não pode cair na regra-pega-tudo do arquivo (contexto
+e rótulo `"*"`): tem regra própria, ou a regra é marcada `unica=True` (tela de janela única:
+créditos, cursor da lista). Nas telas revistas (Pokédex, Union Room, Fame Checker, Easy Chat,
+multiescolha) um teste confere que a janela citada tem a largura dita e que o trecho citado mostra
+o texto indo para ela. Modelos do Easy Chat que o FRLG não abre (batalha, bardo, entrevista, frase
+da moda) são texto morto; a palavra do Easy Chat mede no máximo 79 px (duas por linha, com
+`{CLEAR 17}`, na moldura de 24 tiles). Textos que dividem a mesma linha (`SHARED_ROWS`: "Grito" e
+os controles da Pokédex, categoria e "PÁG. xx/xx") são medidos juntos: o da esquerda não pode
+encostar no que vem alinhado à direita.
 Cobertura: `python3 -m esteira.check_text --regras`.
 Os caracteres
 ({PLAYER}/{RIVAL} medem 7 letras; nomes de batalha `{B_*}` o maior nome do campo, e os

@@ -1245,6 +1245,30 @@ def _ivev_page_results(root: Path) -> list[Result]:
             for line, px in check_page_widths(root)]
 
 
+def _shared_row_results(root: Path, raw: list[_Entry]) -> list[Result]:
+    """Dois textos que dividem a mesma linha (esteira/janelas_uso.SHARED_ROWS): o da esquerda
+    não pode encostar no que vem alinhado à direita."""
+    from esteira.janelas_uso import SHARED_ROWS
+    env = None
+    out: list[Result] = []
+    for row in SHARED_ROWS:
+        lefts = [e for e in raw if e.file == row.file and fnmatch.fnmatchcase(e.label, row.left)]
+        rights = [e for e in raw if e.file == row.file and e.label == row.right]
+        if not lefts or not rights:
+            continue
+        env = env or _load_env(root)
+        right_px = max(measure(t.rstrip("$") + row.right_suffix, env, row.font).widest
+                       for e in rights for t in e.texts)
+        room = row.edge_px - right_px - row.start_px
+        for e in lefts:
+            px = max(measure(t, env, row.font).widest for t in e.texts)
+            if px > room:
+                out.append(Result(f"texto/{RULE_WIDTH}", "falha",
+                                  f"{row.file}: {e.label}: largura excedida: {px} px, mas só sobram {room} px na "
+                                  f"linha que divide com {row.right} ({right_px} px à direita) ({row.source})"))
+    return out
+
+
 def check_text(repo: str, exceptions: dict, english: str = ENGLISH_MODE,
                base: str | None = TRANSLATION_BASE) -> list[Result]:
     """Todas as regras sobre os textos de `repo`. `base`: commit da versão inglesa (None = sem
@@ -1252,7 +1276,8 @@ def check_text(repo: str, exceptions: dict, english: str = ENGLISH_MODE,
     if english not in ENGLISH_MODES:
         raise ValueError(f"modo de inglês desconhecido: {english}")
     scan = _scan(Path(repo), base, english)
-    results = list(scan.syntax) + _evolution_page_results(Path(repo)) + _ivev_page_results(Path(repo))
+    results = (list(scan.syntax) + _evolution_page_results(Path(repo)) + _ivev_page_results(Path(repo))
+               + _shared_row_results(Path(repo), scan.raw))
     if scan.base_note:
         for rule in (RULE_CONTROL, RULE_GLOSSARY):
             results.append(Result(f"texto/{rule}", "aviso",
