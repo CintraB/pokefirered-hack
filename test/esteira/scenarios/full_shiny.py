@@ -19,6 +19,11 @@ roteiro liga, CONTINUAR e:
 6. sai, volta e fala de novo: continua 1;
 7. os mesmos 1 000 pares mantêm a cor depois do charm; taxa com charm (200 000 Pokémon).
 
+Modo paralelo (ESTEIRA_JOBS > 1, esteira/paralelo.py): o cenário roda em SHINY_PARTS sessões
+ao mesmo tempo. A parte 0 faz o roteiro inteiro acima; as outras só CONTINUAR e as duas taxas.
+Cada parte conta a sua fatia dos 200 000 (com o RNG semeado por parte) e `merge_shiny` soma as
+fatias e aplica a MESMA faixa de ±3σ dos 200 000 ao total.
+
 Uso, a partir de test/ (a mesma pasta OUT precisa ter o .sav do modo rápido):
     python3 -m esteira rapido   --rom R --elf E --out OUT
     python3 -m esteira completo --rom R --elf E --out OUT --only shiny
@@ -33,6 +38,8 @@ import sys
 from ..emu import KEY_A, KEY_B, KEY_UP
 from ..game import POKEMON_SIZE, decode_mon
 from ..hooks import CMD_CHECK_SHINY, CMD_COUNT_SHINIES, CMD_SET_DEX_COMPLETE, Mailbox
+from ..paralelo import part_data, part_label, seed_rng, share
+from ..result import Result, Suite
 from . import ScenarioContext
 from .base import TEXT_PERIOD, Abort
 from .pc_menu import MULTICHOICE_TASK, PC_MENU_OAK, PC_TIMEOUT, PcMenuMixin
@@ -46,6 +53,9 @@ ATTEMPTS_NO_CHARM = 2           # 1 + SHINY_BASE_REROLLS  (~1/4096)
 ATTEMPTS_WITH_CHARM = 4         # 1 + SHINY_CHARM_REROLLS (~1/2048)
 SHINY_SAMPLES = 200_000
 SIGMAS = 3
+SHINY_PARTS = 6                 # sessões no modo paralelo (fixo: o resultado não depende do teto)
+RATE_NAMES = {False: "shiny: taxa sem charm ≈ 1/4096 (200 000 Pokémon)",
+              True: "shiny: taxa com charm ≈ 1/2048 (200 000 Pokémon)"}
 
 # ~1,9 quadro por Pokémon criado (medido); o teto dá 3x de folga
 FRAMES_PER_MON_LIMIT = 6
@@ -105,6 +115,41 @@ def _fmt(x: float) -> str:
     return f"{x:.1f}".replace(".", ",")
 
 
+def rate_detail(shinies: int, frames: int, with_charm: bool, bag: int, parts: int = 1) -> str:
+    """Detalhe da taxa de SHINY_SAMPLES Pokémon; AssertionError fora da faixa de ±SIGMAS."""
+    attempts = ATTEMPTS_WITH_CHARM if with_charm else ATTEMPTS_NO_CHARM
+    lo, hi = shiny_interval(SHINY_SAMPLES, attempts)
+    mean = expected_shinies(SHINY_SAMPLES, attempts)
+    where = f" em {parts} processos" if parts > 1 else ""
+    detail = (f"{shinies} shiny em {SHINY_SAMPLES} (esperado {_fmt(mean)} = "
+              f"n·(1-(1-1/8192)^{attempts}); faixa ±{SIGMAS}σ {_fmt(lo)}..{_fmt(hi)}); "
+              f"{frames} quadros{where}; charm na bolsa = {bag}")
+    assert lo <= shinies <= hi, f"fora da faixa: {detail}"
+    return detail
+
+
+def merge_shiny(parts_results: list[list[Result]]) -> list[Result]:
+    """Junta as partes (modo paralelo): os resultados da parte 0 na ordem dela, com as duas taxas
+    trocadas pela soma das fatias de todas as partes, conferida com a faixa dos 200 000."""
+    merged: list[Result] = []
+    parts = len(parts_results)
+    for result in parts_results[0]:
+        if result.data is None or result.name not in RATE_NAMES.values():
+            merged.append(result)
+            continue
+        datas, failure = part_data(parts_results, result.name)
+        if failure is not None:
+            merged.append(failure)
+            continue
+        with_charm = result.name == RATE_NAMES[True]
+        suite = Suite()
+        suite.run(result.name, lambda: rate_detail(
+            sum(d["shinies"] for d in datas), sum(d["frames"] for d in datas), with_charm,
+            datas[0]["bag"], parts))
+        merged.extend(suite.results)
+    return merged
+
+
 class ShinyScenario(PcMenuMixin, CatchSaveScenario):
     def __init__(self, ctx: ScenarioContext):
         super().__init__(ctx)
@@ -160,27 +205,37 @@ class ShinyScenario(PcMenuMixin, CatchSaveScenario):
 
     # --- taxa de shiny -------------------------------------------------------------
     def _rate(self, with_charm: bool) -> str:
-        attempts = ATTEMPTS_WITH_CHARM if with_charm else ATTEMPTS_NO_CHARM
+        part, parts = self.ctx.part, self.ctx.parts
+        samples = share(SHINY_SAMPLES, part, parts)
         bag_before = self.game.bag_quantity(self.charm)
         # o atalho põe/tira o charm durante a contagem; a taxa só vale se a bolsa real já
-        # estiver no estado pedido (o que o jogador teria de verdade)
-        assert bag_before == int(with_charm), (
-            f"charm na bolsa = {bag_before} antes da taxa {'com' if with_charm else 'sem'} charm")
+        # estiver no estado pedido (o que o jogador teria de verdade). As partes > 0 do modo
+        # paralelo não andam até o Oak: só contam a fatia delas (a parte 0 confere a bolsa).
+        if part == 0:
+            assert bag_before == int(with_charm), (
+                f"charm na bolsa = {bag_before} antes da taxa "
+                f"{'com' if with_charm else 'sem'} charm")
+        if parts > 1:   # fatias com sequências do RNG disjuntas (paralelo.part_seed)
+            seed_rng(self.emu, self.game.syms, "shiny", int(with_charm) * parts + part)
         start = self.emu.frames(0)
-        shinies = self.box.call(CMD_COUNT_SHINIES, SHINY_SAMPLES, int(with_charm),
-                                timeout=SHINY_SAMPLES * FRAMES_PER_MON_LIMIT, poll=COUNT_POLL)
+        shinies = self.box.call(CMD_COUNT_SHINIES, samples, int(with_charm),
+                                timeout=samples * FRAMES_PER_MON_LIMIT, poll=COUNT_POLL)
         frames = self.emu.frames(0) - start
         bag_after = self.game.bag_quantity(self.charm)
-        lo, hi = shiny_interval(SHINY_SAMPLES, attempts)
-        mean = expected_shinies(SHINY_SAMPLES, attempts)
         self.measures[f"shinies_{'charm' if with_charm else 'sem_charm'}"] = shinies
         assert bag_after == bag_before, (
             f"o atalho mexeu na bolsa: charm {bag_before} -> {bag_after}")
-        detail = (f"{shinies} shiny em {SHINY_SAMPLES} (esperado {_fmt(mean)} = "
-                  f"n·(1-(1-1/8192)^{attempts}); faixa ±{SIGMAS}σ {_fmt(lo)}..{_fmt(hi)}); "
-                  f"{frames} quadros; charm na bolsa = {bag_before}")
-        assert lo <= shinies <= hi, f"fora da faixa: {detail}"
-        return detail
+        if parts > 1:
+            self._partial = {"shinies": shinies, "frames": frames, "bag": bag_before}
+            return (f"{part_label(part, parts)}: {shinies} shiny em {samples}; {frames} quadros "
+                    "(a faixa é conferida na soma das partes)")
+        return rate_detail(shinies, frames, with_charm, bag_before)
+
+    def _run_rate(self, with_charm: bool) -> None:
+        self._partial = None
+        result = self.suite.run(RATE_NAMES[with_charm], lambda: self._rate(with_charm))
+        if result.status != "falha" and self._partial is not None:
+            result.data = self._partial
 
     # --- Dex completa e avaliações -------------------------------------------------
     def _dex_complete(self) -> str:
@@ -266,8 +321,7 @@ class ShinyScenario(PcMenuMixin, CatchSaveScenario):
                        self._start)
             suite.run("shiny: Pokémon já existentes mantêm a cor original (antes do charm)",
                       lambda: self._colors("antes"))
-            suite.run("shiny: taxa sem charm ≈ 1/4096 (200 000 Pokémon)",
-                      lambda: self._rate(with_charm=False))
+            self._run_rate(with_charm=False)
             self._flow("shiny: atalho marca a Dex Nacional completa", self._dex_complete)
             self._flow("shiny: avaliação pelo PC do Oak com a Dex completa", self._pc_rating)
             suite.run("shiny: avaliação pelo PC não entrega o Shiny Charm",
@@ -280,15 +334,28 @@ class ShinyScenario(PcMenuMixin, CatchSaveScenario):
             suite.run("shiny: falar de novo com o Oak não entrega outro charm", self._oak_again)
             suite.run("shiny: Pokémon já existentes mantêm a cor original (depois do charm)",
                       lambda: self._colors("depois"))
-            suite.run("shiny: taxa com charm ≈ 1/2048 (200 000 Pokémon)",
-                      lambda: self._rate(with_charm=True))
+            self._run_rate(with_charm=True)
+        except Abort:
+            pass
+
+    def run_part(self) -> None:
+        """Parte > 0 do modo paralelo: só CONTINUAR e a fatia das duas taxas."""
+        try:
+            self._flow("shiny: CONTINUAR com o save do modo rápido na build de teste",
+                       self._start)
+            self._run_rate(with_charm=False)
+            self._run_rate(with_charm=True)
         except Abort:
             pass
 
 
 def run_full_shiny(ctx_test: ScenarioContext) -> None:
     """Roda o cenário na build de teste recém-ligada com o .sav do modo rápido (ver módulo)."""
-    ShinyScenario(ctx_test).run()
+    scenario = ShinyScenario(ctx_test)
+    if ctx_test.part > 0:
+        scenario.run_part()
+    else:
+        scenario.run()
 
 
 def main(argv: list[str] | None = None) -> int:

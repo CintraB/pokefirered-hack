@@ -7,12 +7,12 @@ firered_switch.sha1 e imprime `pokefirered_switch.gba: OK`. A worktree é removi
 também quando algo falha. A saída do make fica em OUT/master.log.
 """
 
-import os
 import shutil
 import subprocess
 import tempfile
 from pathlib import Path
 
+from ..paralelo import make_jobs
 from . import REPO_ROOT
 
 BRANCH = "master"
@@ -38,7 +38,8 @@ def _build_master(repo: Path, runner, tmp_root: Path, log: Path) -> str:
         if add.returncode != 0:
             raise AssertionError(f"git worktree add do {BRANCH} falhou: {_tail(add.stderr)}")
         shutil.copytree(repo / "tools" / "agbcc", tree / "tools" / "agbcc", symlinks=True)
-        make = runner(["make", "-C", str(tree), TARGET, f"-j{os.cpu_count() or 1}"],
+        # -j: as vagas do teto ESTEIRA_JOBS que a esteira deu a esta tarefa (paralelo.make_jobs)
+        make = runner(["make", "-C", str(tree), TARGET, f"-j{make_jobs()}"],
                       capture_output=True, text=True, timeout=BUILD_TIMEOUT)
         output = make.stdout + make.stderr
         log.parent.mkdir(parents=True, exist_ok=True)

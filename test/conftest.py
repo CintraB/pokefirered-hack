@@ -8,6 +8,13 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 SWITCH_ROM = REPO_ROOT / "pokefirered_switch.gba"
 
 
+def pytest_xdist_auto_num_workers(config) -> int:
+    """`-n auto` (test/pytest.ini): tantos workers quanto o teto ESTEIRA_JOBS (padrão 10), para
+    o PC continuar usável; `-n 0` roda tudo num processo só."""
+    from esteira.paralelo import jobs
+    return jobs()
+
+
 def pytest_configure(config) -> None:
     config.addinivalue_line(
         "markers", "slow: compila de verdade (minutos); ESTEIRA_SKIP_SLOW=1 pula")

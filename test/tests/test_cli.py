@@ -20,6 +20,8 @@ def isolated_paths(tmp_path, monkeypatch):
     """Nenhum teste pode tocar o estado de rodízio nem as referências reais."""
     monkeypatch.setattr(cli, "STATE_PATH", str(tmp_path / "estado-rodizio.json"))
     monkeypatch.setattr(cli, "REFS_DIR", str(tmp_path / "referencias"))
+    # o modo sequencial (uma sessão por vez, neste processo); o paralelo: test_paralelo.py
+    monkeypatch.setenv("ESTEIRA_JOBS", "1")
 
 
 # --- cenários e emulador falsos --------------------------------------------------------------
@@ -480,6 +482,12 @@ def test_registro_dos_cenarios_completos():
             assert spec.rom == TEST and any(g[0] is spec for _, g in groups)
             assert spec.save_from in playable
     assert set(cli.WATCH_FULL_SCENARIOS) <= {s.name for s in specs if s.save_from}
+    # divididos em partes no modo paralelo: só os estatísticos, cada um sozinho no grupo
+    split = {s.name: s.parts for s in specs if s.parts > 1}
+    assert split == {"shiny": cli.SHINY_PARTS, "creche": cli.BREEDING_PARTS}
+    for name in split:
+        assert by_name[name].merge is not None
+        assert [g for _, g in groups if by_name[name] in g] == [[by_name[name]]]
     rapido = [s.name for s in cli.scenarios_for("rapido")]
     assert rapido == ["abertura", "rota1", "captura"]
 

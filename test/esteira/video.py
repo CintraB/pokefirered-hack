@@ -80,7 +80,11 @@ class VideoRecorder:
     """
 
     def __init__(self, every: int = 8, scale: int = 1, max_bytes: int = MAX_BYTES,
-                 memory_budget: int = MEMORY_BUDGET, quality: int = QUALITY):
+                 memory_budget: int = MEMORY_BUDGET, quality: int = QUALITY,
+                 stream: bool = True):
+        """`stream=False`: só guarda os quadros (sem a codificação WebP durante a execução):
+        o gravador de uma sessão do modo paralelo, cujos quadros o processo principal junta
+        aos das outras (`export`/`add_packed`) e só ele codifica."""
         if every < 1 or scale < 1:
             raise ValueError("every e scale devem ser >= 1")
         self.every = every
@@ -95,7 +99,8 @@ class VideoRecorder:
         self._frames: list[tuple[int, bytes]] = []   # (posição em quadros emulados, zlib(RGB))
         self._bytes = 0
         self._incremental = _webp is not None    # False depois de qualquer falha do incremental
-        self._stream: _Stream | None = _Stream(quality) if self._incremental else None
+        self._stream: _Stream | None = (_Stream(quality) if self._incremental and stream
+                                        else None)
         self._error: Exception | None = None     # erro da thread de fundo
         self.failure: Exception | None = None    # o Emulator desistiu de gravar (ver fail())
         self._queue: queue.Queue = queue.Queue(maxsize=QUEUE_DEPTH)
@@ -143,7 +148,20 @@ class VideoRecorder:
         if self.failure is None:
             self.failure = exc
 
-    def _submit(self, pos: int, rgb: bytes, size: tuple[int, int]) -> None:
+    def add_packed(self, pos: int, packed: bytes) -> None:
+        """Quadro já comprimido (zlib do RGB 240x160), como `export()` de outro gravador os dá."""
+        if pos % self.every == 0:
+            self._submit(pos, packed, SCREEN_SIZE, packed=True)
+
+    def export(self) -> dict:
+        """Os quadros guardados (posição, zlib do RGB), o espaçamento e a falha, se houve: o que
+        uma sessão do modo paralelo devolve ao processo principal (picklável)."""
+        self._flush()
+        problem = self.failure or self._error
+        return {"every": self.every, "frames": list(self._frames),
+                "failure": f"{type(problem).__name__}: {problem}" if problem else None}
+
+    def _submit(self, pos: int, rgb: bytes, size: tuple[int, int], packed: bool = False) -> None:
         if self.failure is not None:
             return
         if self._thread is None:
@@ -152,7 +170,7 @@ class VideoRecorder:
             self._thread = thread
         while True:
             try:
-                self._queue.put((pos, rgb, size), timeout=1)
+                self._queue.put((pos, rgb, size, packed), timeout=1)
                 return
             except queue.Full:
                 if not self._thread.is_alive():
@@ -164,25 +182,29 @@ class VideoRecorder:
     # --- thread de fundo ---------------------------------------------------------------
     def _work(self) -> None:
         while True:
-            pos, rgb, size = self._queue.get()
+            pos, rgb, size, packed = self._queue.get()
             try:
                 if self._error is None:
-                    self._ingest(pos, rgb, size)
+                    if packed:
+                        self._ingest(pos, rgb, size, True)
+                    else:
+                        self._ingest(pos, rgb, size)
             except Exception as exc:  # noqa: BLE001 - reaparece em save()
                 self._error = exc
             finally:
                 self._queue.task_done()
 
-    def _ingest(self, pos: int, rgb: bytes, size: tuple[int, int]) -> None:
+    def _ingest(self, pos: int, rgb: bytes, size: tuple[int, int],
+                is_packed: bool = False) -> None:
         if pos % self.every:   # o espaçamento aumentou depois que o quadro foi pedido
             return
         self.size = size
-        packed = zlib.compress(rgb, 1)
+        packed = rgb if is_packed else zlib.compress(rgb, 1)
         self._frames.append((pos, packed))
         self._bytes += len(packed)
         if self._stream is not None:
             try:
-                self._stream.add(self._image(rgb))
+                self._stream.add(self._image(zlib.decompress(rgb) if is_packed else rgb))
             except Exception:  # noqa: BLE001 - API interna do Pillow: cai na pública em save()
                 self._drop_incremental()
         while ((self._bytes > self.memory_budget or len(self._frames) > self.max_frames)

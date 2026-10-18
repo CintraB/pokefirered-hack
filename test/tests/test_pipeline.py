@@ -3,7 +3,7 @@
 A esteira de verdade (emulador, ~35 s) é trocada por um script falso via ESTEIRA_CMD; as pastas
 `roms/` e `test/out/` apontam para diretórios temporários (ESTEIRA_ROMS_DIR, ESTEIRA_OUT_BASE),
 então nenhum teste escreve em `roms/` de verdade. Só o último teste compila algo (um erro de
-sintaxe numa cópia do repositório) e é lento.
+sintaxe numa cópia do repositório, um espelho no /tmp do WSL) e é lento.
 """
 
 import os
@@ -551,14 +551,21 @@ def test_test_full_rebuilds_the_test_rom_before_running():
     assert f"--elf-test {REPO_ROOT / 'pokefirered_switch_test.elf'}" in run
 
 
-def _link_copy(dest: Path) -> None:
-    """Cópia da árvore com hardlinks (só o que o build precisa): cria rápido, não duplica 250 MB."""
-    skip = {".git", "roms", "test"}
-    dest.mkdir()
-    for entry in REPO_ROOT.iterdir():
-        if entry.name in skip:
-            continue
-        subprocess.run(["cp", "-al", str(entry), str(dest / entry.name)], check=True)
+# Cópia própria do repo para o teste lento: um espelho fixo no /tmp do WSL (ext4), atualizado
+# com rsync a cada execução. No /mnt/c uma cópia com hardlinks levava ~3 min e o make nela
+# ~1 min (cada stat atravessa o 9p); no ext4 o rsync incremental leva ~20 s (~75 s na 1ª vez,
+# ou depois de reiniciar o WSL) e o make menos de 1 s. É uma cópia de verdade (não hardlinks):
+# estragar um arquivo nela nunca toca o original.
+MIRROR = Path(os.environ.get("TMPDIR", "/tmp")) / f"esteira-espelho-repo-{os.getuid()}"
+
+
+def _mirror_copy(dest: Path) -> None:
+    """Deixa `dest` igual ao repo (menos .git, roms/ e test/; mtimes preservados, então o
+    build copiado continua em dia) e copia de test/ só o que o build precisa."""
+    dest.mkdir(parents=True, exist_ok=True)
+    subprocess.run(["rsync", "-a", "--delete", "--exclude=/.git", "--exclude=/roms",
+                    "--exclude=/test", f"{REPO_ROOT}/", f"{dest}/"], check=True, timeout=900)
+    shutil.rmtree(dest / "test", ignore_errors=True)
     # test/pipeline.sh e os scripts de que o Makefile precisa
     shutil.copytree(REPO_ROOT / "test", dest / "test", ignore=shutil.ignore_patterns(
         "out", "__pycache__", "fixtures", "tests", "harness", ".pytest_cache"))
@@ -568,13 +575,17 @@ def _link_copy(dest: Path) -> None:
 @pytest.mark.skipif(os.environ.get("ESTEIRA_SKIP_SLOW") == "1", reason="ESTEIRA_SKIP_SLOW=1")
 def test_compile_error_makes_make_fail():
     """Um erro de sintaxe no C reprova `make firered_switch` (nunca pode parecer verde)."""
+    import fcntl
     if not (REPO_ROOT / "build" / "firered_switch").is_dir() or not (REPO_ROOT / SWITCH).is_file():
         pytest.skip("precisa de um build anterior de firered_switch (make firered_switch)")
-    work = REPO_ROOT / "test" / "out" / f"pipeline-copia-{os.getpid()}"
-    shutil.rmtree(work, ignore_errors=True)
+    if shutil.which("rsync") is None:
+        pytest.skip("precisa do rsync (sudo apt install rsync)")
+    work = MIRROR
+    work.parent.mkdir(parents=True, exist_ok=True)
+    lock = open(work.with_name(work.name + ".lock"), "w")
+    fcntl.flock(lock, fcntl.LOCK_EX)   # dois pytest ao mesmo tempo não dividem o espelho
     try:
-        _link_copy(work)
-        # Quebra um arquivo sem tocar nos inodes do original (os hardlinks): remove e recria.
+        _mirror_copy(work)
         source = work / "src" / "random.c"
         text = source.read_text(encoding="utf-8")
         source.unlink()
@@ -584,7 +595,9 @@ def test_compile_error_makes_make_fail():
         roms = work / "roms-isolado"
         env = {**os.environ, "ESTEIRA_ROMS_DIR": str(roms), "ESTEIRA_OUT_BASE": str(work / "saida"),
                "ESTEIRA_CMD": "true"}
-        done = subprocess.run(["make", "firered_switch", f"-j{os.cpu_count() or 4}"], cwd=work,
+        # -j1: só o random.c recompila (o resto da cópia está em dia) e o worker do pytest já é
+        # uma das vagas do teto ESTEIRA_JOBS
+        done = subprocess.run(["make", "firered_switch", "-j1"], cwd=work,
                               env=env, capture_output=True, text=True, timeout=900)
         assert done.returncode != 0, "make saiu 0 apesar do erro de compilação:\n" + done.stdout[-2000:]
         assert not roms.exists(), "nada pode ser versionado quando a compilação falha"
@@ -593,4 +606,6 @@ def test_compile_error_makes_make_fail():
         assert "random.c" in log.read_text(encoding="utf-8", errors="replace")
         assert not (log.parent / "firered_switch.log.new").exists()
     finally:
-        shutil.rmtree(work, ignore_errors=True)
+        # o espelho fica para a próxima vez (o rsync desfaz o random.c estragado e o resto)
+        fcntl.flock(lock, fcntl.LOCK_UN)
+        lock.close()

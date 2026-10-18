@@ -20,6 +20,11 @@ teste) em WebP animado acelerado (um quadro a cada 8 emulados, 30 fps), embutido
 com um save temporário; não gera versão, não mexe em roms/ nem no rodízio de iniciais. Com
 `--cenario evolucoes` (ou `resumo_evolucao`, `resumo_ivs`, `ovo`), mostra esse cenário do modo completo na ROM de
 teste (partindo de uma cópia do captura.sav mais recente de test/out/*/).
+Paralelismo (esteira/paralelo.py): até ESTEIRA_JOBS (padrão 10) processos ao mesmo tempo. No
+`completo` sem --only, cada sessão roda num processo próprio (o grupo jogável, o master e, assim
+que a ponte captura.sav fica pronta, as sessões da ROM de teste; shiny e creche divididos em
+partes) e tudo é juntado na ordem do sequencial. No `rapido`, a checagem de textos roda ao lado
+do emulador. ESTEIRA_JOBS=1 (ou --only) é o modo sequencial de sempre.
 Sai com 0 se nenhum resultado for `falha` (avisos não reprovam) e 1 caso contrário. Sem
 `--starter`, o inicial é o da vez no rodízio (esteira/rotation.py), que só avança quando a
 execução termina verde: um vermelho repete o mesmo inicial na próxima.
@@ -27,6 +32,7 @@ execução termina verde: um vermelho repete o mesmo inicial na próxima.
 
 import argparse
 import json
+import multiprocessing
 import os
 import shutil
 import signal
@@ -50,13 +56,15 @@ from esteira.result import Result, StepTimeout, Suite
 from esteira.rotation import STARTERS, peek_next_starter, record_starter
 from esteira.scenarios import REPO_ROOT, ScenarioContext, open_context
 from esteira.scenarios.full_evolutions import run_full_evolutions
-from esteira.scenarios.full_breeding import run_full_breeding    # Hack 6
+from esteira import paralelo
+from esteira.scenarios.full_breeding import (BREEDING_PARTS, merge_breeding,   # Hack 6
+                                             run_full_breeding)
 from esteira.scenarios.full_egg import run_full_egg              # Hack 6
 from esteira.scenarios.full_forest_brock import run_full_forest_brock
 from esteira.scenarios.full_master import run_full_master
 from esteira.scenarios.full_pc import run_full_pc
 from esteira.scenarios.full_screen_tour import run_full_screen_tour
-from esteira.scenarios.full_shiny import run_full_shiny
+from esteira.scenarios.full_shiny import SHINY_PARTS, merge_shiny, run_full_shiny
 from esteira.scenarios.full_summary_evolution import run_full_summary_evolution
 from esteira.scenarios.full_summary_ivs import run_full_summary_ivs
 from esteira.scenarios.quick_catch_save import run_catch_save
@@ -99,12 +107,20 @@ class ScenarioSpec:
     `aviso` "não rodou". Com `--only` de um
     cenário da ROM de teste, usa o OUT/<save_from>.sav de uma execução anterior na mesma pasta
     (`rapido` também o deixa); sem ele, `falha` explicando o que rodar.
+
+    `parts`/`merge` (só num cenário que é o grupo inteiro, com `save_from`): no modo paralelo
+    (ESTEIRA_JOBS > 1, esteira/paralelo.py) o cenário roda em `parts` sessões ao mesmo tempo
+    (ctx.part = 0..parts-1, cada uma com a sua fatia do N) e `merge(resultados de cada parte)`
+    devolve os resultados na ordem do sequencial, com as faixas aplicadas ao total. No modo
+    sequencial (ESTEIRA_JOBS=1) e com `--only`, roda inteiro numa sessão só.
     """
     name: str
     run: Callable[[ScenarioContext], None]
     needs: str | None = None
     rom: str = PLAYABLE
     save_from: str | None = None
+    parts: int = 1
+    merge: Callable[[list[list[Result]]], list[Result]] | None = None
 
 
 QUICK_SCENARIOS = [
@@ -123,17 +139,20 @@ QUICK_SCENARIOS = [
 # (test_cli.py::test_registro_dos_cenarios_completos confere a ordem). O `evolucoes`, o
 # `resumo_evolucao` e o `resumo_ivs` também partem desse .sav, cada um numa sessão própria da ROM de teste
 # (save_from abre sessão nova): rodam sozinhos com `--only <nome>` e não herdam o que o
-# shiny (ou o outro) fez (Dex Nacional, Shiny Charm, time de teste).
+# shiny (ou o outro) fez (Dex Nacional, Shiny Charm, time de teste). No modo paralelo cada
+# sessão de teste é um processo; o shiny e o creche, `parts` processos cada (ver ScenarioSpec).
 FULL_SCENARIOS: list[ScenarioSpec] = [
     ScenarioSpec("pc", run_full_pc, needs="save"),
     ScenarioSpec("telas", run_full_screen_tour, needs="pc"),
     ScenarioSpec("floresta_brock", run_full_forest_brock, needs="telas"),
     ScenarioSpec("master", run_full_master, rom=HOST),
-    ScenarioSpec("shiny", run_full_shiny, rom=TEST, save_from="captura"),
+    ScenarioSpec("shiny", run_full_shiny, rom=TEST, save_from="captura",
+                 parts=SHINY_PARTS, merge=merge_shiny),
     ScenarioSpec("evolucoes", run_full_evolutions, rom=TEST, save_from="captura"),
     ScenarioSpec("resumo_evolucao", run_full_summary_evolution, rom=TEST, save_from="captura"),
     ScenarioSpec("resumo_ivs", run_full_summary_ivs, rom=TEST, save_from="captura"),
-    ScenarioSpec("creche", run_full_breeding, rom=TEST, save_from="captura"),   # Hack 6
+    ScenarioSpec("creche", run_full_breeding, rom=TEST, save_from="captura",    # Hack 6
+                 parts=BREEDING_PARTS, merge=merge_breeding),
     ScenarioSpec("ovo", run_full_egg, rom=TEST, save_from="captura"),          # Hack 6
 ]
 # Cenários do modo completo que o `assistir --cenario` mostra numa janela (ROM de teste, a
@@ -169,6 +188,15 @@ def _build_unusable(results: list[Result]) -> bool:
 def _static_checks(args: argparse.Namespace, suite: Suite) -> bool:
     """Roda build/texto; devolve True se o log mostra que não há ROM jogável utilizável."""
     exceptions = json.loads(EXCEPTIONS_PATH.read_text(encoding="utf-8"))
+    unusable = _build_checks(args, suite, exceptions)
+    if args.only in (None, "texto"):
+        for r in _text_checks(exceptions):
+            suite.add(r)
+    return unusable
+
+
+def _build_checks(args: argparse.Namespace, suite: Suite, exceptions: dict) -> bool:
+    """A checagem do log de build; True se ele mostra que não há ROM jogável utilizável."""
     unusable = False
     if args.only in (None, "build"):
         if args.log:
@@ -179,13 +207,28 @@ def _static_checks(args: argparse.Namespace, suite: Suite) -> bool:
         else:
             suite.add(Result("build/log", "aviso",
                              "sem --log: log de build não analisado (só a checagem de texto rodou)"))
-    if args.only in (None, "texto"):
-        results = check_text(str(REPO_ROOT), exceptions)
-        for r in results:
-            suite.add(r)
-        if not results:
-            suite.add(Result("texto/estático", "ok", "nenhum problema nos textos do jogo"))
     return unusable
+
+
+def _text_checks(exceptions: dict) -> list[Result]:
+    results = check_text(str(REPO_ROOT), exceptions)
+    return results or [Result("texto/estático", "ok", "nenhum problema nos textos do jogo")]
+
+
+def _static_failure(exc: BaseException) -> Result:
+    """Bug numa checagem estática: reprova com diagnóstico no relatório (um traceback solto
+    viraria "falha de infraestrutura" a cada build)."""
+    return Result("esteira/checagens-estáticas", "falha",
+                  f"erro inesperado: {type(exc).__name__}: {exc}\n"
+                  f"{''.join(traceback.format_exception(exc)).strip()}")
+
+
+def _text_task(exceptions: dict) -> list[Result]:
+    """A checagem de textos num processo à parte (modo paralelo), ao lado do emulador."""
+    try:
+        return _text_checks(exceptions)
+    except Exception as exc:  # noqa: BLE001 - igual ao modo sequencial
+        return [_static_failure(exc)]
 
 
 def _groups(specs: list[ScenarioSpec], only: str | None) -> list[tuple[str, list[ScenarioSpec]]]:
@@ -240,11 +283,13 @@ def _not_run(suite: Suite, specs: list[ScenarioSpec],
 
 
 def _run_scenarios(group: list[ScenarioSpec], ctx: ScenarioContext, only: str | None,
-                   tempos: dict[str, float], bridges: set[str] = frozenset()) -> None:
+                   tempos: dict[str, float], bridges: set[str] = frozenset(),
+                   on_bridge: Callable[[str], None] | None = None) -> None:
     """Roda a cadeia de um grupo; depois de um cenário com falha, os seguintes viram `aviso`.
     Só falhas surgidas durante a cadeia contam (as checagens estáticas não interrompem nada).
     Um cenário de `bridges` que termina sem falha deixa o .sav da ponte (_write_bridge); se a
-    ponte não puder ser gravada, ele vira `falha`."""
+    ponte não puder ser gravada, ele vira `falha`. `on_bridge(nome)`: chamado logo que a ponte
+    fica pronta (modo paralelo: libera as sessões da ROM de teste)."""
     chain = _chain(group, only, ctx)
     suite = ctx.suite
     out = Path(ctx.out_dir)
@@ -269,6 +314,9 @@ def _run_scenarios(group: list[ScenarioSpec], ctx: ScenarioContext, only: str | 
                                  "save do jogo para a ROM de teste não gravado: "
                                  f"{type(exc).__name__}: {exc}"))
                 failed = True
+            else:
+                if on_bridge is not None:
+                    on_bridge(spec.name)
         tempos[spec.name] = time.monotonic() - start
         if failed:
             _not_run(suite, chain[pos + 1:])
@@ -370,15 +418,90 @@ def run_mode(args: argparse.Namespace) -> int:
     # o de uma execução anterior na mesma pasta não vale.
     video_path = out / VIDEO_NAME
     video_path.unlink(missing_ok=True)
-    recorder = None if args.sem_video else VideoRecorder()
+    jobs = paralelo.jobs()
+    parallel = jobs > 1 and args.only is None
+    if parallel and args.modo == "completo":
+        starter, rotated, nao_testada, recorder = _run_parallel(args, specs, out, suite, tempos,
+                                                                jobs, started_wall)
+    else:
+        recorder = None if args.sem_video else VideoRecorder()
+        starter, rotated, nao_testada = _run_sequential(args, specs, out, suite, tempos,
+                                                        recorder, jobs if parallel else 1,
+                                                        started_wall)
 
+    if recorder is not None and recorder.has_activity():
+        _save_video(recorder, video_path, suite, tempos)
+
+    meta = {"inicial": starter or "-", "data": datetime.now().strftime("%Y-%m-%d %H:%M"),
+            "commit": _git_commit(), "modo": args.modo, "tempos": tempos,
+            "tempo_total": time.monotonic() - start, "nao_testada": nao_testada,
+            "processos": jobs}
+    (out / "meta.json").write_text(json.dumps(meta, ensure_ascii=False, indent=1) + "\n",
+                                   encoding="utf-8")
+    report = write_report(suite, str(out), meta)
+    _print_summary(suite, meta, report)
+    if suite.failed():
+        return 1
+    if rotated:   # verde: o próximo é o seguinte do rodízio (vermelho repete este inicial)
+        try:
+            record_starter(args.state, starter)
+        except OSError as exc:
+            print(f"aviso: rodízio de iniciais não gravado em {args.state}: {exc}", file=sys.stderr)
+    return 0
+
+
+def _run_sequential(args: argparse.Namespace, specs: list[ScenarioSpec], out: Path, suite: Suite,
+                    tempos: dict[str, float], recorder: VideoRecorder | None, jobs: int,
+                    started_wall: float) -> tuple[str | None, bool, bool]:
+    """Os grupos um depois do outro, neste processo (o modo de sempre; também o `rapido` e o
+    `--only`). Com `jobs` > 1 só a checagem de textos vai para um processo à parte, ao lado do
+    emulador (o resultado entra no mesmo lugar do relatório). Devolve (inicial, se veio do
+    rodízio, se a ROM jogável ficou sem teste)."""
+    nao_testada = False
+    starter: str | None = args.starter   # sem --starter, só sai do rodízio quando o emulador roda
+    text_pool: paralelo.Pool | None = None
+    text_at = 0
     try:
-        unusable = _static_checks(args, suite)
-    except Exception as exc:  # noqa: BLE001 - bug numa checagem reprova com diagnóstico no relatório
-        unusable = False      # (um traceback solto viraria "falha de infraestrutura" a cada build)
-        suite.add(Result("esteira/checagens-estáticas", "falha",
-                         f"erro inesperado: {type(exc).__name__}: {exc}\n"
-                         f"{traceback.format_exc().strip()}"))
+        try:
+            if jobs > 1:
+                exceptions = json.loads(EXCEPTIONS_PATH.read_text(encoding="utf-8"))
+                unusable = _build_checks(args, suite, exceptions)
+                if args.only in (None, "texto"):
+                    text_pool = paralelo.Pool(jobs)   # fork antes do emulador (sem threads ainda)
+                    text_pool.submit("texto", lambda: _text_task(exceptions))
+                    text_pool.step(timeout=0)
+                    text_at = len(suite.results)
+            else:
+                unusable = _static_checks(args, suite)
+        except Exception as exc:  # noqa: BLE001 - bug numa checagem reprova com diagnóstico no relatório
+            unusable = False      # (um traceback solto viraria "falha de infraestrutura" a cada build)
+            suite.add(Result("esteira/checagens-estáticas", "falha",
+                             f"erro inesperado: {type(exc).__name__}: {exc}\n"
+                             f"{traceback.format_exc().strip()}"))
+        starter, rotated, nao_testada = _run_groups_inline(args, specs, out, suite, tempos,
+                                                           recorder, unusable, started_wall)
+        if text_pool is not None:
+            suite.results[text_at:text_at] = _wait_text(text_pool)
+    finally:
+        if text_pool is not None:
+            text_pool.close()
+    return starter, rotated, nao_testada
+
+
+def _wait_text(pool: paralelo.Pool) -> list[Result]:
+    while pool.busy():
+        for done in pool.step():
+            if done.error is not None:
+                raise RuntimeError(f"checagem de textos: {done.error}")
+            return done.value
+    raise RuntimeError("checagem de textos não devolveu resultado")
+
+
+def _run_groups_inline(args: argparse.Namespace, specs: list[ScenarioSpec], out: Path,
+                       suite: Suite, tempos: dict[str, float], recorder: VideoRecorder | None,
+                       unusable: bool, started_wall: float) -> tuple[str | None, bool, bool]:
+    nao_testada = False
+    starter: str | None = args.starter
     rotated = False   # o inicial veio do rodízio: só é gravado se a execução terminar verde
     if args.only in (None, *[s.name for s in specs]):
         roms = {PLAYABLE: (args.rom, args.elf, "ROM jogável"),
@@ -432,25 +555,270 @@ def run_mode(args: argparse.Namespace) -> int:
                 _run_scenarios(group, ctx, args.only, tempos, bridges)
         if starter is not None:
             _compare_screens(suite, out, starter, started_wall)
+    return starter, rotated, nao_testada
 
-    if recorder is not None and recorder.has_activity():
-        _save_video(recorder, video_path, suite, tempos)
 
-    meta = {"inicial": starter or "-", "data": datetime.now().strftime("%Y-%m-%d %H:%M"),
-            "commit": _git_commit(), "modo": args.modo, "tempos": tempos,
-            "tempo_total": time.monotonic() - start, "nao_testada": nao_testada}
-    (out / "meta.json").write_text(json.dumps(meta, ensure_ascii=False, indent=1) + "\n",
-                                   encoding="utf-8")
-    report = write_report(suite, str(out), meta)
-    _print_summary(suite, meta, report)
-    if suite.failed():
-        return 1
-    if rotated:   # verde: o próximo é o seguinte do rodízio (vermelho repete este inicial)
+# --- modo completo em paralelo (ESTEIRA_JOBS > 1; ver esteira/paralelo.py) --------------------
+#
+# Cada grupo (sessão) vira uma tarefa num processo próprio, com o seu emulador e a sua pasta
+# (OUT/sessoes/<nome>/: .sav, estados, telas); o grupo jogável usa o próprio OUT, como no
+# sequencial. Ordem de partida: textos, grupo jogável e master logo de cara (o master com as
+# vagas que sobram, `make -j`); as sessões da ROM de teste esperam a ponte (captura.sav), que o
+# grupo jogável grava logo depois do `captura` e avisa (on_bridge). Um cenário com `parts`
+# vira `parts` tarefas. No fim tudo é juntado na ordem do sequencial: resultados, tempos e o
+# vídeo (quadros de cada sessão, na ordem dos grupos). Nunca mais de `jobs` vagas ocupadas.
+
+SESSIONS_DIR = "sessoes"
+# Duração típica (s) de cada cenário: as tarefas mais longas saem primeiro quando há vagas.
+_EXPECTED_SECONDS = {"shiny": 500, "creche": 220, "floresta_brock": 90, "evolucoes": 30,
+                     "master": 25}
+
+
+def _session_task(group: list[ScenarioSpec], rom: str, elf: str, out_dir: str, starter: str,
+                  save_from: str | None, video: bool, bridges: set[str], part: int, parts: int,
+                  bridge_event=None) -> dict:
+    """Roda no processo filho: uma sessão de emulador com a cadeia do grupo."""
+    suite = Suite()
+    tempos: dict[str, float] = {}
+    recorder = VideoRecorder(stream=False) if video else None
+    on_bridge = (lambda name: bridge_event.set()) if bridge_event is not None else None
+    with open_context(rom, elf, out_dir, starter, suite, save_from=save_from,
+                      recorder=recorder) as ctx:
+        ctx.part, ctx.parts = part, parts
+        _run_scenarios(group, ctx, None, tempos, bridges, on_bridge)
+    return {"results": suite.results, "tempos": tempos,
+            "video": recorder.export() if recorder is not None else None}
+
+
+def _host_task(group: list[ScenarioSpec], out_dir: str, starter: str) -> dict:
+    suite = Suite()
+    tempos: dict[str, float] = {}
+    host = ScenarioContext(emu=None, game=None, controller=None, nav=None, suite=suite,
+                           consts=None, out_dir=out_dir, starter=starter)
+    _run_scenarios(group, host, None, tempos)
+    return {"results": suite.results, "tempos": tempos, "video": None}
+
+
+def _adopt_files(sub: Path, out: Path, results: list[Result]) -> None:
+    """Traz as telas e os estados de uma sessão (OUT/sessoes/<nome>/) para OUT/telas e
+    OUT/estados, onde o sequencial os deixa (comparação com as referências, `aprovar`), e
+    corrige os caminhos nos resultados. O resto (evidências de tempo esgotado) fica onde está."""
+    moved: dict[str, str] = {}
+    for folder in ("telas", "estados"):
+        src = sub / folder
+        if not src.is_dir():
+            continue
+        (out / folder).mkdir(parents=True, exist_ok=True)
+        for path in src.iterdir():
+            dest = out / folder / path.name
+            os.replace(path, dest)
+            moved[str(path)] = str(dest)
         try:
-            record_starter(args.state, starter)
-        except OSError as exc:
-            print(f"aviso: rodízio de iniciais não gravado em {args.state}: {exc}", file=sys.stderr)
-    return 0
+            src.rmdir()
+        except OSError:
+            pass
+    for r in results:
+        r.images = [moved.get(p, p) for p in r.images]
+        if r.state is not None:
+            r.state = moved.get(r.state, r.state)
+        for folder in ("telas", "estados"):   # caminhos citados no texto do detalhe
+            r.detail = r.detail.replace(f"{sub / folder}/", f"{out / folder}/")
+
+
+def _drop_session_dir(sub: Path, helper: bool) -> None:
+    """O .sav da sessão não serve para nada depois; pasta vazia some (evidências de tempo
+    esgotado ficam). As telas e os estados das partes > 0 (repetem os da parte 0) saem."""
+    (sub / "esteira.sav").unlink(missing_ok=True)
+    if helper:
+        for folder in ("telas", "estados"):
+            shutil.rmtree(sub / folder, ignore_errors=True)
+    for path in (sub, sub.parent):
+        try:
+            path.rmdir()
+        except OSError:
+            break
+
+
+def _run_parallel(args: argparse.Namespace, specs: list[ScenarioSpec], out: Path, suite: Suite,
+                  tempos: dict[str, float], jobs: int, started_wall: float
+                  ) -> tuple[str | None, bool, bool, VideoRecorder | None]:
+    nao_testada = False
+    starter: str | None = args.starter
+    rotated = False
+    video = not args.sem_video
+    roms = {PLAYABLE: (args.rom, args.elf, "ROM jogável"),
+            TEST: (args.rom_test, args.elf_test, "ROM de teste")}
+    groups = _groups(specs, None)
+    scheduled = {s.name for _, group in groups for s in group}
+    producers = _save_producers()
+    for producer in producers & scheduled:   # o .sav de outra execução não vale (ver sequencial)
+        for path in _bridge_paths(out, producer):
+            path.unlink(missing_ok=True)
+
+    static: list[Result] = []           # build (aqui) + textos (tarefa)
+    texts: list[Result] = []
+    slots_out: list[list[Result]] = [[] for _ in groups]          # resultados de cada grupo
+    parts_out: dict[int, list[list[Result] | None]] = {}          # grupo dividido: por parte
+    group_tempos: list[dict[str, list[float]]] = [{} for _ in groups]
+    videos: dict[tuple[int, int], dict] = {}                      # (grupo, parte) -> quadros
+    tasks: dict[str, tuple[int, int, Path | None]] = {}           # chave -> (grupo, parte, pasta)
+    waiting: list[int] = []                                       # grupos esperando a ponte
+    bridge_event = multiprocessing.get_context("fork").Event()
+    playable_running = False
+
+    static_suite = Suite()
+    exceptions = None
+    try:
+        exceptions = json.loads(EXCEPTIONS_PATH.read_text(encoding="utf-8"))
+        unusable = _build_checks(args, static_suite, exceptions)
+    except Exception as exc:  # noqa: BLE001 - como no sequencial
+        unusable = False
+        static_suite.add(_static_failure(exc))
+    static = static_suite.results
+
+    print(f"[paralelo] até {jobs} processos ao mesmo tempo (ESTEIRA_JOBS)", flush=True)
+    with paralelo.Pool(jobs) as pool:
+        if exceptions is not None:
+            pool.submit("texto", lambda: _text_task(exceptions), priority=1000)
+
+        def submit_session(index: int, kind: str, group: list[ScenarioSpec],
+                           save_from: str | None) -> None:
+            rom, elf, _ = roms[kind]
+            spec = group[0]
+            parts = spec.parts if (len(group) == 1 and spec.parts > 1 and spec.merge) else 1
+            if parts > 1:
+                parts_out[index] = [None] * parts
+            for part in range(parts):
+                if kind == PLAYABLE:
+                    sub, key = None, "jogavel"
+                else:
+                    name = spec.name if parts == 1 else f"{spec.name}-parte{part + 1}"
+                    sub, key = out / SESSIONS_DIR / name, name
+                bridges = producers if kind == PLAYABLE else set()
+                event = bridge_event if kind == PLAYABLE else None
+                expected = max(_EXPECTED_SECONDS.get(s.name, 10) for s in group) / parts
+                if kind == PLAYABLE:
+                    expected = 10_000    # caminho crítico: sai antes de tudo
+                pool.submit(key, (lambda g=group, r=rom, e=elf, d=str(sub or out), sf=save_from,
+                                  b=bridges, p=part, n=parts, ev=event:
+                                  _session_task(g, r, e, d, starter, sf, video, b, p, n, ev)),
+                            priority=expected)
+                tasks[key] = (index, part, sub)
+
+        def release(bridge_ok: bool) -> None:
+            for index in waiting:
+                kind, group = groups[index]
+                producer = group[0].save_from
+                save, _ = _bridge_paths(out, producer)
+                if bridge_ok and save.is_file():
+                    submit_session(index, kind, group, str(save))
+                else:
+                    status, why = _missing_save(producer, producer in scheduled, save, out)
+                    slots_out[index].append(Result(f"cenario/{group[0].name}", status, why))
+                    _not_run(_Collector(slots_out[index]), group[1:])
+            waiting.clear()
+
+        for index, (kind, group) in enumerate(groups):
+            if kind == HOST:
+                slots = max(1, jobs - 2)   # o que sobra ao lado dos textos e do grupo jogável
+                key = f"host-{group[0].name}"
+                pool.submit(key, lambda g=group, s=starter or "-": _host_task(g, str(out), s),
+                            slots=slots, priority=_EXPECTED_SECONDS.get(group[0].name, 10),
+                            env={paralelo.MAKE_JOBS_ENV: str(min(slots, jobs))})
+                tasks[key] = (index, 0, None)
+                continue
+            rom, elf, label = roms[kind]
+            missing = [p for p in (rom, elf) if not Path(p).is_file()]
+            bad_build = unusable and kind == PLAYABLE
+            if bad_build or missing:
+                if kind == PLAYABLE:
+                    nao_testada = True
+                why = ("o log de build mostra que a ROM não foi gerada" if bad_build
+                       else "arquivo não encontrado: " + ", ".join(missing))
+                slots_out[index].append(Result(f"emulador/rom-{kind}", "falha",
+                                               f"{label} não testada: {why}"))
+                continue
+            if group[0].save_from is not None:
+                waiting.append(index)
+                continue
+            if starter is None:
+                starter = peek_next_starter(args.state)
+                rotated = True
+            submit_session(index, kind, group, None)
+            if kind == PLAYABLE:
+                playable_running = True
+        if waiting and not playable_running:
+            release(False)
+
+        while pool.busy() or waiting:
+            for done in pool.step():
+                if done.error is not None:
+                    raise RuntimeError(f"tarefa '{done.key}' do modo paralelo: {done.error}")
+                if done.key == "texto":
+                    texts = done.value
+                    continue
+                index, part, sub = tasks[done.key]
+                value = done.value
+                results: list[Result] = value["results"]
+                if sub is not None:
+                    if part == 0:
+                        _adopt_files(sub, out, results)
+                    _drop_session_dir(sub, helper=part > 0)
+                for name, seconds in value["tempos"].items():
+                    group_tempos[index].setdefault(name, []).append(seconds)
+                if value["video"] is not None:
+                    videos[(index, part)] = value["video"]
+                if index in parts_out:
+                    parts_out[index][part] = results
+                else:
+                    slots_out[index].extend(results)
+                if done.key == "jogavel" and waiting:
+                    release(bridge_event.is_set())
+            if waiting and bridge_event.is_set():
+                release(True)
+            if waiting and not pool.busy():   # nada mais vai gravar a ponte
+                release(False)
+        peak = pool.peak
+
+    for index, parts in parts_out.items():
+        spec = groups[index][1][0]
+        slots_out[index].extend(spec.merge(parts))
+    suite.results.extend(static)
+    suite.results.extend(texts)
+    for index in range(len(groups)):
+        suite.results.extend(slots_out[index])
+        for name, values in group_tempos[index].items():
+            tempos[name] = max(values)
+    print(f"[paralelo] pico de {peak} vaga(s) ocupada(s) de {jobs}", flush=True)
+    if starter is not None:
+        _compare_screens(suite, out, starter, started_wall)
+    recorder = None
+    if video and videos:
+        recorder = _merge_videos([videos[k] for k in sorted(videos)])
+    return starter, rotated, nao_testada, recorder
+
+
+class _Collector:
+    """Uma lista de resultados com a cara de Suite (para _not_run)."""
+
+    def __init__(self, results: list[Result]):
+        self.results = results
+
+    def add(self, result: Result) -> None:
+        self.results.append(result)
+
+
+def _merge_videos(exports: list[dict]) -> VideoRecorder:
+    """Um gravador com os quadros de todas as sessões, na ordem dada (a dos grupos), no mesmo
+    espaçamento para todas (o maior entre elas): o vídeo fica como o do sequencial."""
+    every = max((e["every"] for e in exports if e["frames"]), default=8)
+    recorder = VideoRecorder(every=every)
+    for export in exports:
+        if export["failure"] is not None:
+            recorder.fail(RuntimeError(export["failure"]))
+        for pos, packed in export["frames"]:
+            recorder.add_packed(pos, packed)
+    return recorder
 
 
 # --- assistir: os roteiros rápidos numa janela, em tempo real -------------------------------------

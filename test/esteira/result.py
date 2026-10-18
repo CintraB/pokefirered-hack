@@ -22,6 +22,9 @@ class Result:
     detail: str
     images: list[str] = field(default_factory=list)
     state: str | None = None   # savestate de depuração (StepTimeout), quando houver
+    # medição parcial de um cenário dividido em partes (esteira/paralelo.py); o CLI junta as
+    # partes e o relatório nunca a mostra
+    data: dict | None = None
 
 
 class Suite:

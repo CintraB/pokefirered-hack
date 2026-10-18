@@ -229,9 +229,15 @@ firered_rev1:           ; @$(MAKE) GAME_VERSION=FIRERED GAME_REVISION=1
 # when the ROM step ran or the build failed, so a "Nothing to be done" run keeps the last real log.
 ESTEIRA_MARKER := [esteira] build finished
 FIRERED_SWITCH_LOG := $(BUILD_DIR)/firered_switch$(if $(filter 1,$(TESTBUILD)),_test).log
+# Ceiling of simultaneous work processes (compiler jobs, emulators, pytest workers), so the PC
+# stays usable: 10 by default, `make firered_switch ESTEIRA_JOBS=4` (or the environment variable)
+# to change it. The Switch build uses it as -j unless the command line already has a -j.
+ESTEIRA_JOBS ?= 10
+export ESTEIRA_JOBS
+ESTEIRA_J = $(if $(filter -j%,$(MAKEFLAGS)),,-j$(ESTEIRA_JOBS))
 firered_switch:
 	@mkdir -p $(BUILD_DIR)
-	@$(MAKE) GAME_VERSION=FIRERED GAME_REVISION=10 BUILD_LOG=$(FIRERED_SWITCH_LOG).new 2>&1 | tee $(FIRERED_SWITCH_LOG).new; rc=$$?; \
+	@$(MAKE) $(ESTEIRA_J) GAME_VERSION=FIRERED GAME_REVISION=10 BUILD_LOG=$(FIRERED_SWITCH_LOG).new 2>&1 | tee $(FIRERED_SWITCH_LOG).new; rc=$$?; \
 	if [ $$rc -ne 0 ] || grep -qF "$(ESTEIRA_MARKER)" $(FIRERED_SWITCH_LOG).new; then mv -f $(FIRERED_SWITCH_LOG).new $(FIRERED_SWITCH_LOG); else rm -f $(FIRERED_SWITCH_LOG).new; fi; \
 	exit $$rc
 leafgreen:              ; @$(MAKE) GAME_VERSION=LEAFGREEN

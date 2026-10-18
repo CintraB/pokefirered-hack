@@ -32,6 +32,10 @@ class ScenarioContext:
     consts: Constants
     out_dir: str
     starter: str   # "BULBASAUR" | "CHARMANDER" | "SQUIRTLE"
+    # cenário dividido em partes no modo paralelo (esteira/paralelo.py): esta é a parte `part`
+    # de `parts`; 0 de 1 = o cenário inteiro, como no modo sequencial
+    part: int = 0
+    parts: int = 1
 
 
 @contextmanager

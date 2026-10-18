@@ -21,6 +21,11 @@ natureza, habilidade, gênero, shiny, golpes de ovo) e é comparado com o modelo
   255/510 (MonGainEVs de verdade), e Velocidade pela metade na ordem dos turnos
   (GetWhoStrikesFirst de verdade); Destiny Knot e Everstone não mexem na Velocidade.
 
+Modo paralelo (ESTEIRA_JOBS > 1, esteira/paralelo.py): BREEDING_PARTS sessões ao mesmo tempo,
+cada uma com o RNG semeado por parte, geram a sua fatia dos ovos de cada par e das duas taxas
+de shiny; `merge_breeding` junta os ovos e roda as MESMAS checagens (BreedingStats) sobre o
+total. Personalidade, EVs e Velocidade (não estatísticos) só na parte 0.
+
 Uso, a partir de test/ (a pasta OUT precisa do captura.sav de um `rapido`/`completo`):
     python3 -m esteira completo --rom R --elf E --out OUT --only creche
 """
@@ -35,6 +40,8 @@ from ..breeding import (BATCH, CONFIGS, EGG_PERSONALITY_TRIALS, EGG_SHINY_SAMPLE
                         chi_square, egg_move_probability, egg_moves, female_probability,
                         header_defines, iv_distribution, mean_and_std, nature_distribution,
                         proportion_interval, species_info, unpack_records, z_score)
+from ..paralelo import part_data, part_label, seed_rng, share
+from ..result import Result, Suite
 from ..hooks import (CMD_BREED_EGGS, CMD_BREED_SETUP, CMD_EGG_PERSONALITY, CMD_EGG_SHINIES,
                      CMD_GAIN_EVS, CMD_SPEED_ORDER, Mailbox)
 from . import REPO_ROOT, ScenarioContext
@@ -71,67 +78,12 @@ def expected_evs(evs: list[int], yields: tuple[int, ...], power_stat: int | None
     return evs
 
 
-class BreedingScenario(CatchSaveScenario):
-    def __init__(self, ctx: ScenarioContext):
-        super().__init__(ctx)
-        self.box: Mailbox | None = None
-        self.moves = header_defines(REPO_ROOT, "moves.h")
-        self.setup_addr = self.results_addr = 0
-        self.records: dict[str, list[Record]] = {}
-        self.frames_per_egg: list[float] = []
-        self.continue_shot = "creche_continue"
+class BreedingStats:
+    """As checagens estatísticas de uma configuração sobre os ovos já gerados
+    (`records[config.name]`): não usam o emulador, então o modo paralelo as roda no
+    processo principal sobre os ovos de todas as partes juntos (merge_breeding)."""
 
-    # --- atalhos -------------------------------------------------------------------------
-    def _parent_bytes(self, p: Parent) -> bytes:
-        moves = [self.moves[m] for m in p.moves] + [0] * (4 - len(p.moves))
-        item = self.consts.item(p.item) if p.item else 0
-        return struct.pack(PARENT_FORMAT, self.consts.species(p.species), item, *moves, *p.ivs,
-                           GENDER_CODE[p.gender], p.nature, p.ability)
-
-    def setup(self, config: Config, pending: bool = False) -> int:
-        probes = [self.moves[m] for m in config.probes] + [0] * (4 - len(config.probes))
-        raw = (self._parent_bytes(config.father) + self._parent_bytes(config.mother)
-               + struct.pack(PROBES_FORMAT, *probes))
-        self.emu.write(self.setup_addr, raw)
-        compat = self.box.call(CMD_BREED_SETUP, int(pending))
-        assert compat != 0xFFFFFFFF, f"{config.name}: o jogo recusou um dos pais"
-        assert compat > 0, f"{config.name}: pais incompatíveis (compatibilidade 0)"
-        return compat
-
-    def breed(self, count: int) -> list[Record]:
-        out: list[Record] = []
-        while len(out) < count:
-            n = min(BATCH, count - len(out))
-            start = self.emu.frames(0)
-            got = self.box.call(CMD_BREED_EGGS, n, timeout=n * FRAMES_PER_EGG_LIMIT)
-            assert got == n, f"BREED_EGGS devolveu {got:#x} (time cheio?)"
-            self.frames_per_egg.append((self.emu.frames(0) - start) / n)
-            out += unpack_records(self.emu.read(self.results_addr, RECORD_SIZE * n), n)
-        return out
-
-    # --- início --------------------------------------------------------------------------
-    def _start(self) -> str:
-        self.box = Mailbox(self.ctl)
-        self.setup_addr = self.game.syms.addr("gTestBreedSetup")
-        self.results_addr = self.game.syms.addr("gEnemyParty")
-        self._title_to_continue("tela de título da build de teste", shot=self.continue_shot)
-        party = self.game.party()
-        assert len(party) < 6, "time cheio: não cabe o ovo"
-        return (f"CONTINUAR no Centro de Viridian; time de {len(party)}; gTestBreedSetup em "
-                f"0x{self.setup_addr:08x}")
-
-    # --- checagens de uma configuração ---------------------------------------------------
-    def _generate(self, config: Config) -> str:
-        t0 = time.monotonic()
-        compat = self.setup(config)
-        recs = self.breed(config.eggs)
-        self.records[config.name] = recs
-        child = self.consts.species(config.child)
-        wrong = [r for r in recs if r.species != child or not r.is_egg]
-        assert not wrong, f"{len(wrong)} ovo(s) de espécie errada ou sem a marca de ovo: {wrong[:3]}"
-        shinies = sum(r.shiny for r in recs)
-        return (f"{config.what}: {len(recs)} ovos de {config.child.removeprefix('SPECIES_')} "
-                f"(compatibilidade {compat}), {shinies} shiny; {_fmt(time.monotonic() - t0)} s")
+    records: dict[str, list[Record]]
 
     def _ivs(self, config: Config) -> str:
         recs = self.records[config.name]
@@ -259,18 +211,92 @@ class BreedingScenario(CatchSaveScenario):
         assert abs(z) <= Z_SIGMAS, f"fora da faixa ±{_fmt(Z_SIGMAS, 0)}σ: {detail}"
         return detail
 
-    def _config(self, config: Config) -> None:
+    def stats(self, config: Config, suite) -> None:
+        """Checagens da configuração, na ordem do relatório (depois da geração dos ovos)."""
         tag = f"creche/{config.name}"
-        res = self.suite.run(f"{tag}: ovos pelo caminho real da creche", lambda: self._generate(config))
+        suite.run(f"{tag}: IVs", lambda: self._ivs(config))
+        suite.run(f"{tag}: natureza", lambda: self._nature(config))
+        if species_info(REPO_ROOT, config.child).two_abilities:
+            suite.run(f"{tag}: habilidade", lambda: self._ability(config))
+        if config.probes:
+            suite.run(f"{tag}: golpes de ovo", lambda: self._egg_moves(config))
+        suite.run(f"{tag}: gênero", lambda: self._gender(config))
+
+
+class BreedingScenario(BreedingStats, CatchSaveScenario):
+    def __init__(self, ctx: ScenarioContext):
+        super().__init__(ctx)
+        self.box: Mailbox | None = None
+        self.moves = header_defines(REPO_ROOT, "moves.h")
+        self.setup_addr = self.results_addr = 0
+        self.records: dict[str, list[Record]] = {}
+        self.frames_per_egg: list[float] = []
+        self.continue_shot = "creche_continue"
+
+    # --- atalhos -------------------------------------------------------------------------
+    def _parent_bytes(self, p: Parent) -> bytes:
+        moves = [self.moves[m] for m in p.moves] + [0] * (4 - len(p.moves))
+        item = self.consts.item(p.item) if p.item else 0
+        return struct.pack(PARENT_FORMAT, self.consts.species(p.species), item, *moves, *p.ivs,
+                           GENDER_CODE[p.gender], p.nature, p.ability)
+
+    def setup(self, config: Config, pending: bool = False) -> int:
+        probes = [self.moves[m] for m in config.probes] + [0] * (4 - len(config.probes))
+        raw = (self._parent_bytes(config.father) + self._parent_bytes(config.mother)
+               + struct.pack(PROBES_FORMAT, *probes))
+        self.emu.write(self.setup_addr, raw)
+        compat = self.box.call(CMD_BREED_SETUP, int(pending))
+        assert compat != 0xFFFFFFFF, f"{config.name}: o jogo recusou um dos pais"
+        assert compat > 0, f"{config.name}: pais incompatíveis (compatibilidade 0)"
+        return compat
+
+    def breed(self, count: int) -> list[Record]:
+        out: list[Record] = []
+        while len(out) < count:
+            n = min(BATCH, count - len(out))
+            start = self.emu.frames(0)
+            got = self.box.call(CMD_BREED_EGGS, n, timeout=n * FRAMES_PER_EGG_LIMIT)
+            assert got == n, f"BREED_EGGS devolveu {got:#x} (time cheio?)"
+            self.frames_per_egg.append((self.emu.frames(0) - start) / n)
+            out += unpack_records(self.emu.read(self.results_addr, RECORD_SIZE * n), n)
+        return out
+
+    # --- início --------------------------------------------------------------------------
+    def _start(self) -> str:
+        self.box = Mailbox(self.ctl)
+        self.setup_addr = self.game.syms.addr("gTestBreedSetup")
+        self.results_addr = self.game.syms.addr("gEnemyParty")
+        self._title_to_continue("tela de título da build de teste", shot=self.continue_shot)
+        party = self.game.party()
+        assert len(party) < 6, "time cheio: não cabe o ovo"
+        return (f"CONTINUAR no Centro de Viridian; time de {len(party)}; gTestBreedSetup em "
+                f"0x{self.setup_addr:08x}")
+
+    # --- checagens de uma configuração ---------------------------------------------------
+    def _generate(self, config: Config) -> str:
+        t0 = time.monotonic()
+        compat = self.setup(config)
+        recs = self.breed(share(config.eggs, self.ctx.part, self.ctx.parts))
+        self.records[config.name] = recs
+        child = self.consts.species(config.child)
+        wrong = [r for r in recs if r.species != child or not r.is_egg]
+        assert not wrong, f"{len(wrong)} ovo(s) de espécie errada ou sem a marca de ovo: {wrong[:3]}"
+        seconds = time.monotonic() - t0
+        if self.ctx.parts > 1:
+            self._partial = {"records": recs, "compat": compat, "seconds": seconds}
+            return generation_detail(config, recs, compat, seconds,
+                                     part_label(self.ctx.part, self.ctx.parts))
+        return generation_detail(config, recs, compat, seconds)
+
+    def _config(self, config: Config) -> None:
+        self._partial = None
+        res = self.suite.run(generation_name(config), lambda: self._generate(config))
         if res.status == "falha":
             return
-        self.suite.run(f"{tag}: IVs", lambda: self._ivs(config))
-        self.suite.run(f"{tag}: natureza", lambda: self._nature(config))
-        if species_info(REPO_ROOT, config.child).two_abilities:
-            self.suite.run(f"{tag}: habilidade", lambda: self._ability(config))
-        if config.probes:
-            self.suite.run(f"{tag}: golpes de ovo", lambda: self._egg_moves(config))
-        self.suite.run(f"{tag}: gênero", lambda: self._gender(config))
+        if self.ctx.parts > 1:   # as estatísticas saem dos ovos de todas as partes (merge_breeding)
+            res.data = self._partial
+            return
+        self.stats(config, self.suite)
 
     # --- personalidade e shiny dos ovos --------------------------------------------------
     def _personality(self) -> str:
@@ -283,22 +309,28 @@ class BreedingScenario(CatchSaveScenario):
                 "sorteio (natureza + habilidade + rerolls de shiny) partindo do mesmo RNG")
 
     def _shiny(self, with_charm: bool) -> str:
-        attempts = ATTEMPTS_WITH_CHARM if with_charm else ATTEMPTS_NO_CHARM
+        part, parts = self.ctx.part, self.ctx.parts
+        samples = share(EGG_SHINY_SAMPLES, part, parts)
         charm = self.consts.item("ITEM_SHINY_CHARM")
         before = self.game.bag_quantity(charm)
         start, t0 = self.emu.frames(0), time.monotonic()
-        shinies = self.box.call(CMD_EGG_SHINIES, EGG_SHINY_SAMPLES, int(with_charm),
-                                timeout=EGG_SHINY_SAMPLES * FRAMES_PER_SHINY_LIMIT, poll=SHINY_POLL)
+        shinies = self.box.call(CMD_EGG_SHINIES, samples, int(with_charm),
+                                timeout=samples * FRAMES_PER_SHINY_LIMIT, poll=SHINY_POLL)
         frames = self.emu.frames(0) - start
         assert self.game.bag_quantity(charm) == before, "o atalho mexeu no Shiny Charm da bolsa"
-        lo, hi = shiny_interval(EGG_SHINY_SAMPLES, attempts, SHINY_SIGMAS)
-        mean = EGG_SHINY_SAMPLES * shiny_probability(attempts)
         self.measures[f"ovos_shiny_{'charm' if with_charm else 'sem_charm'}"] = shinies
-        detail = (f"{shinies} shiny em {EGG_SHINY_SAMPLES} ovos (esperado {_fmt(mean)}, faixa "
-                  f"±{_fmt(SHINY_SIGMAS, 0)}σ {_fmt(lo)}..{_fmt(hi)}); {frames} quadros, "
-                  f"{_fmt(time.monotonic() - t0)} s")
-        assert lo <= shinies <= hi, f"fora da faixa: {detail}"
-        return detail
+        seconds = time.monotonic() - t0
+        if parts > 1:
+            self._partial = {"shinies": shinies, "frames": frames, "seconds": seconds}
+            return (f"{part_label(part, parts)}: {shinies} shiny em {samples} ovos; {frames} "
+                    f"quadros, {_fmt(seconds)} s (a faixa é conferida na soma das partes)")
+        return egg_rate_detail(shinies, frames, seconds, with_charm)
+
+    def _run_shiny(self, with_charm: bool) -> None:
+        self._partial = None
+        res = self.suite.run(EGG_RATE_NAMES[with_charm], lambda: self._shiny(with_charm))
+        if res.status != "falha" and self._partial is not None:
+            res.data = self._partial
 
     # --- Power items em batalha ----------------------------------------------------------
     def _evs(self) -> str:
@@ -353,14 +385,17 @@ class BreedingScenario(CatchSaveScenario):
     def run(self) -> None:
         try:
             self._flow("creche: CONTINUAR com o save do modo rápido na build de teste", self._start)
+            if self.ctx.parts > 1:   # cada parte com a sua sequência do RNG (paralelo.part_seed)
+                seed_rng(self.emu, self.game.syms, "creche", self.ctx.part)
             for config in CONFIGS:
                 self._config(config)
-            self.suite.run("creche: ovo entregue tem a personalidade sorteada (natureza + "
-                           "habilidade + shiny juntos)", self._personality)
-            self.suite.run("creche: taxa de shiny dos ovos sem charm ≈ 1/4096",
-                           lambda: self._shiny(False))
-            self.suite.run("creche: taxa de shiny dos ovos com charm ≈ 1/2048",
-                           lambda: self._shiny(True))
+            if self.ctx.part == 0:
+                self.suite.run("creche: ovo entregue tem a personalidade sorteada (natureza + "
+                               "habilidade + shiny juntos)", self._personality)
+            self._run_shiny(False)
+            self._run_shiny(True)
+            if self.ctx.part > 0:    # o resto não é estatístico: só a parte 0
+                return
             self.suite.run("creche: Power items em batalha dão +8 EVs (limites 255/510)", self._evs)
             self.suite.run("creche: Power items em batalha cortam a Velocidade pela metade",
                            self._speed)
@@ -368,6 +403,71 @@ class BreedingScenario(CatchSaveScenario):
                 self.measures["quadros_por_ovo"] = max(self.frames_per_egg)
         except Abort:
             pass
+
+
+BREEDING_PARTS = 3      # sessões no modo paralelo (fixo: o resultado não depende do teto)
+EGG_RATE_NAMES = {False: "creche: taxa de shiny dos ovos sem charm ≈ 1/4096",
+                  True: "creche: taxa de shiny dos ovos com charm ≈ 1/2048"}
+
+
+def generation_name(config: Config) -> str:
+    return f"creche/{config.name}: ovos pelo caminho real da creche"
+
+
+def generation_detail(config: Config, recs: list[Record], compat: int, seconds: float,
+                      where: str = "") -> str:
+    prefix = f"{where}: " if where else ""
+    return (f"{prefix}{config.what}: {len(recs)} ovos de {config.child.removeprefix('SPECIES_')} "
+            f"(compatibilidade {compat}), {sum(r.shiny for r in recs)} shiny; {_fmt(seconds)} s")
+
+
+def egg_rate_detail(shinies: int, frames: int, seconds: float, with_charm: bool,
+                    parts: int = 1) -> str:
+    """Detalhe da taxa de shiny de EGG_SHINY_SAMPLES ovos; AssertionError fora da faixa."""
+    attempts = ATTEMPTS_WITH_CHARM if with_charm else ATTEMPTS_NO_CHARM
+    lo, hi = shiny_interval(EGG_SHINY_SAMPLES, attempts, SHINY_SIGMAS)
+    mean = EGG_SHINY_SAMPLES * shiny_probability(attempts)
+    where = f" em {parts} processos" if parts > 1 else ""
+    detail = (f"{shinies} shiny em {EGG_SHINY_SAMPLES} ovos (esperado {_fmt(mean)}, faixa "
+              f"±{_fmt(SHINY_SIGMAS, 0)}σ {_fmt(lo)}..{_fmt(hi)}); {frames} quadros, "
+              f"{_fmt(seconds)} s{where}")
+    assert lo <= shinies <= hi, f"fora da faixa: {detail}"
+    return detail
+
+
+def merge_breeding(parts_results: list[list[Result]]) -> list[Result]:
+    """Junta as partes do modo paralelo, na ordem do relatório sequencial: para cada par de
+    pais, os ovos de todas as partes juntos e as checagens estatísticas sobre eles; as taxas de
+    shiny somadas; o resto (CONTINUAR, personalidade, EVs, Velocidade) como a parte 0 deixou.
+    As faixas são as mesmas do sequencial, aplicadas ao total."""
+    parts = len(parts_results)
+    by_generation = {generation_name(c): c for c in CONFIGS}
+    merged: list[Result] = []
+    for result in parts_results[0]:
+        if result.data is None:
+            merged.append(result)
+            continue
+        datas, failure = part_data(parts_results, result.name)
+        if failure is not None:
+            merged.append(failure)
+            continue
+        suite = Suite()
+        config = by_generation.get(result.name)
+        if config is not None:
+            recs = [r for d in datas for r in d["records"]]
+            seconds = sum(d["seconds"] for d in datas)
+            suite.add(Result(result.name, "ok", generation_detail(
+                config, recs, datas[0]["compat"], seconds) + f" em {parts} processos"))
+            stats = BreedingStats()
+            stats.records = {config.name: recs}
+            stats.stats(config, suite)
+        else:
+            with_charm = result.name == EGG_RATE_NAMES[True]
+            suite.run(result.name, lambda: egg_rate_detail(
+                sum(d["shinies"] for d in datas), sum(d["frames"] for d in datas),
+                sum(d["seconds"] for d in datas), with_charm, parts))
+        merged.extend(suite.results)
+    return merged
 
 
 def run_full_breeding(ctx_test: ScenarioContext) -> None:
