@@ -134,20 +134,54 @@ def test_without_git_there_is_no_base_and_no_complaint(tmp_path):
     assert check_text(str(tmp_path), {"text": []}, english="desligado") == []
 
 
-def test_unknown_base_is_an_aviso(repo):
+def test_unknown_base_is_an_aviso_of_both_rules(repo):
     results = check_text(str(repo), {"text": []}, base="0123456789abcdef0123", english="desligado")
-    assert [(r.name, r.status) for r in results] == [("texto/controle", "aviso")]
-    assert "base" in results[0].detail
+    assert [(r.name, r.status) for r in results] == [("texto/controle", "aviso"), ("texto/glossario", "aviso")]
+    assert all("base" in r.detail and "não rodou" in r.detail for r in results)
+
+
+def test_broken_git_is_an_aviso_not_silence(repo):
+    # ex.: worktree com `gitdir:` absoluto do Windows que o git do WSL não resolve
+    shutil.rmtree(repo / ".git")
+    (repo / ".git").write_text("gitdir: C:/nao/existe/.git/worktrees/x\n", encoding="utf-8")
+    results = check_text(str(repo), {"text": []}, english="desligado")
+    assert [(r.name, r.status) for r in results] == [("texto/controle", "aviso"), ("texto/glossario", "aviso")]
+    assert "git" in results[0].detail
+
+
+def test_missing_base_object_counts_as_new_labels(repo):
+    sha = git(repo, "rev-parse", "HEAD:data/text/pc.inc")
+    (repo / ".git" / "objects" / sha[:2] / sha[2:]).unlink()
+    translate(repo, ball="Aqui está uma Pokébola.$", two="{STR_VAR_1} deu a você.$")
+    results = run(repo)
+    # sem o original não há controle (o {STR_VAR_2} perdido passa), mas o glossário roda
+    assert [r.name for r in failures(results)] == ["texto/glossario"]
 
 
 def test_pipeline_base_is_the_hack_switch_commit_before_translation():
-    assert TRANSLATION_BASE == "3a8d861f5"
+    assert TRANSLATION_BASE == "3a8d861f513f0805d586532acd56b7e2065b89ff"     # 3a8d861f5
 
 
-def test_real_repo_controle_has_the_base():
-    """A worktree/checkout real tem o commit base: a comparação roda (nenhum aviso de base)."""
+def test_real_repo_has_the_base():
+    """A worktree/checkout real tem o commit base: _load_base devolve a base (não None/motivo)."""
+    from esteira.check_text import _Base, _load_base
+    assert isinstance(_load_base(REPO_ROOT, TRANSLATION_BASE, {}), _Base)
     results = check_text(str(REPO_ROOT), {"text": []}, english="desligado")
-    assert not [r for r in results if r.name == "texto/controle"], [r.detail for r in results][:3]
+    assert not [r for r in results if r.name in ("texto/controle", "texto/glossario")]
+
+
+def test_glyph_macros_are_not_control_codes(repo):
+    put(repo, "data/text/pc.inc", (repo / "data/text/pc.inc").read_text(encoding="utf-8")
+        + '\nText_Lv::\n\t.string "{LV_2}5 {PKMN} {COLOR RED}ok$"\n')
+    git(repo, "add", "-A")
+    git(repo, "-c", "user.name=t", "-c", "user.email=t@t", "commit", "-q", "-m", "lv")
+    put(repo, "data/text/pc.inc", (repo / "data/text/pc.inc").read_text(encoding="utf-8")
+        .replace("{LV_2}5 {PKMN} {COLOR RED}ok", "Nv.5 Pokémon {COLOR RED}ok"))
+    assert failures(run(repo)) == []
+    put(repo, "data/text/pc.inc", (repo / "data/text/pc.inc").read_text(encoding="utf-8")
+        .replace("Nv.5 Pokémon {COLOR RED}ok", "Nv.5 Pokémon ok"))
+    (failed,) = failures(run(repo))
+    assert "{COLOR RED}" in failed.detail
 
 
 # ---- glossário -----------------------------------------------------------------------------

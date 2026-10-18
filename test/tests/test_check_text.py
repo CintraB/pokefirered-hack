@@ -680,14 +680,18 @@ def test_ability_description_fits_the_summary_buffer(repo):
     assert "sLongDescription" in failed.detail and "52 letras, limite 51" in failed.detail
 
 
-def test_map_name_popup_is_112_px_and_24_letters(repo):
+def test_map_name_fits_the_region_map_buffer_and_window(repo):
+    # mapName[19]/dungeonName[19] do mapa da região: 18 letras; janela de calabouço: 108 px
     put(repo, "src/data/region_map/region_map_sections.json", json.dumps({"map_sections": [
-        {"id": "MAPSEC_OK", "name": "Floresta de Viridian"},          # 108 px
-        {"id": "MAPSEC_WIDE", "name": "Floresta de Viridiana"},       # 114 px
-        {"id": "MAPSEC_LONG", "name": "i" * 25},                      # 100 px, 25 letras
+        {"id": "MAPSEC_OK", "name": "Caverna Cerulean"},              # 16 letras
+        {"id": "MAPSEC_18", "name": "i" * 18},
+        {"id": "MAPSEC_FOREST", "name": "Floresta de Viridian"},      # 20 letras (108 px)
+        {"id": "MAPSEC_WIDE", "name": "{PKMN}" * 7},                  # 14 bytes, 112 px
     ]}, ensure_ascii=False))
     failed = failures(run(repo))
-    assert sorted(r.detail.split(": ")[1] for r in failed) == ["MAPSEC_LONG", "MAPSEC_WIDE"]
+    assert sorted(r.detail.split(": ")[1] for r in failed) == ["MAPSEC_FOREST", "MAPSEC_WIDE"]
+    assert any("20 letras, limite 18" in r.detail for r in failed)
+    assert any("112 px, limite 108" in r.detail for r in failed)
 
 
 def test_name_choices_have_seven_letters(repo):
@@ -755,7 +759,9 @@ def test_window_citations_point_at_the_templates():
     dex = rule_for("src/data/pokemon/pokedex_text_fr.h", "gBulbasaurPokedexText")
     assert dex.px == 240 and dex.lines == 3 and ".width = 30" in cited_text(dex)
     popup = rule_for("src/data/region_map/region_map_sections.json", "MAPSEC_PALLET_TOWN")
-    assert popup.px == 112 and popup.chars == 24 and "maxWidth = 112" in cited_text(popup)
+    assert popup.px == 108 and popup.chars == 18
+    assert "u8 mapName[19];" in cited_text(popup) and ".width = 15" in cited_text(popup)
+    assert "12, 2" in cited_text(popup)               # x = 12 do nome de calabouço
     item = rule_for("src/data/items.json", "ITEM_POTION.name")
     assert item.chars == ITEM_NAME_MAX_CHARS and "ITEM_NAME_LENGTH 14" in cited_text(item)
     assert "[19]" in cited_text(item) and "item_X = 9" in cited_text(item) and "0x6e" in cited_text(item)
@@ -796,7 +802,7 @@ def test_cli_reports(repo, capsys):
     assert "data/text/pc.inc" in out and "total: 3 palavras em 1 textos" in out
     assert main(["--regras", "--repo", str(repo)]) == 0
     out = capsys.readouterr().out
-    assert "data/text/pc.inc" in out and "px 208" in out and "0  sem regra" in out
+    assert "data/text/pc.inc" in out and "px 208" in out and "textos: largura 1" in out
 
 
 # ---- repo real -----------------------------------------------------------------------------

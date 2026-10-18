@@ -9,7 +9,9 @@ Fontes varridas (`_sources`): `.string`/`.braille` de `data/text/*.inc`, `data/m
 Regras (nome usado em `excecoes.json`):
   charmap     caractere/placeholder fora do charmap (ou fora do alfabeto braille);
   terminador  bloco `.string`/`.braille` sem `$` no fim;
-  largura     linha mais larga que a janela (`WIDTH_RULES`: px, fonte, espaço);
+  largura     linha mais larga que a janela (`WIDTH_RULES`: px, fonte, espaço; os textos com
+              `by_usage` — strings.c, Easy Chat, textos soltos de .c — são medidos na janela
+              de cada lugar onde o rótulo é usado: esteira/janelas_uso.py);
   linhas      mais linhas que a janela comporta;
   letras      campo de nome com mais bytes que o buffer do C;
   controle    os códigos de controle e placeholders diferem do texto da base inglesa
@@ -53,7 +55,7 @@ from esteira.result import Result
 PLAYER_NAME_CHARS = 7  # {PLAYER}/{RIVAL}: nome de até 7 letras
 
 # Commit da hack-switch antes da tradução (merge do Hack 7): a versão inglesa de cada texto.
-TRANSLATION_BASE = "3a8d861f5"
+TRANSLATION_BASE = "3a8d861f513f0805d586532acd56b7e2065b89ff"   # 3a8d861f5
 
 # Regra `ingles`: "progresso" (aviso com o total) até a Task 11, que muda para "bloqueante".
 ENGLISH_MODE = "progresso"
@@ -79,6 +81,7 @@ class Rule(NamedTuple):
     chars: int | None = None   # máximo de bytes sem o terminador (campos de nome)
     space: int | None = None   # largura do espaço, quando o renderizador não usa a da tabela
     no_prefix: bool = False    # {B_*_NAME_WITH_PREFIX} é sempre do jogador: só o nome, sem prefixo
+    by_usage: bool = False     # a janela sai de onde o rótulo é usado (esteira/janelas_uso.py)
 
 
 # Largura útil (px) por fonte de texto, derivada dos templates de janela do repo (arquivo:linha
@@ -103,8 +106,9 @@ _HELP = ("ajuda: HelpSystemRenderText num bitmap de 26 tiles mostrado nas coluna
          "linhas de 15 px (src/help_system_util.c:398) e 14 de glifo: 6 * 15 + 14 = 104 px, 7 linhas")
 _HELP_MOUSEOVER = ("Help_Text_DescWhatShouldIDo", "Help_Text_DescHowDoIDoThis", "Help_Text_DescWhatDoesThisTermMean",
                    "Help_Text_DescAboutThisGame", "Help_Text_DescTypeMatchupList", "Help_Text_DescExit")
-_C_RESIDUE = ("resíduos de texto em .c/.h com janelas variadas (troca, link, minijogos, menus, cenas): "
-              "sem regra única; a frente E (task 3) mede cada tela")
+_C_RESIDUE = ("textos soltos de outros .c/.h (troca, link, minijogos, menus, cenas): a janela sai de onde "
+              "cada rótulo é usado (esteira/janelas_uso.py); rótulo sem uso indexável (macro, item "
+              "posicional) fica sem medida")
 
 WIDTH_RULES: list[Rule] = [
     Rule("data/maps/*/text.inc", None, DIALOG_WIDTH_PX, _DIALOG),
@@ -172,7 +176,8 @@ WIDTH_RULES: list[Rule] = [
     *[Rule("src/strings.c", prefix, 28 * 8 - 2, "página IVs/EVs do resumo: sWindowTemplates_Ivs[0] .width = 28 tiles (src/pokemon_summary_screen.c:966), texto em x = IVEV_PAGE_TEXT_X = 2 (src/pokemon_summary_screen.c:957); as linhas montadas são medidas em _ivev_page_results")
       for prefix in ("gText_PokeSum_Iv", "gText_PokeSum_Stat", "gText_PokeSum_HiddenPower",
                      "gText_PokeSum_Ev")],
-    Rule("src/strings.c", None, None, "menus e janelas diversos (dona: frente E, que mede cada tela)"),
+    Rule("src/strings.c", None, None, "menus e janelas de dezenas de telas: a janela sai de onde cada rótulo "
+         "é usado (esteira/janelas_uso.py, USAGE_RULES); texto sem uso no código fica sem medida", by_usage=True),
     # -- tabelas de texto --
     Rule("src/data/text/quest_log.h", None, 30 * 8 - 2,
          "janela de descrição do Quest Log: DESC_WIN_WIDTH = DISPLAY_WIDTH / 8 = 30 tiles (src/quest_log.c:40,163), "
@@ -219,9 +224,14 @@ WIDTH_RULES: list[Rule] = [
     *[Rule("src/battle_message.c", label, 64,
            "resultado do link: centralizado em 64 px (src/battle_message.c:2745-2748)")
       for label in ("gText_Win", "gText_Loss", "gText_Draw")],
-    Rule("src/battle_message.c", "gText_MoveInterface", None,
-         "pedaços da janela de golpes montados com o PP e o tipo no código "
-         "(battle_controller_player.c): a frente G mede a tela"),
+    Rule("src/battle_message.c", "gText_MoveInterfacePP", 3 * 8,
+         "rótulo do PP: [B_WIN_PP] 3 tiles (src/battle_bg.c:206-210), FONT_SMALL x = 0 "
+         "(src/battle_message.c:2486-2489); copiado em src/battle_controller_player.c:1389", font="small"),
+    Rule("src/battle_message.c", "gText_MoveInterfaceType", 8 * 8 - 6 * 5,
+         "rótulo do tipo: [B_WIN_MOVE_TYPE] 8 tiles (src/battle_bg.c:215-219), FONT_SMALL x = 0; o nome do tipo "
+         "(até 6 letras de 5 px) vem depois (src/battle_controller_player.c:1413)", font="small"),
+    Rule("src/battle_message.c", "gText_MoveInterface", 8 * 8,
+         "códigos de cor da janela de golpes: [B_WIN_MOVE_TYPE] 8 tiles (src/battle_bg.c:215-219)", font="small"),
     Rule("src/battle_message.c", None, 28 * 8 - 2, _BATTLE_MSG + "; nomes de Pokémon/golpe/item/habilidade "
          "nos {B_*} medem o maior nome possível (DYNAMIC_LETTERS), e os {B_*_WITH_PREFIX} somam o prefixo "
          "mais largo (sText_*Prefix*)"),
@@ -256,10 +266,12 @@ WIDTH_RULES: list[Rule] = [
     Rule("src/union_room_message.c", None, DIALOG_WIDTH_PX,
          "Union Room: PrintOnTextbox usa a janela 0 do diálogo (src/union_room.c:3848-3856); " + _DIALOG
          + "; os rótulos de menu (sText_* curtos) também ficam nesse limite"),
-    Rule("src/data/region_map/region_map_sections.json", None, 112,
-         "aviso de nome do mapa: u8 mapName[25] e maxWidth = 112 (src/map_name_popup.c:194-195), "
-         "centralizado em maxWidth (src/map_name_popup.c:207); com andar o limite sobe para 152 px "
-         "mas o sufixo divide as 24 letras", chars=24),
+    Rule("src/data/region_map/region_map_sections.json", None, 15 * 8 - 12,
+         "nome de lugar: no mapa da região vai para `u8 mapName[19]`/`dungeonName[19]` sem limite de cópia "
+         "(src/region_map.c:96-97, GetMapName em :1448, StringCopy em :1480): 18 letras; a janela de "
+         "calabouço/floresta WIN_DUNGEON_NAME tem 15 tiles (src/region_map.c:476-481) com o texto em "
+         "x = 12 (src/region_map.c:1481): 108 px, valendo para todos os nomes (o aviso ao entrar no mapa, "
+         "112 px e mapName[25] em src/map_name_popup.c:194-195, é mais folgado)", chars=18),
     Rule("src/data/items.json", "*.name", 110 - 9,
          "nome de item: ITEM_NAME_LENGTH 14 com o terminador (include/constants/global.h:62); buffer da "
          "bolsa [19] (src/item_menu.c:70) = cor de 5 bytes (src/item_menu.c:283) + 13 + EOS; na lista da "
@@ -276,14 +288,15 @@ WIDTH_RULES: list[Rule] = [
          "Treinador da Trainer Tower: name[11] (include/cereader_tool.h:9)", chars=10),
     Rule("src/trainer_tower_sets.c", "*.nickname*", None,
          "apelido de Pokémon: nickname[POKEMON_NAME_LENGTH + 1] (include/pokemon.h:166)", chars=10),
-    Rule("src/data/ingame_trades.h", "*.nickname", None,
+    Rule("src/data/ingame_trades.h", "*.nickname*", None,
          "troca no jogo: nickname[POKEMON_NAME_LENGTH + 1] (src/trade_scene.c:58)", chars=10),
-    Rule("src/data/ingame_trades.h", "*.otName", None,
+    Rule("src/data/ingame_trades.h", "*.otName*", None,
          "troca no jogo: otName[11] (src/trade_scene.c:67)", chars=10),
     Rule("src/data/easy_chat/*", None, None,
-         "palavras do Easy Chat: janela e ordem alfabética tratadas na frente G"),
+         "palavras do Easy Chat: a janela sai do uso (tabelas de grupo -> colunas de 13 tiles, "
+         "esteira/janelas_uso.py); a ordem alfabética fica com a frente G", by_usage=True),
     Rule("src/keyboard_text.c", None, None, "layouts de teclado do Easy Chat e da tela de nome"),
-    Rule("src/*", None, None, _C_RESIDUE),
+    Rule("src/*", None, None, _C_RESIDUE, by_usage=True),
 ]
 
 # Regras (usadas em `excecoes.json`)
@@ -429,6 +442,10 @@ def _load_env(repo: Path) -> _Env:
             if latin and all(b < 0xF7 for b in data):
                 for font, table in tables.items():
                     font_macros[font][m.group(1)] = sum(table[b] for b in data)
+            elif len(data) == 2 and data[0] == 0xF9:
+                # símbolo extra (CHAR_EXTRA_SYMBOL): glifo 0x100 | byte (src/text.c:804-806)
+                for font, table in tables.items():
+                    font_macros[font][m.group(1)] = table[0x100 | data[1]]
     max_letter = {font: max(w for ch, w in widths[font].items() if ch.isalnum() and ch.isascii())
                   for font in tables}
     return _Env(chars, widths["normal"], names, font_macros["normal"], PLAYER_NAME_CHARS * max_letter["normal"],
@@ -884,20 +901,25 @@ def _analyze(text: str, needs_terminator: bool, rule: Rule | None, env: _Env,
 
 # ---- controle: códigos de controle iguais aos da base inglesa ------------------------------
 
-def control_codes(text: str) -> Counter[str]:
-    """Placeholders/códigos de controle e terminadores de um texto (sem as quebras de linha)."""
+def control_codes(text: str, glyphs: frozenset[str] = frozenset()) -> Counter[str]:
+    """Placeholders/códigos de controle e terminadores de um texto (sem as quebras de linha).
+    Macros que só imprimem glifos (`glyphs`: {LV_2}, {PKMN}, {ID}, {NO}...) não contam: trocar
+    "{LV_2}" por "Nv." é tradução, não código perdido."""
     codes: Counter[str] = Counter()
     for kind, value in _tokenize(text):
         if kind == "ph":
+            if value.split() and all(word in glyphs for word in value.split()):
+                continue
             codes["{" + " ".join(value.split()) + "}"] += 1
         elif kind == "char" and value == "$":
             codes["$"] += 1
     return codes
 
 
-def _control_problem(texts: tuple[str, ...], base_texts: tuple[str, ...]) -> _Problem | None:
-    cur = [control_codes(t) for t in texts]
-    old = [control_codes(t) for t in base_texts]
+def _control_problem(texts: tuple[str, ...], base_texts: tuple[str, ...],
+                     glyphs: frozenset[str] = frozenset()) -> _Problem | None:
+    cur = [control_codes(t, glyphs) for t in texts]
+    old = [control_codes(t, glyphs) for t in base_texts]
     if len(cur) != len(old):
         cur, old = [sum(cur, Counter())], [sum(old, Counter())]
     missing: Counter[str] = Counter()
@@ -932,14 +954,16 @@ def _blob_sha(data: bytes) -> str:
 
 
 def _load_base(repo: Path, base: str, contents: dict[str, tuple[str, bytes]]) -> _Base | str | None:
-    """Textos da base para os arquivos que mudaram. None = repo sem git (sem comparação);
-    str = motivo de a base não estar disponível."""
+    """Textos da base para os arquivos que mudaram. None = pasta sem `.git` (fixtures, espelho do
+    teste lento: sem comparação); str = motivo de a base não estar disponível (vira aviso)."""
+    if not (repo / ".git").exists():
+        return None
     try:
         top = _git(repo, "rev-parse", "--show-prefix")
-    except (OSError, subprocess.SubprocessError):
-        return None
+    except (OSError, subprocess.SubprocessError) as exc:
+        return f"o git não rodou: {exc}"
     if top.returncode != 0:
-        return None
+        return f"git rev-parse falhou: {top.stderr.decode(errors='replace').strip()}"
     prefix = top.stdout.decode().strip()
     if _git(repo, "rev-parse", "--verify", "--quiet", f"{base}^{{commit}}").returncode != 0:
         return f"commit base {base} não encontrado neste repositório"
@@ -959,8 +983,15 @@ def _load_base(repo: Path, base: str, contents: dict[str, tuple[str, bytes]]) ->
         batch = _git(repo, "cat-file", "--batch", stdin="".join(f"{shas[r]}\n" for r in changed_paths).encode())
         out, pos = batch.stdout, 0
         for rel in changed_paths:
-            header_end = out.index(b"\n", pos)
-            size = int(out[pos:header_end].split()[2])
+            header_end = out.find(b"\n", pos)
+            header = out[pos:header_end].split() if header_end >= 0 else []
+            if len(header) < 3 or header[1] != b"blob":
+                # "<sha> missing" (objeto ausente no clone) ou resposta cortada: o arquivo conta
+                # como mudado e os rótulos dele como novos (só o glossário roda)
+                changed.add(rel)
+                pos = header_end + 1 if header_end >= 0 else len(out)
+                continue
+            size = int(header[2])
             data = out[header_end + 1:header_end + 1 + size].decode("utf-8", errors="replace")
             pos = header_end + 1 + size + 1
             kind, current = contents[rel]
@@ -976,14 +1007,15 @@ def _load_base(repo: Path, base: str, contents: dict[str, tuple[str, bytes]]) ->
 # ---- inglês residual -----------------------------------------------------------------------
 
 # Palavras inglesas comuns que não existem em português (nada de "a", "no", "me", "do", "as",
-# "for", "come", "more", "time"...): bastam para achar frase sem tradução.
+# "for", "come", "more", "time", "some"...): bastam para achar frase sem tradução. Só a primeira
+# variante de #if/.if de cada texto é contada.
 ENGLISH_WORDS = frozenset("""
 the you your yours you're you've you'll you'd and with this that these those have has had having
 what are were was is isn't aren't wasn't weren't there their they they're them from will won't
 would wouldn't can can't cannot could couldn't should shouldn't not don't doesn't didn't does did
 it it's its i'm i've i'll i'd we we're we've our ours us he he's she she's his her him hers who
 whom whose which why how when where here now then than been being be because about after before
-again just only also too very really some any every each other another all but if or so get gets
+again just only also too very really any every each other another all but if or so get gets
 got getting give gives gave given take takes took make makes made let let's look looks see sees
 saw seen know knows knew think thought want wants wanted need needs tell told say said says go
 goes going went gone back still yet way thing things something anything nothing everything
@@ -1074,6 +1106,42 @@ class _Scan(NamedTuple):
     entries: dict[tuple[str, str], tuple[str, list[_Problem]]]
     raw: list[_Entry]
     base_note: str | None          # motivo de a comparação com a base não ter rodado
+    rules: dict[tuple[str, str], list[tuple[Rule, str | None]]]   # janelas de cada texto (e onde é usado)
+
+
+_USAGE_SCRIPTS = ("data/event_scripts.s",)
+
+
+def _usage_rules(raw: list[_Entry], texts: dict[str, str]) -> dict[tuple[str, str], list[tuple[Rule, str | None]]]:
+    """Janelas dos textos com `by_usage`: uma por uso que casa com esteira/janelas_uso.USAGE_RULES."""
+    from esteira import janelas_uso
+    targets: dict[str, list[_Entry]] = {}
+    for e in raw:
+        rule = rule_for(e.file, e.label)
+        if rule is not None and rule.by_usage:
+            # `gX#2` usa os usos de `gX`; `DONO.campo` (item de struct) os da variável DONO
+            targets.setdefault(e.label.split("#")[0].split(".")[0], []).append(e)
+    index = janelas_uso.usage_index(texts, set(targets))
+    out: dict[tuple[str, str], list[tuple[Rule, str | None]]] = {}
+    for label, entries in targets.items():
+        uses = sorted(index.get(label, ()))
+        for e in entries:
+            found: dict[tuple, tuple[Rule, str | None]] = {}
+            unmatched = []
+            for use_file, ctx in uses:
+                u = janelas_uso.match(use_file, ctx, label)
+                if u is None:
+                    unmatched.append(f"{use_file} ({ctx})")
+                    continue
+                key = (u.px, u.font, u.lines, u.chars, u.source)
+                found.setdefault(key, (Rule(e.file, e.label, u.px, f"usado em {use_file} ({ctx}): {u.source}",
+                                            u.font, u.lines, u.chars), f"{use_file}, {ctx}"))
+            if not found:
+                why = ("sem uso no código: texto morto" if not uses
+                       else "usado sem regra de janela: " + ", ".join(unmatched[:3]))
+                found[("none",)] = (Rule(e.file, e.label, None, why), None)
+            out[(e.file, e.label)] = list(found.values())
+    return out
 
 
 def _scan(root: Path, base: str | None, english: str = "desligado") -> _Scan:
@@ -1082,10 +1150,14 @@ def _scan(root: Path, base: str | None, english: str = "desligado") -> _Scan:
     syntax: list[Result] = []
     raw: list[_Entry] = []
     contents: dict[str, tuple[str, bytes]] = {}   # arquivos com texto: (formato, bytes)
+    usage_texts: dict[str, str] = {}             # código onde os rótulos são usados
     for rel, kind in files:
         data = (root / rel).read_bytes()
         found = False
-        for entry in _extract(rel, kind, data.decode("utf-8")):
+        text = data.decode("utf-8")
+        if kind == "c" or rel in _USAGE_SCRIPTS:
+            usage_texts[rel] = text
+        for entry in _extract(rel, kind, text):
             found = True
             if isinstance(entry, Result):
                 syntax.append(entry)
@@ -1101,18 +1173,33 @@ def _scan(root: Path, base: str | None, english: str = "desligado") -> _Scan:
     base_info = loaded if isinstance(loaded, _Base) else None
     note = loaded if isinstance(loaded, str) else None
     glossary = None
+    glyphs = frozenset(env.font_macros["normal"])     # macros que só imprimem glifos
     allowed = _english_allowed_names(raw) if english == "bloqueante" else set()
     entries: dict[tuple[str, str], tuple[str, list[_Problem]]] = {}
+    usage = _usage_rules(raw, usage_texts)
+    rules_of: dict[tuple[str, str], list[tuple[Rule, str | None]]] = {}
     for entry in raw:
-        rule = rule_for(entry.file, entry.label)
-        problems = list(dict.fromkeys(p for text in entry.texts
-                                      for p in _analyze(text, entry.needs_terminator, rule, env, entry.braille)))
+        key = (entry.file, entry.label)
+        rules_of[key] = usage.get(key) or [(rule_for(entry.file, entry.label), None)]
+        problems = []
+        seen_rules: set[str] = set()
+        for rule, where in rules_of[key]:
+            for text in entry.texts:
+                for name, detail, value in _analyze(text, entry.needs_terminator, rule, env, entry.braille):
+                    if name in seen_rules and name in (RULE_WIDTH, RULE_LINES, RULE_CHARS):
+                        continue      # a primeira janela que estoura basta
+                    if where and name in (RULE_WIDTH, RULE_LINES, RULE_CHARS):
+                        detail = f"{detail} (janela de {where})"
+                    if (name, detail, value) not in problems:
+                        problems.append((name, detail, value))
+                    if name in (RULE_WIDTH, RULE_LINES, RULE_CHARS):
+                        seen_rules.add(name)
         if base_info is not None and (entry.file in base_info.changed or entry.file not in base_info.present):
             # arquivo mudado: compara rótulo a rótulo; arquivo novo: só o glossário (sem original)
             old = base_info.texts.get((entry.file, entry.label))
             if old != entry.texts:
                 if old is not None:
-                    control = _control_problem(entry.texts, old)
+                    control = _control_problem(entry.texts, old, glyphs)
                     if control:
                         problems.append(control)
                 if glossary is None:
@@ -1127,7 +1214,7 @@ def _scan(root: Path, base: str | None, english: str = "desligado") -> _Scan:
                 problems.append((RULE_ENGLISH, f"texto em inglês ({len(words)} palavras: "
                                  f"{', '.join(dict.fromkeys(words))})", None))
         entries[(entry.file, entry.label)] = (fingerprint(entry.texts), problems)
-    return _Scan(syntax, entries, raw, note)
+    return _Scan(syntax, entries, raw, note, rules_of)
 
 
 def _evolution_page_results(root: Path) -> list[Result]:
@@ -1167,9 +1254,9 @@ def check_text(repo: str, exceptions: dict, english: str = ENGLISH_MODE,
     scan = _scan(Path(repo), base, english)
     results = list(scan.syntax) + _evolution_page_results(Path(repo)) + _ivev_page_results(Path(repo))
     if scan.base_note:
-        results.append(Result(f"texto/{RULE_CONTROL}", "aviso",
-                              f"base inglesa indisponível ({scan.base_note}): as regras controle e "
-                              "glossario não rodaram"))
+        for rule in (RULE_CONTROL, RULE_GLOSSARY):
+            results.append(Result(f"texto/{rule}", "aviso",
+                                  f"base inglesa indisponível ({scan.base_note}): a regra {rule} não rodou"))
     entries = scan.entries
     frozen = exceptions.get("text", [])
     applied: set[tuple[str, str, str]] = set()  # exceções que de fato calaram um achado
@@ -1214,6 +1301,23 @@ def check_text(repo: str, exceptions: dict, english: str = ENGLISH_MODE,
     return results
 
 
+def effective_rules(repo: str) -> dict[tuple[str, str], list[Rule]]:
+    """Janelas de cada texto como a checagem as usa: a regra fixa de `WIDTH_RULES` ou, nos textos
+    com `by_usage`, uma por janela onde o rótulo é usado (esteira/janelas_uso.py)."""
+    scan = _scan(Path(repo), None)
+    return {key: [rule for rule, _where in rules] for key, rules in scan.rules.items()}
+
+
+def coverage_kind(rules: list[Rule | None]) -> str:
+    """"largura" (alguma janela mede px), "letras" (só limite de bytes) ou "sem medida"."""
+    rules = [r for r in rules if r is not None]
+    if any(r.px is not None for r in rules):
+        return "largura"
+    if any(r.chars is not None or r.lines is not None for r in rules):
+        return "letras"
+    return "sem medida"
+
+
 def compute_baseline(repo: str, base: str | None = TRANSLATION_BASE) -> list[dict]:
     """Exceções (ordenadas) que congelam todos os problemas de texto atuais (sem o inglês residual)."""
     scan = _scan(Path(repo), base)
@@ -1242,17 +1346,25 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("arquivos", nargs="*", help="só estes arquivos (relativos ao repo)")
     args = parser.parse_args(argv)
     if args.regras:
-        counts: Counter[Rule] = Counter()
-        for e in _sources(Path(args.repo)):
-            if isinstance(e, _Entry) and (not args.arquivos or e.file in args.arquivos):
-                counts[rule_for(e.file, e.label)] += 1
-        for rule in WIDTH_RULES:
-            if counts[rule]:
+        scan = _scan(Path(args.repo), None)
+        counts: Counter[tuple[str, str]] = Counter()
+        kinds: Counter[str] = Counter()
+        for (file, label), rules in scan.rules.items():
+            if args.arquivos and file not in args.arquivos:
+                continue
+            rules = [r for r, _where in rules]
+            kinds[coverage_kind(rules)] += 1
+            for rule in rules:
+                if rule is None:
+                    counts[(file, "sem regra")] += 1
+                    continue
                 limits = ", ".join(f"{name} {value}" for name, value in (
                     ("px", rule.px), ("linhas", rule.lines), ("letras", rule.chars)) if value is not None)
-                print(f"{counts[rule]:6d}  {rule.pattern} {rule.prefix or ''}  "
-                      f"[{limits or 'sem medida: ' + rule.source}]")
-        print(f"{counts[None]:6d}  sem regra")
+                where = rule.source.split(":")[0] if rule.source.startswith("usado em") else (rule.prefix or "")
+                counts[(file, f"{where}  [{limits or 'sem medida: ' + rule.source}]")] += 1
+        for (file, desc), n in sorted(counts.items()):
+            print(f"{n:6d}  {file} {desc}")
+        print("textos: " + ", ".join(f"{k} {v}" for k, v in sorted(kinds.items())))
         return 0
     if not args.ingles:
         parser.error("escolha um relatório (--ingles ou --regras)")

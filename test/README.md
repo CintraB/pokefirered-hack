@@ -692,18 +692,33 @@ Carvalho na batalha 208; ajuda 208 px com espaço de 4 px e 7 linhas; Fame Check
 56 (nomes) e 84 em FONT_SMALL (quadro do ícone); descrição de golpe 113 px e 4 linhas; entrada da
 Pokédex 240 px e 3 linhas; descrição de item 200 px e 3 linhas; nome de item 13 letras e 101 px;
 golpe 12 letras e 64 px em FONT_SMALL; habilidade 12; tipo 6; fruta 6; classe 12; espécie 10;
-categoria da Pokédex 11; nome de mapa 112 px e 24 letras; nome sugerido 7. Fonte sem janela
-determinável tem regra explícita com o motivo (menus de `strings.c`, Easy Chat, braille,
-resíduos em `.c`); um teste garante que nenhum texto cai fora das regras. Os caracteres
+categoria da Pokédex 11; nome de lugar 108 px e 18 letras (`mapName[19]` do mapa da região);
+nome sugerido 7.
+
+**Janela pelo uso** (`test/esteira/janelas_uso.py`): os textos do `src/strings.c`, as palavras do
+Easy Chat e os textos soltos de outros `.c` não têm janela fixa: a checagem indexa onde cada
+rótulo é usado em `src/**` (a função que o recebe, `call:DisplayPartyMenuMessage`; a tabela que o
+contém, `table:sCursorOptions`; outro código, `code`) e mede contra a janela de cada uso
+(`USAGE_RULES`, com arquivo:linha). O texto tem de caber em todas; o achado diz qual janela
+estourou. Texto sem uso nenhum é "texto morto" e fica sem medida. Fonte sem janela determinável
+tem regra explícita com o motivo (braille, naturezas, descrições de enfeite, teclados); um teste
+garante que nenhum texto cai fora das regras. Cobertura: `python3 -m esteira.check_text --regras`.
+Os caracteres
 ({PLAYER}/{RIVAL} medem 7 letras; nomes de batalha `{B_*}` o maior nome do campo, e os
 `_WITH_PREFIX` somam o prefixo mais largo) e o espaçamento entre letras seguem o jogo;
 `{CLEAR_TO n}`/`{SKIP n}` levam a caneta a n px e `{CLEAR n}` avança n.
 
-**Tradução** (`TRANSLATION_BASE` em `check_text.py`, o commit da `hack-switch` antes dela):
+**Tradução** (`TRANSLATION_BASE` em `check_text.py`: o SHA completo de `3a8d861f5`, o commit da
+`hack-switch` antes dela). `controle` e `glossario` comparam com **esta** base: uma mudança em
+inglês que entrar depois na `hack-switch` e for trazida para a tradução aparece como texto
+"mudado" (falso positivo) até a base ser atualizada.
 - `controle`: todo texto mudado tem os mesmos códigos de controle e placeholders (`{PLAYER}`,
   `{STR_VAR_n}`, `{B_*}`, `{COLOR ...}`, `$`...) da versão inglesa (`git cat-file` da base),
-  em qualquer ordem; só `\n`, `\l` e `\p` podem mudar. Sem git a regra não roda; com git e sem o
-  commit base vira aviso.
+  em qualquer ordem; só `\n`, `\l` e `\p` podem mudar, e macros que só imprimem glifo
+  (`{LV_2}`, `{PKMN}`, `{ID}`, `{NO}`) podem virar texto ("Nv."). Pasta sem `.git` (fixtures,
+  espelho do teste lento): as regras não rodam; com `.git` mas git falhando ou sem o commit base:
+  aviso `texto/controle` e `texto/glossario` com o motivo. Objeto ausente da base: os rótulos do
+  arquivo contam como novos.
 - `glossario`: texto mudado (ou novo) com variante proibida ("Pokébola", "Professor Oak", "HP",
   "Team Rocket"...) ou termo inglês do glossário que sobrou ("POKé BALL", "PALLET TOWN" ou
   "Pallet Town"). O glossário de máquina é `test/esteira/glossario.json`, gerado do glossário
@@ -716,7 +731,9 @@ resíduos em `.c`); um teste garante que nenhum texto cai fora das regras. Os ca
   `python3 -m esteira.check_text --ingles [arquivo...]` (em `test/`).
 - Quebra de linha: `python3 -m esteira.reflow` refaz `\n`/`\l` medindo como a checagem
   (`--texto "..." --largura 208`, ou um `.inc` com `--rotulo X --escrever`; sem `--largura` usa a
-  janela da regra do arquivo).
+  janela da regra do arquivo). Só mexe na caixa que tem linha estourada, e nela só na linha que
+  estoura (o excesso desce para a seguinte): placas, listas `{CIRCLE_n}` e recuos ficam;
+  `--forcar` refaz tudo do zero.
 
 Página EVOLUTION do resumo (Hack 4): os textos `gText_PokeSum_Evo*` de `src/strings.c` têm o
 limite da janela da página, 222 px (28 tiles com o texto em x = 2, `sWindowTemplates_Evolution`
