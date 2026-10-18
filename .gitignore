@@ -78,3 +78,7 @@ __pycache__/
 .pytest_cache/
 test/out/
 test/fixtures/*.tmp
+
+# Planejamento (designs, planos, mockups, workspace dos agentes): fica só local, o Git guarda o resultado
+.superpowers/
+docs/superpowers/
