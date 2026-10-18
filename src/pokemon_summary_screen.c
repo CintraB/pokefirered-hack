@@ -2666,14 +2666,16 @@ void GetEvolutionPageText(u8 *dest, u16 species)
         case EVO_FRIENDSHIP:
             line = gText_PokeSum_EvoFriendship;
             break;
-        // FireRed has no clock: GetEvolutionTargetSpecies skips the day/night evolutions
         case EVO_FRIENDSHIP_DAY:
             line = gText_PokeSum_EvoFriendshipDay;
-            suffix = gText_PokeSum_EvoNotPossible;
             break;
         case EVO_FRIENDSHIP_NIGHT:
             line = gText_PokeSum_EvoFriendshipNight;
-            suffix = gText_PokeSum_EvoNotPossible;
+            break;
+        // Hack 7: Feebas + Prism Scale
+        case EVO_LEVEL_UP_HOLD_ITEM:
+            CopyItemName(evo->param, gStringVar2);
+            line = gText_PokeSum_EvoLevelUpHoldItem;
             break;
         // Nothing in FireRed raises beauty (no Pokéblocks), but a Feebas traded from R/S/E
         // with enough beauty still evolves on level up

@@ -961,12 +961,12 @@
       "secondaryId": 0
     },
     {
-      "english": "????????",
-      "itemId": "ITEM_NONE",
-      "price": 0,
+      "english": "Escama Prisma",
+      "itemId": "ITEM_PRISM_SCALE",
+      "price": 7000,
       "holdEffect": "HOLD_EFFECT_NONE",
       "holdEffectParam": 0,
-      "description_english": "?????",
+      "description_english": "Uma escama misteriosa que\\nfaz certo Pok\u00e9mon evoluir.\\nBrilha com as cores do arco-\u00edris.",
       "importance": 0,
       "registrability": 0,
       "pocket": "POCKET_ITEMS",

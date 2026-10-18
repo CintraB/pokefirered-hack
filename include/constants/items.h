@@ -61,7 +61,7 @@
 #define ITEM_POWER_LENS 57
 #define ITEM_POWER_BAND 58
 #define ITEM_POWER_ANKLET 59
-#define ITEM_03C 60
+#define ITEM_PRISM_SCALE 60
 #define ITEM_03D 61
 #define ITEM_03E 62
 #define ITEM_HP_UP 63

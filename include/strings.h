@@ -1508,6 +1508,7 @@ extern const u8 gText_PokeSum_PageName_Evolution[];
 extern const u8 gText_PokeSum_EvoLevel[];
 extern const u8 gText_PokeSum_EvoItem[];
 extern const u8 gText_PokeSum_EvoLevelHoldItem[];
+extern const u8 gText_PokeSum_EvoLevelUpHoldItem[]; // Hack 7 - frente D
 extern const u8 gText_PokeSum_EvoFriendship[];
 extern const u8 gText_PokeSum_EvoFriendshipDay[];
 extern const u8 gText_PokeSum_EvoFriendshipNight[];

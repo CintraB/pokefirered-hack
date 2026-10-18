@@ -7,6 +7,7 @@ um item), nenhum evolui mais por troca, e os 6 itens estão à venda no 4F por 2
 
 import json
 import re
+import struct
 
 import pytest
 
@@ -102,7 +103,8 @@ def test_metodo_novo_definido_com_numero_livre_e_nivel_37():
                if not k.startswith(("EVO_MODE_", "EVOS_")) and k != "EVO_HOLD_ITEM_LEVEL"}
     assert "EVO_LEVEL_HOLD_ITEM" in methods
     assert len(set(methods.values())) == len(methods), methods      # nenhum número repetido
-    assert methods["EVO_LEVEL_HOLD_ITEM"] == max(methods.values())  # o próximo livre
+    assert methods["EVO_LEVEL_HOLD_ITEM"] == 16
+    assert methods["EVO_LEVEL_UP_HOLD_ITEM"] == max(methods.values())  # o próximo livre (17)
     assert defines["EVO_HOLD_ITEM_LEVEL"] == HOLD_ITEM_LEVEL == 37
 
 
@@ -186,3 +188,83 @@ def test_modo_troca_sem_a_trava_da_dex_nacional():
     assert "KANTO_SPECIES_END" not in trade
     item = trade[trade.index("case EVO_TRADE_ITEM:"):]
     assert "SetMonData(mon, MON_DATA_HELD_ITEM, &heldItem)" in item[:item.index("break;")]
+
+
+# --- Hack 7 frente D: Espeon/Umbreon por horário e Milotic pela Escama Prisma --------------------
+
+def _normal_mode() -> str:
+    body = POKEMON_C[POKEMON_C.index("u16 GetEvolutionTargetSpecies("):]
+    return body[body.index("case EVO_MODE_NORMAL:"):body.index("case EVO_MODE_TRADE:")]
+
+
+def _case(normal: str, method: str) -> str:
+    case = normal[normal.index(f"case {method}:"):]
+    return case[:case.index("break;")]
+
+
+def test_feebas_prism_scale():
+    assert TABLE["SPECIES_FEEBAS"] == [("EVO_LEVEL_UP_HOLD_ITEM", "ITEM_PRISM_SCALE", "SPECIES_MILOTIC")]
+
+
+def test_metodo_17_unico_e_maior():
+    defines = _defines()
+    methods = {k: v for k, v in defines.items()
+               if not k.startswith(("EVO_MODE_", "EVOS_")) and k != "EVO_HOLD_ITEM_LEVEL"}
+    assert methods["EVO_LEVEL_UP_HOLD_ITEM"] == 17 == max(methods.values())
+    assert list(methods.values()).count(17) == 1
+    case = _case(_normal_mode(), "EVO_LEVEL_UP_HOLD_ITEM")
+    assert "param == heldItem" in case
+    assert "EVO_HOLD_ITEM_LEVEL" not in case      # qualquer nível
+    assert "SetMonData" not in case               # o item segurado não é consumido
+
+
+def test_amizade_dia_e_noite_usam_o_relogio_novo():
+    normal = _normal_mode()
+    for method, neg in (("EVO_FRIENDSHIP_DAY", ""), ("EVO_FRIENDSHIP_NIGHT", "!")):
+        case = _case(normal, method)
+        assert f"friendship >= 220 && {neg}DayNight_IsDayPeriod(DayNight_GetPeriod())" in case
+        assert "/*" not in case and "RtcCalcLocalTime" not in case
+
+
+def test_prism_scale_item():
+    items = json.loads((REPO_ROOT / "src" / "data" / "items.json").read_text(encoding="utf-8"))["items"]
+    it = items[60]
+    assert it["itemId"] == "ITEM_PRISM_SCALE"
+    assert it["english"] == "Escama Prisma" and len(it["english"]) < 14   # ITEM_NAME_LENGTH 14
+    assert it["price"] == 7000
+    assert (it["holdEffect"], it["holdEffectParam"]) == ("HOLD_EFFECT_NONE", 0)
+    assert it["pocket"] == "POCKET_ITEMS" and it["importance"] == 0
+    assert it["description_english"] == ("Uma escama misteriosa que\\nfaz certo Pokémon evoluir.\\n"
+                                         "Brilha com as cores do arco-íris.")
+    items_h = (REPO_ROOT / "include" / "constants" / "items.h").read_text(encoding="utf-8")
+    assert re.search(r"#define ITEM_PRISM_SCALE 60\b", items_h) and "ITEM_03C" not in items_h
+    table = (REPO_ROOT / "src" / "data" / "item_icon_table.h").read_text(encoding="utf-8")
+    m = re.search(r"\[ITEM_PRISM_SCALE\]\s*=\s*\{(\w+), (\w+)\}", table)
+    assert m and "QuestionMark" not in m.group(0)
+    gfx = (REPO_ROOT / "src" / "data" / "graphics" / "items.h").read_text(encoding="utf-8")
+    assert 'INCBIN_U32("graphics/items/icons/prism_scale.4bpp.lz")' in gfx
+    assert 'INCBIN_U32("graphics/items/icon_palettes/prism_scale.gbapal.lz")' in gfx
+    raw = (REPO_ROOT / "graphics/items/icons/prism_scale.png").read_bytes()
+    assert struct.unpack(">IIBB", raw[16:26]) == (24, 24, 4, 3)
+    pal = (REPO_ROOT / "graphics/items/icon_palettes/prism_scale.pal").read_bytes()
+    assert pal.startswith(b"JASC-PAL\r\n0100\r\n16\r\n") and pal.count(b"\r\n") == 19
+    shop = parse_shop((REPO_ROOT / "data/maps/FourIsland_Mart/scripts.inc").read_text(encoding="utf-8"),
+                      "FourIsland_Mart_Items")
+    assert "ITEM_PRISM_SCALE" in shop
+    assert shop.index("ITEM_PRISM_SCALE") < shop.index("ITEM_EVERSTONE")  # os 8 do breeding ficam no fim
+
+
+def test_eevee_sem_impossible():
+    strings = (REPO_ROOT / "src" / "strings.c").read_text(encoding="utf-8")
+    summary = (REPO_ROOT / "src" / "pokemon_summary_screen.c").read_text(encoding="utf-8")
+    day_night = summary[summary.index("case EVO_FRIENDSHIP_DAY:"):summary.index("case EVO_BEAUTY:")]
+    assert "EvoNotPossible" not in day_night
+    assert ('gText_PokeSum_EvoLevelUpHoldItem[] = _("Subir nível + {STR_VAR_2} '
+            '{RIGHT_ARROW_2} {STR_VAR_3}");') in strings
+
+
+def test_loja_comporta_o_nome_da_escama_prisma():
+    """Os nomes da lista da loja moram em buffers de 13 bytes na base: 'Escama Prisma' (13 letras +
+    fim) estourava no nome da linha seguinte; o buffer agora é do tamanho do nome de item."""
+    shop = (REPO_ROOT / "src" / "shop.c").read_text(encoding="utf-8")
+    assert "(*sShopMenuItemStrings)[ITEM_NAME_LENGTH]" in shop

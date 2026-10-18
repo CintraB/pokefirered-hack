@@ -92,8 +92,9 @@ def test_everstone_reprecificada():
     assert it["holdEffect"] == "HOLD_EFFECT_PREVENT_EVOLVE"
 
 
-def test_sete_dos_67_slots_vazios_usados():
-    assert sum(it["english"] == "????????" for it in ITEMS) == 67 - 7
+def test_oito_dos_67_slots_vazios_usados():
+    # 7 do Hack 6 + a Escama Prisma do Hack 7 (slot 60)
+    assert sum(it["english"] == "????????" for it in ITEMS) == 67 - 8
 
 
 @pytest.mark.parametrize("item", sorted(br.NEW_ITEMS))

@@ -39,12 +39,12 @@ FIXED = {
     "SPECIES_EEVEE": [f"THUNDERSTONE {ARROW} JOLTEON",
                       f"WATER STONE {ARROW} VAPOREON",
                       f"FIRE STONE {ARROW} FLAREON",
-                      f"Day friendship {ARROW} ESPEON (impossible)",
-                      f"Night friendship {ARROW} UMBREON (impossible)"],
+                      f"Day friendship {ARROW} ESPEON",
+                      f"Night friendship {ARROW} UMBREON"],
     "SPECIES_ONIX": [f"{LV} 37 + METAL COAT {ARROW} STEELIX"],
     "SPECIES_SLOWPOKE": [f"{LV} 37 {ARROW} SLOWBRO",
                          f"{LV} 37 + KING'S ROCK {ARROW} SLOWKING"],
-    "SPECIES_FEEBAS": [f"High beauty {ARROW} MILOTIC (R/S/E only)"],
+    "SPECIES_FEEBAS": [f"Subir nível + Escama Prisma {ARROW} MILOTIC"],
     "SPECIES_TAUROS": ["Does not evolve."],
     "SPECIES_WURMPLE": [f"{LV} 7 (random) {ARROW} SILCOON",
                         f"{LV} 7 (random) {ARROW} CASCOON"],
@@ -68,10 +68,10 @@ def test_casos_fixos(species):
     assert PAGE.text(species).split("\n") == FIXED[species]
 
 
-def test_eevee_tem_5_linhas_e_espeon_umbreon_impossiveis():
+def test_eevee_tem_5_linhas_sem_impossible():
     lines = PAGE.text("SPECIES_EEVEE").split("\n")
     assert len(lines) == 5
-    assert [line.endswith(NOT_POSSIBLE) for line in lines] == [False, False, False, True, True]
+    assert [line.endswith(NOT_POSSIBLE) for line in lines] == [False] * 5
 
 
 def test_especies_validas_sao_as_386_sem_old_unown():
@@ -124,6 +124,7 @@ def test_formatos_de_strings_c_batem_com_o_python():
     by_method = {
         "EVO_LEVEL": "gText_PokeSum_EvoLevel", "EVO_LEVEL_NINJASK": "gText_PokeSum_EvoLevel",
         "EVO_ITEM": "gText_PokeSum_EvoItem", "EVO_LEVEL_HOLD_ITEM": "gText_PokeSum_EvoLevelHoldItem",
+        "EVO_LEVEL_UP_HOLD_ITEM": "gText_PokeSum_EvoLevelUpHoldItem",
         "EVO_FRIENDSHIP": "gText_PokeSum_EvoFriendship",
         "EVO_FRIENDSHIP_DAY": "gText_PokeSum_EvoFriendshipDay",
         "EVO_FRIENDSHIP_NIGHT": "gText_PokeSum_EvoFriendshipNight",
@@ -136,11 +137,10 @@ def test_formatos_de_strings_c_batem_com_o_python():
         "EVO_LEVEL_SHEDINJA": "gText_PokeSum_EvoLevelFreeSlot",
         "EVO_TRADE": "gText_PokeSum_EvoTrade", "EVO_TRADE_ITEM": "gText_PokeSum_EvoTradeItem",
     }
-    suffixes = {"EVO_FRIENDSHIP_DAY": "gText_PokeSum_EvoNotPossible",
-                "EVO_FRIENDSHIP_NIGHT": "gText_PokeSum_EvoNotPossible",
-                "EVO_BEAUTY": "gText_PokeSum_EvoTradedOnly"}
+    suffixes = {"EVO_BEAUTY": "gText_PokeSum_EvoTradedOnly"}
     for method, label in by_method.items():
-        item = method in ("EVO_ITEM", "EVO_LEVEL_HOLD_ITEM", "EVO_TRADE_ITEM")
+        item = method in ("EVO_ITEM", "EVO_LEVEL_HOLD_ITEM", "EVO_LEVEL_UP_HOLD_ITEM",
+                          "EVO_TRADE_ITEM")
         param = "ITEM_METAL_COAT" if item else "20"
         level = "37" if method == "EVO_LEVEL_HOLD_ITEM" else param
         c_line = (t[label].replace("{STR_VAR_1}", level).replace("{STR_VAR_2}", "METAL COAT")

@@ -13,14 +13,15 @@ Formatos (➡ = {RIGHT_ARROW_2}, "Lv" = {LV_2}, os glifos do jogo):
     EVO_ITEM                        FIRE STONE ➡ ARCANINE
     EVO_LEVEL_HOLD_ITEM             Lv 37 + METAL COAT ➡ STEELIX   (nível fixo 37 do Hack 3)
     EVO_FRIENDSHIP                  High friendship ➡ CROBAT
-    EVO_FRIENDSHIP_DAY / _NIGHT     Day friendship ➡ ESPEON (impossible)
-    EVO_BEAUTY                      High beauty ➡ MILOTIC (R/S/E only)
+    EVO_LEVEL_UP_HOLD_ITEM          Subir nível + Escama Prisma ➡ MILOTIC   (Hack 7, qualquer nível)
+    EVO_FRIENDSHIP_DAY / _NIGHT     Day friendship ➡ ESPEON   (Hack 7: relógio do jogo, sem sufixo)
+    EVO_BEAUTY                      High beauty ➡ X (R/S/E only; nenhuma espécie usa mais)
     EVO_LEVEL_ATK_GT/EQ/LT_DEF      Lv 20, ATK > DEF ➡ HITMONLEE
     EVO_LEVEL_SILCOON / _CASCOON    Lv 7 (random) ➡ SILCOON
     EVO_LEVEL_SHEDINJA              Lv 20, free slot ➡ SHEDINJA
     EVO_TRADE / EVO_TRADE_ITEM      Trade ➡ X / Trade + ITEM ➡ X   (não sobrou nenhuma no jogo)
-"Impossible": no FireRed os casos de dia/noite estão comentados em GetEvolutionTargetSpecies
-(src/pokemon.c, sem relógio). "R/S/E only": nada no FireRed sobe a beleza (sem Pokéblocks;
+Dia/noite (Hack 7): o relógio do jogo decide (DayNight_IsDayPeriod), então Eevee mostra Espeon e
+Umbreon sem sufixo; Feebas evolui com a Escama Prisma. "R/S/E only": nada no FireRed sobe a beleza (sem Pokéblocks;
 MON_DATA_BEAUTY só é escrito ao copiar dados de batalha por link), mas um Feebas trazido de
 Ruby/Sapphire/Emerald com beleza alta evolui ao subir de nível (o método continua no jogo).
 """
@@ -39,8 +40,7 @@ NOT_POSSIBLE = " (impossible)"
 TRADED_ONLY = " (R/S/E only)"
 NO_EVOLUTION = "Does not evolve."
 # sufixo das evoluções que o jogo sozinho não dispara
-SUFFIXES = {"EVO_FRIENDSHIP_DAY": NOT_POSSIBLE, "EVO_FRIENDSHIP_NIGHT": NOT_POSSIBLE,
-            "EVO_BEAUTY": TRADED_ONLY}
+SUFFIXES = {"EVO_BEAUTY": TRADED_ONLY}
 
 # Janela do texto: sWindowTemplates_Evolution[0] (.tilemapLeft = 1, .width = 28 tiles) e o texto
 # em x = EVOLUTION_PAGE_TEXT_X = 2 (src/pokemon_summary_screen.c); 13 tiles de altura com 16 px
@@ -83,6 +83,7 @@ def evolution_line(method: str, param: str, target: str, species_names: dict[str
         "EVO_LEVEL_NINJASK": lambda: f"{LV} {param} {ARROW} {name}",
         "EVO_ITEM": lambda: f"{item_names[param]} {ARROW} {name}",
         "EVO_LEVEL_HOLD_ITEM": lambda: f"{LV} {HOLD_ITEM_LEVEL} + {item_names[param]} {ARROW} {name}",
+        "EVO_LEVEL_UP_HOLD_ITEM": lambda: f"Subir nível + {item_names[param]} {ARROW} {name}",
         "EVO_FRIENDSHIP": lambda: f"High friendship {ARROW} {name}",
         "EVO_FRIENDSHIP_DAY": lambda: f"Day friendship {ARROW} {name}",
         "EVO_FRIENDSHIP_NIGHT": lambda: f"Night friendship {ARROW} {name}",

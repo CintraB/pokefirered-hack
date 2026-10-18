@@ -849,6 +849,8 @@ const u8 gText_PokeSum_HmMovesCantBeForgotten[] = _("HM moves can't be\nforgotte
 const u8 gText_PokeSum_EvoLevel[] = _("{LV_2} {STR_VAR_1} {RIGHT_ARROW_2} {STR_VAR_3}");
 const u8 gText_PokeSum_EvoItem[] = _("{STR_VAR_2} {RIGHT_ARROW_2} {STR_VAR_3}");
 const u8 gText_PokeSum_EvoLevelHoldItem[] = _("{LV_2} {STR_VAR_1} + {STR_VAR_2} {RIGHT_ARROW_2} {STR_VAR_3}");
+// Hack 7 - frente D
+const u8 gText_PokeSum_EvoLevelUpHoldItem[] = _("Subir nível + {STR_VAR_2} {RIGHT_ARROW_2} {STR_VAR_3}");
 const u8 gText_PokeSum_EvoFriendship[] = _("High friendship {RIGHT_ARROW_2} {STR_VAR_3}");
 const u8 gText_PokeSum_EvoFriendshipDay[] = _("Day friendship {RIGHT_ARROW_2} {STR_VAR_3}");
 const u8 gText_PokeSum_EvoFriendshipNight[] = _("Night friendship {RIGHT_ARROW_2} {STR_VAR_3}");
