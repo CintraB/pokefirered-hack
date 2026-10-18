@@ -2938,10 +2938,11 @@ bool32 PokeSum_TestCopyPageText(u8 *dest)
     return TRUE;
 }
 
-// Hack 7 - frente D: the friendship line the open EVOLUTION page printed
+// Hack 7 - frente D: the friendship line of the mon the open summary shows, rebuilt from its
+// friendship (FALSE with no summary open, or on an egg: its friendship is the hatch counter)
 bool32 PokeSum_TestCopyFriendshipText(u8 *dest)
 {
-    if (sMonSummaryScreen == NULL)
+    if (sMonSummaryScreen == NULL || sMonSummaryScreen->isEgg)
         return FALSE;
     GetFriendshipLineText(dest, GetMonData(&sMonSummaryScreen->currentMon, MON_DATA_FRIENDSHIP));
     return TRUE;

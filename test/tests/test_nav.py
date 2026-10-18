@@ -290,6 +290,16 @@ def test_step_counts_connection_once_when_map_switches_before_position(early_swi
     assert (world.game.location(), world.game.player_xy()) == (route1, (12, height - 2))
 
 
+def test_outside_map_without_navigation_data_fails_explicitly():
+    """Um mapa sem dados de navegação não pode passar por "dentro do mapa" em silêncio: falha
+    como `_grid()`, com evidência."""
+    route1 = Constants.load(str(REPO_ROOT)).map("MAP_ROUTE1")
+    nav = Navigator(_ConnectionWorld(route1, 40, False))
+    assert nav._outside_map(route1, (12, 40)) and not nav._outside_map(route1, (12, 39))
+    with pytest.raises(StepTimeout, match="dados de navegação"):
+        nav._outside_map((99, 99), (0, 0))
+
+
 # --- step ao vivo: bloqueio com evidência e conexão de mapas -------------------------
 
 

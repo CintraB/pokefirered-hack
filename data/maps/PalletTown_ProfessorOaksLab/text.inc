@@ -317,7 +317,7 @@ PalletTown_ProfessorOaksLab_Text_RivalJustLetMeHandleEverything::
     .string "You should just let me handle\n"
     .string "everything.$"
 
-PalletTown_ProfessorOaksLab_Text_OakNeedYourHelpTooNeedToSeePokedexes::
+PalletTown_ProfessorOaksLab_Text_OakNeedYourHelpToo::
     .string "OAK: I know, I know.\n"
     .string "Of course I need your help, too.$"
 
