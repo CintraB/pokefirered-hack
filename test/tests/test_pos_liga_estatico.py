@@ -130,10 +130,10 @@ def _text_body(label: str) -> str:
 def test_oak_nao_pede_mais_as_pokedex():
     """O Oak não leva mais as Pokédex (o upgrade virou o ovo raro): a fala que pedia as duas acaba
     no "preciso da sua ajuda também"."""
-    body = _text_body("PalletTown_ProfessorOaksLab_Text_OakNeedYourHelpTooNeedToSeePokedexes")
+    body = _text_body("PalletTown_ProfessorOaksLab_Text_OakNeedYourHelpToo")
     assert body == r"OAK: I know, I know.\nOf course I need your help, too.$", body
     scene = _scene()
-    assert scene.index("Text_OakNeedYourHelpTooNeedToSeePokedexes") < scene.index("Text_OakThanksRareEgg")
+    assert scene.index("Text_OakNeedYourHelpToo") < scene.index("Text_OakThanksRareEgg")
 
 
 def test_fanfarra_do_ovo_no_padrao():

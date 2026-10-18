@@ -15,10 +15,21 @@ SetNextWeather faz) a partir desse savestate e o jogo roda 1500 quadros:
 4. `clima_visual/areia_troca`: areia -> neve sem trocar de mapa: os flocos voltam a usar a paleta
    padrão do clima (default.gbapal), e não a da areia;
 5. `clima_visual/neblina`: neblina horizontal num mapa externo com a intensidade nova
-   (FOG_OUTDOOR_BLEND, espelho do C); na Pokémon Tower 3F (interior) a original 12/8.
+   (FOG_OUTDOOR_BLEND, espelho do C); na Pokémon Tower 3F (interior) a original 12/8, e lá as
+   paletas de gente (OBJ 0–11) e a do clima sem clarear (como no FRLG);
+6. `clima_visual/neblina_npcs`: a neblina chega à Rota 1 pela troca de período (entardecer ->
+   noite de um dia em que Kanto sorteia neblina à noite) com o jogador na tela; o menino entra
+   na tela depois; aí um retingimento (sAppliedTint zerado na RAM: o mesmo caminho de um degrau
+   de tom, com o mesmo tom) recarrega todas as paletas sob a neblina. Nos três momentos: as
+   paletas de gente (OBJ 0–11) e a do clima iguais ao Unfaded (sem clarear), e as do jogador e
+   do menino iguais entre os momentos; as dos efeitos de campo (OBJ 12–15 com tag) clareadas
+   para RGB(28, 31, 28) pelo EVA da neblina em uso (9 fora; a Pokémon Tower usa 12);
+7. `clima_visual/chuva_para_neblina`: chuva -> neblina sem trocar de mapa: os passos da gamma
+   (3 -> 0) reescrevem as paletas do Unfaded; quando acabam, os efeitos de campo já na tela
+   estão clareados pelo EVA da neblina (e gente/clima não).
 
 Telas para o Cintra aprovar: telas/clima_<neve|cinzas|areia|neblina>.png (+ clima_limpo,
-clima_neblina_torre).
+clima_neblina_torre, clima_neblina_npc_<chegada|entrou|retinge>).
 
 Uso, a partir de test/ (a pasta OUT precisa do captura.sav de um `rapido`/`completo`):
     python3 -m esteira completo --rom R --elf E --out OUT --only clima_visual
@@ -30,6 +41,7 @@ from pathlib import Path
 
 from PIL import Image
 
+from .. import dia_noite as dn
 from ..breeding import header_defines
 from ..hooks import CMD_WARP, Mailbox
 from . import REPO_ROOT, ScenarioContext
@@ -65,6 +77,20 @@ FOG_INDOOR_BLEND = bldalpha(12, 8)      # FogHorizontal_Main do Emerald (interio
 FOG_OUTDOOR_BLEND = bldalpha(9, 11)     # Hack 7: neblina externa mais fraca (espelho do C)
 
 ROUTE1_SPOT = (12, 20)
+# clima_visual/neblina_npcs: um dia em que Kanto (INLAND) não sorteia clima no entardecer e sorteia
+# neblina à noite; o menino (19, 16) fica fora da tela em FOG_START e entra nela em FOG_WALK_TO
+FOG_NIGHT_DAY = next(d for d in range(1, 5000)
+                     if dn.roll_weather(dn.REGION_INLAND, d, dn.EVENING) == dn.WEATHER_NONE
+                     and dn.roll_weather(dn.REGION_INLAND, d, dn.NIGHT) == dn.WEATHER_FOG_HORIZONTAL)
+FOG_START, FOG_WALK_TO = (4, 18), (14, 18)
+FOG_CLOCK = 19 * 60 + 58
+OBJ_PALSLOT_COUNT = 12                  # include/event_object_movement.h: gente e reflexos
+PLAYER_SLOT, BOY_SLOT = 0, 4            # PALSLOT_PLAYER; o menino é OBJ_EVENT_PAL_TAG_NPC_GREEN
+FOG_LIGHT = (28, 31, 28)                # UpdateSpritePaletteWithWeather: RGB(28, 31, 28)
+W_WEATHER_PAL = 0x6D4                   # weatherPicSpritePalIndex
+W_GAMMA_INDEX, W_PAL_STATE = 0x6C0, 0x6C6   # gammaIndex (s8), palProcessingState
+WEATHER_PAL_STATE_IDLE = 3
+TAG_NONE = 0xFFFF
 TOWER_SPOT = (5, 10)        # ao lado da escada para o 2F, fora da visão das médiuns
 NOON = 12 * 60
 FRAMES = 1500
@@ -76,6 +102,19 @@ SAMPLES, SAMPLE_GAP = 10, 6
 def _gbapal(name: str) -> tuple[int, ...]:
     data = (Path(REPO_ROOT) / "graphics" / "weather" / f"{name}.gbapal").read_bytes()
     return struct.unpack("<16H", data[:32])
+
+
+def _fog_blend(color: int, coeff: int) -> int:
+    """BlendPalette (src/blend_palette.c) de uma cor para FOG_LIGHT (o bit 15 cai)."""
+    channels = (color & 31, (color >> 5) & 31, (color >> 10) & 31)
+    r, g, b = (c + (((t - c) * coeff) >> 4) for c, t in zip(channels, FOG_LIGHT))
+    return b << 10 | g << 5 | r
+
+
+def _fog_coeffs(unfaded: tuple[int, ...], faded: tuple[int, ...]) -> list[int]:
+    """Coeficientes de BlendPalette para FOG_LIGHT que levam unfaded a faded (vazio = nenhum)."""
+    return [k for k in range(17)
+            if all(_fog_blend(u, k) == f & 0x7FFF for u, f in zip(unfaded, faded))]
 
 
 def _light_gray(p: tuple[int, int, int]) -> bool:
@@ -123,6 +162,28 @@ class WeatherGfxScenario(CatchSaveScenario):
     def _obj_palette(self, slot: int, buffer: str = "gPlttBufferUnfaded") -> tuple[int, ...]:
         addr = self.game.syms.addr(buffer) + (16 + slot) * 32
         return struct.unpack("<16H", self.emu.read(addr, 32))
+
+    def _sprite_pals(self) -> dict[int, tuple[tuple[int, ...], tuple[int, ...]]]:
+        """Paletas OBJ em uso: slot -> (Unfaded, Faded). As de gente (0–11) estão sempre lá; das
+        outras, só as com tag (sSpritePaletteTags)."""
+        tags = struct.unpack("<16H", self.emu.read(self.game.syms.addr("sSpritePaletteTags"), 32))
+        return {i: (self._obj_palette(i), self._obj_palette(i, "gPlttBufferFaded"))
+                for i in range(16) if i < OBJ_PALSLOT_COUNT or tags[i] != TAG_NONE}
+
+    def _check_fog_pals(self, what: str, eva: int) -> dict[int, tuple[int, ...]]:
+        """Gente (OBJ 0–11) e a paleta do clima: Faded == Unfaded; efeitos de campo: clareados
+        pelo EVA da neblina. Devolve slot -> Faded."""
+        weather_pal = self.emu.read_u8(self._wp() + W_WEATHER_PAL)
+        pals = self._sprite_pals()
+        bad = []
+        for slot, (unfaded, faded) in pals.items():
+            want = 0 if slot < OBJ_PALSLOT_COUNT or slot == weather_pal else eva
+            got = _fog_coeffs(unfaded, faded)
+            if want not in got:
+                bad.append(f"OBJ {slot}: clareada {got or 'de outro jeito'}, esperava {want} "
+                           f"(Unfaded {unfaded[1]:#06x}, Faded {faded[1]:#06x})")
+        assert not bad, f"{what}: " + "; ".join(bad)
+        return {slot: faded for slot, (_, faded) in pals.items()}
 
     def _set_weather(self, weather: int) -> None:
         """O que SetNextWeather faz, escrito na RAM (só a ROM de teste)."""
@@ -251,7 +312,64 @@ class WeatherGfxScenario(CatchSaveScenario):
         self._shot("clima_neblina_torre")
         assert tower == FOG_INDOOR_BLEND, (
             f"Pokémon Tower 3F: BLDALPHA {tower:#06x}, esperava a original {FOG_INDOOR_BLEND:#06x}")
-        return f"Rota 1 BLDALPHA {alpha:#06x}; Pokémon Tower 3F {tower:#06x}"
+        pals = self._check_fog_pals("Pokémon Tower 3F", FOG_INDOOR_BLEND & 0xFF)
+        return (f"Rota 1 BLDALPHA {alpha:#06x}; Pokémon Tower 3F {tower:#06x}, paletas OBJ "
+                f"{sorted(pals)} como no FRLG")
+
+    def _fog_npcs(self) -> str:
+        fog = self.weather["WEATHER_FOG_HORIZONTAL"]
+        self.box.set_clock(FOG_NIGHT_DAY, FOG_CLOCK)
+        self._warp("MAP_ROUTE1", FOG_START)
+        curr = self.emu.read_u8(self._wp() + W_CURR)
+        assert curr != fog, f"dia {FOG_NIGHT_DAY} às {FOG_CLOCK // 60}h{FOG_CLOCK % 60}: já com neblina"
+        self.ctl.wait_until(lambda: self.emu.read_u8(self._wp() + W_CURR) == fog
+                            and self.emu.read_u8(self._wp() + W_GFX_LOADED), 1500,
+                            "neblina da noite pela troca de período")
+        self.emu.frames(120)
+        eva = self._gpu(GPU_BLDALPHA) & 0xFF
+        assert eva == FOG_OUTDOOR_BLEND & 0xFF, f"BLDALPHA {self._gpu(GPU_BLDALPHA):#06x}"
+        self._shot("clima_neblina_npc_chegada")
+        moments = [self._check_fog_pals("neblina chegou com o jogador na tela", eva)]
+        self._walk(*FOG_WALK_TO)
+        self.emu.frames(30)
+        self._shot("clima_neblina_npc_entrou")
+        moments.append(self._check_fog_pals("o menino entrou na tela sob a neblina", eva))
+        self.emu.write(self.game.syms.addr("sAppliedTint"), bytes(6))   # próximo quadro retinge
+        self.emu.frames(10)
+        self._shot("clima_neblina_npc_retinge")
+        moments.append(self._check_fog_pals("paletas recarregadas sob a neblina (retingimento)", eva))
+        for slot in (PLAYER_SLOT, BOY_SLOT):
+            colors = [m[slot] for m in moments]
+            assert colors.count(colors[0]) == len(colors), (
+                f"OBJ {slot} (cor 1): " + " / ".join(f"{c[1]:#06x}" for c in colors)
+                + " na chegada da neblina / com o menino na tela / depois do retingimento")
+        return (f"dia {FOG_NIGHT_DAY}, neblina pela troca de período (EVA {eva}): jogador "
+                f"(OBJ {PLAYER_SLOT}) e menino (OBJ {BOY_SLOT}) com a mesma cor na chegada, com o "
+                f"menino na tela e depois do retingimento; efeitos de campo clareados por {eva}")
+
+    def _rain_to_fog(self) -> str:
+        self.emu.load_state(self.state)
+        rain, fog = self.weather["WEATHER_RAIN"], self.weather["WEATHER_FOG_HORIZONTAL"]
+
+        def settled(weather: int, gamma: int) -> bool:
+            wp = self._wp()
+            return (self.emu.read_u8(wp + W_CURR) == weather and self.emu.read_u8(wp + W_GFX_LOADED)
+                    and self.emu.read_u8(wp + W_GAMMA_INDEX) == gamma
+                    and self.emu.read_u8(wp + W_PAL_STATE) == WEATHER_PAL_STATE_IDLE)
+
+        self._set_weather(rain)
+        self.ctl.wait_until(lambda: settled(rain, 3), 1500, "chuva com a gamma 3")
+        self._set_weather(fog)
+        self.ctl.wait_until(lambda: settled(fog, 0), 1500, "neblina depois da chuva, gamma 0")
+        self.emu.frames(30)
+        weather_pal = self.emu.read_u8(self._wp() + W_WEATHER_PAL)
+        effects = [slot for slot in self._sprite_pals()
+                   if slot >= OBJ_PALSLOT_COUNT and slot != weather_pal]
+        assert effects, "nenhuma paleta de efeito de campo carregada para conferir"
+        self._shot("clima_chuva_para_neblina")
+        self._check_fog_pals("chuva -> neblina", FOG_OUTDOOR_BLEND & 0xFF)
+        return (f"chuva -> neblina na Rota 1: efeitos de campo OBJ {effects} clareados por "
+                f"{FOG_OUTDOOR_BLEND & 0xFF} depois dos passos da gamma")
 
     def run(self) -> None:
         try:
@@ -265,6 +383,10 @@ class WeatherGfxScenario(CatchSaveScenario):
                            self._sand_to_snow)
             self.suite.run("clima_visual/neblina: mais fraca fora, original na Pokémon Tower",
                            self._fog)
+            self.suite.run("clima_visual/neblina_npcs: gente com a mesma cor antes e depois da "
+                           "neblina chegar", self._fog_npcs)
+            self.suite.run("clima_visual/chuva_para_neblina: efeitos de campo clareados depois da "
+                           "gamma da chuva", self._rain_to_fog)
         except Abort:
             pass
 

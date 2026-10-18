@@ -117,6 +117,21 @@ def test_rota1_noite():
     assert "SPECIES_HOOTHOOT" not in route1["day"]
 
 
+def test_rota1_noite_decisivo():
+    """O cenário encontros/rota1_noite espera um Hoothoot em até NIGHT_MAX_WILD selvagens à noite,
+    nunca Pidgey: a chance do Hoothoot (pesos dos slots de terra) é a do espelho, Pidgey não está
+    na noite e está no FRLG, e a chance de falhar com a tabela certa fica abaixo de 0,1%."""
+    from esteira.scenarios import full_encounters as fe
+    rates = (20, 20, 10, 10, 10, 10, 5, 5, 4, 4, 1, 1)   # ChooseWildMonIndex_Land
+    route1 = next(t for t in TABLES if t["map"] == "MAP_ROUTE1")
+    chance = sum(r for r, mon in zip(rates, route1["night"]) if mon == fe.NIGHT_ONLY)
+    assert chance == fe.NIGHT_ONLY_CHANCE
+    assert fe.NIGHT_ONLY not in {m["species"] for m in FRLG["MAP_ROUTE1"]}
+    assert fe.DAY_ONLY in {m["species"] for m in FRLG["MAP_ROUTE1"]}
+    assert fe.DAY_ONLY not in route1["night"]
+    assert (1 - chance / 100) ** fe.NIGHT_MAX_WILD < 0.001
+
+
 def test_conversor_reproduz(tmp_path):
     hgss = os.environ.get("HGSS_ENC_DATA")
     if not hgss or not Path(hgss).is_file():

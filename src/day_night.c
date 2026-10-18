@@ -232,6 +232,9 @@ static void TryRetintField(void)
         LoadCustomWeatherSpritePalette(gSandstormWeatherPalette);
     else
         RestoreDefaultWeatherSpritePalette();
+    // the gamma above rewrote every field effect palette from Unfaded, not only GFE0/GFE1
+    if (gWeatherPtr->currWeather == WEATHER_FOG_HORIZONTAL)
+        UpdateSpritePalettesForFog();
     DayNight_RecordFieldTint();
 }
 

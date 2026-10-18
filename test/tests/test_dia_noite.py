@@ -541,6 +541,40 @@ def test_granizo_permanente():
         _src("src/pokemon.c")
 
 
+def test_offset_da_duracao_do_clima():
+    """clima/batalha_granizo escreve gWishFutureKnock.weatherDuration pelo offset do espelho: os
+    campos antes dele em struct WishFutureKnock somam 0x28 bytes (u8[4], u8[4], s32[4], u16[4],
+    u8[4], u8[4])."""
+    from esteira.scenarios import full_weather as fwe
+    body = re.search(r"struct WishFutureKnock\n\{(.*?)\};", _src("include/battle.h"), re.S).group(1)
+    fields = re.findall(r"(\w+) (\w+)(?:\[(\w+)\])?;", body)
+    sizes = {"u8": 1, "u16": 2, "s32": 4}
+    offset = 0
+    for kind, name, count in fields:
+        if name == "weatherDuration":
+            break
+        assert count == "MAX_BATTLERS_COUNT", name
+        offset += sizes[kind] * 4
+    assert offset == fwe.WISH_WEATHER_DURATION == 0x28
+    assert fwe.HAIL_DURATION < fwe.HAIL_TURNS
+
+
+def test_offsets_da_gamma_no_tom_com_chuva():
+    """tom/chuva lê as tabelas de gamma e o gammaIndex de struct Weather: logo depois da union
+    de sprites (0x200), duas tabelas u8[19][32] e o s8 gammaIndex; currWeather igual ao do
+    cenário clima_visual."""
+    from esteira.scenarios import full_clock as fc
+    from esteira.scenarios import full_weather_gfx as fw
+    header = _src("include/field_weather.h")
+    assert re.search(r"\} sprites;\s*u8 gammaShifts\[19\]\[32\];\s*u8 altGammaShifts\[19\]\[32\];"
+                     r"\s*s8 gammaIndex;", header)
+    assert fc.W_ALT_GAMMA_SHIFTS == fc.W_GAMMA_SHIFTS + 19 * 32
+    assert fc.W_GAMMA_INDEX == fc.W_ALT_GAMMA_SHIFTS + 19 * 32
+    assert fc.W_CURR_WEATHER == fw.W_CURR
+    assert dn.roll_weather(dn.REGION_INLAND, fc.RAIN_NIGHT_DAY, dn.NIGHT) == dn.WEATHER_RAIN
+    assert "ApplyGammaShift(0, 32, 3);" in _src("src/field_weather.c")   # RAIN_GAMMA_INDEX
+
+
 def test_atalho_batalha_selvagem():
     """TEST_CMD_START_WILD_BATTLE: cria o selvagem e roda um script de campo com dowildbattle (o
     caminho normal de setwildbattle/dowildbattle); os bytes do script batem com a tabela de comandos."""

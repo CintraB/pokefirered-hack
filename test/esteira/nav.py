@@ -195,24 +195,21 @@ class Navigator:
         base = self.ctl.timeout_error(what)
         return cls(what, base.screenshot_path, base.state_path, **extra)
 
-    def _grid(self) -> MapGrid:
-        loc = self.game.location()
+    def _grid(self, loc: tuple[int, int] | None = None) -> MapGrid:
+        """Grade do mapa `loc` (padrão: o atual); sem dados de navegação = falha com evidência."""
+        loc = self.game.location() if loc is None else loc
         try:
             return load_map_grid(str(REPO_ROOT), *loc)
-        except (KeyError, IndexError, StopIteration, OSError) as exc:
+        except (KeyError, IndexError, StopIteration, OSError, ValueError) as exc:
             raise self._fail(f"dados de navegação do mapa {loc} ({exc!r})") from exc
 
     def _player_still(self) -> bool:
         base = self.game.syms.addr("gPlayerAvatar")
         return self.emu.read_u8(base + 3) == 0   # PlayerAvatar.tileTransitionState == T_NOT_MOVING
 
-    @staticmethod
-    def _outside_map(loc: tuple[int, int], pos: tuple[int, int]) -> bool:
-        """`pos` fora dos limites do mapa `loc` (False se o mapa não tem dados de navegação)."""
-        try:
-            grid = load_map_grid(str(REPO_ROOT), *loc)
-        except (KeyError, IndexError, StopIteration, OSError, ValueError):
-            return False
+    def _outside_map(self, loc: tuple[int, int], pos: tuple[int, int]) -> bool:
+        """`pos` fora dos limites do mapa `loc` (sem dados de navegação: falha, como `_grid`)."""
+        grid = self._grid(loc)
         return not (0 <= pos[0] < grid.width and 0 <= pos[1] < grid.height)
 
     def step(self, direction: str, n: int = 1, run: bool = False) -> int:

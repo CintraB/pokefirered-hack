@@ -147,7 +147,9 @@ static u32 EvolutionTarget(u32 arg0, u32 arg1)
 }
 
 // Hack 7 front D: friendship line of the EVOLUTION page. mode 0: GetFriendshipLineText(arg0) into
-// gTestText; 1: the line the open summary printed; 2: sets the friendship of gPlayerParty[arg0] to 0.
+// gTestText; 1: the line rebuilt from the friendship of the mon the open summary shows (0xFFFFFFFF
+// with no summary open or on an egg, which has no line); 2: sets the friendship of
+// gPlayerParty[arg0] to 0.
 static u32 FriendshipText(u32 arg0, u32 mode)
 {
     u8 zero = 0;
@@ -166,6 +168,7 @@ static u32 FriendshipText(u32 arg0, u32 mode)
         return 0xFFFFFFFF;
     return StringLength(gTestText);
 }
+// --- end of Hack 7 front D ------------------------------------------------------------------
 
 // Hack 4: the EVOLUTION page text, either built by the same function the summary screen uses
 // (source 0) or the one the open summary screen printed (source 1), copied to gTestText.
@@ -572,6 +575,7 @@ static const u8 sWildBattleScript[] =
     0x6B, // releaseall
     0x02, // end
 };
+// --- end of Hack 7 front A ------------------------------------------------------------------
 
 void TestHooks_Run(void)
 {

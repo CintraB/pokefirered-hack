@@ -21,7 +21,10 @@ a paleta de NPC azul do OBJ 2, comparadas com as do ROM × o tom de esteira/dia_
 - `tom/sem_acumular`: às 22:00, Pallet → menu Start → casa (sem tom) → Pallet → batalha
   selvagem na grama da Rota 1 e fuga: continua ROM × tom uma vez;
 - `tom/transicao`: 16:00 na rota, ~62 minutos do jogo parado: cada leitura == ROM × tom do
-  minuto, a cor muda em degraus e termina igual à do entardecer.
+  minuto, a cor muda em degraus e termina igual à do entardecer;
+- `tom/chuva`: 22:00 de um dia em que Kanto sorteia chuva à noite, Pallet com chuva → entra e
+  sai de casa → batalha selvagem na Rota 1 e fuga: cada canal == tabela de gamma da chuva (lida
+  de gWeatherPtr, gammaIndex 3) aplicada a ROM × tom da noite uma vez (tela `tom_noite_chuva`).
 
 O relógio não para durante o diálogo de salvar nem depois do CONTINUAR, então o valor salvo
 fica entre o acertado e o lido logo depois do save, e o lido depois do CONTINUAR passa do salvo
@@ -62,6 +65,12 @@ ROUTE1_SPOT = (13, 30)                         # Rota 1, chão livre ao norte da
 PALLET_HOUSE_FRONT = (6, 8)                    # porta de casa em (6, 7)
 HOUSE_EXIT = (4, 8)
 VIRIDIAN_CENTER_SPOT = (7, 6)                  # Centro Pokémon de Viridian, warps em (6..7, 8)
+# tom/chuva: um dia em que Kanto sorteia chuva à noite; struct Weather (include/field_weather.h)
+RAIN_NIGHT_DAY = next(d for d in range(1, 1000)
+                      if dn.roll_weather(dn.REGION_INLAND, d, dn.NIGHT) == dn.WEATHER_RAIN)
+W_GAMMA_SHIFTS, W_ALT_GAMMA_SHIFTS, W_GAMMA_INDEX = 0x200, 0x460, 0x6C0   # [19][32], [19][32], s8
+W_CURR_WEATHER = 0x6D0
+RAIN_GAMMA_INDEX = 3                           # FadeInScreen_RainShowShade
 TINT_SHOTS = ((6 * 60, "manha"), (12 * 60, "tarde"), (18 * 60, "entardecer"), (22 * 60, "noite"))
 TRANSITION_START = 16 * 60
 TRANSITION_SAMPLE = 75                         # quadros entre leituras (meio minuto do jogo)
@@ -416,6 +425,65 @@ class ClockScenario(CatchSaveScenario):
         steps.append(self._check_colors("MAP_ROUTE1", "volta da batalha selvagem"))
         return "; ".join(steps)
 
+    def _rain_gamma(self) -> tuple[int, list[int], list[int]]:
+        """(gammaIndex, tabela normal, tabela alt) em uso, lidas de gWeatherPtr."""
+        wp = self.emu.read_u32(self.game.syms.addr("gWeatherPtr"))
+        index = self.emu.read_u8(wp + W_GAMMA_INDEX)
+        index = index - 256 if index >= 128 else index
+        row = 32 * (index - 1)
+        return (index, list(self.emu.read(wp + W_GAMMA_SHIFTS + row, 32)),
+                list(self.emu.read(wp + W_ALT_GAMMA_SHIFTS + row, 32)))
+
+    def _check_colors_in_rain(self, map_name: str, what: str) -> str:
+        """Faded == gamma da chuva(ROM × tom da noite, uma vez): ApplyGammaShift passa cada canal
+        do Unfaded (já com o tom) pela tabela do gammaIndex; BG 0–12 na normal, OBJ 2 na alt."""
+        index, normal, alt = self._rain_gamma()
+        assert index == RAIN_GAMMA_INDEX, f"{what}: gammaIndex {index}, esperava o da chuva"
+        minute, _ = self.box.clock_info()
+        assert dn.tint_at(minute) == dn.PERIOD_TINTS[dn.NIGHT], f"{what}: {self._hhmm(minute)}"
+        got = self._faded_colors()
+
+        def gamma(color: int, table: list[int]) -> int:
+            return table[(color >> 10) & 31] << 10 | table[(color >> 5) & 31] << 5 | table[color & 31]
+
+        tinted = self._expected(map_name, minute)
+        bg = NUM_PALS_TOTAL * 16   # depois do BG, a paleta do OBJ 2: GAMMA_ALT (sBasePaletteGammaTypes)
+        want = [gamma(c, normal if i < bg else alt) for i, c in enumerate(tinted)]
+        twice = [gamma(c, normal) for c in self._expected(map_name, minute, times=2)[:bg]]
+        bad = [i for i, (g, w) in enumerate(zip(got, want)) if g != w]
+        if bad:
+            verdict = ("tom aplicado DUAS vezes" if got[:bg] == twice and twice != want[:bg]
+                       else f"{len(bad)} cores diferentes")
+            raise AssertionError(f"{what} ({map_name}, {self._hhmm(minute)}): {verdict}; " + ", ".join(
+                f"{self._where(i)}: {got[i]:#06x} (esperava {want[i]:#06x}, ROM × tom "
+                f"{tinted[i]:#06x})" for i in bad[:4]))
+        changed = sum(w != t for w, t in zip(want, tinted))
+        return f"{what}: {len(got)} cores = gamma {index}(ROM × tom da noite), {changed} mudadas pela gamma"
+
+    def _tint_rain(self) -> str:
+        """22:00 de um dia de chuva em Kanto: porta de casa (entra e sai) e batalha selvagem na
+        Rota 1 com fuga; depois de cada volta as cores = gamma da chuva sobre o tom uma vez."""
+        self.box.set_clock(RAIN_NIGHT_DAY, 22 * 60)
+        self._warp_to("MAP_PALLET_TOWN", PALLET_HOUSE_FRONT)
+        wp = self.emu.read_u32(self.game.syms.addr("gWeatherPtr"))
+        curr = self.emu.read_u8(wp + W_CURR_WEATHER)
+        assert curr == dn.WEATHER_RAIN, f"Pallet, dia {RAIN_NIGHT_DAY} 22:00: clima {curr}, esperava chuva"
+        steps = [self._check_colors_in_rain("MAP_PALLET_TOWN", "chegada em Pallet com chuva")]
+        self._warp(None, "MAP_PALLET_TOWN_PLAYERS_HOUSE_1F")
+        self._settle("dentro de casa")
+        self._walk(*HOUSE_EXIT)
+        self._warp(None, "MAP_PALLET_TOWN")
+        self._settle("saída de casa")
+        steps.append(self._check_colors_in_rain("MAP_PALLET_TOWN", "saída de casa"))
+        self._go_to_grass()
+        self._find_wild_battle()
+        self._escape_battle()
+        self._settle("volta da batalha")
+        self._expect_map("MAP_ROUTE1")
+        steps.append(self._check_colors_in_rain("MAP_ROUTE1", "volta da batalha selvagem"))
+        self._shot("tom_noite_chuva")
+        return f"dia {RAIN_NIGHT_DAY}: " + "; ".join(steps)
+
     def _tint_transition(self) -> str:
         """16:00 na rota, 60 minutos do jogo parado: o tom anda em degraus até o do entardecer."""
         self._warp_to("MAP_ROUTE1", ROUTE1_SPOT)
@@ -464,6 +532,8 @@ class ClockScenario(CatchSaveScenario):
                        self._tint_no_accumulation)
             self._flow("tom/transicao: 16:00 → 17:00 na rota em degraus até o entardecer",
                        self._tint_transition)
+            self._flow("tom/chuva: noite com chuva, porta e batalha = gamma sobre o tom, uma vez",
+                       self._tint_rain)
         except Abort:
             pass
 

@@ -118,7 +118,8 @@ struct Weather
     s16 droughtLastBrightnessStage;
     s16 droughtTimer;
     s16 droughtState;
-    u8 filler_744[0xD-4];
+    u16 fogSpritePalTags[4]; // Hack 7: tag of sprite palettes 12-15 (OBJ_PALSLOT_COUNT..15) when they went through UpdateSpritePaletteWithWeather
+    u8 filler_74C[1];
     s8 loadDroughtPalsIndex;
     u8 loadDroughtPalsOffset;
 };
@@ -140,6 +141,7 @@ void WeatherProcessingIdle(void);
 u8 GetCurrentWeather(void);
 void delay(u8, u8, u32);
 void UpdateSpritePaletteWithWeather(u8 palIdx);
+void UpdateSpritePalettesForFog(void);
 void ResetPreservedPalettesInWeather(void);
 void PreservePaletteInWeather(u8 palIdx);
 

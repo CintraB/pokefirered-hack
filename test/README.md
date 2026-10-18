@@ -353,13 +353,15 @@ make test-approve DIR=test/out/20261017-030544   # uma execução específica (t
 Copia `telas/*.png` dos pontos-chave para `test/referencias/<INICIAL>/<ponto>.png` (o inicial vem
 do `meta.json` da execução). Pontos: `nome`, `inicial`, `batalha_rival`, `captura`,
 `save_continue` (modo rápido) e `bolsa`, `resumo`, `pokedex`, `opcoes`, `cartao`, `pc`, `loja`,
-`mapa` (tour do modo completo). Cada inicial tem o seu conjunto: para aprovar os três, rode a
+`mapa` (tour do modo completo) e, do Hack 7, `relogio_menu`, `relogio_aviso_noite`,
+`pokedex_nacional`, `pos_liga_ovo`, `pos_liga_dinheiro` e `pos_liga_objetivo` (mudam com o inicial
+ou com a execução: NPC andando no Centro Pokémon, contagem da Pokédex, Poké Balls na mesa do Oak;
+`refs.STARTER_DEPENDENT_POINTS`). Cada inicial tem o seu conjunto: para aprovar os três, rode a
 esteira uma vez com cada um (`--starter`). As telas da cena de evolução (`evo_*_antes`,
 `evo_*_depois`, do cenário `evolucoes`) e das páginas novas do resumo (`resumo_evo_*`, `resumo_pag_*`, do
 `resumo_evolucao`; `resumo_ivs_*`, do `resumo_ivs`), da loja de Four Island (`loja_four_island*`,
-do `ovo`) e do Hack 7 (`resumo_amizade_eevee`, `relogio_menu`, `relogio_aviso_noite`,
-`pokedex_nacional`, `pos_liga_ovo`, `pos_liga_dinheiro`, `pos_liga_objetivo`) não dependem do
-inicial e vão para `test/referencias/COMUM/`, que vale para os três.
+do `ovo`) e do Hack 7 (`resumo_amizade_eevee`) não dependem do inicial e vão para
+`test/referencias/COMUM/`, que vale para os três.
 
 "Mais recente" é a pasta `test/out/<data-hora>` modificada por último, de qualquer comando;
 confira o `DIR` quando tiver rodado outras coisas. O comando **não confere se a execução

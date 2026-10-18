@@ -8,7 +8,9 @@ A 6ª linha da página sempre mostra a amizade do Pokémon: "<corações> <n>/25
   byte a byte, ao texto gerado em Python;
 - amizade/pagina: Eevee com amizade 230 -> START > POKéMON > SUMMARY > → → → na página EVOLUTION: a
   linha impressa é `friendship_line(230)` e o texto das evoluções não mudou; ↓ para o Onix, com
-  amizade 0: linha sem corações. Tela do Eevee: telas/resumo_amizade_eevee.png.
+  amizade 0: linha sem corações. Tela do Eevee: telas/resumo_amizade_eevee.png;
+- amizade/ovo: um ovo no time, resumo aberto nele: FRIENDSHIP_TEXT do resumo aberto (arg1 = 1)
+  recusa (0xFFFFFFFF; a amizade de um ovo são os ciclos para chocar).
 
 Uso, a partir de test/ (a pasta OUT precisa do captura.sav de um `rapido`/`completo`):
     python3 -m esteira completo --rom R --elf E --out OUT --only resumo_amizade
@@ -20,10 +22,10 @@ from ..emu import KEY_B, KEY_DOWN, KEY_RIGHT
 from ..evolution_page import (FRIENDSHIP_SCREEN_POINTS, SHOWCASE, friendship_hearts,
                               friendship_line)
 from ..field_menu import STARTMENU_POKEMON
-from ..hooks import PSS_PAGE_EVOLUTION, PSS_PAGE_INFO, PSS_PAGE_MOVES
+from ..hooks import CMD_FRIENDSHIP_TEXT, NO_RESULT, PSS_PAGE_EVOLUTION, PSS_PAGE_INFO, PSS_PAGE_MOVES
 from . import ScenarioContext
 from .base import Abort
-from .full_summary_evolution import SHOWCASE_LEVEL, SummaryEvolutionScenario
+from .full_summary_evolution import EGG_SPECIES, SHOWCASE_LEVEL, SummaryEvolutionScenario
 
 EEVEE_FRIENDSHIP = 230
 
@@ -83,6 +85,24 @@ class SummaryFriendshipScenario(SummaryEvolutionScenario):
         self.menu.close_start_menu()
         return f"{eevee} (tela em {shot}); ↓ {onix}"
 
+    def _egg(self) -> str:
+        slot = min(len(self.game.party()), 5)
+        assert self.box.set_party_egg(slot, self._sp(EGG_SPECIES)) > slot, "SET_PARTY_EGG recusado"
+        self.menu.open_start_menu()
+        self.menu.choose(STARTMENU_POKEMON)
+        self._open_summary(slot)
+        state = self._state()
+        got = self.box.call(CMD_FRIENDSHIP_TEXT, 0, 1)
+        self._close_summary("ovo")
+        self.ctl.press_until(KEY_B, lambda: self.game.callback2() == "CB2_Overworld"
+                             and self.menu.start_menu_open() and self.menu.accepting_input(),
+                             "volta ao menu START", tries=6, wait=120)
+        self.menu.close_start_menu()
+        assert state is not None and state[2], f"resumo do slot {slot} não é de ovo: {state}"
+        assert got == NO_RESULT, (f"FRIENDSHIP_TEXT do resumo aberto num ovo devolveu {got:#x} "
+                                  f"(uma linha de amizade), esperava 0xFFFFFFFF")
+        return f"ovo de {EGG_SPECIES.removeprefix('SPECIES_')} no slot {slot}: FRIENDSHIP_TEXT recusado"
+
     def run(self) -> None:
         try:
             self._flow("resumo_amizade: CONTINUAR com o save do modo rápido e time de teste",
@@ -90,6 +110,7 @@ class SummaryFriendshipScenario(SummaryEvolutionScenario):
             self.suite.run("amizade/textos: GetFriendshipLineText de 0 a 255", self._texts)
             self._flow("amizade/pagina: linha de amizade na 6ª linha da página EVOLUTION",
                        self._page)
+            self._flow("amizade/ovo: resumo aberto num ovo não tem linha de amizade", self._egg)
         except Abort:
             pass
 
