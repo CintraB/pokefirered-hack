@@ -2,7 +2,8 @@
 #include "day_night.h"
 
 // The in-game clock: gSaveBlock2Ptr->gameClockFrames counts the frames played since 08:00 of
-// day 0, advanced by DayNight_Tick while the play time counter runs.
+// day 0, advanced by DayNight_Tick every frame the play time counter is not stopped (it keeps
+// going after play time maxes out at 999:59).
 
 u32 DayNight_GetTotalMinutes(void)
 {
@@ -50,6 +51,12 @@ void DayNight_SetClock(u32 day, u32 minuteOfDay)
     if (total < GAME_CLOCK_START_MINUTE)
         total = GAME_CLOCK_START_MINUTE;
     gSaveBlock2Ptr->gameClockFrames = (total - GAME_CLOCK_START_MINUTE) * GAME_CLOCK_FRAMES_PER_MINUTE;
+}
+
+// 08:00 of day 0 (new game)
+void DayNight_Reset(void)
+{
+    gSaveBlock2Ptr->gameClockFrames = 0;
 }
 
 void DayNight_Tick(void)

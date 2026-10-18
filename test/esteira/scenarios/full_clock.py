@@ -1,8 +1,8 @@
 """Modo completo: relógio do jogo (Hack 7), na build de teste.
 
 O relógio conta os quadros jogados em gSaveBlock2Ptr->gameClockFrames (150 quadros = 1 minuto
-do jogo; 0 = 08:00 do dia 0), avançado a cada quadro em que o contador de tempo de jogo corre
-(esteira/dia_noite.py tem as regras). Sessão própria da ROM de teste a partir do .sav do
+do jogo; 0 = 08:00 do dia 0), avançado a cada quadro em que o contador de tempo de jogo não
+está parado, inclusive depois de travar em 999:59 (esteira/dia_noite.py tem as regras). Sessão própria da ROM de teste a partir do .sav do
 `captura` (`save_from="captura"`):
 
 1. `relogio/anda`: 1500 quadros parado no campo avançam 10 minutos;
@@ -62,11 +62,11 @@ class ClockScenario(CatchSaveScenario):
         frames_set = self._clock_frames()
         self._save()
         frames_saved_max = self._clock_frames()
-        start = self.emu.frames(1)
         self.emu.reset()
         self._title_to_continue("tela de título depois do reset", shot=shot)
-        now = self.emu.frames(1)
-        elapsed = now if now < start else now - start   # o reset do core zera o contador
+        # o reset do core zera o contador de quadros: o valor agora é o jogado desde o reset
+        # (se um dia não zerar, só fica maior, e o limite afrouxa em vez de dar falso vermelho)
+        elapsed = self.emu.frames(1)
 
         frames_after = self._clock_frames()
         assert frames_set <= frames_after <= frames_saved_max + elapsed, (

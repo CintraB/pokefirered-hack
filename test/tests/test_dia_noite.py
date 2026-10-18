@@ -46,12 +46,31 @@ def test_save_campo_no_filler():
 
 
 def test_tick_no_play_time():
+    """O relógio anda com o contador de tempo de jogo ligado (RUNNING) e também depois que ele
+    trava em 999:59 (MAXED_OUT): só para em STOPPED."""
     corpo = re.search(r"void PlayTimeCounter_Update\(void\)\n\{(.*?)\n\}", PLAY_TIME_C, re.S)
     assert corpo, "PlayTimeCounter_Update não encontrado"
-    ramo = re.search(r"if \(sPlayTimeCounterState == RUNNING\)\s*\{(.*)\}", corpo.group(1), re.S)
+    texto = corpo.group(1)
+    assert texto.count("DayNight_Tick();") == 1
+    assert re.search(r"if \(sPlayTimeCounterState != STOPPED\)\s*\{?\s*DayNight_Tick\(\);", texto), (
+        "DayNight_Tick() tem de estar sob `if (sPlayTimeCounterState != STOPPED)`")
+    ramo = re.search(r"if \(sPlayTimeCounterState == RUNNING\)\s*\{(.*)\}", texto, re.S)
     assert ramo, "ramo RUNNING não encontrado"
-    assert "DayNight_Tick();" in ramo.group(1)
-    assert corpo.group(1).count("DayNight_Tick();") == 1
+    assert "DayNight_Tick();" not in ramo.group(1)
+
+
+def test_jogo_novo_zera_o_relogio():
+    """Jogo novo por cima de um save existente não herda o relógio: NewGameInitData zera junto
+    com o tempo de jogo, e DayNight_Reset volta a 08:00 do dia 0 (gameClockFrames = 0)."""
+    new_game = (REPO_ROOT / "src" / "new_game.c").read_text(encoding="utf-8")
+    corpo = re.search(r"void NewGameInitData\(void\)\n\{(.*?)\n\}", new_game, re.S)
+    assert corpo, "NewGameInitData não encontrado"
+    assert "PlayTimeCounter_Reset();" in corpo.group(1)
+    assert "DayNight_Reset();" in corpo.group(1)
+    day_night = (REPO_ROOT / "src" / "day_night.c").read_text(encoding="utf-8")
+    reset = re.search(r"void DayNight_Reset\(void\)\n\{(.*?)\n\}", day_night, re.S)
+    assert reset, "DayNight_Reset não encontrado"
+    assert re.fullmatch(r"\s*gSaveBlock2Ptr->gameClockFrames = 0;\s*", reset.group(1))
 
 
 def test_cenario_relogio_registrado():

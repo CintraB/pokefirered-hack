@@ -33,9 +33,10 @@ void PlayTimeCounter_Stop(void)
 
 void PlayTimeCounter_Update(void)
 {
+    if (sPlayTimeCounterState != STOPPED)
+        DayNight_Tick();
     if (sPlayTimeCounterState == RUNNING)
     {
-        DayNight_Tick();
         gSaveBlock2Ptr->playTimeVBlanks++;
         if (gSaveBlock2Ptr->playTimeVBlanks > 59)
         {
