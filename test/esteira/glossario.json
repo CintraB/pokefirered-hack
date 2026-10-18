@@ -9100,6 +9100,95 @@
    "detectar": true,
    "frente": "Task 2",
    "obs": "classe só do R/S/E"
+  },
+  {
+   "en": "POWER",
+   "pt": "Poder",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "frente": "H",
+   "obs": "rótulo da imagem do resumo/info de golpe (H.1)",
+   "tela": "Resumo"
+  },
+  {
+   "en": "EFFECT",
+   "pt": "Efeito",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "frente": "H",
+   "obs": "rótulo da imagem do resumo/info de golpe (H.1)",
+   "tela": "Resumo"
+  },
+  {
+   "en": "STATE",
+   "pt": "Estado",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "frente": "H",
+   "obs": "rótulo da página do ovo no resumo (H.1)",
+   "tela": "Resumo"
+  },
+  {
+   "en": "NAME",
+   "pt": "Nome",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "frente": "H",
+   "obs": "rótulo da imagem do resumo (H.1)",
+   "tela": "Resumo"
+  },
+  {
+   "en": "No",
+   "pt": "Nº",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "frente": "H",
+   "obs": "rótulo da imagem do resumo (H.1); \"IDNo\" = \"Nº ID\"",
+   "tela": "Resumo"
+  },
+  {
+   "en": "SPEED (abrev.)",
+   "pt": "Veloc.",
+   "fonte": "criado",
+   "categoria": "batalha",
+   "detectar": false,
+   "frente": "H",
+   "obs": "forma curta de Velocidade onde não cabe (imagem do resumo, H.1)",
+   "tela": "Resumo"
+  },
+  {
+   "en": "SP. ATK (abrev.)",
+   "pt": "Atq.Esp.",
+   "fonte": "criado",
+   "categoria": "batalha",
+   "detectar": false,
+   "frente": "H",
+   "obs": "na imagem do resumo sem espaço (largura); no texto \"Atq. Esp.\"",
+   "tela": "Resumo"
+  },
+  {
+   "en": "SP. DEF (abrev.)",
+   "pt": "Def.Esp.",
+   "fonte": "criado",
+   "categoria": "batalha",
+   "detectar": false,
+   "frente": "H",
+   "obs": "na imagem do resumo sem espaço (largura); no texto \"Def. Esp.\"",
+   "tela": "Resumo"
+  },
+  {
+   "en": "ADMIN",
+   "pt": "Executivo",
+   "fonte": "anime",
+   "categoria": "personagem",
+   "detectar": false,
+   "frente": "D",
+   "obs": "decisão D4 do Cintra (18/10): classe dos 2 ADMIN da Equipe Rocket (trainers.h usa TRAINER_CLASS_TEAM_ROCKET + nome \"ADMIN\"; exige classe própria — frente D/trainers)"
   }
  ],
  "proibidos": [
