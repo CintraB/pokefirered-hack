@@ -18,8 +18,11 @@ Sessão própria da ROM de teste a partir do .sav do `captura` (`save_from="capt
 - `clima/caverna`: Mt. Moon (subterrâneo) → WEATHER_NONE com o mesmo tipo de sorteio;
 - `clima/batalha_granizo` (Task 5): Four Island com neve, atalho START_WILD_BATTLE (Pikachu nível 5)
   → depois da abertura gBattleWeather tem B_WEATHER_HAIL_PERMANENT, a mensagem "It started to
-  hail!" (tela `batalha_granizo`) e o granizo continua depois de 2 turnos (Splash de um Magikarp
-  nível 50 no lugar do 1º do time, para o Pikachu não cair);
+  hail!" (tela `batalha_granizo`); aí gWishFutureKnock.weatherDuration = 1 na RAM (o granizo
+  temporário acabaria no fim do 1º turno: sem a guarda de B_WEATHER_HAIL_PERMANENT o contador,
+  que começa em 0, daria a volta para 255 e a checagem não pegaria nada) e o granizo continua
+  depois de 3 turnos (Splash de um Magikarp nível 50 no lugar do 1º do time, para o Pikachu não
+  cair);
 - `clima/batalha_areia`, `clima/batalha_chuva`, `clima/batalha_cinzas`: Rota 3 com tempestade de
   areia → B_WEATHER_SANDSTORM; Vermilion (COAST) com chuva → B_WEATHER_RAIN; Cinnabar (VOLCANO)
   com cinzas → gBattleWeather == 0.
@@ -66,7 +69,9 @@ B_WEATHER_HAIL_PERMANENT = 1 << 8
 B_WEATHER_HAIL = B_WEATHER_HAIL_TEMPORARY | B_WEATHER_HAIL_PERMANENT
 WILD_SPECIES, WILD_LEVEL = "SPECIES_PIKACHU", 5
 LEAD_SPECIES, LEAD_LEVEL = "SPECIES_MAGIKARP", 50   # 1º golpe Splash, mais rápido: o turno não derruba ninguém
-HAIL_TURNS = 2
+HAIL_TURNS = 3
+HAIL_DURATION = 1                   # weatherDuration escrito depois da abertura: acaba no 1º turno
+WISH_WEATHER_DURATION = 0x28        # gWishFutureKnock.weatherDuration (struct WishFutureKnock, include/battle.h)
 HAIL_TEXT = "It started to hail!"
 BATTLE_CASES = (   # (fluxo, mapa, ponto, região, período, clima do campo, (máscara, esperado) na batalha)
     ("areia", "MAP_ROUTE3", ROUTE3_SPOT, dn.REGION_SAND, dn.AFTERNOON, dn.WEATHER_SANDSTORM,
@@ -287,12 +292,15 @@ class WeatherScenario(ClockScenario):
         assert weather & B_WEATHER_HAIL == B_WEATHER_HAIL, (
             f"depois da abertura gBattleWeather = {weather:#x}, esperava granizo permanente")
         steps.append(f"\"{HAIL_TEXT}\"; abertura: gBattleWeather = {weather:#x}")
+        duration = self.game.syms.addr("gWishFutureKnock") + WISH_WEATHER_DURATION
+        self.emu.write(duration, bytes([HAIL_DURATION]))
         for turn in range(1, HAIL_TURNS + 1):
             assert driver.fight_turn() == "menu", f"a batalha acabou no turno {turn}"
             weather = self._battle_weather()
             assert weather & B_WEATHER_HAIL == B_WEATHER_HAIL, (
                 f"turno {turn}: gBattleWeather = {weather:#x}, o granizo acabou")
-        steps.append(f"depois de {HAIL_TURNS} turnos: {weather:#x}")
+        steps.append(f"weatherDuration = {HAIL_DURATION} e {HAIL_TURNS} turnos depois: {weather:#x} "
+                     f"(contador em {self.emu.read_u8(duration)})")
         self._leave_battle(driver, "granizo")
         return "; ".join(steps)
 
