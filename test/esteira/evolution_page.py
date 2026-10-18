@@ -21,9 +21,8 @@ Formatos (➡ = {RIGHT_ARROW_2}, "Lv" = {LV_2}, os glifos do jogo):
     EVO_LEVEL_SHEDINJA              Lv 20, free slot ➡ SHEDINJA
     EVO_TRADE / EVO_TRADE_ITEM      Trade ➡ X / Trade + ITEM ➡ X   (não sobrou nenhuma no jogo)
 Dia/noite (Hack 7): o relógio do jogo decide (DayNight_IsDayPeriod), então Eevee mostra Espeon e
-Umbreon sem sufixo; Feebas evolui com a Escama Prisma. "R/S/E only": nada no FireRed sobe a beleza (sem Pokéblocks;
-MON_DATA_BEAUTY só é escrito ao copiar dados de batalha por link), mas um Feebas trazido de
-Ruby/Sapphire/Emerald com beleza alta evolui ao subir de nível (o método continua no jogo).
+Umbreon sem sufixo; Feebas evolui com a Escama Prisma. EVO_BEAUTY ("R/S/E only") continua no
+código, mas nenhuma espécie usa mais o método desde o Hack 7.
 """
 
 import json

@@ -2677,8 +2677,8 @@ void GetEvolutionPageText(u8 *dest, u16 species)
             CopyItemName(evo->param, gStringVar2);
             line = gText_PokeSum_EvoLevelUpHoldItem;
             break;
-        // Nothing in FireRed raises beauty (no Pokéblocks), but a Feebas traded from R/S/E
-        // with enough beauty still evolves on level up
+        // No species uses this method anymore (Feebas evolves with the Prism Scale since Hack 7);
+        // the line stays in case one is given beauty again
         case EVO_BEAUTY:
             line = gText_PokeSum_EvoBeauty;
             suffix = gText_PokeSum_EvoTradedOnly;
