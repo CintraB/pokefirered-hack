@@ -19,6 +19,9 @@ repo.
 | Ver a página EVOLUTION do resumo (Hack 4) numa janela | `make test-watch CENARIO=resumo_evolucao` | ~2 min (tempo real) |
 | Ver a página IVs/EVs do resumo (Hack 5) numa janela | `make test-watch CENARIO=resumo_ivs` | ~2 min (tempo real) |
 | Ver um ovo da creche chocar (Hack 6) numa janela | `make test-watch CENARIO=ovo` | ~1,5 min (tempo real) |
+| Ver o relógio, a hora no menu, o aviso e o tom de cor (Hack 7) numa janela | `make test-watch CENARIO=relogio` | tempo real |
+| Ver o clima por região e o granizo na batalha (Hack 7) numa janela | `make test-watch CENARIO=clima` | tempo real |
+| Ver outro cenário do Hack 7 numa janela | `make test-watch CENARIO=encontros` (ou `dex_nacional`, `pos_liga`, `evo_dia_noite`, `resumo_amizade`) | tempo real |
 | Aprovar as telas de referência | `make test-approve` | instantâneo |
 | Testes unitários da própria esteira | `python3 -m pytest test -q` | ~40 s (~1,5 min na 1ª vez depois de ligar o WSL) |
 
@@ -149,6 +152,14 @@ ROM. Sem o log, só o uso de memória é conferido (o terminal avisa). Deixa os 
 | `resumo_ivs` | **ROM de teste** | Hack 5, página IVs/EVs do resumo: o texto da página para as bordas do design, todos os tipos de Hidden Power e 150 combinações sorteadas, a página pelo menu de verdade (→/←, ↓ entre 5 Pokémon com IVs/EVs escolhidos) e o ovo sem a página (veja abaixo) |
 | `creche` | **ROM de teste** | Hack 6, breeding genético: ~21 000 ovos pelo caminho real da creche comparados com a distribuição exata das regras (IVs, natureza, habilidade, golpes de ovo, gênero, itens), taxa de shiny dos ovos com/sem charm e os Power items em batalha (veja abaixo) |
 | `ovo` | **ROM de teste** | Hack 6: um ovo de verdade na creche de Four Island, entregue pelo velho, chocado andando e conferido na memória, e a loja de Four Island |
+| `relogio` | **ROM de teste** | Hack 7: relógio do jogo (anda, salva, save antigo), hora no menu Start, aviso de troca de período e tom de cor por período (veja abaixo) |
+| `clima_visual` | **ROM de teste** | Hack 7: neve, cinzas, areia e neblina visíveis no campo (flocos caindo, blend e paleta do Emerald, neblina externa mais fraca) |
+| `encontros` | **ROM de teste** | Hack 7: encontros de grama/caverna por horário (manhã/tarde/noite; entardecer meio a meio) e a área da Pokédex |
+| `dex_nacional` | **ROM de teste** | Hack 7: Pokédex Nacional na tela desde o início, sem ligar a flag do pós-Liga |
+| `pos_liga` | **ROM de teste** | Hack 7: cena pós-Liga do Prof. Carvalho (Ovo raro na equipe, no PC ou guardado pelo Oak, ₽45.000, objetivo do Amuleto Brilhante) |
+| `evo_dia_noite` | **ROM de teste** | Hack 7: Espeon de dia, Umbreon de noite/entardecer, Milotic pela Escama Prisma e a Escama Prisma na loja de Four Island |
+| `resumo_amizade` | **ROM de teste** | Hack 7: linha de amizade com corações na página EVOLUTION do resumo |
+| `clima` | **ROM de teste** | Hack 7: clima dinâmico por região e período, interiores/cavernas/climas fixos, troca de período e volta da bolsa, e o clima do mapa na batalha (neve → granizo, areia, chuva) |
 
 Depende da ROM jogável da raiz (se não existir, vira falha `emulador/rom-playable`). Não grava
 em `roms/`: o resultado fica em `test/out/<data-hora>/`. Leva **~4 min** (os cenários rodam em
@@ -275,6 +286,61 @@ design, os 7 itens novos (slots 53-59, preço, efeito, ícone 24×24 4bpp e pale
 Everstone a ₽7000, a loja de Four Island e o próprio modelo (contra uma simulação independente
 das regras, com poder para reprovar uma regra errada).
 
+**Hack 7, dia/noite e clima** (design em `docs/superpowers/specs/2026-10-17-dia-noite-clima-design.md`).
+O jogo ganhou um relógio próprio (`gSaveBlock2Ptr->gameClockFrames`: 150 quadros = 1 minuto do
+jogo, 1 dia = 1 h real; jogo novo e save antigo começam às 08:00 do dia 0) com quatro períodos:
+manhã 04–10, tarde 10–17, entardecer 17–20 e noite 20–04. As regras ficam em Python em
+`test/esteira/dia_noite.py` (tom de cor, sorteio do clima) e os atalhos da build de teste são os
+`0x70`–`0x7B` de `include/test_hooks.h` (`SET_CLOCK`, `CLOCK_INFO`, `TINT_AT`, `ROLL_WEATHER`,
+`LAND_SPECIES`, `FRIENDSHIP_TEXT`, `RARE_EGG_ROLL`, `SET_KANTO_OWNED`, `START_WILD_BATTLE`,
+`FILL_PC`, `SET_FLAG`, `SPECIES_ON_MAP`). Cada cenário numa sessão própria da ROM de teste, a
+partir do `captura.sav` (`--only <nome>`):
+
+- `relogio` (`full_clock.py`): `relogio/anda` (1500 quadros = 10 minutos), `relogio/salva` (dia 3
+  18:30 sobrevive a salvar, reset e CONTINUAR), `relogio/save_antigo` (relógio 0 = 08:00),
+  `relogio/menu` (hora e período no menu Start, tela `relogio_menu`), `relogio/aviso` (aviso da
+  noite com o jogador livre, tela `relogio_aviso_noite`), `relogio/aviso_no_menu`,
+  `relogio/save_cancelado` (a janela da hora não vaza), `relogio/sem_aviso_ao_entrar`; e o tom de
+  cor: `tom/hook` (os 1440 minutos iguais ao espelho Python), `tom/periodos` (Rota 1 às 06, 12, 18
+  e 22 h = cor do ROM × tom, telas `tom_*`), `tom/interior` (sem tom), `tom/sem_acumular` (menu,
+  casa e batalha não aplicam o tom duas vezes) e `tom/transicao` (a cor muda em degraus de 16:00
+  até o entardecer).
+- `clima` (`full_weather.py`): o clima de um mapa externo com header NONE/SUNNY/SUNNY_CLOUDS sai
+  de um sorteio por região, dia do clima e período; o **dia do clima vira às 04:00** e o **dia 0
+  é sempre céu limpo**. `clima/hook` (2000 sorteios iguais ao espelho), `clima/neve` (Four Island,
+  tela `clima_neve`), `clima/interior`, `clima/troca_de_periodo` (tela `clima_troca_de_periodo`),
+  `clima/volta_da_bolsa`, `clima/fixo` (Viridian Forest, Pokémon Tower), `clima/caverna`, e na
+  batalha: `clima/batalha_granizo` (neve do mapa → granizo permanente, tela `batalha_granizo`),
+  `batalha_areia`, `batalha_chuva` e `batalha_cinzas` (sem clima de batalha).
+- `clima_visual` (`full_weather_gfx.py`): cada clima injetado na Rota 1 ao meio-dia por 1500
+  quadros: `neve` (flocos caindo), `cinzas` e `areia` (blend e paleta do Emerald), `areia_troca`
+  (a neve volta à paleta padrão) e `neblina` (mais fraca fora, original na Pokémon Tower). Telas
+  `clima_*` só para registro.
+- `encontros` (`full_encounters.py`; tabela em `src/data/wild_encounters_time.json`):
+  `encontros/hook` (35 mapas × 3 períodos × 12 slots), `encontros/entardecer` (tarde ou noite meio
+  a meio, ±4σ), `encontros/rota1_noite` (selvagem de verdade na grama às 22:00 e às 07:00),
+  `encontros/sem_tabela` (Rota 12 segue o FRLG) e `encontros/area_pokedex`.
+- `dex_nacional` (`full_national_dex.py`): a flag continua desligada, a Pokédex abre na lista
+  nacional (tela `pokedex_nacional`), o resumo do Larvitar mostra 246 e o porteiro da Liga segue no
+  lugar.
+- `pos_liga` (`full_post_league.py`): a cena do Prof. Carvalho depois da Liga (60 capturados de
+  Kanto + One Island) dá um Ovo raro (Larvitar, Bagon ou Beldum: na equipe, senão no PC, senão o
+  Oak guarda e entrega depois), ₽45.000 e o objetivo do Amuleto Brilhante, e liga a Dex Nacional;
+  `pos_liga/sorteio` (3000 sorteios, ±4σ) e `pos_liga/sem_60`. Telas `pos_liga_ovo`,
+  `pos_liga_dinheiro` e `pos_liga_objetivo`.
+- `evo_dia_noite` (`full_day_night_evo.py`): Eevee com amizade 220 + Rare Candy vira Espeon de
+  manhã/tarde e Umbreon de noite e no entardecer; amizade baixa não evolui; Feebas segurando a
+  Escama Prisma vira Milotic; a Escama Prisma a ₽7000 na loja de Four Island, antes dos 8 itens do
+  breeding.
+- `resumo_amizade` (`full_summary_friendship.py`): a 6ª linha da página EVOLUTION ("<corações>
+  n/255 <frase>", " (220+)" a partir de 220) para 0..255 e na página de verdade (tela
+  `resumo_amizade_eevee`).
+
+Os testes estáticos ficam em `test/tests/test_dia_noite.py` (relógio, hora no menu, tom, clima,
+granizo), `test_clima_visual.py`, `test_encontros_estatico.py`, `test_dex_nacional_estatico.py`,
+`test_pos_liga_estatico.py`, `test_evolucoes_estatico.py` e `test_resumo_evolucao.py` (Espeon,
+Umbreon, Milotic e a linha de amizade) e `test_glifos.py` (ã õ Ã Õ nas fontes).
+
 ### `make test-approve`
 
 Promove as telas de uma execução a **screenshots de referência**:
@@ -290,8 +356,10 @@ do `meta.json` da execução). Pontos: `nome`, `inicial`, `batalha_rival`, `capt
 `mapa` (tour do modo completo). Cada inicial tem o seu conjunto: para aprovar os três, rode a
 esteira uma vez com cada um (`--starter`). As telas da cena de evolução (`evo_*_antes`,
 `evo_*_depois`, do cenário `evolucoes`) e das páginas novas do resumo (`resumo_evo_*`, `resumo_pag_*`, do
-`resumo_evolucao`; `resumo_ivs_*`, do `resumo_ivs`) não dependem do inicial e vão para `test/referencias/COMUM/`, que vale para
-os três.
+`resumo_evolucao`; `resumo_ivs_*`, do `resumo_ivs`), da loja de Four Island (`loja_four_island*`,
+do `ovo`) e do Hack 7 (`resumo_amizade_eevee`, `relogio_menu`, `relogio_aviso_noite`,
+`pokedex_nacional`, `pos_liga_ovo`, `pos_liga_dinheiro`, `pos_liga_objetivo`) não dependem do
+inicial e vão para `test/referencias/COMUM/`, que vale para os três.
 
 "Mais recente" é a pasta `test/out/<data-hora>` modificada por último, de qualquer comando;
 confira o `DIR` quando tiver rodado outras coisas. O comando **não confere se a execução
@@ -302,17 +370,15 @@ a referência e o diff com os pixels diferentes em vermelho). Sem referência ta
 Telas com dados que mudam de execução para execução (dinheiro, HP, tempo de jogo, vistos na
 Pokédex) podem continuar avisando mesmo depois de aprovadas.
 
-**Revisar e commitar:** `test/referencias/` hoje **não está no Git** (aparece como `??` no
-`git status`). Abra as imagens (`test/referencias/<INICIAL>/*.png`, no Explorer) e, se estiverem
-certas, versione-as:
+**Revisar e commitar:** `test/referencias/` **está no Git**. Depois de aprovar, o
+`git status`/`git diff --stat test/referencias` mostra quais PNG mudaram ou chegaram; abra as
+imagens (`test/referencias/<INICIAL>/*.png` e `COMUM/*.png`, no Explorer) e, se estiverem
+certas, commite-as:
 
 ```powershell
 git add test/referencias
 git commit -m "test(esteira): referências de tela"
 ```
-
-Referências aprovadas depois entram como alterações normais; o `git diff --stat test/referencias`
-mostra quais PNG mudaram.
 
 ### `make test-watch`
 
@@ -336,7 +402,9 @@ make test-watch FROM=encomenda STARTER=SQUIRTLE  # começa na captura
 - Precisa do WSLg (Windows 11) e da `libsdl2-dev` (veja Requisitos). Sem janela disponível o
   comando diz para rodar `wsl --update` e `wsl --shutdown` no PowerShell e abrir o WSL de novo.
 
-**Cenário do modo completo numa janela** (`CENARIO=`: `evolucoes`, `resumo_evolucao`, `resumo_ivs` ou `ovo`):
+**Cenário do modo completo numa janela** (`CENARIO=`: `evolucoes`, `resumo_evolucao`,
+`resumo_ivs`, `ovo`, `relogio`, `encontros`, `dex_nacional`, `pos_liga`, `evo_dia_noite`,
+`resumo_amizade` ou `clima`; o `clima_visual` não, ele injeta o clima direto na memória):
 
 ```bash
 make test-watch CENARIO=evolucoes                    # Hack 3: as evoluções, em tempo real
@@ -344,6 +412,13 @@ make test-watch CENARIO=evolucoes STARTER=SQUIRTLE   # usa o save de uma execuç
 make test-watch CENARIO=resumo_evolucao              # Hack 4: a página EVOLUTION do resumo
 make test-watch CENARIO=resumo_ivs                   # Hack 5: a página IVs/EVs de 5 Pokémon
 make test-watch CENARIO=ovo                          # Hack 6: o ovo entregue e chocando (~1,5 min)
+make test-watch CENARIO=relogio                      # Hack 7: relógio, hora no menu, aviso e tom de cor
+make test-watch CENARIO=clima                        # Hack 7: clima por região/período e granizo na batalha
+make test-watch CENARIO=encontros                    # Hack 7: selvagens da Rota 1 de noite e de manhã
+make test-watch CENARIO=dex_nacional                 # Hack 7: Pokédex Nacional desde o início
+make test-watch CENARIO=pos_liga                     # Hack 7: cena pós-Liga do Oak (Ovo raro, ₽45.000)
+make test-watch CENARIO=evo_dia_noite                # Hack 7: Espeon/Umbreon por horário e Milotic
+make test-watch CENARIO=resumo_amizade               # Hack 7: corações de amizade no resumo
 ```
 
 - Recompila antes a **ROM de teste** (`make firered_switch TESTBUILD=1`, como o `test-full`) e
@@ -374,7 +449,7 @@ python3 -m esteira rapido --rom ../pokefirered_switch.gba --elf ../pokefirered_s
 | `rapido` | Checagens estáticas + 3 roteiros rápidos |
 | `completo` | O rápido + os cenários de `FULL_SCENARIOS` |
 | `aprovar DIR` | Promove as telas da execução `DIR` a referência |
-| `assistir` | Roteiro rápido (ou, com `--cenario evolucoes`, `resumo_evolucao` ou `resumo_ivs`, esse cenário na ROM de teste) numa janela (é o que o `make test-watch` chama) |
+| `assistir` | Roteiro rápido (ou, com `--cenario <nome>` de `WATCH_FULL_SCENARIOS`, esse cenário na ROM de teste) numa janela (é o que o `make test-watch` chama) |
 | `nao-testada --out DIR` | Só o relatório "NÃO TESTADA" (usado por `SKIP_TESTS=1`) |
 
 Opções de `rapido` e `completo` (`--rom`, `--elf` e `--out` são obrigatórios):
@@ -385,11 +460,11 @@ Opções de `rapido` e `completo` (`--rom`, `--elf` e `--out` são obrigatórios
 | `--rom-test`, `--elf-test` | ROM de teste e ELF, só para cenários que usam a build de teste (padrão: `pokefirered_switch_test.*` na raiz) |
 | `--log` | Log do build; sem ele só a checagem de texto roda (a do build vira aviso) |
 | `--out` | Pasta da execução (relatório, telas, estados, vídeo) |
-| `--only NOME` | Só um item: `build`, `texto`, `abertura`, `rota1`, `captura`; no `completo` também `pc`, `telas`, `floresta_brock`, `master`, `shiny`, `evolucoes`, `resumo_evolucao`, `resumo_ivs`, `creche`, `ovo` |
+| `--only NOME` | Só um item: `build`, `texto`, `abertura`, `rota1`, `captura`; no `completo` também `pc`, `telas`, `floresta_brock`, `master`, `shiny`, `evolucoes`, `resumo_evolucao`, `resumo_ivs`, `creche`, `ovo`, `relogio`, `clima_visual`, `encontros`, `dex_nacional`, `pos_liga`, `evo_dia_noite`, `resumo_amizade`, `clima` |
 | `--starter X` | Força `BULBASAUR`, `CHARMANDER` ou `SQUIRTLE` (não mexe no rodízio) |
 | `--sem-video` | Não grava `video.webp` |
 
-`assistir`: `--starter`, `--from {encomenda,rival}` ou `--cenario {evolucoes,resumo_evolucao,resumo_ivs,ovo}` (com `--rom-test`/`--elf-test`, padrão os da raiz), `--rom`, `--elf`. Códigos de saída de
+`assistir`: `--starter`, `--from {encomenda,rival}` ou `--cenario {evolucoes,resumo_evolucao,resumo_ivs,ovo,relogio,encontros,dex_nacional,pos_liga,evo_dia_noite,resumo_amizade,clima}` (com `--rom-test`/`--elf-test`, padrão os da raiz), `--rom`, `--elf`. Códigos de saída de
 `rapido`/`completo`: 0 sem falha (aviso não reprova), 1 com falha.
 
 Exemplos:
@@ -410,8 +485,9 @@ passar sem valer. Regras práticas:
 - passe o mesmo `--starter` da execução original (está no `meta.json`): sem ele a esteira usa o
   inicial da vez no rodízio e, se não for o do checkpoint, descarta o checkpoint e roda a
   cadeia toda;
-- `--only shiny`, `--only evolucoes`, `--only resumo_evolucao`, `--only resumo_ivs`, `--only creche` e `--only ovo` precisam do `<OUT>/captura.sav` que o `rapido`/`completo` anterior (mesma
-  pasta) deixou; sem ele o resultado é uma falha dizendo o que rodar antes;
+- `--only` de qualquer cenário da ROM de teste (`shiny`, `evolucoes`, `resumo_evolucao`,
+  `resumo_ivs`, `creche`, `ovo` e os do Hack 7) precisa do `<OUT>/captura.sav` que o
+  `rapido`/`completo` anterior (mesma pasta) deixou; sem ele o resultado é uma falha dizendo o que rodar antes;
 - `--only build` e `--only texto` não usam emulador e não têm esse problema.
 
 O vídeo (`video.webp`) grava a execução inteira acelerada, tipicamente 4x (um quadro a cada 8
