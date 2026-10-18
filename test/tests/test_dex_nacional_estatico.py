@@ -72,8 +72,12 @@ def test_fala_do_oak():
     scripts, text = _read(f"{OAK}/scripts.inc"), _read(f"{OAK}/text.inc")
     label = "PalletTown_ProfessorOaksLab_Text_OakDexRecordsOtherRegions"
     assert f"msgbox {label}" in scripts
-    assert scripts.index("setflag FLAG_SYS_POKEDEX_GET") < scripts.index(f"msgbox {label}")
-    assert scripts.index(f"msgbox {label}") < scripts.index(
-        "msgbox PalletTown_ProfessorOaksLab_Text_OakCatchMonsForDataTakeThese")
+    # depois da explicação principal da Pokédex ("Ah, mais uma coisa!"), uma vez só
+    assert scripts.count(f"msgbox {label}") == 1
+    assert scripts.index("setflag FLAG_SYS_POKEDEX_GET") < scripts.index(
+        "msgbox PalletTown_ProfessorOaksLab_Text_OakCompleteMonGuideWasMyDream")
+    assert scripts.index("msgbox PalletTown_ProfessorOaksLab_Text_OakCompleteMonGuideWasMyDream") \
+        < scripts.index(f"msgbox {label}") < scripts.index(
+        "msgbox PalletTown_ProfessorOaksLab_Text_RivalLeaveItToMeGramps")
     assert f"{label}::" in text
     assert "Pokémon de outras" in text and "regiões" in text

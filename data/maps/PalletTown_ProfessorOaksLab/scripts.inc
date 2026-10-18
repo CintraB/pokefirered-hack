@@ -78,32 +78,17 @@ PalletTown_ProfessorOaksLab_EventScript_NationalDexScene::
 	msgbox PalletTown_ProfessorOaksLab_Text_OakNeedYourHelpTooNeedToSeePokedexes
 	call_if_eq VAR_FACING, DIR_NORTH, PalletTown_ProfessorOaksLab_EventScript_PlayerFaceOakNorth
 	call_if_eq VAR_FACING, DIR_WEST, PalletTown_ProfessorOaksLab_EventScript_PlayerFaceOakWest
+	msgbox PalletTown_ProfessorOaksLab_Text_OakThanksRareEgg
+	call PalletTown_ProfessorOaksLab_EventScript_TryGiveRareEgg
+	msgbox PalletTown_ProfessorOaksLab_Text_OakAndThisForTravels
+	addmoney 45000
 	textcolor NPC_TEXT_COLOR_NEUTRAL
-	msgbox PalletTown_ProfessorOaksLab_Text_OakTookBothPokedexUnits
-	closemessage
-	call EventScript_RestorePrevTextColor
-	call_if_eq VAR_FACING, DIR_NORTH, PalletTown_ProfessorOaksLab_EventScript_OakBringDexesToDeskNorth
-	call_if_eq VAR_FACING, DIR_SOUTH, PalletTown_ProfessorOaksLab_EventScript_OakBringDexesToDeskSouth
-	call_if_eq VAR_FACING, DIR_EAST, PalletTown_ProfessorOaksLab_EventScript_OakBringDexesToDeskEast
-	call_if_eq VAR_FACING, DIR_WEST, PalletTown_ProfessorOaksLab_EventScript_OakBringDexesToDeskWest
-	addobject LOCALID_POKEDEX_1
-	addobject LOCALID_POKEDEX_2
-	delay 30
-	msgbox PalletTown_ProfessorOaksLab_Text_OakNowTheseUnitsCanRecordMoreData
-	closemessage
-	removeobject LOCALID_POKEDEX_1
-	removeobject LOCALID_POKEDEX_2
-	delay 30
-	call_if_eq VAR_FACING, DIR_NORTH, PalletTown_ProfessorOaksLab_EventScript_OakBringDexesOverNorth
-	call_if_eq VAR_FACING, DIR_SOUTH, PalletTown_ProfessorOaksLab_EventScript_OakBringDexesOverSouth
-	call_if_eq VAR_FACING, DIR_EAST, PalletTown_ProfessorOaksLab_EventScript_OakBringDexesOverEast
-	call_if_eq VAR_FACING, DIR_WEST, PalletTown_ProfessorOaksLab_EventScript_OakBringDexesOverWest
-	textcolor NPC_TEXT_COLOR_NEUTRAL
-	playfanfare MUS_OBTAIN_KEY_ITEM
-	message PalletTown_ProfessorOaksLab_Text_PlayersPokedexWasUpgraded
+	playfanfare MUS_OBTAIN_ITEM
+	message PalletTown_ProfessorOaksLab_Text_ReceivedMoneyFromOak
 	waitmessage
 	waitfanfare
 	call EventScript_RestorePrevTextColor
+	msgbox PalletTown_ProfessorOaksLab_Text_OakShinyCharmGoal
 	special EnableNationalPokedex
 	msgbox PalletTown_ProfessorOaksLab_Text_OakMustReallyWorkToFillPokedex
 	msgbox PalletTown_ProfessorOaksLab_Text_RivalIllCompleteThePokedex
@@ -117,6 +102,47 @@ PalletTown_ProfessorOaksLab_EventScript_NationalDexScene::
 	fadedefaultbgm
 	setvar VAR_MAP_SCENE_PALLET_TOWN_PROFESSOR_OAKS_LAB, 8
 	releaseall
+	end
+
+@ Hack 7 — frente C
+@ Subroutine: gives the rare egg (party, else PC); with no room anywhere Oak keeps it for later
+PalletTown_ProfessorOaksLab_EventScript_TryGiveRareEgg::
+	specialvar VAR_0x8004, GetRandomRareEggSpecies
+	giveegg VAR_0x8004
+	goto_if_eq VAR_RESULT, MON_CANT_GIVE, PalletTown_ProfessorOaksLab_EventScript_NoRoomForRareEgg
+	goto_if_eq VAR_RESULT, MON_GIVEN_TO_PC, PalletTown_ProfessorOaksLab_EventScript_RareEggSentToPC
+	setflag FLAG_GOT_RARE_EGG
+	textcolor NPC_TEXT_COLOR_NEUTRAL
+	playfanfare MUS_LEVEL_UP
+	message PalletTown_ProfessorOaksLab_Text_ReceivedRareEgg
+	waitfanfare
+	waitmessage
+	call EventScript_RestorePrevTextColor
+	return
+
+PalletTown_ProfessorOaksLab_EventScript_RareEggSentToPC::
+	setflag FLAG_GOT_RARE_EGG
+	textcolor NPC_TEXT_COLOR_NEUTRAL
+	playfanfare MUS_LEVEL_UP
+	message PalletTown_ProfessorOaksLab_Text_ReceivedRareEgg
+	waitfanfare
+	waitmessage
+	msgbox PalletTown_ProfessorOaksLab_Text_RareEggSentToPC
+	call EventScript_RestorePrevTextColor
+	return
+
+PalletTown_ProfessorOaksLab_EventScript_NoRoomForRareEgg::
+	msgbox PalletTown_ProfessorOaksLab_Text_OakNoRoomForEgg
+	return
+
+PalletTown_ProfessorOaksLab_EventScript_OakCheckRareEgg::
+	goto_if_set FLAG_GOT_RARE_EGG, PalletTown_ProfessorOaksLab_EventScript_ProfOakStoryStage
+	goto PalletTown_ProfessorOaksLab_EventScript_OakGivePendingRareEgg
+	end
+
+PalletTown_ProfessorOaksLab_EventScript_OakGivePendingRareEgg::
+	call PalletTown_ProfessorOaksLab_EventScript_TryGiveRareEgg
+	release
 	end
 
 PalletTown_ProfessorOaksLab_EventScript_NationalDexSceneRivalEnterNorth::
@@ -568,6 +594,8 @@ PalletTown_ProfessorOaksLab_EventScript_ProfOak::
 	lock
 	faceplayer
 	goto_if_set SHOWED_OAK_COMPLETE_DEX, PalletTown_ProfessorOaksLab_EventScript_OakJustShownCompleteDex
+	goto_if_ge VAR_MAP_SCENE_PALLET_TOWN_PROFESSOR_OAKS_LAB, 8, PalletTown_ProfessorOaksLab_EventScript_OakCheckRareEgg
+PalletTown_ProfessorOaksLab_EventScript_ProfOakStoryStage::
 	goto_if_eq VAR_MAP_SCENE_PALLET_TOWN_PROFESSOR_OAKS_LAB, 9, PalletTown_ProfessorOaksLab_EventScript_RatePokedex
 	goto_if_eq VAR_MAP_SCENE_PALLET_TOWN_PROFESSOR_OAKS_LAB, 8, PalletTown_ProfessorOaksLab_EventScript_MonsAroundWorldWait
 	goto_if_set FLAG_SYS_GAME_CLEAR, PalletTown_ProfessorOaksLab_EventScript_TryStartNationalDexScene
@@ -656,12 +684,12 @@ PalletTown_ProfessorOaksLab_EventScript_ReceiveDexScene::
 	setflag FLAG_SYS_POKEDEX_GET
 	special SetUnlockedPokedexFlags
 	setvar VAR_MAP_SCENE_POKEMON_CENTER_TEALA, 1
-	msgbox PalletTown_ProfessorOaksLab_Text_OakDexRecordsOtherRegions
 	msgbox PalletTown_ProfessorOaksLab_Text_OakCatchMonsForDataTakeThese
 	giveitem_msg PalletTown_ProfessorOaksLab_Text_ReceivedFivePokeBalls, ITEM_POKE_BALL, 5
 	msgbox PalletTown_ProfessorOaksLab_Text_OakExplainCatching
 	famechecker FAMECHECKER_OAK, 1
 	msgbox PalletTown_ProfessorOaksLab_Text_OakCompleteMonGuideWasMyDream
+	msgbox PalletTown_ProfessorOaksLab_Text_OakDexRecordsOtherRegions
 	msgbox PalletTown_ProfessorOaksLab_Text_RivalLeaveItToMeGramps
 	call_if_eq VAR_FACING, DIR_NORTH, PalletTown_ProfessorOaksLab_EventScript_DexSceneRivalFacePlayerNorth
 	call_if_eq VAR_FACING, DIR_SOUTH, PalletTown_ProfessorOaksLab_EventScript_DexSceneRivalFacePlayerSouth

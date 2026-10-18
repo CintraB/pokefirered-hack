@@ -323,20 +323,6 @@ PalletTown_ProfessorOaksLab_Text_OakNeedYourHelpTooNeedToSeePokedexes::
     .string "Now, I need to see both your\n"
     .string "POKéDEXES.$"
 
-PalletTown_ProfessorOaksLab_Text_OakTookBothPokedexUnits::
-    .string "PROF. OAK took both POKéDEX\n"
-    .string "units.$"
-
-PalletTown_ProfessorOaksLab_Text_OakNowTheseUnitsCanRecordMoreData::
-    .string "… … …  … … …\p"
-    .string "… … …  … … …\p"
-    .string "…And that's done!\p"
-    .string "Now these units can record data on\n"
-    .string "a lot more POKéMON.$"
-
-PalletTown_ProfessorOaksLab_Text_PlayersPokedexWasUpgraded::
-    .string "{PLAYER}'s POKéDEX was upgraded!$"
-
 PalletTown_ProfessorOaksLab_Text_OakMustReallyWorkToFillPokedex::
     .string "Now, {PLAYER} and {RIVAL}!\p"
     .string "This time, you really must work\n"
@@ -362,3 +348,35 @@ PalletTown_ProfessorOaksLab_Text_OakDexRecordsOtherRegions::
     .string "regiões têm aparecido em Kanto.\p"
     .string "A sua Pokédex também registra\n"
     .string "esses Pokémon, viu?$"
+
+@ Hack 7 — frente C
+PalletTown_ProfessorOaksLab_Text_OakThanksRareEgg::
+    .string "CARVALHO: Vocês dois ajudaram\n"
+    .string "muito a minha pesquisa.\p"
+    .string "{PLAYER}, como agradecimento,\n"
+    .string "quero que fique com isto.\p"
+    .string "É um Ovo de Pokémon muito raro!$"
+
+PalletTown_ProfessorOaksLab_Text_ReceivedRareEgg::
+    .string "{PLAYER} recebeu o Ovo!$"
+
+PalletTown_ProfessorOaksLab_Text_RareEggSentToPC::
+    .string "O Ovo foi enviado para o PC.$"
+
+PalletTown_ProfessorOaksLab_Text_OakNoRoomForEgg::
+    .string "Ih, você não tem espaço para ele.\p"
+    .string "Venha falar comigo quando tiver,\n"
+    .string "que eu entrego o Ovo.$"
+
+PalletTown_ProfessorOaksLab_Text_OakAndThisForTravels::
+    .string "E isto é para as suas viagens!$"
+
+PalletTown_ProfessorOaksLab_Text_ReceivedMoneyFromOak::
+    .string "{PLAYER} recebeu ¥45.000!$"
+
+PalletTown_ProfessorOaksLab_Text_OakShinyCharmGoal::
+    .string "Pokémon de outras regiões estão\n"
+    .string "aparecendo por toda parte.\p"
+    .string "Se você completar a Pokédex\n"
+    .string "Nacional, eu lhe darei algo muito\l"
+    .string "especial: o Amuleto Brilhante!$"

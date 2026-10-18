@@ -61,6 +61,7 @@ from esteira.scenarios.full_breeding import (BREEDING_PARTS, merge_breeding,   #
                                              run_full_breeding)
 from esteira.scenarios.full_egg import run_full_egg              # Hack 6
 from esteira.scenarios.full_clock import run_full_clock          # Hack 7
+from esteira.scenarios.full_post_league import run_full_post_league  # Hack 7 — frente C
 from esteira.scenarios.full_national_dex import run_full_national_dex   # Hack 7 — frente C
 from esteira.scenarios.full_forest_brock import run_full_forest_brock
 from esteira.scenarios.full_master import run_full_master
@@ -158,12 +159,13 @@ FULL_SCENARIOS: list[ScenarioSpec] = [
     ScenarioSpec("ovo", run_full_egg, rom=TEST, save_from="captura"),          # Hack 6
     ScenarioSpec("relogio", run_full_clock, rom=TEST, save_from="captura"),    # Hack 7
     ScenarioSpec("dex_nacional", run_full_national_dex, rom=TEST, save_from="captura"),  # Hack 7 — frente C
+    ScenarioSpec("pos_liga", run_full_post_league, rom=TEST, save_from="captura"),  # Hack 7 — frente C
 ]
 # Cenários do modo completo que o `assistir --cenario` mostra numa janela (ROM de teste, a
 # partir do .sav da ponte). O shiny e o creche ficam de fora: centenas de milhares de sorteios
 # em tempo real levariam horas.
 WATCH_FULL_SCENARIOS = ("evolucoes", "resumo_evolucao", "resumo_ivs", "ovo",
-                        "relogio", "dex_nacional")  # Hack 7
+                        "relogio", "dex_nacional", "pos_liga")  # Hack 7
 
 
 def scenarios_for(mode: str) -> list[ScenarioSpec]:

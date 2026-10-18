@@ -28,6 +28,8 @@
 #include "constants/moves.h"
 // Hack 7 (day/night)
 #include "day_night.h"
+// Hack 7 — frente C
+#include "pokemon_storage_system.h"
 
 STATIC_ASSERT(TEST_TEXT_SIZE >= SUMMARY_PAGE_TEXT_SIZE, TestTextHoldsASummaryPage);
 
@@ -487,6 +489,53 @@ static u32 SpeedOrder(u32 arg0, u32 arg1)
 }
 // --- end of Hack 6 -------------------------------------------------------------------------
 
+// Hack 7 front C: post-League scene (rare egg)
+// Marks the first n Kanto species seen and caught, without turning the National Dex on;
+// result = Kanto species caught.
+static u32 SetKantoOwned(u32 n)
+{
+    u16 i;
+
+    if (n > KANTO_DEX_COUNT)
+        n = KANTO_DEX_COUNT;
+    for (i = 1; i <= n; i++)
+    {
+        GetSetPokedexFlag(i, FLAG_SET_SEEN);
+        GetSetPokedexFlag(i, FLAG_SET_CAUGHT);
+    }
+    return GetKantoPokedexCount(FLAG_GET_CAUGHT);
+}
+
+// Fills every box slot with a plain mon; result = filled slots.
+static u32 FillPC(void)
+{
+    struct Pokemon mon;
+    u32 box, slot, count = 0;
+
+    CreateMon(&mon, SPECIES_RATTATA, 5, TEST_MON_FIXED_IV, TRUE, 0, OT_ID_PLAYER_ID, 0);
+    for (box = 0; box < TOTAL_BOXES_COUNT; box++)
+    {
+        for (slot = 0; slot < IN_BOX_COUNT; slot++)
+        {
+            gPokemonStoragePtr->boxes[box][slot] = mon.box;
+            count++;
+        }
+    }
+    return count;
+}
+
+static u32 SetFlagHook(u32 flag, u32 on)
+{
+    if (flag >= FLAGS_COUNT)
+        return 0xFFFFFFFF;
+    if (on)
+        FlagSet(flag);
+    else
+        FlagClear(flag);
+    return FlagGet(flag);
+}
+// --- end of Hack 7 front C ------------------------------------------------------------------
+
 void TestHooks_Run(void)
 {
     u32 result = 0;
@@ -553,7 +602,10 @@ void TestHooks_Run(void)
 
     // Hack 7 front B: end
     // Hack 7 front C: start
-
+    case TEST_CMD_RARE_EGG_ROLL:    result = GetRandomRareEggSpecies(); break;
+    case TEST_CMD_SET_KANTO_OWNED:  result = SetKantoOwned(gTestMailbox.arg0); break;
+    case TEST_CMD_FILL_PC:          result = FillPC(); break;
+    case TEST_CMD_SET_FLAG:         result = SetFlagHook(gTestMailbox.arg0, gTestMailbox.arg1); break;
     // Hack 7 front C: end
     // Hack 7 front D: start
 

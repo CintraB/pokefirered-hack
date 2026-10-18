@@ -1223,7 +1223,7 @@
 
 // Unused hidden item flags
 #define FLAG_GOT_SHINY_CHARM            0x4A7
-#define FLAG_UNUSED_0x4A8               0x4A8 // Unused Flag
+#define FLAG_GOT_RARE_EGG               0x4A8
 #define FLAG_UNUSED_0x4A9               0x4A9 // Unused Flag
 #define FLAG_UNUSED_0x4AA               0x4AA // Unused Flag
 #define FLAG_UNUSED_0x4AB               0x4AB // Unused Flag

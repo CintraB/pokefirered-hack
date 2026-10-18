@@ -2553,3 +2553,11 @@ static void Task_WingFlapSound(u8 taskId)
     if (data[0] == gSpecialVar_0x8004 - 1)
         DestroyTask(taskId);
 }
+
+// Hack 7 — frente C
+u16 GetRandomRareEggSpecies(void)
+{
+    static const u16 sRareEggSpecies[] = {SPECIES_LARVITAR, SPECIES_BAGON, SPECIES_BELDUM};
+
+    return sRareEggSpecies[Random() % NELEMS(sRareEggSpecies)];
+}

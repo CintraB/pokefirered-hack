@@ -121,3 +121,6 @@ def approve_refs(run_dir: str, starter: str | None = None,
 
 # Hack 7 — frente C: tela da Pokédex com a lista nacional desde o início
 SHARED_POINTS = SHARED_POINTS + ("pokedex_nacional",)
+
+# Hack 7 — frente C: telas da cena pós-Liga (ovo, dinheiro, objetivo)
+SHARED_POINTS = SHARED_POINTS + ("pos_liga_ovo", "pos_liga_dinheiro", "pos_liga_objetivo")
