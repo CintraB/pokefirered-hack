@@ -20,4 +20,15 @@
 // A new game (or a save from before the clock existed, gameClockFrames = 0) starts at 08:00 of day 0
 #define GAME_CLOCK_START_MINUTE (8 * 60)
 
+// Hack 7 — frente A: weather regions (DayNight_GetWeatherRegion; test/esteira/dia_noite.py mirrors them)
+#define WEATHER_REGION_NONE     0
+#define WEATHER_REGION_INLAND   1
+#define WEATHER_REGION_COAST    2
+#define WEATHER_REGION_OPEN_SEA 3
+#define WEATHER_REGION_SNOW     4
+#define WEATHER_REGION_SAND     5
+#define WEATHER_REGION_VOLCANO  6
+#define WEATHER_REGION_SEVII    7
+#define WEATHER_REGION_COUNT    8
+
 #endif // GUARD_CONSTANTS_DAY_NIGHT_H

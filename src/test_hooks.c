@@ -555,6 +555,9 @@ void TestHooks_Run(void)
         result = tint.r | tint.g << 10 | tint.b << 20;
         break;
     }
+    case TEST_CMD_ROLL_WEATHER:
+        result = DayNight_RollWeather(gTestMailbox.arg0, gTestMailbox.arg1 & 0xFFFFFF, gTestMailbox.arg1 >> 24);
+        break;
     // Hack 7 front A: end
     // Hack 7 front B: start
 

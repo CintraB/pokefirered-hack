@@ -5,6 +5,7 @@
 #include "event_object_movement.h"
 #include "field_effect.h"
 #include "field_weather.h"
+#include "field_weather_util.h"
 #include "fieldmap.h"
 #include "graphics.h"
 #include "map_name_popup.h"
@@ -13,7 +14,9 @@
 #include "script.h"
 #include "strings.h"
 #include "constants/quest_log.h"
+#include "constants/region_map_sections.h"
 #include "constants/weather.h"
+#include "data/day_night_weather.h"
 
 // The in-game clock: gSaveBlock2Ptr->gameClockFrames counts the frames played since 08:00 of
 // day 0, advanced by DayNight_Tick every frame the play time counter is not stopped (it keeps
@@ -84,6 +87,7 @@ void DayNight_Tick(void)
 EWRAM_DATA u8 gDayNightClockText[20] = {0};
 EWRAM_DATA u8 gDayNightPopupPeriod = 0;
 static u8 sSeenPeriod; // period + 1, 0 = none yet
+static bool8 sMapWeatherChecked;
 
 // "HH:MM Period"
 void DayNight_FormatClock(u8 *dest)
@@ -103,6 +107,7 @@ void DayNight_FormatClock(u8 *dest)
 void DayNight_ForgetSeenPeriod(void)
 {
     sSeenPeriod = PERIOD_NONE;
+    sMapWeatherChecked = FALSE;
     gDayNightPopupPeriod = 0xFF;
 }
 
@@ -227,6 +232,16 @@ static void TryRetintField(void)
     DayNight_RecordFieldTint();
 }
 
+// Back in the field from a battle or a screen, ResumeMap restores the saved weather and the period
+// seen is forgotten: once the player is free, bring the weather up to the current period's
+static void TryUpdateWeatherAfterEntry(void)
+{
+    if (sMapWeatherChecked || ArePlayerFieldControlsLocked() || ScriptContext_IsEnabled() || gPaletteFade.active)
+        return;
+    sMapWeatherChecked = TRUE;
+    DayNight_OnPeriodChange();
+}
+
 void DayNight_FieldUpdate(void)
 {
     u8 period;
@@ -234,6 +249,7 @@ void DayNight_FieldUpdate(void)
     if (QL_IS_PLAYBACK_STATE)
         return;
     TryRetintField();
+    TryUpdateWeatherAfterEntry();
     period = DayNight_GetPeriod();
     if (sSeenPeriod == PERIOD_NONE)
     {
@@ -250,7 +266,112 @@ void DayNight_FieldUpdate(void)
     DayNight_OnPeriodChange();
 }
 
-// Weather hook, filled in by the weather task
+// Dynamic weather: outdoor maps with no weather of their own roll one per region, day and period
+// (the table is in src/data/day_night_weather.h)
+u8 DayNight_GetWeatherRegion(u8 mapsec)
+{
+    switch (mapsec)
+    {
+    case MAPSEC_VERMILION_CITY:
+    case MAPSEC_CERULEAN_CITY:
+    case MAPSEC_ROUTE_24:
+    case MAPSEC_ROUTE_25:
+        return WEATHER_REGION_COAST;
+    case MAPSEC_ROUTE_19:
+    case MAPSEC_ROUTE_20:
+    case MAPSEC_ROUTE_21:
+        return WEATHER_REGION_OPEN_SEA;
+    case MAPSEC_ROUTE_3:
+    case MAPSEC_ROUTE_10:
+        return WEATHER_REGION_SAND;
+    case MAPSEC_CINNABAR_ISLAND:
+    case MAPSEC_MT_EMBER:
+        return WEATHER_REGION_VOLCANO;
+    case MAPSEC_FOUR_ISLAND:
+        return WEATHER_REGION_SNOW;
+    case MAPSEC_NAVEL_ROCK:
+    case MAPSEC_BIRTH_ISLAND:
+        return WEATHER_REGION_NONE;
+    }
+    if (mapsec >= SEVII_MAPSEC_START)
+        return WEATHER_REGION_SEVII;
+    if (mapsec >= KANTO_MAPSEC_START)
+        return WEATHER_REGION_INLAND;
+    return WEATHER_REGION_NONE;
+}
+
+// lowbias32
+static u32 WeatherHash(u32 seed, u8 region)
+{
+    u32 x = seed ^ (region * 0x9E3779B9);
+
+    x ^= x >> 16;
+    x *= 0x7FEB352D;
+    x ^= x >> 15;
+    x *= 0x846CA68B;
+    x ^= x >> 16;
+    return x;
+}
+
+u8 DayNight_RollWeather(u8 region, u32 day, u8 period)
+{
+    const struct WeatherChance *chances;
+    u32 roll, i;
+
+    if (region >= WEATHER_REGION_COUNT || period >= TIME_PERIOD_COUNT)
+        return WEATHER_NONE;
+    chances = sRegionWeatherChances[region][period];
+    roll = WeatherHash(day * TIME_PERIOD_COUNT + period, region) % 100;
+    for (i = 0; i < MAX_REGION_WEATHERS && chances[i].chance != 0; i++)
+    {
+        if (roll < chances[i].chance)
+            return chances[i].weather;
+        roll -= chances[i].chance;
+    }
+    return WEATHER_NONE;
+}
+
+// The weather's day starts with the morning (04:00), so a whole night is one roll
+static u32 GetWeatherDay(void)
+{
+    return (DayNight_GetTotalMinutes() - MORNING_START_HOUR * 60) / MINUTES_PER_DAY;
+}
+
+// The region whose roll replaces the header's weather on the current map, or WEATHER_REGION_NONE:
+// only outdoor maps with no weather of their own (NONE, SUNNY, SUNNY_CLOUDS) roll
+static u8 GetRolledWeatherRegion(u8 headerWeather)
+{
+    if (!IsMapTypeOutdoors(gMapHeader.mapType))
+        return WEATHER_REGION_NONE;
+    if (headerWeather != WEATHER_NONE && headerWeather != WEATHER_SUNNY && headerWeather != WEATHER_SUNNY_CLOUDS)
+        return WEATHER_REGION_NONE;
+    return DayNight_GetWeatherRegion(gMapHeader.regionMapSectionId);
+}
+
+// The current map's weather (SetSavedWeatherFromCurrMapHeader): the roll, or the header's when the
+// map does not roll or the roll is WEATHER_NONE
+u8 DayNight_GetMapWeather(u8 headerWeather)
+{
+    u8 region = GetRolledWeatherRegion(headerWeather);
+    u8 weather;
+
+    if (region == WEATHER_REGION_NONE)
+        return headerWeather;
+    weather = DayNight_RollWeather(region, GetWeatherDay(), DayNight_GetPeriod());
+    if (weather == WEATHER_NONE)
+        return headerWeather;
+    return weather;
+}
+
+// New period (or back in the field) on a map that rolls: change to the period's weather with the
+// gradual transition, as crossing into a connected map
 void DayNight_OnPeriodChange(void)
 {
+    u8 weather;
+
+    if (GetRolledWeatherRegion(gMapHeader.weather) == WEATHER_REGION_NONE)
+        return;
+    weather = DayNight_GetMapWeather(gMapHeader.weather);
+    if (weather != GetSav1Weather())
+        SetWeather(weather);
 }

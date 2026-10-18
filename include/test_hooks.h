@@ -82,7 +82,7 @@ enum
     TEST_CMD_SET_CLOCK = 0x70,   // arg0 = day, arg1 = minute of day: DayNight_SetClock; result = DayNight_GetMinuteOfDay()
     TEST_CMD_CLOCK_INFO,         // result = minute of day | period << 16
     TEST_CMD_TINT_AT,            // arg0 = minute of day; result = r | g << 10 | b << 20 (DayNight_GetTintAt, 1/256)
-    TEST_CMD_ROLL_WEATHER,
+    TEST_CMD_ROLL_WEATHER,       // arg0 = region, arg1 = day | period << 24; result = DayNight_RollWeather
     TEST_CMD_LAND_SPECIES,
     TEST_CMD_FRIENDSHIP_TEXT,
     TEST_CMD_RARE_EGG_ROLL,

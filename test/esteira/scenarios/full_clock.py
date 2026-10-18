@@ -54,7 +54,10 @@ NUM_PALS_IN_PRIMARY, NUM_PALS_TOTAL = 7, 13    # include/fieldmap.h: BG 0–12 =
 OBJ_NPC_BLUE_SLOT = 2                          # PALSLOT_NPC_1 = OBJ_EVENT_PAL_TAG_NPC_BLUE (sObjectPaletteTags0)
 OBJ_NPC_BLUE_PAL = "gObjectEventPal_NpcBlue"
 PALETTE_FADE_ACTIVE = 7                        # gPaletteFade: bit 7 do byte 7 (`active`, include/palette.h)
-TINT_DAY = 1
+# Hack 7 frente A (Task 4): um dia em que Kanto (INLAND) não sorteia clima em nenhum período — o
+# gamma da chuva/sombra mudaria as cores do Faded
+TINT_DAY = next(d for d in range(1, 1000) if all(
+    dn.roll_weather(dn.REGION_INLAND, d, p) == dn.WEATHER_NONE for p in range(4)))
 ROUTE1_SPOT = (13, 30)                         # Rota 1, chão livre ao norte da grama da entrada
 PALLET_HOUSE_FRONT = (6, 8)                    # porta de casa em (6, 7)
 HOUSE_EXIT = (4, 8)

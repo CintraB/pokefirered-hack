@@ -17,6 +17,9 @@ void DayNight_FormatClock(u8 *dest);
 void DayNight_FieldUpdate(void);
 void DayNight_ForgetSeenPeriod(void);
 void DayNight_OnPeriodChange(void);
+u8 DayNight_GetWeatherRegion(u8 mapsec);
+u8 DayNight_RollWeather(u8 region, u32 day, u8 period);
+u8 DayNight_GetMapWeather(u8 headerWeather);
 extern u8 gDayNightClockText[20];
 extern u8 gDayNightPopupPeriod;
 

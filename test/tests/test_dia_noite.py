@@ -321,3 +321,151 @@ def test_tint_de_objeto_sem_slot_nao_escreve_fora():
     guarda = re.search(r"if \(paletteIdx >= 16\)\s*return;", corpo)
     assert guarda and guarda.start() < corpo.index("DayNight_ShouldTintCurrentMap()")
     assert corpo.index("DayNight_ShouldTintCurrentMap()") < corpo.index("switch (gGlobalFieldTintMode)")
+
+
+# ---- Hack 7 frente A: clima dinâmico por região (Task 4) ----------------------------------------
+
+WEATHER_TABLE_H = REPO_ROOT / "src" / "data" / "day_night_weather.h"
+
+
+def test_pesos_somam_100():
+    assert sorted(dn.REGION_WEIGHTS) == list(range(1, dn.REGION_COUNT))   # todas menos NONE
+    for region, periods in dn.REGION_WEIGHTS.items():
+        assert sorted(periods) == [dn.MORNING, dn.AFTERNOON, dn.EVENING, dn.NIGHT], region
+        for period, weights in periods.items():
+            assert sum(w for _, w in weights) == 100, (dn.REGION_NAMES[region], period, weights)
+            assert all(w > 0 for _, w in weights)
+            assert len({c for c, _ in weights}) == len(weights), (region, period)
+
+
+def test_drought_nunca():
+    """WEATHER_DROUGHT trava o jogo no FRLG (pkfr-mundo): nunca sorteado."""
+    for periods in dn.REGION_WEIGHTS.values():
+        for weights in periods.values():
+            assert dn.WEATHER_DROUGHT not in [c for c, _ in weights]
+    assert "WEATHER_DROUGHT" not in WEATHER_TABLE_H.read_text(encoding="utf-8")
+
+
+def test_hash_conhecido():
+    """Valores calculados à parte com o lowbias32 do brief (seed = dia * 4 + período)."""
+    assert dn.weather_hash(0 * 4 + dn.MORNING, dn.REGION_INLAND) == 0x01FCE552
+    assert dn.weather_hash(7 * 4 + dn.MORNING, dn.REGION_SNOW) == 0xBB807911
+    assert dn.weather_hash(123 * 4 + dn.AFTERNOON, dn.REGION_SAND) == 0xD9BE7714
+    # 0x01FCE552 % 100 = 94 → INLAND manhã: NONE 0–69, FOG_H 70–84, RAIN 85–99
+    assert dn.roll_weather(dn.REGION_INLAND, 0, dn.MORNING) == dn.WEATHER_RAIN
+    # 93 → SNOW 0–59, NONE 60–89, FOG_H 90–99
+    assert dn.roll_weather(dn.REGION_SNOW, 7, dn.MORNING) == dn.WEATHER_FOG_HORIZONTAL
+    # 96 → SAND tarde: NONE 0–49, SANDSTORM 50–99
+    assert dn.roll_weather(dn.REGION_SAND, 123, dn.AFTERNOON) == dn.WEATHER_SANDSTORM
+    # 0xD2391570 % 100 = 0 → primeiro da tabela
+    assert dn.roll_weather(dn.REGION_COAST, 1000, dn.NIGHT) == dn.WEATHER_NONE
+    assert dn.roll_weather(dn.REGION_NONE, 5, dn.MORNING) == dn.WEATHER_NONE
+
+
+def test_distribuicao_do_sorteio():
+    """40 000 dias por região × período: cada clima a ±4σ do peso, e nenhum fora da tabela."""
+    n = 40000
+    for region, periods in dn.REGION_WEIGHTS.items():
+        for period, weights in periods.items():
+            counts: dict[int, int] = {}
+            for day in range(n):
+                w = dn.roll_weather(region, day, period)
+                counts[w] = counts.get(w, 0) + 1
+            assert set(counts) <= {c for c, _ in weights}, (region, period, counts)
+            for weather, weight in weights:
+                p = weight / 100
+                sigma = (n * p * (1 - p)) ** 0.5
+                got = counts.get(weather, 0)
+                assert abs(got - n * p) <= 4 * sigma, (
+                    f"{dn.REGION_NAMES[region]} {dn.PERIOD_NAMES[period]} "
+                    f"{dn.WEATHER_BY_ID[weather]}: {got} de {n}, esperava {n * p:.0f} ± {4 * sigma:.0f}")
+
+
+def test_dia_do_clima_comeca_as_4():
+    """A noite inteira (20h–04h) é um sorteio só: o dia do clima vira às 04:00, não à meia-noite."""
+    assert dn.weather_day(5, 3 * 60 + 59) == 4
+    assert dn.weather_day(5, 4 * 60) == 5
+    assert dn.weather_day(4, 23 * 60) == dn.weather_day(5, 1 * 60) == 4
+    assert dn.weather_day(0, dn.START_MINUTE) == 0
+
+
+def test_clima_do_mapa():
+    sunny, shade = dn.WEATHER_SUNNY, dn.WEATHER_SHADE
+    dia = next(d for d in range(1000) if dn.roll_weather(dn.REGION_SNOW, d, dn.MORNING) == dn.WEATHER_SNOW)
+    assert dn.map_weather(sunny, dn.REGION_SNOW, True, dia, 6 * 60) == dn.WEATHER_SNOW
+    assert dn.map_weather(dn.WEATHER_NONE, dn.REGION_SNOW, False, dia, 6 * 60) == dn.WEATHER_NONE  # interior
+    assert dn.map_weather(shade, dn.REGION_SNOW, True, dia, 6 * 60) == shade                     # header fixo
+    assert dn.map_weather(sunny, dn.REGION_NONE, True, dia, 6 * 60) == sunny
+    calmo = next(d for d in range(1000) if dn.roll_weather(dn.REGION_SNOW, d, dn.MORNING) == dn.WEATHER_NONE)
+    assert dn.map_weather(sunny, dn.REGION_SNOW, True, calmo, 6 * 60) == sunny                   # sorteio NONE
+
+
+def _c_weather_table() -> dict:
+    texto = WEATHER_TABLE_H.read_text(encoding="utf-8")
+    tabela = {}
+    for nome, corpo in re.findall(r"\[WEATHER_REGION_(\w+)\]\s*=\s*\{(.*?)\n    \},", texto, re.S):
+        periodos = {}
+        for periodo, pares in re.findall(r"\[TIME_(\w+)\]\s*=\s*\{(.*?)\},(?:\n|$)", corpo, re.S):
+            periodos[getattr(dn, periodo)] = tuple(
+                (dn.WEATHER_IDS[c], int(p)) for c, p in re.findall(r"\{(WEATHER_\w+),\s*(\d+)\}", pares))
+        tabela[dn.REGION_NAMES.index(nome)] = periodos
+    return tabela
+
+
+def test_tabela_c_igual_python():
+    assert _c_weather_table() == dn.REGION_WEIGHTS
+
+
+def test_regioes_do_c():
+    """DayNight_GetWeatherRegion: os MAPSEC de cada `return WEATHER_REGION_X;` e a regra de
+    Kanto (INLAND) e das Sevii (SEVII) depois do switch."""
+    corpo = _corpo_c("day_night.c", "u8 DayNight_GetWeatherRegion(u8 mapsec)")
+    achados = {}
+    for casos, regiao in re.findall(r"((?:\s*case MAPSEC_\w+:)+)\s*return WEATHER_REGION_(\w+);", corpo):
+        achados[dn.REGION_NAMES.index(regiao)] = tuple(re.findall(r"MAPSEC_\w+", casos))
+    assert {r: sorted(m) for r, m in achados.items()} == {r: sorted(m) for r, m in dn.REGION_MAPSECS.items()}
+    resto = corpo[corpo.rindex("}"):]
+    assert "SEVII_MAPSEC_START" in resto and "WEATHER_REGION_SEVII" in resto
+    assert "KANTO_MAPSEC_START" in resto and "WEATHER_REGION_INLAND" in resto
+    constantes = (REPO_ROOT / "include" / "constants" / "day_night.h").read_text(encoding="utf-8")
+    for valor, nome in enumerate(dn.REGION_NAMES):
+        assert re.search(rf"#define WEATHER_REGION_{nome}\s+{valor}\b", constantes), nome
+    secoes = (REPO_ROOT / "include" / "constants" / "region_map_sections.h").read_text(encoding="utf-8")
+    for mapsecs in dn.REGION_MAPSECS.values():
+        for m in mapsecs:
+            assert re.search(rf"\b{m},", secoes), m
+
+
+def test_clima_salvo_pelo_sorteio():
+    corpo = _corpo_c("field_weather_util.c", "void SetSavedWeatherFromCurrMapHeader(void)")
+    assert "TranslateWeatherNum(DayNight_GetMapWeather(gMapHeader.weather))" in corpo
+    troca = _corpo_c("day_night.c", "void DayNight_OnPeriodChange(void)")
+    assert "SetWeather(" in troca and "DayNight_GetMapWeather(gMapHeader.weather)" in troca
+    assert "GetRolledWeatherRegion(gMapHeader.weather) == WEATHER_REGION_NONE" in troca
+    mapa = _corpo_c("day_night.c", "u8 DayNight_GetMapWeather(u8 headerWeather)")
+    assert "GetRolledWeatherRegion(headerWeather)" in mapa and "WEATHER_REGION_NONE" in mapa
+    rola = _corpo_c("day_night.c", "static u8 GetRolledWeatherRegion(u8 headerWeather)")
+    assert "IsMapTypeOutdoors(gMapHeader.mapType)" in rola
+    for w in ("WEATHER_NONE", "WEATHER_SUNNY", "WEATHER_SUNNY_CLOUDS",
+              "DayNight_GetWeatherRegion(gMapHeader.regionMapSectionId)"):
+        assert w in rola, w
+
+
+def test_clima_atualizado_na_volta_ao_campo():
+    """Na volta de batalha/bolsa (ResumeMap usa o clima salvo e o período visto é esquecido), o
+    clima é conferido uma vez quando o jogador fica livre."""
+    esquece = _corpo_c("day_night.c", "void DayNight_ForgetSeenPeriod(void)")
+    assert "sMapWeatherChecked = FALSE;" in esquece
+    volta = _corpo_c("day_night.c", "static void TryUpdateWeatherAfterEntry(void)")
+    for item in ("ArePlayerFieldControlsLocked()", "ScriptContext_IsEnabled()", "gPaletteFade.active",
+                 "sMapWeatherChecked = TRUE;", "DayNight_OnPeriodChange();"):
+        assert item in volta, item
+    update = _corpo_c("day_night.c", "void DayNight_FieldUpdate(void)")
+    assert update.index("TryUpdateWeatherAfterEntry();") < update.index("if (sSeenPeriod == PERIOD_NONE)")
+
+
+def test_cenario_clima_registrado():
+    from esteira import __main__ as cli
+    spec = {s.name: s for s in cli.FULL_SCENARIOS}["clima"]
+    assert (spec.rom, spec.save_from) == (cli.TEST, "captura")
+    assert "clima" in cli.WATCH_FULL_SCENARIOS

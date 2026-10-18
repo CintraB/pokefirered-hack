@@ -265,6 +265,16 @@ def test_step_reports_lock_on_last_tile_even_if_player_never_stops():
 
 
 
+def _dry_clock(emu, game) -> None:
+    """Hack 7 frente A: o jogo novo começa às 08:00 do dia 0, quando Kanto (INLAND) sorteia chuva;
+    a travessia de conexão com chuva atrasa um quadro e o mapa muda antes da posição. O relógio vai
+    para 08:00 de um dia seco (gameClockFrames em SaveBlock2 0x090) antes de sair de casa."""
+    from esteira import dia_noite as dn
+    day = next(d for d in range(1, 100) if dn.roll_weather(dn.REGION_INLAND, d, dn.MORNING) == dn.WEATHER_NONE)
+    sb2 = emu.read_u32(game.syms.addr("gSaveBlock2Ptr"))
+    emu.write(sb2 + 0x090, (day * dn.MINUTES_PER_DAY * dn.FRAMES_PER_MINUTE).to_bytes(4, "little"))
+
+
 @pytest.fixture
 def town(rom_path, tmp_save, tmp_path):
     """Novo jogo, já em PalletTown (6,8), na rua em frente à casa."""
@@ -277,6 +287,7 @@ def town(rom_path, tmp_save, tmp_path):
         ctl = Controller(emu, game, str(tmp_path / "out"))
         nav = Navigator(ctl)
         _new_game_overworld(ctl, game, emu)
+        _dry_clock(emu, game)
         assert nav.walk_to(10, 2)
         nav.go_through_warp()
         assert nav.walk_to(4, 8)
