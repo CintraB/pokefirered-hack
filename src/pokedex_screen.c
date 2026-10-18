@@ -880,7 +880,7 @@ void DexScreen_LoadResources(void)
     bool8 natDex;
     u8 taskId;
 
-    natDex = IsNationalPokedexEnabled();
+    natDex = IsNationalPokedexUiEnabled();
     m4aSoundVSyncOff();
     SetVBlankCallback(NULL);
     ResetPaletteFade();
@@ -1029,7 +1029,7 @@ static void Task_PokedexScreen(u8 taskId)
         break;
     case 5:
         ListMenuGetScrollAndRow(sPokedexScreenData->modeSelectListMenuId, &sPokedexScreenData->modeSelectCursorPosBak, NULL);
-        if (IsNationalPokedexEnabled())
+        if (IsNationalPokedexUiEnabled())
             sPokedexScreenData->scrollArrowsTaskId = AddScrollIndicatorArrowPair(&sScrollArrowsTemplate_NatDex, &sPokedexScreenData->modeSelectCursorPosBak);
         else
             sPokedexScreenData->scrollArrowsTaskId = AddScrollIndicatorArrowPair(&sScrollArrowsTemplate_KantoDex, &sPokedexScreenData->modeSelectCursorPosBak);
@@ -1130,7 +1130,7 @@ static void DexScreen_InitGfxForTopMenu(void)
     sPokedexScreenData->modeSelectWindowId = AddWindow(&sWindowTemplate_ModeSelect);
     sPokedexScreenData->selectionIconWindowId = AddWindow(&sWindowTemplate_SelectionIcon);
     sPokedexScreenData->dexCountsWindowId = AddWindow(&sWindowTemplate_DexCounts);
-    if (IsNationalPokedexEnabled())
+    if (IsNationalPokedexUiEnabled())
     {
         listMenuTemplate = sListMenuTemplate_NatDexModeSelect;
         listMenuTemplate.windowId = sPokedexScreenData->modeSelectWindowId;
@@ -1370,7 +1370,7 @@ static void DexScreen_CreateCharacteristicListMenu(void)
 
 static u16 DexScreen_CountMonsInOrderedList(u8 orderIdx)
 {
-    s32 max_n = IsNationalPokedexEnabled() ? NATIONAL_DEX_COUNT : KANTO_DEX_COUNT;
+    s32 max_n = IsNationalPokedexUiEnabled() ? NATIONAL_DEX_COUNT : KANTO_DEX_COUNT;
     u16 ndex_num;
     u16 ret = NATIONAL_DEX_NONE;
     s32 i;
@@ -2504,7 +2504,7 @@ bool8 DexScreen_TurnCategoryPage_BgEffect(u8 page)
 static bool8 DexScreen_FlipCategoryPageInDirection(u8 direction)
 {
     u16 color;
-    if (IsNationalPokedexEnabled())
+    if (IsNationalPokedexUiEnabled())
         color = sNationalDexPalette[7];
     else
         color = sKantoDexPalette[7];
@@ -3166,7 +3166,7 @@ u8 DexScreen_DestroyAreaScreenResources(void)
 
 static int DexScreen_CanShowMonInDex(u16 species)
 {
-    if (IsNationalPokedexEnabled() == TRUE)
+    if (IsNationalPokedexUiEnabled() == TRUE)
         return TRUE;
     if (SpeciesToNationalPokedexNum(species) <= KANTO_DEX_COUNT)
         return TRUE;
@@ -3308,7 +3308,7 @@ u8 DexScreen_RegisterMonToPokedex(u16 species)
     DexScreen_GetSetPokedexFlag(species, FLAG_SET_SEEN, TRUE);
     DexScreen_GetSetPokedexFlag(species, FLAG_SET_CAUGHT, TRUE);
 
-    if (!IsNationalPokedexEnabled() && SpeciesToNationalPokedexNum(species) > KANTO_DEX_COUNT)
+    if (!IsNationalPokedexUiEnabled() && SpeciesToNationalPokedexNum(species) > KANTO_DEX_COUNT)
         return CreateTask(Task_DexScreen_RegisterNonKantoMonBeforeNationalDex, 0);
 
     DexScreen_LoadResources();

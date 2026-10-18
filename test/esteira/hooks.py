@@ -139,6 +139,26 @@ class Mailbox:
         info = self.call(CMD_CLOCK_INFO)
         return info & 0xFFFF, info >> 16
 
+    # --- Hack 7 — frente C: cena pós-Liga (ovo raro) ---------------------------------------
+    def rare_egg_roll(self) -> int:
+        """Espécie sorteada por GetRandomRareEggSpecies()."""
+        return self.call(CMD_RARE_EGG_ROLL)
+
+    def set_kanto_owned(self, n: int) -> int:
+        """Marca vistos e capturados os n primeiros de Kanto (sem ligar a Dex Nacional);
+        devolve quantos de Kanto o jogo conta como capturados."""
+        return self.call(CMD_SET_KANTO_OWNED, n)
+
+    def fill_pc(self) -> int:
+        """Enche todas as caixas do PC com um Pokémon simples; devolve quantos slots."""
+        return self.call(CMD_FILL_PC)
+
+    def set_flag(self, flag: int, on: bool = True) -> bool:
+        """Liga/desliga uma flag; devolve o valor que o jogo passou a ver."""
+        result = self.call(CMD_SET_FLAG, flag, int(on))
+        assert result != NO_RESULT, f"SET_FLAG recusado: flag {flag:#x}"
+        return bool(result)
+
 # --- Hack 6: breeding genético (enum à parte em include/test_hooks.h, a partir de 0x60; ------
 # o uso fica em esteira/breeding.py e scenarios/full_breeding.py / full_egg.py)
 CMD_BREED_SETUP = 0x60      # gTestBreedSetup -> creche (arg0 = 1: ovo pendente) -> compatibilidade (0xFFFFFFFF = pai inválido)
