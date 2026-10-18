@@ -440,8 +440,11 @@ void ApplyGlobalFieldPaletteTint(u8 paletteIdx)
 {
     bool8 tinted = FALSE;
 
+    // Hack 7 — frente A: no slot (0xFF, palette table full) = nothing to tint
+    if (paletteIdx >= 16)
+        return;
     // Hack 7 — frente A: day/night tone
-    if (paletteIdx < 16 && DayNight_ShouldTintCurrentMap())
+    if (DayNight_ShouldTintCurrentMap())
     {
         DayNight_TintPaletteBuffer(&gPlttBufferUnfaded[OBJ_PLTT_ID2(paletteIdx)], 16);
         tinted = TRUE;

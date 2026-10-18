@@ -29,6 +29,7 @@ struct DayNightTint
 void DayNight_GetTintAt(u32 minuteOfDay, struct DayNightTint *out);
 bool8 DayNight_ShouldTintCurrentMap(void);
 void DayNight_TintPaletteBuffer(u16 *pal, u16 count);
+void DayNight_RecordFieldTint(void);
 void DayNight_SuspendTint(bool8 suspend);
 
 #endif // GUARD_DAY_NIGHT_H

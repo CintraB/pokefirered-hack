@@ -118,7 +118,7 @@ static const struct DayNightTint sPeriodTints[TIME_PERIOD_COUNT] =
     [TIME_NIGHT]     = {144, 152, 224},
 };
 
-static EWRAM_DATA struct DayNightTint sAppliedTint = {0}; // last tone given to a field palette
+static EWRAM_DATA struct DayNightTint sAppliedTint = {0}; // tone of the last full field palette load
 static EWRAM_DATA bool8 sTintSuspended = FALSE;
 
 // The period's tone; in the last hour before a period starts it moves minute by minute to the
@@ -154,6 +154,14 @@ void DayNight_SuspendTint(bool8 suspend)
     sTintSuspended = suspend;
 }
 
+// The field's palettes were all (re)loaded with the current tone: the primary tileset load and
+// TryRetintField. A single palette tinted later (cut tree, special NPC palette) is not a reference:
+// the rest of the field may still have an older tone.
+void DayNight_RecordFieldTint(void)
+{
+    DayNight_GetTintAt(DayNight_GetMinuteOfDay(), &sAppliedTint);
+}
+
 // Only for a buffer just loaded from ROM
 void DayNight_TintPaletteBuffer(u16 *pal, u16 count)
 {
@@ -161,7 +169,6 @@ void DayNight_TintPaletteBuffer(u16 *pal, u16 count)
     u32 r, g, b;
 
     DayNight_GetTintAt(DayNight_GetMinuteOfDay(), &tint);
-    sAppliedTint = tint;
     for (; count != 0; count--, pal++)
     {
         r = ((*pal & 0x1F) * tint.r) >> 8;
@@ -217,6 +224,7 @@ static void TryRetintField(void)
         LoadCustomWeatherSpritePalette(gSandstormWeatherPalette);
     else
         LoadCustomWeatherSpritePalette(gDefaultWeatherSpritePalette);
+    DayNight_RecordFieldTint();
 }
 
 void DayNight_FieldUpdate(void)

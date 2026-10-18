@@ -847,6 +847,8 @@ static void ApplyGlobalTintToPaletteEntries(u16 offset, u16 size)
     if (offset < BG_PLTT_ID(NUM_PALS_TOTAL) && DayNight_ShouldTintCurrentMap())
     {
         DayNight_TintPaletteBuffer(&gPlttBufferUnfaded[offset], min(size, BG_PLTT_ID(NUM_PALS_TOTAL) - offset));
+        if (offset < BG_PLTT_ID(NUM_PALS_IN_PRIMARY))
+            DayNight_RecordFieldTint();
         tinted = TRUE;
     }
     switch (gGlobalFieldTintMode)

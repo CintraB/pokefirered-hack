@@ -288,3 +288,36 @@ def test_fame_checker_sem_tom():
     i = linhas.index("InitObjectEventPalettes(0);")
     assert linhas[i - 1].startswith("DayNight_SuspendTint(TRUE);")
     assert linhas[i + 1].startswith("DayNight_SuspendTint(FALSE);")
+
+
+def test_tom_de_referencia_so_na_carga_completa():
+    """sAppliedTint (o tom que o TryRetintField compara) só muda numa carga completa do campo
+    (paletas do tileset primário) ou no próprio retinge. Se toda paleta tingida o atualizasse, uma
+    paleta nova tingida com o retinge bloqueado (árvore cortada, NPC com paleta especial) deixaria
+    o BG e os OBJ 0–9 presos no tom antigo."""
+    tint = _corpo_c("day_night.c", "void DayNight_TintPaletteBuffer(u16 *pal, u16 count)")
+    assert "sAppliedTint" not in tint
+    record = _corpo_c("day_night.c", "void DayNight_RecordFieldTint(void)")
+    assert "sAppliedTint" in record
+    texto = (REPO_ROOT / "src" / "day_night.c").read_text(encoding="utf-8")
+    # gravado só em DayNight_RecordFieldTint (pelo ponteiro); fora dele, só a declaração e leituras
+    assert len(re.findall(r"sAppliedTint\s*=[^=]", texto)) == 1, "sAppliedTint só na declaração"
+    assert texto.count("&sAppliedTint") == record.count("&sAppliedTint") == 1
+    chamadas = []
+    for arquivo in sorted((REPO_ROOT / "src").glob("*.c")):
+        corpo = arquivo.read_text(encoding="utf-8", errors="replace")
+        chamadas += [arquivo.name for _ in re.finditer(r"DayNight_RecordFieldTint\(\);", corpo)]
+    assert sorted(chamadas) == ["day_night.c", "fieldmap.c"], chamadas
+    assert "DayNight_RecordFieldTint();" in _corpo_c("day_night.c", "static void TryRetintField(void)")
+    entries = _corpo_c("fieldmap.c", "static void ApplyGlobalTintToPaletteEntries(u16 offset, u16 size)")
+    assert re.search(r"if \(offset < BG_PLTT_ID\(NUM_PALS_IN_PRIMARY\)\)\s*DayNight_RecordFieldTint\(\);", entries), (
+        "o tom de referência tem de ser gravado só na carga do tileset primário")
+
+
+def test_tint_de_objeto_sem_slot_nao_escreve_fora():
+    """ApplyGlobalFieldPaletteTint com paletteIdx 0xFF (tabela de paletas cheia) não pode mexer no
+    buffer — nem o tom nem o switch do Quest Log."""
+    corpo = _corpo_c("field_effect.c", "void ApplyGlobalFieldPaletteTint(u8 paletteIdx)")
+    guarda = re.search(r"if \(paletteIdx >= 16\)\s*return;", corpo)
+    assert guarda and guarda.start() < corpo.index("DayNight_ShouldTintCurrentMap()")
+    assert corpo.index("DayNight_ShouldTintCurrentMap()") < corpo.index("switch (gGlobalFieldTintMode)")
