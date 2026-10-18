@@ -438,6 +438,12 @@ static void FieldEffectScript_LoadTiles(const u8 **script)
 
 void ApplyGlobalFieldPaletteTint(u8 paletteIdx)
 {
+    ApplyGlobalFieldPaletteTintRange(paletteIdx, 16);
+}
+
+// Hack 7: only the first count colors, for a palette loaded in part (the rest is already tinted)
+void ApplyGlobalFieldPaletteTintRange(u8 paletteIdx, u8 count)
+{
     bool8 tinted = FALSE;
 
     // Hack 7 — frente A: no slot (0xFF, palette table full) = nothing to tint
@@ -446,7 +452,7 @@ void ApplyGlobalFieldPaletteTint(u8 paletteIdx)
     // Hack 7 — frente A: day/night tone
     if (DayNight_ShouldTintCurrentMap())
     {
-        DayNight_TintPaletteBuffer(&gPlttBufferUnfaded[OBJ_PLTT_ID2(paletteIdx)], 16);
+        DayNight_TintPaletteBuffer(&gPlttBufferUnfaded[OBJ_PLTT_ID2(paletteIdx)], count);
         tinted = TRUE;
     }
     switch (gGlobalFieldTintMode)
@@ -456,14 +462,14 @@ void ApplyGlobalFieldPaletteTint(u8 paletteIdx)
             return;
         break;
     case 1:
-        TintPalette_GrayScale(&gPlttBufferUnfaded[OBJ_PLTT_ID2(paletteIdx)], 16);
+        TintPalette_GrayScale(&gPlttBufferUnfaded[OBJ_PLTT_ID2(paletteIdx)], count);
         break;
     case 2:
-        TintPalette_SepiaTone(&gPlttBufferUnfaded[OBJ_PLTT_ID2(paletteIdx)], 16);
+        TintPalette_SepiaTone(&gPlttBufferUnfaded[OBJ_PLTT_ID2(paletteIdx)], count);
         break;
     case 3:
-        QuestLog_BackUpPalette(OBJ_PLTT_ID2(paletteIdx), 16);
-        TintPalette_GrayScale(&gPlttBufferUnfaded[OBJ_PLTT_ID2(paletteIdx)], 16);
+        QuestLog_BackUpPalette(OBJ_PLTT_ID2(paletteIdx), count);
+        TintPalette_GrayScale(&gPlttBufferUnfaded[OBJ_PLTT_ID2(paletteIdx)], count);
         break;
     default:
         if (!tinted)

@@ -223,7 +223,7 @@ def test_coeficientes_do_c_batem():
 TINT_POINTS = (
     ("fieldmap.c", "static void ApplyGlobalTintToPaletteEntries(u16 offset, u16 size)"),
     ("fieldmap.c", "void ApplyGlobalTintToPaletteSlot(u8 slot, u8 count)"),
-    ("field_effect.c", "void ApplyGlobalFieldPaletteTint(u8 paletteIdx)"),
+    ("field_effect.c", "void ApplyGlobalFieldPaletteTintRange(u8 paletteIdx, u8 count)"),
 )
 
 
@@ -323,7 +323,7 @@ def test_tom_de_referencia_so_na_carga_completa():
 def test_tint_de_objeto_sem_slot_nao_escreve_fora():
     """ApplyGlobalFieldPaletteTint com paletteIdx 0xFF (tabela de paletas cheia) não pode mexer no
     buffer — nem o tom nem o switch do Quest Log."""
-    corpo = _corpo_c("field_effect.c", "void ApplyGlobalFieldPaletteTint(u8 paletteIdx)")
+    corpo = _corpo_c("field_effect.c", "void ApplyGlobalFieldPaletteTintRange(u8 paletteIdx, u8 count)")
     guarda = re.search(r"if \(paletteIdx >= 16\)\s*return;", corpo)
     assert guarda and guarda.start() < corpo.index("DayNight_ShouldTintCurrentMap()")
     assert corpo.index("DayNight_ShouldTintCurrentMap()") < corpo.index("switch (gGlobalFieldTintMode)")
@@ -593,3 +593,18 @@ def test_creditos_com_o_clima_do_mapa():
         scripts = REPO_ROOT / "data" / "maps" / pasta / "scripts.inc"
         assert scripts.exists(), scripts
         assert "setweather" not in scripts.read_text(encoding="utf-8"), mapa
+
+
+def test_paleta_da_rocha_do_deoxys_tinge_so_as_4_cores():
+    """A rocha do Deoxys carrega só 4 cores no OBJ 10: o tom vai só nelas (as outras 12 já estão
+    tingidas e seriam tingidas de novo a cada movimento)."""
+    specials = _src("src/field_specials.c")
+    assert "ApplyGlobalFieldPaletteTint(10);" not in specials
+    assert specials.count("LoadPalette(sDeoxysObjectPals[num], OBJ_PLTT_ID(10), PLTT_SIZEOF(4));\n"
+                          "    ApplyGlobalFieldPaletteTintRange(10, 4);") == 2
+    assert "void ApplyGlobalFieldPaletteTintRange(u8 paletteIdx, u8 count);" in _src("include/field_effect.h")
+    wrapper = _corpo_c("field_effect.c", "void ApplyGlobalFieldPaletteTint(u8 paletteIdx)")
+    assert wrapper.strip() == "ApplyGlobalFieldPaletteTintRange(paletteIdx, 16);"
+    corpo = _corpo_c("field_effect.c", "void ApplyGlobalFieldPaletteTintRange(u8 paletteIdx, u8 count)")
+    assert ", 16)" not in corpo, "o tom e o Quest Log usam count, não 16"
+    assert "DayNight_TintPaletteBuffer(&gPlttBufferUnfaded[OBJ_PLTT_ID2(paletteIdx)], count);" in corpo
