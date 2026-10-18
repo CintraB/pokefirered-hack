@@ -5901,7 +5901,7 @@ u16 SpeciesToPokedexNum(u16 species)
 {
     species = SpeciesToNationalPokedexNum(species);
 
-    if (!IsNationalPokedexEnabled() && species > KANTO_SPECIES_END)
+    if (!IsNationalPokedexUiEnabled() && species > KANTO_SPECIES_END)
         return 0xFFFF;
     return species;
 }

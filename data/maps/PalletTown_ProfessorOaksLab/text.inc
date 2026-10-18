@@ -355,3 +355,10 @@ PalletTown_ProfessorOaksLab_Text_RivalIllCompleteThePokedex::
     .string "ONE ISLAND first…\p"
     .string "Anyways, I'm outta here!$"
 
+
+PalletTown_ProfessorOaksLab_Text_OakDexRecordsOtherRegions::
+    .string "CARVALHO: Ah, mais uma coisa!\p"
+    .string "Ultimamente, Pokémon de outras\n"
+    .string "regiões têm aparecido em Kanto.\p"
+    .string "A sua Pokédex também registra\n"
+    .string "esses Pokémon, viu?$"

@@ -118,3 +118,6 @@ def approve_refs(run_dir: str, starter: str | None = None,
                 shutil.copyfile(src, dst)
                 copied.append(str(dst))
     return copied
+
+# Hack 7 — frente C: tela da Pokédex com a lista nacional desde o início
+SHARED_POINTS = SHARED_POINTS + ("pokedex_nacional",)

@@ -114,6 +114,16 @@ bool32 IsNationalPokedexEnabled(void)
     return FALSE;
 }
 
+// Screens show the National Dex from the start; the flag above stays the post-League marker.
+bool32 IsNationalPokedexUiEnabled(void)
+{
+#if NATIONAL_DEX_FROM_START
+    return TRUE;
+#else
+    return IsNationalPokedexEnabled();
+#endif
+}
+
 void DisableMysteryGift(void)
 {
     FlagClear(FLAG_SYS_MYSTERY_GIFT_ENABLED);
