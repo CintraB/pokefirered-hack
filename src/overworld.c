@@ -53,6 +53,7 @@
 #include "constants/region_map_sections.h"
 #include "constants/songs.h"
 #include "constants/sound.h"
+#include "day_night.h" /* Hack 7 — frente A */
 
 #define PLAYER_LINK_STATE_IDLE 0x80
 #define PLAYER_LINK_STATE_BUSY 0x81
@@ -1460,6 +1461,7 @@ void CB1_Overworld(void)
 static void OverworldBasic(void)
 {
     ScriptContext_RunScript();
+    DayNight_FieldUpdate(); /* Hack 7 — frente A */
     RunTasks();
     AnimateSprites();
     CameraUpdate();
@@ -1526,6 +1528,7 @@ void ClearFieldCallback(void)
 
 void CB2_NewGame(void)
 {
+    DayNight_ForgetSeenPeriod(); /* Hack 7 — frente A */
     FieldClearVBlankHBlankCallbacks();
     StopMapMusic();
     ResetSafariZoneFlag_();
@@ -1548,6 +1551,7 @@ void CB2_WhiteOut(void)
 
     if (++gMain.state >= 120)
     {
+        DayNight_ForgetSeenPeriod(); /* Hack 7 — frente A */
         FieldClearVBlankHBlankCallbacks();
         StopMapMusic();
         ResetSafariZoneFlag_();
@@ -1567,6 +1571,7 @@ void CB2_WhiteOut(void)
 
 void CB2_LoadMap(void)
 {
+    DayNight_ForgetSeenPeriod(); /* Hack 7 — frente A */
     FieldClearVBlankHBlankCallbacks();
     ScriptContext_Init();
     UnlockPlayerFieldControls();
@@ -1610,6 +1615,7 @@ static void CB2_LoadMapOnReturnToFieldCableClub(void)
 
 void CB2_ReturnToField(void)
 {
+    DayNight_ForgetSeenPeriod(); /* Hack 7 — frente A */
     if (IsUpdateLinkStateCBActive() == TRUE)
     {
         SetMainCallback2(CB2_ReturnToFieldLink);
@@ -1690,6 +1696,7 @@ static void FieldCB_ShowMapNameOnContinue(void)
 
 void CB2_ContinueSavedGame(void)
 {
+    DayNight_ForgetSeenPeriod(); /* Hack 7 — frente A */
     FieldClearVBlankHBlankCallbacks();
     StopMapMusic();
     ResetSafariZoneFlag_();

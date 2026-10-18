@@ -9450,3 +9450,21 @@ static void DoRippleFieldEffect(struct ObjectEvent *objectEvent, struct Sprite *
     gFieldEffectArguments[3] = 3;
     FieldEffectStart(FLDEFF_RIPPLE);
 }
+
+/* Hack 7 — frente A */
+// Reloads from ROM the object event palettes in use, as on spawn (day/night retint); unlike
+// InitObjectEventPalettes, keeps the tagged palettes of the other sprites
+void ReloadObjectEventPalettes(void)
+{
+    const struct ObjectEventGraphicsInfo *graphicsInfo;
+
+    PatchObjectPaletteRange(gObjectPaletteTagSets[sCurrentReflectionType], 0, sCurrentReflectionType == 1 ? 6 : 10);
+    if (gObjectEvents[gPlayerAvatar.objectEventId].active)
+    {
+        graphicsInfo = GetObjectEventGraphicsInfo(gObjectEvents[gPlayerAvatar.objectEventId].graphicsId);
+        if (graphicsInfo->paletteSlot == PALSLOT_PLAYER)
+            LoadPlayerObjectReflectionPalette(graphicsInfo->paletteTag, PALSLOT_PLAYER);
+    }
+    if (sCurrentSpecialObjectPaletteTag != OBJ_EVENT_PAL_TAG_NONE && sCurrentSpecialObjectPaletteTag != 0)
+        LoadSpecialObjectReflectionPalette(sCurrentSpecialObjectPaletteTag, PALSLOT_NPC_SPECIAL);
+}

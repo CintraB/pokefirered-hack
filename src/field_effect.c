@@ -12,6 +12,7 @@
 #include "field_player_avatar.h"
 #include "field_weather.h"
 #include "fieldmap.h"
+#include "day_night.h" /* Hack 7 — frente A */
 #include "help_system.h"
 #include "metatile_behavior.h"
 #include "new_menu_helpers.h"
@@ -437,10 +438,23 @@ static void FieldEffectScript_LoadTiles(const u8 **script)
 
 void ApplyGlobalFieldPaletteTint(u8 paletteIdx)
 {
+    bool8 tinted = FALSE;
+
+    // Hack 7 — frente A: no slot (0xFF, palette table full) = nothing to tint
+    if (paletteIdx >= 16)
+        return;
+    // Hack 7 — frente A: day/night tone
+    if (DayNight_ShouldTintCurrentMap())
+    {
+        DayNight_TintPaletteBuffer(&gPlttBufferUnfaded[OBJ_PLTT_ID2(paletteIdx)], 16);
+        tinted = TRUE;
+    }
     switch (gGlobalFieldTintMode)
     {
     case 0:
-        return;
+        if (!tinted)
+            return;
+        break;
     case 1:
         TintPalette_GrayScale(&gPlttBufferUnfaded[OBJ_PLTT_ID2(paletteIdx)], 16);
         break;
@@ -452,7 +466,9 @@ void ApplyGlobalFieldPaletteTint(u8 paletteIdx)
         TintPalette_GrayScale(&gPlttBufferUnfaded[OBJ_PLTT_ID2(paletteIdx)], 16);
         break;
     default:
-        return;
+        if (!tinted)
+            return;
+        break;
     }
     CpuFastCopy(&gPlttBufferUnfaded[OBJ_PLTT_ID2(paletteIdx)], &gPlttBufferFaded[OBJ_PLTT_ID2(paletteIdx)], PLTT_SIZE_4BPP);
 }
@@ -473,7 +489,9 @@ static void FieldEffectScript_LoadPal(const u8 **script)
     const struct SpritePalette * spritePalette = (const struct SpritePalette * )FieldEffectScript_ReadWord(script);
     u8 idx = IndexOfSpritePaletteTag(spritePalette->tag);
     LoadSpritePalette(spritePalette);
-    if (idx != 0xFF)
+    // Hack 7 — frente A: only a palette just loaded, as LoadFadedPal (an existing one is already
+    // tinted: the 5 Poké Balls of the battle transition got the tone 4 times)
+    if (idx == 0xFF)
         ApplyGlobalFieldPaletteTint(IndexOfSpritePaletteTag(spritePalette->tag));
     *script += sizeof(u32);
 }

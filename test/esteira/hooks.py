@@ -175,6 +175,20 @@ class Mailbox:
         got = self.call(CMD_FRIENDSHIP_TEXT, slot, 2)
         assert got == 0, f"FRIENDSHIP_TEXT zerou o slot {slot} mas a amizade ficou {got}"
 
+    # --- Hack 7 frente A: tom de cor por período ------------------------------------------
+    def tint_at(self, minute: int) -> tuple[int, int, int]:
+        """(r, g, b) em 1/256 que DayNight_GetTintAt dá para o minuto do dia."""
+        packed = self.call(CMD_TINT_AT, minute)
+        assert packed != NO_RESULT, "TINT_AT não implementado nesta ROM"
+        return packed & 0x3FF, (packed >> 10) & 0x3FF, (packed >> 20) & 0x3FF
+
+    def roll_weather(self, region: int, day: int, period: int) -> int:
+        """Clima (WEATHER_*) que DayNight_RollWeather sorteia para a região no dia e período."""
+        assert 0 <= day < 1 << 24, day
+        weather = self.call(CMD_ROLL_WEATHER, region, day | period << 24)
+        assert weather != NO_RESULT, "ROLL_WEATHER não implementado nesta ROM"
+        return weather
+
 # --- Hack 6: breeding genético (enum à parte em include/test_hooks.h, a partir de 0x60; ------
 # o uso fica em esteira/breeding.py e scenarios/full_breeding.py / full_egg.py)
 CMD_BREED_SETUP = 0x60      # gTestBreedSetup -> creche (arg0 = 1: ovo pendente) -> compatibilidade (0xFFFFFFFF = pai inválido)
@@ -193,13 +207,13 @@ CMD_SPEED_ORDER = 0x69      # arg0/arg1 = velocidade | item << 16 -> GetWhoStrik
 # a partir de 0x70; números fixos do plano, os ainda não implementados devolvem 0xFFFFFFFF)
 CMD_SET_CLOCK = 0x70        # arg0 = dia, arg1 = minuto do dia -> DayNight_GetMinuteOfDay()
 CMD_CLOCK_INFO = 0x71       # -> minuto do dia | período << 16
-CMD_TINT_AT = 0x72
-CMD_ROLL_WEATHER = 0x73
+CMD_TINT_AT = 0x72          # arg0 = minuto do dia -> r | g << 10 | b << 20 (tom em 1/256)
+CMD_ROLL_WEATHER = 0x73     # arg0 = região, arg1 = dia | período << 24 -> clima (DayNight_RollWeather)
 CMD_LAND_SPECIES = 0x74
 CMD_FRIENDSHIP_TEXT = 0x75
 CMD_RARE_EGG_ROLL = 0x76
 CMD_SET_KANTO_OWNED = 0x77
-CMD_START_WILD_BATTLE = 0x78
+CMD_START_WILD_BATTLE = 0x78  # arg0 = espécie, arg1 = nível -> 1 (batalha selvagem por script de campo)
 CMD_FILL_PC = 0x79
 CMD_SET_FLAG = 0x7A
 CMD_SPECIES_ON_MAP = 0x7B

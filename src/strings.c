@@ -1391,3 +1391,30 @@ const u8 gText_Receive[] = _("RECEIVE");
 const u8 gText_Send[] = _("SEND");
 const u8 gText_Toss[] = _("TOSS");
 const u8 gText_DelAllCancelOk[] = _("DEL. ALL{CLEAR_TO 0x57}CANCEL{CLEAR_TO 0xA4}OK");
+
+/* Hack 7 — frente A */
+#include "constants/day_night.h"
+
+static const u8 sPeriodName_Morning[] = _("Manhã");
+static const u8 sPeriodName_Afternoon[] = _("Tarde");
+static const u8 sPeriodName_Evening[] = _("Entardecer");
+static const u8 sPeriodName_Night[] = _("Noite");
+
+static const u8 sPeriodStart_Morning[] = _("Amanheceu.");
+static const u8 sPeriodStart_Afternoon[] = _("O sol está alto.");
+static const u8 sPeriodStart_Evening[] = _("O sol se põe.");
+static const u8 sPeriodStart_Night[] = _("Anoiteceu.");
+
+const u8 *const gText_DayNight_PeriodName[TIME_PERIOD_COUNT] = {
+    [TIME_MORNING]   = sPeriodName_Morning,
+    [TIME_AFTERNOON] = sPeriodName_Afternoon,
+    [TIME_EVENING]   = sPeriodName_Evening,
+    [TIME_NIGHT]     = sPeriodName_Night,
+};
+
+const u8 *const gText_DayNight_PeriodStart[TIME_PERIOD_COUNT] = {
+    [TIME_MORNING]   = sPeriodStart_Morning,
+    [TIME_AFTERNOON] = sPeriodStart_Afternoon,
+    [TIME_EVENING]   = sPeriodStart_Evening,
+    [TIME_NIGHT]     = sPeriodStart_Night,
+};

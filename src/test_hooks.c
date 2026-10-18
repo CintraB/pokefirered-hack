@@ -561,6 +561,18 @@ static u32 SetFlagHook(u32 flag, u32 on)
 }
 // --- end of Hack 7 front C ------------------------------------------------------------------
 
+// Hack 7 — frente A: wild battle started by a field script, as setwildbattle + dowildbattle do
+#include "script.h"
+#include "script_pokemon_util.h"
+
+static const u8 sWildBattleScript[] =
+{
+    0x69, // lockall
+    0xB7, // dowildbattle
+    0x6B, // releaseall
+    0x02, // end
+};
+
 void TestHooks_Run(void)
 {
     u32 result = 0;
@@ -621,7 +633,22 @@ void TestHooks_Run(void)
         break;
     case TEST_CMD_CLOCK_INFO:       result = DayNight_GetMinuteOfDay() | DayNight_GetPeriod() << 16; break;
     // Hack 7 front A: start
+    case TEST_CMD_TINT_AT:
+    {
+        struct DayNightTint tint;
 
+        DayNight_GetTintAt(gTestMailbox.arg0, &tint);
+        result = tint.r | tint.g << 10 | tint.b << 20;
+        break;
+    }
+    case TEST_CMD_ROLL_WEATHER:
+        result = DayNight_RollWeather(gTestMailbox.arg0, gTestMailbox.arg1 & 0xFFFFFF, gTestMailbox.arg1 >> 24);
+        break;
+    case TEST_CMD_START_WILD_BATTLE:
+        CreateScriptedWildMon(gTestMailbox.arg0, gTestMailbox.arg1, ITEM_NONE);
+        ScriptContext_SetupScript(sWildBattleScript);
+        result = 1;
+        break;
     // Hack 7 front A: end
     // Hack 7 front B: start
     case TEST_CMD_LAND_SPECIES:

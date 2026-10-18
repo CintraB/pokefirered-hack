@@ -81,13 +81,13 @@ enum
 {
     TEST_CMD_SET_CLOCK = 0x70,   // arg0 = day, arg1 = minute of day: DayNight_SetClock; result = DayNight_GetMinuteOfDay()
     TEST_CMD_CLOCK_INFO,         // result = minute of day | period << 16
-    TEST_CMD_TINT_AT,
-    TEST_CMD_ROLL_WEATHER,
+    TEST_CMD_TINT_AT,            // arg0 = minute of day; result = r | g << 10 | b << 20 (DayNight_GetTintAt, 1/256)
+    TEST_CMD_ROLL_WEATHER,       // arg0 = region, arg1 = day | period << 24; result = DayNight_RollWeather
     TEST_CMD_LAND_SPECIES,       // arg0 = mapGroup << 8 | mapNum, arg1 = slot | period << 8: species of that land slot (the FRLG one without a time table; 0xFFFFFFFF = no land table)
     TEST_CMD_FRIENDSHIP_TEXT,    // arg1 = 0: GetFriendshipLineText(arg0 = friendship) / 1: the line the open EVOLUTION page printed, into gTestText (result = length) / 2: friendship of party slot arg0 set to 0
     TEST_CMD_RARE_EGG_ROLL,
     TEST_CMD_SET_KANTO_OWNED,
-    TEST_CMD_START_WILD_BATTLE,
+    TEST_CMD_START_WILD_BATTLE,  // arg0 = species, arg1 = level: wild battle through a field script (dowildbattle); result = 1
     TEST_CMD_FILL_PC,
     TEST_CMD_SET_FLAG,
     TEST_CMD_SPECIES_ON_MAP,     // arg0 = mapGroup << 8 | mapNum, arg1 = species: IsSpeciesOnMap of that map header (0xFFFFFFFF = no header)

@@ -31,7 +31,9 @@ KEY_POINTS = ("nome", "inicial", "batalha_rival", "captura", "save_continue") + 
 SHARED_REFS = "COMUM"
 SHARED_POINTS = (EVOLUTION_POINTS + EVOLUTION_PAGE_POINTS + SUMMARY_PAGE_POINTS + IVEV_PAGE_POINTS
                  + SHOP_SCREEN_POINTS
-                 + FRIENDSHIP_SCREEN_POINTS)   # Hack 7 - frente D
+                 + FRIENDSHIP_SCREEN_POINTS   # Hack 7 - frente D
+                 # Hack 7 — frente A
+                 + ("relogio_menu", "relogio_aviso_noite"))
 DIFF_RED = (255, 0, 0)
 # O Pillow acusa PNG quebrado com OSError (UnidentifiedImageError é subclasse, "image file is
 # truncated"), SyntaxError ("broken PNG file") ou ValueError, conforme onde o arquivo está estragado.
