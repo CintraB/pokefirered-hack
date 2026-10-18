@@ -125,3 +125,17 @@ def test_approve_refs_poe_as_telas_comuns_em_COMUM(tmp_path):
     assert sorted(Path(p).relative_to(refs).as_posix() for p in copied) == sorted(
         ["BULBASAUR/nome.png", f"{SHARED_REFS}/{SHARED_POINTS[0]}.png"])
     assert not (refs / "BULBASAUR" / f"{SHARED_POINTS[0]}.png").exists()
+
+
+def test_telas_que_dependem_do_inicial_ficam_por_inicial():
+    """Telas que mudam com o inicial ou com a execução (Poké Balls na mesa do Oak, contagem da
+    Pokédex, NPC andando no Centro Pokémon) não podem ter uma referência COMUM: a cada inicial ela
+    viraria. Ficam em KEY_POINTS (test/referencias/<INICIAL>/), no fim, depois do tour."""
+    from esteira.refs import SHARED_POINTS, STARTER_DEPENDENT_POINTS, TOUR_POINTS
+    moved = ("relogio_menu", "relogio_aviso_noite", "pokedex_nacional",
+             "pos_liga_ovo", "pos_liga_dinheiro", "pos_liga_objetivo")
+    assert STARTER_DEPENDENT_POINTS == moved
+    assert KEY_POINTS[-len(moved):] == moved
+    assert KEY_POINTS[-len(moved) - len(TOUR_POINTS):-len(moved)] == TOUR_POINTS
+    assert not set(moved) & set(SHARED_POINTS)
+    assert len(set(KEY_POINTS + SHARED_POINTS)) == len(KEY_POINTS) + len(SHARED_POINTS)

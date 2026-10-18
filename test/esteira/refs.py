@@ -24,16 +24,21 @@ DEFAULT_REFS_DIR = "test/referencias"
 # Nomes dos arquivos em OUT/telas/<ponto>.png gravados pelos cenários nos pontos-chave: os do
 # modo rápido e os do tour de telas do modo completo (scenarios/full_screen_tour.py).
 TOUR_POINTS = ("bolsa", "resumo", "pokedex", "opcoes", "cartao", "pc", "loja", "mapa")
-KEY_POINTS = ("nome", "inicial", "batalha_rival", "captura", "save_continue") + TOUR_POINTS
+# Hack 7: telas de cenários da ROM de teste que mudam com o inicial (ou com a execução): NPC que
+# anda no Centro Pokémon (relogio_*), contagem da Pokédex (pokedex_nacional), Poké Balls que
+# sobraram na mesa do Oak (pos_liga_*). Por isso referência por inicial, não COMUM.
+STARTER_DEPENDENT_POINTS = ("relogio_menu", "relogio_aviso_noite",   # Hack 7 — frente A
+                            "pokedex_nacional",                       # Hack 7 — frente C
+                            "pos_liga_ovo", "pos_liga_dinheiro", "pos_liga_objetivo")
+KEY_POINTS = (("nome", "inicial", "batalha_rival", "captura", "save_continue") + TOUR_POINTS
+              + STARTER_DEPENDENT_POINTS)
 # Pontos cuja tela não depende do inicial (cena de evolução do cenário `evolucoes`, página
 # EVOLUTION do resumo do cenário `resumo_evolucao`): uma referência só, em
 # test/referencias/COMUM/<ponto>.png, vale para os três.
 SHARED_REFS = "COMUM"
 SHARED_POINTS = (EVOLUTION_POINTS + EVOLUTION_PAGE_POINTS + SUMMARY_PAGE_POINTS + IVEV_PAGE_POINTS
                  + SHOP_SCREEN_POINTS
-                 + FRIENDSHIP_SCREEN_POINTS   # Hack 7 - frente D
-                 # Hack 7 — frente A
-                 + ("relogio_menu", "relogio_aviso_noite"))
+                 + FRIENDSHIP_SCREEN_POINTS)  # Hack 7 - frente D
 DIFF_RED = (255, 0, 0)
 # O Pillow acusa PNG quebrado com OSError (UnidentifiedImageError é subclasse, "image file is
 # truncated"), SyntaxError ("broken PNG file") ou ValueError, conforme onde o arquivo está estragado.
@@ -122,9 +127,3 @@ def approve_refs(run_dir: str, starter: str | None = None,
                 shutil.copyfile(src, dst)
                 copied.append(str(dst))
     return copied
-
-# Hack 7 — frente C: tela da Pokédex com a lista nacional desde o início
-SHARED_POINTS = SHARED_POINTS + ("pokedex_nacional",)
-
-# Hack 7 — frente C: telas da cena pós-Liga (ovo, dinheiro, objetivo)
-SHARED_POINTS = SHARED_POINTS + ("pos_liga_ovo", "pos_liga_dinheiro", "pos_liga_objetivo")
