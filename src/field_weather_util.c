@@ -1,7 +1,7 @@
 #include "global.h"
 #include "field_weather.h"
 #include "overworld.h"
-#include "day_night.h"
+#include "day_night.h" /* Hack 7 — frente A */
 #include "constants/weather.h"
 
 static u8 TranslateWeatherNum(u8 weather);
@@ -22,7 +22,7 @@ u8 GetSav1Weather(void)
 void SetSavedWeatherFromCurrMapHeader(void)
 {
     u8 oldWeather = gSaveBlock1Ptr->weather;
-    gSaveBlock1Ptr->weather = TranslateWeatherNum(DayNight_GetMapWeather(gMapHeader.weather));
+    gSaveBlock1Ptr->weather = TranslateWeatherNum(DayNight_GetMapWeather(gMapHeader.weather)); /* Hack 7 — frente A */
     UpdateRainCounter(gSaveBlock1Ptr->weather, oldWeather);
 }
 

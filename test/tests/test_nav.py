@@ -261,23 +261,54 @@ def test_step_reports_lock_on_last_tile_even_if_player_never_stops():
     assert nav.interrupted == "script"
 
 
+class _ConnectionWorld(_StepWorld):
+    """PalletTown (12,1) → (12,0) → Route 1 → mais um tile, andando para cima. Com chuva (Hack 7) o mapa troca
+    um quadro antes da posição: (Route1, (12, altura)) — o tile de Pallet nas coordenadas do mapa
+    novo, fora dele — e só no quadro seguinte (12, altura - 1)."""
+
+    def __init__(self, route1: tuple[int, int], height: int, early_switch: bool):
+        super().__init__(arrive=0, lock=10_000)
+        self.trace = [(PALLET, (12, 1))] * 6 + [(PALLET, (12, 0))] * 6
+        if early_switch:
+            self.trace.append((route1, (12, height)))
+        self.trace += [(route1, (12, height - 1))] * 6 + [(route1, (12, height - 2))] * 6
+        self.game.location = lambda: self._now()[0]
+        self.game.player_xy = lambda: self._now()[1]
+        self.emu.read_u8 = lambda addr: 0   # avatar parado no fim
+
+    def _now(self):
+        return self.trace[min(self.frame, len(self.trace) - 1)]
+
+
+@pytest.mark.parametrize("early_switch", [False, True], ids=["seco", "chuva"])
+def test_step_counts_connection_once_when_map_switches_before_position(early_switch):
+    route1 = Constants.load(str(REPO_ROOT)).map("MAP_ROUTE1")
+    height = load_map_grid(str(REPO_ROOT), *route1).height
+    world = _ConnectionWorld(route1, height, early_switch)
+    nav = Navigator(world)
+    assert nav.step("up", 3) == 3
+    assert (world.game.location(), world.game.player_xy()) == (route1, (12, height - 2))
+
+
 # --- step ao vivo: bloqueio com evidência e conexão de mapas -------------------------
 
 
 
-def _dry_clock(emu, game) -> None:
-    """Hack 7 frente A: o jogo novo começa às 08:00 do dia 0, quando Kanto (INLAND) sorteia chuva;
-    a travessia de conexão com chuva atrasa um quadro e o mapa muda antes da posição. O relógio vai
-    para 08:00 de um dia seco (gameClockFrames em SaveBlock2 0x090) antes de sair de casa."""
+def _set_clock_weather(emu, game, weather: str) -> None:
+    """Hack 7 frente A: o relógio vai para 08:00 de um dia em que Kanto (INLAND) sorteia
+    `weather` de manhã (gameClockFrames em SaveBlock2 0x090), antes de sair de casa. Com chuva a
+    travessia de conexão troca o mapa um quadro antes da posição (o `step` tem de contar um tile só)."""
     from esteira import dia_noite as dn
-    day = next(d for d in range(1, 100) if dn.roll_weather(dn.REGION_INLAND, d, dn.MORNING) == dn.WEATHER_NONE)
+    want = {"seco": dn.WEATHER_NONE, "chuva": dn.WEATHER_RAIN}[weather]
+    day = next(d for d in range(1, 100) if dn.roll_weather(dn.REGION_INLAND, d, dn.MORNING) == want)
     sb2 = emu.read_u32(game.syms.addr("gSaveBlock2Ptr"))
     emu.write(sb2 + 0x090, (day * dn.MINUTES_PER_DAY * dn.FRAMES_PER_MINUTE).to_bytes(4, "little"))
 
 
 @pytest.fixture
-def town(rom_path, tmp_save, tmp_path):
-    """Novo jogo, já em PalletTown (6,8), na rua em frente à casa."""
+def town(request, rom_path, tmp_save, tmp_path):
+    """Novo jogo, já em PalletTown (6,8), na rua em frente à casa; num dia seco, ou com o clima
+    pedido por parametrização indireta ("seco"/"chuva")."""
     elf = REPO_ROOT / "pokefirered_switch.elf"
     if not elf.is_file():
         pytest.skip(f"ELF não encontrado: {elf}")
@@ -287,7 +318,7 @@ def town(rom_path, tmp_save, tmp_path):
         ctl = Controller(emu, game, str(tmp_path / "out"))
         nav = Navigator(ctl)
         _new_game_overworld(ctl, game, emu)
-        _dry_clock(emu, game)
+        _set_clock_weather(emu, game, getattr(request, "param", "seco"))
         assert nav.walk_to(10, 2)
         nav.go_through_warp()
         assert nav.walk_to(4, 8)
@@ -325,6 +356,7 @@ def test_step_reports_oak_trigger_as_script_interruption(town):
     assert town.ctl.script_active()
 
 
+@pytest.mark.parametrize("town", ["seco", "chuva"], indirect=True)
 def test_step_crosses_map_connection_to_route1(town):
     nav, game, emu, consts = town.nav, town.game, town.emu, town.consts
     # desliga o gatilho do Oak (VAR_MAP_SCENE_PALLET_TOWN_OAK=0x4050 != 0), senão o script

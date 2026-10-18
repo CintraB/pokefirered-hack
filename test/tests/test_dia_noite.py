@@ -351,8 +351,9 @@ def test_hash_conhecido():
     assert dn.weather_hash(0 * 4 + dn.MORNING, dn.REGION_INLAND) == 0x01FCE552
     assert dn.weather_hash(7 * 4 + dn.MORNING, dn.REGION_SNOW) == 0xBB807911
     assert dn.weather_hash(123 * 4 + dn.AFTERNOON, dn.REGION_SAND) == 0xD9BE7714
-    # 0x01FCE552 % 100 = 94 → INLAND manhã: NONE 0–69, FOG_H 70–84, RAIN 85–99
-    assert dn.roll_weather(dn.REGION_INLAND, 0, dn.MORNING) == dn.WEATHER_RAIN
+    # 0x01FCE552 % 100 = 94 → INLAND manhã: NONE 0–69, FOG_H 70–84, RAIN 85–99 (só o hash: o dia 0
+    # é sempre sem clima, test_dia_zero_sem_clima)
+    assert dn.roll_from_hash(dn.REGION_INLAND, dn.MORNING, 0x01FCE552) == dn.WEATHER_RAIN
     # 93 → SNOW 0–59, NONE 60–89, FOG_H 90–99
     assert dn.roll_weather(dn.REGION_SNOW, 7, dn.MORNING) == dn.WEATHER_FOG_HORIZONTAL
     # 96 → SAND tarde: NONE 0–49, SANDSTORM 50–99
@@ -362,13 +363,29 @@ def test_hash_conhecido():
     assert dn.roll_weather(dn.REGION_NONE, 5, dn.MORNING) == dn.WEATHER_NONE
 
 
+def test_dia_zero_sem_clima():
+    """Regra 15: o dia 0 do clima (08:00 do jogo novo até 04:00 do dia 1) nunca sorteia clima, em
+    nenhuma região nem período — senão todo jogo novo começaria com chuva em Pallet/Rota 1."""
+    for region in range(dn.REGION_COUNT):
+        for period in range(4):
+            assert dn.roll_weather(region, 0, period) == dn.WEATHER_NONE, (region, period)
+    for minute in (dn.START_MINUTE, 12 * 60, 22 * 60):
+        assert dn.map_weather(dn.WEATHER_SUNNY, dn.REGION_INLAND, True, 0, minute) == dn.WEATHER_SUNNY
+    assert dn.weather_day(1, 3 * 60) == 0          # 03:00 do dia 1 ainda é o dia 0 do clima
+    assert dn.roll_weather(dn.REGION_INLAND, 1, dn.MORNING) == dn.roll_from_hash(
+        dn.REGION_INLAND, dn.MORNING, dn.weather_hash(1 * 4 + dn.MORNING, dn.REGION_INLAND))
+    corpo = _corpo_c("day_night.c", "u8 DayNight_RollWeather(u8 region, u32 day, u8 period)")
+    assert re.search(r"day == 0\)\s*\n?\s*return WEATHER_NONE;", corpo) or "|| day == 0)" in corpo, corpo
+
+
 def test_distribuicao_do_sorteio():
-    """40 000 dias por região × período: cada clima a ±4σ do peso, e nenhum fora da tabela."""
+    """40 000 dias (a partir do 1; o 0 é sempre sem clima) por região × período: cada clima a ±4σ
+    do peso, e nenhum fora da tabela."""
     n = 40000
     for region, periods in dn.REGION_WEIGHTS.items():
         for period, weights in periods.items():
             counts: dict[int, int] = {}
-            for day in range(n):
+            for day in range(1, n + 1):
                 w = dn.roll_weather(region, day, period)
                 counts[w] = counts.get(w, 0) + 1
             assert set(counts) <= {c for c, _ in weights}, (region, period, counts)

@@ -318,8 +318,8 @@ u8 DayNight_RollWeather(u8 region, u32 day, u8 period)
     const struct WeatherChance *chances;
     u32 roll, i;
 
-    if (region >= WEATHER_REGION_COUNT || period >= TIME_PERIOD_COUNT)
-        return WEATHER_NONE;
+    if (region >= WEATHER_REGION_COUNT || period >= TIME_PERIOD_COUNT || day == 0)
+        return WEATHER_NONE; // Day 0 (the new game's first, until 04:00 of day 1) is always clear
     chances = sRegionWeatherChances[region][period];
     roll = WeatherHash(day * TIME_PERIOD_COUNT + period, region) % 100;
     for (i = 0; i < MAX_REGION_WEATHERS && chances[i].chance != 0; i++)

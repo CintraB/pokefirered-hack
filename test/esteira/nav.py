@@ -206,11 +206,22 @@ class Navigator:
         base = self.game.syms.addr("gPlayerAvatar")
         return self.emu.read_u8(base + 3) == 0   # PlayerAvatar.tileTransitionState == T_NOT_MOVING
 
+    @staticmethod
+    def _outside_map(loc: tuple[int, int], pos: tuple[int, int]) -> bool:
+        """`pos` fora dos limites do mapa `loc` (False se o mapa não tem dados de navegação)."""
+        try:
+            grid = load_map_grid(str(REPO_ROOT), *loc)
+        except (KeyError, IndexError, StopIteration, OSError, ValueError):
+            return False
+        return not (0 <= pos[0] < grid.width and 0 <= pos[1] < grid.height)
+
     def step(self, direction: str, n: int = 1, run: bool = False) -> int:
         """Anda `n` tiles na direção, conferindo cada mudança de tile; devolve quantos andou.
 
-        - Cruzar uma conexão de mapas (ex.: PalletTown -> Route 1) é transparente: `pos` e
-          `location` mudam no mesmo quadro, o tile conta e o passo segue no mapa novo.
+        - Cruzar uma conexão de mapas (ex.: PalletTown -> Route 1) é transparente: o tile conta
+          uma vez e o passo segue no mapa novo. Normalmente `pos` e `location` mudam no mesmo
+          quadro; com chuva o mapa troca um quadro antes, com `pos` ainda no tile de partida (fora
+          do mapa novo), e esse quadro não conta como tile.
         - Se um script/warp/fade ou uma batalha assumir os controles, para e devolve < n com
           `self.interrupted` = "script" ou "battle" (confira `game.location()` para warps).
         - Sem sair do lugar por STALL_FRAMES (NPC/parede) ou caindo em tile inesperado,
@@ -247,6 +258,13 @@ class Navigator:
                     if pos != expected:
                         raise self._fail(f"passo {direction} de {(x, y)}: esperava tile "
                                          f"{expected}, estou em {pos}")
+                elif self._outside_map(new_loc, pos):
+                    # conexão com o mapa trocado um quadro antes da posição (acontece com chuva,
+                    # Hack 7): pos ainda é o tile de partida, nas coordenadas do mapa novo e fora
+                    # dele; não conta, o tile chega no quadro seguinte
+                    loc, x, y = new_loc, pos[0], pos[1]
+                    stalled = 0
+                    continue
                 # (conexão: mudar de mapa sem script ativo; pos já vem nas coordenadas do novo)
                 loc, x, y = new_loc, pos[0], pos[1]
                 done += 1

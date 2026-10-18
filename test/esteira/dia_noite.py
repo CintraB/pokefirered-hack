@@ -129,17 +129,23 @@ def weather_hash(seed: int, region: int) -> int:
     return x
 
 
-def roll_weather(region: int, day: int, period: int) -> int:
-    """Clima sorteado (DayNight_RollWeather): roll = hash(dia * 4 + período, região) % 100 contra
-    os pesos cumulativos da região; região NONE → WEATHER_NONE."""
-    if region not in REGION_WEIGHTS:
-        return WEATHER_NONE
-    roll = weather_hash((day * 4 + period) & _U32, region) % 100
+def roll_from_hash(region: int, period: int, hashed: int) -> int:
+    """Clima de um valor do hash: hash % 100 contra os pesos cumulativos da região."""
+    roll = hashed % 100
     for weather, weight in REGION_WEIGHTS[region][period]:
         if roll < weight:
             return weather
         roll -= weight
     return WEATHER_NONE
+
+
+def roll_weather(region: int, day: int, period: int) -> int:
+    """Clima sorteado (DayNight_RollWeather): roll = hash(dia * 4 + período, região) % 100 contra
+    os pesos cumulativos da região; região NONE → WEATHER_NONE. O dia 0 do clima (o do jogo novo,
+    até 04:00 do dia 1) é sempre WEATHER_NONE, em todas as regiões (regra 15)."""
+    if region not in REGION_WEIGHTS or day == 0:
+        return WEATHER_NONE
+    return roll_from_hash(region, period, weather_hash((day * 4 + period) & _U32, region))
 
 
 def weather_day(day: int, minute: int) -> int:
