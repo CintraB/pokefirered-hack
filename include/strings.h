@@ -1584,4 +1584,9 @@ extern const u8 gText_PokeSum_EggOrigin_NicePlace[];
 extern const u8 gText_PokeSum_EggOrigin_Spa[];
 extern const u8 gText_PokeSum_EggOrigin_Trade[];
 
+/* Hack 7 — frente A */
+#include "constants/day_night.h"
+extern const u8 *const gText_DayNight_PeriodName[TIME_PERIOD_COUNT];
+extern const u8 *const gText_DayNight_PeriodStart[TIME_PERIOD_COUNT];
+
 #endif //GUARD_STRINGS_H

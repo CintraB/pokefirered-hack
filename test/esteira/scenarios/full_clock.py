@@ -23,6 +23,7 @@ Uso, a partir de test/ (a pasta OUT precisa do captura.sav de um `rapido`/`compl
 import sys
 
 from .. import dia_noite as dn
+from ..emu import KEY_B
 from ..hooks import Mailbox
 from . import ScenarioContext
 from .base import Abort
@@ -132,6 +133,95 @@ class ClockScenario(CatchSaveScenario):
                 f"(+{diff} min: save e CONTINUAR levaram {f['saved_max']} + {f['elapsed']} "
                 f"quadros), {dn.PERIOD_NAMES[period]}")
 
+    # --- Hack 7 frente A: hora no menu Start e aviso de troca de período ------------------
+    def _idle(self, frames: int) -> None:
+        self.emu.frames(frames)
+
+    def _popup_period(self) -> int:
+        return self.emu.read_u8(self.game.syms.addr("gDayNightPopupPeriod"))
+
+    def _clock_text(self) -> str:
+        raw = self.emu.read(self.game.syms.addr("gDayNightClockText"), 20)
+        return self.game.charmap.decode(bytes(raw))
+
+    def _menu_text(self, minute: int, shot: str | None) -> str:
+        """Acerta o relógio, abre o menu Start e lê o que a janela da hora imprimiu (pode ter
+        andado 1 minuto entre acertar e desenhar)."""
+        self.box.set_clock(1, minute)
+        self.menu.open_start_menu()
+        try:
+            if shot:
+                self._shot(shot)
+            want = {f"{m // 60:02d}:{m % 60:02d} " + dn.PERIOD_NAMES[dn.period_at(m)].capitalize()
+                    for m in (minute, minute + 1)}
+            got = self._clock_text()
+            assert got in want, f"janela da hora imprimiu {got!r}, esperava um de {sorted(want)}"
+        finally:
+            self.menu.close_start_menu()
+        return got
+
+    def _clock_menu(self) -> str:
+        a = self._menu_text(18 * 60 + 30, "relogio_menu")
+        b = self._menu_text(7 * 60, None)
+        return f"{a!r} e {b!r}"
+
+    def _notice_night(self) -> str:
+        self.box.set_clock(1, 19 * 60 + 30)
+        self._idle(400)   # o aviso do entardecer passa e o período fica registrado
+        self.box.set_clock(1, 19 * 60 + 59)
+        spent = 0
+        while self._popup_period() != dn.NIGHT:
+            assert spent < 700, f"sem aviso da noite: gDayNightPopupPeriod = {self._popup_period():#x}"
+            self._idle(10)
+            spent += 10
+        self._idle(90)
+        self._shot("relogio_aviso_noite")
+        return f"aviso da noite {spent} quadros depois de 19:59"
+
+    def _notice_in_menu(self) -> str:
+        self.box.set_clock(1, 9 * 60)
+        self._idle(400)
+        assert self._popup_period() == dn.MORNING, f"período {self._popup_period():#x}"
+        self.menu.open_start_menu()
+        self.box.set_clock(1, 9 * 60 + 59)
+        self._idle(dn.FRAMES_PER_MINUTE + 100)
+        assert self._popup_period() == dn.MORNING, "aviso com o menu Start aberto"
+        self.menu.close_start_menu()
+        spent = 0
+        while self._popup_period() != dn.AFTERNOON:
+            assert spent < 300, "sem aviso da tarde depois de fechar o menu"
+            self._idle(10)
+            spent += 10
+        return f"nenhum aviso no menu; tarde avisada {spent} quadros depois de fechar"
+
+    def _save_cancel(self) -> str:
+        """START > SALVAR > cancelar (B) várias vezes: a janela da hora é recriada a cada volta
+        sem vazar janelas (o id fica estável e a janela está aberta com o menu)."""
+        syms = self.game.syms
+        ids = []
+        self.menu.open_start_menu()
+        for i in range(4):
+            self.menu.choose(4)   # STARTMENU_SAVE
+            self._idle(90)
+            self.ctl.press_until(KEY_B, lambda: self.menu.accepting_input() and self.menu.start_menu_open(),
+                                 f"menu START depois de cancelar o save ({i})", tries=10, wait=60)
+            assert self.emu.read_u8(syms.addr("sClockWindowOpen")) == 1, "janela da hora fechada"
+            ids.append(self.emu.read_u8(syms.addr("sClockWindowId")))
+        assert len(set(ids)) == 1, f"id da janela da hora mudou entre os cancelamentos: {ids}"
+        self.menu.close_start_menu()
+        assert self.emu.read_u8(syms.addr("sClockWindowOpen")) == 0, "janela da hora vazou"
+        return f"4 cancelamentos do save, janela da hora sempre no id {ids[0]}"
+
+    def _no_notice_on_enter(self) -> str:
+        def set_clock() -> None:
+            self.box.set_clock(1, 20 * 60 + 30)
+
+        self._save_reset_continue(set_clock, "relogio_sem_aviso_continue")
+        self._idle(300)
+        got = self._popup_period()
+        assert got == 0xFF, f"aviso ao entrar no campo: gDayNightPopupPeriod = {got:#x}"
+        return "300 quadros no campo depois do CONTINUAR às 20:30, sem aviso"
+
     def run(self) -> None:
         try:
             self._flow("relogio: CONTINUAR com o save do modo rápido", self._start)
@@ -140,6 +230,12 @@ class ClockScenario(CatchSaveScenario):
                        self._saved_clock)
             self._flow("relogio/save_antigo: gameClockFrames = 0 começa às 08:00 (manhã)",
                        self._old_save)
+            self._flow("relogio/menu: hora no menu Start", self._clock_menu)
+            self._flow("relogio/aviso: aviso da noite com o jogador livre", self._notice_night)
+            self._flow("relogio/aviso_no_menu: sem aviso com o menu aberto", self._notice_in_menu)
+            self._flow("relogio/save_cancelado: janela da hora sem vazar", self._save_cancel)
+            self._flow("relogio/sem_aviso_ao_entrar: CONTINUAR às 20:30 não avisa",
+                       self._no_notice_on_enter)
         except Abort:
             pass
 

@@ -13,6 +13,8 @@ static void Task_MapNamePopup(u8 taskId);
 static u16 MapNamePopupCreateWindow(bool32 palIntoFadedBuffer);
 static void MapNamePopupPrintMapNameOnWindow(u16 windowId);
 static u8 *MapNamePopupAppendFloorNum(u8 *dest, s8 flags);
+/* Hack 7 — frente A */
+static const u8 *sPopupText; // NULL = map name
 
 #define tState              data[0]
 #define tTimer              data[1]
@@ -27,6 +29,7 @@ static u8 *MapNamePopupAppendFloorNum(u8 *dest, s8 flags);
 void ShowMapNamePopup(bool32 palIntoFadedBuffer)
 {
     u8 taskId;
+    sPopupText = NULL;
     if (FlagGet(FLAG_DONT_SHOW_MAP_NAME_POPUP) != TRUE && !QL_IS_PLAYBACK_STATE)
     {
         taskId = FindTaskIdByFunc(Task_MapNamePopup);
@@ -159,7 +162,7 @@ static u16 MapNamePopupCreateWindow(bool32 palintoFadedBuffer)
     };
     u16 windowId;
     u16 tileNum = 0x01D;
-    if (gMapHeader.floorNum != 0)
+    if (sPopupText == NULL && gMapHeader.floorNum != 0)
     {
         if (gMapHeader.floorNum != FLOOR_ROOFTOP)
         {
@@ -192,7 +195,11 @@ static void MapNamePopupPrintMapNameOnWindow(u16 windowId)
     u32 maxWidth = 112;
     u32 xpos;
     u8 *ptr = GetMapName(mapName, gMapHeader.regionMapSectionId, 0);
-    if (gMapHeader.floorNum != 0)
+    if (sPopupText != NULL)
+    {
+        StringCopy(mapName, sPopupText);
+    }
+    else if (gMapHeader.floorNum != 0)
     {
         ptr = MapNamePopupAppendFloorNum(ptr, gMapHeader.floorNum);
         maxWidth = gMapHeader.floorNum != FLOOR_ROOFTOP ? 152 : 176;
@@ -229,3 +236,12 @@ static u8 *MapNamePopupAppendFloorNum(u8 *dest, s8 floorNum)
 #undef tPos
 #undef tTimer
 #undef tState
+
+/* Hack 7 — frente A */
+void ShowFieldMessagePopup(const u8 *text)
+{
+    if (QL_IS_PLAYBACK_STATE)
+        return;
+    ShowMapNamePopup(FALSE);
+    sPopupText = text;
+}

@@ -1,5 +1,11 @@
 #include "global.h"
+#include "gflib.h"
 #include "day_night.h"
+#include "characters.h"
+#include "map_name_popup.h"
+#include "quest_log.h"
+#include "script.h"
+#include "strings.h"
 
 // The in-game clock: gSaveBlock2Ptr->gameClockFrames counts the frames played since 08:00 of
 // day 0, advanced by DayNight_Tick every frame the play time counter is not stopped (it keeps
@@ -62,4 +68,59 @@ void DayNight_Reset(void)
 void DayNight_Tick(void)
 {
     gSaveBlock2Ptr->gameClockFrames++;
+}
+
+/* Hack 7 — frente A */
+#define PERIOD_NONE 0
+
+EWRAM_DATA u8 gDayNightClockText[20] = {0};
+EWRAM_DATA u8 gDayNightPopupPeriod = 0;
+static u8 sSeenPeriod; // period + 1, 0 = none yet
+
+// "HH:MM Period"
+void DayNight_FormatClock(u8 *dest)
+{
+    u32 minute = DayNight_GetMinuteOfDay();
+
+    dest = ConvertIntToDecimalStringN(dest, minute / 60, STR_CONV_MODE_LEADING_ZEROS, 2);
+    *dest++ = CHAR_COLON;
+    dest = ConvertIntToDecimalStringN(dest, minute % 60, STR_CONV_MODE_LEADING_ZEROS, 2);
+    *dest++ = CHAR_SPACE;
+    StringCopy(dest, gText_DayNight_PeriodName[DayNight_GetPeriodAt(minute)]);
+}
+
+// Called when entering the field (new game, continue, door, end of battle, return from a
+// screen): the next update only records the current period, with no notice; also clears the
+// last-notice period for the test hooks (0xFF = none; EWRAM_DATA cannot start non-zero)
+void DayNight_ForgetSeenPeriod(void)
+{
+    sSeenPeriod = PERIOD_NONE;
+    gDayNightPopupPeriod = 0xFF;
+}
+
+void DayNight_FieldUpdate(void)
+{
+    u8 period;
+
+    if (QL_IS_PLAYBACK_STATE)
+        return;
+    period = DayNight_GetPeriod();
+    if (sSeenPeriod == PERIOD_NONE)
+    {
+        sSeenPeriod = period + 1;
+        return;
+    }
+    if (period + 1 == sSeenPeriod)
+        return;
+    if (ArePlayerFieldControlsLocked() || ScriptContext_IsEnabled() || gPaletteFade.active)
+        return;
+    sSeenPeriod = period + 1;
+    gDayNightPopupPeriod = period;
+    ShowFieldMessagePopup(gText_DayNight_PeriodStart[period]);
+    DayNight_OnPeriodChange();
+}
+
+// Weather hook, filled in by the weather task
+void DayNight_OnPeriodChange(void)
+{
 }
