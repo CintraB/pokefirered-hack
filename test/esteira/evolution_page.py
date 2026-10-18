@@ -10,8 +10,8 @@ da fonte, contra a janela da página.
 
 Formatos (➡ = {RIGHT_ARROW_2}, "Lv" = {LV_2}, os glifos do jogo):
     EVO_LEVEL / EVO_LEVEL_NINJASK   Lv 16 ➡ IVYSAUR
-    EVO_ITEM                        FIRE STONE ➡ ARCANINE
-    EVO_LEVEL_HOLD_ITEM             Lv 37 + METAL COAT ➡ STEELIX   (nível fixo 37 do Hack 3)
+    EVO_ITEM                        Pedra de Fogo ➡ ARCANINE
+    EVO_LEVEL_HOLD_ITEM             Lv 37 + Revest. Metal ➡ STEELIX   (nível fixo 37 do Hack 3)
     EVO_FRIENDSHIP                  High friendship ➡ CROBAT
     EVO_LEVEL_UP_HOLD_ITEM          Subir nível + Escama Prisma ➡ MILOTIC   (Hack 7, qualquer nível)
     EVO_FRIENDSHIP_DAY / _NIGHT     Day friendship ➡ ESPEON   (Hack 7: relógio do jogo, sem sufixo)

@@ -69,10 +69,10 @@ def test_percentual_arredondado(total, pct):
 
 
 def test_hidden_power_bordas():
-    assert hidden_power((31,) * 6) == (17, 70)          # DARK 70
-    assert TYPES[17] == "DARK"
-    assert hidden_power((0,) * 6) == (1, 30)            # FIGHT 30
-    assert TYPES[1] == "FIGHT"
+    assert hidden_power((31,) * 6) == (17, 70)          # Sombr. 70
+    assert TYPES[17] == "Sombr."
+    assert hidden_power((0,) * 6) == (1, 30)            # Lutad. 30
+    assert TYPES[1] == "Lutad."
     seen = {hidden_power(tuple(2 | ((b >> i) & 1) | 28 for i in range(6))) for b in range(64)}
     assert {t for t, _ in seen} == set(range(1, 18)) - {9}      # nunca NORMAL nem ???
     assert {p for _, p in seen} == {70}
@@ -84,7 +84,7 @@ def test_hidden_power_usa_a_ordem_da_batalha():
     base = (0,) * 6
     speed_odd = (0, 0, 0, 0, 0, 1)
     spatk_odd = (0, 0, 0, 1, 0, 0)
-    assert hidden_power(base) == (1, 30)                     # FIGHT
+    assert hidden_power(base) == (1, 30)                     # Lutad.
     assert hidden_power(speed_odd) == (15 * 8 // 63 + 1, 30) == (2, 30)      # FLYING
     assert hidden_power(spatk_odd) == (15 * 16 // 63 + 1, 30) == (4, 30)     # GROUND
 
@@ -92,7 +92,7 @@ def test_hidden_power_usa_a_ordem_da_batalha():
 def test_casos_do_design_e_do_cenario():
     mewtwo = PAGE.text(*SHOWCASE[0][1:])
     assert PAGE.decode(mewtwo).startswith("IV TOTAL 186/186{SKIP 106}100%{SKIP 136}Perfect / HP")
-    assert PAGE.decode(mewtwo).endswith("HIDDEN POWER DARK 70{SKIP 144}EV{SKIP 164}510/510")
+    assert PAGE.decode(mewtwo).endswith("HIDDEN POWER Sombr. 70{SKIP 144}EV{SKIP 164}510/510")
     magikarp = PAGE.decode(PAGE.text(*SHOWCASE[1][1:]))
     assert "IV TOTAL 0/186{SKIP 106}0%{SKIP 136}Below average" in magikarp
     eevee = PAGE.decode(PAGE.text(*SHOWCASE[2][1:]))
@@ -186,7 +186,7 @@ def test_checagem_de_texto_reprova_coluna_apertada(tmp_path):
         shutil.copy(REPO_ROOT / rel, tmp_path / rel)
     assert _ivev_page_results(tmp_path) == []
     battle = tmp_path / "src" / "battle_main.c"
-    battle.write_text(battle.read_text(encoding="utf-8").replace('_("FIGHT")', '_("FIGHTINGFIGHTING")'),
+    battle.write_text(battle.read_text(encoding="utf-8").replace('_("Lutad.")', '_("LUTADORLUTADOR")'),
                       encoding="utf-8")
     results = _ivev_page_results(tmp_path)
     assert results and all(r.name == "texto/largura" and r.status == "falha" for r in results)
