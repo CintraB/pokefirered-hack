@@ -887,6 +887,15 @@ void LoadCustomWeatherSpritePalette(const u16 *palette)
     UpdateSpritePaletteWithWeather(gWeatherPtr->weatherPicSpritePalIndex);
 }
 
+// FRLG keeps a single weather sprite palette (RSE has a second one, PALTAG_WEATHER_2, for the
+// custom palettes), so a weather that replaced it must put the default one back when it ends.
+void RestoreDefaultWeatherSpritePalette(void)
+{
+    LoadPalette(gDefaultWeatherSpritePalette, OBJ_PLTT_ID(gWeatherPtr->weatherPicSpritePalIndex), PLTT_SIZE_4BPP);
+    ApplyGlobalFieldPaletteTint(gWeatherPtr->weatherPicSpritePalIndex);
+    UpdateSpritePaletteWithWeather(gWeatherPtr->weatherPicSpritePalIndex);
+}
+
 static void LoadDroughtWeatherPalette(u8 *gammaIndexPtr, u8 *a1)
 {
     // Dummied out in FRLG
