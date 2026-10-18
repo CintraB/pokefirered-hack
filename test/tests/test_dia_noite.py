@@ -561,3 +561,15 @@ def test_atalho_batalha_selvagem():
     for valor, nome in pares:
         assert int(valor, 16) == opcodes[nome], (nome, valor, opcodes[nome])
     assert re.search(r"TEST_CMD_START_WILD_BATTLE,\s*// arg0 = species, arg1 = level", _src("include/test_hooks.h"))
+
+
+# --- revisão final da branch ---------------------------------------------------------------------
+
+def test_clima_do_campo_fora_das_batalhas_roteirizadas():
+    """Pokédude (Teachy TV) e o tutorial de captura do velho seguem um roteiro de comandos
+    (sPokedudeTextScripts_*): o clima do campo (chuva, areia, granizo do Hack 7) não entra nelas."""
+    main = _src("src/battle_main.c")
+    assert re.search(r"if \(!gBattleStruct->overworldWeatherDone\s*"
+                     r"&& !\(gBattleTypeFlags & \(BATTLE_TYPE_POKEDUDE \| BATTLE_TYPE_OLD_MAN_TUTORIAL\)\)\s*"
+                     r"&& AbilityBattleEffects\(0, 0, 0, ABILITYEFFECT_SWITCH_IN_WEATHER, 0\) != 0\)", main)
+    assert main.count("ABILITYEFFECT_SWITCH_IN_WEATHER") == 1
