@@ -83,14 +83,14 @@ enum
     TEST_CMD_CLOCK_INFO,         // result = minute of day | period << 16
     TEST_CMD_TINT_AT,
     TEST_CMD_ROLL_WEATHER,
-    TEST_CMD_LAND_SPECIES,
+    TEST_CMD_LAND_SPECIES,       // arg0 = mapGroup << 8 | mapNum, arg1 = slot | period << 8: species of that land slot (the FRLG one without a time table; 0xFFFFFFFF = no land table)
     TEST_CMD_FRIENDSHIP_TEXT,
     TEST_CMD_RARE_EGG_ROLL,
     TEST_CMD_SET_KANTO_OWNED,
     TEST_CMD_START_WILD_BATTLE,
     TEST_CMD_FILL_PC,
     TEST_CMD_SET_FLAG,
-    TEST_CMD_SPECIES_ON_MAP,
+    TEST_CMD_SPECIES_ON_MAP,     // arg0 = mapGroup << 8 | mapNum, arg1 = species: IsSpeciesOnMap of that map header (0xFFFFFFFF = no header)
 };
 // --- end of Hack 7 -------------------------------------------------------------------------
 
