@@ -43,3 +43,24 @@ def test_offsets_de_struct_weather():
     assert (fw.W_CURR, fw.W_NEXT, fw.W_GFX_LOADED, fw.W_CHANGE_COMPLETE) == tuple(
         fw.W_FINISH_STEP + 2 + i for i in range(4))
     assert "struct Sprite *snowflakeSprites[101];" in WEATHER_H
+
+
+def test_neblina_clareia_sprites_pela_intensidade():
+    """Item 1 dos ajustes do Hack 7: o clareamento dos sprites na neblina sai da intensidade em uso
+    (EVA), não do 12 fixo do RSE, e não pega gente nem a paleta do clima; o espelho do cenário
+    (W_WEATHER_PAL, OBJ_PALSLOT_COUNT) bate com o C."""
+    weather_c = (REPO_ROOT / "src" / "field_weather.c").read_text(encoding="utf-8")
+    assert "BlendPalette(paletteIndex, 16, 12, RGB(28, 31, 28))" not in weather_c
+    assert "* 3) >> 2;" not in weather_c, "ApplyFogBlend ainda clareia 3/4 fixo"
+    coeff = re.search(r"static u8 GetFogSpriteLightenCoeff\(u8 spritePaletteIndex\)\n\{(.*?)^\}",
+                      weather_c, re.M | re.S).group(1)
+    for part in ("OBJ_PALSLOT_COUNT", "weatherPicSpritePalIndex", "targetBlendEVA"):
+        assert part in coeff, part
+    assert "UpdateSpritePalettesForFog();" in _function("FogHorizontal_Main")
+    assert "UpdateSpritePalettesForFog();" in re.search(
+        r"bool8 FogHorizontal_Finish\(void\)\n\{(.*?)^\}", EFFECTS_C, re.M | re.S).group(1)
+    block = re.search(r"bool8 weatherChangeComplete;\s*u8 (\w+);", WEATHER_H).group(1)
+    assert block == "weatherPicSpritePalIndex" and fw.W_WEATHER_PAL == fw.W_CHANGE_COMPLETE + 1
+    header = (REPO_ROOT / "include" / "event_object_movement.h").read_text(encoding="utf-8")
+    slots = re.search(r"enum \{\n(.*?)OBJ_PALSLOT_COUNT", header, re.S).group(1)
+    assert len(re.findall(r"PALSLOT_\w+,", slots)) == fw.OBJ_PALSLOT_COUNT

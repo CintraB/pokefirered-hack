@@ -1,6 +1,7 @@
 #include "global.h"
 #include "gflib.h"
 #include "blend_palette.h"
+#include "event_object_movement.h"
 #include "field_effect.h"
 #include "field_weather.h"
 #include "field_weather_util.h"
@@ -62,6 +63,7 @@ static bool8 FadeInScreen_FogHorizontal(void);
 static void DoNothing(void);
 static void ApplyFogBlend(u8 blendCoeff, u16 blendColor);
 static bool8 LightenSpritePaletteInFog(u8 paletteIndex);
+static u8 GetFogSpriteLightenCoeff(u8 spritePaletteIndex);
 
 struct Weather *const gWeatherPtr = &sWeather;
 
@@ -604,6 +606,7 @@ static void ApplyFogBlend(u8 blendCoeff, u16 blendColor)
     u8 gBlend;
     u8 bBlend;
     u16 curPalIndex;
+    u8 lightenCoeff = gWeatherPtr->targetBlendEVA; // Hack 7: the fog's strength (was 12, i.e. 3/4)
 
     BlendPalette(0, 256, blendCoeff, blendColor);
     color = *(struct RGBColor *)&blendColor;
@@ -625,9 +628,9 @@ static void ApplyFogBlend(u8 blendCoeff, u16 blendColor)
                 u8 g = color.g;
                 u8 b = color.b;
 
-                r += ((28 - r) * 3) >> 2;
-                g += ((31 - g) * 3) >> 2;
-                b += ((28 - b) * 3) >> 2;
+                r += ((28 - r) * lightenCoeff) >> 4;
+                g += ((31 - g) * lightenCoeff) >> 4;
+                b += ((28 - b) * lightenCoeff) >> 4;
 
                 r += ((rBlend - r) * blendCoeff) >> 4;
                 g += ((gBlend - g) * blendCoeff) >> 4;
@@ -650,6 +653,37 @@ static void MarkFogSpritePalToLighten(u8 paletteIndex)
     {
         gWeatherPtr->lightenedFogSpritePals[gWeatherPtr->lightenedFogSpritePalsCount] = paletteIndex;
         gWeatherPtr->lightenedFogSpritePalsCount++;
+    }
+}
+
+// Hack 7: how much a sprite palette is lightened toward the fog color, in 1/16: the fog's own
+// blend over the background (BLDALPHA EVA: 12 indoors as in RSE, 9 outdoors; 0 while it fades
+// away). As in FRLG, the palettes of people (object events and their reflections) and the fog's
+// own palette are never lightened: only field effects are, whenever they are loaded or the fog
+// starts or ends, so the screen never mixes two tones.
+static u8 GetFogSpriteLightenCoeff(u8 spritePaletteIndex)
+{
+    if (gWeatherPtr->currWeather != WEATHER_FOG_HORIZONTAL
+     || spritePaletteIndex < OBJ_PALSLOT_COUNT
+     || spritePaletteIndex == gWeatherPtr->weatherPicSpritePalIndex)
+        return 0;
+    return gWeatherPtr->targetBlendEVA;
+}
+
+// Hack 7: the fog started or ended in the field (period change): redo the sprite palettes already
+// on screen as UpdateSpritePaletteWithWeather does for the ones loaded later. A fade-in marks and
+// lightens them itself (ApplyFogBlend).
+void UpdateSpritePalettesForFog(void)
+{
+    u8 i;
+
+    if (gWeatherPtr->palProcessingState == WEATHER_PAL_STATE_SCREEN_FADING_IN
+     || gWeatherPtr->palProcessingState == WEATHER_PAL_STATE_SCREEN_FADING_OUT)
+        return;
+    for (i = OBJ_PALSLOT_COUNT; i < 16; i++)
+    {
+        if (GetSpritePaletteTagByPaletteNum(i) != TAG_NONE)
+            UpdateSpritePaletteWithWeather(i);
     }
 }
 
@@ -840,7 +874,7 @@ void UpdateSpritePaletteWithWeather(u8 spritePaletteIndex)
     case WEATHER_PAL_STATE_SCREEN_FADING_IN:
         if (gWeatherPtr->fadeInActive != 0)
         {
-            if (gWeatherPtr->currWeather == WEATHER_FOG_HORIZONTAL)
+            if (GetFogSpriteLightenCoeff(spritePaletteIndex) != 0)
                 MarkFogSpritePalToLighten(paletteIndex);
             paletteIndex = PLTT_ID(paletteIndex);
             for (i = 0; i < 16; i++)
@@ -862,7 +896,7 @@ void UpdateSpritePaletteWithWeather(u8 spritePaletteIndex)
         else
         {
             paletteIndex = PLTT_ID(paletteIndex);
-            BlendPalette(paletteIndex, 16, 12, RGB(28, 31, 28));
+            BlendPalette(paletteIndex, 16, GetFogSpriteLightenCoeff(spritePaletteIndex), RGB(28, 31, 28));
         }
         break;
     }

@@ -140,6 +140,7 @@ void WeatherProcessingIdle(void);
 u8 GetCurrentWeather(void);
 void delay(u8, u8, u32);
 void UpdateSpritePaletteWithWeather(u8 palIdx);
+void UpdateSpritePalettesForFog(void);
 void ResetPreservedPalettesInWeather(void);
 void PreservePaletteInWeather(u8 palIdx);
 

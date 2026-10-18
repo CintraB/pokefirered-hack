@@ -1349,6 +1349,8 @@ void FogHorizontal_Main(void)
             Weather_SetTargetBlendCoeffs(12, 8, 3);
         else
             Weather_SetTargetBlendCoeffs(4, 16, 0);
+        if (gWeatherPtr->currWeather == WEATHER_FOG_HORIZONTAL)
+            UpdateSpritePalettesForFog(); // Hack 7: field effects already on screen
         gWeatherPtr->initStep++;
         break;
     case 1:
@@ -1374,6 +1376,8 @@ bool8 FogHorizontal_Finish(void)
     {
     case 0:
         Weather_SetTargetBlendCoeffs(0, 16, 3);
+        if (gWeatherPtr->currWeather == WEATHER_FOG_HORIZONTAL)
+            UpdateSpritePalettesForFog(); // Hack 7: field effects lose the fog's lightening
         gWeatherPtr->finishStep++;
         break;
     case 1:
