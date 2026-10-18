@@ -6,8 +6,9 @@ Sessão própria da ROM de teste a partir do .sav do `captura` (`save_from="capt
    (0x74) devolve a espécie de src/data/wild_encounters_time.json;
 2. `encontros/entardecer`: num slot da Rota 1 em que tarde e noite diferem, 4000 chamadas no
    ENTARDECER dão só essas duas espécies, na proporção de 0,5 (a ±4 desvios-padrão);
-3. `encontros/rota1_noite`: relógio às 22:00, vai à grama da Rota 1, espera um selvagem, a
-   espécie é uma da noite da Rota 1, foge; relógio às 07:00, repete: uma da manhã;
+3. `encontros/rota1_noite`: relógio às 22:00, na grama da Rota 1 foge de selvagens até sair um
+   Hoothoot (só a tabela da noite tem; no máximo 16), todos da noite da Rota 1 e nenhum Pidgey
+   (só o FRLG/dia tem); relógio às 07:00, um selvagem: da manhã e não Hoothoot;
 4. `encontros/sem_tabela`: na Rota 12 (sem tabela) o atalho devolve a espécie FRLG do slot nos
    4 períodos;
 5. `encontros/area_pokedex`: SPECIES_ON_MAP (0x7B): Hoothoot na Rota 1 com o relógio de dia =
@@ -33,6 +34,12 @@ DAY = 1                      # dia do jogo dos relógios acertados (qualquer um 
 NIGHT_MINUTE, MORNING_MINUTE, NOON_MINUTE = 22 * 60, 7 * 60, 12 * 60
 HOOK_PERIODS = ((dn.MORNING, "morning"), (dn.AFTERNOON, "day"), (dn.NIGHT, "night"))
 WARP_TIMEOUT = 600
+# encontros/rota1_noite: só a tabela da noite tem Hoothoot (45% dos encontros: slots 0, 2, 6, 7,
+# 9 e 11) e só o FRLG/dia tem Pidgey. Sem a tabela da noite nunca sai Hoothoot (falha sempre);
+# com ela, 16 selvagens sem nenhum têm chance 0,55^16 ≈ 0,007%.
+NIGHT_ONLY, DAY_ONLY = "SPECIES_HOOTHOOT", "SPECIES_PIDGEY"
+NIGHT_ONLY_CHANCE = 45
+NIGHT_MAX_WILD = 16
 
 
 class EncountersScenario(CatchSaveScenario):
@@ -111,16 +118,30 @@ class EncountersScenario(CatchSaveScenario):
                 f"(desvio {diff:.0f}, 4σ = {4 * sigma:.0f})")
 
     def _rota1_noite(self) -> str:
-        night_id, night_level = self._wild_species_at(NIGHT_MINUTE)
-        night_name = self._name(night_id)
-        assert night_name in self.route1["night"], (
-            f"22:00: {night_name}, esperava um de {sorted(set(self.route1['night']))}")
+        night = set(self.route1["night"])
+        frlg = {mon["species"] for mon in self.frlg["MAP_ROUTE1"]}
+        assert NIGHT_ONLY in night - frlg and DAY_ONLY in frlg - night, (night, frlg)
+        self.box.set_clock(DAY, NIGHT_MINUTE)
+        self._warp_to_grass()
+        seen = []
+        while NIGHT_ONLY not in seen:
+            assert len(seen) < NIGHT_MAX_WILD, (
+                f"22:00: nenhum {NIGHT_ONLY} em {len(seen)} selvagens ({', '.join(seen)}); a noite "
+                f"da Rota 1 dá {NIGHT_ONLY} em {NIGHT_ONLY_CHANCE}% dos encontros")
+            self._find_wild_battle(CATCH_GRASS)
+            self.driver.wait_action_menu()
+            species, level = self.driver.battler_species_level(1)
+            name = self._name(species)
+            self._end_battle("fuga do selvagem da Rota 1 à noite")
+            seen.append(name)
+            assert name in night and name != DAY_ONLY, (
+                f"22:00, selvagem {len(seen)}: {name} nv{level}, esperava um de {sorted(night)}")
         morning_id, morning_level = self._wild_species_at(MORNING_MINUTE)
         morning_name = self._name(morning_id)
-        assert morning_name in self.route1["morning"], (
+        assert morning_name in self.route1["morning"] and morning_name != NIGHT_ONLY, (
             f"07:00: {morning_name}, esperava um de {sorted(set(self.route1['morning']))}")
-        return (f"22:00 {night_name} nv{night_level} (noite); "
-                f"07:00 {morning_name} nv{morning_level} (manhã)")
+        return (f"22:00: {', '.join(seen)} (o {len(seen)}º foi o 1º {NIGHT_ONLY}, nenhum "
+                f"{DAY_ONLY}); 07:00 {morning_name} nv{morning_level} (manhã)")
 
     def _sem_tabela(self) -> str:
         slots = self.frlg[en.NO_TABLE_MAP]
