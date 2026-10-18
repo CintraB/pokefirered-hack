@@ -84,7 +84,7 @@ enum
     TEST_CMD_TINT_AT,
     TEST_CMD_ROLL_WEATHER,
     TEST_CMD_LAND_SPECIES,
-    TEST_CMD_FRIENDSHIP_TEXT,
+    TEST_CMD_FRIENDSHIP_TEXT,    // arg1 = 0: GetFriendshipLineText(arg0 = friendship) / 1: the line the open EVOLUTION page printed, into gTestText (result = length) / 2: friendship of party slot arg0 set to 0
     TEST_CMD_RARE_EGG_ROLL,
     TEST_CMD_SET_KANTO_OWNED,
     TEST_CMD_START_WILD_BATTLE,

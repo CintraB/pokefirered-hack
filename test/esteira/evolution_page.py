@@ -215,3 +215,28 @@ def check_page_widths(repo: Path, consts) -> list[tuple[str, str, int]]:
             if px > LINE_WIDTH_PX:
                 wide.append((species, line, px))
     return wide
+
+
+# --- Hack 7 - frente D: linha de amizade, sempre a 6ª da página (y = EVOLUTION_PAGE_TEXT_Y + 5 * 16) ---
+# GetFriendshipLineText (src/pokemon_summary_screen.c): "<corações> <n>/255 <frase><marca>"
+HEART = "{EMOJI_HEART}"
+FRIENDSHIP_PHRASES = ("Odeia você", "Te encara feio", "Ainda desconfia", "Pegando confiança",
+                      "Amigável", "Muito feliz", "Ama você!")
+FRIENDSHIP_MARK = " (220+)"
+FRIENDSHIP_MARK_FROM = 220          # amizade que faz o Eevee evoluir (EVO_FRIENDSHIP_*)
+FRIENDSHIP_LINE_SIZE = 48           # sFriendshipLineText, com o terminador
+FRIENDSHIP_SCREEN_POINTS = ("resumo_amizade_eevee",)
+# primeira amizade de cada faixa (0-6 corações)
+FRIENDSHIP_BAND_STARTS = (0, 1, 50, 100, 150, 200, 255)
+
+
+def friendship_hearts(friendship: int) -> int:
+    return max(i for i, start in enumerate(FRIENDSHIP_BAND_STARTS) if friendship >= start)
+
+
+def friendship_line(friendship: int) -> str:
+    """O texto esperado da linha de amizade (com o placeholder {EMOJI_HEART})."""
+    hearts = friendship_hearts(friendship)
+    return (HEART * hearts + (" " if hearts else "") + f"{friendship}/255 "
+            + FRIENDSHIP_PHRASES[hearts]
+            + (FRIENDSHIP_MARK if friendship >= FRIENDSHIP_MARK_FROM else ""))

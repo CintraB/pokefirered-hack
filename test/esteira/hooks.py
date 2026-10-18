@@ -139,6 +139,22 @@ class Mailbox:
         info = self.call(CMD_CLOCK_INFO)
         return info & 0xFFFF, info >> 16
 
+    # --- Hack 7 - frente D: linha de amizade da página EVOLUTION -----------------------------
+    def friendship_text(self, friendship: int = 0, from_open_summary: bool = False) -> bytes:
+        """Bytes (sem o 0xFF) da linha de amizade: GetFriendshipLineText(`friendship`) ou a linha
+        que a página EVOLUTION aberta imprimiu."""
+        length = self.call(CMD_FRIENDSHIP_TEXT, friendship, 1 if from_open_summary else 0)
+        assert length != NO_RESULT, ("FRIENDSHIP_TEXT recusado: " + (
+            "nenhum resumo aberto" if from_open_summary else f"amizade {friendship}"))
+        data = self.emu.read(self.ctl.game.syms.addr(TEXT_SYMBOL), length + 1)
+        assert data[length] == 0xFF, f"texto de {length} bytes sem terminador: {data.hex()}"
+        return data[:length]
+
+    def zero_friendship(self, slot: int) -> None:
+        """Zera a amizade do Pokémon do slot (SET_PARTY_MON usa 0 para "amizade base")."""
+        got = self.call(CMD_FRIENDSHIP_TEXT, slot, 2)
+        assert got == 0, f"FRIENDSHIP_TEXT zerou o slot {slot} mas a amizade ficou {got}"
+
 # --- Hack 6: breeding genético (enum à parte em include/test_hooks.h, a partir de 0x60; ------
 # o uso fica em esteira/breeding.py e scenarios/full_breeding.py / full_egg.py)
 CMD_BREED_SETUP = 0x60      # gTestBreedSetup -> creche (arg0 = 1: ovo pendente) -> compatibilidade (0xFFFFFFFF = pai inválido)

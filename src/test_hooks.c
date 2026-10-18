@@ -140,6 +140,27 @@ static u32 EvolutionTarget(u32 arg0, u32 arg1)
     return GetEvolutionTargetSpecies(&gEnemyParty[0], mode, evolutionItem);
 }
 
+// Hack 7 front D: friendship line of the EVOLUTION page. mode 0: GetFriendshipLineText(arg0) into
+// gTestText; 1: the line the open summary printed; 2: sets the friendship of gPlayerParty[arg0] to 0.
+static u32 FriendshipText(u32 arg0, u32 mode)
+{
+    u8 zero = 0;
+
+    gTestText[0] = EOS;
+    if (mode == 2)
+    {
+        if (arg0 >= CalculatePlayerPartyCount())
+            return 0xFFFFFFFF;
+        SetMonData(&gPlayerParty[arg0], MON_DATA_FRIENDSHIP, &zero);
+        return GetMonData(&gPlayerParty[arg0], MON_DATA_FRIENDSHIP);
+    }
+    if (mode == 0)
+        GetFriendshipLineText(gTestText, arg0);
+    else if (!PokeSum_TestCopyFriendshipText(gTestText))
+        return 0xFFFFFFFF;
+    return StringLength(gTestText);
+}
+
 // Hack 4: the EVOLUTION page text, either built by the same function the summary screen uses
 // (source 0) or the one the open summary screen printed (source 1), copied to gTestText.
 static u32 EvolutionText(u32 species, u32 source)
@@ -556,7 +577,9 @@ void TestHooks_Run(void)
 
     // Hack 7 front C: end
     // Hack 7 front D: start
-
+    case TEST_CMD_FRIENDSHIP_TEXT:
+        result = FriendshipText(gTestMailbox.arg0, gTestMailbox.arg1);
+        break;
     // Hack 7 front D: end
     // Hack 7 front E: start
 

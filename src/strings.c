@@ -851,6 +851,18 @@ const u8 gText_PokeSum_EvoItem[] = _("{STR_VAR_2} {RIGHT_ARROW_2} {STR_VAR_3}");
 const u8 gText_PokeSum_EvoLevelHoldItem[] = _("{LV_2} {STR_VAR_1} + {STR_VAR_2} {RIGHT_ARROW_2} {STR_VAR_3}");
 // Hack 7 - frente D
 const u8 gText_PokeSum_EvoLevelUpHoldItem[] = _("Subir nível + {STR_VAR_2} {RIGHT_ARROW_2} {STR_VAR_3}");
+// Friendship line of the EVOLUTION page (GetFriendshipLineText): hearts, count, phrase, mark
+const u8 gText_PokeSum_FriendBand[7][19] = {
+    _("Odeia você"),
+    _("Te encara feio"),
+    _("Ainda desconfia"),
+    _("Pegando confiança"),
+    _("Amigável"),
+    _("Muito feliz"),
+    _("Ama você!"),
+};
+const u8 gText_PokeSum_FriendMark[] = _(" (220+)");
+const u8 gText_PokeSum_FriendCount[] = _("{STR_VAR_1}/255");
 const u8 gText_PokeSum_EvoFriendship[] = _("High friendship {RIGHT_ARROW_2} {STR_VAR_3}");
 const u8 gText_PokeSum_EvoFriendshipDay[] = _("Day friendship {RIGHT_ARROW_2} {STR_VAR_3}");
 const u8 gText_PokeSum_EvoFriendshipNight[] = _("Night friendship {RIGHT_ARROW_2} {STR_VAR_3}");

@@ -16,7 +16,8 @@ import pytest
 from esteira import hooks
 from esteira.check_text import WIDTH_RULES, _evolution_page_results, check_text, width_limit
 from esteira.constants import Constants
-from esteira.evolution_page import (ARROW, LINE_WIDTH_PX, LV, MAX_LINES, NO_EVOLUTION,
+from esteira.check_text import _load_widths
+from esteira.evolution_page import (friendship_line, ARROW, LINE_WIDTH_PX, LV, MAX_LINES, NO_EVOLUTION,
                                     NOT_POSSIBLE, PAGE_POINTS, SCREEN_POINTS, TRADED_ONLY, SHOWCASE, SOURCE_FILES, TEXT_X,
                                     WINDOW_WIDTH_PX, EvolutionPage, check_page_widths,
                                     evolution_line, text_size)
@@ -321,3 +322,43 @@ def test_jogo_monta_o_texto_esperado_para_todas_as_especies(tmp_path):
         assert box.summary_state() is None                 # nenhum resumo aberto no boot
         with pytest.raises(AssertionError, match="nenhum resumo aberto"):
             box.evolution_text(from_open_summary=True)
+
+
+# --- Hack 7 - frente D: amizade com corações na 6ª linha da página ----------------------------
+
+FRIENDSHIP_CASES = (  # (amizade, corações, frase, marca 220+)
+    (0, 0, "Odeia você", False), (1, 1, "Te encara feio", False), (49, 1, "Te encara feio", False),
+    (50, 2, "Ainda desconfia", False), (99, 2, "Ainda desconfia", False),
+    (100, 3, "Pegando confiança", False), (149, 3, "Pegando confiança", False),
+    (150, 4, "Amigável", False), (199, 4, "Amigável", False), (200, 5, "Muito feliz", False),
+    (219, 5, "Muito feliz", False), (220, 5, "Muito feliz", True), (254, 5, "Muito feliz", True),
+    (255, 6, "Ama você!", True),
+)
+
+
+@pytest.mark.parametrize("friendship,hearts,phrase,mark", FRIENDSHIP_CASES)
+def test_faixas_de_amizade(friendship, hearts, phrase, mark):
+    heart = "{EMOJI_HEART}"
+    want = (heart * hearts + (" " if hearts else "") + f"{friendship}/255 {phrase}"
+            + (" (220+)" if mark else ""))
+    assert friendship_line(friendship) == want
+
+
+def test_linha_cabe():
+    page = PAGE
+    for friendship in (0, 49, 99, 149, 199, 219, 254, 255):
+        data = page.encode(friendship_line(friendship))
+        assert page.line_widths(data) == [page.line_widths(data)[0]]
+        assert page.line_widths(data)[0] <= LINE_WIDTH_PX, friendship_line(friendship)
+        assert len(data) + 1 <= 48
+
+
+def test_coracao_tem_largura():
+    assert _load_widths(REPO_ROOT)[0x100 | 0xE7] > 0
+
+
+def test_amizade_ligada_ao_c():
+    assert "void GetFriendshipLineText(u8 *dest, u8 friendship);" in SUMMARY_H
+    assert "sFriendshipLineText[48]" in SUMMARY_C
+    assert "TEST_CMD_FRIENDSHIP_TEXT" in (REPO_ROOT / "src" / "test_hooks.c").read_text(encoding="utf-8")
+    assert "5 * 16" in _function(SUMMARY_C, "static void PrintEvolutionPage(void)")

@@ -18,6 +18,8 @@ void SetPokemonSummaryScreenMode(u8);
 // order), or a "does not evolve" line. Lines are separated by '\n'.
 #define SUMMARY_PAGE_TEXT_SIZE 384  // the hack's pages (EVOLUTION, IVs/EVs), with the terminator
 void GetEvolutionPageText(u8 *dest, u16 species);
+// Hack 7: friendship line of the EVOLUTION page (hearts, n/255, phrase, " (220+)" from 220)
+void GetFriendshipLineText(u8 *dest, u8 friendship);
 // IVs/EVs page: IV total, % and overall grade; IV, grade and EV per stat; Hidden Power and EV
 // total, one line each. Columns are placed with {SKIP x} codes.
 void GetIvEvPageText(u8 *dest, struct Pokemon *mon);
@@ -25,6 +27,7 @@ void GetIvEvPageText(u8 *dest, struct Pokemon *mon);
 #if TESTBUILD
 u32 PokeSum_TestGetState(void);
 bool32 PokeSum_TestCopyPageText(u8 *dest);
+bool32 PokeSum_TestCopyFriendshipText(u8 *dest); // Hack 7 - frente D
 #endif
 
 // The Pokemon Summary Screen can operate in different modes. Certain features,
