@@ -35,11 +35,14 @@ def test_terms_are_unique_per_category():
 
 
 def test_glossary_has_every_section_of_the_approved_document():
-    counts = Counter(t["categoria"] for t in TERMS)
+    approved = [t for t in TERMS if "frente" not in t]     # acréscimos das frentes ficam de fora
+    counts = Counter(t["categoria"] for t in approved)
     assert counts["tipo"] == 18
     assert counts["natureza"] == 25
     assert counts["habilidade"] == 77
     assert counts["golpe"] == 178
+    # Task 2: os 176 golpes fora da amostra entram com fonte própria; o glossário cobre os 354
+    assert sum(t["categoria"] == "golpe" for t in TERMS) == 354
     assert counts["item"] >= 163          # linhas agrupadas ("BLUE / YELLOW / RED FLUTE") viram termos
     assert counts["lugar"] >= 70
     assert len(TERMS) >= 688

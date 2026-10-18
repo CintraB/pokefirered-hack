@@ -4182,10 +4182,12 @@
   },
   {
    "en": "VERMILION CITY",
-   "pt": "Cidade de Vermilion",
+   "pt": "Cidade Vermilion",
    "fonte": "anime",
    "categoria": "lugar",
-   "detectar": true
+   "detectar": true,
+   "completo": "Cidade de Vermilion",
+   "obs": "✂ de: Cidade de Vermilion (regra 1, sem a preposição); decisão 5 do controlador (Task 2)"
   },
   {
    "en": "LAVENDER TOWN",
@@ -4413,10 +4415,12 @@
   },
   {
    "en": "VIRIDIAN FOREST",
-   "pt": "Floresta de Viridian",
+   "pt": "Floresta Viridian",
    "fonte": "TCG",
    "categoria": "lugar",
-   "detectar": true
+   "detectar": true,
+   "completo": "Floresta de Viridian",
+   "obs": "✂ de: Floresta de Viridian (regra 1, sem a preposição); decisão 5 do controlador (Task 2)"
   },
   {
    "en": "MT. MOON",
@@ -4427,10 +4431,12 @@
   },
   {
    "en": "CERULEAN CAVE",
-   "pt": "Caverna de Cerulean",
+   "pt": "Caverna Cerulean",
    "fonte": "criado",
    "categoria": "lugar",
-   "detectar": true
+   "detectar": true,
+   "completo": "Caverna de Cerulean",
+   "obs": "✂ de: Caverna de Cerulean (regra 1, sem a preposição; já era o nome curto dos andares); decisão 5 do controlador (Task 2)"
   },
   {
    "en": "DIGLETT'S CAVE",
@@ -4469,10 +4475,12 @@
   },
   {
    "en": "UNDERGROUND PATH",
-   "pt": "Caminho Subterrâneo",
+   "pt": "Via Subterrânea",
    "fonte": "criado",
    "categoria": "lugar",
-   "detectar": true
+   "detectar": true,
+   "completo": "Caminho Subterrâneo",
+   "obs": "✂ de: Caminho Subterrâneo (sem preposição para tirar; \"Caminho Subterr.\" lê mal no aviso: \"via\" = caminho); decisão 5 do controlador (Task 2)"
   },
   {
    "en": "CELADON DEPT.",
@@ -4763,17 +4771,21 @@
   },
   {
    "en": "THREE ISLE PATH",
-   "pt": "Trilha da Ilha Três",
+   "pt": "Trilha Ilha Três",
    "fonte": "criado",
    "categoria": "lugar",
-   "detectar": true
+   "detectar": true,
+   "completo": "Trilha da Ilha Três",
+   "obs": "✂ de: Trilha da Ilha Três (regra 1, sem a preposição); decisão 5 do controlador (Task 2)"
   },
   {
    "en": "BERRY FOREST",
-   "pt": "Floresta das Frutas",
+   "pt": "Bosque das Frutas",
    "fonte": "criado",
    "categoria": "lugar",
-   "detectar": true
+   "detectar": true,
+   "completo": "Floresta das Frutas",
+   "obs": "✂ de: Floresta das Frutas (\"Floresta Frutas\" lê mal; \"bosque\" = floresta pequena); decisão 5 do controlador (Task 2)"
   },
   {
    "en": "ICEFALL CAVE",
@@ -4784,10 +4796,12 @@
   },
   {
    "en": "FIVE ISLE MEADOW",
-   "pt": "Prado da Ilha Cinco",
+   "pt": "Prado Ilha Cinco",
    "fonte": "criado",
    "categoria": "lugar",
-   "detectar": true
+   "detectar": true,
+   "completo": "Prado da Ilha Cinco",
+   "obs": "✂ de: Prado da Ilha Cinco (regra 1, sem a preposição); decisão 5 do controlador (Task 2)"
   },
   {
    "en": "ROCKET WAREHOUSE",
@@ -6439,6 +6453,2653 @@
    "categoria": "interface",
    "detectar": false,
    "tela": "Geral"
+  },
+  {
+   "en": "COMET PUNCH",
+   "pt": "Soco Cometa",
+   "fonte": "TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "✂ de: Soco de Cometa"
+  },
+  {
+   "en": "PAY DAY",
+   "pt": "Dia Pagto.",
+   "fonte": "TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "✂ de: Dia de Pagamento"
+  },
+  {
+   "en": "FIRE PUNCH",
+   "pt": "Soco de Fogo",
+   "fonte": "GO+TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "ICE PUNCH",
+   "pt": "Soco de Gelo",
+   "fonte": "GO+TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "THUNDERPUNCH",
+   "pt": "S. Trovoada",
+   "fonte": "GO+TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "✂ de: Soco Trovoada"
+  },
+  {
+   "en": "VICEGRIP",
+   "pt": "Agarramento",
+   "fonte": "GO+TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "✂ de: Agarramento Compressor (abreviado, \"Agarr. Compr.\" ainda passa de 12)"
+  },
+  {
+   "en": "GUILLOTINE",
+   "pt": "Guilhotina",
+   "fonte": "TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "RAZOR WIND",
+   "pt": "V. Cortante",
+   "fonte": "TCG antigo",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "✂ de: Vento Cortante"
+  },
+  {
+   "en": "WHIRLWIND",
+   "pt": "Ataque Vento",
+   "fonte": "TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "✂ de: Ataque de Vento"
+  },
+  {
+   "en": "BIND",
+   "pt": "Ligação",
+   "fonte": "TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "JUMP KICK",
+   "pt": "Chute Pulo",
+   "fonte": "criado",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "no padrão de Chute de Pulo Alto (GO, HI JUMP KICK)"
+  },
+  {
+   "en": "ROLLING KICK",
+   "pt": "Chute Girat.",
+   "fonte": "criado",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "✂ de: Chute Giratório"
+  },
+  {
+   "en": "TWINEEDLE",
+   "pt": "Agulha Dupla",
+   "fonte": "GO+TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "PIN MISSILE",
+   "pt": "M. Espinhos",
+   "fonte": "TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "✂ de: Míssil de Espinhos"
+  },
+  {
+   "en": "MIST",
+   "pt": "Névoa",
+   "fonte": "criado",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "\"névoa\" como em Bola de Névoa (GO)"
+  },
+  {
+   "en": "BUBBLEBEAM",
+   "pt": "Jato Bolhas",
+   "fonte": "GO+TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "✂ de: Jato de Bolhas"
+  },
+  {
+   "en": "MEGA DRAIN",
+   "pt": "Megadreno",
+   "fonte": "GO+TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "PETAL DANCE",
+   "pt": "D. Pétalas",
+   "fonte": "TCG antigo",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "✂ de: Dança das Pétalas"
+  },
+  {
+   "en": "STRING SHOT",
+   "pt": "Estilingada",
+   "fonte": "TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "FISSURE",
+   "pt": "Fissura",
+   "fonte": "GO",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "MEDITATE",
+   "pt": "Meditação",
+   "fonte": "TCG antigo",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "TELEPORT",
+   "pt": "Teleporte",
+   "fonte": "TCG antigo",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "NIGHT SHADE",
+   "pt": "S. Noturna",
+   "fonte": "GO",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "✂ de: Sombra Noturna"
+  },
+  {
+   "en": "BARRIER",
+   "pt": "Barreira",
+   "fonte": "TCG antigo",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "BIDE",
+   "pt": "Aguardar",
+   "fonte": "TCG antigo",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "EGG BOMB",
+   "pt": "Bomba de Ovo",
+   "fonte": "criado",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "SLUDGE",
+   "pt": "Ataque Lama",
+   "fonte": "GO",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "✂ de: Ataque de Lama"
+  },
+  {
+   "en": "BONE CLUB",
+   "pt": "Bastão Osso",
+   "fonte": "GO",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "✂ de: Bastão de Osso"
+  },
+  {
+   "en": "CLAMP",
+   "pt": "Capturar",
+   "fonte": "TCG antigo",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "SKULL BASH",
+   "pt": "Q. Crânio",
+   "fonte": "GO+TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "✂ de: Quebra-crânio"
+  },
+  {
+   "en": "SPIKE CANNON",
+   "pt": "C. Espinhos",
+   "fonte": "TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "✂ de: Canhão de Espinhos"
+  },
+  {
+   "en": "AMNESIA",
+   "pt": "Amnésia",
+   "fonte": "TCG antigo",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "KINESIS",
+   "pt": "Cinese",
+   "fonte": "TCG antigo",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "HI JUMP KICK",
+   "pt": "C. Pulo Alto",
+   "fonte": "GO+TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "✂ de: Chute de Pulo Alto"
+  },
+  {
+   "en": "GLARE",
+   "pt": "Olhar Penet.",
+   "fonte": "TCG antigo",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "✂ de: Olhar Penetrante"
+  },
+  {
+   "en": "BARRAGE",
+   "pt": "Bombardeio",
+   "fonte": "criado",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "LOVELY KISS",
+   "pt": "Beijo Amável",
+   "fonte": "criado",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "SKY ATTACK",
+   "pt": "Ataque Céu",
+   "fonte": "GO+TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "✂ de: Ataque do Céu"
+  },
+  {
+   "en": "TRANSFORM",
+   "pt": "Transformar",
+   "fonte": "GO+TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "✂ de: Transformação (13 letras)"
+  },
+  {
+   "en": "DIZZY PUNCH",
+   "pt": "Soco Estont.",
+   "fonte": "TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "✂ de: Soco Estonteante"
+  },
+  {
+   "en": "SPORE",
+   "pt": "Esporos",
+   "fonte": "TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "PSYWAVE",
+   "pt": "O. Psíquica",
+   "fonte": "GO+TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "✂ de: Onda Psíquica"
+  },
+  {
+   "en": "SPLASH",
+   "pt": "Borrifada",
+   "fonte": "GO+TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "ACID ARMOR",
+   "pt": "Arm. Ácida",
+   "fonte": "criado",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "✂ de: Armadura Ácida"
+  },
+  {
+   "en": "CRABHAMMER",
+   "pt": "Martelo Siri",
+   "fonte": "criado",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "GO/TCG \"Martelo Caranguejo\" não cabe nem abreviado (\"M. Caranguejo\" = 13)"
+  },
+  {
+   "en": "BONEMERANG",
+   "pt": "Ossomerangue",
+   "fonte": "TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "HYPER FANG",
+   "pt": "Hiperpresa",
+   "fonte": "GO+TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "SHARPEN",
+   "pt": "Afiar",
+   "fonte": "TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "CONVERSION",
+   "pt": "Conversão",
+   "fonte": "criado",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "SUPER FANG",
+   "pt": "Superpresa",
+   "fonte": "TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "STRUGGLE",
+   "pt": "Insistência",
+   "fonte": "GO",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "SKETCH",
+   "pt": "Esboço",
+   "fonte": "criado",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "TRIPLE KICK",
+   "pt": "Chute Triplo",
+   "fonte": "TCG antigo",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "SPIDER WEB",
+   "pt": "Teia Aranha",
+   "fonte": "TCG antigo",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "✂ de: Teia de Aranha"
+  },
+  {
+   "en": "MIND READER",
+   "pt": "Ler Mentes",
+   "fonte": "criado",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "NIGHTMARE",
+   "pt": "Pesadelo",
+   "fonte": "TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "FLAME WHEEL",
+   "pt": "Roda de Fogo",
+   "fonte": "GO",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "SNORE",
+   "pt": "Ronco",
+   "fonte": "criado",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "CONVERSION 2",
+   "pt": "Conversão 2",
+   "fonte": "criado",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "AEROBLAST",
+   "pt": "Expl. Aérea",
+   "fonte": "GO",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "✂ de: Explosão Aérea"
+  },
+  {
+   "en": "COTTON SPORE",
+   "pt": "Esp. Algodão",
+   "fonte": "criado",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "✂ de: Esporo de Algodão"
+  },
+  {
+   "en": "REVERSAL",
+   "pt": "Reversão",
+   "fonte": "criado",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "POWDER SNOW",
+   "pt": "Neve em Pó",
+   "fonte": "GO+TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "MACH PUNCH",
+   "pt": "Soco Mach",
+   "fonte": "TCG antigo",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "FAINT ATTACK",
+   "pt": "Atq. Furtivo",
+   "fonte": "criado",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "GO/TCG \"Ataque Dissimulado\" (18) não cabe nem abreviado"
+  },
+  {
+   "en": "SWEET KISS",
+   "pt": "Beijo Doce",
+   "fonte": "TCG antigo",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "BELLY DRUM",
+   "pt": "Tambor Pança",
+   "fonte": "criado",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "MUD-SLAP",
+   "pt": "Tapa de Lama",
+   "fonte": "GO+TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "OCTAZOOKA",
+   "pt": "Polvo-canhão",
+   "fonte": "GO",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "SPIKES",
+   "pt": "Espinhos",
+   "fonte": "criado",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "ZAP CANNON",
+   "pt": "Canhão Zap",
+   "fonte": "GO+TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "PERISH SONG",
+   "pt": "Canção Fatal",
+   "fonte": "criado",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "ICY WIND",
+   "pt": "Vento Gélido",
+   "fonte": "criado",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "GO/TCG \"Vento Congelante\" (16): \"Vento Congel.\" e \"V. Congelante\" têm 13"
+  },
+  {
+   "en": "DETECT",
+   "pt": "Detectar",
+   "fonte": "TCG antigo",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "BONE RUSH",
+   "pt": "Fúria Ossos",
+   "fonte": "TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "✂ de: Fúria de Ossos"
+  },
+  {
+   "en": "LOCK-ON",
+   "pt": "Mirar",
+   "fonte": "GO+TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "OUTRAGE",
+   "pt": "Ultraje",
+   "fonte": "GO+TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "CHARM",
+   "pt": "Encantar",
+   "fonte": "GO+TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "FALSE SWIPE",
+   "pt": "Corte Artif.",
+   "fonte": "TCG antigo",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "✂ de: Corte Artificial"
+  },
+  {
+   "en": "MILK DRINK",
+   "pt": "Leite Cura",
+   "fonte": "TCG antigo",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "✂ de: Leite de Cura"
+  },
+  {
+   "en": "SPARK",
+   "pt": "Faísca",
+   "fonte": "GO+TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "FURY CUTTER",
+   "pt": "Cort. Fúria",
+   "fonte": "GO+TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "✂ de: Cortador de Fúria"
+  },
+  {
+   "en": "SLEEP TALK",
+   "pt": "Sonambulismo",
+   "fonte": "criado",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "HEAL BELL",
+   "pt": "Sino da Cura",
+   "fonte": "TCG antigo",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "PRESENT",
+   "pt": "Presente",
+   "fonte": "GO",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "PAIN SPLIT",
+   "pt": "Dividir Dor",
+   "fonte": "criado",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "SACRED FIRE",
+   "pt": "Fogo Sagrado",
+   "fonte": "GO+TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "DYNAMICPUNCH",
+   "pt": "S. Dinâmico",
+   "fonte": "GO+TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "✂ de: Soco Dinâmico"
+  },
+  {
+   "en": "DRAGONBREATH",
+   "pt": "Sopro Dragão",
+   "fonte": "GO",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "✂ de: Sopro do Dragão"
+  },
+  {
+   "en": "BATON PASS",
+   "pt": "Passe Bastão",
+   "fonte": "criado",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "ENCORE",
+   "pt": "Bis",
+   "fonte": "criado",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "VITAL THROW",
+   "pt": "A. Vital",
+   "fonte": "criado",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "✂ de: Arremesso Vital (como A. Sísmico)"
+  },
+  {
+   "en": "MORNING SUN",
+   "pt": "Sol da Manhã",
+   "fonte": "criado",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "SYNTHESIS",
+   "pt": "Síntese",
+   "fonte": "TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "MOONLIGHT",
+   "pt": "Luar",
+   "fonte": "TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "CRUNCH",
+   "pt": "Mastigada",
+   "fonte": "GO+TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "MIRROR COAT",
+   "pt": "C. Espelhado",
+   "fonte": "GO",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "✂ de: Casaco Espelhado"
+  },
+  {
+   "en": "EXTREMESPEED",
+   "pt": "Vel. Extrema",
+   "fonte": "criado",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "✂ de: Velocidade Extrema"
+  },
+  {
+   "en": "WHIRLPOOL",
+   "pt": "Redemoinho",
+   "fonte": "TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "BEAT UP",
+   "pt": "Espancar",
+   "fonte": "TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "FAKE OUT",
+   "pt": "Fingimento",
+   "fonte": "TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "UPROAR",
+   "pt": "Tumulto",
+   "fonte": "TCG antigo",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "STOCKPILE",
+   "pt": "Acumular",
+   "fonte": "criado",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "SPIT UP",
+   "pt": "Cuspir",
+   "fonte": "TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "SWALLOW",
+   "pt": "Engolir",
+   "fonte": "TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "HEAT WAVE",
+   "pt": "Onda Calor",
+   "fonte": "GO+TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "✂ de: Onda de Calor"
+  },
+  {
+   "en": "FLATTER",
+   "pt": "Bajular",
+   "fonte": "criado",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "WILL-O-WISP",
+   "pt": "Fogo Fátuo",
+   "fonte": "TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "MEMENTO",
+   "pt": "Lembrança",
+   "fonte": "criado",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "SMELLINGSALT",
+   "pt": "Sais Cheiro",
+   "fonte": "criado",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "✂ de: Sais de Cheiro"
+  },
+  {
+   "en": "FOLLOW ME",
+   "pt": "Isca-viva",
+   "fonte": "TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "NATURE POWER",
+   "pt": "P. Natural",
+   "fonte": "criado",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "✂ de: Poder Natural"
+  },
+  {
+   "en": "CHARGE",
+   "pt": "Carga",
+   "fonte": "TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "TRICK",
+   "pt": "Travessura",
+   "fonte": "TCG antigo",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "ROLE PLAY",
+   "pt": "Encenação",
+   "fonte": "criado",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "WISH",
+   "pt": "Desejo",
+   "fonte": "TCG antigo",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "ASSIST",
+   "pt": "Assistência",
+   "fonte": "criado",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "INGRAIN",
+   "pt": "Enraizar",
+   "fonte": "criado",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "SUPERPOWER",
+   "pt": "Superpoder",
+   "fonte": "GO+TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "MAGIC COAT",
+   "pt": "C. Mágico",
+   "fonte": "criado",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "✂ de: Casaco Mágico (como C. Espelhado)"
+  },
+  {
+   "en": "RECYCLE",
+   "pt": "Reciclagem",
+   "fonte": "TCG antigo",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "YAWN",
+   "pt": "Bocejo",
+   "fonte": "GO+TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "KNOCK OFF",
+   "pt": "Derrubar",
+   "fonte": "TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "ENDEAVOR",
+   "pt": "Esforço",
+   "fonte": "TCG antigo",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "ERUPTION",
+   "pt": "Erupção",
+   "fonte": "TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "IMPRISON",
+   "pt": "Aprisionar",
+   "fonte": "criado",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "REFRESH",
+   "pt": "Refrescar",
+   "fonte": "TCG antigo",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "GRUDGE",
+   "pt": "Mágoa",
+   "fonte": "criado",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "ARM THRUST",
+   "pt": "Golpe Braço",
+   "fonte": "TCG antigo",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "✂ de: Golpe de Braço"
+  },
+  {
+   "en": "CAMOUFLAGE",
+   "pt": "Camuflagem",
+   "fonte": "criado",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "TAIL GLOW",
+   "pt": "Cauda Brilho",
+   "fonte": "criado",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "LUSTER PURGE",
+   "pt": "P. Esplendor",
+   "fonte": "GO+TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "✂ de: Purga de Esplendor"
+  },
+  {
+   "en": "MIST BALL",
+   "pt": "Bola Névoa",
+   "fonte": "GO+TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "✂ de: Bola de Névoa"
+  },
+  {
+   "en": "FEATHERDANCE",
+   "pt": "Dança Penas",
+   "fonte": "GO+TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "✂ de: Dança das Penas"
+  },
+  {
+   "en": "TEETER DANCE",
+   "pt": "Dança Tonta",
+   "fonte": "criado",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "BLAZE KICK",
+   "pt": "C. Labareda",
+   "fonte": "GO+TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "✂ de: Chute Labareda"
+  },
+  {
+   "en": "ICE BALL",
+   "pt": "Bola de Gelo",
+   "fonte": "TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "NEEDLE ARM",
+   "pt": "Braço Agulha",
+   "fonte": "TCG antigo",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "✂ de: Braço de Agulha"
+  },
+  {
+   "en": "SLACK OFF",
+   "pt": "Relaxar",
+   "fonte": "TCG antigo",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "HYPER VOICE",
+   "pt": "Hipervoz",
+   "fonte": "TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "POISON FANG",
+   "pt": "P. Venenosa",
+   "fonte": "GO+TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "✂ de: Presa Venenosa"
+  },
+  {
+   "en": "CRUSH CLAW",
+   "pt": "Garra Esmag.",
+   "fonte": "GO",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "✂ de: Garra Esmagadora"
+  },
+  {
+   "en": "METEOR MASH",
+   "pt": "M. Esmagador",
+   "fonte": "GO+TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "✂ de: Meteoro Esmagador"
+  },
+  {
+   "en": "ASTONISH",
+   "pt": "Abismar",
+   "fonte": "GO+TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "WEATHER BALL",
+   "pt": "E. Climática",
+   "fonte": "GO",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "✂ de: Esfera Climática"
+  },
+  {
+   "en": "AROMATHERAPY",
+   "pt": "Aromaterapia",
+   "fonte": "TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "FAKE TEARS",
+   "pt": "Choro Falso",
+   "fonte": "criado",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "AIR CUTTER",
+   "pt": "Cortador Ar",
+   "fonte": "GO+TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "✂ de: Cortador de Ar"
+  },
+  {
+   "en": "ODOR SLEUTH",
+   "pt": "Farejador",
+   "fonte": "TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "SILVER WIND",
+   "pt": "V. Prateado",
+   "fonte": "GO",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "✂ de: Vento Prateado"
+  },
+  {
+   "en": "METAL SOUND",
+   "pt": "Som de Metal",
+   "fonte": "GO+TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "GRASSWHISTLE",
+   "pt": "Assobio Erva",
+   "fonte": "criado",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "TICKLE",
+   "pt": "Cócegas",
+   "fonte": "TCG antigo",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "COSMIC POWER",
+   "pt": "P. Cósmico",
+   "fonte": "criado",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "✂ de: Poder Cósmico"
+  },
+  {
+   "en": "WATER SPOUT",
+   "pt": "Jorro d'Água",
+   "fonte": "criado",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "no padrão de Jato d'Água"
+  },
+  {
+   "en": "SIGNAL BEAM",
+   "pt": "Feixe Sinal.",
+   "fonte": "GO+TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "✂ de: Feixe Sinalizador"
+  },
+  {
+   "en": "SHADOW PUNCH",
+   "pt": "Soco Sombrio",
+   "fonte": "GO+TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "EXTRASENSORY",
+   "pt": "Extrassens.",
+   "fonte": "GO+TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "✂ de: Extrassensorial"
+  },
+  {
+   "en": "SKY UPPERCUT",
+   "pt": "Dir. Celeste",
+   "fonte": "TCG antigo",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "✂ de: Direto Celeste"
+  },
+  {
+   "en": "SAND TOMB",
+   "pt": "Fosso Areia",
+   "fonte": "GO+TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "✂ de: Fosso de Areia"
+  },
+  {
+   "en": "SHEER COLD",
+   "pt": "Frio Extremo",
+   "fonte": "TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "MUDDY WATER",
+   "pt": "Á. Barrenta",
+   "fonte": "GO+TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "✂ de: Água Barrenta"
+  },
+  {
+   "en": "ICICLE SPEAR",
+   "pt": "L. Congelada",
+   "fonte": "GO",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "✂ de: Lança Congelada"
+  },
+  {
+   "en": "IRON DEFENSE",
+   "pt": "Defesa Ferro",
+   "fonte": "TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "✂ de: Defesa de Ferro"
+  },
+  {
+   "en": "BLOCK",
+   "pt": "Bloquear",
+   "fonte": "TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "HOWL",
+   "pt": "Uivo",
+   "fonte": "criado",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "BOUNCE",
+   "pt": "Ricochete",
+   "fonte": "TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "POISON TAIL",
+   "pt": "Cauda Venen.",
+   "fonte": "criado",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "✂ de: Cauda Venenosa"
+  },
+  {
+   "en": "COVET",
+   "pt": "Cobiça",
+   "fonte": "TCG antigo",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "VOLT TACKLE",
+   "pt": "Inv. Trovão",
+   "fonte": "GO+TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "✂ de: Investida Trovão"
+  },
+  {
+   "en": "MAGICAL LEAF",
+   "pt": "Folha Mágica",
+   "fonte": "GO+TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "WATER SPORT",
+   "pt": "Aguaceiro",
+   "fonte": "criado",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "par de Lamaçal (MUD SPORT)"
+  },
+  {
+   "en": "LEAF BLADE",
+   "pt": "Lâmina Folha",
+   "fonte": "GO+TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "✂ de: Lâmina de Folha"
+  },
+  {
+   "en": "DRAGON DANCE",
+   "pt": "Dança Dragão",
+   "fonte": "TCG antigo",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "✂ de: Dança do Dragão"
+  },
+  {
+   "en": "DOOM DESIRE",
+   "pt": "Desejo Cruel",
+   "fonte": "GO+TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "PSYCHO BOOST",
+   "pt": "I. Psíquico",
+   "fonte": "GO+TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "✂ de: Impulso Psíquico"
+  },
+  {
+   "en": "SHOAL SALT",
+   "pt": "Sal do Baixio",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "SHOAL SHELL",
+   "pt": "Concha Baixio",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "✂ de: Concha do Baixio"
+  },
+  {
+   "en": "RED SHARD",
+   "pt": "Caco Vermelho",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "no padrão de Caco Estrela (GO)"
+  },
+  {
+   "en": "BLUE SHARD",
+   "pt": "Caco Azul",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "YELLOW SHARD",
+   "pt": "Caco Amarelo",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "GREEN SHARD",
+   "pt": "Caco Verde",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "ORANGE MAIL",
+   "pt": "Carta Laranja",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "MAIL = Carta (glossário §2.10)"
+  },
+  {
+   "en": "HARBOR MAIL",
+   "pt": "Carta Porto",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "GLITTER MAIL",
+   "pt": "Carta Brilho",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "MECH MAIL",
+   "pt": "Carta Máquina",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "WOOD MAIL",
+   "pt": "Carta Madeira",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "WAVE MAIL",
+   "pt": "Carta Onda",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "BEAD MAIL",
+   "pt": "Carta Contas",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "SHADOW MAIL",
+   "pt": "Carta Sombra",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "TROPIC MAIL",
+   "pt": "Carta Trópico",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "DREAM MAIL",
+   "pt": "Carta Sonho",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "FAB MAIL",
+   "pt": "Carta Chique",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "RETRO MAIL",
+   "pt": "Carta Retrô",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "SILVERPOWDER",
+   "pt": "Pó Prateado",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "SOUL DEW",
+   "pt": "Orvalho Alma",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "✂ de: Orvalho da Alma"
+  },
+  {
+   "en": "SHELL BELL",
+   "pt": "Sino Concha",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "SEA INCENSE",
+   "pt": "Incenso Mar",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "Incenso (GO); ✂ de: Incenso do Mar"
+  },
+  {
+   "en": "LAX INCENSE",
+   "pt": "Incenso Leve",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "Incenso (GO)"
+  },
+  {
+   "en": "METAL POWDER",
+   "pt": "Pó Metálico",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "THICK CLUB",
+   "pt": "Bastão Grosso",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "STICK",
+   "pt": "Alho-poró",
+   "fonte": "TCG",
+   "categoria": "item",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "o nome atual em inglês é LEEK (TCG: Leek -> Alho-poró)"
+  },
+  {
+   "en": "RED SCARF",
+   "pt": "Lenço Verm.",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "✂ de: Lenço Vermelho (como Flauta Verm.)"
+  },
+  {
+   "en": "BLUE SCARF",
+   "pt": "Lenço Azul",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "PINK SCARF",
+   "pt": "Lenço Rosa",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "GREEN SCARF",
+   "pt": "Lenço Verde",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "YELLOW SCARF",
+   "pt": "Lenço Amarelo",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "CONTEST PASS",
+   "pt": "Passe Torneio",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "WAILMER PAIL",
+   "pt": "Balde Wailmer",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "DEVON GOODS",
+   "pt": "Peças Devon",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "SOOT SACK",
+   "pt": "Saco Fuligem",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "BASEMENT KEY",
+   "pt": "Chave Porão",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "{POKEBLOCK} CASE",
+   "pt": "Porta-blocos",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": false,
+   "frente": "Task 2",
+   "obs": "no padrão de Porta-frutas (BERRY POUCH)"
+  },
+  {
+   "en": "LETTER",
+   "pt": "Envelope",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "\"Carta\" já é MAIL"
+  },
+  {
+   "en": "EON TICKET",
+   "pt": "Bilhete Eon",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "RED ORB",
+   "pt": "Orbe Vermelho",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "Orbe (TCG: Orbe Tera)"
+  },
+  {
+   "en": "BLUE ORB",
+   "pt": "Orbe Azul",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "SCANNER",
+   "pt": "Escâner",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "GO-GOGGLES",
+   "pt": "Óculos Areia",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "METEORITE",
+   "pt": "Meteorito",
+   "fonte": "GO",
+   "categoria": "item",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "RM. 1 KEY",
+   "pt": "Chave Sala 1",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "RM. 2 KEY",
+   "pt": "Chave Sala 2",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "RM. 4 KEY",
+   "pt": "Chave Sala 4",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "RM. 6 KEY",
+   "pt": "Chave Sala 6",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true,
+   "frente": "Task 2"
+  },
+  {
+   "en": "STORAGE KEY",
+   "pt": "Chave Depós.",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "✂ de: Chave do Depósito"
+  },
+  {
+   "en": "ROOT FOSSIL",
+   "pt": "Fóssil Raiz",
+   "fonte": "TCG",
+   "categoria": "item",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "TCG: Fóssil Raiz Arcaico"
+  },
+  {
+   "en": "CLAW FOSSIL",
+   "pt": "Fóssil Garra",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "no padrão de Fóssil Raiz"
+  },
+  {
+   "en": "DEVON SCOPE",
+   "pt": "Visor Devon",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "no padrão de Visor Silph"
+  },
+  {
+   "en": "TM01",
+   "pt": "MT01",
+   "fonte": "GO",
+   "categoria": "item",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "MT = Máquina Técnica (GO \"MTs\"), glossário §2.7"
+  },
+  {
+   "en": "TM02",
+   "pt": "MT02",
+   "fonte": "GO",
+   "categoria": "item",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "MT = Máquina Técnica (GO \"MTs\"), glossário §2.7"
+  },
+  {
+   "en": "TM03",
+   "pt": "MT03",
+   "fonte": "GO",
+   "categoria": "item",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "MT = Máquina Técnica (GO \"MTs\"), glossário §2.7"
+  },
+  {
+   "en": "TM04",
+   "pt": "MT04",
+   "fonte": "GO",
+   "categoria": "item",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "MT = Máquina Técnica (GO \"MTs\"), glossário §2.7"
+  },
+  {
+   "en": "TM05",
+   "pt": "MT05",
+   "fonte": "GO",
+   "categoria": "item",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "MT = Máquina Técnica (GO \"MTs\"), glossário §2.7"
+  },
+  {
+   "en": "TM06",
+   "pt": "MT06",
+   "fonte": "GO",
+   "categoria": "item",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "MT = Máquina Técnica (GO \"MTs\"), glossário §2.7"
+  },
+  {
+   "en": "TM07",
+   "pt": "MT07",
+   "fonte": "GO",
+   "categoria": "item",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "MT = Máquina Técnica (GO \"MTs\"), glossário §2.7"
+  },
+  {
+   "en": "TM08",
+   "pt": "MT08",
+   "fonte": "GO",
+   "categoria": "item",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "MT = Máquina Técnica (GO \"MTs\"), glossário §2.7"
+  },
+  {
+   "en": "TM09",
+   "pt": "MT09",
+   "fonte": "GO",
+   "categoria": "item",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "MT = Máquina Técnica (GO \"MTs\"), glossário §2.7"
+  },
+  {
+   "en": "TM10",
+   "pt": "MT10",
+   "fonte": "GO",
+   "categoria": "item",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "MT = Máquina Técnica (GO \"MTs\"), glossário §2.7"
+  },
+  {
+   "en": "TM11",
+   "pt": "MT11",
+   "fonte": "GO",
+   "categoria": "item",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "MT = Máquina Técnica (GO \"MTs\"), glossário §2.7"
+  },
+  {
+   "en": "TM12",
+   "pt": "MT12",
+   "fonte": "GO",
+   "categoria": "item",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "MT = Máquina Técnica (GO \"MTs\"), glossário §2.7"
+  },
+  {
+   "en": "TM13",
+   "pt": "MT13",
+   "fonte": "GO",
+   "categoria": "item",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "MT = Máquina Técnica (GO \"MTs\"), glossário §2.7"
+  },
+  {
+   "en": "TM14",
+   "pt": "MT14",
+   "fonte": "GO",
+   "categoria": "item",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "MT = Máquina Técnica (GO \"MTs\"), glossário §2.7"
+  },
+  {
+   "en": "TM15",
+   "pt": "MT15",
+   "fonte": "GO",
+   "categoria": "item",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "MT = Máquina Técnica (GO \"MTs\"), glossário §2.7"
+  },
+  {
+   "en": "TM16",
+   "pt": "MT16",
+   "fonte": "GO",
+   "categoria": "item",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "MT = Máquina Técnica (GO \"MTs\"), glossário §2.7"
+  },
+  {
+   "en": "TM17",
+   "pt": "MT17",
+   "fonte": "GO",
+   "categoria": "item",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "MT = Máquina Técnica (GO \"MTs\"), glossário §2.7"
+  },
+  {
+   "en": "TM18",
+   "pt": "MT18",
+   "fonte": "GO",
+   "categoria": "item",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "MT = Máquina Técnica (GO \"MTs\"), glossário §2.7"
+  },
+  {
+   "en": "TM19",
+   "pt": "MT19",
+   "fonte": "GO",
+   "categoria": "item",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "MT = Máquina Técnica (GO \"MTs\"), glossário §2.7"
+  },
+  {
+   "en": "TM20",
+   "pt": "MT20",
+   "fonte": "GO",
+   "categoria": "item",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "MT = Máquina Técnica (GO \"MTs\"), glossário §2.7"
+  },
+  {
+   "en": "TM21",
+   "pt": "MT21",
+   "fonte": "GO",
+   "categoria": "item",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "MT = Máquina Técnica (GO \"MTs\"), glossário §2.7"
+  },
+  {
+   "en": "TM22",
+   "pt": "MT22",
+   "fonte": "GO",
+   "categoria": "item",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "MT = Máquina Técnica (GO \"MTs\"), glossário §2.7"
+  },
+  {
+   "en": "TM23",
+   "pt": "MT23",
+   "fonte": "GO",
+   "categoria": "item",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "MT = Máquina Técnica (GO \"MTs\"), glossário §2.7"
+  },
+  {
+   "en": "TM24",
+   "pt": "MT24",
+   "fonte": "GO",
+   "categoria": "item",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "MT = Máquina Técnica (GO \"MTs\"), glossário §2.7"
+  },
+  {
+   "en": "TM25",
+   "pt": "MT25",
+   "fonte": "GO",
+   "categoria": "item",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "MT = Máquina Técnica (GO \"MTs\"), glossário §2.7"
+  },
+  {
+   "en": "TM26",
+   "pt": "MT26",
+   "fonte": "GO",
+   "categoria": "item",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "MT = Máquina Técnica (GO \"MTs\"), glossário §2.7"
+  },
+  {
+   "en": "TM27",
+   "pt": "MT27",
+   "fonte": "GO",
+   "categoria": "item",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "MT = Máquina Técnica (GO \"MTs\"), glossário §2.7"
+  },
+  {
+   "en": "TM28",
+   "pt": "MT28",
+   "fonte": "GO",
+   "categoria": "item",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "MT = Máquina Técnica (GO \"MTs\"), glossário §2.7"
+  },
+  {
+   "en": "TM29",
+   "pt": "MT29",
+   "fonte": "GO",
+   "categoria": "item",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "MT = Máquina Técnica (GO \"MTs\"), glossário §2.7"
+  },
+  {
+   "en": "TM30",
+   "pt": "MT30",
+   "fonte": "GO",
+   "categoria": "item",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "MT = Máquina Técnica (GO \"MTs\"), glossário §2.7"
+  },
+  {
+   "en": "TM31",
+   "pt": "MT31",
+   "fonte": "GO",
+   "categoria": "item",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "MT = Máquina Técnica (GO \"MTs\"), glossário §2.7"
+  },
+  {
+   "en": "TM32",
+   "pt": "MT32",
+   "fonte": "GO",
+   "categoria": "item",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "MT = Máquina Técnica (GO \"MTs\"), glossário §2.7"
+  },
+  {
+   "en": "TM33",
+   "pt": "MT33",
+   "fonte": "GO",
+   "categoria": "item",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "MT = Máquina Técnica (GO \"MTs\"), glossário §2.7"
+  },
+  {
+   "en": "TM34",
+   "pt": "MT34",
+   "fonte": "GO",
+   "categoria": "item",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "MT = Máquina Técnica (GO \"MTs\"), glossário §2.7"
+  },
+  {
+   "en": "TM35",
+   "pt": "MT35",
+   "fonte": "GO",
+   "categoria": "item",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "MT = Máquina Técnica (GO \"MTs\"), glossário §2.7"
+  },
+  {
+   "en": "TM36",
+   "pt": "MT36",
+   "fonte": "GO",
+   "categoria": "item",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "MT = Máquina Técnica (GO \"MTs\"), glossário §2.7"
+  },
+  {
+   "en": "TM37",
+   "pt": "MT37",
+   "fonte": "GO",
+   "categoria": "item",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "MT = Máquina Técnica (GO \"MTs\"), glossário §2.7"
+  },
+  {
+   "en": "TM38",
+   "pt": "MT38",
+   "fonte": "GO",
+   "categoria": "item",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "MT = Máquina Técnica (GO \"MTs\"), glossário §2.7"
+  },
+  {
+   "en": "TM39",
+   "pt": "MT39",
+   "fonte": "GO",
+   "categoria": "item",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "MT = Máquina Técnica (GO \"MTs\"), glossário §2.7"
+  },
+  {
+   "en": "TM40",
+   "pt": "MT40",
+   "fonte": "GO",
+   "categoria": "item",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "MT = Máquina Técnica (GO \"MTs\"), glossário §2.7"
+  },
+  {
+   "en": "TM41",
+   "pt": "MT41",
+   "fonte": "GO",
+   "categoria": "item",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "MT = Máquina Técnica (GO \"MTs\"), glossário §2.7"
+  },
+  {
+   "en": "TM42",
+   "pt": "MT42",
+   "fonte": "GO",
+   "categoria": "item",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "MT = Máquina Técnica (GO \"MTs\"), glossário §2.7"
+  },
+  {
+   "en": "TM43",
+   "pt": "MT43",
+   "fonte": "GO",
+   "categoria": "item",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "MT = Máquina Técnica (GO \"MTs\"), glossário §2.7"
+  },
+  {
+   "en": "TM44",
+   "pt": "MT44",
+   "fonte": "GO",
+   "categoria": "item",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "MT = Máquina Técnica (GO \"MTs\"), glossário §2.7"
+  },
+  {
+   "en": "TM45",
+   "pt": "MT45",
+   "fonte": "GO",
+   "categoria": "item",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "MT = Máquina Técnica (GO \"MTs\"), glossário §2.7"
+  },
+  {
+   "en": "TM46",
+   "pt": "MT46",
+   "fonte": "GO",
+   "categoria": "item",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "MT = Máquina Técnica (GO \"MTs\"), glossário §2.7"
+  },
+  {
+   "en": "TM47",
+   "pt": "MT47",
+   "fonte": "GO",
+   "categoria": "item",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "MT = Máquina Técnica (GO \"MTs\"), glossário §2.7"
+  },
+  {
+   "en": "TM48",
+   "pt": "MT48",
+   "fonte": "GO",
+   "categoria": "item",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "MT = Máquina Técnica (GO \"MTs\"), glossário §2.7"
+  },
+  {
+   "en": "TM49",
+   "pt": "MT49",
+   "fonte": "GO",
+   "categoria": "item",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "MT = Máquina Técnica (GO \"MTs\"), glossário §2.7"
+  },
+  {
+   "en": "TM50",
+   "pt": "MT50",
+   "fonte": "GO",
+   "categoria": "item",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "MT = Máquina Técnica (GO \"MTs\"), glossário §2.7"
+  },
+  {
+   "en": "HM01",
+   "pt": "MO01",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "MO = Máquina Oculta, glossário §2.7"
+  },
+  {
+   "en": "HM02",
+   "pt": "MO02",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "MO = Máquina Oculta, glossário §2.7"
+  },
+  {
+   "en": "HM03",
+   "pt": "MO03",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "MO = Máquina Oculta, glossário §2.7"
+  },
+  {
+   "en": "HM04",
+   "pt": "MO04",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "MO = Máquina Oculta, glossário §2.7"
+  },
+  {
+   "en": "HM05",
+   "pt": "MO05",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "MO = Máquina Oculta, glossário §2.7"
+  },
+  {
+   "en": "HM06",
+   "pt": "MO06",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "MO = Máquina Oculta, glossário §2.7"
+  },
+  {
+   "en": "HM07",
+   "pt": "MO07",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "MO = Máquina Oculta, glossário §2.7"
+  },
+  {
+   "en": "HM08",
+   "pt": "MO08",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "MO = Máquina Oculta, glossário §2.7"
+  },
+  {
+   "en": "AQUA LEADER",
+   "pt": "Líder Aqua",
+   "fonte": "criado",
+   "categoria": "personagem",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "classe só do R/S/E"
+  },
+  {
+   "en": "TEAM AQUA",
+   "pt": "Equipe Aqua",
+   "fonte": "criado",
+   "categoria": "personagem",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "classe só do R/S/E"
+  },
+  {
+   "en": "INTERVIEWER",
+   "pt": "Repórter",
+   "fonte": "criado",
+   "categoria": "personagem",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "classe só do R/S/E"
+  },
+  {
+   "en": "HEX MANIAC",
+   "pt": "Feiticeira",
+   "fonte": "criado",
+   "categoria": "personagem",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "classe só do R/S/E"
+  },
+  {
+   "en": "RICH BOY",
+   "pt": "Menino Rico",
+   "fonte": "criado",
+   "categoria": "personagem",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "classe só do R/S/E"
+  },
+  {
+   "en": "GUITARIST",
+   "pt": "Guitarrista",
+   "fonte": "criado",
+   "categoria": "personagem",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "classe só do R/S/E"
+  },
+  {
+   "en": "KINDLER",
+   "pt": "Foguista",
+   "fonte": "criado",
+   "categoria": "personagem",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "classe só do R/S/E"
+  },
+  {
+   "en": "BUG MANIAC",
+   "pt": "Fã de Inseto",
+   "fonte": "criado",
+   "categoria": "personagem",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "classe só do R/S/E"
+  },
+  {
+   "en": "SCHOOL KID",
+   "pt": "Estudante",
+   "fonte": "criado",
+   "categoria": "personagem",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "classe só do R/S/E"
+  },
+  {
+   "en": "SR. AND JR.",
+   "pt": "Pai e Filho",
+   "fonte": "criado",
+   "categoria": "personagem",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "classe só do R/S/E"
+  },
+  {
+   "en": "POKéFAN",
+   "pt": "Pokéfã",
+   "fonte": "criado",
+   "categoria": "personagem",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "classe só do R/S/E"
+  },
+  {
+   "en": "EXPERT",
+   "pt": "Especialista",
+   "fonte": "criado",
+   "categoria": "personagem",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "classe só do R/S/E"
+  },
+  {
+   "en": "TRIATHLETE",
+   "pt": "Triatleta",
+   "fonte": "criado",
+   "categoria": "personagem",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "classe só do R/S/E"
+  },
+  {
+   "en": "DRAGON TAMER",
+   "pt": "Dom. Dragão",
+   "fonte": "criado",
+   "categoria": "personagem",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "✂ de: Domador de Dragão; classe só do R/S/E"
+  },
+  {
+   "en": "NINJA BOY",
+   "pt": "Ninja Mirim",
+   "fonte": "criado",
+   "categoria": "personagem",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "classe só do R/S/E"
+  },
+  {
+   "en": "BATTLE GIRL",
+   "pt": "Garota Luta",
+   "fonte": "criado",
+   "categoria": "personagem",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "classe só do R/S/E"
+  },
+  {
+   "en": "PARASOL LADY",
+   "pt": "Dama Parasol",
+   "fonte": "criado",
+   "categoria": "personagem",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "classe só do R/S/E"
+  },
+  {
+   "en": "BOARDER",
+   "pt": "Esquiador",
+   "fonte": "criado",
+   "categoria": "personagem",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "classe só do R/S/E"
+  },
+  {
+   "en": "COLLECTOR",
+   "pt": "Colecionador",
+   "fonte": "criado",
+   "categoria": "personagem",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "classe só do R/S/E"
+  },
+  {
+   "en": "MAGMA LEADER",
+   "pt": "Líder Magma",
+   "fonte": "criado",
+   "categoria": "personagem",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "classe só do R/S/E"
+  },
+  {
+   "en": "TEAM MAGMA",
+   "pt": "Equipe Magma",
+   "fonte": "criado",
+   "categoria": "personagem",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "classe só do R/S/E"
+  },
+  {
+   "en": "OLD COUPLE",
+   "pt": "Casal Idoso",
+   "fonte": "criado",
+   "categoria": "personagem",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "classe só do R/S/E"
+  },
+  {
+   "en": "AQUA ADMIN",
+   "pt": "Admin. Aqua",
+   "fonte": "criado",
+   "categoria": "personagem",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "classe só do R/S/E"
+  },
+  {
+   "en": "MAGMA ADMIN",
+   "pt": "Admin. Magma",
+   "fonte": "criado",
+   "categoria": "personagem",
+   "detectar": true,
+   "frente": "Task 2",
+   "obs": "classe só do R/S/E"
   }
  ],
  "proibidos": [

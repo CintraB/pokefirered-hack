@@ -37,14 +37,14 @@ TEST_ELF = REPO_ROOT / "pokefirered_switch_test.elf"
 # Casos fixos (pedido do Cintra): o texto completo, linha a linha
 FIXED = {
     "SPECIES_BULBASAUR": [f"{LV} 16 {ARROW} IVYSAUR"],
-    "SPECIES_EEVEE": [f"THUNDERSTONE {ARROW} JOLTEON",
-                      f"WATER STONE {ARROW} VAPOREON",
-                      f"FIRE STONE {ARROW} FLAREON",
+    "SPECIES_EEVEE": [f"Pedra Trovão {ARROW} JOLTEON",
+                      f"Pedra d'Água {ARROW} VAPOREON",
+                      f"Pedra de Fogo {ARROW} FLAREON",
                       f"Day friendship {ARROW} ESPEON",
                       f"Night friendship {ARROW} UMBREON"],
-    "SPECIES_ONIX": [f"{LV} 37 + METAL COAT {ARROW} STEELIX"],
+    "SPECIES_ONIX": [f"{LV} 37 + Revest. Metal {ARROW} STEELIX"],
     "SPECIES_SLOWPOKE": [f"{LV} 37 {ARROW} SLOWBRO",
-                         f"{LV} 37 + KING'S ROCK {ARROW} SLOWKING"],
+                         f"{LV} 37 + Pedra do Rei {ARROW} SLOWKING"],
     "SPECIES_FEEBAS": [f"Subir nível + Escama Prisma {ARROW} MILOTIC"],
     "SPECIES_TAUROS": ["Does not evolve."],
     "SPECIES_WURMPLE": [f"{LV} 7 (random) {ARROW} SILCOON",
@@ -144,7 +144,7 @@ def test_formatos_de_strings_c_batem_com_o_python():
                           "EVO_TRADE_ITEM")
         param = "ITEM_METAL_COAT" if item else "20"
         level = "37" if method == "EVO_LEVEL_HOLD_ITEM" else param
-        c_line = (t[label].replace("{STR_VAR_1}", level).replace("{STR_VAR_2}", "METAL COAT")
+        c_line = (t[label].replace("{STR_VAR_1}", level).replace("{STR_VAR_2}", "Revest. Metal")
                   .replace("{STR_VAR_3}", "STEELIX"))
         if method in suffixes:
             c_line += t[suffixes[method]]
@@ -234,7 +234,7 @@ def _mini_repo(tmp_path: Path) -> Path:
 def test_checagem_de_texto_reprova_linha_larga_demais(tmp_path):
     repo = _mini_repo(tmp_path)
     items = repo / "src" / "data" / "items.json"
-    items.write_text(items.read_text(encoding="utf-8").replace('"METAL COAT"', '"METAL COAT XXXXXXXXXXXX"'),
+    items.write_text(items.read_text(encoding="utf-8").replace('"Revest. Metal"', '"Revest. Metal XXXXXXXXXXXX"'),
                      encoding="utf-8")
     results = _evolution_page_results(repo)
     assert results and all(r.status == "falha" and r.name == "texto/largura" for r in results)
