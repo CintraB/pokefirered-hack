@@ -1,0 +1,6541 @@
+{
+ "_formato": "termos[]: en = termo como o jogo inglês escreve; pt = termo do glossário (como vai na tela); fonte = GO/TCG/TCG antigo/anime/jogo/criado; categoria = tipo, status, natureza, batalha, habilidade, golpe, item, lugar, personagem ou interface; detectar = o en é procurado nos textos traduzidos (regra glossario); obs/completo/tela = colunas do glossário. proibidos[]: variante que não pode aparecer em texto traduzido, com o termo a usar. Termo novo de uma frente: acrescentar em termos com fonte \"criado\" e \"frente\": \"<nome>\".",
+ "_fonte": "docs/superpowers/specs/2026-10-18-traducao-glossario.md (aprovado em 18/10; decisões da §6: GO -> TCG -> criado, PS/PE, caixa mista, golpe longo abreviado com ponto, GARY) via python3 -m esteira.glossario gerar",
+ "termos": [
+  {
+   "en": "NORMAL",
+   "pt": "Normal",
+   "fonte": "GO",
+   "categoria": "tipo",
+   "detectar": true
+  },
+  {
+   "en": "FIGHT",
+   "pt": "Lutad.",
+   "fonte": "GO",
+   "categoria": "tipo",
+   "detectar": true,
+   "obs": "✂ 7 letras",
+   "completo": "Lutador"
+  },
+  {
+   "en": "FLYING",
+   "pt": "Voador",
+   "fonte": "GO",
+   "categoria": "tipo",
+   "detectar": true
+  },
+  {
+   "en": "POISON",
+   "pt": "Venen.",
+   "fonte": "GO",
+   "categoria": "tipo",
+   "detectar": true,
+   "obs": "✂ 8 letras",
+   "completo": "Venenoso"
+  },
+  {
+   "en": "GROUND",
+   "pt": "Terra",
+   "fonte": "GO",
+   "categoria": "tipo",
+   "detectar": true,
+   "obs": "✂ 9 letras; \"Terra\" lê melhor que \"Terres\"",
+   "completo": "Terrestre"
+  },
+  {
+   "en": "ROCK",
+   "pt": "Pedra",
+   "fonte": "GO",
+   "categoria": "tipo",
+   "detectar": true
+  },
+  {
+   "en": "BUG",
+   "pt": "Inseto",
+   "fonte": "GO",
+   "categoria": "tipo",
+   "detectar": true
+  },
+  {
+   "en": "GHOST",
+   "pt": "Fantas",
+   "fonte": "GO",
+   "categoria": "tipo",
+   "detectar": true,
+   "obs": "✂ 8 letras",
+   "completo": "Fantasma"
+  },
+  {
+   "en": "STEEL",
+   "pt": "Aço",
+   "fonte": "GO",
+   "categoria": "tipo",
+   "detectar": true
+  },
+  {
+   "en": "???",
+   "pt": "???",
+   "fonte": "criado",
+   "categoria": "tipo",
+   "detectar": false,
+   "obs": "mantém"
+  },
+  {
+   "en": "FIRE",
+   "pt": "Fogo",
+   "fonte": "GO",
+   "categoria": "tipo",
+   "detectar": true
+  },
+  {
+   "en": "WATER",
+   "pt": "Água",
+   "fonte": "GO",
+   "categoria": "tipo",
+   "detectar": true
+  },
+  {
+   "en": "GRASS",
+   "pt": "Planta",
+   "fonte": "GO",
+   "categoria": "tipo",
+   "detectar": true
+  },
+  {
+   "en": "ELECTR",
+   "pt": "Elétr.",
+   "fonte": "GO",
+   "categoria": "tipo",
+   "detectar": true,
+   "obs": "✂ 8 letras",
+   "completo": "Elétrico"
+  },
+  {
+   "en": "PSYCHC",
+   "pt": "Psíq.",
+   "fonte": "GO",
+   "categoria": "tipo",
+   "detectar": true,
+   "obs": "✂ 8 letras",
+   "completo": "Psíquico"
+  },
+  {
+   "en": "ICE",
+   "pt": "Gelo",
+   "fonte": "GO",
+   "categoria": "tipo",
+   "detectar": true
+  },
+  {
+   "en": "DRAGON",
+   "pt": "Dragão",
+   "fonte": "GO",
+   "categoria": "tipo",
+   "detectar": true,
+   "obs": "precisa do glifo ã"
+  },
+  {
+   "en": "DARK",
+   "pt": "Sombr.",
+   "fonte": "GO",
+   "categoria": "tipo",
+   "detectar": true,
+   "obs": "✂ 7 letras",
+   "completo": "Sombrio"
+  },
+  {
+   "en": "paralysis",
+   "pt": "paralisia",
+   "fonte": "TCG",
+   "categoria": "status",
+   "detectar": false
+  },
+  {
+   "en": "paralyzed",
+   "pt": "paralisado",
+   "fonte": "TCG",
+   "categoria": "status",
+   "detectar": false
+  },
+  {
+   "en": "sleep",
+   "pt": "sono",
+   "fonte": "TCG",
+   "categoria": "status",
+   "detectar": false,
+   "obs": "ícone criado"
+  },
+  {
+   "en": "asleep",
+   "pt": "adormecido",
+   "fonte": "TCG",
+   "categoria": "status",
+   "detectar": false,
+   "obs": "ícone criado"
+  },
+  {
+   "en": "poison",
+   "pt": "envenenamento",
+   "fonte": "TCG",
+   "categoria": "status",
+   "detectar": false,
+   "obs": "ícone criado"
+  },
+  {
+   "en": "poisoned",
+   "pt": "envenenado",
+   "fonte": "TCG",
+   "categoria": "status",
+   "detectar": false,
+   "obs": "ícone criado"
+  },
+  {
+   "en": "badly poisoned",
+   "pt": "gravemente envenenado",
+   "fonte": "criado",
+   "categoria": "status",
+   "detectar": false
+  },
+  {
+   "en": "burn",
+   "pt": "queimadura",
+   "fonte": "TCG",
+   "categoria": "status",
+   "detectar": false,
+   "obs": "ícone criado"
+  },
+  {
+   "en": "burned",
+   "pt": "queimado",
+   "fonte": "TCG",
+   "categoria": "status",
+   "detectar": false,
+   "obs": "ícone criado"
+  },
+  {
+   "en": "freeze",
+   "pt": "congelamento",
+   "fonte": "criado",
+   "categoria": "status",
+   "detectar": false,
+   "obs": "ícone criado"
+  },
+  {
+   "en": "frozen",
+   "pt": "congelado",
+   "fonte": "criado",
+   "categoria": "status",
+   "detectar": false,
+   "obs": "ícone criado"
+  },
+  {
+   "en": "confusion",
+   "pt": "confusão",
+   "fonte": "TCG",
+   "categoria": "status",
+   "detectar": false
+  },
+  {
+   "en": "confused",
+   "pt": "confuso",
+   "fonte": "TCG",
+   "categoria": "status",
+   "detectar": false
+  },
+  {
+   "en": "attraction",
+   "pt": "paixão",
+   "fonte": "criado",
+   "categoria": "status",
+   "detectar": false
+  },
+  {
+   "en": "in love",
+   "pt": "apaixonado",
+   "fonte": "criado",
+   "categoria": "status",
+   "detectar": false
+  },
+  {
+   "en": "fainted",
+   "pt": "desmaiado",
+   "fonte": "GO",
+   "categoria": "status",
+   "detectar": false,
+   "obs": "ícone criado"
+  },
+  {
+   "en": "HARDY",
+   "pt": "Forte",
+   "fonte": "criado",
+   "categoria": "natureza",
+   "detectar": true
+  },
+  {
+   "en": "JOLLY",
+   "pt": "Alegre",
+   "fonte": "criado",
+   "categoria": "natureza",
+   "detectar": true
+  },
+  {
+   "en": "LONELY",
+   "pt": "Solitária",
+   "fonte": "criado",
+   "categoria": "natureza",
+   "detectar": true
+  },
+  {
+   "en": "NAIVE",
+   "pt": "Ingênua",
+   "fonte": "criado",
+   "categoria": "natureza",
+   "detectar": true
+  },
+  {
+   "en": "BRAVE",
+   "pt": "Corajosa",
+   "fonte": "criado",
+   "categoria": "natureza",
+   "detectar": true
+  },
+  {
+   "en": "MODEST",
+   "pt": "Modesta",
+   "fonte": "criado",
+   "categoria": "natureza",
+   "detectar": true
+  },
+  {
+   "en": "ADAMANT",
+   "pt": "Firme",
+   "fonte": "criado",
+   "categoria": "natureza",
+   "detectar": true
+  },
+  {
+   "en": "MILD",
+   "pt": "Suave",
+   "fonte": "criado",
+   "categoria": "natureza",
+   "detectar": true
+  },
+  {
+   "en": "NAUGHTY",
+   "pt": "Travessa",
+   "fonte": "criado",
+   "categoria": "natureza",
+   "detectar": true
+  },
+  {
+   "en": "QUIET",
+   "pt": "Quieta",
+   "fonte": "criado",
+   "categoria": "natureza",
+   "detectar": true
+  },
+  {
+   "en": "BOLD",
+   "pt": "Ousada",
+   "fonte": "criado",
+   "categoria": "natureza",
+   "detectar": true
+  },
+  {
+   "en": "BASHFUL",
+   "pt": "Acanhada",
+   "fonte": "criado",
+   "categoria": "natureza",
+   "detectar": true
+  },
+  {
+   "en": "DOCILE",
+   "pt": "Dócil",
+   "fonte": "criado",
+   "categoria": "natureza",
+   "detectar": true
+  },
+  {
+   "en": "RASH",
+   "pt": "Imprudente",
+   "fonte": "criado",
+   "categoria": "natureza",
+   "detectar": true
+  },
+  {
+   "en": "RELAXED",
+   "pt": "Relaxada",
+   "fonte": "criado",
+   "categoria": "natureza",
+   "detectar": true
+  },
+  {
+   "en": "CALM",
+   "pt": "Calma",
+   "fonte": "criado",
+   "categoria": "natureza",
+   "detectar": true
+  },
+  {
+   "en": "IMPISH",
+   "pt": "Marota",
+   "fonte": "criado",
+   "categoria": "natureza",
+   "detectar": true
+  },
+  {
+   "en": "GENTLE",
+   "pt": "Gentil",
+   "fonte": "criado",
+   "categoria": "natureza",
+   "detectar": true
+  },
+  {
+   "en": "LAX",
+   "pt": "Descontraída",
+   "fonte": "criado",
+   "categoria": "natureza",
+   "detectar": true
+  },
+  {
+   "en": "SASSY",
+   "pt": "Atrevida",
+   "fonte": "criado",
+   "categoria": "natureza",
+   "detectar": true
+  },
+  {
+   "en": "TIMID",
+   "pt": "Tímida",
+   "fonte": "criado",
+   "categoria": "natureza",
+   "detectar": true
+  },
+  {
+   "en": "CAREFUL",
+   "pt": "Cuidadosa",
+   "fonte": "criado",
+   "categoria": "natureza",
+   "detectar": true
+  },
+  {
+   "en": "HASTY",
+   "pt": "Apressada",
+   "fonte": "criado",
+   "categoria": "natureza",
+   "detectar": true
+  },
+  {
+   "en": "QUIRKY",
+   "pt": "Excêntrica",
+   "fonte": "criado",
+   "categoria": "natureza",
+   "detectar": true
+  },
+  {
+   "en": "SERIOUS",
+   "pt": "Séria",
+   "fonte": "criado",
+   "categoria": "natureza",
+   "detectar": true
+  },
+  {
+   "en": "HP",
+   "pt": "PS",
+   "fonte": "GO+TCG",
+   "categoria": "batalha",
+   "detectar": true,
+   "obs": "ver dúvida 2",
+   "completo": "Pontos de Saúde"
+  },
+  {
+   "en": "ATTACK",
+   "pt": "Ataque",
+   "fonte": "GO",
+   "categoria": "batalha",
+   "detectar": true
+  },
+  {
+   "en": "DEFENSE",
+   "pt": "Defesa",
+   "fonte": "GO",
+   "categoria": "batalha",
+   "detectar": true
+  },
+  {
+   "en": "SP. ATK",
+   "pt": "Atq. Esp.",
+   "fonte": "criado",
+   "categoria": "batalha",
+   "detectar": true,
+   "obs": "completo: Ataque Especial"
+  },
+  {
+   "en": "SP. DEF",
+   "pt": "Def. Esp.",
+   "fonte": "criado",
+   "categoria": "batalha",
+   "detectar": true,
+   "obs": "completo: Defesa Especial"
+  },
+  {
+   "en": "SPEED",
+   "pt": "Velocidade",
+   "fonte": "GO",
+   "categoria": "batalha",
+   "detectar": true
+  },
+  {
+   "en": "accuracy",
+   "pt": "precisão",
+   "fonte": "criado",
+   "categoria": "batalha",
+   "detectar": false
+  },
+  {
+   "en": "evasiveness",
+   "pt": "evasão",
+   "fonte": "criado",
+   "categoria": "batalha",
+   "detectar": false
+  },
+  {
+   "en": "EXP. POINTS",
+   "pt": "PE",
+   "fonte": "GO (PE)",
+   "categoria": "batalha",
+   "detectar": true,
+   "obs": "GO usa \"PE\" para XP; ver dúvida 2"
+  },
+  {
+   "en": "Lv.",
+   "pt": "Nv.",
+   "fonte": "GO (Nível)",
+   "categoria": "batalha",
+   "detectar": false,
+   "obs": "`{LV}` é glifo, precisa de glifo \"Nv\""
+  },
+  {
+   "en": "level",
+   "pt": "nível",
+   "fonte": "GO (Nível)",
+   "categoria": "batalha",
+   "detectar": false,
+   "obs": "`{LV}` é glifo, precisa de glifo \"Nv\""
+  },
+  {
+   "en": "PP",
+   "pt": "PP",
+   "fonte": "criado",
+   "categoria": "batalha",
+   "detectar": false,
+   "obs": "sigla mantida",
+   "completo": "Pontos de Poder"
+  },
+  {
+   "en": "move",
+   "pt": "golpe",
+   "fonte": "anime",
+   "categoria": "batalha",
+   "detectar": false,
+   "obs": "o GO diz \"ataque\", que colide com o atributo Ataque"
+  },
+  {
+   "en": "ability",
+   "pt": "Habilidade",
+   "fonte": "TCG",
+   "categoria": "batalha",
+   "detectar": false
+  },
+  {
+   "en": "nature",
+   "pt": "Natureza",
+   "fonte": "GO",
+   "categoria": "batalha",
+   "detectar": false
+  },
+  {
+   "en": "type",
+   "pt": "Tipo",
+   "fonte": "GO",
+   "categoria": "batalha",
+   "detectar": false
+  },
+  {
+   "en": "weakness",
+   "pt": "fraqueza",
+   "fonte": "TCG",
+   "categoria": "batalha",
+   "detectar": false
+  },
+  {
+   "en": "resistance",
+   "pt": "resistência",
+   "fonte": "TCG",
+   "categoria": "batalha",
+   "detectar": false
+  },
+  {
+   "en": "Wild {X} appeared!",
+   "pt": "{X} selvagem apareceu!",
+   "fonte": "GO",
+   "categoria": "batalha",
+   "detectar": false
+  },
+  {
+   "en": "Go! {X}!",
+   "pt": "Vai, {X}!",
+   "fonte": "criado",
+   "categoria": "batalha",
+   "detectar": false
+  },
+  {
+   "en": "It's super effective!",
+   "pt": "É supereficaz!",
+   "fonte": "GO",
+   "categoria": "batalha",
+   "detectar": false
+  },
+  {
+   "en": "It's not very effective…",
+   "pt": "Não é muito eficaz…",
+   "fonte": "GO",
+   "categoria": "batalha",
+   "detectar": false
+  },
+  {
+   "en": "It doesn't affect {X}…",
+   "pt": "Não afeta {X}…",
+   "fonte": "criado",
+   "categoria": "batalha",
+   "detectar": false
+  },
+  {
+   "en": "A critical hit!",
+   "pt": "Um golpe crítico!",
+   "fonte": "criado",
+   "categoria": "batalha",
+   "detectar": false
+  },
+  {
+   "en": "{X} fainted!",
+   "pt": "{X} desmaiou!",
+   "fonte": "GO",
+   "categoria": "batalha",
+   "detectar": false
+  },
+  {
+   "en": "Got away safely!",
+   "pt": "Você fugiu em segurança!",
+   "fonte": "criado",
+   "categoria": "batalha",
+   "detectar": false
+  },
+  {
+   "en": "{X} gained {N} EXP. Points!",
+   "pt": "{X} ganhou {N} PE!",
+   "fonte": "GO (PE)",
+   "categoria": "batalha",
+   "detectar": false
+  },
+  {
+   "en": "{X} grew to Lv. {N}!",
+   "pt": "{X} subiu para o Nv. {N}!",
+   "fonte": "criado",
+   "categoria": "batalha",
+   "detectar": false
+  },
+  {
+   "en": "FIGHT",
+   "pt": "Lutar",
+   "fonte": "GO (Bolsa)",
+   "categoria": "batalha",
+   "detectar": true,
+   "obs": "Lutar e Fugir criados"
+  },
+  {
+   "en": "BAG",
+   "pt": "Bolsa",
+   "fonte": "GO (Bolsa)",
+   "categoria": "batalha",
+   "detectar": true,
+   "obs": "Lutar e Fugir criados"
+  },
+  {
+   "en": "POKéMON",
+   "pt": "Pokémon",
+   "fonte": "GO (Bolsa)",
+   "categoria": "batalha",
+   "detectar": true,
+   "obs": "Lutar e Fugir criados"
+  },
+  {
+   "en": "RUN",
+   "pt": "Fugir",
+   "fonte": "GO (Bolsa)",
+   "categoria": "batalha",
+   "detectar": true,
+   "obs": "Lutar e Fugir criados"
+  },
+  {
+   "en": "What will {X} do?",
+   "pt": "O que {X} vai fazer?",
+   "fonte": "criado",
+   "categoria": "batalha",
+   "detectar": false
+  },
+  {
+   "en": "weather",
+   "pt": "clima",
+   "fonte": "GO (Clima, Chuvoso, Ensolarado)",
+   "categoria": "batalha",
+   "detectar": false,
+   "obs": "\"granizo\" do TCG"
+  },
+  {
+   "en": "rain",
+   "pt": "chuva",
+   "fonte": "GO (Clima, Chuvoso, Ensolarado)",
+   "categoria": "batalha",
+   "detectar": false,
+   "obs": "\"granizo\" do TCG"
+  },
+  {
+   "en": "sun",
+   "pt": "sol forte",
+   "fonte": "GO (Clima, Chuvoso, Ensolarado)",
+   "categoria": "batalha",
+   "detectar": false,
+   "obs": "\"granizo\" do TCG"
+  },
+  {
+   "en": "sand",
+   "pt": "tempestade de areia",
+   "fonte": "GO (Clima, Chuvoso, Ensolarado)",
+   "categoria": "batalha",
+   "detectar": false,
+   "obs": "\"granizo\" do TCG"
+  },
+  {
+   "en": "hail",
+   "pt": "granizo",
+   "fonte": "GO (Clima, Chuvoso, Ensolarado)",
+   "categoria": "batalha",
+   "detectar": false,
+   "obs": "\"granizo\" do TCG"
+  },
+  {
+   "en": "shiny",
+   "pt": "brilhante",
+   "fonte": "GO",
+   "categoria": "batalha",
+   "detectar": false,
+   "obs": "já usado no Hack 7 (Amuleto Brilhante)"
+  },
+  {
+   "en": "STENCH",
+   "pt": "Fedor",
+   "fonte": "criado",
+   "categoria": "habilidade",
+   "detectar": true
+  },
+  {
+   "en": "DRIZZLE",
+   "pt": "Garoa",
+   "fonte": "criado",
+   "categoria": "habilidade",
+   "detectar": true
+  },
+  {
+   "en": "SPEED BOOST",
+   "pt": "Acelerar",
+   "fonte": "criado",
+   "categoria": "habilidade",
+   "detectar": true
+  },
+  {
+   "en": "BATTLE ARMOR",
+   "pt": "Arm. Batalha",
+   "fonte": "TCG",
+   "categoria": "habilidade",
+   "detectar": true,
+   "obs": "✂ de: Armadura de Batalha"
+  },
+  {
+   "en": "STURDY",
+   "pt": "Robustez",
+   "fonte": "TCG",
+   "categoria": "habilidade",
+   "detectar": true
+  },
+  {
+   "en": "DAMP",
+   "pt": "Umidade",
+   "fonte": "TCG",
+   "categoria": "habilidade",
+   "detectar": true,
+   "obs": "o TCG também usa \"Ensopado\""
+  },
+  {
+   "en": "LIMBER",
+   "pt": "Elasticidade",
+   "fonte": "TCG",
+   "categoria": "habilidade",
+   "detectar": true
+  },
+  {
+   "en": "SAND VEIL",
+   "pt": "Véu de Areia",
+   "fonte": "criado",
+   "categoria": "habilidade",
+   "detectar": true,
+   "obs": "no padrão de \"Véu de Água\" (TCG)"
+  },
+  {
+   "en": "STATIC",
+   "pt": "Estática",
+   "fonte": "criado",
+   "categoria": "habilidade",
+   "detectar": true
+  },
+  {
+   "en": "VOLT ABSORB",
+   "pt": "Absorve Volt",
+   "fonte": "criado",
+   "categoria": "habilidade",
+   "detectar": true
+  },
+  {
+   "en": "WATER ABSORB",
+   "pt": "Absorve Água",
+   "fonte": "criado",
+   "categoria": "habilidade",
+   "detectar": true
+  },
+  {
+   "en": "OBLIVIOUS",
+   "pt": "Distraído",
+   "fonte": "criado",
+   "categoria": "habilidade",
+   "detectar": true
+  },
+  {
+   "en": "CLOUD NINE",
+   "pt": "Nas Nuvens",
+   "fonte": "criado",
+   "categoria": "habilidade",
+   "detectar": true
+  },
+  {
+   "en": "COMPOUNDEYES",
+   "pt": "Olhos Comp.",
+   "fonte": "TCG",
+   "categoria": "habilidade",
+   "detectar": true,
+   "obs": "✂ de: Olhos Compostos"
+  },
+  {
+   "en": "INSOMNIA",
+   "pt": "Insônia",
+   "fonte": "TCG",
+   "categoria": "habilidade",
+   "detectar": true
+  },
+  {
+   "en": "COLOR CHANGE",
+   "pt": "Troca de Cor",
+   "fonte": "TCG antigo",
+   "categoria": "habilidade",
+   "detectar": true
+  },
+  {
+   "en": "IMMUNITY",
+   "pt": "Imunidade",
+   "fonte": "criado",
+   "categoria": "habilidade",
+   "detectar": true
+  },
+  {
+   "en": "FLASH FIRE",
+   "pt": "Chama Súbita",
+   "fonte": "criado",
+   "categoria": "habilidade",
+   "detectar": true
+  },
+  {
+   "en": "SHIELD DUST",
+   "pt": "Pó Escudo",
+   "fonte": "criado",
+   "categoria": "habilidade",
+   "detectar": true
+  },
+  {
+   "en": "OWN TEMPO",
+   "pt": "R. Próprio",
+   "fonte": "TCG antigo",
+   "categoria": "habilidade",
+   "detectar": true,
+   "obs": "✂ de: Ritmo Próprio"
+  },
+  {
+   "en": "SUCTION CUPS",
+   "pt": "Ventosas",
+   "fonte": "criado",
+   "categoria": "habilidade",
+   "detectar": true
+  },
+  {
+   "en": "INTIMIDATE",
+   "pt": "Intimidação",
+   "fonte": "criado",
+   "categoria": "habilidade",
+   "detectar": true
+  },
+  {
+   "en": "SHADOW TAG",
+   "pt": "Pega-sombra",
+   "fonte": "criado",
+   "categoria": "habilidade",
+   "detectar": true
+  },
+  {
+   "en": "ROUGH SKIN",
+   "pt": "Pele Áspera",
+   "fonte": "TCG antigo",
+   "categoria": "habilidade",
+   "detectar": true
+  },
+  {
+   "en": "WONDER GUARD",
+   "pt": "Superguarda",
+   "fonte": "criado",
+   "categoria": "habilidade",
+   "detectar": true
+  },
+  {
+   "en": "LEVITATE",
+   "pt": "Levitação",
+   "fonte": "criado",
+   "categoria": "habilidade",
+   "detectar": true
+  },
+  {
+   "en": "EFFECT SPORE",
+   "pt": "Esp. Efeito",
+   "fonte": "TCG antigo",
+   "categoria": "habilidade",
+   "detectar": true,
+   "obs": "✂ de: Esporo de Efeito"
+  },
+  {
+   "en": "SYNCHRONIZE",
+   "pt": "Sincronia",
+   "fonte": "criado",
+   "categoria": "habilidade",
+   "detectar": true
+  },
+  {
+   "en": "CLEAR BODY",
+   "pt": "Corpo Limpo",
+   "fonte": "criado",
+   "categoria": "habilidade",
+   "detectar": true
+  },
+  {
+   "en": "NATURAL CURE",
+   "pt": "Cura Natural",
+   "fonte": "TCG",
+   "categoria": "habilidade",
+   "detectar": true
+  },
+  {
+   "en": "LIGHTNINGROD",
+   "pt": "Para-raios",
+   "fonte": "criado",
+   "categoria": "habilidade",
+   "detectar": true
+  },
+  {
+   "en": "SERENE GRACE",
+   "pt": "Graça Serena",
+   "fonte": "criado",
+   "categoria": "habilidade",
+   "detectar": true
+  },
+  {
+   "en": "SWIFT SWIM",
+   "pt": "Nado Veloz",
+   "fonte": "criado",
+   "categoria": "habilidade",
+   "detectar": true
+  },
+  {
+   "en": "CHLOROPHYLL",
+   "pt": "Clorofila",
+   "fonte": "criado",
+   "categoria": "habilidade",
+   "detectar": true
+  },
+  {
+   "en": "ILLUMINATE",
+   "pt": "Iluminação",
+   "fonte": "TCG antigo",
+   "categoria": "habilidade",
+   "detectar": true
+  },
+  {
+   "en": "TRACE",
+   "pt": "Rastrear",
+   "fonte": "criado",
+   "categoria": "habilidade",
+   "detectar": true
+  },
+  {
+   "en": "HUGE POWER",
+   "pt": "Poder Imenso",
+   "fonte": "criado",
+   "categoria": "habilidade",
+   "detectar": true
+  },
+  {
+   "en": "POISON POINT",
+   "pt": "P. Venenoso",
+   "fonte": "TCG",
+   "categoria": "habilidade",
+   "detectar": true,
+   "obs": "✂ de: Ponto Venenoso"
+  },
+  {
+   "en": "INNER FOCUS",
+   "pt": "Foco Interno",
+   "fonte": "criado",
+   "categoria": "habilidade",
+   "detectar": true
+  },
+  {
+   "en": "MAGMA ARMOR",
+   "pt": "Armad. Magma",
+   "fonte": "criado",
+   "categoria": "habilidade",
+   "detectar": true,
+   "obs": "✂ de: Armadura de Magma"
+  },
+  {
+   "en": "WATER VEIL",
+   "pt": "Véu de Água",
+   "fonte": "TCG",
+   "categoria": "habilidade",
+   "detectar": true
+  },
+  {
+   "en": "MAGNET PULL",
+   "pt": "Magnetismo",
+   "fonte": "criado",
+   "categoria": "habilidade",
+   "detectar": true
+  },
+  {
+   "en": "SOUNDPROOF",
+   "pt": "Antirruído",
+   "fonte": "criado",
+   "categoria": "habilidade",
+   "detectar": true
+  },
+  {
+   "en": "RAIN DISH",
+   "pt": "Prato Chuva",
+   "fonte": "TCG antigo",
+   "categoria": "habilidade",
+   "detectar": true,
+   "obs": "✂ de: Prato de Chuva"
+  },
+  {
+   "en": "SAND STREAM",
+   "pt": "Fluxo Areia",
+   "fonte": "TCG",
+   "categoria": "habilidade",
+   "detectar": true,
+   "obs": "✂ de: Fluxo de Areia"
+  },
+  {
+   "en": "PRESSURE",
+   "pt": "Pressão",
+   "fonte": "TCG",
+   "categoria": "habilidade",
+   "detectar": true
+  },
+  {
+   "en": "THICK FAT",
+   "pt": "Gordura Esp.",
+   "fonte": "TCG",
+   "categoria": "habilidade",
+   "detectar": true,
+   "obs": "✂ de: Gordura Espessa"
+  },
+  {
+   "en": "EARLY BIRD",
+   "pt": "Madrugador",
+   "fonte": "criado",
+   "categoria": "habilidade",
+   "detectar": true
+  },
+  {
+   "en": "FLAME BODY",
+   "pt": "Corpo Chama",
+   "fonte": "criado",
+   "categoria": "habilidade",
+   "detectar": true
+  },
+  {
+   "en": "RUN AWAY",
+   "pt": "Fuga",
+   "fonte": "criado",
+   "categoria": "habilidade",
+   "detectar": true
+  },
+  {
+   "en": "KEEN EYE",
+   "pt": "Olho Aguçado",
+   "fonte": "TCG",
+   "categoria": "habilidade",
+   "detectar": true,
+   "obs": "✂ de: Olhar Aguçado"
+  },
+  {
+   "en": "HYPER CUTTER",
+   "pt": "Hipercorte",
+   "fonte": "criado",
+   "categoria": "habilidade",
+   "detectar": true
+  },
+  {
+   "en": "PICKUP",
+   "pt": "Pegar",
+   "fonte": "TCG antigo",
+   "categoria": "habilidade",
+   "detectar": true,
+   "obs": "\"Coleta\" leria melhor"
+  },
+  {
+   "en": "TRUANT",
+   "pt": "Preguiça",
+   "fonte": "criado",
+   "categoria": "habilidade",
+   "detectar": true
+  },
+  {
+   "en": "HUSTLE",
+   "pt": "Afobação",
+   "fonte": "criado",
+   "categoria": "habilidade",
+   "detectar": true
+  },
+  {
+   "en": "CUTE CHARM",
+   "pt": "Charme Fofo",
+   "fonte": "criado",
+   "categoria": "habilidade",
+   "detectar": true
+  },
+  {
+   "en": "PLUS",
+   "pt": "Positivo",
+   "fonte": "criado",
+   "categoria": "habilidade",
+   "detectar": true
+  },
+  {
+   "en": "MINUS",
+   "pt": "Negativo",
+   "fonte": "criado",
+   "categoria": "habilidade",
+   "detectar": true
+  },
+  {
+   "en": "FORECAST",
+   "pt": "Previsão",
+   "fonte": "criado",
+   "categoria": "habilidade",
+   "detectar": true
+  },
+  {
+   "en": "STICKY HOLD",
+   "pt": "Pegajoso",
+   "fonte": "criado",
+   "categoria": "habilidade",
+   "detectar": true
+  },
+  {
+   "en": "SHED SKIN",
+   "pt": "Muda de Pele",
+   "fonte": "criado",
+   "categoria": "habilidade",
+   "detectar": true,
+   "obs": "✂ TCG \"Pele Vertente\" tem 13 letras"
+  },
+  {
+   "en": "GUTS",
+   "pt": "Tenacidade",
+   "fonte": "TCG",
+   "categoria": "habilidade",
+   "detectar": true
+  },
+  {
+   "en": "MARVEL SCALE",
+   "pt": "Escama Bela",
+   "fonte": "criado",
+   "categoria": "habilidade",
+   "detectar": true
+  },
+  {
+   "en": "LIQUID OOZE",
+   "pt": "Lodo Líquido",
+   "fonte": "criado",
+   "categoria": "habilidade",
+   "detectar": true
+  },
+  {
+   "en": "OVERGROW",
+   "pt": "Supercrescer",
+   "fonte": "TCG antigo",
+   "categoria": "habilidade",
+   "detectar": true,
+   "obs": "✂ de: Supercrescimento"
+  },
+  {
+   "en": "BLAZE",
+   "pt": "Labareda",
+   "fonte": "criado",
+   "categoria": "habilidade",
+   "detectar": true
+  },
+  {
+   "en": "TORRENT",
+   "pt": "Torrente",
+   "fonte": "criado",
+   "categoria": "habilidade",
+   "detectar": true
+  },
+  {
+   "en": "SWARM",
+   "pt": "Enxame",
+   "fonte": "criado",
+   "categoria": "habilidade",
+   "detectar": true
+  },
+  {
+   "en": "ROCK HEAD",
+   "pt": "Cabeça Pedra",
+   "fonte": "TCG antigo",
+   "categoria": "habilidade",
+   "detectar": true,
+   "obs": "✂ de: Cabeça de Pedra"
+  },
+  {
+   "en": "DROUGHT",
+   "pt": "Seca",
+   "fonte": "TCG antigo",
+   "categoria": "habilidade",
+   "detectar": true
+  },
+  {
+   "en": "ARENA TRAP",
+   "pt": "Armadilha",
+   "fonte": "criado",
+   "categoria": "habilidade",
+   "detectar": true
+  },
+  {
+   "en": "VITAL SPIRIT",
+   "pt": "Esp. Vital",
+   "fonte": "criado",
+   "categoria": "habilidade",
+   "detectar": true,
+   "obs": "✂ de: Espírito Vital"
+  },
+  {
+   "en": "WHITE SMOKE",
+   "pt": "Fum. Branca",
+   "fonte": "criado",
+   "categoria": "habilidade",
+   "detectar": true,
+   "obs": "✂ de: Fumaça Branca"
+  },
+  {
+   "en": "PURE POWER",
+   "pt": "Poder Puro",
+   "fonte": "TCG antigo",
+   "categoria": "habilidade",
+   "detectar": true
+  },
+  {
+   "en": "SHELL ARMOR",
+   "pt": "Arm. Concha",
+   "fonte": "TCG",
+   "categoria": "habilidade",
+   "detectar": true,
+   "obs": "✂ de: Armadura de Concha"
+  },
+  {
+   "en": "CACOPHONY",
+   "pt": "Cacofonia",
+   "fonte": "TCG antigo",
+   "categoria": "habilidade",
+   "detectar": true
+  },
+  {
+   "en": "AIR LOCK",
+   "pt": "Trava Aérea",
+   "fonte": "criado",
+   "categoria": "habilidade",
+   "detectar": true
+  },
+  {
+   "en": "ABSORB",
+   "pt": "Absorção",
+   "fonte": "GO+TCG",
+   "categoria": "golpe",
+   "detectar": true
+  },
+  {
+   "en": "ACID",
+   "pt": "Ácido",
+   "fonte": "GO",
+   "categoria": "golpe",
+   "detectar": true
+  },
+  {
+   "en": "AERIAL ACE",
+   "pt": "Ás dos Ares",
+   "fonte": "GO+TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "obs": "MT40"
+  },
+  {
+   "en": "AGILITY",
+   "pt": "Agilidade",
+   "fonte": "TCG",
+   "categoria": "golpe",
+   "detectar": true
+  },
+  {
+   "en": "ANCIENTPOWER",
+   "pt": "P. Ancestral",
+   "fonte": "GO+TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "obs": "✂ de: Poder Ancestral"
+  },
+  {
+   "en": "ATTRACT",
+   "pt": "Atração",
+   "fonte": "criado",
+   "categoria": "golpe",
+   "detectar": true,
+   "obs": "MT45"
+  },
+  {
+   "en": "AURORA BEAM",
+   "pt": "Raio Aurora",
+   "fonte": "GO+TCG",
+   "categoria": "golpe",
+   "detectar": true
+  },
+  {
+   "en": "BITE",
+   "pt": "Mordida",
+   "fonte": "GO+TCG",
+   "categoria": "golpe",
+   "detectar": true
+  },
+  {
+   "en": "BLAST BURN",
+   "pt": "Q. Explosiva",
+   "fonte": "GO",
+   "categoria": "golpe",
+   "detectar": true,
+   "obs": "✂ de: Queimadura Explosiva; tutor"
+  },
+  {
+   "en": "BLIZZARD",
+   "pt": "Nevasca",
+   "fonte": "GO+TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "obs": "MT14"
+  },
+  {
+   "en": "BODY SLAM",
+   "pt": "P. Corporal",
+   "fonte": "GO+TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "obs": "✂ de: Pancada Corporal; tutor"
+  },
+  {
+   "en": "BRICK BREAK",
+   "pt": "Quebra-telha",
+   "fonte": "GO+TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "obs": "MT31"
+  },
+  {
+   "en": "BUBBLE",
+   "pt": "Bolha",
+   "fonte": "GO+TCG",
+   "categoria": "golpe",
+   "detectar": true
+  },
+  {
+   "en": "BULK UP",
+   "pt": "Musculação",
+   "fonte": "criado",
+   "categoria": "golpe",
+   "detectar": true,
+   "obs": "MT08"
+  },
+  {
+   "en": "BULLET SEED",
+   "pt": "P. Semente",
+   "fonte": "GO+TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "obs": "✂ de: Projétil de Semente; MT09"
+  },
+  {
+   "en": "CALM MIND",
+   "pt": "Mente Calma",
+   "fonte": "TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "obs": "MT04"
+  },
+  {
+   "en": "CONFUSE RAY",
+   "pt": "R. Confusão",
+   "fonte": "TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "obs": "✂ de: Raio da Confusão"
+  },
+  {
+   "en": "CONFUSION",
+   "pt": "Confusão",
+   "fonte": "GO",
+   "categoria": "golpe",
+   "detectar": true
+  },
+  {
+   "en": "CONSTRICT",
+   "pt": "Contrair",
+   "fonte": "TCG antigo",
+   "categoria": "golpe",
+   "detectar": true
+  },
+  {
+   "en": "COUNTER",
+   "pt": "Contragolpe",
+   "fonte": "criado",
+   "categoria": "golpe",
+   "detectar": true,
+   "obs": "✂ GO/TCG \"Contra-atacar\" tem 13 letras; tutor"
+  },
+  {
+   "en": "CROSS CHOP",
+   "pt": "G. Cruzado",
+   "fonte": "GO+TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "obs": "✂ de: Golpe Cruzado"
+  },
+  {
+   "en": "CURSE",
+   "pt": "Maldição",
+   "fonte": "criado",
+   "categoria": "golpe",
+   "detectar": true
+  },
+  {
+   "en": "CUT",
+   "pt": "Cortar",
+   "fonte": "GO+TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "obs": "MO01"
+  },
+  {
+   "en": "DEFENSE CURL",
+   "pt": "Espiral Def.",
+   "fonte": "TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "obs": "✂ de: Espiral de Defesa"
+  },
+  {
+   "en": "DESTINY BOND",
+   "pt": "Elo Destino",
+   "fonte": "criado",
+   "categoria": "golpe",
+   "detectar": true
+  },
+  {
+   "en": "DIG",
+   "pt": "Cavar",
+   "fonte": "GO+TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "obs": "MT28"
+  },
+  {
+   "en": "DISABLE",
+   "pt": "Inabilitar",
+   "fonte": "TCG antigo",
+   "categoria": "golpe",
+   "detectar": true
+  },
+  {
+   "en": "DIVE",
+   "pt": "Mergulho",
+   "fonte": "TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "obs": "MO08"
+  },
+  {
+   "en": "DOUBLE KICK",
+   "pt": "Chute Duplo",
+   "fonte": "GO+TCG",
+   "categoria": "golpe",
+   "detectar": true
+  },
+  {
+   "en": "DOUBLE TEAM",
+   "pt": "Equipe Dupla",
+   "fonte": "criado",
+   "categoria": "golpe",
+   "detectar": true,
+   "obs": "MT32"
+  },
+  {
+   "en": "DOUBLE-EDGE",
+   "pt": "Faca 2 Gumes",
+   "fonte": "TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "obs": "✂ de: Faca de Dois Gumes; tutor"
+  },
+  {
+   "en": "DOUBLESLAP",
+   "pt": "Tapa Duplo",
+   "fonte": "GO+TCG",
+   "categoria": "golpe",
+   "detectar": true
+  },
+  {
+   "en": "DRAGON CLAW",
+   "pt": "Garra Dragão",
+   "fonte": "GO+TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "obs": "✂ de: Garra de Dragão; MT02"
+  },
+  {
+   "en": "DRAGON RAGE",
+   "pt": "Ira Dragão",
+   "fonte": "TCG antigo",
+   "categoria": "golpe",
+   "detectar": true,
+   "obs": "✂ de: Ira do Dragão"
+  },
+  {
+   "en": "DREAM EATER",
+   "pt": "Devora-sonho",
+   "fonte": "TCG antigo",
+   "categoria": "golpe",
+   "detectar": true,
+   "obs": "✂ de: Devorador de Sonhos; tutor"
+  },
+  {
+   "en": "DRILL PECK",
+   "pt": "Bico Broca",
+   "fonte": "GO+TCG",
+   "categoria": "golpe",
+   "detectar": true
+  },
+  {
+   "en": "EARTHQUAKE",
+   "pt": "Terremoto",
+   "fonte": "GO+TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "obs": "MT26"
+  },
+  {
+   "en": "EMBER",
+   "pt": "Brasa",
+   "fonte": "GO+TCG",
+   "categoria": "golpe",
+   "detectar": true
+  },
+  {
+   "en": "ENDURE",
+   "pt": "Resistência",
+   "fonte": "TCG antigo",
+   "categoria": "golpe",
+   "detectar": true
+  },
+  {
+   "en": "EXPLOSION",
+   "pt": "Explosão",
+   "fonte": "TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "obs": "tutor"
+  },
+  {
+   "en": "FACADE",
+   "pt": "Fachada",
+   "fonte": "TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "obs": "MT42"
+  },
+  {
+   "en": "FIRE BLAST",
+   "pt": "Rajada Fogo",
+   "fonte": "GO+TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "obs": "✂ de: Rajada de Fogo; MT38"
+  },
+  {
+   "en": "FIRE SPIN",
+   "pt": "C. Furacão",
+   "fonte": "GO+TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "obs": "✂ de: Chama Furacão"
+  },
+  {
+   "en": "FLAIL",
+   "pt": "Mangual",
+   "fonte": "TCG",
+   "categoria": "golpe",
+   "detectar": true
+  },
+  {
+   "en": "FLAMETHROWER",
+   "pt": "Lança-chamas",
+   "fonte": "GO+TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "obs": "MT35"
+  },
+  {
+   "en": "FLASH",
+   "pt": "Clarão",
+   "fonte": "criado",
+   "categoria": "golpe",
+   "detectar": true,
+   "obs": "MO05"
+  },
+  {
+   "en": "FLY",
+   "pt": "Voar",
+   "fonte": "GO+TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "obs": "MO02"
+  },
+  {
+   "en": "FOCUS ENERGY",
+   "pt": "Foc. Energia",
+   "fonte": "TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "obs": "✂ de: Focalizar Energia"
+  },
+  {
+   "en": "FOCUS PUNCH",
+   "pt": "Soco Focado",
+   "fonte": "criado",
+   "categoria": "golpe",
+   "detectar": true,
+   "obs": "MT01"
+  },
+  {
+   "en": "FORESIGHT",
+   "pt": "Antevisão",
+   "fonte": "criado",
+   "categoria": "golpe",
+   "detectar": true
+  },
+  {
+   "en": "FRENZY PLANT",
+   "pt": "P. Mortal",
+   "fonte": "GO",
+   "categoria": "golpe",
+   "detectar": true,
+   "obs": "✂ de: Planta Mortal; tutor"
+  },
+  {
+   "en": "FRUSTRATION",
+   "pt": "Frustração",
+   "fonte": "GO",
+   "categoria": "golpe",
+   "detectar": true,
+   "obs": "MT21"
+  },
+  {
+   "en": "FURY ATTACK",
+   "pt": "Ataque Fúria",
+   "fonte": "TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "obs": "✂ de: Ataque de Fúria"
+  },
+  {
+   "en": "FURY SWIPES",
+   "pt": "Golpes Fúria",
+   "fonte": "TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "obs": "✂ de: Golpes de Fúria"
+  },
+  {
+   "en": "FUTURE SIGHT",
+   "pt": "Visão Futuro",
+   "fonte": "GO+TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "obs": "✂ de: Visão do Futuro"
+  },
+  {
+   "en": "GIGA DRAIN",
+   "pt": "Gigadreno",
+   "fonte": "GO+TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "obs": "MT19"
+  },
+  {
+   "en": "GROWL",
+   "pt": "Rosnadura",
+   "fonte": "TCG",
+   "categoria": "golpe",
+   "detectar": true
+  },
+  {
+   "en": "GROWTH",
+   "pt": "Crescimento",
+   "fonte": "TCG antigo",
+   "categoria": "golpe",
+   "detectar": true
+  },
+  {
+   "en": "GUST",
+   "pt": "Lufada Vento",
+   "fonte": "GO+TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "obs": "✂ de: Lufada de Vento"
+  },
+  {
+   "en": "HAIL",
+   "pt": "Granizo",
+   "fonte": "TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "obs": "MT07"
+  },
+  {
+   "en": "HARDEN",
+   "pt": "Endurecer",
+   "fonte": "TCG",
+   "categoria": "golpe",
+   "detectar": true
+  },
+  {
+   "en": "HAZE",
+   "pt": "Bruma",
+   "fonte": "criado",
+   "categoria": "golpe",
+   "detectar": true
+  },
+  {
+   "en": "HEADBUTT",
+   "pt": "Cabeçada",
+   "fonte": "GO+TCG",
+   "categoria": "golpe",
+   "detectar": true
+  },
+  {
+   "en": "HELPING HAND",
+   "pt": "Mãozinha",
+   "fonte": "TCG",
+   "categoria": "golpe",
+   "detectar": true
+  },
+  {
+   "en": "HIDDEN POWER",
+   "pt": "Poder Oculto",
+   "fonte": "GO",
+   "categoria": "golpe",
+   "detectar": true,
+   "obs": "MT10"
+  },
+  {
+   "en": "HORN ATTACK",
+   "pt": "Atq. Chifre",
+   "fonte": "GO+TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "obs": "✂ de: Ataque de Chifre"
+  },
+  {
+   "en": "HORN DRILL",
+   "pt": "Chifre Broca",
+   "fonte": "GO+TCG",
+   "categoria": "golpe",
+   "detectar": true
+  },
+  {
+   "en": "HYDRO CANNON",
+   "pt": "Hidro Canhão",
+   "fonte": "GO",
+   "categoria": "golpe",
+   "detectar": true,
+   "obs": "tutor"
+  },
+  {
+   "en": "HYDRO PUMP",
+   "pt": "Jato d'Água",
+   "fonte": "GO+TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "obs": "o TCG também usa \"Hidro Bomba\""
+  },
+  {
+   "en": "HYPER BEAM",
+   "pt": "Hiper-raio",
+   "fonte": "GO+TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "obs": "MT15"
+  },
+  {
+   "en": "HYPNOSIS",
+   "pt": "Hipnose",
+   "fonte": "TCG",
+   "categoria": "golpe",
+   "detectar": true
+  },
+  {
+   "en": "ICE BEAM",
+   "pt": "Raio Congel.",
+   "fonte": "GO+TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "obs": "✂ de: Raio Congelante; MT13"
+  },
+  {
+   "en": "IRON TAIL",
+   "pt": "Cauda Ferro",
+   "fonte": "GO+TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "obs": "✂ de: Cauda de Ferro; MT23"
+  },
+  {
+   "en": "KARATE CHOP",
+   "pt": "Golpe Caratê",
+   "fonte": "GO",
+   "categoria": "golpe",
+   "detectar": true,
+   "obs": "✂ de: Golpe de Caratê"
+  },
+  {
+   "en": "LEECH LIFE",
+   "pt": "Suga-vidas",
+   "fonte": "GO+TCG",
+   "categoria": "golpe",
+   "detectar": true
+  },
+  {
+   "en": "LEECH SEED",
+   "pt": "Sanguessuga",
+   "fonte": "TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "obs": "✂ de: Semente Sanguessuga"
+  },
+  {
+   "en": "LEER",
+   "pt": "Encarar",
+   "fonte": "TCG",
+   "categoria": "golpe",
+   "detectar": true
+  },
+  {
+   "en": "LICK",
+   "pt": "Lambida",
+   "fonte": "GO+TCG",
+   "categoria": "golpe",
+   "detectar": true
+  },
+  {
+   "en": "LIGHT SCREEN",
+   "pt": "Tela de Luz",
+   "fonte": "criado",
+   "categoria": "golpe",
+   "detectar": true,
+   "obs": "MT16"
+  },
+  {
+   "en": "LOW KICK",
+   "pt": "Rasteira",
+   "fonte": "GO+TCG",
+   "categoria": "golpe",
+   "detectar": true
+  },
+  {
+   "en": "MAGNITUDE",
+   "pt": "Magnitude",
+   "fonte": "criado",
+   "categoria": "golpe",
+   "detectar": true
+  },
+  {
+   "en": "MEAN LOOK",
+   "pt": "Olhar Mau",
+   "fonte": "TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "obs": "✂ de: Olhar Malvado"
+  },
+  {
+   "en": "MEGA KICK",
+   "pt": "Megachute",
+   "fonte": "TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "obs": "tutor"
+  },
+  {
+   "en": "MEGA PUNCH",
+   "pt": "Megassoco",
+   "fonte": "TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "obs": "tutor"
+  },
+  {
+   "en": "MEGAHORN",
+   "pt": "Megachifre",
+   "fonte": "GO",
+   "categoria": "golpe",
+   "detectar": true
+  },
+  {
+   "en": "METAL CLAW",
+   "pt": "Garra Metal",
+   "fonte": "GO+TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "obs": "✂ de: Garra de Metal"
+  },
+  {
+   "en": "METRONOME",
+   "pt": "Metrônomo",
+   "fonte": "TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "obs": "tutor"
+  },
+  {
+   "en": "MIMIC",
+   "pt": "Mímica",
+   "fonte": "TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "obs": "tutor"
+  },
+  {
+   "en": "MINIMIZE",
+   "pt": "Minimizar",
+   "fonte": "criado",
+   "categoria": "golpe",
+   "detectar": true
+  },
+  {
+   "en": "MIRROR MOVE",
+   "pt": "A. Espelhado",
+   "fonte": "TCG antigo",
+   "categoria": "golpe",
+   "detectar": true,
+   "obs": "✂ de: Ataque Espelhado"
+  },
+  {
+   "en": "MUD SHOT",
+   "pt": "Tiro de Lama",
+   "fonte": "GO+TCG",
+   "categoria": "golpe",
+   "detectar": true
+  },
+  {
+   "en": "MUD SPORT",
+   "pt": "Lamaçal",
+   "fonte": "criado",
+   "categoria": "golpe",
+   "detectar": true
+  },
+  {
+   "en": "OVERHEAT",
+   "pt": "Superaquecer",
+   "fonte": "GO",
+   "categoria": "golpe",
+   "detectar": true,
+   "obs": "✂ de: Superaquecimento; MT50"
+  },
+  {
+   "en": "PECK",
+   "pt": "Bicada",
+   "fonte": "GO+TCG",
+   "categoria": "golpe",
+   "detectar": true
+  },
+  {
+   "en": "POISON GAS",
+   "pt": "Gás Venenoso",
+   "fonte": "TCG",
+   "categoria": "golpe",
+   "detectar": true
+  },
+  {
+   "en": "POISON STING",
+   "pt": "F. Venenoso",
+   "fonte": "GO+TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "obs": "✂ de: Ferrão Venenoso"
+  },
+  {
+   "en": "POISONPOWDER",
+   "pt": "Pó Venenoso",
+   "fonte": "TCG",
+   "categoria": "golpe",
+   "detectar": true
+  },
+  {
+   "en": "POUND",
+   "pt": "Pancada",
+   "fonte": "GO+TCG",
+   "categoria": "golpe",
+   "detectar": true
+  },
+  {
+   "en": "PROTECT",
+   "pt": "Proteção",
+   "fonte": "TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "obs": "MT17"
+  },
+  {
+   "en": "PSYBEAM",
+   "pt": "F. Psíquico",
+   "fonte": "GO+TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "obs": "✂ de: Feixe Psíquico"
+  },
+  {
+   "en": "PSYCH UP",
+   "pt": "C. Psíquica",
+   "fonte": "TCG antigo",
+   "categoria": "golpe",
+   "detectar": true,
+   "obs": "✂ de: Carga Psíquica"
+  },
+  {
+   "en": "PSYCHIC",
+   "pt": "Psíquico",
+   "fonte": "GO+TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "obs": "MT29"
+  },
+  {
+   "en": "PURSUIT",
+   "pt": "Perseguição",
+   "fonte": "criado",
+   "categoria": "golpe",
+   "detectar": true
+  },
+  {
+   "en": "QUICK ATTACK",
+   "pt": "Atq. Rápido",
+   "fonte": "GO+TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "obs": "✂ de: Ataque Rápido"
+  },
+  {
+   "en": "RAGE",
+   "pt": "Ira",
+   "fonte": "TCG",
+   "categoria": "golpe",
+   "detectar": true
+  },
+  {
+   "en": "RAIN DANCE",
+   "pt": "Dança Chuva",
+   "fonte": "criado",
+   "categoria": "golpe",
+   "detectar": true,
+   "obs": "✂ de: Dança da Chuva; MT18"
+  },
+  {
+   "en": "RAPID SPIN",
+   "pt": "Giro Rápido",
+   "fonte": "TCG",
+   "categoria": "golpe",
+   "detectar": true
+  },
+  {
+   "en": "RAZOR LEAF",
+   "pt": "F. Navalha",
+   "fonte": "GO+TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "obs": "✂ de: Folha Navalha"
+  },
+  {
+   "en": "RECOVER",
+   "pt": "Recuperação",
+   "fonte": "TCG",
+   "categoria": "golpe",
+   "detectar": true
+  },
+  {
+   "en": "REFLECT",
+   "pt": "Refletir",
+   "fonte": "TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "obs": "MT33"
+  },
+  {
+   "en": "REST",
+   "pt": "Descansar",
+   "fonte": "GO+TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "obs": "MT44"
+  },
+  {
+   "en": "RETURN",
+   "pt": "Retorno",
+   "fonte": "GO+TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "obs": "MT27"
+  },
+  {
+   "en": "REVENGE",
+   "pt": "Vingança",
+   "fonte": "TCG",
+   "categoria": "golpe",
+   "detectar": true
+  },
+  {
+   "en": "ROAR",
+   "pt": "Rugido",
+   "fonte": "TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "obs": "MT05"
+  },
+  {
+   "en": "ROCK BLAST",
+   "pt": "Expl. Rocha",
+   "fonte": "GO",
+   "categoria": "golpe",
+   "detectar": true,
+   "obs": "✂ de: Explosão de Rocha"
+  },
+  {
+   "en": "ROCK SLIDE",
+   "pt": "Desl. Pedras",
+   "fonte": "GO+TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "obs": "✂ de: Deslize de Pedras; tutor"
+  },
+  {
+   "en": "ROCK SMASH",
+   "pt": "Esmaga Pedra",
+   "fonte": "GO+TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "obs": "✂ de: Esmagamento de Pedras; MO06"
+  },
+  {
+   "en": "ROCK THROW",
+   "pt": "Lanç. Rocha",
+   "fonte": "GO+TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "obs": "✂ de: Lançamento de Rocha"
+  },
+  {
+   "en": "ROCK TOMB",
+   "pt": "Tumba Rochas",
+   "fonte": "GO+TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "obs": "✂ de: Tumba de Rochas; MT39"
+  },
+  {
+   "en": "ROLLOUT",
+   "pt": "Rolagem",
+   "fonte": "GO+TCG",
+   "categoria": "golpe",
+   "detectar": true
+  },
+  {
+   "en": "SAFEGUARD",
+   "pt": "Salvaguarda",
+   "fonte": "TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "obs": "MT20"
+  },
+  {
+   "en": "SAND-ATTACK",
+   "pt": "Ataque Areia",
+   "fonte": "GO+TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "obs": "✂ de: Ataque de Areia"
+  },
+  {
+   "en": "SANDSTORM",
+   "pt": "Temp. Areia",
+   "fonte": "criado",
+   "categoria": "golpe",
+   "detectar": true,
+   "obs": "✂ de: Tempestade de Areia; MT37"
+  },
+  {
+   "en": "SCARY FACE",
+   "pt": "Cara Feia",
+   "fonte": "criado",
+   "categoria": "golpe",
+   "detectar": true
+  },
+  {
+   "en": "SCRATCH",
+   "pt": "Arranhão",
+   "fonte": "GO+TCG",
+   "categoria": "golpe",
+   "detectar": true
+  },
+  {
+   "en": "SCREECH",
+   "pt": "Agudo",
+   "fonte": "TCG",
+   "categoria": "golpe",
+   "detectar": true
+  },
+  {
+   "en": "SECRET POWER",
+   "pt": "P. Secreto",
+   "fonte": "criado",
+   "categoria": "golpe",
+   "detectar": true,
+   "obs": "✂ de: Poder Secreto; MT43"
+  },
+  {
+   "en": "SEISMIC TOSS",
+   "pt": "A. Sísmico",
+   "fonte": "TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "obs": "✂ de: Arremesso Sísmico; tutor"
+  },
+  {
+   "en": "SELFDESTRUCT",
+   "pt": "Autodestruir",
+   "fonte": "TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "obs": "✂ de: Autodestruição"
+  },
+  {
+   "en": "SHADOW BALL",
+   "pt": "Bola Sombria",
+   "fonte": "GO",
+   "categoria": "golpe",
+   "detectar": true,
+   "obs": "MT30"
+  },
+  {
+   "en": "SHOCK WAVE",
+   "pt": "Onda Choque",
+   "fonte": "criado",
+   "categoria": "golpe",
+   "detectar": true,
+   "obs": "✂ de: Onda de Choque; MT34"
+  },
+  {
+   "en": "SING",
+   "pt": "Canção",
+   "fonte": "TCG",
+   "categoria": "golpe",
+   "detectar": true
+  },
+  {
+   "en": "SKILL SWAP",
+   "pt": "Troca Habil.",
+   "fonte": "criado",
+   "categoria": "golpe",
+   "detectar": true,
+   "obs": "MT48"
+  },
+  {
+   "en": "SLAM",
+   "pt": "P. Brusca",
+   "fonte": "GO+TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "obs": "✂ de: Pancada Brusca"
+  },
+  {
+   "en": "SLASH",
+   "pt": "Talho",
+   "fonte": "GO+TCG",
+   "categoria": "golpe",
+   "detectar": true
+  },
+  {
+   "en": "SLEEP POWDER",
+   "pt": "Pó do Sono",
+   "fonte": "TCG",
+   "categoria": "golpe",
+   "detectar": true
+  },
+  {
+   "en": "SLUDGE BOMB",
+   "pt": "Bomba Lodo",
+   "fonte": "GO+TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "obs": "✂ de: Bomba de Lodo; MT36"
+  },
+  {
+   "en": "SMOG",
+   "pt": "Nev. Fumaça",
+   "fonte": "GO+TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "obs": "✂ de: Nevoeiro de Fumaça"
+  },
+  {
+   "en": "SMOKESCREEN",
+   "pt": "Cortina Fum.",
+   "fonte": "TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "obs": "✂ de: Cortina de Fumaça"
+  },
+  {
+   "en": "SNATCH",
+   "pt": "Arrebatar",
+   "fonte": "criado",
+   "categoria": "golpe",
+   "detectar": true,
+   "obs": "MT49"
+  },
+  {
+   "en": "SOFTBOILED",
+   "pt": "Ovo Cozido",
+   "fonte": "criado",
+   "categoria": "golpe",
+   "detectar": true,
+   "obs": "tutor; o TCG antigo usa \"Cozidos\""
+  },
+  {
+   "en": "SOLARBEAM",
+   "pt": "Raio Solar",
+   "fonte": "GO+TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "obs": "MT22"
+  },
+  {
+   "en": "SONICBOOM",
+   "pt": "Expl. Sônica",
+   "fonte": "TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "obs": "✂ de: Explosão Sônica"
+  },
+  {
+   "en": "SPITE",
+   "pt": "Rancor",
+   "fonte": "criado",
+   "categoria": "golpe",
+   "detectar": true
+  },
+  {
+   "en": "STEEL WING",
+   "pt": "Asa de Aço",
+   "fonte": "GO+TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "obs": "MT47"
+  },
+  {
+   "en": "STOMP",
+   "pt": "Pisotear",
+   "fonte": "GO+TCG",
+   "categoria": "golpe",
+   "detectar": true
+  },
+  {
+   "en": "STRENGTH",
+   "pt": "Força",
+   "fonte": "TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "obs": "MO04"
+  },
+  {
+   "en": "STUN SPORE",
+   "pt": "Esporo Atord",
+   "fonte": "TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "obs": "✂ de: Esporos Atordoantes (sem ponto: não cabe)"
+  },
+  {
+   "en": "SUBMISSION",
+   "pt": "Submissão",
+   "fonte": "GO",
+   "categoria": "golpe",
+   "detectar": true
+  },
+  {
+   "en": "SUBSTITUTE",
+   "pt": "Substituto",
+   "fonte": "criado",
+   "categoria": "golpe",
+   "detectar": true,
+   "obs": "tutor"
+  },
+  {
+   "en": "SUNNY DAY",
+   "pt": "Dia de Sol",
+   "fonte": "TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "obs": "✂ de: Dia Ensolarado; MT11"
+  },
+  {
+   "en": "SUPERSONIC",
+   "pt": "Supersônico",
+   "fonte": "TCG",
+   "categoria": "golpe",
+   "detectar": true
+  },
+  {
+   "en": "SURF",
+   "pt": "Surfar",
+   "fonte": "GO+TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "obs": "MO03"
+  },
+  {
+   "en": "SWAGGER",
+   "pt": "Arrogância",
+   "fonte": "TCG",
+   "categoria": "golpe",
+   "detectar": true
+  },
+  {
+   "en": "SWEET SCENT",
+   "pt": "Aroma Doce",
+   "fonte": "TCG",
+   "categoria": "golpe",
+   "detectar": true
+  },
+  {
+   "en": "SWIFT",
+   "pt": "Ataque Veloz",
+   "fonte": "GO+TCG",
+   "categoria": "golpe",
+   "detectar": true
+  },
+  {
+   "en": "SWORDS DANCE",
+   "pt": "Dança Espada",
+   "fonte": "TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "obs": "✂ de: Dança das Espadas; tutor"
+  },
+  {
+   "en": "TACKLE",
+   "pt": "Investida",
+   "fonte": "GO+TCG",
+   "categoria": "golpe",
+   "detectar": true
+  },
+  {
+   "en": "TAIL WHIP",
+   "pt": "Cauda Chic.",
+   "fonte": "TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "obs": "✂ de: Cauda Chicote"
+  },
+  {
+   "en": "TAKE DOWN",
+   "pt": "Desmantelar",
+   "fonte": "GO+TCG",
+   "categoria": "golpe",
+   "detectar": true
+  },
+  {
+   "en": "TAUNT",
+   "pt": "Insulto",
+   "fonte": "TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "obs": "MT12"
+  },
+  {
+   "en": "THIEF",
+   "pt": "Roubar",
+   "fonte": "TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "obs": "MT46"
+  },
+  {
+   "en": "THRASH",
+   "pt": "Castigar",
+   "fonte": "TCG",
+   "categoria": "golpe",
+   "detectar": true
+  },
+  {
+   "en": "THUNDER",
+   "pt": "Trovão",
+   "fonte": "GO+TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "obs": "MT25"
+  },
+  {
+   "en": "THUNDER WAVE",
+   "pt": "Onda Trovão",
+   "fonte": "TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "obs": "✂ de: Onda de Trovão; tutor"
+  },
+  {
+   "en": "THUNDERBOLT",
+   "pt": "Relâmpago",
+   "fonte": "GO+TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "obs": "MT24"
+  },
+  {
+   "en": "THUNDERSHOCK",
+   "pt": "Choq. Trovão",
+   "fonte": "GO+TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "obs": "✂ de: Trovoada de Choques; a forma curta usa o nome do anime (\"Choque do Trovão\")"
+  },
+  {
+   "en": "TORMENT",
+   "pt": "Atormentar",
+   "fonte": "TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "obs": "MT41"
+  },
+  {
+   "en": "TOXIC",
+   "pt": "Tóxico",
+   "fonte": "TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "obs": "MT06"
+  },
+  {
+   "en": "TRI ATTACK",
+   "pt": "Triataque",
+   "fonte": "GO+TCG",
+   "categoria": "golpe",
+   "detectar": true
+  },
+  {
+   "en": "TWISTER",
+   "pt": "Twister",
+   "fonte": "GO",
+   "categoria": "golpe",
+   "detectar": true
+  },
+  {
+   "en": "VINE WHIP",
+   "pt": "Chic. Vinha",
+   "fonte": "GO+TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "obs": "✂ de: Chicote de Vinha"
+  },
+  {
+   "en": "WATER GUN",
+   "pt": "Rev. d'Água",
+   "fonte": "GO+TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "obs": "✂ de: Revólver d'Água"
+  },
+  {
+   "en": "WATER PULSE",
+   "pt": "Pulso d'Água",
+   "fonte": "GO+TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "obs": "MT03"
+  },
+  {
+   "en": "WATERFALL",
+   "pt": "Cachoeira",
+   "fonte": "GO+TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "obs": "MO07"
+  },
+  {
+   "en": "WING ATTACK",
+   "pt": "Ataque Asa",
+   "fonte": "GO+TCG",
+   "categoria": "golpe",
+   "detectar": true,
+   "obs": "✂ de: Ataque de Asa"
+  },
+  {
+   "en": "WITHDRAW",
+   "pt": "Retirada",
+   "fonte": "TCG",
+   "categoria": "golpe",
+   "detectar": true
+  },
+  {
+   "en": "WRAP",
+   "pt": "Embrulho",
+   "fonte": "GO+TCG",
+   "categoria": "golpe",
+   "detectar": true
+  },
+  {
+   "en": "POKé BALL",
+   "pt": "Poké Bola",
+   "fonte": "GO+TCG",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "GREAT BALL",
+   "pt": "Grande Bola",
+   "fonte": "GO+TCG",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "ULTRA BALL",
+   "pt": "Ultra Bola",
+   "fonte": "GO+TCG",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "MASTER BALL",
+   "pt": "Bola Mestra",
+   "fonte": "GO+TCG",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "SAFARI BALL",
+   "pt": "Bola Safári",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "NET BALL",
+   "pt": "Bola Tela",
+   "fonte": "TCG antigo",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "DIVE BALL",
+   "pt": "Bola Mergulho",
+   "fonte": "TCG antigo",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "NEST BALL",
+   "pt": "Bola de Ninho",
+   "fonte": "TCG",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "REPEAT BALL",
+   "pt": "Bola Repetir",
+   "fonte": "TCG antigo",
+   "categoria": "item",
+   "detectar": true,
+   "obs": "✂ de: Bola da Repetição"
+  },
+  {
+   "en": "TIMER BALL",
+   "pt": "Bola Tempo",
+   "fonte": "TCG antigo",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "LUXURY BALL",
+   "pt": "Bola Luxo",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "PREMIER BALL",
+   "pt": "Bola Presente",
+   "fonte": "GO",
+   "categoria": "item",
+   "detectar": true,
+   "obs": "✂ de: Bola Presenteada"
+  },
+  {
+   "en": "POTION",
+   "pt": "Poção",
+   "fonte": "GO+TCG",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "SUPER POTION",
+   "pt": "Superpoção",
+   "fonte": "GO+TCG",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "HYPER POTION",
+   "pt": "Hiperpoção",
+   "fonte": "GO+TCG",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "MAX POTION",
+   "pt": "Poção Máxima",
+   "fonte": "GO+TCG",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "FULL RESTORE",
+   "pt": "Restaura Tudo",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "FULL HEAL",
+   "pt": "Cura Total",
+   "fonte": "TCG",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "ANTIDOTE",
+   "pt": "Antídoto",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "BURN HEAL",
+   "pt": "Cura Queimad.",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "ICE HEAL",
+   "pt": "Descongelar",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "AWAKENING",
+   "pt": "Despertar",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "PARLYZ HEAL",
+   "pt": "Antiparalisia",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "REVIVE",
+   "pt": "Reviver",
+   "fonte": "GO+TCG",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "MAX REVIVE",
+   "pt": "Reviver Máx.",
+   "fonte": "GO+TCG",
+   "categoria": "item",
+   "detectar": true,
+   "obs": "✂ de: Máximo Reviver"
+  },
+  {
+   "en": "FRESH WATER",
+   "pt": "Água Fresca",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "SODA POP",
+   "pt": "Refrigerante",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "LEMONADE",
+   "pt": "Limonada",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "MOOMOO MILK",
+   "pt": "Leite Moomoo",
+   "fonte": "TCG antigo",
+   "categoria": "item",
+   "detectar": true,
+   "obs": "✂ de: Leite de Moomoo"
+  },
+  {
+   "en": "ENERGYPOWDER",
+   "pt": "Pó Energia",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "ENERGY ROOT",
+   "pt": "Raiz Energia",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "HEAL POWDER",
+   "pt": "Pó Curativo",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "REVIVAL HERB",
+   "pt": "Erva Reviver",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "ETHER",
+   "pt": "Éter",
+   "fonte": "TCG antigo",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "MAX ETHER",
+   "pt": "Éter Máximo",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true,
+   "obs": "no padrão de \"Elixir Máximo\""
+  },
+  {
+   "en": "ELIXIR",
+   "pt": "Elixir",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "MAX ELIXIR",
+   "pt": "Elixir Máximo",
+   "fonte": "TCG antigo",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "LAVA COOKIE",
+   "pt": "Biscoito Lava",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "BERRY JUICE",
+   "pt": "Suco de Fruta",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "SACRED ASH",
+   "pt": "Cinza Sagrada",
+   "fonte": "TCG",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "BLUE FLUTE",
+   "pt": "Flauta Azul",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true,
+   "obs": "✂ \"Flauta Amarela\" e \"Flauta Vermelha\" passam de 13"
+  },
+  {
+   "en": "YELLOW FLUTE",
+   "pt": "Flauta Amar.",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true,
+   "obs": "✂ \"Flauta Amarela\" e \"Flauta Vermelha\" passam de 13"
+  },
+  {
+   "en": "RED FLUTE",
+   "pt": "Flauta Verm.",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true,
+   "obs": "✂ \"Flauta Amarela\" e \"Flauta Vermelha\" passam de 13"
+  },
+  {
+   "en": "BLACK FLUTE",
+   "pt": "Flauta Preta",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "WHITE FLUTE",
+   "pt": "Flauta Branca",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "HP UP",
+   "pt": "PS Mais",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true,
+   "obs": "segue \"PS\""
+  },
+  {
+   "en": "PROTEIN",
+   "pt": "Proteína",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "IRON",
+   "pt": "Ferro",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "CARBOS",
+   "pt": "Carbos",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true,
+   "obs": "mantém"
+  },
+  {
+   "en": "CALCIUM",
+   "pt": "Cálcio",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "ZINC",
+   "pt": "Zinco",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "PP UP",
+   "pt": "PP Mais",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "PP MAX",
+   "pt": "PP Máximo",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "RARE CANDY",
+   "pt": "Doce Raro",
+   "fonte": "GO+TCG",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "X ATTACK",
+   "pt": "Ataque X",
+   "fonte": "GO",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "X DEFEND",
+   "pt": "Defesa X",
+   "fonte": "GO",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "X SPEED",
+   "pt": "Velocidade X",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true,
+   "obs": "no padrão do GO"
+  },
+  {
+   "en": "X ACCURACY",
+   "pt": "Precisão X",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "X SPECIAL",
+   "pt": "Especial X",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "DIRE HIT",
+   "pt": "Golpe Certo",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "GUARD SPEC.",
+   "pt": "Guarda Esp.",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "POKé DOLL",
+   "pt": "Boneca Poké",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "FLUFFY TAIL",
+   "pt": "Cauda Fofa",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "REPEL",
+   "pt": "Repelente",
+   "fonte": "TCG",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "SUPER REPEL",
+   "pt": "Superrepel.",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true,
+   "obs": "✂ de: Superrepelente"
+  },
+  {
+   "en": "MAX REPEL",
+   "pt": "Repel. Máximo",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true,
+   "obs": "✂ de: Repelente Máximo"
+  },
+  {
+   "en": "ESCAPE ROPE",
+   "pt": "Corda de Fuga",
+   "fonte": "TCG",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "SUN STONE",
+   "pt": "Pedra Solar",
+   "fonte": "GO",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "MOON STONE",
+   "pt": "Pedra Lunar",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "FIRE STONE",
+   "pt": "Pedra de Fogo",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "THUNDERSTONE",
+   "pt": "Pedra Trovão",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "WATER STONE",
+   "pt": "Pedra d'Água",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "LEAF STONE",
+   "pt": "Pedra Folha",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "TINYMUSHROOM",
+   "pt": "Cogumelinho",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "BIG MUSHROOM",
+   "pt": "Cogumelão",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "PEARL",
+   "pt": "Pérola",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "BIG PEARL",
+   "pt": "Pérola Grande",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "STARDUST",
+   "pt": "Pó Estelar",
+   "fonte": "GO",
+   "categoria": "item",
+   "detectar": true,
+   "obs": "✂ de: Poeira Estelar"
+  },
+  {
+   "en": "STAR PIECE",
+   "pt": "Caco Estrela",
+   "fonte": "GO",
+   "categoria": "item",
+   "detectar": true,
+   "obs": "✂ de: Pedaço de Estrela (sem o \"de\" ainda tem 14)"
+  },
+  {
+   "en": "NUGGET",
+   "pt": "Pepita",
+   "fonte": "TCG",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "HEART SCALE",
+   "pt": "Escama Coraç.",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true,
+   "obs": "✂ de: Escama Coração"
+  },
+  {
+   "en": "KING'S ROCK",
+   "pt": "Pedra do Rei",
+   "fonte": "GO",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "METAL COAT",
+   "pt": "Revest. Metal",
+   "fonte": "GO",
+   "categoria": "item",
+   "detectar": true,
+   "obs": "✂ de: Revestimento Metálico"
+  },
+  {
+   "en": "DRAGON SCALE",
+   "pt": "Escama Dragão",
+   "fonte": "GO",
+   "categoria": "item",
+   "detectar": true,
+   "obs": "✂ de: Escama de Dragão"
+  },
+  {
+   "en": "UP-GRADE",
+   "pt": "Melhora",
+   "fonte": "GO",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "DEEPSEATOOTH",
+   "pt": "Dente Abissal",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "DEEPSEASCALE",
+   "pt": "Escama Abiss.",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true,
+   "obs": "✂ de: Escama Abissal"
+  },
+  {
+   "en": "EVERSTONE",
+   "pt": "Pedra Eterna",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "PRISM SCALE",
+   "pt": "Escama Prisma",
+   "fonte": "jogo",
+   "categoria": "item",
+   "detectar": true,
+   "obs": "Hack 7"
+  },
+  {
+   "en": "SHINY CHARM",
+   "pt": "Amul. Brilh.",
+   "fonte": "jogo",
+   "categoria": "item",
+   "detectar": true,
+   "obs": "✂ de: Amuleto Brilhante (nome usado no diálogo do Hack 7)"
+  },
+  {
+   "en": "DESTINY KNOT",
+   "pt": "Nó do Destino",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "POWER WEIGHT",
+   "pt": "Peso Potente",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "POWER BRACER",
+   "pt": "Bracel. Pot.",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "POWER BELT",
+   "pt": "Cinto Potente",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "POWER LENS",
+   "pt": "Lente Potente",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "POWER BAND",
+   "pt": "Faixa Potente",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "POWER ANKLET",
+   "pt": "Tornoz. Pot.",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "LEFTOVERS",
+   "pt": "Sobras",
+   "fonte": "TCG",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "LUCKY EGG",
+   "pt": "Ovo da Sorte",
+   "fonte": "GO+TCG",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "EXP. SHARE",
+   "pt": "Compart. Exp.",
+   "fonte": "TCG",
+   "categoria": "item",
+   "detectar": true,
+   "obs": "abreviação oficial"
+  },
+  {
+   "en": "QUICK CLAW",
+   "pt": "Garra Rápida",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "SOOTHE BELL",
+   "pt": "Sino Calmante",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "MENTAL HERB",
+   "pt": "Erva Mental",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "WHITE HERB",
+   "pt": "Erva Branca",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "AMULET COIN",
+   "pt": "Moeda Amuleto",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "CLEANSE TAG",
+   "pt": "Talismã Puro",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "SMOKE BALL",
+   "pt": "Bola Fumaça",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "FOCUS BAND",
+   "pt": "Faixa do Foco",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "SCOPE LENS",
+   "pt": "Lente Mira",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "CHOICE BAND",
+   "pt": "Faixa Escolha",
+   "fonte": "TCG antigo",
+   "categoria": "item",
+   "detectar": true,
+   "obs": "✂ de: Faixa da Escolha"
+  },
+  {
+   "en": "LIGHT BALL",
+   "pt": "Esfera de Luz",
+   "fonte": "TCG",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "MACHO BRACE",
+   "pt": "Bracel. Macho",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "BRIGHTPOWDER",
+   "pt": "Pó Brilhante",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "SOFT SAND",
+   "pt": "Areia Macia",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "HARD STONE",
+   "pt": "Pedra Dura",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "MIRACLE SEED",
+   "pt": "Sem. Milagre",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true,
+   "obs": "✂ de: Semente Milagrosa"
+  },
+  {
+   "en": "BLACKGLASSES",
+   "pt": "Óculos Esc.",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true,
+   "obs": "✂ de: Óculos Escuros"
+  },
+  {
+   "en": "BLACK BELT",
+   "pt": "Faixa Preta",
+   "fonte": "GO",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "MAGNET",
+   "pt": "Ímã",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "MYSTIC WATER",
+   "pt": "Água Mística",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "SHARP BEAK",
+   "pt": "Bico Afiado",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "POISON BARB",
+   "pt": "Farpa Venen.",
+   "fonte": "TCG antigo",
+   "categoria": "item",
+   "detectar": true,
+   "obs": "✂ de: Farpa Venenosa"
+  },
+  {
+   "en": "NEVERMELTICE",
+   "pt": "Gelo Eterno",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "SPELL TAG",
+   "pt": "Talismã Feit.",
+   "fonte": "TCG antigo",
+   "categoria": "item",
+   "detectar": true,
+   "obs": "✂ de: Talismã de Feitiço"
+  },
+  {
+   "en": "TWISTEDSPOON",
+   "pt": "Colher Torta",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "CHARCOAL",
+   "pt": "Carvão",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "DRAGON FANG",
+   "pt": "Presa Dragão",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "SILK SCARF",
+   "pt": "Lenço de Seda",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "LUCKY PUNCH",
+   "pt": "Soco da Sorte",
+   "fonte": "TCG antigo",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "CHERI BERRY",
+   "pt": "Fruta Cheri",
+   "fonte": "padrão TCG (criado)",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "CHESTO BERRY",
+   "pt": "Fruta Chesto",
+   "fonte": "padrão TCG (criado)",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "PECHA BERRY",
+   "pt": "Fruta Pecha",
+   "fonte": "padrão TCG (criado)",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "RAWST BERRY",
+   "pt": "Fruta Rawst",
+   "fonte": "padrão TCG (criado)",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "ASPEAR BERRY",
+   "pt": "Fruta Aspear",
+   "fonte": "padrão TCG (criado)",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "LEPPA BERRY",
+   "pt": "Fruta Leppa",
+   "fonte": "padrão TCG (criado)",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "ORAN BERRY",
+   "pt": "Fruta Oran",
+   "fonte": "padrão TCG (criado)",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "PERSIM BERRY",
+   "pt": "Fruta Persim",
+   "fonte": "padrão TCG (criado)",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "LUM BERRY",
+   "pt": "Fruta Lum",
+   "fonte": "TCG",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "SITRUS BERRY",
+   "pt": "Fruta Sitrus",
+   "fonte": "TCG",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "RAZZ BERRY",
+   "pt": "Fruta Frambo",
+   "fonte": "GO",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "BLUK BERRY",
+   "pt": "Fruta Roama",
+   "fonte": "GO",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "NANAB BERRY",
+   "pt": "Fruta Anaba",
+   "fonte": "GO",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "WEPEAR BERRY",
+   "pt": "Fruta Ocipêra",
+   "fonte": "GO",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "PINAP BERRY",
+   "pt": "Fruta Caxí",
+   "fonte": "GO",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "FIGY BERRY",
+   "pt": "Fruta Figy",
+   "fonte": "padrão TCG (criado)",
+   "categoria": "item",
+   "detectar": true,
+   "obs": "a maior, \"Fruta Ocipêra\", tem 13"
+  },
+  {
+   "en": "WIKI BERRY",
+   "pt": "Fruta Wiki",
+   "fonte": "padrão TCG (criado)",
+   "categoria": "item",
+   "detectar": true,
+   "obs": "a maior, \"Fruta Ocipêra\", tem 13"
+  },
+  {
+   "en": "MAGO BERRY",
+   "pt": "Fruta Mago",
+   "fonte": "padrão TCG (criado)",
+   "categoria": "item",
+   "detectar": true,
+   "obs": "a maior, \"Fruta Ocipêra\", tem 13"
+  },
+  {
+   "en": "AGUAV BERRY",
+   "pt": "Fruta Aguav",
+   "fonte": "padrão TCG (criado)",
+   "categoria": "item",
+   "detectar": true,
+   "obs": "a maior, \"Fruta Ocipêra\", tem 13"
+  },
+  {
+   "en": "IAPAPA BERRY",
+   "pt": "Fruta Iapapa",
+   "fonte": "padrão TCG (criado)",
+   "categoria": "item",
+   "detectar": true,
+   "obs": "a maior, \"Fruta Ocipêra\", tem 13"
+  },
+  {
+   "en": "POMEG BERRY",
+   "pt": "Fruta Pomeg",
+   "fonte": "padrão TCG (criado)",
+   "categoria": "item",
+   "detectar": true,
+   "obs": "a maior, \"Fruta Ocipêra\", tem 13"
+  },
+  {
+   "en": "KELPSY BERRY",
+   "pt": "Fruta Kelpsy",
+   "fonte": "padrão TCG (criado)",
+   "categoria": "item",
+   "detectar": true,
+   "obs": "a maior, \"Fruta Ocipêra\", tem 13"
+  },
+  {
+   "en": "QUALOT BERRY",
+   "pt": "Fruta Qualot",
+   "fonte": "padrão TCG (criado)",
+   "categoria": "item",
+   "detectar": true,
+   "obs": "a maior, \"Fruta Ocipêra\", tem 13"
+  },
+  {
+   "en": "HONDEW BERRY",
+   "pt": "Fruta Hondew",
+   "fonte": "padrão TCG (criado)",
+   "categoria": "item",
+   "detectar": true,
+   "obs": "a maior, \"Fruta Ocipêra\", tem 13"
+  },
+  {
+   "en": "GREPA BERRY",
+   "pt": "Fruta Grepa",
+   "fonte": "padrão TCG (criado)",
+   "categoria": "item",
+   "detectar": true,
+   "obs": "a maior, \"Fruta Ocipêra\", tem 13"
+  },
+  {
+   "en": "TAMATO BERRY",
+   "pt": "Fruta Tamato",
+   "fonte": "padrão TCG (criado)",
+   "categoria": "item",
+   "detectar": true,
+   "obs": "a maior, \"Fruta Ocipêra\", tem 13"
+  },
+  {
+   "en": "CORNN BERRY",
+   "pt": "Fruta Cornn",
+   "fonte": "padrão TCG (criado)",
+   "categoria": "item",
+   "detectar": true,
+   "obs": "a maior, \"Fruta Ocipêra\", tem 13"
+  },
+  {
+   "en": "MAGOST BERRY",
+   "pt": "Fruta Magost",
+   "fonte": "padrão TCG (criado)",
+   "categoria": "item",
+   "detectar": true,
+   "obs": "a maior, \"Fruta Ocipêra\", tem 13"
+  },
+  {
+   "en": "RABUTA BERRY",
+   "pt": "Fruta Rabuta",
+   "fonte": "padrão TCG (criado)",
+   "categoria": "item",
+   "detectar": true,
+   "obs": "a maior, \"Fruta Ocipêra\", tem 13"
+  },
+  {
+   "en": "NOMEL BERRY",
+   "pt": "Fruta Nomel",
+   "fonte": "padrão TCG (criado)",
+   "categoria": "item",
+   "detectar": true,
+   "obs": "a maior, \"Fruta Ocipêra\", tem 13"
+  },
+  {
+   "en": "SPELON BERRY",
+   "pt": "Fruta Spelon",
+   "fonte": "padrão TCG (criado)",
+   "categoria": "item",
+   "detectar": true,
+   "obs": "a maior, \"Fruta Ocipêra\", tem 13"
+  },
+  {
+   "en": "PAMTRE BERRY",
+   "pt": "Fruta Pamtre",
+   "fonte": "padrão TCG (criado)",
+   "categoria": "item",
+   "detectar": true,
+   "obs": "a maior, \"Fruta Ocipêra\", tem 13"
+  },
+  {
+   "en": "WATMEL BERRY",
+   "pt": "Fruta Watmel",
+   "fonte": "padrão TCG (criado)",
+   "categoria": "item",
+   "detectar": true,
+   "obs": "a maior, \"Fruta Ocipêra\", tem 13"
+  },
+  {
+   "en": "DURIN BERRY",
+   "pt": "Fruta Durin",
+   "fonte": "padrão TCG (criado)",
+   "categoria": "item",
+   "detectar": true,
+   "obs": "a maior, \"Fruta Ocipêra\", tem 13"
+  },
+  {
+   "en": "BELUE BERRY",
+   "pt": "Fruta Belue",
+   "fonte": "padrão TCG (criado)",
+   "categoria": "item",
+   "detectar": true,
+   "obs": "a maior, \"Fruta Ocipêra\", tem 13"
+  },
+  {
+   "en": "LIECHI BERRY",
+   "pt": "Fruta Liechi",
+   "fonte": "padrão TCG (criado)",
+   "categoria": "item",
+   "detectar": true,
+   "obs": "a maior, \"Fruta Ocipêra\", tem 13"
+  },
+  {
+   "en": "GANLON BERRY",
+   "pt": "Fruta Ganlon",
+   "fonte": "padrão TCG (criado)",
+   "categoria": "item",
+   "detectar": true,
+   "obs": "a maior, \"Fruta Ocipêra\", tem 13"
+  },
+  {
+   "en": "SALAC BERRY",
+   "pt": "Fruta Salac",
+   "fonte": "padrão TCG (criado)",
+   "categoria": "item",
+   "detectar": true,
+   "obs": "a maior, \"Fruta Ocipêra\", tem 13"
+  },
+  {
+   "en": "PETAYA BERRY",
+   "pt": "Fruta Petaya",
+   "fonte": "padrão TCG (criado)",
+   "categoria": "item",
+   "detectar": true,
+   "obs": "a maior, \"Fruta Ocipêra\", tem 13"
+  },
+  {
+   "en": "APICOT BERRY",
+   "pt": "Fruta Apicot",
+   "fonte": "padrão TCG (criado)",
+   "categoria": "item",
+   "detectar": true,
+   "obs": "a maior, \"Fruta Ocipêra\", tem 13"
+  },
+  {
+   "en": "LANSAT BERRY",
+   "pt": "Fruta Lansat",
+   "fonte": "padrão TCG (criado)",
+   "categoria": "item",
+   "detectar": true,
+   "obs": "a maior, \"Fruta Ocipêra\", tem 13"
+  },
+  {
+   "en": "STARF BERRY",
+   "pt": "Fruta Starf",
+   "fonte": "padrão TCG (criado)",
+   "categoria": "item",
+   "detectar": true,
+   "obs": "a maior, \"Fruta Ocipêra\", tem 13"
+  },
+  {
+   "en": "ENIGMA BERRY",
+   "pt": "Fruta Enigma",
+   "fonte": "padrão TCG (criado)",
+   "categoria": "item",
+   "detectar": true,
+   "obs": "a maior, \"Fruta Ocipêra\", tem 13"
+  },
+  {
+   "en": "BICYCLE",
+   "pt": "Bicicleta",
+   "fonte": "TCG antigo",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "TOWN MAP",
+   "pt": "Mapa Cidade",
+   "fonte": "TCG antigo",
+   "categoria": "item",
+   "detectar": true,
+   "obs": "✂ de: Mapa da Cidade"
+  },
+  {
+   "en": "VS SEEKER",
+   "pt": "Explorador VS",
+   "fonte": "TCG antigo",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "OLD ROD",
+   "pt": "Vara Velha",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "GOOD ROD",
+   "pt": "Vara Boa",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "SUPER ROD",
+   "pt": "Supervara",
+   "fonte": "TCG",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "COIN CASE",
+   "pt": "Porta-moedas",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "ITEMFINDER",
+   "pt": "Detector Item",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "SILPH SCOPE",
+   "pt": "Visor Silph",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "POKé FLUTE",
+   "pt": "Poké Flauta",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "HELIX FOSSIL",
+   "pt": "Fóssil Hélice",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "DOME FOSSIL",
+   "pt": "Fóssil Domo",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "OLD AMBER",
+   "pt": "Âmbar Antigo",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "CARD KEY",
+   "pt": "Cartão-chave",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "LIFT KEY",
+   "pt": "Chave Elevad.",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "SECRET KEY",
+   "pt": "Chave Secreta",
+   "fonte": "TCG antigo",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "BIKE VOUCHER",
+   "pt": "Vale Bicicl.",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "GOLD TEETH",
+   "pt": "Dentes Ouro",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "OAK'S PARCEL",
+   "pt": "Encomenda",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true,
+   "obs": "\"Pacote do Carvalho\" não cabe"
+  },
+  {
+   "en": "S.S. TICKET",
+   "pt": "Bilhete S.S.",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "FAME CHECKER",
+   "pt": "Arquivo Fama",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "TM CASE",
+   "pt": "Estojo de MT",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "BERRY POUCH",
+   "pt": "Porta-frutas",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "TEACHY TV",
+   "pt": "TV Educativa",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "TRI-PASS",
+   "pt": "Passe Triplo",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "RAINBOW PASS",
+   "pt": "Passe 7 Cores",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true,
+   "obs": "\"Passe Arco-íris\" = 15"
+  },
+  {
+   "en": "TEA",
+   "pt": "Chá",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "RUBY",
+   "pt": "Rubi",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "SAPPHIRE",
+   "pt": "Safira",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "MYSTICTICKET",
+   "pt": "Bilhete Míst.",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "AURORATICKET",
+   "pt": "Bilh. Aurora",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "POWDER JAR",
+   "pt": "Pote de Pó",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true
+  },
+  {
+   "en": "ACRO BIKE",
+   "pt": "Bicic. Acro",
+   "fonte": "TCG antigo / criado",
+   "categoria": "item",
+   "detectar": true,
+   "obs": "✂ de: Bicicleta Acro; itens de R/S/E, não aparecem no FRLG"
+  },
+  {
+   "en": "MACH BIKE",
+   "pt": "Bicic. Mach",
+   "fonte": "TCG antigo / criado",
+   "categoria": "item",
+   "detectar": true,
+   "obs": "✂ de: Bicicleta Acro; itens de R/S/E, não aparecem no FRLG"
+  },
+  {
+   "en": "PALLET TOWN",
+   "pt": "Cidade de Pallet",
+   "fonte": "anime",
+   "categoria": "lugar",
+   "detectar": true
+  },
+  {
+   "en": "VIRIDIAN CITY",
+   "pt": "Cidade de Viridian",
+   "fonte": "anime",
+   "categoria": "lugar",
+   "detectar": true
+  },
+  {
+   "en": "PEWTER CITY",
+   "pt": "Cidade de Pewter",
+   "fonte": "anime",
+   "categoria": "lugar",
+   "detectar": true
+  },
+  {
+   "en": "CERULEAN CITY",
+   "pt": "Cidade de Cerulean",
+   "fonte": "anime",
+   "categoria": "lugar",
+   "detectar": true
+  },
+  {
+   "en": "VERMILION CITY",
+   "pt": "Cidade de Vermilion",
+   "fonte": "anime",
+   "categoria": "lugar",
+   "detectar": true
+  },
+  {
+   "en": "LAVENDER TOWN",
+   "pt": "Cidade de Lavender",
+   "fonte": "TCG",
+   "categoria": "lugar",
+   "detectar": true
+  },
+  {
+   "en": "CELADON CITY",
+   "pt": "Cidade de Celadon",
+   "fonte": "anime",
+   "categoria": "lugar",
+   "detectar": true
+  },
+  {
+   "en": "SAFFRON CITY",
+   "pt": "Cidade de Saffron",
+   "fonte": "anime",
+   "categoria": "lugar",
+   "detectar": true
+  },
+  {
+   "en": "FUCHSIA CITY",
+   "pt": "Cidade de Fuchsia",
+   "fonte": "anime",
+   "categoria": "lugar",
+   "detectar": true
+  },
+  {
+   "en": "CINNABAR ISLAND",
+   "pt": "Ilha Cinnabar",
+   "fonte": "anime",
+   "categoria": "lugar",
+   "detectar": true
+  },
+  {
+   "en": "INDIGO PLATEAU",
+   "pt": "Platô Índigo",
+   "fonte": "anime (confirmar)",
+   "categoria": "lugar",
+   "detectar": true
+  },
+  {
+   "en": "POKéMON LEAGUE",
+   "pt": "Liga Pokémon",
+   "fonte": "anime",
+   "categoria": "lugar",
+   "detectar": true
+  },
+  {
+   "en": "ROUTE 1",
+   "pt": "Rota 1",
+   "fonte": "anime",
+   "categoria": "lugar",
+   "detectar": true
+  },
+  {
+   "en": "ROUTE 2",
+   "pt": "Rota 2",
+   "fonte": "anime",
+   "categoria": "lugar",
+   "detectar": true
+  },
+  {
+   "en": "ROUTE 3",
+   "pt": "Rota 3",
+   "fonte": "anime",
+   "categoria": "lugar",
+   "detectar": true
+  },
+  {
+   "en": "ROUTE 4",
+   "pt": "Rota 4",
+   "fonte": "anime",
+   "categoria": "lugar",
+   "detectar": true
+  },
+  {
+   "en": "ROUTE 5",
+   "pt": "Rota 5",
+   "fonte": "anime",
+   "categoria": "lugar",
+   "detectar": true
+  },
+  {
+   "en": "ROUTE 6",
+   "pt": "Rota 6",
+   "fonte": "anime",
+   "categoria": "lugar",
+   "detectar": true
+  },
+  {
+   "en": "ROUTE 7",
+   "pt": "Rota 7",
+   "fonte": "anime",
+   "categoria": "lugar",
+   "detectar": true
+  },
+  {
+   "en": "ROUTE 8",
+   "pt": "Rota 8",
+   "fonte": "anime",
+   "categoria": "lugar",
+   "detectar": true
+  },
+  {
+   "en": "ROUTE 9",
+   "pt": "Rota 9",
+   "fonte": "anime",
+   "categoria": "lugar",
+   "detectar": true
+  },
+  {
+   "en": "ROUTE 10",
+   "pt": "Rota 10",
+   "fonte": "anime",
+   "categoria": "lugar",
+   "detectar": true
+  },
+  {
+   "en": "ROUTE 11",
+   "pt": "Rota 11",
+   "fonte": "anime",
+   "categoria": "lugar",
+   "detectar": true
+  },
+  {
+   "en": "ROUTE 12",
+   "pt": "Rota 12",
+   "fonte": "anime",
+   "categoria": "lugar",
+   "detectar": true
+  },
+  {
+   "en": "ROUTE 13",
+   "pt": "Rota 13",
+   "fonte": "anime",
+   "categoria": "lugar",
+   "detectar": true
+  },
+  {
+   "en": "ROUTE 14",
+   "pt": "Rota 14",
+   "fonte": "anime",
+   "categoria": "lugar",
+   "detectar": true
+  },
+  {
+   "en": "ROUTE 15",
+   "pt": "Rota 15",
+   "fonte": "anime",
+   "categoria": "lugar",
+   "detectar": true
+  },
+  {
+   "en": "ROUTE 16",
+   "pt": "Rota 16",
+   "fonte": "anime",
+   "categoria": "lugar",
+   "detectar": true
+  },
+  {
+   "en": "ROUTE 17",
+   "pt": "Rota 17",
+   "fonte": "anime",
+   "categoria": "lugar",
+   "detectar": true
+  },
+  {
+   "en": "ROUTE 18",
+   "pt": "Rota 18",
+   "fonte": "anime",
+   "categoria": "lugar",
+   "detectar": true
+  },
+  {
+   "en": "ROUTE 19",
+   "pt": "Rota 19",
+   "fonte": "anime",
+   "categoria": "lugar",
+   "detectar": true
+  },
+  {
+   "en": "ROUTE 20",
+   "pt": "Rota 20",
+   "fonte": "anime",
+   "categoria": "lugar",
+   "detectar": true
+  },
+  {
+   "en": "ROUTE 21",
+   "pt": "Rota 21",
+   "fonte": "anime",
+   "categoria": "lugar",
+   "detectar": true
+  },
+  {
+   "en": "ROUTE 22",
+   "pt": "Rota 22",
+   "fonte": "anime",
+   "categoria": "lugar",
+   "detectar": true
+  },
+  {
+   "en": "ROUTE 23",
+   "pt": "Rota 23",
+   "fonte": "anime",
+   "categoria": "lugar",
+   "detectar": true
+  },
+  {
+   "en": "ROUTE 24",
+   "pt": "Rota 24",
+   "fonte": "anime",
+   "categoria": "lugar",
+   "detectar": true
+  },
+  {
+   "en": "ROUTE 25",
+   "pt": "Rota 25",
+   "fonte": "anime",
+   "categoria": "lugar",
+   "detectar": true
+  },
+  {
+   "en": "VIRIDIAN FOREST",
+   "pt": "Floresta de Viridian",
+   "fonte": "TCG",
+   "categoria": "lugar",
+   "detectar": true
+  },
+  {
+   "en": "MT. MOON",
+   "pt": "Monte Lua",
+   "fonte": "anime (confirmar)",
+   "categoria": "lugar",
+   "detectar": true
+  },
+  {
+   "en": "CERULEAN CAVE",
+   "pt": "Caverna de Cerulean",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true
+  },
+  {
+   "en": "DIGLETT'S CAVE",
+   "pt": "Caverna do Diglett",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true
+  },
+  {
+   "en": "S.S. ANNE",
+   "pt": "S.S. Anne",
+   "fonte": "anime",
+   "categoria": "lugar",
+   "detectar": true
+  },
+  {
+   "en": "ROCK TUNNEL",
+   "pt": "Túnel de Pedra",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true
+  },
+  {
+   "en": "POWER PLANT",
+   "pt": "Usina Elétrica",
+   "fonte": "GO+TCG",
+   "categoria": "lugar",
+   "detectar": true
+  },
+  {
+   "en": "POKéMON TOWER",
+   "pt": "Torre Pokémon",
+   "fonte": "anime",
+   "categoria": "lugar",
+   "detectar": true
+  },
+  {
+   "en": "UNDERGROUND PATH",
+   "pt": "Caminho Subterrâneo",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true
+  },
+  {
+   "en": "CELADON DEPT.",
+   "pt": "Loja de Celadon",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true
+  },
+  {
+   "en": "ROCKET HIDEOUT",
+   "pt": "Esconderijo Rocket",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true
+  },
+  {
+   "en": "SILPH CO.",
+   "pt": "Silph Co.",
+   "fonte": "anime",
+   "categoria": "lugar",
+   "detectar": true
+  },
+  {
+   "en": "SAFARI ZONE",
+   "pt": "Zona de Safári",
+   "fonte": "GO",
+   "categoria": "lugar",
+   "detectar": true
+  },
+  {
+   "en": "SEAFOAM ISLANDS",
+   "pt": "Ilhas Seafoam",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true
+  },
+  {
+   "en": "POKéMON MANSION",
+   "pt": "Mansão Pokémon",
+   "fonte": "anime",
+   "categoria": "lugar",
+   "detectar": true
+  },
+  {
+   "en": "VICTORY ROAD",
+   "pt": "Estrada da Vitória",
+   "fonte": "anime (confirmar)",
+   "categoria": "lugar",
+   "detectar": true
+  },
+  {
+   "en": "Sevii Islands",
+   "pt": "Ilhas Sevii",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": false
+  },
+  {
+   "en": "ONE ISLAND",
+   "pt": "Ilha Um",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true
+  },
+  {
+   "en": "TWO ISLAND",
+   "pt": "Ilha Dois",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true
+  },
+  {
+   "en": "THREE ISLAND",
+   "pt": "Ilha Três",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true
+  },
+  {
+   "en": "FOUR ISLAND",
+   "pt": "Ilha Quatro",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true
+  },
+  {
+   "en": "FIVE ISLAND",
+   "pt": "Ilha Cinco",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true
+  },
+  {
+   "en": "SIX ISLAND",
+   "pt": "Ilha Seis",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true
+  },
+  {
+   "en": "SEVEN ISLAND",
+   "pt": "Ilha Sete",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true
+  },
+  {
+   "en": "SEVII ISLE 6",
+   "pt": "Ilhas Sevii 6",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true
+  },
+  {
+   "en": "SEVII ISLE 7",
+   "pt": "Ilhas Sevii 7",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true
+  },
+  {
+   "en": "SEVII ISLE 8",
+   "pt": "Ilhas Sevii 8",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true
+  },
+  {
+   "en": "SEVII ISLE 9",
+   "pt": "Ilhas Sevii 9",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true
+  },
+  {
+   "en": "SEVII ISLE 10",
+   "pt": "Ilhas Sevii 10",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true
+  },
+  {
+   "en": "SEVII ISLE 11",
+   "pt": "Ilhas Sevii 11",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true
+  },
+  {
+   "en": "SEVII ISLE 12",
+   "pt": "Ilhas Sevii 12",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true
+  },
+  {
+   "en": "SEVII ISLE 13",
+   "pt": "Ilhas Sevii 13",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true
+  },
+  {
+   "en": "SEVII ISLE 14",
+   "pt": "Ilhas Sevii 14",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true
+  },
+  {
+   "en": "SEVII ISLE 15",
+   "pt": "Ilhas Sevii 15",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true
+  },
+  {
+   "en": "SEVII ISLE 16",
+   "pt": "Ilhas Sevii 16",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true
+  },
+  {
+   "en": "SEVII ISLE 17",
+   "pt": "Ilhas Sevii 17",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true
+  },
+  {
+   "en": "SEVII ISLE 18",
+   "pt": "Ilhas Sevii 18",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true
+  },
+  {
+   "en": "SEVII ISLE 19",
+   "pt": "Ilhas Sevii 19",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true
+  },
+  {
+   "en": "SEVII ISLE 20",
+   "pt": "Ilhas Sevii 20",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true
+  },
+  {
+   "en": "SEVII ISLE 21",
+   "pt": "Ilhas Sevii 21",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true
+  },
+  {
+   "en": "SEVII ISLE 22",
+   "pt": "Ilhas Sevii 22",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true
+  },
+  {
+   "en": "SEVII ISLE 23",
+   "pt": "Ilhas Sevii 23",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true
+  },
+  {
+   "en": "SEVII ISLE 24",
+   "pt": "Ilhas Sevii 24",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true
+  },
+  {
+   "en": "KINDLE ROAD",
+   "pt": "Estrada Fagulha",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true
+  },
+  {
+   "en": "TREASURE BEACH",
+   "pt": "Praia do Tesouro",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true
+  },
+  {
+   "en": "MT. EMBER",
+   "pt": "Monte Brasa",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true
+  },
+  {
+   "en": "EMBER SPA",
+   "pt": "Spa da Brasa",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true
+  },
+  {
+   "en": "CAPE BRINK",
+   "pt": "Cabo Extremo",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true
+  },
+  {
+   "en": "BOND BRIDGE",
+   "pt": "Ponte da União",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true
+  },
+  {
+   "en": "THREE ISLE PORT",
+   "pt": "Porto da Ilha Três",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true
+  },
+  {
+   "en": "THREE ISLE PATH",
+   "pt": "Trilha da Ilha Três",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true
+  },
+  {
+   "en": "BERRY FOREST",
+   "pt": "Floresta das Frutas",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true
+  },
+  {
+   "en": "ICEFALL CAVE",
+   "pt": "Caverna Gélida",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true
+  },
+  {
+   "en": "FIVE ISLE MEADOW",
+   "pt": "Prado da Ilha Cinco",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true
+  },
+  {
+   "en": "ROCKET WAREHOUSE",
+   "pt": "Armazém Rocket",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true
+  },
+  {
+   "en": "LOST CAVE",
+   "pt": "Caverna Perdida",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true
+  },
+  {
+   "en": "MEMORIAL PILLAR",
+   "pt": "Pilar Memorial",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true
+  },
+  {
+   "en": "RESORT GORGEOUS",
+   "pt": "Recanto Esplêndido",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true
+  },
+  {
+   "en": "WATER LABYRINTH",
+   "pt": "Labirinto Aquático",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true
+  },
+  {
+   "en": "WATER PATH",
+   "pt": "Caminho da Água",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true
+  },
+  {
+   "en": "RUIN VALLEY",
+   "pt": "Vale das Ruínas",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true
+  },
+  {
+   "en": "DOTTED HOLE",
+   "pt": "Buraco Pontilhado",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true
+  },
+  {
+   "en": "GREEN PATH",
+   "pt": "Caminho Verde",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true
+  },
+  {
+   "en": "OUTCAST ISLAND",
+   "pt": "Ilha Proscrita",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true
+  },
+  {
+   "en": "PATTERN BUSH",
+   "pt": "Moita Estampada",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true
+  },
+  {
+   "en": "ALTERING CAVE",
+   "pt": "Caverna Mutante",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true
+  },
+  {
+   "en": "TRAINER TOWER",
+   "pt": "Torre do Treinador",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true
+  },
+  {
+   "en": "CANYON ENTRANCE",
+   "pt": "Entrada do Cânion",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true
+  },
+  {
+   "en": "SEVAULT CANYON",
+   "pt": "Cânion Sevault",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true
+  },
+  {
+   "en": "TANOBY RUINS",
+   "pt": "Ruínas de Tanoby",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true
+  },
+  {
+   "en": "TANOBY CHAMBERS",
+   "pt": "Câmaras de Tanoby",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true
+  },
+  {
+   "en": "TANOBY KEY",
+   "pt": "Chave de Tanoby",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true
+  },
+  {
+   "en": "MONEAN CHAMBER",
+   "pt": "Câmara Monean",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true
+  },
+  {
+   "en": "LIPTOO CHAMBER",
+   "pt": "Câmara Liptoo",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true
+  },
+  {
+   "en": "WEEPTH CHAMBER",
+   "pt": "Câmara Weepth",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true
+  },
+  {
+   "en": "DILFORD CHAMBER",
+   "pt": "Câmara Dilford",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true
+  },
+  {
+   "en": "SCUFIB CHAMBER",
+   "pt": "Câmara Scufib",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true
+  },
+  {
+   "en": "RIXY CHAMBER",
+   "pt": "Câmara Rixy",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true
+  },
+  {
+   "en": "VIAPOIS CHAMBER",
+   "pt": "Câmara Viapois",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true
+  },
+  {
+   "en": "NAVEL ROCK",
+   "pt": "Rocha Umbigo",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true
+  },
+  {
+   "en": "BIRTH ISLAND",
+   "pt": "Ilha do Nascimento",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true
+  },
+  {
+   "en": "GAME CORNER",
+   "pt": "Cassino",
+   "fonte": "anime (confirmar)",
+   "categoria": "lugar",
+   "detectar": true
+  },
+  {
+   "en": "POKéMON CENTER",
+   "pt": "Centro Pokémon",
+   "fonte": "anime",
+   "categoria": "lugar",
+   "detectar": true
+  },
+  {
+   "en": "POKé MART",
+   "pt": "Poké Mart",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true
+  },
+  {
+   "en": "Day Care",
+   "pt": "Creche Pokémon",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": false
+  },
+  {
+   "en": "Pokémon Lab",
+   "pt": "Laboratório Pokémon",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": false
+  },
+  {
+   "en": "Gym",
+   "pt": "Ginásio",
+   "fonte": "GO",
+   "categoria": "lugar",
+   "detectar": false
+  },
+  {
+   "en": "PROF. OAK",
+   "pt": "Prof. Carvalho",
+   "fonte": "anime / jogo",
+   "categoria": "personagem",
+   "detectar": true
+  },
+  {
+   "en": "OAK",
+   "pt": "Carvalho",
+   "fonte": "anime / jogo",
+   "categoria": "personagem",
+   "detectar": true
+  },
+  {
+   "en": "TEAM ROCKET",
+   "pt": "Equipe Rocket",
+   "fonte": "anime+TCG",
+   "categoria": "personagem",
+   "detectar": true
+  },
+  {
+   "en": "TEAM ROCKET GRUNT",
+   "pt": "Recruta Rocket",
+   "fonte": "TCG",
+   "categoria": "personagem",
+   "detectar": true,
+   "obs": "classe \"Recruta\" + nome \"Rocket\" (\"Recruta Rocket quer batalhar!\"); \"Equipe Rocket\" tem 13 letras e não cabe como classe; o TCG usa \"Recruta da Equipe X\""
+  },
+  {
+   "en": "GIOVANNI",
+   "pt": "Giovanni",
+   "fonte": "GO",
+   "categoria": "personagem",
+   "detectar": true,
+   "obs": "chefe da Equipe Rocket"
+  },
+  {
+   "en": "BROCK",
+   "pt": "Brock",
+   "fonte": "regra do Cintra",
+   "categoria": "personagem",
+   "detectar": true,
+   "obs": "o TCG escreve \"Érica\"; mantive \"Erika\""
+  },
+  {
+   "en": "MISTY",
+   "pt": "Misty",
+   "fonte": "regra do Cintra",
+   "categoria": "personagem",
+   "detectar": true,
+   "obs": "o TCG escreve \"Érica\"; mantive \"Erika\""
+  },
+  {
+   "en": "ERIKA",
+   "pt": "Erika",
+   "fonte": "regra do Cintra",
+   "categoria": "personagem",
+   "detectar": true,
+   "obs": "o TCG escreve \"Érica\"; mantive \"Erika\""
+  },
+  {
+   "en": "KOGA",
+   "pt": "Koga",
+   "fonte": "regra do Cintra",
+   "categoria": "personagem",
+   "detectar": true,
+   "obs": "o TCG escreve \"Érica\"; mantive \"Erika\""
+  },
+  {
+   "en": "SABRINA",
+   "pt": "Sabrina",
+   "fonte": "regra do Cintra",
+   "categoria": "personagem",
+   "detectar": true,
+   "obs": "o TCG escreve \"Érica\"; mantive \"Erika\""
+  },
+  {
+   "en": "BLAINE",
+   "pt": "Blaine",
+   "fonte": "regra do Cintra",
+   "categoria": "personagem",
+   "detectar": true,
+   "obs": "o TCG escreve \"Érica\"; mantive \"Erika\""
+  },
+  {
+   "en": "LT. SURGE",
+   "pt": "Ten. Surge",
+   "fonte": "anime (confirmar)",
+   "categoria": "personagem",
+   "detectar": true,
+   "obs": "anime: \"Tenente Surge\""
+  },
+  {
+   "en": "LORELEI",
+   "pt": "Lorelei",
+   "fonte": "TCG (Bruno, Agatha, Lance)",
+   "categoria": "personagem",
+   "detectar": true
+  },
+  {
+   "en": "BRUNO",
+   "pt": "Bruno",
+   "fonte": "TCG (Bruno, Agatha, Lance)",
+   "categoria": "personagem",
+   "detectar": true
+  },
+  {
+   "en": "AGATHA",
+   "pt": "Agatha",
+   "fonte": "TCG (Bruno, Agatha, Lance)",
+   "categoria": "personagem",
+   "detectar": true
+  },
+  {
+   "en": "LANCE",
+   "pt": "Lance",
+   "fonte": "TCG (Bruno, Agatha, Lance)",
+   "categoria": "personagem",
+   "detectar": true
+  },
+  {
+   "en": "ELITE FOUR",
+   "pt": "Elite Quatro",
+   "fonte": "criado",
+   "categoria": "personagem",
+   "detectar": true,
+   "obs": "✂ anime \"Elite dos Quatro\" tem 16 letras; no diálogo usar o nome inteiro"
+  },
+  {
+   "en": "CHAMPION",
+   "pt": "Campeão",
+   "fonte": "GO",
+   "categoria": "personagem",
+   "detectar": true
+  },
+  {
+   "en": "LEADER",
+   "pt": "Líder",
+   "fonte": "GO",
+   "categoria": "personagem",
+   "detectar": true,
+   "obs": "\"Líder de Ginásio\" no diálogo"
+  },
+  {
+   "en": "RIVAL",
+   "pt": "Rival",
+   "fonte": "criado",
+   "categoria": "personagem",
+   "detectar": true
+  },
+  {
+   "en": "BILL",
+   "pt": "Bill",
+   "fonte": "—",
+   "categoria": "personagem",
+   "detectar": true
+  },
+  {
+   "en": "DAISY",
+   "pt": "Daisy",
+   "fonte": "—",
+   "categoria": "personagem",
+   "detectar": true
+  },
+  {
+   "en": "CELIO",
+   "pt": "Celio",
+   "fonte": "—",
+   "categoria": "personagem",
+   "detectar": true
+  },
+  {
+   "en": "LOSTELLE",
+   "pt": "Lostelle",
+   "fonte": "—",
+   "categoria": "personagem",
+   "detectar": true
+  },
+  {
+   "en": "MR. FUJI",
+   "pt": "Sr. Fuji",
+   "fonte": "criado",
+   "categoria": "personagem",
+   "detectar": true
+  },
+  {
+   "en": "COPYCAT",
+   "pt": "Imitadora",
+   "fonte": "TCG",
+   "categoria": "personagem",
+   "detectar": true
+  },
+  {
+   "en": "MOM",
+   "pt": "Mãe",
+   "fonte": "criado",
+   "categoria": "personagem",
+   "detectar": true
+  },
+  {
+   "en": "NURSE",
+   "pt": "Enfermeira",
+   "fonte": "criado",
+   "categoria": "personagem",
+   "detectar": true
+  },
+  {
+   "en": "{PKMN} TRAINER",
+   "pt": "Treinador",
+   "fonte": "GO+TCG",
+   "categoria": "personagem",
+   "detectar": true
+  },
+  {
+   "en": "YOUNGSTER",
+   "pt": "Jovem",
+   "fonte": "GO+TCG",
+   "categoria": "personagem",
+   "detectar": true
+  },
+  {
+   "en": "BUG CATCHER",
+   "pt": "Caça-inseto",
+   "fonte": "GO+TCG",
+   "categoria": "personagem",
+   "detectar": true
+  },
+  {
+   "en": "HIKER",
+   "pt": "Montanhista",
+   "fonte": "GO+TCG",
+   "categoria": "personagem",
+   "detectar": true
+  },
+  {
+   "en": "LASS",
+   "pt": "Moça",
+   "fonte": "criado",
+   "categoria": "personagem",
+   "detectar": true
+  },
+  {
+   "en": "CAMPER",
+   "pt": "Campista",
+   "fonte": "criado",
+   "categoria": "personagem",
+   "detectar": true,
+   "obs": "\"Piqueniqueira\" tem 13 letras"
+  },
+  {
+   "en": "PICNICKER",
+   "pt": "Campista",
+   "fonte": "criado",
+   "categoria": "personagem",
+   "detectar": true,
+   "obs": "\"Piqueniqueira\" tem 13 letras"
+  },
+  {
+   "en": "SAILOR",
+   "pt": "Marinheiro",
+   "fonte": "criado",
+   "categoria": "personagem",
+   "detectar": true
+  },
+  {
+   "en": "SUPER NERD",
+   "pt": "Supernerd",
+   "fonte": "criado",
+   "categoria": "personagem",
+   "detectar": true
+  },
+  {
+   "en": "POKéMANIAC",
+   "pt": "Pokémaníaco",
+   "fonte": "criado",
+   "categoria": "personagem",
+   "detectar": true
+  },
+  {
+   "en": "GAMER",
+   "pt": "Apostador",
+   "fonte": "criado",
+   "categoria": "personagem",
+   "detectar": true
+  },
+  {
+   "en": "SWIMMER♂",
+   "pt": "Nadador",
+   "fonte": "criado",
+   "categoria": "personagem",
+   "detectar": true
+  },
+  {
+   "en": "SWIMMER♀",
+   "pt": "Nadadora",
+   "fonte": "criado",
+   "categoria": "personagem",
+   "detectar": true
+  },
+  {
+   "en": "ENGINEER",
+   "pt": "Engenheiro",
+   "fonte": "criado",
+   "categoria": "personagem",
+   "detectar": true
+  },
+  {
+   "en": "FISHERMAN",
+   "pt": "Pescador",
+   "fonte": "criado",
+   "categoria": "personagem",
+   "detectar": true
+  },
+  {
+   "en": "BIKER",
+   "pt": "Motoqueiro",
+   "fonte": "criado",
+   "categoria": "personagem",
+   "detectar": true
+  },
+  {
+   "en": "BURGLAR",
+   "pt": "Ladrão",
+   "fonte": "criado",
+   "categoria": "personagem",
+   "detectar": true
+  },
+  {
+   "en": "CUE BALL",
+   "pt": "Careca",
+   "fonte": "criado",
+   "categoria": "personagem",
+   "detectar": true
+  },
+  {
+   "en": "BEAUTY",
+   "pt": "Beldade",
+   "fonte": "criado",
+   "categoria": "personagem",
+   "detectar": true
+  },
+  {
+   "en": "PSYCHIC",
+   "pt": "Paranormal",
+   "fonte": "criado",
+   "categoria": "personagem",
+   "detectar": true
+  },
+  {
+   "en": "CHANNELER",
+   "pt": "Médium",
+   "fonte": "criado",
+   "categoria": "personagem",
+   "detectar": true
+  },
+  {
+   "en": "ROCKER",
+   "pt": "Roqueiro",
+   "fonte": "criado",
+   "categoria": "personagem",
+   "detectar": true
+  },
+  {
+   "en": "JUGGLER",
+   "pt": "Malabarista",
+   "fonte": "criado",
+   "categoria": "personagem",
+   "detectar": true
+  },
+  {
+   "en": "TAMER",
+   "pt": "Domador",
+   "fonte": "criado",
+   "categoria": "personagem",
+   "detectar": true
+  },
+  {
+   "en": "BIRD KEEPER",
+   "pt": "Ornitólogo",
+   "fonte": "criado",
+   "categoria": "personagem",
+   "detectar": true
+  },
+  {
+   "en": "BLACK BELT",
+   "pt": "Faixa-preta",
+   "fonte": "GO",
+   "categoria": "personagem",
+   "detectar": true
+  },
+  {
+   "en": "SCIENTIST",
+   "pt": "Cientista",
+   "fonte": "criado",
+   "categoria": "personagem",
+   "detectar": true
+  },
+  {
+   "en": "GENTLEMAN",
+   "pt": "Cavalheiro",
+   "fonte": "criado",
+   "categoria": "personagem",
+   "detectar": true
+  },
+  {
+   "en": "COOLTRAINER",
+   "pt": "Treinador Ás",
+   "fonte": "criado",
+   "categoria": "personagem",
+   "detectar": true
+  },
+  {
+   "en": "BOSS",
+   "pt": "Chefe",
+   "fonte": "criado",
+   "categoria": "personagem",
+   "detectar": true
+  },
+  {
+   "en": "TWINS",
+   "pt": "Gêmeas",
+   "fonte": "criado",
+   "categoria": "personagem",
+   "detectar": true
+  },
+  {
+   "en": "YOUNG COUPLE",
+   "pt": "Casal Jovem",
+   "fonte": "criado",
+   "categoria": "personagem",
+   "detectar": true
+  },
+  {
+   "en": "COOL COUPLE",
+   "pt": "Casal Ás",
+   "fonte": "criado",
+   "categoria": "personagem",
+   "detectar": true
+  },
+  {
+   "en": "SIS AND BRO",
+   "pt": "Irmãos",
+   "fonte": "criado",
+   "categoria": "personagem",
+   "detectar": true
+  },
+  {
+   "en": "CRUSH GIRL",
+   "pt": "Lutadora",
+   "fonte": "criado",
+   "categoria": "personagem",
+   "detectar": true
+  },
+  {
+   "en": "CRUSH KIN",
+   "pt": "Família Luta",
+   "fonte": "criado",
+   "categoria": "personagem",
+   "detectar": true
+  },
+  {
+   "en": "TUBER",
+   "pt": "Criança Boia",
+   "fonte": "criado",
+   "categoria": "personagem",
+   "detectar": true
+  },
+  {
+   "en": "PAINTER",
+   "pt": "Pintora",
+   "fonte": "criado",
+   "categoria": "personagem",
+   "detectar": true
+  },
+  {
+   "en": "AROMA LADY",
+   "pt": "Dama Aroma",
+   "fonte": "criado",
+   "categoria": "personagem",
+   "detectar": true
+  },
+  {
+   "en": "RUIN MANIAC",
+   "pt": "Ruinomaníaco",
+   "fonte": "criado",
+   "categoria": "personagem",
+   "detectar": true
+  },
+  {
+   "en": "LADY",
+   "pt": "Dama",
+   "fonte": "criado",
+   "categoria": "personagem",
+   "detectar": true
+  },
+  {
+   "en": "{PKMN} BREEDER",
+   "pt": "Criador",
+   "fonte": "criado",
+   "categoria": "personagem",
+   "detectar": true
+  },
+  {
+   "en": "{PKMN} RANGER",
+   "pt": "Patrulheiro",
+   "fonte": "criado",
+   "categoria": "personagem",
+   "detectar": true
+  },
+  {
+   "en": "{PKMN} PROF.",
+   "pt": "Prof.",
+   "fonte": "criado",
+   "categoria": "personagem",
+   "detectar": true
+  },
+  {
+   "en": "PLAYER",
+   "pt": "Jogador",
+   "fonte": "criado",
+   "categoria": "personagem",
+   "detectar": true
+  },
+  {
+   "en": "POKéDEX",
+   "pt": "Pokédex",
+   "fonte": "GO+TCG",
+   "categoria": "interface",
+   "detectar": true,
+   "obs": "41 px",
+   "tela": "Menu Start"
+  },
+  {
+   "en": "POKéMON",
+   "pt": "Pokémon",
+   "fonte": "—",
+   "categoria": "interface",
+   "detectar": true,
+   "obs": "40 px",
+   "tela": "Menu Start"
+  },
+  {
+   "en": "BAG",
+   "pt": "Bolsa",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": true,
+   "obs": "28 px",
+   "tela": "Menu Start"
+  },
+  {
+   "en": "{PLAYER}",
+   "pt": "{PLAYER}",
+   "fonte": "—",
+   "categoria": "interface",
+   "detectar": false,
+   "tela": "Menu Start"
+  },
+  {
+   "en": "SAVE",
+   "pt": "Salvar",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": true,
+   "obs": "34 px",
+   "tela": "Menu Start"
+  },
+  {
+   "en": "OPTION",
+   "pt": "Opções",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "obs": "35 px; o GO usa \"Configurações\" (não cabe)",
+   "tela": "Menu Start"
+  },
+  {
+   "en": "EXIT",
+   "pt": "Sair",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "obs": "21 px",
+   "tela": "Menu Start"
+  },
+  {
+   "en": "RETIRE",
+   "pt": "Desistir",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "obs": "40 px",
+   "tela": "Menu Start"
+  },
+  {
+   "en": "ITEMS",
+   "pt": "Itens",
+   "fonte": "GO (Itens, Poké Bolas)",
+   "categoria": "interface",
+   "detectar": true,
+   "obs": "o GO usa \"Itens essenciais\"",
+   "tela": "Bolsa"
+  },
+  {
+   "en": "KEY ITEMS",
+   "pt": "Itens-chave",
+   "fonte": "GO (Itens, Poké Bolas)",
+   "categoria": "interface",
+   "detectar": true,
+   "obs": "o GO usa \"Itens essenciais\"",
+   "tela": "Bolsa"
+  },
+  {
+   "en": "POKé BALLS",
+   "pt": "Poké Bolas",
+   "fonte": "GO (Itens, Poké Bolas)",
+   "categoria": "interface",
+   "detectar": true,
+   "obs": "o GO usa \"Itens essenciais\"",
+   "tela": "Bolsa"
+  },
+  {
+   "en": "USE",
+   "pt": "Usar",
+   "fonte": "GO (Descartar)",
+   "categoria": "interface",
+   "detectar": true,
+   "obs": "demais criados",
+   "tela": "Bolsa"
+  },
+  {
+   "en": "GIVE",
+   "pt": "Dar",
+   "fonte": "GO (Descartar)",
+   "categoria": "interface",
+   "detectar": true,
+   "obs": "demais criados",
+   "tela": "Bolsa"
+  },
+  {
+   "en": "TOSS",
+   "pt": "Descartar",
+   "fonte": "GO (Descartar)",
+   "categoria": "interface",
+   "detectar": true,
+   "obs": "demais criados",
+   "tela": "Bolsa"
+  },
+  {
+   "en": "REGISTER",
+   "pt": "Registrar",
+   "fonte": "GO (Descartar)",
+   "categoria": "interface",
+   "detectar": true,
+   "obs": "demais criados",
+   "tela": "Bolsa"
+  },
+  {
+   "en": "CHECK",
+   "pt": "Ver",
+   "fonte": "GO (Descartar)",
+   "categoria": "interface",
+   "detectar": true,
+   "obs": "demais criados",
+   "tela": "Bolsa"
+  },
+  {
+   "en": "CANCEL",
+   "pt": "Cancelar",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": true,
+   "tela": "Bolsa"
+  },
+  {
+   "en": "Pokémon holds item",
+   "pt": "Item segurado",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "tela": "Bolsa"
+  },
+  {
+   "en": "BILL'S PC",
+   "pt": "PC do Bill",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "tela": "PC"
+  },
+  {
+   "en": "SOMEONE'S PC",
+   "pt": "PC de alguém",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "tela": "PC"
+  },
+  {
+   "en": "PROF. OAK'S PC",
+   "pt": "PC do Prof. Carvalho",
+   "fonte": "anime",
+   "categoria": "interface",
+   "detectar": true,
+   "tela": "PC"
+  },
+  {
+   "en": "{PLAYER}'S PC",
+   "pt": "PC de {PLAYER}",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "tela": "PC"
+  },
+  {
+   "en": "WITHDRAW",
+   "pt": "Retirar",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "tela": "PC"
+  },
+  {
+   "en": "DEPOSIT",
+   "pt": "Guardar",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "tela": "PC"
+  },
+  {
+   "en": "MOVE POKéMON",
+   "pt": "Mover Pokémon",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "tela": "PC"
+  },
+  {
+   "en": "BOX",
+   "pt": "Caixa",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "tela": "PC"
+  },
+  {
+   "en": "ITEM STORAGE",
+   "pt": "Depósito de Itens",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "tela": "PC"
+  },
+  {
+   "en": "RELEASE",
+   "pt": "Soltar",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "obs": "o GO usa \"Transferir\" (outra mecânica)",
+   "tela": "PC"
+  },
+  {
+   "en": "SEEN",
+   "pt": "Vistos",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": true,
+   "tela": "Pokédex"
+  },
+  {
+   "en": "OWNED",
+   "pt": "Pegos",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": true,
+   "tela": "Pokédex"
+  },
+  {
+   "en": "HT",
+   "pt": "Alt.",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": true,
+   "tela": "Pokédex"
+  },
+  {
+   "en": "WT",
+   "pt": "Peso",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": true,
+   "tela": "Pokédex"
+  },
+  {
+   "en": "AREA",
+   "pt": "Área",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "tela": "Pokédex"
+  },
+  {
+   "en": "CRY",
+   "pt": "Grito",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "tela": "Pokédex"
+  },
+  {
+   "en": "SIZE",
+   "pt": "Tamanho",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "tela": "Pokédex"
+  },
+  {
+   "en": "{category} POKéMON",
+   "pt": "Pokémon {categoria}",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "\"SEED\" → \"Semente\"; categoria ≤ 11 letras",
+   "tela": "Pokédex"
+  },
+  {
+   "en": "NATIONAL DEX",
+   "pt": "Pokédex Nacional",
+   "fonte": "jogo",
+   "categoria": "interface",
+   "detectar": true,
+   "tela": "Pokédex"
+  },
+  {
+   "en": "POKéMON INFO",
+   "pt": "Dados",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": true,
+   "obs": "nome de página ≤ 88 px",
+   "tela": "Resumo"
+  },
+  {
+   "en": "POKéMON SKILLS",
+   "pt": "Atributos",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "tela": "Resumo"
+  },
+  {
+   "en": "KNOWN MOVES",
+   "pt": "Golpes",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "tela": "Resumo"
+  },
+  {
+   "en": "EVOLUTION",
+   "pt": "Evolução",
+   "fonte": "GO (Evolução)",
+   "categoria": "interface",
+   "detectar": true,
+   "obs": "IV/EV ficam em inglês (sigla usada pela comunidade BR)",
+   "tela": "Resumo"
+  },
+  {
+   "en": "IVs/EVs",
+   "pt": "IVs/EVs",
+   "fonte": "GO (Evolução)",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "IV/EV ficam em inglês (sigla usada pela comunidade BR)",
+   "tela": "Resumo"
+  },
+  {
+   "en": "OT",
+   "pt": "TO",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "obs": "TO = Treinador Original",
+   "tela": "Resumo"
+  },
+  {
+   "en": "ID No.",
+   "pt": "Nº ID",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "TO = Treinador Original",
+   "tela": "Resumo"
+  },
+  {
+   "en": "TYPE",
+   "pt": "Tipo",
+   "fonte": "GO / GO / TCG",
+   "categoria": "interface",
+   "detectar": true,
+   "tela": "Resumo"
+  },
+  {
+   "en": "ITEM",
+   "pt": "Item",
+   "fonte": "GO / GO / TCG",
+   "categoria": "interface",
+   "detectar": true,
+   "tela": "Resumo"
+  },
+  {
+   "en": "ABILITY",
+   "pt": "Habilidade",
+   "fonte": "GO / GO / TCG",
+   "categoria": "interface",
+   "detectar": true,
+   "tela": "Resumo"
+  },
+  {
+   "en": "TRAINER MEMO",
+   "pt": "Notas do Treinador",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "tela": "Resumo"
+  },
+  {
+   "en": "EXP. POINTS",
+   "pt": "PE",
+   "fonte": "GO (PE)",
+   "categoria": "interface",
+   "detectar": true,
+   "tela": "Resumo"
+  },
+  {
+   "en": "NEXT LV.",
+   "pt": "Próx. Nv.",
+   "fonte": "GO (PE)",
+   "categoria": "interface",
+   "detectar": true,
+   "tela": "Resumo"
+  },
+  {
+   "en": "{X} nature.",
+   "pt": "Natureza {X}.",
+   "fonte": "GO (Natureza)",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "ordem invertida no código",
+   "tela": "Resumo"
+  },
+  {
+   "en": "friendship",
+   "pt": "Amizade",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "tela": "Resumo"
+  },
+  {
+   "en": "male",
+   "pt": "macho",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "tela": "Resumo"
+  },
+  {
+   "en": "female",
+   "pt": "fêmea",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "tela": "Resumo"
+  },
+  {
+   "en": "FIGHT",
+   "pt": "Lutar",
+   "fonte": "GO (Bolsa)",
+   "categoria": "interface",
+   "detectar": true,
+   "tela": "Batalha"
+  },
+  {
+   "en": "RUN",
+   "pt": "Fugir",
+   "fonte": "GO (Bolsa)",
+   "categoria": "interface",
+   "detectar": true,
+   "tela": "Batalha"
+  },
+  {
+   "en": "PP",
+   "pt": "PP",
+   "fonte": "—",
+   "categoria": "interface",
+   "detectar": false,
+   "tela": "Batalha"
+  },
+  {
+   "en": "TYPE/",
+   "pt": "Tipo/",
+   "fonte": "—",
+   "categoria": "interface",
+   "detectar": true,
+   "tela": "Batalha"
+  },
+  {
+   "en": "SUMMARY",
+   "pt": "Resumo",
+   "fonte": "GO (Trocar, Cancelar)",
+   "categoria": "interface",
+   "detectar": true,
+   "tela": "Grupo"
+  },
+  {
+   "en": "SWITCH",
+   "pt": "Trocar",
+   "fonte": "GO (Trocar, Cancelar)",
+   "categoria": "interface",
+   "detectar": true,
+   "tela": "Grupo"
+  },
+  {
+   "en": "TAKE",
+   "pt": "Pegar",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "tela": "Grupo"
+  },
+  {
+   "en": "MAIL",
+   "pt": "Carta",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "tela": "Grupo"
+  },
+  {
+   "en": "TEXT SPEED",
+   "pt": "Vel. texto",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "tela": "Opções"
+  },
+  {
+   "en": "SLOW",
+   "pt": "Lenta",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "tela": "Opções"
+  },
+  {
+   "en": "MID",
+   "pt": "Média",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "tela": "Opções"
+  },
+  {
+   "en": "FAST",
+   "pt": "Rápida",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "tela": "Opções"
+  },
+  {
+   "en": "BATTLE SCENE",
+   "pt": "Animação",
+   "fonte": "GO (Sim/Não)",
+   "categoria": "interface",
+   "detectar": true,
+   "tela": "Opções"
+  },
+  {
+   "en": "ON",
+   "pt": "Sim",
+   "fonte": "GO (Sim/Não)",
+   "categoria": "interface",
+   "detectar": false,
+   "tela": "Opções"
+  },
+  {
+   "en": "OFF",
+   "pt": "Não",
+   "fonte": "GO (Sim/Não)",
+   "categoria": "interface",
+   "detectar": true,
+   "tela": "Opções"
+  },
+  {
+   "en": "BATTLE STYLE",
+   "pt": "Estilo",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "tela": "Opções"
+  },
+  {
+   "en": "SHIFT",
+   "pt": "Troca",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "tela": "Opções"
+  },
+  {
+   "en": "SET",
+   "pt": "Fixo",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "tela": "Opções"
+  },
+  {
+   "en": "SOUND",
+   "pt": "Áudio",
+   "fonte": "GO (Áudio)",
+   "categoria": "interface",
+   "detectar": true,
+   "tela": "Opções"
+  },
+  {
+   "en": "MONO",
+   "pt": "Mono",
+   "fonte": "GO (Áudio)",
+   "categoria": "interface",
+   "detectar": true,
+   "tela": "Opções"
+  },
+  {
+   "en": "STEREO",
+   "pt": "Estéreo",
+   "fonte": "GO (Áudio)",
+   "categoria": "interface",
+   "detectar": true,
+   "tela": "Opções"
+  },
+  {
+   "en": "BUTTON MODE",
+   "pt": "Botões",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "tela": "Opções"
+  },
+  {
+   "en": "FRAME",
+   "pt": "Moldura",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "tela": "Opções"
+  },
+  {
+   "en": "BUY",
+   "pt": "Comprar",
+   "fonte": "GO (Comprar)",
+   "categoria": "interface",
+   "detectar": true,
+   "tela": "Loja"
+  },
+  {
+   "en": "SELL",
+   "pt": "Vender",
+   "fonte": "GO (Comprar)",
+   "categoria": "interface",
+   "detectar": true,
+   "tela": "Loja"
+  },
+  {
+   "en": "SEE YA!",
+   "pt": "Tchau!",
+   "fonte": "GO (Comprar)",
+   "categoria": "interface",
+   "detectar": true,
+   "tela": "Loja"
+  },
+  {
+   "en": "MONEY",
+   "pt": "Dinheiro",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "tela": "Loja"
+  },
+  {
+   "en": "IN BAG",
+   "pt": "Na bolsa",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "tela": "Loja"
+  },
+  {
+   "en": "currency ¥",
+   "pt": "¥",
+   "fonte": "—",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "glifo mantido",
+   "tela": "Loja"
+  },
+  {
+   "en": "Would you like to save the game?",
+   "pt": "Quer salvar o jogo?",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "tela": "Salvar"
+  },
+  {
+   "en": "SAVING… DON'T TURN OFF THE POWER.",
+   "pt": "Salvando… Não desligue o aparelho.",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "tela": "Salvar"
+  },
+  {
+   "en": "{PLAYER} saved the game.",
+   "pt": "{PLAYER} salvou o jogo.",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "tela": "Salvar"
+  },
+  {
+   "en": "NEW GAME",
+   "pt": "Novo jogo",
+   "fonte": "GO (Continuar)",
+   "categoria": "interface",
+   "detectar": true,
+   "tela": "Título"
+  },
+  {
+   "en": "CONTINUE",
+   "pt": "Continuar",
+   "fonte": "GO (Continuar)",
+   "categoria": "interface",
+   "detectar": true,
+   "tela": "Título"
+  },
+  {
+   "en": "MYSTERY GIFT",
+   "pt": "Presente Misterioso",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "tela": "Título"
+  },
+  {
+   "en": "YES",
+   "pt": "Sim",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": true,
+   "tela": "Geral"
+  },
+  {
+   "en": "NO",
+   "pt": "Não",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "tela": "Geral"
+  },
+  {
+   "en": "TRAINER CARD",
+   "pt": "Cartão de Treinador",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "tela": "Geral"
+  },
+  {
+   "en": "BADGES",
+   "pt": "Insígnias",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": true,
+   "tela": "Geral"
+  },
+  {
+   "en": "BOULDERBADGE",
+   "pt": "Insígnia Rocha",
+   "fonte": "anime (confirmar)",
+   "categoria": "interface",
+   "detectar": true,
+   "tela": "Geral"
+  },
+  {
+   "en": "CASCADEBADGE",
+   "pt": "Insígnia Cascata",
+   "fonte": "anime (confirmar)",
+   "categoria": "interface",
+   "detectar": true,
+   "tela": "Geral"
+  },
+  {
+   "en": "THUNDERBADGE",
+   "pt": "Insígnia Trovão",
+   "fonte": "anime (confirmar)",
+   "categoria": "interface",
+   "detectar": true,
+   "tela": "Geral"
+  },
+  {
+   "en": "RAINBOWBADGE",
+   "pt": "Insígnia Arco-íris",
+   "fonte": "anime (confirmar)",
+   "categoria": "interface",
+   "detectar": true,
+   "tela": "Geral"
+  },
+  {
+   "en": "SOULBADGE",
+   "pt": "Insígnia Alma",
+   "fonte": "anime (confirmar)",
+   "categoria": "interface",
+   "detectar": true,
+   "tela": "Geral"
+  },
+  {
+   "en": "MARSHBADGE",
+   "pt": "Insígnia Pântano",
+   "fonte": "anime (confirmar)",
+   "categoria": "interface",
+   "detectar": true,
+   "tela": "Geral"
+  },
+  {
+   "en": "VOLCANOBADGE",
+   "pt": "Insígnia Vulcão",
+   "fonte": "anime (confirmar)",
+   "categoria": "interface",
+   "detectar": true,
+   "tela": "Geral"
+  },
+  {
+   "en": "EARTHBADGE",
+   "pt": "Insígnia Terra",
+   "fonte": "anime (confirmar)",
+   "categoria": "interface",
+   "detectar": true,
+   "tela": "Geral"
+  },
+  {
+   "en": "HALL OF FAME",
+   "pt": "Hall da Fama",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "tela": "Geral"
+  },
+  {
+   "en": "EGG",
+   "pt": "Ovo",
+   "fonte": "jogo+GO",
+   "categoria": "interface",
+   "detectar": true,
+   "tela": "Geral"
+  },
+  {
+   "en": "hatch",
+   "pt": "chocar",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "tela": "Geral"
+  },
+  {
+   "en": "nickname",
+   "pt": "apelido",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "tela": "Geral"
+  },
+  {
+   "en": "Morning",
+   "pt": "Manhã",
+   "fonte": "jogo",
+   "categoria": "interface",
+   "detectar": false,
+   "tela": "Geral"
+  },
+  {
+   "en": "Day",
+   "pt": "Tarde",
+   "fonte": "jogo",
+   "categoria": "interface",
+   "detectar": false,
+   "tela": "Geral"
+  },
+  {
+   "en": "Evening",
+   "pt": "Entardecer",
+   "fonte": "jogo",
+   "categoria": "interface",
+   "detectar": false,
+   "tela": "Geral"
+  },
+  {
+   "en": "Night",
+   "pt": "Noite",
+   "fonte": "jogo",
+   "categoria": "interface",
+   "detectar": false,
+   "tela": "Geral"
+  }
+ ],
+ "proibidos": [
+  {
+   "variante": "Pokébola",
+   "use": "Poké Bola",
+   "motivo": "glossário §2.7: Poké Bola (GO+TCG), caixa mista (§6.3)"
+  },
+  {
+   "variante": "Pokebola",
+   "use": "Poké Bola",
+   "motivo": "glossário §2.7: Poké Bola (GO+TCG), caixa mista (§6.3)"
+  },
+  {
+   "variante": "Poké bola",
+   "use": "Poké Bola",
+   "motivo": "glossário §2.7: Poké Bola (GO+TCG), caixa mista (§6.3)"
+  },
+  {
+   "variante": "Poke Bola",
+   "use": "Poké Bola",
+   "motivo": "glossário §2.7: Poké Bola (GO+TCG), caixa mista (§6.3)"
+  },
+  {
+   "variante": "PokéBola",
+   "use": "Poké Bola",
+   "motivo": "glossário §2.7: Poké Bola (GO+TCG), caixa mista (§6.3)"
+  },
+  {
+   "variante": "Poké-bola",
+   "use": "Poké Bola",
+   "motivo": "glossário §2.7: Poké Bola (GO+TCG), caixa mista (§6.3)"
+  },
+  {
+   "variante": "Poké Ball",
+   "use": "Poké Bola",
+   "motivo": "glossário §2.7: Poké Bola (GO+TCG), caixa mista (§6.3)"
+  },
+  {
+   "variante": "Professor Oak",
+   "use": "Prof. Carvalho",
+   "motivo": "glossário §2.9 e Global Constraints: Prof. Carvalho"
+  },
+  {
+   "variante": "Prof. Oak",
+   "use": "Prof. Carvalho",
+   "motivo": "glossário §2.9 e Global Constraints: Prof. Carvalho"
+  },
+  {
+   "variante": "Oak",
+   "use": "Carvalho",
+   "motivo": "glossário §2.9: Carvalho"
+  },
+  {
+   "variante": "HP",
+   "use": "PS",
+   "motivo": "decisão §6.2: PS e PE"
+  },
+  {
+   "variante": "EXP",
+   "use": "PE",
+   "motivo": "decisão §6.2: PS e PE"
+  },
+  {
+   "variante": "Team Rocket",
+   "use": "Equipe Rocket",
+   "motivo": "glossário §2.9: Equipe Rocket"
+  },
+  {
+   "variante": "Time Rocket",
+   "use": "Equipe Rocket",
+   "motivo": "glossário §2.9: Equipe Rocket"
+  },
+  {
+   "variante": "Pokemon",
+   "use": "Pokémon",
+   "motivo": "glossário: Pokémon (com acento, caixa mista)"
+  },
+  {
+   "variante": "Pokedex",
+   "use": "Pokédex",
+   "motivo": "glossário §2.10: Pokédex"
+  },
+  {
+   "variante": "Pokémon Center",
+   "use": "Centro Pokémon",
+   "motivo": "glossário §2.8: Centro Pokémon"
+  },
+  {
+   "variante": "Lv.",
+   "use": "Nv.",
+   "motivo": "glossário §2.4: Nv. / nível"
+  },
+  {
+   "variante": "Gym",
+   "use": "Ginásio",
+   "motivo": "glossário §2.8: Ginásio (GO)"
+  }
+ ]
+}
