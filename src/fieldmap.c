@@ -5,6 +5,7 @@
 #include "new_menu_helpers.h"
 #include "quest_log.h"
 #include "fieldmap.h"
+#include "day_night.h" /* Hack 7 — frente A */
 
 struct ConnectionFlags
 {
@@ -840,10 +841,20 @@ static void CopyTilesetToVramUsingHeap(struct Tileset const *tileset, u16 numTil
 
 static void ApplyGlobalTintToPaletteEntries(u16 offset, u16 size)
 {
+    bool8 tinted = FALSE;
+
+    // Hack 7 — frente A: day/night tone (tilesets only, never the window palettes BG 13-15)
+    if (offset < BG_PLTT_ID(NUM_PALS_TOTAL) && DayNight_ShouldTintCurrentMap())
+    {
+        DayNight_TintPaletteBuffer(&gPlttBufferUnfaded[offset], min(size, BG_PLTT_ID(NUM_PALS_TOTAL) - offset));
+        tinted = TRUE;
+    }
     switch (gGlobalFieldTintMode)
     {
     case QL_TINT_NONE:
-        return;
+        if (!tinted)
+            return;
+        break;
     case QL_TINT_GRAYSCALE:
         TintPalette_GrayScale(&gPlttBufferUnfaded[offset], size);
         break;
@@ -855,17 +866,29 @@ static void ApplyGlobalTintToPaletteEntries(u16 offset, u16 size)
         TintPalette_GrayScale(&gPlttBufferUnfaded[offset], size);
         break;
     default:
-        return;
+        if (!tinted)
+            return;
+        break;
     }
     CpuCopy16(&gPlttBufferUnfaded[offset], &gPlttBufferFaded[offset], PLTT_SIZEOF(size));
 }
 
 void ApplyGlobalTintToPaletteSlot(u8 slot, u8 count)
 {
+    bool8 tinted = FALSE;
+
+    // Hack 7 — frente A: day/night tone (never the window palettes BG 13-15)
+    if (slot < NUM_PALS_TOTAL && DayNight_ShouldTintCurrentMap())
+    {
+        DayNight_TintPaletteBuffer(&gPlttBufferUnfaded[BG_PLTT_ID(slot)], min(count, NUM_PALS_TOTAL - slot) * 16);
+        tinted = TRUE;
+    }
     switch (gGlobalFieldTintMode)
     {
     case QL_TINT_NONE:
-        return;
+        if (!tinted)
+            return;
+        break;
     case QL_TINT_GRAYSCALE:
         TintPalette_GrayScale(&gPlttBufferUnfaded[BG_PLTT_ID(slot)], count * 16);
         break;
@@ -877,7 +900,9 @@ void ApplyGlobalTintToPaletteSlot(u8 slot, u8 count)
         TintPalette_GrayScale(&gPlttBufferUnfaded[BG_PLTT_ID(slot)], count * 16);
         break;
     default:
-        return;
+        if (!tinted)
+            return;
+        break;
     }
     CpuFastCopy(&gPlttBufferUnfaded[BG_PLTT_ID(slot)], &gPlttBufferFaded[BG_PLTT_ID(slot)], count * PLTT_SIZE_4BPP);
 }

@@ -19,6 +19,7 @@
 #include "fame_checker.h"
 #include "strings.h"
 #include "constants/event_objects.h"
+#include "day_night.h" /* Hack 7 — frente A */
 
 #define SPRITETAG_SELECTOR_CURSOR 1000
 #define SPRITETAG_QUESTION_MARK 1001
@@ -1197,7 +1198,9 @@ static void FCSetup_ResetTasksAndSpriteResources(void)
     ResetSpriteData();
     ResetAllPicSprites();
     ResetPaletteFade();
+    DayNight_SuspendTint(TRUE); /* Hack 7 — frente A: not on the field */
     InitObjectEventPalettes(0);
+    DayNight_SuspendTint(FALSE);
     gReservedSpritePaletteCount = 7;
 
 }

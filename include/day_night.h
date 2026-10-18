@@ -20,4 +20,15 @@ void DayNight_OnPeriodChange(void);
 extern u8 gDayNightClockText[20];
 extern u8 gDayNightPopupPeriod;
 
+// Per-channel multiplier of the field palettes, in 1/256
+struct DayNightTint
+{
+    u16 r, g, b;
+};
+
+void DayNight_GetTintAt(u32 minuteOfDay, struct DayNightTint *out);
+bool8 DayNight_ShouldTintCurrentMap(void);
+void DayNight_TintPaletteBuffer(u16 *pal, u16 count);
+void DayNight_SuspendTint(bool8 suspend);
+
 #endif // GUARD_DAY_NIGHT_H

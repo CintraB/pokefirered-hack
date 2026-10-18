@@ -139,6 +139,13 @@ class Mailbox:
         info = self.call(CMD_CLOCK_INFO)
         return info & 0xFFFF, info >> 16
 
+    # --- Hack 7 frente A: tom de cor por período ------------------------------------------
+    def tint_at(self, minute: int) -> tuple[int, int, int]:
+        """(r, g, b) em 1/256 que DayNight_GetTintAt dá para o minuto do dia."""
+        packed = self.call(CMD_TINT_AT, minute)
+        assert packed != NO_RESULT, "TINT_AT não implementado nesta ROM"
+        return packed & 0x3FF, (packed >> 10) & 0x3FF, (packed >> 20) & 0x3FF
+
 # --- Hack 6: breeding genético (enum à parte em include/test_hooks.h, a partir de 0x60; ------
 # o uso fica em esteira/breeding.py e scenarios/full_breeding.py / full_egg.py)
 CMD_BREED_SETUP = 0x60      # gTestBreedSetup -> creche (arg0 = 1: ovo pendente) -> compatibilidade (0xFFFFFFFF = pai inválido)
@@ -157,7 +164,7 @@ CMD_SPEED_ORDER = 0x69      # arg0/arg1 = velocidade | item << 16 -> GetWhoStrik
 # a partir de 0x70; números fixos do plano, os ainda não implementados devolvem 0xFFFFFFFF)
 CMD_SET_CLOCK = 0x70        # arg0 = dia, arg1 = minuto do dia -> DayNight_GetMinuteOfDay()
 CMD_CLOCK_INFO = 0x71       # -> minuto do dia | período << 16
-CMD_TINT_AT = 0x72
+CMD_TINT_AT = 0x72          # arg0 = minuto do dia -> r | g << 10 | b << 20 (tom em 1/256)
 CMD_ROLL_WEATHER = 0x73
 CMD_LAND_SPECIES = 0x74
 CMD_FRIENDSHIP_TEXT = 0x75

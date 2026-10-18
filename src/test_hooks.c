@@ -547,7 +547,14 @@ void TestHooks_Run(void)
         break;
     case TEST_CMD_CLOCK_INFO:       result = DayNight_GetMinuteOfDay() | DayNight_GetPeriod() << 16; break;
     // Hack 7 front A: start
+    case TEST_CMD_TINT_AT:
+    {
+        struct DayNightTint tint;
 
+        DayNight_GetTintAt(gTestMailbox.arg0, &tint);
+        result = tint.r | tint.g << 10 | tint.b << 20;
+        break;
+    }
     // Hack 7 front A: end
     // Hack 7 front B: start
 

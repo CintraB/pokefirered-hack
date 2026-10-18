@@ -884,6 +884,7 @@ static u8 IsWeatherFadingIn(void)
 void LoadCustomWeatherSpritePalette(const u16 *palette)
 {
     LoadPalette(palette, OBJ_PLTT_ID(gWeatherPtr->weatherPicSpritePalIndex), PLTT_SIZE_4BPP);
+    ApplyGlobalFieldPaletteTint(gWeatherPtr->weatherPicSpritePalIndex); // Hack 7 — frente A: tinted as the default one
     UpdateSpritePaletteWithWeather(gWeatherPtr->weatherPicSpritePalIndex);
 }
 

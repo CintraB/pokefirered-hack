@@ -158,3 +158,133 @@ def test_relogio_destruido_antes_de_limpar_as_janelas():
         antes = "\n".join(linhas[max(0, i - 6):i])
         assert "DestroyStartMenuClockWindow();" in antes, (
             f"start_menu.c:{i + 1}: CleanupOverworldWindowsAndTilemaps sem DestroyStartMenuClockWindow antes")
+
+
+# ---- Hack 7 frente A: tom de cor por período (Task 3) ----------------------------------------
+
+def _corpo_c(arquivo: str, assinatura: str) -> str:
+    texto = (REPO_ROOT / "src" / arquivo).read_text(encoding="utf-8")
+    corpo = re.search(re.escape(assinatura) + r"\n\{\n(.*?)\n\}", texto, re.S)
+    assert corpo, f"{assinatura} não encontrado em src/{arquivo}"
+    return corpo.group(1)
+
+
+def test_tom_nos_periodos():
+    assert dn.tint_at(12 * 60) == (256, 256, 256)
+    assert dn.tint_at(22 * 60) == (144, 152, 224)
+    assert dn.tint_at(5 * 60) == (256, 240, 224)
+    assert dn.tint_at(18 * 60) == (256, 200, 168)
+
+
+def test_tom_interpola():
+    tarde, entardecer = dn.PERIOD_TINTS[dn.AFTERNOON], dn.PERIOD_TINTS[dn.EVENING]
+    assert dn.tint_at(16 * 60) == tarde          # a transição parte do tom do período
+    meio = dn.tint_at(16 * 60 + 30)
+    for t, m, e in zip(tarde, meio, entardecer):
+        assert min(t, e) <= m <= max(t, e), (tarde, meio, entardecer)
+        if t != e:
+            assert m not in (t, e), (tarde, meio, entardecer)
+    fim = dn.tint_at(16 * 60 + 59)
+    assert fim != entardecer
+    for t, f, e in zip(tarde, fim, entardecer):
+        passo = -(-abs(t - e) // 60)              # um minuto de interpolação, arredondado para cima
+        assert abs(f - e) <= passo, (fim, entardecer)
+    assert dn.tint_at(17 * 60) == entardecer
+
+
+def test_tom_contínuo_nos_quatro_limites():
+    """Nenhum salto maior que um minuto de interpolação em volta do dia inteiro."""
+    for minuto in range(dn.MINUTES_PER_DAY):
+        a, b = dn.tint_at(minuto), dn.tint_at(minuto + 1)
+        for x, y in zip(a, b):
+            assert abs(x - y) <= 2, (minuto, a, b)
+    for hora in (3, 9, 16, 19):
+        assert dn.tint_at(hora * 60) == dn.PERIOD_TINTS[dn.period_at(hora * 60)]
+        assert dn.tint_at(hora * 60 + 60) == dn.PERIOD_TINTS[dn.period_at(hora * 60 + 60)]
+
+
+def test_tom_da_cor():
+    branco = 0x7FFF
+    assert dn.tint_color(branco, (256, 256, 256)) == branco
+    assert dn.tint_color(branco, (144, 152, 224)) == (27 << 10 | 18 << 5 | 17)
+    assert dn.tint_color(0x8000 | branco, (256, 256, 256)) == 0x8000 | branco
+
+
+def test_coeficientes_do_c_batem():
+    texto = (REPO_ROOT / "src" / "day_night.c").read_text(encoding="utf-8")
+    tabela = re.search(r"sPeriodTints\[TIME_PERIOD_COUNT\]\s*=\s*\{(.*?)\};", texto, re.S)
+    assert tabela, "sPeriodTints não encontrado em src/day_night.c"
+    achados = dict(re.findall(r"\[(TIME_\w+)\]\s*=\s*\{\s*(\d+,\s*\d+,\s*\d+)\s*\}", tabela.group(1)))
+    nomes = {"TIME_MORNING": dn.MORNING, "TIME_AFTERNOON": dn.AFTERNOON,
+             "TIME_EVENING": dn.EVENING, "TIME_NIGHT": dn.NIGHT}
+    assert {nomes[k]: tuple(int(x) for x in v.split(",")) for k, v in achados.items()} == dn.PERIOD_TINTS
+
+
+TINT_POINTS = (
+    ("fieldmap.c", "static void ApplyGlobalTintToPaletteEntries(u16 offset, u16 size)"),
+    ("fieldmap.c", "void ApplyGlobalTintToPaletteSlot(u8 slot, u8 count)"),
+    ("field_effect.c", "void ApplyGlobalFieldPaletteTint(u8 paletteIdx)"),
+)
+
+
+def test_tint_antes_do_quest_log():
+    """Nos três pontos de tint, o tom do dia/noite vai no Unfaded antes do switch do Quest Log
+    (compõe com cinza/sépia e com o backup) e a cópia para o Faded acontece mesmo sem tint do
+    Quest Log."""
+    for arquivo, assinatura in TINT_POINTS:
+        corpo = _corpo_c(arquivo, assinatura)
+        pos = corpo.find("switch (gGlobalFieldTintMode)")
+        assert pos > 0, f"{assinatura}: switch (gGlobalFieldTintMode) não encontrado"
+        antes = corpo[:pos]
+        assert "DayNight_ShouldTintCurrentMap()" in antes, assinatura
+        assert "DayNight_TintPaletteBuffer(&gPlttBufferUnfaded[" in antes, assinatura
+        assert not re.search(r"case (QL_TINT_NONE|0):\s*return;", corpo), (
+            f"{assinatura}: sem tint do Quest Log ainda tem de copiar o tom para o Faded")
+
+
+def test_tom_so_nos_pontos_de_tint():
+    """Só os três pontos de tint (que rodam logo depois de carregar a paleta do ROM) tingem: um
+    buffer já tingido nunca é tingido de novo."""
+    chamadas = []
+    for arquivo in sorted((REPO_ROOT / "src").glob("*.c")):
+        texto = arquivo.read_text(encoding="utf-8", errors="replace")
+        chamadas += [arquivo.name for _ in re.finditer(r"DayNight_TintPaletteBuffer\(&", texto)]
+    assert sorted(chamadas) == ["field_effect.c", "fieldmap.c", "fieldmap.c"], chamadas
+
+
+def test_loadpal_tinge_so_paleta_nova():
+    """FieldEffectScript_LoadPal (Poké Bola da transição de batalha) tingia a paleta que JÁ
+    existia: 5 bolas = tom aplicado 4 vezes. Agora tinge só a recém-carregada, como LoadFadedPal."""
+    corpo = _corpo_c("field_effect.c", "static void FieldEffectScript_LoadPal(const u8 **script)")
+    assert "if (idx == 0xFF)" in corpo and "if (idx != 0xFF)" not in corpo
+
+
+def test_retinge_recarregando_do_rom():
+    retint = _corpo_c("day_night.c", "static void TryRetintField(void)")
+    for item in ("gPaletteFade.active", "WEATHER_PAL_STATE_IDLE", "ArePlayerFieldControlsLocked()",
+                 "DayNight_ShouldTintCurrentMap()", "gGlobalFieldTintMode != QL_TINT_NONE",
+                 "LoadMapTilesetPalettes(gMapHeader.mapLayout);", "ApplyWeatherGammaShiftToPal(",
+                 "ReloadObjectEventPalettes();", "UpdateSpritePaletteWithWeather(",
+                 "LoadCustomWeatherSpritePalette("):
+        assert item in retint, item
+    assert "DayNight_TintPaletteBuffer" not in retint
+    update = _corpo_c("day_night.c", "void DayNight_FieldUpdate(void)")
+    assert update.index("TryRetintField();") < update.index("ShowFieldMessagePopup")
+    reload = _corpo_c("event_object_movement.c", "void ReloadObjectEventPalettes(void)")
+    assert "PatchObjectPaletteRange(" in reload and "LoadSpecialObjectReflectionPalette(" in reload
+    assert "FreeAndReserveObjectSpritePalettes" not in reload   # não solta paletas em uso
+
+
+def test_paleta_do_clima_customizada_tingida():
+    corpo = _corpo_c("field_weather.c", "void LoadCustomWeatherSpritePalette(const u16 *palette)")
+    assert corpo.index("LoadPalette(") < corpo.index("ApplyGlobalFieldPaletteTint(") < corpo.index(
+        "UpdateSpritePaletteWithWeather(")
+
+
+def test_fame_checker_sem_tom():
+    """O Fame Checker monta os retratos com InitObjectEventPalettes fora do campo: sem tom."""
+    corpo = _corpo_c("fame_checker.c", "static void FCSetup_ResetTasksAndSpriteResources(void)")
+    linhas = [l.strip() for l in corpo.split("\n")]
+    i = linhas.index("InitObjectEventPalettes(0);")
+    assert linhas[i - 1].startswith("DayNight_SuspendTint(TRUE);")
+    assert linhas[i + 1].startswith("DayNight_SuspendTint(FALSE);")
