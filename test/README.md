@@ -10,17 +10,17 @@ repo.
 
 | Quero... | Comando (dentro do WSL, na raiz do repo) | Tempo |
 |---|---|---|
-| Compilar, testar e versionar a ROM | `make firered_switch -j$(nproc)` | build + ~35 s de teste |
-| Compilar e versionar **sem** testar | `SKIP_TESTS=1 make firered_switch -j$(nproc)` | só o build |
+| Compilar, testar e versionar a ROM | `make firered_switch` | build + ~35 s de teste |
+| Compilar e versionar **sem** testar | `SKIP_TESTS=1 make firered_switch` | só o build |
 | Testar de novo a ROM já compilada, sem versionar | `make test-quick` | ~35 s |
-| Teste completo (cenários longos, ROM de teste) | `make test-full` | ~16 min (o shiny ~8 min, a creche ~4 min) |
+| Teste completo (cenários longos, ROM de teste) | `make test-full` | ~4 min (em paralelo; ~16 min com `ESTEIRA_JOBS=1`) |
 | Ver o roteiro rápido numa janela | `make test-watch` | ~ tempo real |
 | Ver as evoluções sem troca (Hack 3) numa janela | `make test-watch CENARIO=evolucoes` | ~9 min (tempo real) |
 | Ver a página EVOLUTION do resumo (Hack 4) numa janela | `make test-watch CENARIO=resumo_evolucao` | ~2 min (tempo real) |
 | Ver a página IVs/EVs do resumo (Hack 5) numa janela | `make test-watch CENARIO=resumo_ivs` | ~2 min (tempo real) |
 | Ver um ovo da creche chocar (Hack 6) numa janela | `make test-watch CENARIO=ovo` | ~1,5 min (tempo real) |
 | Aprovar as telas de referência | `make test-approve` | instantâneo |
-| Testes unitários da própria esteira | `python3 -m pytest test -q` | ~5-6 min (~80 s sem os lentos) |
+| Testes unitários da própria esteira | `python3 -m pytest test -q` | ~40 s (~1,5 min na 1ª vez depois de ligar o WSL) |
 
 > **Atenção: nunca rode `python3` ou `python` no PowerShell nem no Git Bash do Windows.**
 > Nesta máquina isso é um alias do Windows que abre a Microsoft Store (App Execution Alias).
@@ -37,11 +37,11 @@ wsl -d Ubuntu --cd /mnt/c/Users/crist/Documents/GitHub/pokefirered
 Depois, no prompt do Ubuntu, os comandos da tabela acima valem como estão.
 
 **Direto do PowerShell**, uma linha por comando. Use aspas simples em volta do comando para o
-PowerShell não mexer no `$(nproc)` nem em variáveis:
+PowerShell não mexer em variáveis:
 
 ```powershell
-wsl -d Ubuntu --cd /mnt/c/Users/crist/Documents/GitHub/pokefirered -- bash -c 'make firered_switch -j$(nproc)'
-wsl -d Ubuntu --cd /mnt/c/Users/crist/Documents/GitHub/pokefirered -- bash -c 'SKIP_TESTS=1 make firered_switch -j$(nproc)'
+wsl -d Ubuntu --cd /mnt/c/Users/crist/Documents/GitHub/pokefirered -- bash -c 'make firered_switch'
+wsl -d Ubuntu --cd /mnt/c/Users/crist/Documents/GitHub/pokefirered -- bash -c 'SKIP_TESTS=1 make firered_switch'
 wsl -d Ubuntu --cd /mnt/c/Users/crist/Documents/GitHub/pokefirered -- make test-quick
 ```
 
@@ -151,8 +151,11 @@ ROM. Sem o log, só o uso de memória é conferido (o terminal avisa). Deixa os 
 | `ovo` | **ROM de teste** | Hack 6: um ovo de verdade na creche de Four Island, entregue pelo velho, chocado andando e conferido na memória, e a loja de Four Island |
 
 Depende da ROM jogável da raiz (se não existir, vira falha `emulador/rom-playable`). Não grava
-em `roms/`: o resultado fica em `test/out/<data-hora>/`. Rode com o terminal aberto por ~16
-min; o shiny leva ~8 min disso e a `creche` ~4 min.
+em `roms/`: o resultado fica em `test/out/<data-hora>/`. Leva **~4 min** (os cenários rodam em
+paralelo, veja **Paralelismo**; ~45 s disso é o `make` da ROM de teste conferindo que está em
+dia). O caminho mais longo é a corrente jogável (rápido → `pc` → `telas` → `floresta_brock`,
+~3 min); o `shiny` (~8 min sozinho) e a `creche` (~4 min sozinha) vão em pedaços ao lado dela.
+Com `ESTEIRA_JOBS=1` volta a ser sequencial: ~16 min.
 
 O `shiny`, o `evolucoes`, o `resumo_evolucao` e o `resumo_ivs` partem do mesmo save do jogo (o `.sav` do fim do
 `captura`), cada um numa **sessão própria** da ROM de teste: um não herda o que o outro fez (o
@@ -419,8 +422,8 @@ no relatório. Problema para gravar é só aviso. Com
 ## Testes unitários da esteira
 
 ```bash
-python3 -m pytest test -q                       # tudo: ~5-6 min
-ESTEIRA_SKIP_SLOW=1 python3 -m pytest test -q   # sem os lentos: ~80 s
+python3 -m pytest test -q                       # tudo: ~40 s (10 processos; veja Paralelismo)
+ESTEIRA_SKIP_SLOW=1 python3 -m pytest test -q   # sem os lentos: ~30 s
 ```
 
 Na raiz do repo, dentro do WSL. Os testes marcados `slow` compilam de verdade (um deles quebra um
@@ -429,12 +432,68 @@ Na raiz do repo, dentro do WSL. Os testes marcados `slow` compilam de verdade (u
 `pokefirered_switch.gba` da raiz e são pulados se ela não existir. Rode isto depois de mexer em
 qualquer arquivo de `test/esteira/`.
 
+Rodam em paralelo com o `pytest-xdist` (`test/pytest.ini`: `-n auto --dist loadfile`, e o
+`-n auto` vira `ESTEIRA_JOBS` workers, padrão 10). Cada arquivo de teste fica num worker só, e
+cada teste usa a sua pasta temporária, o seu emulador e o seu save. Para rodar num processo só:
+`python3 -m pytest test -q -n 0`; com menos processos: `ESTEIRA_JOBS=4 python3 -m pytest test -q`.
+
+A cópia do repo do teste lento é um **espelho fixo em `/tmp/esteira-espelho-repo-<uid>/`** (ext4
+do WSL), atualizado com `rsync` a cada execução: ~20 s, ou ~75 s na primeira vez depois de ligar
+o WSL (o `/tmp` começa vazio). No `/mnt/c` a cópia levava ~4,5 min. São ~250 MB; pode apagar a
+pasta quando quiser (o teste a refaz).
+
+## Paralelismo (`ESTEIRA_JOBS`)
+
+A máquina tem 16 threads; a esteira usa **no máximo 10 processos de trabalho ao mesmo tempo**
+(sobram 6 para usar o PC). O teto vale para tudo o que roda junto: cada sessão de emulador (o
+Python que a dirige e o runner do mGBA se revezam: conta 1), a checagem de textos, os workers do
+pytest e os `make -jN` (contam N). Para mudar:
+
+```bash
+ESTEIRA_JOBS=4 make test-full              # mais leve (mais lento)
+make firered_switch ESTEIRA_JOBS=6         # também vale como variável do make
+ESTEIRA_JOBS=1 make test-full              # o modo sequencial de antes (~16 min)
+```
+
+- **Compilação**: `make firered_switch` (e o `make firered_switch TESTBUILD=1` do `test-full` e do
+  `test-watch`) usa `-j$ESTEIRA_JOBS` (10) quando a linha de comando não tem `-j`. Um `-jN`
+  explícito continua valendo. Não use mais `-j$(nproc)` (16).
+- **Esteira rápida** (`make firered_switch`, `make test-quick`): o roteiro jogado é uma corrente
+  (abertura → Rota 1 → captura) e não se divide; a checagem de textos roda num processo ao lado
+  do emulador (~2 s a menos). Resultado e versionamento iguais.
+- **Modo completo** (`make test-full`): cada sessão roda num processo próprio, com o seu emulador
+  e a sua pasta (`<OUT>/sessoes/<cenário>/`, apagada no fim; telas e estados voltam para
+  `<OUT>/telas` e `<OUT>/estados`). Saem logo de cara a checagem de textos, o grupo jogável
+  (rápido → `pc` → `telas` → `floresta_brock`, que é uma corrente: cada um parte do checkpoint do
+  anterior) e o `master` (com as vagas que sobram no `make -j`). As sessões da ROM de teste
+  esperam a ponte `captura.sav`, que o grupo jogável grava logo depois do `captura`, e então
+  rodam todas juntas. Relatório, vídeo, tempos e resumo do terminal são juntados **na ordem do
+  modo sequencial** (mesmos cenários, mesmos nomes, mesmas asserções); o tempo de um cenário é
+  o da sessão dele (do pedaço mais longo, nos divididos).
+- **`shiny` e `creche` divididos em partes**: o `shiny` roda em 6 sessões e a `creche` em 3. Cada
+  parte conta a sua fatia do N (200 000 Pokémon por taxa; os ovos de cada par de pais; 400 000
+  ovos por taxa) e o processo principal soma as fatias e aplica **as mesmas faixas** (±3σ, ±4σ,
+  qui-quadrado) ao total. A parte 1 faz o roteiro inteiro (Dex completa, PC, Oak, charm,
+  personalidade, EVs, Velocidade); as outras só CONTINUAR e as contagens. Para as fatias não
+  repetirem a mesma sequência, cada parte grava no `gRngValue` do jogo uma semente fixa
+  (`esteira/paralelo.py`, `part_seed`): sementes separadas por 2^27 passos do gerador, então as
+  sequências nunca se cruzam e o resultado é o mesmo a cada execução, com 4 ou 10 processos (o
+  número de partes não depende do teto). Os números diferem dos do modo sequencial (outras
+  sequências do RNG), não as faixas nem os nomes; o detalhe diz "em 6 processos".
+- `--only` e `ESTEIRA_JOBS=1` rodam como antes, tudo num processo só, sem dividir nada.
+
+**Pular o desenho dos quadros (medido, não adotado):** o runner pode deixar de desenhar os quadros
+que não viram tela nem vídeo (o `frameskip` do mGBA; a emulação não muda: memória, quadro e tela
+final idênticos). O ganho medido foi de ~3% (20 000 quadros em pedidos de 2: 12,9 s → 12,6 s;
+60 000 em pedidos de 60: 32,7 s → 31,6 s), abaixo dos 15% que justificariam mais uma chave; o
+desenho do mGBA é barato perto da emulação. Fica como está.
+
 ## Requisitos (uma vez só)
 
 No Ubuntu do WSL, como root:
 
 ```bash
-sudo apt install libmgba-dev mgba-sdl libpng-dev python3-pytest python3-pil
+sudo apt install libmgba-dev mgba-sdl libpng-dev python3-pytest python3-pytest-xdist python3-pil rsync
 sudo apt install libsdl2-dev     # OPCIONAL: só para o make test-watch (janela)
 ```
 
@@ -555,6 +614,10 @@ tipos de Hidden Power) e medidas, e uma coluna que encavale na anterior também 
   (p ≥ 1e-5) e as duas taxas de shiny dos ovos a ±3σ dão **~1% de falso vermelho** por execução.
   Um vermelho isolado num item do `creche`, perto do limite, vale rodar de novo (`--only creche`)
   antes de investigar.
+- **No modo paralelo as contagens do `shiny` e da `creche` têm sementes fixas** (veja
+  Paralelismo): repetir o `make test-full` com a mesma ROM dá os mesmos números, então um falso
+  vermelho estatístico se repete. Para tirar a dúvida, rode com outras sequências do RNG:
+  `--only shiny`/`--only creche` (sessão inteira, sem semente) ou `ESTEIRA_JOBS=1 make test-full`.
 - **Brock no modo completo** é adaptativo, mas **probabilístico**: treina até um nível e tenta
   algumas vezes; com azar nos golpes/RNG pode perder todas as tentativas e reprovar sem que o jogo
   tenha problema.
