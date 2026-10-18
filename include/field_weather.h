@@ -149,6 +149,7 @@ void Weather_SetBlendCoeffs(u8 eva, u8 evb);
 void Weather_SetTargetBlendCoeffs(u8 eva, u8 evb, int delay);
 bool8 Weather_UpdateBlend(void);
 void LoadCustomWeatherSpritePalette(const u16 *palette);
+void RestoreDefaultWeatherSpritePalette(void);
 void ResetDroughtWeatherPaletteLoading(void);
 bool8 LoadDroughtWeatherPalettes(void);
 void DroughtStateInit(void);
