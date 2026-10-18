@@ -470,7 +470,8 @@ def test_registro_dos_cenarios_completos():
                  "relogio",  # Hack 7
                  "clima_visual",  # Hack 7 — frente E
                  "encontros",  # Hack 7 — frente B
-                 "dex_nacional", "pos_liga"):  # Hack 7 — frente C
+                 "dex_nacional", "pos_liga",  # Hack 7 — frente C
+                 "evo_dia_noite", "resumo_amizade"):  # Hack 7 - frente D
         spec = by_name[name]
         assert (spec.rom, spec.save_from, spec.needs) == (TEST, "captura", None)
     playable = [s.name for s in specs if s.rom == cli.PLAYABLE]
@@ -484,7 +485,8 @@ def test_registro_dos_cenarios_completos():
         (TEST, ["relogio"]),  # Hack 7
         (TEST, ["clima_visual"]),  # Hack 7 — frente E
         (TEST, ["encontros"]),  # Hack 7 — frente B
-        (TEST, ["dex_nacional"]), (TEST, ["pos_liga"])]  # Hack 7 — frente C
+        (TEST, ["dex_nacional"]), (TEST, ["pos_liga"]),  # Hack 7 — frente C
+        (TEST, ["evo_dia_noite"]), (TEST, ["resumo_amizade"])]  # Hack 7 - frente D
     for spec in specs:
         if spec.save_from is not None:
             assert spec.rom == TEST and any(g[0] is spec for _, g in groups)

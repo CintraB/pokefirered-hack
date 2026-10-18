@@ -16,7 +16,8 @@ import pytest
 from esteira import hooks
 from esteira.check_text import WIDTH_RULES, _evolution_page_results, check_text, width_limit
 from esteira.constants import Constants
-from esteira.evolution_page import (ARROW, LINE_WIDTH_PX, LV, MAX_LINES, NO_EVOLUTION,
+from esteira.check_text import _load_widths
+from esteira.evolution_page import (friendship_line, ARROW, LINE_WIDTH_PX, LV, MAX_LINES, NO_EVOLUTION,
                                     NOT_POSSIBLE, PAGE_POINTS, SCREEN_POINTS, TRADED_ONLY, SHOWCASE, SOURCE_FILES, TEXT_X,
                                     WINDOW_WIDTH_PX, EvolutionPage, check_page_widths,
                                     evolution_line, text_size)
@@ -39,12 +40,12 @@ FIXED = {
     "SPECIES_EEVEE": [f"THUNDERSTONE {ARROW} JOLTEON",
                       f"WATER STONE {ARROW} VAPOREON",
                       f"FIRE STONE {ARROW} FLAREON",
-                      f"Day friendship {ARROW} ESPEON (impossible)",
-                      f"Night friendship {ARROW} UMBREON (impossible)"],
+                      f"Day friendship {ARROW} ESPEON",
+                      f"Night friendship {ARROW} UMBREON"],
     "SPECIES_ONIX": [f"{LV} 37 + METAL COAT {ARROW} STEELIX"],
     "SPECIES_SLOWPOKE": [f"{LV} 37 {ARROW} SLOWBRO",
                          f"{LV} 37 + KING'S ROCK {ARROW} SLOWKING"],
-    "SPECIES_FEEBAS": [f"High beauty {ARROW} MILOTIC (R/S/E only)"],
+    "SPECIES_FEEBAS": [f"Subir nível + Escama Prisma {ARROW} MILOTIC"],
     "SPECIES_TAUROS": ["Does not evolve."],
     "SPECIES_WURMPLE": [f"{LV} 7 (random) {ARROW} SILCOON",
                         f"{LV} 7 (random) {ARROW} CASCOON"],
@@ -68,10 +69,10 @@ def test_casos_fixos(species):
     assert PAGE.text(species).split("\n") == FIXED[species]
 
 
-def test_eevee_tem_5_linhas_e_espeon_umbreon_impossiveis():
+def test_eevee_tem_5_linhas_sem_impossible():
     lines = PAGE.text("SPECIES_EEVEE").split("\n")
     assert len(lines) == 5
-    assert [line.endswith(NOT_POSSIBLE) for line in lines] == [False, False, False, True, True]
+    assert [line.endswith(NOT_POSSIBLE) for line in lines] == [False] * 5
 
 
 def test_especies_validas_sao_as_386_sem_old_unown():
@@ -124,6 +125,7 @@ def test_formatos_de_strings_c_batem_com_o_python():
     by_method = {
         "EVO_LEVEL": "gText_PokeSum_EvoLevel", "EVO_LEVEL_NINJASK": "gText_PokeSum_EvoLevel",
         "EVO_ITEM": "gText_PokeSum_EvoItem", "EVO_LEVEL_HOLD_ITEM": "gText_PokeSum_EvoLevelHoldItem",
+        "EVO_LEVEL_UP_HOLD_ITEM": "gText_PokeSum_EvoLevelUpHoldItem",
         "EVO_FRIENDSHIP": "gText_PokeSum_EvoFriendship",
         "EVO_FRIENDSHIP_DAY": "gText_PokeSum_EvoFriendshipDay",
         "EVO_FRIENDSHIP_NIGHT": "gText_PokeSum_EvoFriendshipNight",
@@ -136,11 +138,10 @@ def test_formatos_de_strings_c_batem_com_o_python():
         "EVO_LEVEL_SHEDINJA": "gText_PokeSum_EvoLevelFreeSlot",
         "EVO_TRADE": "gText_PokeSum_EvoTrade", "EVO_TRADE_ITEM": "gText_PokeSum_EvoTradeItem",
     }
-    suffixes = {"EVO_FRIENDSHIP_DAY": "gText_PokeSum_EvoNotPossible",
-                "EVO_FRIENDSHIP_NIGHT": "gText_PokeSum_EvoNotPossible",
-                "EVO_BEAUTY": "gText_PokeSum_EvoTradedOnly"}
+    suffixes = {"EVO_BEAUTY": "gText_PokeSum_EvoTradedOnly"}
     for method, label in by_method.items():
-        item = method in ("EVO_ITEM", "EVO_LEVEL_HOLD_ITEM", "EVO_TRADE_ITEM")
+        item = method in ("EVO_ITEM", "EVO_LEVEL_HOLD_ITEM", "EVO_LEVEL_UP_HOLD_ITEM",
+                          "EVO_TRADE_ITEM")
         param = "ITEM_METAL_COAT" if item else "20"
         level = "37" if method == "EVO_LEVEL_HOLD_ITEM" else param
         c_line = (t[label].replace("{STR_VAR_1}", level).replace("{STR_VAR_2}", "METAL COAT")
@@ -321,3 +322,43 @@ def test_jogo_monta_o_texto_esperado_para_todas_as_especies(tmp_path):
         assert box.summary_state() is None                 # nenhum resumo aberto no boot
         with pytest.raises(AssertionError, match="nenhum resumo aberto"):
             box.evolution_text(from_open_summary=True)
+
+
+# --- Hack 7 - frente D: amizade com corações na 6ª linha da página ----------------------------
+
+FRIENDSHIP_CASES = (  # (amizade, corações, frase, marca 220+)
+    (0, 0, "Odeia você", False), (1, 1, "Te encara feio", False), (49, 1, "Te encara feio", False),
+    (50, 2, "Ainda desconfia", False), (99, 2, "Ainda desconfia", False),
+    (100, 3, "Pegando confiança", False), (149, 3, "Pegando confiança", False),
+    (150, 4, "Amigável", False), (199, 4, "Amigável", False), (200, 5, "Muito feliz", False),
+    (219, 5, "Muito feliz", False), (220, 5, "Muito feliz", True), (254, 5, "Muito feliz", True),
+    (255, 6, "Ama você!", True),
+)
+
+
+@pytest.mark.parametrize("friendship,hearts,phrase,mark", FRIENDSHIP_CASES)
+def test_faixas_de_amizade(friendship, hearts, phrase, mark):
+    heart = "{EMOJI_HEART}"
+    want = (heart * hearts + (" " if hearts else "") + f"{friendship}/255 {phrase}"
+            + (" (220+)" if mark else ""))
+    assert friendship_line(friendship) == want
+
+
+def test_linha_cabe():
+    page = PAGE
+    for friendship in (0, 49, 99, 149, 199, 219, 254, 255):
+        data = page.encode(friendship_line(friendship))
+        assert page.line_widths(data) == [page.line_widths(data)[0]]
+        assert page.line_widths(data)[0] <= LINE_WIDTH_PX, friendship_line(friendship)
+        assert len(data) + 1 <= 48
+
+
+def test_coracao_tem_largura():
+    assert _load_widths(REPO_ROOT)[0x100 | 0xE7] > 0
+
+
+def test_amizade_ligada_ao_c():
+    assert "void GetFriendshipLineText(u8 *dest, u8 friendship);" in SUMMARY_H
+    assert "sFriendshipLineText[48]" in SUMMARY_C
+    assert "TEST_CMD_FRIENDSHIP_TEXT" in (REPO_ROOT / "src" / "test_hooks.c").read_text(encoding="utf-8")
+    assert "5 * 16" in _function(SUMMARY_C, "static void PrintEvolutionPage(void)")

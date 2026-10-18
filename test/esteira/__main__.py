@@ -66,6 +66,8 @@ from esteira.scenarios.full_weather_gfx import run_full_weather_gfx
 from esteira.scenarios.full_encounters import run_full_encounters  # Hack 7 — frente B
 from esteira.scenarios.full_post_league import run_full_post_league  # Hack 7 — frente C
 from esteira.scenarios.full_national_dex import run_full_national_dex   # Hack 7 — frente C
+from esteira.scenarios.full_day_night_evo import run_full_day_night_evo  # Hack 7 - frente D
+from esteira.scenarios.full_summary_friendship import run_full_summary_friendship  # Hack 7 - frente D
 from esteira.scenarios.full_forest_brock import run_full_forest_brock
 from esteira.scenarios.full_master import run_full_master
 from esteira.scenarios.full_pc import run_full_pc
@@ -166,6 +168,9 @@ FULL_SCENARIOS: list[ScenarioSpec] = [
     ScenarioSpec("encontros", run_full_encounters, rom=TEST, save_from="captura"),  # Hack 7 — frente B
     ScenarioSpec("dex_nacional", run_full_national_dex, rom=TEST, save_from="captura"),  # Hack 7 — frente C
     ScenarioSpec("pos_liga", run_full_post_league, rom=TEST, save_from="captura"),  # Hack 7 — frente C
+    # Hack 7 - frente D
+    ScenarioSpec("evo_dia_noite", run_full_day_night_evo, rom=TEST, save_from="captura"),
+    ScenarioSpec("resumo_amizade", run_full_summary_friendship, rom=TEST, save_from="captura"),
 ]
 # Cenários do modo completo que o `assistir --cenario` mostra numa janela (ROM de teste, a
 # partir do .sav da ponte). O shiny e o creche ficam de fora: centenas de milhares de sorteios
@@ -173,7 +178,8 @@ FULL_SCENARIOS: list[ScenarioSpec] = [
 WATCH_FULL_SCENARIOS = ("evolucoes", "resumo_evolucao", "resumo_ivs", "ovo",
                         "relogio",  # Hack 7
                         "encontros",  # Hack 7 — frente B
-                        "dex_nacional", "pos_liga")  # Hack 7 — frente C
+                        "dex_nacional", "pos_liga",  # Hack 7 — frente C
+                        "evo_dia_noite", "resumo_amizade")  # Hack 7 - frente D
 
 
 def scenarios_for(mode: str) -> list[ScenarioSpec]:

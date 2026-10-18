@@ -426,6 +426,10 @@ const u32 gItemIcon_ShinyCharm[] = INCBIN_U32("graphics/items/icons/shiny_charm.
 const u32 gItemIconPalette_ShinyCharm[] = INCBIN_U32("graphics/items/icon_palettes/shiny_charm.gbapal.lz");
 const u32 gItemIcon_DestinyKnot[] = INCBIN_U32("graphics/items/icons/destiny_knot.4bpp.lz");
 const u32 gItemIconPalette_DestinyKnot[] = INCBIN_U32("graphics/items/icon_palettes/destiny_knot.gbapal.lz");
+
+// Hack 7 - frente D
+const u32 gItemIcon_PrismScale[] = INCBIN_U32("graphics/items/icons/prism_scale.4bpp.lz");
+const u32 gItemIconPalette_PrismScale[] = INCBIN_U32("graphics/items/icon_palettes/prism_scale.gbapal.lz");
 const u32 gItemIcon_PowerItem[] = INCBIN_U32("graphics/items/icons/power_item.4bpp.lz");
 const u32 gItemIconPalette_PowerWeight[] = INCBIN_U32("graphics/items/icon_palettes/power_weight.gbapal.lz");
 const u32 gItemIconPalette_PowerBracer[] = INCBIN_U32("graphics/items/icon_palettes/power_bracer.gbapal.lz");
