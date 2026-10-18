@@ -486,3 +486,72 @@ def test_cenario_clima_registrado():
     spec = {s.name: s for s in cli.FULL_SCENARIOS}["clima"]
     assert (spec.rom, spec.save_from) == (cli.TEST, "captura")
     assert "clima" in cli.WATCH_FULL_SCENARIOS
+
+
+# --- Task 5: neve do mapa vira granizo na batalha ----------------------------------------------
+
+def _src(caminho: str) -> str:
+    return (REPO_ROOT / caminho).read_text(encoding="utf-8")
+
+
+def test_granizo_permanente():
+    battle_h = _src("include/constants/battle.h")
+    assert re.search(r"#define B_WEATHER_HAIL_PERMANENT\s+\(1 << 8\)", battle_h)
+    assert re.search(r"#define B_WEATHER_HAIL\s+\(B_WEATHER_HAIL_TEMPORARY \| B_WEATHER_HAIL_PERMANENT\)",
+                     battle_h)
+    # o bit 8 cabe: gBattleWeather e gWeatherMoveAnim são u16 e o controlador manda os 2 bytes
+    assert "EWRAM_DATA u16 gBattleWeather = 0;" in _src("src/battle_main.c")
+    assert "EWRAM_DATA u16 gWeatherMoveAnim = 0;" in _src("src/battle_anim.c")
+    assert "sBattleBuffersTransferData[13] = (gBattleWeather & 0xFF00) >> 8;" in _src("src/battle_controllers.c")
+
+    util = _src("src/battle_util.c")
+    entrada = util[util.index("case ABILITYEFFECT_SWITCH_IN_WEATHER:"):]
+    entrada = entrada[:entrada.index("if (effect != 0)")]
+    neve = re.search(r"case WEATHER_SNOW:(?: *//[^\n]*)?\s*if \(!\(gBattleWeather & B_WEATHER_HAIL\)\)\s*\{(.*?)\}",
+                     entrada, re.S)
+    assert neve, "case WEATHER_SNOW no clima de entrada"
+    for item in ("gBattleWeather = B_WEATHER_HAIL;", "gBattleScripting.animArg1 = B_ANIM_HAIL_CONTINUES;",
+                 "gBattleScripting.battler = battler;", "effect++;"):
+        assert item in neve.group(1), item
+
+    fim = util[util.index("case ENDTURN_HAIL:"):util.index("case ENDTURN_FIELD_COUNT:")]
+    assert ("if (!(gBattleWeather & B_WEATHER_HAIL_PERMANENT) && --gWishFutureKnock.weatherDuration == 0)"
+            in fim)
+
+    assert re.search(r"\[WEATHER_SNOW\]\s*=\s*STRINGID_STARTEDHAIL,", _src("src/battle_message.c"))
+
+    # B_WEATHER_HAIL_TEMPORARY só nas gravações (golpe Hail e o fim do granizo temporário); os
+    # testes de "há granizo" usam B_WEATHER_HAIL
+    permitidos = {"gBattleWeather = B_WEATHER_HAIL_TEMPORARY;", "gBattleWeather &= ~B_WEATHER_HAIL_TEMPORARY;"}
+    usos = []
+    for arquivo in sorted((REPO_ROOT / "src").glob("*.c")):
+        for n, linha in enumerate(arquivo.read_text(encoding="utf-8", errors="replace").splitlines(), 1):
+            if "B_WEATHER_HAIL_TEMPORARY" in linha and linha.strip() not in permitidos:
+                usos.append(f"{arquivo.name}:{n}: {linha.strip()}")
+    assert not usos, usos
+    assert re.search(r"if \(gBattleWeather & B_WEATHER_HAIL\)[^\n]*\n\s*AI_THINKING_STRUCT->funcResult = WEATHER_TYPE_HAIL;",
+                     _src("src/battle_ai_script_commands.c"))
+    assert "(B_WEATHER_RAIN | B_WEATHER_SANDSTORM | B_WEATHER_HAIL)) && gCurrentMove == MOVE_SOLAR_BEAM" in \
+        _src("src/pokemon.c")
+
+
+def test_atalho_batalha_selvagem():
+    """TEST_CMD_START_WILD_BATTLE: cria o selvagem e roda um script de campo com dowildbattle (o
+    caminho normal de setwildbattle/dowildbattle); os bytes do script batem com a tabela de comandos."""
+    hooks_c = _src("src/test_hooks.c")
+    caso = re.search(r"case TEST_CMD_START_WILD_BATTLE:(.*?)break;", hooks_c, re.S)
+    assert caso, "case TEST_CMD_START_WILD_BATTLE"
+    a_bloco = hooks_c[hooks_c.index("// Hack 7 front A: start"):hooks_c.index("// Hack 7 front A: end")]
+    assert "case TEST_CMD_START_WILD_BATTLE:" in a_bloco
+    for item in ("CreateScriptedWildMon(gTestMailbox.arg0, gTestMailbox.arg1, ITEM_NONE);",
+                 "ScriptContext_SetupScript(sWildBattleScript);"):
+        assert item in caso.group(1), item
+    tabela = _src("data/script_cmd_table.inc")
+    opcodes = {nome: int(valor, 16) for nome, valor in re.findall(r"\.4byte ScrCmd_(\w+)\s*@ 0x([0-9a-f]+)", tabela)}
+    script = re.search(r"static const u8 sWildBattleScript\[\] =\s*\{(.*?)\};", hooks_c, re.S)
+    assert script, "sWildBattleScript"
+    pares = re.findall(r"(0x[0-9A-Fa-f]+),\s*// (\w+)", script.group(1))
+    assert [nome for _, nome in pares] == ["lockall", "dowildbattle", "releaseall", "end"], pares
+    for valor, nome in pares:
+        assert int(valor, 16) == opcodes[nome], (nome, valor, opcodes[nome])
+    assert re.search(r"TEST_CMD_START_WILD_BATTLE,\s*// arg0 = species, arg1 = level", _src("include/test_hooks.h"))

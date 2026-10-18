@@ -487,6 +487,18 @@ static u32 SpeedOrder(u32 arg0, u32 arg1)
 }
 // --- end of Hack 6 -------------------------------------------------------------------------
 
+// Hack 7 — frente A: wild battle started by a field script, as setwildbattle + dowildbattle do
+#include "script.h"
+#include "script_pokemon_util.h"
+
+static const u8 sWildBattleScript[] =
+{
+    0x69, // lockall
+    0xB7, // dowildbattle
+    0x6B, // releaseall
+    0x02, // end
+};
+
 void TestHooks_Run(void)
 {
     u32 result = 0;
@@ -557,6 +569,11 @@ void TestHooks_Run(void)
     }
     case TEST_CMD_ROLL_WEATHER:
         result = DayNight_RollWeather(gTestMailbox.arg0, gTestMailbox.arg1 & 0xFFFFFF, gTestMailbox.arg1 >> 24);
+        break;
+    case TEST_CMD_START_WILD_BATTLE:
+        CreateScriptedWildMon(gTestMailbox.arg0, gTestMailbox.arg1, ITEM_NONE);
+        ScriptContext_SetupScript(sWildBattleScript);
+        result = 1;
         break;
     // Hack 7 front A: end
     // Hack 7 front B: start

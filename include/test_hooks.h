@@ -87,7 +87,7 @@ enum
     TEST_CMD_FRIENDSHIP_TEXT,
     TEST_CMD_RARE_EGG_ROLL,
     TEST_CMD_SET_KANTO_OWNED,
-    TEST_CMD_START_WILD_BATTLE,
+    TEST_CMD_START_WILD_BATTLE,  // arg0 = species, arg1 = level: wild battle through a field script (dowildbattle); result = 1
     TEST_CMD_FILL_PC,
     TEST_CMD_SET_FLAG,
     TEST_CMD_SPECIES_ON_MAP,
