@@ -2725,7 +2725,7 @@ void GetEvolutionPageText(u8 *dest, u16 species)
 // Hack 7 - frente D: friendship line, always the 6th line of the EVOLUTION page
 #define CHAR_EMOJI_HEART 0xE7   // CHAR_EXTRA_SYMBOL char (charmap.txt: EMOJI_HEART = F9 E7)
 
-static EWRAM_DATA u8 sFriendshipLineText[48] = {0};
+#define FRIENDSHIP_LINE_SIZE 48 // with the terminator
 
 void GetFriendshipLineText(u8 *dest, u8 friendship)
 {
@@ -2752,6 +2752,8 @@ void GetFriendshipLineText(u8 *dest, u8 friendship)
 
 static void PrintEvolutionPage(void)
 {
+    u8 friendshipText[FRIENDSHIP_LINE_SIZE];
+
     if (sMonSummaryScreen->isEgg)
         return;
 
@@ -2762,12 +2764,12 @@ static void PrintEvolutionPage(void)
                                  sLevelNickTextColors[0], TEXT_SKIP_DRAW,
                                  sMonSummaryScreen->pageText);
 
-    GetFriendshipLineText(sFriendshipLineText, GetMonData(&sMonSummaryScreen->currentMon, MON_DATA_FRIENDSHIP));
+    GetFriendshipLineText(friendshipText, GetMonData(&sMonSummaryScreen->currentMon, MON_DATA_FRIENDSHIP));
     AddTextPrinterParameterized4(sMonSummaryScreen->windowIds[POKESUM_WIN_RIGHT_PANE], FONT_NORMAL,
                                  EVOLUTION_PAGE_TEXT_X, EVOLUTION_PAGE_TEXT_Y + 5 * 16,
                                  0, EVOLUTION_PAGE_LINE_SPACING,
                                  sLevelNickTextColors[0], TEXT_SKIP_DRAW,
-                                 sFriendshipLineText);
+                                 friendshipText);
 }
 
 // Columns of the IVs/EVs page, in px from the start of the text (right-aligned numbers end at
@@ -2941,7 +2943,7 @@ bool32 PokeSum_TestCopyFriendshipText(u8 *dest)
 {
     if (sMonSummaryScreen == NULL)
         return FALSE;
-    StringCopy(dest, sFriendshipLineText);
+    GetFriendshipLineText(dest, GetMonData(&sMonSummaryScreen->currentMon, MON_DATA_FRIENDSHIP));
     return TRUE;
 }
 #endif

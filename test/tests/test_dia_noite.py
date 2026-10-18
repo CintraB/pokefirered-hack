@@ -575,6 +575,23 @@ def test_clima_do_campo_fora_das_batalhas_roteirizadas():
     assert main.count("ABILITYEFFECT_SWITCH_IN_WEATHER") == 1
 
 
+def test_hora_do_menu_sem_buffer_fixo():
+    """A janela da hora imprime na hora (velocidade 0xFF): o texto fica na pilha; a cópia em EWRAM
+    existe só na ROM de teste, para o cenário relogio ler o que foi impresso."""
+    day_night = _src("src/day_night.c")
+    assert re.search(r"#if TESTBUILD\nEWRAM_DATA u8 gDayNightClockText\[DAY_NIGHT_CLOCK_TEXT_SIZE\] = \{0\};\n#endif",
+                     day_night)
+    assert day_night.count("gDayNightClockText") == 1
+    header = _src("include/day_night.h")
+    assert re.search(r"#if TESTBUILD\nextern u8 gDayNightClockText\[DAY_NIGHT_CLOCK_TEXT_SIZE\];\n#endif", header)
+    assert re.search(r"#define DAY_NIGHT_CLOCK_TEXT_SIZE\s+20\b", header)
+    menu = _src("src/start_menu.c")
+    draw = re.search(r"static void DrawStartMenuClockWindow\(void\)\n\{\n(.*?)\n\}", menu, re.S).group(1)
+    assert "u8 clockText[DAY_NIGHT_CLOCK_TEXT_SIZE];" in draw
+    assert "DayNight_FormatClock(clockText);" in draw
+    assert "AddTextPrinterParameterized(sClockWindowId, FONT_NORMAL, clockText, 4, 0, 0xFF, NULL);" in draw
+    assert re.search(r"#if TESTBUILD\n\s*StringCopy\(gDayNightClockText, clockText\);\n#endif", draw)
+
 
 def test_creditos_com_o_clima_do_mapa():
     """Os créditos passeiam pelos mapas com LoadMapFromWarp, que sorteia o clima: logo depois,

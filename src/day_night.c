@@ -84,7 +84,10 @@ void DayNight_Tick(void)
 /* Hack 7 — frente A */
 #define PERIOD_NONE 0
 
-EWRAM_DATA u8 gDayNightClockText[20] = {0};
+// What the Start menu clock printed, read by the test scenarios
+#if TESTBUILD
+EWRAM_DATA u8 gDayNightClockText[DAY_NIGHT_CLOCK_TEXT_SIZE] = {0};
+#endif
 EWRAM_DATA u8 gDayNightPopupPeriod = 0;
 static u8 sSeenPeriod; // period + 1, 0 = none yet
 static bool8 sMapWeatherChecked;

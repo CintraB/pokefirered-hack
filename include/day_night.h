@@ -20,7 +20,10 @@ void DayNight_OnPeriodChange(void);
 u8 DayNight_GetWeatherRegion(u8 mapsec);
 u8 DayNight_RollWeather(u8 region, u32 day, u8 period);
 u8 DayNight_GetMapWeather(u8 headerWeather);
-extern u8 gDayNightClockText[20];
+#define DAY_NIGHT_CLOCK_TEXT_SIZE 20
+#if TESTBUILD
+extern u8 gDayNightClockText[DAY_NIGHT_CLOCK_TEXT_SIZE];
+#endif
 extern u8 gDayNightPopupPeriod;
 
 // Per-channel multiplier of the field palettes, in 1/256

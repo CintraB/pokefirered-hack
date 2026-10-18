@@ -359,6 +359,15 @@ def test_coracao_tem_largura():
 
 def test_amizade_ligada_ao_c():
     assert "void GetFriendshipLineText(u8 *dest, u8 friendship);" in SUMMARY_H
-    assert "sFriendshipLineText[48]" in SUMMARY_C
+    # a linha é montada na pilha (impressão instantânea); o atalho de teste recalcula
+    from esteira.evolution_page import FRIENDSHIP_LINE_SIZE
+    assert re.search(rf"#define FRIENDSHIP_LINE_SIZE\s+{FRIENDSHIP_LINE_SIZE}\b", SUMMARY_C)
+    assert "sFriendshipLineText" not in SUMMARY_C
+    page = _function(SUMMARY_C, "static void PrintEvolutionPage(void)")
+    assert "u8 friendshipText[FRIENDSHIP_LINE_SIZE];" in page
+    assert ("GetFriendshipLineText(friendshipText, GetMonData(&sMonSummaryScreen->currentMon, "
+            "MON_DATA_FRIENDSHIP));") in page
+    copy = _function(SUMMARY_C, "bool32 PokeSum_TestCopyFriendshipText(u8 *dest)")
+    assert "GetFriendshipLineText(dest, GetMonData(&sMonSummaryScreen->currentMon, MON_DATA_FRIENDSHIP));" in copy
     assert "TEST_CMD_FRIENDSHIP_TEXT" in (REPO_ROOT / "src" / "test_hooks.c").read_text(encoding="utf-8")
     assert "5 * 16" in _function(SUMMARY_C, "static void PrintEvolutionPage(void)")

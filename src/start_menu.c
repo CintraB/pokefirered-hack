@@ -294,6 +294,7 @@ static void DestroySafariZoneStatsWindow(void)
 static void DrawStartMenuClockWindow(void)
 {
     struct WindowTemplate template = sClockWindowTemplate;
+    u8 clockText[DAY_NIGHT_CLOCK_TEXT_SIZE];
 
     if (sClockWindowOpen)
         return;
@@ -303,8 +304,11 @@ static void DrawStartMenuClockWindow(void)
     sClockWindowOpen = TRUE;
     PutWindowTilemap(sClockWindowId);
     DrawStdWindowFrame(sClockWindowId, FALSE);
-    DayNight_FormatClock(gDayNightClockText);
-    AddTextPrinterParameterized(sClockWindowId, FONT_NORMAL, gDayNightClockText, 4, 0, 0xFF, NULL);
+    DayNight_FormatClock(clockText);
+    AddTextPrinterParameterized(sClockWindowId, FONT_NORMAL, clockText, 4, 0, 0xFF, NULL);
+#if TESTBUILD
+    StringCopy(gDayNightClockText, clockText);
+#endif
     CopyWindowToVram(sClockWindowId, COPYWIN_GFX);
 }
 

@@ -224,7 +224,7 @@ FRIENDSHIP_PHRASES = ("Odeia você", "Te encara feio", "Ainda desconfia", "Pegan
                       "Amigável", "Muito feliz", "Ama você!")
 FRIENDSHIP_MARK = " (220+)"
 FRIENDSHIP_MARK_FROM = 220          # amizade que faz o Eevee evoluir (EVO_FRIENDSHIP_*)
-FRIENDSHIP_LINE_SIZE = 48           # sFriendshipLineText, com o terminador
+FRIENDSHIP_LINE_SIZE = 48           # FRIENDSHIP_LINE_SIZE do C (buffer na pilha), com o terminador
 FRIENDSHIP_SCREEN_POINTS = ("resumo_amizade_eevee",)
 # primeira amizade de cada faixa (0-6 corações)
 FRIENDSHIP_BAND_STARTS = (0, 1, 50, 100, 150, 200, 255)
