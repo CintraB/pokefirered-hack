@@ -26,6 +26,8 @@
 #include "constants/daycare.h"
 #include "constants/maps.h"
 #include "constants/moves.h"
+// Hack 7 (day/night)
+#include "day_night.h"
 
 STATIC_ASSERT(TEST_TEXT_SIZE >= SUMMARY_PAGE_TEXT_SIZE, TestTextHoldsASummaryPage);
 
@@ -538,6 +540,27 @@ void TestHooks_Run(void)
     case TEST_CMD_SET_VAR:          VarSet(gTestMailbox.arg0, gTestMailbox.arg1); result = VarGet(gTestMailbox.arg0); break;
     case TEST_CMD_GAIN_EVS:         result = GainEVs(gTestMailbox.arg0, gTestMailbox.arg1); break;
     case TEST_CMD_SPEED_ORDER:      result = SpeedOrder(gTestMailbox.arg0, gTestMailbox.arg1); break;
+    // Hack 7 (day/night): the in-game clock
+    case TEST_CMD_SET_CLOCK:
+        DayNight_SetClock(gTestMailbox.arg0, gTestMailbox.arg1);
+        result = DayNight_GetMinuteOfDay();
+        break;
+    case TEST_CMD_CLOCK_INFO:       result = DayNight_GetMinuteOfDay() | DayNight_GetPeriod() << 16; break;
+    // Hack 7 front A: start
+
+    // Hack 7 front A: end
+    // Hack 7 front B: start
+
+    // Hack 7 front B: end
+    // Hack 7 front C: start
+
+    // Hack 7 front C: end
+    // Hack 7 front D: start
+
+    // Hack 7 front D: end
+    // Hack 7 front E: start
+
+    // Hack 7 front E: end
     default:
         result = 0xFFFFFFFF;
         break;

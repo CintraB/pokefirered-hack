@@ -128,6 +128,17 @@ class Mailbox:
         assert count > slot, f"SET_PARTY_EGG recusado: espécie {species}, slot {slot} (time = {count})"
         return count
 
+    # --- relógio do jogo (Hack 7) ----------------------------------------------------------
+    def set_clock(self, day: int, minute: int) -> int:
+        """Acerta o relógio do jogo (antes de 08:00 do dia 0 vira 08:00 do dia 0); devolve o
+        minuto do dia que o jogo passou a ver."""
+        return self.call(CMD_SET_CLOCK, day, minute)
+
+    def clock_info(self) -> tuple[int, int]:
+        """(minuto do dia 0–1439, período TIME_*) do relógio do jogo."""
+        info = self.call(CMD_CLOCK_INFO)
+        return info & 0xFFFF, info >> 16
+
 # --- Hack 6: breeding genético (enum à parte em include/test_hooks.h, a partir de 0x60; ------
 # o uso fica em esteira/breeding.py e scenarios/full_breeding.py / full_egg.py)
 CMD_BREED_SETUP = 0x60      # gTestBreedSetup -> creche (arg0 = 1: ovo pendente) -> compatibilidade (0xFFFFFFFF = pai inválido)
@@ -141,3 +152,18 @@ CMD_SET_VAR = 0x67          # arg0 = var, arg1 = valor -> VarGet()
 CMD_GAIN_EVS = 0x68         # arg0 = item | espécie derrotada << 16, arg1 = EV do atributo | outros << 8
                             # | atributo << 16 -> total (os 6 EVs em bytes em gEnemyParty)
 CMD_SPEED_ORDER = 0x69      # arg0/arg1 = velocidade | item << 16 -> GetWhoStrikesFirst (0, 1, 2 empate)
+
+# --- Hack 7: dia/noite, clima e encontros por horário (enum à parte em include/test_hooks.h, ---
+# a partir de 0x70; números fixos do plano, os ainda não implementados devolvem 0xFFFFFFFF)
+CMD_SET_CLOCK = 0x70        # arg0 = dia, arg1 = minuto do dia -> DayNight_GetMinuteOfDay()
+CMD_CLOCK_INFO = 0x71       # -> minuto do dia | período << 16
+CMD_TINT_AT = 0x72
+CMD_ROLL_WEATHER = 0x73
+CMD_LAND_SPECIES = 0x74
+CMD_FRIENDSHIP_TEXT = 0x75
+CMD_RARE_EGG_ROLL = 0x76
+CMD_SET_KANTO_OWNED = 0x77
+CMD_START_WILD_BATTLE = 0x78
+CMD_FILL_PC = 0x79
+CMD_SET_FLAG = 0x7A
+CMD_SPECIES_ON_MAP = 0x7B

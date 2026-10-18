@@ -75,6 +75,25 @@ struct TestBreedSetup
 extern struct TestBreedSetup gTestBreedSetup;
 // --- end of Hack 6 -------------------------------------------------------------------------
 
+// --- Hack 7: day/night, weather and time-based encounters (numbers fixed by the plan) ------
+// Commands not implemented yet fall to TestHooks_Run's default (result = 0xFFFFFFFF).
+enum
+{
+    TEST_CMD_SET_CLOCK = 0x70,   // arg0 = day, arg1 = minute of day: DayNight_SetClock; result = DayNight_GetMinuteOfDay()
+    TEST_CMD_CLOCK_INFO,         // result = minute of day | period << 16
+    TEST_CMD_TINT_AT,
+    TEST_CMD_ROLL_WEATHER,
+    TEST_CMD_LAND_SPECIES,
+    TEST_CMD_FRIENDSHIP_TEXT,
+    TEST_CMD_RARE_EGG_ROLL,
+    TEST_CMD_SET_KANTO_OWNED,
+    TEST_CMD_START_WILD_BATTLE,
+    TEST_CMD_FILL_PC,
+    TEST_CMD_SET_FLAG,
+    TEST_CMD_SPECIES_ON_MAP,
+};
+// --- end of Hack 7 -------------------------------------------------------------------------
+
 extern struct TestMailbox gTestMailbox;
 extern u8 gTestText[TEST_TEXT_SIZE];
 
