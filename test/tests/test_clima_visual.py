@@ -64,3 +64,23 @@ def test_neblina_clareia_sprites_pela_intensidade():
     header = (REPO_ROOT / "include" / "event_object_movement.h").read_text(encoding="utf-8")
     slots = re.search(r"enum \{\n(.*?)OBJ_PALSLOT_COUNT", header, re.S).group(1)
     assert len(re.findall(r"PALSLOT_\w+,", slots)) == fw.OBJ_PALSLOT_COUNT
+
+
+def test_neblina_reaplicada_depois_de_reescrever_as_paletas():
+    """Ajustes do Hack 7 (revisão): a gamma da troca de clima (chuva -> neblina) e o retingimento
+    dia/noite reescrevem as paletas OBJ do Unfaded; os dois chamam UpdateSpritePalettesForFog no
+    fim, e ela só refaz as paletas que passaram por UpdateSpritePaletteWithWeather (não um loadpal)."""
+    weather_c = (REPO_ROOT / "src" / "field_weather.c").read_text(encoding="utf-8")
+    day_night_c = (REPO_ROOT / "src" / "day_night.c").read_text(encoding="utf-8")
+    gamma = re.search(r"static void UpdateWeatherGammaShift\(void\)\n\{(.*?)^\}", weather_c, re.M | re.S).group(1)
+    assert gamma.index("UpdateSpritePalettesForFog();") < gamma.index("WEATHER_PAL_STATE_IDLE;")
+    retint = re.search(r"static void TryRetintField\(void\)\n\{(.*?)^\}", day_night_c, re.M | re.S).group(1)
+    assert retint.index("RestoreDefaultWeatherSpritePalette();") < retint.index("UpdateSpritePalettesForFog();")
+    refresh = re.search(r"void UpdateSpritePalettesForFog\(void\)\n\{(.*?)^\}", weather_c, re.M | re.S).group(1)
+    assert "fogSpritePalTags[i - OBJ_PALSLOT_COUNT]" in refresh
+    update = re.search(r"void UpdateSpritePaletteWithWeather\(u8 spritePaletteIndex\)\n\{(.*?)^\}",
+                       weather_c, re.M | re.S).group(1)
+    assert "fogSpritePalTags[spritePaletteIndex - OBJ_PALSLOT_COUNT] = " in update
+    # a lista de tags ocupa o filler antigo: o resto de struct Weather não muda de lugar
+    assert re.search(r"s16 droughtState;\s*u16 fogSpritePalTags\[4\];[^\n]*\n\s*u8 filler_74C\[1\];"
+                     r"\s*s8 loadDroughtPalsIndex;", WEATHER_H)

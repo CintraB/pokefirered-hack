@@ -23,7 +23,10 @@ SetNextWeather faz) a partir desse savestate e o jogo roda 1500 quadros:
    de tom, com o mesmo tom) recarrega todas as paletas sob a neblina. Nos três momentos: as
    paletas de gente (OBJ 0–11) e a do clima iguais ao Unfaded (sem clarear), e as do jogador e
    do menino iguais entre os momentos; as dos efeitos de campo (OBJ 12–15 com tag) clareadas
-   para RGB(28, 31, 28) pelo EVA da neblina em uso (9 fora; a Pokémon Tower usa 12).
+   para RGB(28, 31, 28) pelo EVA da neblina em uso (9 fora; a Pokémon Tower usa 12);
+7. `clima_visual/chuva_para_neblina`: chuva -> neblina sem trocar de mapa: os passos da gamma
+   (3 -> 0) reescrevem as paletas do Unfaded; quando acabam, os efeitos de campo já na tela
+   estão clareados pelo EVA da neblina (e gente/clima não).
 
 Telas para o Cintra aprovar: telas/clima_<neve|cinzas|areia|neblina>.png (+ clima_limpo,
 clima_neblina_torre, clima_neblina_npc_<chegada|entrou|retinge>).
@@ -85,6 +88,8 @@ OBJ_PALSLOT_COUNT = 12                  # include/event_object_movement.h: gente
 PLAYER_SLOT, BOY_SLOT = 0, 4            # PALSLOT_PLAYER; o menino é OBJ_EVENT_PAL_TAG_NPC_GREEN
 FOG_LIGHT = (28, 31, 28)                # UpdateSpritePaletteWithWeather: RGB(28, 31, 28)
 W_WEATHER_PAL = 0x6D4                   # weatherPicSpritePalIndex
+W_GAMMA_INDEX, W_PAL_STATE = 0x6C0, 0x6C6   # gammaIndex (s8), palProcessingState
+WEATHER_PAL_STATE_IDLE = 3
 TAG_NONE = 0xFFFF
 TOWER_SPOT = (5, 10)        # ao lado da escada para o 2F, fora da visão das médiuns
 NOON = 12 * 60
@@ -342,6 +347,30 @@ class WeatherGfxScenario(CatchSaveScenario):
                 f"(OBJ {PLAYER_SLOT}) e menino (OBJ {BOY_SLOT}) com a mesma cor na chegada, com o "
                 f"menino na tela e depois do retingimento; efeitos de campo clareados por {eva}")
 
+    def _rain_to_fog(self) -> str:
+        self.emu.load_state(self.state)
+        rain, fog = self.weather["WEATHER_RAIN"], self.weather["WEATHER_FOG_HORIZONTAL"]
+
+        def settled(weather: int, gamma: int) -> bool:
+            wp = self._wp()
+            return (self.emu.read_u8(wp + W_CURR) == weather and self.emu.read_u8(wp + W_GFX_LOADED)
+                    and self.emu.read_u8(wp + W_GAMMA_INDEX) == gamma
+                    and self.emu.read_u8(wp + W_PAL_STATE) == WEATHER_PAL_STATE_IDLE)
+
+        self._set_weather(rain)
+        self.ctl.wait_until(lambda: settled(rain, 3), 1500, "chuva com a gamma 3")
+        self._set_weather(fog)
+        self.ctl.wait_until(lambda: settled(fog, 0), 1500, "neblina depois da chuva, gamma 0")
+        self.emu.frames(30)
+        weather_pal = self.emu.read_u8(self._wp() + W_WEATHER_PAL)
+        effects = [slot for slot in self._sprite_pals()
+                   if slot >= OBJ_PALSLOT_COUNT and slot != weather_pal]
+        assert effects, "nenhuma paleta de efeito de campo carregada para conferir"
+        self._shot("clima_chuva_para_neblina")
+        self._check_fog_pals("chuva -> neblina", FOG_OUTDOOR_BLEND & 0xFF)
+        return (f"chuva -> neblina na Rota 1: efeitos de campo OBJ {effects} clareados por "
+                f"{FOG_OUTDOOR_BLEND & 0xFF} depois dos passos da gamma")
+
     def run(self) -> None:
         try:
             self._flow("clima_visual: CONTINUAR, 12:00 e Rota 1 com céu limpo", self._start)
@@ -356,6 +385,8 @@ class WeatherGfxScenario(CatchSaveScenario):
                            self._fog)
             self.suite.run("clima_visual/neblina_npcs: gente com a mesma cor antes e depois da "
                            "neblina chegar", self._fog_npcs)
+            self.suite.run("clima_visual/chuva_para_neblina: efeitos de campo clareados depois da "
+                           "gamma da chuva", self._rain_to_fog)
         except Abort:
             pass
 

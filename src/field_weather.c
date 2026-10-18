@@ -67,6 +67,9 @@ static u8 GetFogSpriteLightenCoeff(u8 spritePaletteIndex);
 
 struct Weather *const gWeatherPtr = &sWeather;
 
+// Hack 7: one tag per field effect slot, taken from the old filler (the struct keeps its size)
+STATIC_ASSERT(ARRAY_COUNT(sWeather.fogSpritePalTags) == 16 - OBJ_PALSLOT_COUNT, FogSpritePalTagsCoverFieldEffectSlots);
+
 static const struct WeatherCallbacks sWeatherFuncs[] = {
     {None_Init, None_Main, None_Init, None_Finish},
     {Clouds_InitVars, Clouds_Main, Clouds_InitAll, Clouds_Finish},
@@ -145,6 +148,8 @@ const u8 gWeatherSandstormTiles[] = INCBIN_U8("graphics/weather/sandstorm.4bpp")
 // code
 void StartWeather(void)
 {
+    u32 i;
+
     if (!FuncIsActiveTask(Task_WeatherMain))
     {
         u8 index = AllocSpritePalette(0x1200);
@@ -164,6 +169,8 @@ void StartWeather(void)
         gWeatherPtr->sandstormSwirlSpritesCreated = FALSE;
         gWeatherPtr->bubblesSpritesCreated = FALSE;
         gWeatherPtr->lightenedFogSpritePalsCount = 0;
+        for (i = 0; i < ARRAY_COUNT(gWeatherPtr->fogSpritePalTags); i++)
+            gWeatherPtr->fogSpritePalTags[i] = TAG_NONE;
         Weather_SetBlendCoeffs(16, 0);
         gWeatherPtr->currWeather = WEATHER_NONE;
         gWeatherPtr->palProcessingState = WEATHER_PAL_STATE_IDLE;
@@ -333,6 +340,9 @@ static void UpdateWeatherGammaShift(void)
 {
     if (gWeatherPtr->gammaIndex == gWeatherPtr->gammaTargetIndex)
     {
+        // Hack 7: the gamma steps (rain -> fog) rewrote the field effects from Unfaded
+        if (gWeatherPtr->currWeather == WEATHER_FOG_HORIZONTAL)
+            UpdateSpritePalettesForFog();
         gWeatherPtr->palProcessingState = WEATHER_PAL_STATE_IDLE;
     }
     else
@@ -658,9 +668,11 @@ static void MarkFogSpritePalToLighten(u8 paletteIndex)
 
 // Hack 7: how much a sprite palette is lightened toward the fog color, in 1/16: the fog's own
 // blend over the background (BLDALPHA EVA: 12 indoors as in RSE, 9 outdoors; 0 while it fades
-// away). As in FRLG, the palettes of people (object events and their reflections) and the fog's
-// own palette are never lightened: only field effects are, whenever they are loaded or the fog
-// starts or ends, so the screen never mixes two tones.
+// away). As in FRLG, the palettes of people and the fog's own palette are never lightened; unlike
+// FRLG (field_effect_helpers.c lightened them by 12), neither are the reflections, which keep the
+// tone of the person they mirror. Field effects are lightened whenever they are loaded, the fog
+// starts or ends, the weather's gamma steps end and the day/night tone is reapplied, so the
+// screen never mixes two tones.
 static u8 GetFogSpriteLightenCoeff(u8 spritePaletteIndex)
 {
     if (gWeatherPtr->currWeather != WEATHER_FOG_HORIZONTAL
@@ -670,19 +682,23 @@ static u8 GetFogSpriteLightenCoeff(u8 spritePaletteIndex)
     return gWeatherPtr->targetBlendEVA;
 }
 
-// Hack 7: the fog started or ended in the field (period change): redo the sprite palettes already
-// on screen as UpdateSpritePaletteWithWeather does for the ones loaded later. A fade-in marks and
-// lightens them itself (ApplyFogBlend).
+// Hack 7: the fog started or ended in the field, or something rewrote the sprite palettes from
+// Unfaded (gamma steps, day/night retint): redo the ones already on screen as
+// UpdateSpritePaletteWithWeather does for the ones loaded later. Only the palettes that went through
+// it (field effects): a plain loadpal (Poké Ball, HoF monitor) is never lightened, as in FRLG. A
+// fade-in marks and lightens them itself (ApplyFogBlend).
 void UpdateSpritePalettesForFog(void)
 {
     u8 i;
+    u16 tag;
 
     if (gWeatherPtr->palProcessingState == WEATHER_PAL_STATE_SCREEN_FADING_IN
      || gWeatherPtr->palProcessingState == WEATHER_PAL_STATE_SCREEN_FADING_OUT)
         return;
     for (i = OBJ_PALSLOT_COUNT; i < 16; i++)
     {
-        if (GetSpritePaletteTagByPaletteNum(i) != TAG_NONE)
+        tag = GetSpritePaletteTagByPaletteNum(i);
+        if (tag != TAG_NONE && tag == gWeatherPtr->fogSpritePalTags[i - OBJ_PALSLOT_COUNT])
             UpdateSpritePaletteWithWeather(i);
     }
 }
@@ -869,6 +885,9 @@ void UpdateSpritePaletteWithWeather(u8 spritePaletteIndex)
     u16 paletteIndex = 16 + spritePaletteIndex;
     u16 i;
 
+    // Hack 7: remembered for UpdateSpritePalettesForFog
+    if (spritePaletteIndex >= OBJ_PALSLOT_COUNT && spritePaletteIndex < 16)
+        gWeatherPtr->fogSpritePalTags[spritePaletteIndex - OBJ_PALSLOT_COUNT] = GetSpritePaletteTagByPaletteNum(spritePaletteIndex);
     switch (gWeatherPtr->palProcessingState)
     {
     case WEATHER_PAL_STATE_SCREEN_FADING_IN:
