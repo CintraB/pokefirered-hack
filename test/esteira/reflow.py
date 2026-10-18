@@ -10,8 +10,9 @@ seguintes `\\l` (rolagem), como no FRLG (`estilo="dialogo"`); `estilo="linhas"` 
 Formatação intencional é preservada:
   - só a caixa que tem linha estourada é refeita (`forcar=True` refaz todas): placa com
     "ROUTE 1\\nPALLET TOWN - VIRIDIAN CITY" que cabe fica como está;
-  - linha que começa com glifo de lista ({CIRCLE_1}..{CIRCLE_9}, {CIRCLE_DOT}, {TRIANGLE})
-    abre item novo; as linhas recuadas logo depois são a continuação do item e mantêm o recuo;
+  - linha que começa com glifo de lista ({CIRCLE_1}..{CIRCLE_9}, {CIRCLE_DOT}, {TRIANGLE},
+    {BIG_MULT_X}) abre item novo; as linhas recuadas logo depois são a continuação do item e
+    mantêm o recuo, a não ser que o item termine em ":" (sublista: cada entrada fica na linha);
   - linha recuada fora de lista ("  Usar a BOLSA") é fixa: começa linha e mantém o recuo;
   - espaços duplos entre palavras ficam.
 
@@ -33,8 +34,14 @@ from esteira.check_text import _LABEL_LINE, _STRING_LINE, _load_env, measure, ru
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 _BREAK = re.compile(r"\\[nlp]")
-_LIST_GLYPH = re.compile(r"^\{(?:CIRCLE_\d|CIRCLE_DOT|TRIANGLE)\}")
+_LIST_GLYPH = re.compile(r"^\{(?:CIRCLE_\d|CIRCLE_DOT|TRIANGLE|BIG_MULT_X)\}")   # glifos F9 de lista
 _INDENT = re.compile(r"^( +)")
+
+
+def _opens_sublist(text: str) -> bool:
+    """Item que termina em ":" abre sublista: as linhas recuadas seguintes são entradas fixas,
+    não continuação (Help_Text_HowToUseSummary, data/text/help_system.inc)."""
+    return text.rstrip().endswith(":")
 
 
 @lru_cache(maxsize=2)
@@ -79,7 +86,7 @@ def _segments(box: str) -> list[list[str]]:
         indent = _INDENT.match(line)
         if _LIST_GLYPH.match(line):
             segs.append(["", "", line, "item"])
-        elif indent and segs and segs[-1][3] == "item":
+        elif indent and segs and segs[-1][3] == "item" and not _opens_sublist(segs[-1][2]):
             if not segs[-1][1]:
                 segs[-1][1] = indent.group(1)
             segs[-1][2] += " " + line[len(indent.group(1)):]
@@ -117,12 +124,12 @@ def _kinds(lines: list[str]) -> list[tuple[str, str]]:
     fixo (recuada fora de lista) ou corrido."""
     out: list[tuple[str, str]] = []
     in_item = False
-    for line in lines:
+    for n, line in enumerate(lines):
         indent = _INDENT.match(line)
         if _LIST_GLYPH.match(line):
             out.append(("item", ""))
             in_item = True
-        elif indent and in_item:
+        elif indent and in_item and not _opens_sublist(lines[n - 1]):
             out.append(("cont", indent.group(1)))
         elif indent:
             out.append(("fixo", indent.group(1)))

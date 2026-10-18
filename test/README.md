@@ -702,7 +702,13 @@ contém, `table:sCursorOptions`; outro código, `code`) e mede contra a janela d
 (`USAGE_RULES`, com arquivo:linha). O texto tem de caber em todas; o achado diz qual janela
 estourou. Texto sem uso nenhum é "texto morto" e fica sem medida. Fonte sem janela determinável
 tem regra explícita com o motivo (braille, naturezas, descrições de enfeite, teclados); um teste
-garante que nenhum texto cai fora das regras. Cobertura: `python3 -m esteira.check_text --regras`.
+garante que nenhum texto cai fora das regras. Texto de tabela ou de chamada de menu/lista
+(`MENU_CALL`) não pode cair na regra-pega-tudo do arquivo (contexto e rótulo `"*"`): tem regra
+própria, ou a regra é marcada `unica=True` (tela de janela única: multiescolha, créditos). Nas
+telas revistas (Pokédex, Union Room, Fame Checker, Easy Chat, multiescolha) um teste confere que
+a janela citada tem a largura dita e que o trecho citado mostra o texto indo para ela. Modelos
+do Easy Chat que o FRLG não abre (batalha, bardo, entrevista, frase da moda) são texto morto.
+Cobertura: `python3 -m esteira.check_text --regras`.
 Os caracteres
 ({PLAYER}/{RIVAL} medem 7 letras; nomes de batalha `{B_*}` o maior nome do campo, e os
 `_WITH_PREFIX` somam o prefixo mais largo) e o espaçamento entre letras seguem o jogo;
@@ -732,8 +738,9 @@ inglês que entrar depois na `hack-switch` e for trazida para a tradução apare
 - Quebra de linha: `python3 -m esteira.reflow` refaz `\n`/`\l` medindo como a checagem
   (`--texto "..." --largura 208`, ou um `.inc` com `--rotulo X --escrever`; sem `--largura` usa a
   janela da regra do arquivo). Só mexe na caixa que tem linha estourada, e nela só na linha que
-  estoura (o excesso desce para a seguinte): placas, listas `{CIRCLE_n}` e recuos ficam;
-  `--forcar` refaz tudo do zero.
+  estoura (o excesso desce para a seguinte): placas, listas (`{CIRCLE_n}`, `{CIRCLE_DOT}`,
+  `{TRIANGLE}`, `{BIG_MULT_X}`) e recuos ficam; item que termina em ":" abre sublista, e as
+  linhas recuadas dele ficam uma por linha; `--forcar` refaz tudo do zero.
 
 Página EVOLUTION do resumo (Hack 4): os textos `gText_PokeSum_Evo*` de `src/strings.c` têm o
 limite da janela da página, 222 px (28 tiles com o texto em x = 2, `sWindowTemplates_Evolution`

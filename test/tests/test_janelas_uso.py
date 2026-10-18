@@ -9,7 +9,7 @@ from pathlib import Path
 import pytest
 
 from esteira.check_text import check_text, coverage_kind, effective_rules
-from esteira.janelas_uso import USAGE_RULES, c_contexts, match
+from esteira.janelas_uso import MENU_CALL, USAGE_RULES, c_contexts, match, repo_uses
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 W60 = "W" * 60
@@ -48,7 +48,7 @@ def test_contexts_of_calls_tables_and_code():
            'extern const u8 gText_Declared[];\n')
     ctx = c_contexts(src, {"gText_MenuBag", "gText_Desc", "gText_Msg", "gText_Code", "gText_Comment",
                            "gText_Literal", "gText_Declared"})
-    assert ctx == {"gText_MenuBag": {"table:sStartMenuActionTable"}, "gText_Desc": {"table:sInfo"},
+    assert ctx == {"gText_MenuBag": {"table:sStartMenuActionTable"}, "gText_Desc": {"table:sInfo.desc"},
                    "gText_Msg": {"call:DisplayPartyMenuMessage"}, "gText_Code": {"code"}}
 
 
@@ -57,6 +57,8 @@ def test_first_matching_usage_rule_wins():
     assert match("src/data/party_menu.h", "table:sCursorOptions").px == 72
     assert match("src/data/party_menu.h", "table:sActionStringTable", "gText_DoWhatWithPokemon").px == 128
     assert match("src/data/party_menu.h", "table:sActionStringTable", "gText_ChoosePokemon").px == 168
+    assert match("src/easy_chat_2.c", "table:sEasyChatScreenTemplates.titleText").px == 128     # campo próprio
+    assert match("src/easy_chat_2.c", "table:sEasyChatScreenTemplates.confirmText1").px == 176  # a tabela
     assert match("src/nada_aqui.c", "code") is None
 
 
@@ -119,7 +121,7 @@ def test_easy_chat_words_fit_the_word_column(repo):
         + '");\nconst struct EasyChatWordInfo gEasyChatGroup_Actions[] = {\n'
         '    { .text = sEasyChatWord_Ok, },\n    { .text = sEasyChatWord_Bad, },\n};\n')
     (failed,) = failures(run(repo))
-    assert "sEasyChatWord_Bad" in failed.detail and "limite 104 px" in failed.detail
+    assert "sEasyChatWord_Bad" in failed.detail and "limite 96 px" in failed.detail
 
 
 # ---- repo real -----------------------------------------------------------------------------
@@ -140,8 +142,26 @@ def test_real_families_have_their_windows(real_rules):
     assert px(real_rules, "src/strings.c", "gText_DoWhatWithPokemon") == 128    # grupo
     assert px(real_rules, "src/strings.c", "gText_PokeSum_Controls_Page") == 84    # resumo
     assert px(real_rules, "src/strings.c", "gText_RegionMap_AreaDesc_ViridianForest") == 198
-    assert px(real_rules, "src/data/easy_chat/easy_chat_group_actions.h", "sEasyChatWord_Meets") == 104
+    assert px(real_rules, "src/data/easy_chat/easy_chat_group_actions.h", "sEasyChatWord_Meets") == 96
     assert px(real_rules, "src/battle_message.c", "gText_MoveInterfacePP") == 24
+
+
+@pytest.mark.parametrize("label, expected", [
+    ("gText_1BigMushroom", 214),                    # multiescolha: (largura + 9) / 8 + 1 <= 28
+    ("gText_Kanto", 44), ("gText_Seen", 72), ("gText_AreaUnknown", 88), ("gText_Cry", 228),
+    ("gText_PokedexPokemon", 49), ("gText_Page", 200),                          # Pokédex
+    ("gText_F700JoinedChat", 168), ("gText_Exit", 48), ("gText_Register", 80),  # Union Room
+    ("gFameCheckerOakName", 56), ("gFameCheckerText_MainScreenUI", 188),        # Fame Checker
+    ("gText_Profile", 128), ("gText_QuitEditing", 176),                         # Easy Chat
+    ("gText_WirelessCommunicationStatus", 192), ("gText_PeopleTrading", 176),
+])
+def test_real_screens_reviewed_in_round_2(real_rules, label, expected):
+    assert expected in {r.px for r in real_rules[("src/strings.c", label)]}       # a janela revista entra na conta
+
+
+def test_real_union_room_chat_default_phrase_fits_the_save_buffer(real_rules):
+    (rule,) = [r for r in real_rules[("src/strings.c", "gText_Hello")] if r.chars is not None]
+    assert rule.chars == 20                     # registeredTexts[][21] (include/global.h)
 
 
 def test_real_strings_c_is_measured(real_rules):
@@ -150,6 +170,64 @@ def test_real_strings_c_is_measured(real_rules):
     dead = [label for (file, label), rules in real_rules.items() if file == "src/strings.c"
             and coverage_kind(rules) == "sem medida" and "texto morto" not in rules[0].source]
     assert dead == [], dead[:10]
+
+
+def test_table_and_menu_uses_never_fall_into_a_generic_rule():
+    """Texto de tabela ou de chamada de menu/lista não pode ganhar a janela de uma regra-pega-tudo
+    do arquivo: cada um desses usos tem regra própria (ou a tela tem janela única)."""
+    loose = []
+    for label, uses in repo_uses(REPO_ROOT).items():
+        for file, ctx in uses:
+            rule = match(file, ctx, label)
+            assert rule is not None, (file, ctx, label)
+            if (ctx.startswith("table:") or MENU_CALL.match(ctx)) and rule.generic:
+                loose.append((file, ctx, label, rule.px))
+    assert loose == [], loose[:10]
+
+
+def test_generic_rule_flag():
+    assert match("src/credits.c", "code", "x").generic is False             # tela de janela única
+    assert match("src/script_menu.c", "table:sMultichoiceLists", "x").generic is False
+    assert match("src/daycare.c", "code", "x").generic is True
+    assert MENU_CALL.match("call:StringCopy") is None and MENU_CALL.match("call:DisplayPartyMenuMessage")
+    assert bool(MENU_CALL.match("call:AddTextPrinterForListMenu")) and bool(MENU_CALL.match("call:PrintTextArray"))
+
+
+_CHECKED_FILES = ("src/pokedex_screen.c", "src/union_room", "src/data/union_room.h", "src/fame_checker.c",
+                  "src/easy_chat", "src/data/easy_chat/", "src/script_menu.c")
+_TILES = re.compile(r"(\d+) tiles(?: cada)? \(((?:src|include)/[\w./-]+\.[ch]):(\d+)(?:-(\d+))?")
+_CITE = re.compile(r"((?:src|include|data)/[\w./-]+\.(?:c|h|inc|s)):(\d+)(?:-(\d+))?((?:, :\d+(?:-\d+)?)*)")
+
+
+def _cited_ranges(source):
+    for path, first, last, more in _CITE.findall(source):
+        yield path, int(first), int(last or first)
+        for a, b in re.findall(r":(\d+)(?:-(\d+))?", more):
+            yield path, int(a), int(b or a)
+
+
+def _cited_text(path, first, last):
+    lines = (REPO_ROOT / path).read_text(encoding="utf-8").splitlines()
+    return "\n".join(lines[first - 1:last])
+
+
+@pytest.mark.parametrize("rule", [r for r in USAGE_RULES if r.file.startswith(_CHECKED_FILES)],
+                         ids=lambda r: f"{r.file}|{r.context}|{r.label}")
+def test_cited_window_is_the_one_that_receives_the_text(rule):
+    """Nas telas revistas, a janela citada tem a largura dita e o trecho de uso citado mostra o
+    texto (a chamada, a tabela ou o rótulo) indo para ela."""
+    for tiles, path, first, last in _TILES.findall(rule.source):
+        text = _cited_text(path, int(first), int(last or first))
+        assert re.search(rf"\bwidth\s*=\s*{tiles}\b|\b{tiles}\s*,", text), (rule.source, path, first)
+    if rule.px is None and rule.chars is None:
+        return
+    names = {rule.label} if rule.label != "*" and not any(c in rule.label for c in "*?[") else set()
+    if ":" in rule.context and "*" not in rule.context:
+        names.add(rule.context.split(":", 1)[1].split(".")[0])
+    if not names:
+        return
+    texts = [_cited_text(p, a, b) for p, a, b in _cited_ranges(rule.source)]
+    assert any(n in t for n in names for t in texts), (rule.file, rule.context, rule.label, sorted(names))
 
 
 def test_every_measuring_usage_rule_cites_existing_lines():

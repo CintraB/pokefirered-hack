@@ -32,10 +32,32 @@ class UsageRule(NamedTuple):
     lines: int | None = None
     chars: int | None = None
     label: str = "*"           # só estes rótulos (fnmatch), quando a mesma chamada/tabela mistura janelas
+    unica: bool = False        # "*" legítimo: a tela só tem esta janela para estes textos
+
+    @property
+    def generic(self) -> bool:
+        """Regra-pega-tudo (contexto e rótulo "*") que não é de tela de janela única: não pode
+        decidir a janela de um texto de tabela ou de menu/lista (teste)."""
+        return self.context == "*" and self.label == "*" and not self.unica
 
 
 def U(file: str, context: str, px: int | None, source: str, **kw) -> UsageRule:
     return UsageRule(file, context, px, source, **kw)
+
+
+# Chamadas que montam menu/lista: o texto que passa por elas tem de cair numa regra específica
+MENU_CALL = re.compile(r"^call:\w*(?:Menu|List|PrintTextArray|ActionText|Multichoice)\w*$")
+
+
+# Textos que só aparecem nos modelos do Easy Chat que o FRLG não abre (sobras do R/S/E)
+_EC_UNREACHABLE = (
+    "gText_AtTheBattlesStart", "gText_UponWinningABattle", "gText_UponLosingABattle", "gText_MakeMessageSixPhrases",
+    "gText_MaxTwoTwelveLetterPhrases", "gText_YourFeelingAtTheBattlesStart", "gText_WhatYouSayIfYouWin",
+    "gText_WhatYouSayIfYouLose", "gText_TheBardsSong", "gText_ChangeJustOneWordOrPhrase",
+    "gText_AndImproveTheBardsSong", "gText_TheNewSong", "gText_Interview", "gText_FindWordsThatDescribeYour",
+    "gText_FeelingsRightNow", "gText_WhatsHipAndHappening", "gText_CombineTwoWordsOrPhrases",
+    "gText_AndMakeATrendySaying", "gText_TheTrendySaying",
+)
 
 
 # A primeira que casar com o uso vale. Linhas citadas conferidas em 18/10 (hack-switch 3a8d861f5).
@@ -90,6 +112,11 @@ USAGE_RULES: list[UsageRule] = [
       "botões Cancelar/OK: 6 tiles (src/data/party_menu.h:387-392, :409-414), centralizados"),
     U("src/party_menu.c", "call:AddTextPrinterParameterized[34]", 6 * 8,
       "botões Cancelar/OK: 6 tiles (src/data/party_menu.h:387-392, :409-414), centralizados"),
+    U("src/*.c", "call:DisplayPartyMenuMessage", 28 * 8,
+      "mensagem do grupo: janela 6 de 28 tiles (src/data/party_menu.h:180-184), x = 0 (src/party_menu.c:2573)"),
+    U("src/data/party_menu.h", "table:sUnionRoomTradeMessages", 28 * 8,
+      "troca no Union Room: mensagem do grupo (src/party_menu.c:3883) na janela 6 de 28 tiles "
+      "(src/data/party_menu.h:180-184)"),
     U("src/party_menu.c", "call:PartyMenu_Oak_PrintText", 26 * 8,
       "voz do Carvalho no 1º combate: sWindowTemplate_FirstBattleOakVoiceover 26 tiles (src/data/party_menu.h:530-535)"),
     U("src/party_menu.c", "*", 28 * 8,
@@ -105,6 +132,12 @@ USAGE_RULES: list[UsageRule] = [
     U("src/pokemon_summary_screen.c", "call:PokeSum_PrintControlsString", 0x54,
       "controles do resumo: FONT_SMALL alinhado à direita em 0x54 (src/pokemon_summary_screen.c:2568-2570)",
       font="small"),
+    U("src/pokemon_summary_screen.c", "table:sEggHatchTimeTexts", 15 * 8 - 7,
+      "tempo para chocar: painel direito [POKESUM_WIN_INFO_3] 15 tiles (src/pokemon_summary_screen.c:790-794), "
+      "x = 7 (src/pokemon_summary_screen.c:2982)"),
+    U("src/pokemon_summary_screen.c", "table:sEggOriginTexts", 28 * 8,
+      "origem do ovo: memória do Treinador, [POKESUM_WIN_INFO_4] 28 tiles (src/pokemon_summary_screen.c:799-803), "
+      "x = 0 (src/pokemon_summary_screen.c:3326)"),
     U("src/pokemon_summary_screen.c", "*", 28 * 8,
       "página INFO/memória do Treinador: [POKESUM_WIN_INFO_4] 28 tiles (src/pokemon_summary_screen.c:799-803), "
       "x = 0 (src/pokemon_summary_screen.c:3294)"),
@@ -132,7 +165,12 @@ USAGE_RULES: list[UsageRule] = [
       "menu da loja: janela de 12 tiles (src/shop.c:154-158), texto em x = 8 (src/shop.c:216)"),
     U("src/shop.c", "table:*", 12 * 8 - 8,
       "menu da loja: janela de 12 tiles (src/shop.c:154-158), texto em x = 8 (src/shop.c:216)"),
-    U("src/shop.c", "*", DIALOG_PX, _DIALOG + "; mensagens da loja (BuyMenuDisplayMessage)"),
+    U("src/shop.c", "call:BuyMenuDisplayMessage", DIALOG_PX, _DIALOG + "; mensagens da loja"),
+    U("src/shop.c", "call:BuyMenuPrint", 8, "cursor da lista da loja (src/shop.c:666)", label="gText_SelectorArrow2"),
+    U("src/shop.c", "call:BuyMenuPrint", 10 * 8,
+      "traços no lugar da MT (Cancelar): janela 6 de 10 tiles (src/buy_menu_helpers.c:129-134), x = 0 "
+      "(src/shop.c:642-643)", label="gText_*Hyphens"),
+    U("src/shop.c", "*", DIALOG_PX, _DIALOG + "; mensagens da loja"),
     U("src/money.c", "*", 8 * 8 - 2, "caixa de dinheiro: 8 tiles (src/money.c:123)"),
     U("src/coins.c", "*", 8 * 8 - 2, "caixa de moedas: 8 tiles (src/coins.c:83)"),
     U("src/berry_powder.c", "*", 8 * 8 - 2, "caixa de pó de frutas: 8 tiles (src/berry_powder.c:120)"),
@@ -157,12 +195,23 @@ USAGE_RULES: list[UsageRule] = [
     U("src/pokemon_storage_system_menu.c", "table:*", 17 * 8 - 8,
       "menu do PC: janela de 17 tiles (src/pokemon_storage_system_menu.c:376-380), texto em x = 8 "
       "(src/pokemon_storage_system_menu.c:391)"),
+    U("src/pokemon_storage_system_menu.c", "call:ChooseBoxMenu_PrintTextToSprite", None,
+      "\"/30\" desenhado no sprite da escolha de caixa (src/pokemon_storage_system_menu.c:580, :636-640): "
+      "número, não texto traduzível"),
     U("src/pokemon_storage_system_menu.c", "*", DIALOG_PX, _DIALOG + "; descrição na janela 0 "
       "(src/pokemon_storage_system_menu.c:253)"),
+    U("src/pokemon_storage_system_tasks.c", "table:sMessages", 18 * 8,
+      "mensagem do PC (sMessages, src/pokemon_storage_system_tasks.c:275): janela de 18 tiles "
+      "(src/pokemon_storage_system_tasks.c:199-203), x = 0 (src/pokemon_storage_system_tasks.c:2588)"),
     U("src/pokemon_storage_system_tasks.c", "*", 18 * 8,
       "mensagem do PC: janela de 18 tiles (src/pokemon_storage_system_tasks.c:199-203), x = 0 "
       "(src/pokemon_storage_system_tasks.c:2588)"),
-    U("src/pokemon_storage_system_data.c", "*", 9 * 8 - 8,
+    U("src/pokemon_storage_system_data.c", "call:StringCopyPadded", 9 * 8 - 6,
+      "apelido do ovo no PC: displayMonTexts[0] impresso na janela 0 de 9 tiles em x = 6 "
+      "(src/pokemon_storage_system_data.c:1096; src/pokemon_storage_system_tasks.c:190-196, :2295); "
+      "conta também como nome de Pokémon, POKEMON_NAME_LENGTH (include/constants/global.h:63)",
+      chars=10, label="gText_EggNickname"),
+    U("src/pokemon_storage_system_data.c", "table:sMenuTexts", 9 * 8 - 8,
       "menus do PC (Mover, Marcar, papéis de parede...): janela de 9 tiles "
       "(src/pokemon_storage_system_tasks.c:191-195), texto em x = 8"),
     U("src/pokemon_storage_system_misc.c", "*", DIALOG_PX, _DIALOG),
@@ -171,15 +220,53 @@ USAGE_RULES: list[UsageRule] = [
       "menu da Pokédex: sWindowTemplate_ModeSelect 20 tiles (src/pokedex_screen.c:290-294), item_X = 12 "
       "(src/pokedex_screen.c:350)"),
     U("src/pokedex_screen.c", "table:sDexCategoryNamePtrs", 30 * 8,
-      "título da categoria na barra de 30 tiles (src/pokedex_screen.c:246-250)"),
+      "título da categoria na janela 0 de 30 tiles (src/pokedex_screen.c:246-250), centralizado ou à esquerda "
+      "(src/pokedex_screen.c:2376-2380)"),
     U("src/pokedex_screen.c", "call:DexScreen_PrintStringWithAlignment", 30 * 8,
       "título da Pokédex: janela 0 de 30 tiles (src/pokedex_screen.c:246-250), centralizado em 240 "
-      "(src/pokedex_screen.c:3443-3451)"),
+      "(src/pokedex_screen.c:1162, :3433-3451)"),
     U("src/pokedex_screen.c", "call:DexScreen_PrintControlInfo", 236,
-      "controles da Pokédex: FONT_SMALL alinhado à direita em 236 (src/pokedex_screen.c:2299)", font="small"),
-    U("src/pokedex_screen.c", "*", 8 * 8,
-      "rótulos da Pokédex (Vistos, Pegos, Alt., Peso, Área...): janelas de 8 tiles (src/pokedex_screen.c:578-602) "
-      "em FONT_SMALL", font="small"),
+      "controles da Pokédex: FONT_SMALL alinhado à direita em 236 (src/pokedex_screen.c:2297-2299)", font="small"),
+    *(U("src/pokedex_screen.c", "*", 52 - 8,
+        "\"Kanto\"/\"Nacional\" na contagem: FONT_SMALL em x = 8 com o número em x = 52 "
+        "(src/pokedex_screen.c:1140-1147), sWindowTemplate_DexCounts 9 tiles (src/pokedex_screen.c:310-318)",
+        font="small", label=lb) for lb in ("gText_Kanto", "gText_National")),
+    *(U("src/pokedex_screen.c", "*", 9 * 8,
+        "\"Vistos\"/\"Pegos\": linha própria na sWindowTemplate_DexCounts de 9 tiles (src/pokedex_screen.c:310-318), "
+        "em FONT_NORMAL_COPY_1 no modo só Kanto (src/pokedex_screen.c:1156-1158) e FONT_SMALL no nacional "
+        "(src/pokedex_screen.c:1139, :1144); mede na normal, a mais larga", label=lb)
+      for lb in ("gText_Seen", "gText_Owned")),
+    U("src/pokedex_screen.c", "*", 88,
+      "\"Área desconhecida\": centralizado sobre a elipse de 88 px (src/pokedex_screen.c:3133-3136)",
+      font="small", label="gText_AreaUnknown"),
+    *(U("src/pokedex_screen.c", "*", 10 * 8,
+        "\"Área\"/\"Tamanho\": centralizados nas janelas sWindowTemplate_AreaMap_Area/Size de 10 tiles "
+        "(src/pokedex_screen.c:648-667, :3066, :3075)", font="small", label=lb) for lb in ("gText_Area", "gText_Size")),
+    U("src/pokedex_screen.c", "*", 236 - 8,
+      "\"{START_BUTTON}Grito\": FONT_SMALL em x = 8 na barra de baixo, que divide com os controles alinhados "
+      "à direita em 236 (src/pokedex_screen.c:2962, :2299)", font="small", label="gText_Cry"),
+    U("src/pokedex_screen.c", "*", 10,
+      "\"{NO}\" antes do número, que vem em x + 9 (src/pokedex_screen.c:2215-2219); o glifo original mede "
+      "10 px", font="small", label="gText_PokedexNo"),
+    U("src/pokedex_screen.c", "*", 13 * 8 - 11 * 5,
+      "\" POKéMON\" depois da categoria (até 11 letras FONT_SMALL) na sWindowTemplate_DexEntry_SpeciesStats "
+      "de 13 tiles (src/pokedex_screen.c:608-613, :2700-2703)", font="small", label="gText_PokedexPokemon"),
+    U("src/pokedex_screen.c", "*", 30,
+      "\"Alt.\"/\"Peso\": FONT_SMALL com o valor em x + 30 (src/pokedex_screen.c:2716, :2758-2759, :2850-2851)",
+      font="small", label="gText_HT"),
+    U("src/pokedex_screen.c", "*", 30,
+      "\"Alt.\"/\"Peso\": FONT_SMALL com o valor em x + 30 (src/pokedex_screen.c:2776, :2758-2759, :2850-2851)",
+      font="small", label="gText_WT"),
+    U("src/pokedex_screen.c", "*", 13 * 8 - 30 - 6 * 5,
+      "unidade do peso: no valor que começa em x + 30 na janela de 13 tiles (src/pokedex_screen.c:608-613, "
+      ":2777-2851), depois de até 6 algarismos com espaçamento 5", font="small", label="gText_Lbs"),
+    U("src/pokedex_screen.c", "*", 200,
+      "\"PÁG. 1/ 2\": alinhado à direita em 232 (src/pokedex_screen.c:2357-2364, :3448) na janela 0 de 30 tiles "
+      "(src/pokedex_screen.c:246-250), menos \" 99/99\"", label="gText_Page"),
+    U("src/pokedex_screen.c", "*", 23 * 8 - 56,
+      "item vazio da lista numérica: sListMenuTemplate_OrderedListMenu item_X = 56 (src/pokedex_screen.c:517) "
+      "na janela de 23 tiles (src/pokedex_screen.c:499-503); rótulo do item (src/pokedex_screen.c:1396, :1482)",
+      label="gText_5Dashes"),
     # -- mapa da região --
     U("src/region_map.c", "table:sDungeonInfo", 25 * 8 - 2,
       "descrição da área: WIN_MAP_PREVIEW 25 tiles (src/region_map.c:486-491), x = 2 (src/region_map.c:2064)"),
@@ -208,6 +295,11 @@ USAGE_RULES: list[UsageRule] = [
     U("src/mystery_gift_menu.c", "table:sListMenuItems_*", 7 * 8 - 8,
       "lista Receber/Enviar/Jogar fora: sWindowTemplate_GiftSelect_* 7 tiles (src/mystery_gift_menu.c:167-191), "
       "item_X = 8 (src/mystery_gift_menu.c:262)"),
+    U("src/*.c", "call:PrintMysteryGiftMenuMessage", 28 * 8,
+      "mensagem do Presente Misterioso/e-Reader: janela 1 de 28 tiles (src/mystery_gift_menu.c:97-101), x = 0 "
+      "(src/mystery_gift_menu.c:528)"),
+    U("src/mystery_gift_menu.c", "table:sUnusedMenuTexts", None,
+      "tabela sem leitura no código (só definida em src/mystery_gift_menu.c:338): texto morto"),
     U("src/mystery_gift_menu.c", "call:AddTextPrinterParameterized4", 30 * 8 - 2,
       "barra de cima: 30 tiles (src/mystery_gift_menu.c:89-93), x = 2 (src/mystery_gift_menu.c:474)"),
     U("src/mystery_gift_menu.c", "*", 28 * 8,
@@ -217,9 +309,9 @@ USAGE_RULES: list[UsageRule] = [
       "mensagem do e-Reader: janela 1 do Presente Misterioso, 28 tiles (src/mystery_gift_menu.c:97-101)"),
     U("src/mystery_event_script.c", "*", DIALOG_PX, _DIALOG),
     # -- multiescolha de script --
-    U("src/script_menu.c", "*", 28 * 8 - 8,
-      "multiescolha: a janela cresce com o texto e se desloca para caber em 28 tiles "
-      "(src/script_menu.c:736-738), texto em x = 8 (src/script_menu.c:745)"),
+    U("src/script_menu.c", "*", 214,
+      "multiescolha: a janela cresce com o texto, (largura + 9) / 8 + 1 tiles, e se desloca para caber em 28 "
+      "(src/script_menu.c:736-738): largura <= 214 px (com left = 0 a borda já sai da tela)", unica=True),
     U("src/field_specials.c", "table:sFloorNamePointers", 56,
       "andar do elevador: alinhado à direita em x = 56 (src/field_specials.c:1108)"),
     U("src/field_specials.c", "call:AddTextPrinterParameterized", 7 * 8,
@@ -238,9 +330,23 @@ USAGE_RULES: list[UsageRule] = [
     U("src/trainer_fan_club.c", "*", DIALOG_PX, _DIALOG),
     U("src/daycare.c", "table:sLevelMenuItems", 17 * 8 - 8,
       "lista de Pokémon da creche: janela de 17 tiles (src/daycare.c:90-94), texto em x = 8"),
+    U("src/daycare.c", "table:sCompatibilityMessages", DIALOG_PX,
+      _DIALOG + "; copiado para gStringVar4 (src/daycare.c:1382)"),
     U("src/daycare.c", "*", DIALOG_PX, _DIALOG),
-    U("src/fame_checker.c", "*", DIALOG_PX,
-      "caixa do Fame Checker: FCWINDOWID_MSGBOX 26 tiles (src/fame_checker.c:494-498), x = 0"),
+    U("src/fame_checker.c", "table:sNonTrainerNamePointers", 8 * 8 - 8,
+      "nome na lista do Fame Checker: FCWINDOWID_LIST 8 tiles (src/fame_checker.c:476-484), item_X = 8 "
+      "(src/fame_checker.c:1436), rótulo da lista (src/fame_checker.c:1566)"),
+    U("src/fame_checker.c", "code", 8 * 8 - 8,
+      "\"Cancelar\" da lista do Fame Checker: FCWINDOWID_LIST 8 tiles, item_X = 8 (src/fame_checker.c:1436, "
+      ":1573)", label="gFameCheckerText_Cancel"),
+    U("src/fame_checker.c", "code", 188,
+      "ajuda de botões: FONT_SMALL alinhado à direita em 188 na FCWINDOWID_UIHELP (src/fame_checker.c:1078-1087)",
+      font="small", label="gFameCheckerText_*UI"),
+    U("src/fame_checker.c", "call:AddTextPrinterParameterized2", DIALOG_PX,
+      "caixa do Fame Checker: FCWINDOWID_MSGBOX 26 tiles (src/fame_checker.c:494-498), x = 0 "
+      "(src/fame_checker.c:826, :1523)"),
+    U("src/fame_checker.c", "call:AddTextPrinterParameterized4", 8,
+      "cursor da lista (src/fame_checker.c:1739)", label="gText_SelectorArrow2"),
     U("src/learn_move.c", "table:*", 10 * 8 - 8,
       "lista do tutor: janela de 10 tiles (src/learn_move.c:309-313)"),
     U("src/learn_move.c", "*", 26 * 8, "mensagem do tutor: janela de 26 tiles (src/learn_move.c:318-322), x = 0"),
@@ -254,8 +360,9 @@ USAGE_RULES: list[UsageRule] = [
       "menino/menina: [WIN_INTRO_BOYGIRL] 9 tiles (src/oak_speech.c:298-304), x = 8 (src/oak_speech.c:1298)"),
     U("src/oak_speech.c", "*", 236, "barra de cima (TopBarWindowPrintString): FONT_SMALL alinhado à direita "
       "em 236 (src/menu.c:187-196)", font="small"),
-    U("src/naming_screen.c", "table:title", 30 * 8, "título da tela de nome: WIN_BANNER 30 tiles "
-      "(src/naming_screen.c:364-368)"),
+    U("src/naming_screen.c", "table:s*NamingScreenTemplate*", 16 * 8 - 1,
+      "título da tela de nome: WIN_TEXT_ENTRY_BOX 16 tiles (src/naming_screen.c:355-360), x = 1 "
+      "(src/naming_screen.c:1710)"),
     U("src/naming_screen.c", "*", 30 * 8, "barra da tela de nome: WIN_BANNER 30 tiles (src/naming_screen.c:364-368)"),
     U("src/clear_save_data_screen.c", "*", DIALOG_PX, _DIALOG),
     U("src/save_failed_screen.c", "*", DIALOG_PX, _DIALOG),
@@ -267,46 +374,127 @@ USAGE_RULES: list[UsageRule] = [
     U("src/hall_of_fame.c", "*", 0xD0, "Hall da Fama: janela 0 do diálogo (src/hall_of_fame.c:1202), "
       "texto centralizado em 0xD0 (src/hall_of_fame.c:986)"),
     U("src/diploma.c", "*", 30 * 8, "diploma: centralizado em 240 px (src/diploma.c:269-273)"),
-    U("src/credits.c", "*", 30 * 8, "créditos: janela de 30 tiles (src/credits.c:456-460), centralizados"),
+    U("src/credits.c", "*", 30 * 8, "créditos: janela de 30 tiles (src/credits.c:456-460), centralizados",
+      unica=True),
     U("src/help_system*.c", "*", 26 * 8, "ajuda: bitmap de 26 tiles (src/help_system_util.c:265)"),
     # -- troca, cartão, link, minijogos --
     U("src/trade.c", "table:sMenuAction_*", 12 * 8 - 8,
       "menu da troca: janela de 12 tiles (src/trade.c:605-609)"),
+    U("src/trade.c", "table:sActionTexts", 2 * 32,
+      "botão Cancelar da troca: 2 blocos de 32 px copiados para o sprite (DrawTextWindowAndBufferTiles, "
+      "src/pokemon_storage_system_menu.c:68-79; src/trade.c:986)", label="gTradeText_Cancel"),
+    U("src/trade.c", "table:sActionTexts", 6 * 32,
+      "linha de baixo da troca: 6 blocos de 32 px no sprite (DrawBottomRowText, src/trade.c:2646-2648; "
+      "src/pokemon_storage_system_menu.c:68-79)"),
+    U("src/trade.c", "table:sMessages", 22 * 8,
+      "mensagem da troca: janela 0 de 22 tiles (src/trade.c:597-601), x = 0 (src/trade.c:2584)"),
     U("src/trade.c", "*", 22 * 8, "mensagem da troca: janela de 22 tiles (src/trade.c:597-601)"),
     U("src/trade_scene.c", "*", 26 * 8, "mensagem da cena de troca: sTradeMessageWindowTemplates 26 tiles "
       "(src/trade_scene.c:480-485), x = 0 (src/trade_scene.c:2814)"),
     U("src/evolution_scene.c", "*", 26 * 8, "mensagem da evolução na troca: DrawTextOnTradeWindow, 26 tiles "
       "(src/trade_scene.c:480-485, :2808-2814)"),
+    U("src/trainer_card.c", "table:sLinkTrainerCardRecordStrings", 27 * 8 - 16,
+      "recorde de link no verso do cartão: janela de 27 tiles (src/trainer_card.c:235-239), copiado em "
+      "src/trainer_card.c:1315"),
     U("src/trainer_card.c", "*", 27 * 8 - 16,
       "cartão de Treinador: janela de 27 tiles (src/trainer_card.c:235-239), textos a partir de x = 16"),
     U("src/battle_records.c", "*", 27 * 8, "recordes de batalha: janela de 27 tiles (src/battle_records.c:41-46)"),
     U("src/link.c", "*", 28 * 8 - 2, "erro de link: janelas da tela de erro, x = 2 (src/link.c:1488-1547)"),
+    U("src/cable_club.c", "table:sTrainerCardColorNames", DIALOG_PX,
+      _DIALOG + "; cor do cartão vai para {STR_VAR_2} de um diálogo (src/cable_club.c:996)"),
     U("src/cable_club.c", "*", DIALOG_PX, _DIALOG),
     U("src/union_room_chat_display.c", "table:sMessageWindowInfo", 28 * 8,
       "mensagem do chat: janela de 21 tiles, ou 28 com widerBox (src/union_room_chat_display.c:991-1001); "
       "vale a larga"),
-    U("src/union_room*.c", "*", DIALOG_PX, _DIALOG),
-    U("src/data/union_room.h", "*", DIALOG_PX, _DIALOG),
+    U("src/union_room_chat_display.c", "call:AddTextPrinterParameterized", 6 * 8 - 8,
+      "Sim/Não do chat: janela de 6 tiles com o texto em x = 8 (src/union_room_chat_display.c:940-956)",
+      label="gText_Yes"),
+    U("src/union_room_chat_display.c", "call:AddTextPrinterParameterized", 6 * 8 - 8,
+      "Sim/Não do chat: janela de 6 tiles com o texto em x = 8 (src/union_room_chat_display.c:940-956)",
+      label="gText_No"),
+    U("src/union_room_chat_display.c", "table:sKeyboardSwapTexts", 7 * 8 - 8,
+      "troca de teclado do chat: janela 3 de 7 tiles (src/union_room_chat_display.c:187-191), PrintMenuTable "
+      "(src/union_room_chat_display.c:1198) põe o texto depois do cursor, x = 8 (src/menu.c:472-476, "
+      "src/new_menu_helpers.c:147); o 14 da chamada é a altura da linha"),
+    U("src/union_room_chat_display.c", "call:AddTextPrinterParameterized3", 6 * 8 - 39,
+      "reticências depois do nome: janela 2 de 6 tiles (src/union_room_chat_display.c:179-183), FONT_SMALL em "
+      "x = 4 + 35 (src/union_room_chat_display.c:1132-1150)", font="small", label="gText_Ellipsis"),
+    U("src/union_room_chat.c", "call:StringCopy", None,
+      "frase registrada padrão do chat: copiada para registeredTexts[][21] do save (src/union_room_chat.c:1432-1441, "
+      "include/global.h:817): 20 letras", chars=20),
+    U("src/union_room_chat.c", "call:DynamicPlaceholderTextUtil_ExpandPlaceholders", 21 * 8,
+      "entrou/saiu do chat: registro na janela 0 de 21 tiles (src/union_room_chat_display.c:163-168), x = 0 "
+      "(src/union_room_chat_display.c:1217); expandido em src/union_room_chat.c:1298, :1318"),
+    U("src/union_room_battle.c", "call:UnionRoomBattle_PrintTextOnWindow0", 26 * 8,
+      "mensagem da batalha do Union Room: janela 0 de 26 tiles (src/union_room_battle.c:29-35), x = 0 "
+      "(src/union_room_battle.c:73-80)"),
+    U("src/data/union_room.h", "table:sListMenuItems_RegisterForTrade", 11 * 8 - 8,
+      "menu Registrar/Info/Sair: sWindowTemplate_RegisterForTrade 11 tiles (src/data/union_room.h:203-207), "
+      "item_X = 8 (src/data/union_room.h:213-227)"),
+    U("src/wireless_communication_status_screen.c", "table:sHeaderTexts", 192,
+      "título do status sem fio, sHeaderTexts[0] (src/wireless_communication_status_screen.c:128): "
+      "centralizado em 192 (src/wireless_communication_status_screen.c:274-275)",
+      label="gText_WirelessCommunicationStatus"),
+    U("src/wireless_communication_status_screen.c", "table:sHeaderTexts", 22 * 8,
+      "linhas do status sem fio: janela 1 de 22 tiles (src/wireless_communication_status_screen.c:100-104), "
+      "x = 0 (src/wireless_communication_status_screen.c:279, :283)"),
+    U("src/wireless_communication_status_screen.c", "table:sPlayersTextPtrs", None,
+      "tabela sem leitura no código (só definida em src/wireless_communication_status_screen.c:120): texto morto"),
     U("src/wireless_communication_status_screen.c", "*", 22 * 8,
       "status da comunicação sem fio: janela de 22 tiles (src/wireless_communication_status_screen.c:100-104)"),
+    U("src/berry_crush.c", "table:sMessages", DIALOG_PX,
+      _DIALOG + "; janela 0 do diálogo (InitStandardTextBoxWindows, src/berry_crush.c:2547; :1275)"),
+    U("src/berry_crush.c", "table:sBCRankingHeaders", 22 * 8,
+      "cabeçalho dos resultados: janelas de 22-24 tiles (src/berry_crush.c:599-627), alinhado à direita "
+      "(src/berry_crush.c:2925)"),
     U("src/berry_crush.c", "*", 24 * 8,
       "Berry Crush: mensagens e resultados em janelas de 22-24 tiles (src/berry_crush.c:545-549)"),
+    U("src/dodrio_berry_picking.c", "table:sRankingTexts", 28 - 8,
+      "colocação no ranking: FONT_SMALL em x = 8, com o nome em x = 28 (src/dodrio_berry_picking.c:4467-4471)",
+      font="small"),
+    U("src/dodrio_berry_picking.c", "table:sRecordsTexts", 224 - 1 - 30,
+      "recordes: texto em x = 1 e número alinhado à direita em 224 (até 5 algarismos, 30 px) "
+      "(src/dodrio_berry_picking.c:3008-3015)"),
+    U("src/dodrio_berry_picking.c", "table:sPlaceholderPlayerNames", None,
+      "nomes de enchimento copiados para gLinkPlayers[].name (src/dodrio_berry_picking.c:3077-3078): "
+      "PLAYER_NAME_LENGTH (include/constants/global.h:64)", chars=7),
     U("src/dodrio_berry_picking.c", "*", 28 * 8,
       "Dodrio Berry Picking: janelas de 28 tiles (src/dodrio_berry_picking.c:409-433)"),
+    U("src/pokemon_jump.c", "table:sRecordsTexts", 0xDE - 30,
+      "recordes do Pokémon Jump: texto em x = 0 e número alinhado à direita em 0xDE (até 5 algarismos, 30 px) "
+      "(src/pokemon_jump.c:4563-4567)"),
     U("src/pokemon_jump.c", "*", 28 * 8, "Pokémon Jump: janela de 28 tiles (src/pokemon_jump.c:4494-4498)"),
     U("src/slot_machine.c", "*", 20 * 8 - 1, "caça-níquel: janela 0 de 20 tiles (src/slot_machine.c:796-801), "
       "x = 1 (src/slot_machine.c:2336)"),
     U("src/pokemon_special_anim_scene.c", "table:sLevelUpWindowStatNames", 56,
       "atributos ao subir de nível: nome em x = 0 e valor em x = 56 (src/pokemon_special_anim_scene.c:1518-1520)"),
+    U("src/pokemon_special_anim_scene.c", "table:s1_2_and_Poof_textPtrs", 28 * 8,
+      "\"1, 2 e... Puf!\": copiado para a mensagem (src/pokemon_special_anim_scene.c:426) da janela de 28 tiles "
+      "(src/pokemon_special_anim_scene.c:86-90)"),
     U("src/pokemon_special_anim_scene.c", "*", 28 * 8,
       "mensagem do uso de item: janela de 28 tiles (src/pokemon_special_anim_scene.c:86-90)"),
     # -- Easy Chat --
-    U("src/data/easy_chat/*", "table:*", 13 * 8,
-      "palavra do Easy Chat: colunas em x = 24 e x = 128, 13 tiles cada (src/easy_chat_3.c:1673)"),
+    U("src/data/easy_chat/*", "table:*", 28 * 8 - 128,
+      "palavra do Easy Chat: a coluna da direita começa em x = 128 (src/easy_chat_3.c:1673) na janela de 28 tiles "
+      "(src/easy_chat_3.c:259-263): 96 px"),
+    U("src/easy_chat.c", "table:sEasyChatGroupNamePointers", 84,
+      "nome de grupo do Easy Chat (src/easy_chat.c:552): colunas a cada 84 px (src/easy_chat_3.c:1587)"),
     U("src/easy_chat.c", "*", 84,
       "nome de grupo do Easy Chat: colunas a cada 84 px (src/easy_chat_3.c:1587)"),
-    U("src/easy_chat_2.c", "*", 28 * 8,
-      "instruções do Easy Chat: janela de 28 tiles (src/easy_chat_3.c:259-263)"),
+    *(U("src/easy_chat_2.c", "table:sEasyChatScreenTemplates", None,
+        "texto morto: modelo do Easy Chat de um tipo que o FRLG nunca abre (BATTLE_*, BARD_SONG, INTERVIEW, "
+        "TRENDY_PHRASE, src/easy_chat_2.c:321-396); só PROFILE, MAIL e QUESTIONNAIRE são pedidos "
+        "(data/scripts/mystery_event_club.inc:102, data/scripts/questionnaire.inc:6, src/party_menu.c:3538, :5504)",
+        label=lb) for lb in _EC_UNREACHABLE),
+    U("src/easy_chat_2.c", "table:sEasyChatScreenTemplates.titleText", 128,
+      "título do Easy Chat: centralizado em 128 na janela 0 de 16 tiles (src/easy_chat_3.c:240-245, :1337-1339); "
+      "lido da tabela em src/easy_chat_2.c:1193"),
+    U("src/easy_chat_2.c", "code", 22 * 8,
+      "confirmação de sair/apagar do Easy Chat (src/easy_chat_2.c:1236-1252): janela 1 de 22 tiles "
+      "(src/easy_chat_3.c:250-257), x = 0 (src/easy_chat_3.c:1395-1398)"),
+    U("src/easy_chat_2.c", "table:sEasyChatScreenTemplates", 22 * 8,
+      "instruções e confirmações do Easy Chat (src/easy_chat_2.c:1223-1230): janela 1 de 22 tiles "
+      "(src/easy_chat_3.c:250-257), x = 0 (src/easy_chat_3.c:1395-1398)"),
     U("src/easy_chat_3.c", "*", 22 * 8, "Easy Chat: janela de 22 tiles (src/easy_chat_3.c:250-254)"),
     # -- batalha --
     U("src/battle_message.c", "table:gTrainerTowerChallengeTypeTexts", DIALOG_PX, _DIALOG),
@@ -323,7 +511,7 @@ USAGE_RULES: list[UsageRule] = [
     U("src/mail.c", "*", 24 * 8, "carta: janela de 24 tiles (src/mail.c:114-120)"),
     U("src/menu.c", "*", 6 * 8 - 8, "Sim/Não padrão: sYesNo_WindowTemplate 6 tiles (src/new_menu_helpers.c:48-53), "
       "texto em x = 8"),
-    U("src/list_menu.c", "*", 8, "cursor da lista, um glifo antes do item (src/list_menu.c:390)"),
+    U("src/list_menu.c", "*", 8, "cursor da lista, um glifo antes do item (src/list_menu.c:390)", unica=True),
     # -- scripts --
     U("data/*", "script:*", DIALOG_PX, _DIALOG + "; usado por script"),
 ]
@@ -377,8 +565,14 @@ def c_contexts(source: str, labels: set[str]) -> dict[str, set[str]]:
             else:
                 owner = _table_owner(source, [p for kind, p in stack if kind == "{"]) if stack else None
                 ctx = f"table:{owner}" if owner and stack and stack[-1][0] == "{" else "code"
+                field = _FIELD_BEFORE.search(source, max(0, m.start() - 80), m.start())
+                if ctx != "code" and field:
+                    ctx += f".{field.group(1)}"       # `.titleText = gText_X` -> table:Dono.titleText
             out[tok].add(ctx)
     return out
+
+
+_FIELD_BEFORE = re.compile(r"\.([A-Za-z_]\w*)\s*=\s*$")
 
 
 _SCRIPT_LINE = re.compile(r"^\s*([a-z_]\w*)\b(.*)$", re.M)
@@ -411,8 +605,24 @@ _IDENT = re.compile(r"(?<![A-Za-z0-9_])[gGs][A-Za-z]\w*")
 
 
 def match(use_file: str, ctx: str, label: str = "") -> UsageRule | None:
+    """A primeira regra do arquivo/contexto/rótulo; `table:X` vale também para `table:X.campo`."""
+    base = ctx.split(".")[0]
     for rule in USAGE_RULES:
-        if (fnmatch.fnmatchcase(use_file, rule.file) and fnmatch.fnmatchcase(ctx, rule.context)
+        if (fnmatch.fnmatchcase(use_file, rule.file)
+                and (fnmatch.fnmatchcase(ctx, rule.context) or fnmatch.fnmatchcase(base, rule.context))
                 and fnmatch.fnmatchcase(label, rule.label)):
             return rule
     return None
+
+
+def repo_uses(repo) -> dict[str, set[tuple[str, str]]]:
+    """Índice de uso do repo inteiro (rótulos com janela pelo uso), como a checagem o monta."""
+    from pathlib import Path
+    from esteira import check_text as ct
+    root = Path(repo)
+    raw = [e for e in ct._sources(root) if isinstance(e, ct._Entry)]
+    labels = {e.label.split("#")[0].split(".")[0] for e in raw
+              if (rule := ct.rule_for(e.file, e.label)) is not None and rule.by_usage}
+    texts = {rel: (root / rel).read_text(encoding="utf-8") for rel, kind in ct._source_files(root)
+             if kind == "c" or rel in ct._USAGE_SCRIPTS}
+    return usage_index(texts, labels)

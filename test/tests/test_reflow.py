@@ -68,6 +68,50 @@ def test_forced_reflow_of_a_real_help_answer_keeps_the_list():
     assert out.replace("\\n", " ").split() == text.replace("\\n", " ").split()
 
 
+TYPE_MATCHUP = ("Dependendo do tipo do golpe e do tipo\\n"
+                "do Pokémon alvo, a eficácia do golpe\\n"
+                "varia:\\n"
+                "{CIRCLE_DOT}: Supereficaz!\\n"
+                "{TRIANGLE}: Não muito eficaz, o dano cai bastante\\n"
+                "{BIG_MULT_X}: Não tem efeito nenhum\\n"
+                "(Sem mudança nos outros casos.)$")     # Help_Text_HowToUseTypeMatchupList
+
+
+@pytest.mark.parametrize("forcar", [False, True])
+def test_big_mult_x_opens_a_list_item(forcar):
+    out = reflow(TYPE_MATCHUP, 208, estilo="linhas", espaco=4, forcar=forcar)
+    lines = out.rstrip("$").split("\\n")
+    assert [line[:12] for line in lines if line.startswith("{")] == ["{CIRCLE_DOT}", "{TRIANGLE}: ", "{BIG_MULT_X}"]
+    assert next(line for line in lines if line.startswith("{BIG_MULT_X}")) == "{BIG_MULT_X}: Não tem efeito nenhum"
+    assert lines[-1] == "(Sem mudança nos outros casos.)"
+    assert max(line_widths(out, espaco=4)) <= 208
+    assert out.replace("\\n", " ").split() == TYPE_MATCHUP.replace("\\n", " ").split()
+
+
+SUMMARY = ("{CIRCLE_1} Escolha “RESUMO”.\\n"
+           "{CIRCLE_2} Aperte para a esquerda ou a direita no {PLUS}\\n"
+           "   para ver as informações:\\n"
+           "   “INFORMAÇÕES DO POKéMON”\\n"
+           "   “HABILIDADES DO POKéMON”\\n"
+           "   “GOLPES CONHECIDOS”$")              # Help_Text_HowToUseSummary
+
+
+def test_forced_reflow_keeps_an_indented_sublist():
+    out = reflow(SUMMARY, 208, estilo="linhas", espaco=4, forcar=True)
+    lines = out.rstrip("$").split("\\n")
+    assert lines[-3:] == ["   “INFORMAÇÕES DO POKéMON”", "   “HABILIDADES DO POKéMON”", "   “GOLPES CONHECIDOS”"]
+    assert lines[-4].endswith("informações:")
+    assert max(line_widths(out, espaco=4)) <= 208
+
+
+def test_overflow_before_a_sublist_does_not_merge_into_it():
+    text = SUMMARY.replace("para ver as informações:", "para ver todas as informações sobre o Pokémon:")
+    out = reflow(text, 208, estilo="linhas", espaco=4)
+    lines = out.rstrip("$").split("\\n")
+    assert lines[-3:] == ["   “INFORMAÇÕES DO POKéMON”", "   “HABILIDADES DO POKéMON”", "   “GOLPES CONHECIDOS”"]
+    assert max(line_widths(out, espaco=4)) <= 208
+
+
 def test_indented_line_outside_a_list_stays_a_line():
     text = "Ajuda:\\n  Usar a BOLSA para guardar itens e outras coisas mais que não cabem$"
     out = reflow(text, 208)
