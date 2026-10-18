@@ -35,6 +35,17 @@ struct WildPokemonHeader
 
 extern const struct WildPokemonHeader gWildMonHeaders[];
 
+// Hack 7 — frente B
+struct WildMonTimeTable
+{
+    u8 mapGroup;
+    u8 mapNum;
+    u16 species[3][LAND_WILD_COUNT]; // 0 = morning, 1 = afternoon, 2 = night
+};
+
+extern const struct WildMonTimeTable gWildMonTimeTables[];
+u16 GetTimeOfDayLandSpecies(u8 mapGroup, u8 mapNum, u8 slot, u8 period, u16 fallback);
+
 void DisableWildEncounters(bool8 disabled);
 bool8 StandardWildEncounter(u32 currMetatileAttrs, u16 previousMetaTileBehavior);
 bool8 SweetScentWildEncounter(void);

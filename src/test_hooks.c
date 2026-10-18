@@ -28,6 +28,10 @@
 #include "constants/moves.h"
 // Hack 7 (day/night)
 #include "day_night.h"
+// Hack 7 — frente B
+#include "wild_encounter.h"
+extern u32 TestSpeciesOnMap(u8 mapGroup, u8 mapNum, u16 species);
+extern u32 TestLandSpecies(u8 mapGroup, u8 mapNum, u8 slot, u8 period);
 
 STATIC_ASSERT(TEST_TEXT_SIZE >= SUMMARY_PAGE_TEXT_SIZE, TestTextHoldsASummaryPage);
 
@@ -550,6 +554,12 @@ void TestHooks_Run(void)
 
     // Hack 7 front A: end
     // Hack 7 front B: start
+    case TEST_CMD_LAND_SPECIES:
+        result = TestLandSpecies(gTestMailbox.arg0 >> 8, gTestMailbox.arg0 & 0xFF, gTestMailbox.arg1 & 0xFF, gTestMailbox.arg1 >> 8);
+        break;
+    case TEST_CMD_SPECIES_ON_MAP:
+        result = TestSpeciesOnMap(gTestMailbox.arg0 >> 8, gTestMailbox.arg0 & 0xFF, gTestMailbox.arg1);
+        break;
 
     // Hack 7 front B: end
     // Hack 7 front C: start

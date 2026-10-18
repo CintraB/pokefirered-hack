@@ -259,9 +259,28 @@ static s32 GetRoamerPokedexAreaMarkers(u16 species, struct Subsprite * subsprite
     return 0;
 }
 
+// Hack 7 — frente B: the time-of-day land tables also count for the Pokédex area
+static bool32 IsSpeciesInTimeTables(const struct WildPokemonHeader * data, s32 species)
+{
+    u32 i, p, slot;
+
+    for (i = 0; gWildMonTimeTables[i].mapGroup != MAP_GROUP(MAP_UNDEFINED)
+             || gWildMonTimeTables[i].mapNum != MAP_NUM(MAP_UNDEFINED); i++)
+    {
+        if (gWildMonTimeTables[i].mapGroup != data->mapGroup || gWildMonTimeTables[i].mapNum != data->mapNum)
+            continue;
+        for (p = 0; p < 3; p++)
+            for (slot = 0; slot < LAND_WILD_COUNT; slot++)
+                if (gWildMonTimeTables[i].species[p][slot] == species)
+                    return TRUE;
+    }
+    return FALSE;
+}
+
 static bool32 IsSpeciesOnMap(const struct WildPokemonHeader * data, s32 species)
 {
-    if (IsSpeciesInEncounterTable(data->landMonsInfo, species, LAND_WILD_COUNT))
+    if (IsSpeciesInEncounterTable(data->landMonsInfo, species, LAND_WILD_COUNT)
+     || IsSpeciesInTimeTables(data, species)) // Hack 7
         return TRUE;
     if (IsSpeciesInEncounterTable(data->waterMonsInfo, species, WATER_WILD_COUNT))
         return TRUE;
@@ -315,3 +334,19 @@ static bool32 FindDexAreaByMapSec(u16 mapSecId, const u16 (*table)[2], s32 count
     }
     return FALSE;
 }
+
+// Hack 7 — frente B: test hook, IsSpeciesOnMap for the header of a map (0xFFFFFFFF = no header)
+#if TESTBUILD
+u32 TestSpeciesOnMap(u8 mapGroup, u8 mapNum, u16 species)
+{
+    u32 i;
+
+    for (i = 0; gWildMonHeaders[i].mapGroup != MAP_GROUP(MAP_UNDEFINED)
+             || gWildMonHeaders[i].mapNum != MAP_NUM(MAP_UNDEFINED); i++)
+    {
+        if (gWildMonHeaders[i].mapGroup == mapGroup && gWildMonHeaders[i].mapNum == mapNum)
+            return IsSpeciesOnMap(&gWildMonHeaders[i], species);
+    }
+    return 0xFFFFFFFF;
+}
+#endif

@@ -16,6 +16,8 @@
 #include "constants/maps.h"
 #include "constants/abilities.h"
 #include "constants/items.h"
+// Hack 7 — frente B
+#include "day_night.h"
 
 #define MAX_ENCOUNTER_RATE 1600
 
@@ -45,6 +47,40 @@ static u16 WildEncounterRandom(void);
 static void AddToWildEncounterRateBuff(u8 encouterRate);
 
 #include "data/wild_encounters.h"
+#include "data/wild_encounters_time.h"
+
+// Hack 7 — frente B: land species by time of day (HeartGold tables); level and rate stay FRLG's
+u16 GetTimeOfDayLandSpecies(u8 mapGroup, u8 mapNum, u8 slot, u8 period, u16 fallback)
+{
+    u32 i;
+    u8 index;
+
+    if (slot >= LAND_WILD_COUNT)
+        return fallback;
+    for (i = 0; gWildMonTimeTables[i].mapGroup != MAP_GROUP(MAP_UNDEFINED)
+             || gWildMonTimeTables[i].mapNum != MAP_NUM(MAP_UNDEFINED); i++)
+    {
+        if (gWildMonTimeTables[i].mapGroup != mapGroup || gWildMonTimeTables[i].mapNum != mapNum)
+            continue;
+        switch (period)
+        {
+        case TIME_MORNING:
+            index = 0;
+            break;
+        case TIME_AFTERNOON:
+            index = 1;
+            break;
+        case TIME_EVENING:
+            index = (Random() & 1) ? 1 : 2;
+            break;
+        default:
+            index = 2;
+            break;
+        }
+        return gWildMonTimeTables[i].species[index][slot];
+    }
+    return fallback;
+}
 
 static const u8 sUnownLetterSlots[][LAND_WILD_COUNT] = {
   //  A   A   A   A   A   A   A   A   A   A   A   ?
@@ -270,6 +306,7 @@ static bool8 TryGenerateWildMon(const struct WildPokemonInfo * info, u8 area, u8
 {
     u8 slot = 0;
     u8 level;
+    u16 species;
     switch (area)
     {
     case WILD_AREA_LAND:
@@ -287,7 +324,10 @@ static bool8 TryGenerateWildMon(const struct WildPokemonInfo * info, u8 area, u8
     {
         return FALSE;
     }
-    GenerateWildMon(info->wildPokemon[slot].species, level, slot);
+    species = info->wildPokemon[slot].species;
+    if (area == WILD_AREA_LAND)
+        species = GetTimeOfDayLandSpecies(gSaveBlock1Ptr->location.mapGroup, gSaveBlock1Ptr->location.mapNum, slot, DayNight_GetPeriod(), species);
+    GenerateWildMon(species, level, slot);
     return TRUE;
 }
 
@@ -523,6 +563,13 @@ void FishingWildEncounter(u8 rod)
     StartWildBattle();
 }
 
+static u16 GetLocalLandSpecies(const struct WildPokemonInfo * landMonsInfo)
+{
+    u8 slot = ChooseWildMonIndex_Land();
+
+    return GetTimeOfDayLandSpecies(gSaveBlock1Ptr->location.mapGroup, gSaveBlock1Ptr->location.mapNum, slot, DayNight_GetPeriod(), landMonsInfo->wildPokemon[slot].species);
+}
+
 u16 GetLocalWildMon(bool8 *isWaterMon)
 {
     u16 headerId;
@@ -540,7 +587,7 @@ u16 GetLocalWildMon(bool8 *isWaterMon)
         return SPECIES_NONE;
         // Land Pokemon
     else if (landMonsInfo != NULL && waterMonsInfo == NULL)
-        return landMonsInfo->wildPokemon[ChooseWildMonIndex_Land()].species;
+        return GetLocalLandSpecies(landMonsInfo);
         // Water Pokemon
     else if (landMonsInfo == NULL && waterMonsInfo != NULL)
     {
@@ -550,7 +597,7 @@ u16 GetLocalWildMon(bool8 *isWaterMon)
     // Either land or water Pokemon
     if ((Random() % 100) < 80)
     {
-        return landMonsInfo->wildPokemon[ChooseWildMonIndex_Land()].species;
+        return GetLocalLandSpecies(landMonsInfo);
     }
     else
     {
@@ -782,3 +829,21 @@ static void AddToWildEncounterRateBuff(u8 encounterRate)
     else
         sWildEncounterData.encounterRateBuff = 0;
 }
+
+// Hack 7 — frente B: test hook, the species a land slot gives in a period (the FRLG species
+// of the slot when the map has no time table; 0xFFFFFFFF = no land table at all)
+#if TESTBUILD
+u32 TestLandSpecies(u8 mapGroup, u8 mapNum, u8 slot, u8 period)
+{
+    u32 i;
+
+    for (i = 0; gWildMonHeaders[i].mapGroup != MAP_GROUP(MAP_UNDEFINED)
+             || gWildMonHeaders[i].mapNum != MAP_NUM(MAP_UNDEFINED); i++)
+    {
+        if (gWildMonHeaders[i].mapGroup == mapGroup && gWildMonHeaders[i].mapNum == mapNum
+         && gWildMonHeaders[i].landMonsInfo != NULL && slot < LAND_WILD_COUNT)
+            return GetTimeOfDayLandSpecies(mapGroup, mapNum, slot, period, gWildMonHeaders[i].landMonsInfo->wildPokemon[slot].species);
+    }
+    return 0xFFFFFFFF;
+}
+#endif
