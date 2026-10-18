@@ -58,7 +58,9 @@ Os relatórios são arquivos normais do Windows: abra o `relatorio.html` com dup
    - **log do build**: erro de compilação, aviso novo do compilador, do assembler ou do linker, ou
      EWRAM/IWRAM em 100% ou mais reprovam;
    - **textos do jogo**: caractere fora do charmap, falta de terminador, linha larga demais
-     para a caixa, sintaxe;
+     para a caixa, linhas demais, nome longo demais para o buffer, sintaxe; e, para a tradução,
+     códigos de controle diferentes do original, termo fora do glossário e o inglês que sobrou
+     (aviso de progresso);
    - **3 roteiros no emulador**: `abertura` (nome, inicial, batalha do rival), `rota1`
      (passos, Rota 1, encomenda do Oak) e `captura` (loja, captura com apelido, Poção, Centro,
      salvar, reiniciar e continuar).
@@ -650,8 +652,9 @@ existia. Tem duas listas:
 
 - `build_warnings`: pedaços de texto; um aviso do compilador que contém algum deles é aceito.
 - `text`: achados de texto congelados. Cada item tem `file` (arquivo), `label` (rótulo do texto),
-  `rule` (`charmap`, `terminador`, `largura`...), `fingerprint` (sha1 abreviado do texto cru do
-  rótulo) e, na regra `largura`, `valor` (largura em px da linha mais larga).
+  `rule` (`charmap`, `terminador`, `largura`, `linhas`, `letras`, `controle`, `glossario`,
+  `ingles`), `fingerprint` (sha1 abreviado do texto cru do rótulo) e, nas regras que medem
+  (`largura`, `linhas`, `letras`), `valor` (a medida: px da linha mais larga, linhas ou letras).
 
 Hoje as duas listas estão **vazias**: não há problema conhecido, e qualquer achado novo reprova.
 
@@ -671,16 +674,78 @@ Como funciona:
 
   e cole o resultado em `"text"`.
 
-**Largura do texto** (regra `largura`): cada fonte de texto tem a sua largura útil em px, tirada
-dos templates de janela do código. As principais: diálogos de mapa (`data/maps/*/text.inc`) e a
-maioria de `data/text/*.inc`, 208 px (26 tiles); descrições de itens (`src/data/items.json`),
-200 px; Quest Log (`src/data/text/quest_log.h`) e barra de ajuda do menu Start (os
-`gStartMenuDesc_*` de `src/strings.c`), 238 px. Textos que não são diálogo (menus, o resto de
-`strings.c`, nomes, `help_system`, `new_game_intro`, `fame_checker`, `pokedude`, `pc_transfer`,
-`save`, `pokedex_rating`, braille, o resto de `src/data/text/*.h`) **não têm checagem de largura**: a janela
-varia ou não foi determinada. A tabela completa, com o motivo de cada uma, está em `WIDTH_RULES`
-em `test/esteira/check_text.py`. Os caracteres ({PLAYER}/{RIVAL} medem 7 letras) e o espaçamento
-entre letras seguem o jogo.
+**Fontes de texto**: `.string`/`.braille` de `data/text/*.inc`, `data/maps/*/text.inc`,
+`data/scripts/*.inc`, `data/event_scripts.s` e `data/mystery_event_msg.s`; todo `_("...")` de
+`src/**/*.c|h` (menos o `pokedex_text_lg.h`, que a build FireRed não compila); `english` (rótulo
+`ITEM_X.name`) e `description_english` (rótulo `ITEM_X`) do `items.json`; `name` do
+`region_map_sections.json` (rótulo `MAPSEC_X`). Em C o rótulo é o índice (`MOVE_X`), o campo com
+o dono (`TRAINER_X.trainerName`, `NATIONAL_DEX_X.categoryName`) ou a variável (`gText_X`; item
+posicional repetido vira `gDecorations#2`).
+
+**Janela de cada texto** (regras `largura`, `linhas`, `letras`): cada fonte de texto tem a sua
+janela, tirada dos templates do código, com arquivo:linha de cada uma em `WIDTH_RULES`
+(`test/esteira/check_text.py`): largura útil em px, fonte (normal ou small), largura do espaço
+(a ajuda usa 4 px), máximo de linhas e, nos campos de nome, máximo de bytes do buffer. As
+principais: diálogo 208 px (mapas, scripts, quase todo `data/text`, Union Room, TV Educativa,
+Pokédude, fala do Carvalho); mensagem de batalha 222 px (28 tiles, x = 2); tutorial do
+Carvalho na batalha 208; ajuda 208 px com espaço de 4 px e 7 linhas; Fame Checker 208 (caixa),
+56 (nomes) e 84 em FONT_SMALL (quadro do ícone); descrição de golpe 113 px e 4 linhas; entrada da
+Pokédex 240 px e 3 linhas; descrição de item 200 px e 3 linhas; nome de item 13 letras e 101 px;
+golpe 12 letras e 64 px em FONT_SMALL; habilidade 12; tipo 6; fruta 6; classe 12; espécie 10;
+categoria da Pokédex 11; nome de lugar 108 px e 18 letras (`mapName[19]` do mapa da região);
+nome sugerido 7.
+
+**Janela pelo uso** (`test/esteira/janelas_uso.py`): os textos do `src/strings.c`, as palavras do
+Easy Chat e os textos soltos de outros `.c` não têm janela fixa: a checagem indexa onde cada
+rótulo é usado em `src/**` (a função que o recebe, `call:DisplayPartyMenuMessage`; a tabela que o
+contém, `table:sCursorOptions`; outro código, `code`) e mede contra a janela de cada uso
+(`USAGE_RULES`, com arquivo:linha). O texto tem de caber em todas; o achado diz qual janela
+estourou. Texto sem uso nenhum é "texto morto" e fica sem medida. Fonte sem janela determinável
+tem regra explícita com o motivo (braille, naturezas, descrições de enfeite, teclados); um teste
+garante que nenhum texto cai fora das regras. Texto de tabela, de chamada de menu/lista
+(`MENU_CALL`) ou de menu montado à mão (`AddTextPrinterParameterized*` numa função que abre cursor
+de menu, como o menu do PC e o do Seagallop) não pode cair na regra-pega-tudo do arquivo (contexto
+e rótulo `"*"`): tem regra própria, ou a regra é marcada `unica=True` (tela de janela única:
+créditos, cursor da lista). Nas telas revistas (Pokédex, Union Room, Fame Checker, Easy Chat,
+multiescolha) um teste confere que a janela citada tem a largura dita e que o trecho citado mostra
+o texto indo para ela. Modelos do Easy Chat que o FRLG não abre (batalha, bardo, entrevista, frase
+da moda) são texto morto; a palavra do Easy Chat mede no máximo 79 px (duas por linha, com
+`{CLEAR 17}`, na moldura de 24 tiles). Textos que dividem a mesma linha (`SHARED_ROWS`: "Grito" e
+os controles da Pokédex, categoria e "PÁG. xx/xx") são medidos juntos: o da esquerda não pode
+encostar no que vem alinhado à direita.
+Cobertura: `python3 -m esteira.check_text --regras`.
+Os caracteres
+({PLAYER}/{RIVAL} medem 7 letras; nomes de batalha `{B_*}` o maior nome do campo, e os
+`_WITH_PREFIX` somam o prefixo mais largo) e o espaçamento entre letras seguem o jogo;
+`{CLEAR_TO n}`/`{SKIP n}` levam a caneta a n px e `{CLEAR n}` avança n.
+
+**Tradução** (`TRANSLATION_BASE` em `check_text.py`: o SHA completo de `3a8d861f5`, o commit da
+`hack-switch` antes dela). `controle` e `glossario` comparam com **esta** base: uma mudança em
+inglês que entrar depois na `hack-switch` e for trazida para a tradução aparece como texto
+"mudado" (falso positivo) até a base ser atualizada.
+- `controle`: todo texto mudado tem os mesmos códigos de controle e placeholders (`{PLAYER}`,
+  `{STR_VAR_n}`, `{B_*}`, `{COLOR ...}`, `$`...) da versão inglesa (`git cat-file` da base),
+  em qualquer ordem; só `\n`, `\l` e `\p` podem mudar, e macros que só imprimem glifo
+  (`{LV_2}`, `{PKMN}`, `{ID}`, `{NO}`) podem virar texto ("Nv."). Pasta sem `.git` (fixtures,
+  espelho do teste lento): as regras não rodam; com `.git` mas git falhando ou sem o commit base:
+  aviso `texto/controle` e `texto/glossario` com o motivo. Objeto ausente da base: os rótulos do
+  arquivo contam como novos.
+- `glossario`: texto mudado (ou novo) com variante proibida ("Pokébola", "Professor Oak", "HP",
+  "Team Rocket"...) ou termo inglês do glossário que sobrou ("POKé BALL", "PALLET TOWN" ou
+  "Pallet Town"). O glossário de máquina é `test/esteira/glossario.json`, gerado do glossário
+  aprovado (`python3 -m esteira.glossario gerar <md>`); termo novo de uma frente entra lá com
+  fonte "criado". `python3 -m esteira.glossario checar "texto"` mostra os achados de um texto.
+- `ingles`: em **modo progresso** (`ENGLISH_MODE`) é um aviso só, com o total de palavras
+  inglesas e os maiores arquivos; nunca reprova. A Task 11 muda para `bloqueante` (falha por
+  texto). Lista de permissões: nomes de espécie e de Treinador, créditos (`gCreditsString_*`),
+  japonês (`gJPText_*`), teclados (`src/keyboard_text.c`). Por arquivo:
+  `python3 -m esteira.check_text --ingles [arquivo...]` (em `test/`).
+- Quebra de linha: `python3 -m esteira.reflow` refaz `\n`/`\l` medindo como a checagem
+  (`--texto "..." --largura 208`, ou um `.inc` com `--rotulo X --escrever`; sem `--largura` usa a
+  janela da regra do arquivo). Só mexe na caixa que tem linha estourada, e nela só na linha que
+  estoura (o excesso desce para a seguinte): placas, listas (`{CIRCLE_n}`, `{CIRCLE_DOT}`,
+  `{TRIANGLE}`, `{BIG_MULT_X}`) e recuos ficam; item que termina em ":" abre sublista, e as
+  linhas recuadas dele ficam uma por linha; `--forcar` refaz tudo do zero.
 
 Página EVOLUTION do resumo (Hack 4): os textos `gText_PokeSum_Evo*` de `src/strings.c` têm o
 limite da janela da página, 222 px (28 tiles com o texto em x = 2, `sWindowTemplates_Evolution`

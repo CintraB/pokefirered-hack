@@ -14,6 +14,7 @@ import struct
 import pytest
 
 from esteira import breeding as br
+from esteira.check_text import ITEM_NAME_MAX_CHARS
 from esteira.scenarios import REPO_ROOT
 from esteira.scenarios.full_breeding import expected_evs
 
@@ -70,7 +71,7 @@ def test_item_novo_no_slot_vazio_com_preco_e_efeito(item):
     want_slot, name = br.NEW_ITEMS[item]
     slot, it = BY_ID[item]
     assert slot == want_slot == _defines("items.h")[item]
-    assert it["english"] == name and len(name) <= 12
+    assert it["english"] == name and len(name) <= ITEM_NAME_MAX_CHARS
     assert it["price"] == br.PRICES[item]
     assert it["pocket"] == "POCKET_ITEMS" and it["importance"] == 0
     assert it["description_english"].count("\\n") == 2
