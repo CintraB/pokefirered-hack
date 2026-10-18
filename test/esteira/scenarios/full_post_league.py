@@ -48,9 +48,10 @@ ROLLS = 3000
 OWNED_NEEDED = 60
 TEXT_OVO, TEXT_DINHEIRO, TEXT_OBJETIVO = "recebeu o Ovo!", "recebeu ¥45.000!", "Amuleto Brilhante"
 TEXT_SEM_ESPACO = "você não tem espaço"
-# trecho da mensagem -> (tela, página da caixa em que ela é tirada; a 2ª página começa em \p)
+# trecho da mensagem -> (tela, espera da caixa em que ela é tirada: cada \p e cada \l antes do trecho
+# conta uma; o "Amuleto Brilhante" só aparece depois da rolagem do \l da 2ª página)
 SHOTS = {TEXT_OVO: ("pos_liga_ovo", 0), TEXT_DINHEIRO: ("pos_liga_dinheiro", 0),
-         TEXT_OBJETIVO: ("pos_liga_objetivo", 1)}
+         TEXT_OBJETIVO: ("pos_liga_objetivo", 2)}
 BUTTON_WAIT_STATES = {1, 2, 3}     # RENDER_STATE_WAIT/CLEAR/SCROLL_START: o texto espera um botão
 STRING_VAR4_SIZE = 0x100
 
@@ -151,7 +152,7 @@ class PostLeagueScenario(CatchSaveScenario):
                 or self.game.text_printer_state(0) in BUTTON_WAIT_STATES)
 
     def _shot_page(self, needle: str, name: str, page: int) -> None:
-        """Avança as páginas da caixa atual até a `page` esperar um botão e tira a tela."""
+        """Avança as esperas da caixa atual (\\p e \\l) até a `page` esperar um botão e tira a tela."""
         for current in range(page + 1):
             self.ctl.wait_until(self._waiting, 300, f"texto '{needle}' (página {current + 1})")
             if current == page:

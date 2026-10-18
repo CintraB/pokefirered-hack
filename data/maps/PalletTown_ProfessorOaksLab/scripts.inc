@@ -115,8 +115,8 @@ PalletTown_ProfessorOaksLab_EventScript_TryGiveRareEgg::
 	textcolor NPC_TEXT_COLOR_NEUTRAL
 	playfanfare MUS_LEVEL_UP
 	message PalletTown_ProfessorOaksLab_Text_ReceivedRareEgg
-	waitfanfare
 	waitmessage
+	waitfanfare
 	call EventScript_RestorePrevTextColor
 	return
 
@@ -125,8 +125,8 @@ PalletTown_ProfessorOaksLab_EventScript_RareEggSentToPC::
 	textcolor NPC_TEXT_COLOR_NEUTRAL
 	playfanfare MUS_LEVEL_UP
 	message PalletTown_ProfessorOaksLab_Text_ReceivedRareEgg
-	waitfanfare
 	waitmessage
+	waitfanfare
 	msgbox PalletTown_ProfessorOaksLab_Text_RareEggSentToPC
 	call EventScript_RestorePrevTextColor
 	return

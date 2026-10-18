@@ -115,3 +115,48 @@ def test_textos_do_brief():
                  "Venha falar comigo quando tiver", "E isto é para as suas viagens!",
                  "Amuleto Brilhante"):
         assert frag in t, frag
+
+
+# --- revisão final da branch ---------------------------------------------------------------------
+
+def _text_body(label: str) -> str:
+    """O texto de um rótulo do text.inc, com as linhas .string juntadas."""
+    t = _read(f"{OAK}/text.inc")
+    bloco = t[t.index(f"{label}::"):]
+    bloco = bloco[:bloco.index("$\"") + 2]
+    return "".join(re.findall(r'\.string "(.*?)"', bloco))
+
+
+def test_oak_nao_pede_mais_as_pokedex():
+    """O Oak não leva mais as Pokédex (o upgrade virou o ovo raro): a fala que pedia as duas acaba
+    no "preciso da sua ajuda também"."""
+    body = _text_body("PalletTown_ProfessorOaksLab_Text_OakNeedYourHelpTooNeedToSeePokedexes")
+    assert body == r"OAK: I know, I know.\nOf course I need your help, too.$", body
+    scene = _scene()
+    assert scene.index("Text_OakNeedYourHelpTooNeedToSeePokedexes") < scene.index("Text_OakThanksRareEgg")
+
+
+def test_fanfarra_do_ovo_no_padrao():
+    """message / waitmessage / waitfanfare, como o resto do repo (dinheiro do Oak, obtain_item)."""
+    s = _read(f"{OAK}/scripts.inc")
+    padrao = ("message PalletTown_ProfessorOaksLab_Text_ReceivedRareEgg\n"
+              "\twaitmessage\n"
+              "\twaitfanfare\n")
+    assert s.count(padrao) == 2, "equipe e PC"
+    assert "message PalletTown_ProfessorOaksLab_Text_ReceivedRareEgg\n\twaitfanfare" not in s
+
+
+def test_telas_da_cena_na_pagina_do_trecho():
+    r"""Cada tela da cena é tirada na espera (\p ou \l) em que o trecho já está na caixa: o
+    `pos_liga_objetivo` tem de mostrar "Amuleto Brilhante", que só aparece depois da rolagem."""
+    from esteira.scenarios.full_post_league import SHOTS, TEXT_DINHEIRO, TEXT_OBJETIVO, TEXT_OVO
+    labels = {TEXT_OVO: "PalletTown_ProfessorOaksLab_Text_ReceivedRareEgg",
+              TEXT_DINHEIRO: "PalletTown_ProfessorOaksLab_Text_ReceivedMoneyFromOak",
+              TEXT_OBJETIVO: "PalletTown_ProfessorOaksLab_Text_OakShinyCharmGoal"}
+    assert set(labels) == set(SHOTS)
+    for needle, label in labels.items():
+        body = _text_body(label)
+        assert needle in body, (needle, label)
+        antes = body[:body.index(needle)]
+        esperas = antes.count(r"\p") + antes.count(r"\l")
+        assert SHOTS[needle][1] == esperas, (needle, SHOTS[needle], esperas)
