@@ -13,16 +13,16 @@ Formatos (➡ = {RIGHT_ARROW_2}, "Lv" = {LV_2}, os glifos do jogo):
     EVO_ITEM                        FIRE STONE ➡ ARCANINE
     EVO_LEVEL_HOLD_ITEM             Lv 37 + METAL COAT ➡ STEELIX   (nível fixo 37 do Hack 3)
     EVO_FRIENDSHIP                  High friendship ➡ CROBAT
-    EVO_FRIENDSHIP_DAY / _NIGHT     Day friendship ➡ ESPEON (impossible)
-    EVO_BEAUTY                      High beauty ➡ MILOTIC (R/S/E only)
+    EVO_LEVEL_UP_HOLD_ITEM          Subir nível + Escama Prisma ➡ MILOTIC   (Hack 7, qualquer nível)
+    EVO_FRIENDSHIP_DAY / _NIGHT     Day friendship ➡ ESPEON   (Hack 7: relógio do jogo, sem sufixo)
+    EVO_BEAUTY                      High beauty ➡ X (R/S/E only; nenhuma espécie usa mais)
     EVO_LEVEL_ATK_GT/EQ/LT_DEF      Lv 20, ATK > DEF ➡ HITMONLEE
     EVO_LEVEL_SILCOON / _CASCOON    Lv 7 (random) ➡ SILCOON
     EVO_LEVEL_SHEDINJA              Lv 20, free slot ➡ SHEDINJA
     EVO_TRADE / EVO_TRADE_ITEM      Trade ➡ X / Trade + ITEM ➡ X   (não sobrou nenhuma no jogo)
-"Impossible": no FireRed os casos de dia/noite estão comentados em GetEvolutionTargetSpecies
-(src/pokemon.c, sem relógio). "R/S/E only": nada no FireRed sobe a beleza (sem Pokéblocks;
-MON_DATA_BEAUTY só é escrito ao copiar dados de batalha por link), mas um Feebas trazido de
-Ruby/Sapphire/Emerald com beleza alta evolui ao subir de nível (o método continua no jogo).
+Dia/noite (Hack 7): o relógio do jogo decide (DayNight_IsDayPeriod), então Eevee mostra Espeon e
+Umbreon sem sufixo; Feebas evolui com a Escama Prisma. EVO_BEAUTY ("R/S/E only") continua no
+código, mas nenhuma espécie usa mais o método desde o Hack 7.
 """
 
 import json
@@ -39,8 +39,7 @@ NOT_POSSIBLE = " (impossible)"
 TRADED_ONLY = " (R/S/E only)"
 NO_EVOLUTION = "Does not evolve."
 # sufixo das evoluções que o jogo sozinho não dispara
-SUFFIXES = {"EVO_FRIENDSHIP_DAY": NOT_POSSIBLE, "EVO_FRIENDSHIP_NIGHT": NOT_POSSIBLE,
-            "EVO_BEAUTY": TRADED_ONLY}
+SUFFIXES = {"EVO_BEAUTY": TRADED_ONLY}
 
 # Janela do texto: sWindowTemplates_Evolution[0] (.tilemapLeft = 1, .width = 28 tiles) e o texto
 # em x = EVOLUTION_PAGE_TEXT_X = 2 (src/pokemon_summary_screen.c); 13 tiles de altura com 16 px
@@ -83,6 +82,7 @@ def evolution_line(method: str, param: str, target: str, species_names: dict[str
         "EVO_LEVEL_NINJASK": lambda: f"{LV} {param} {ARROW} {name}",
         "EVO_ITEM": lambda: f"{item_names[param]} {ARROW} {name}",
         "EVO_LEVEL_HOLD_ITEM": lambda: f"{LV} {HOLD_ITEM_LEVEL} + {item_names[param]} {ARROW} {name}",
+        "EVO_LEVEL_UP_HOLD_ITEM": lambda: f"Subir nível + {item_names[param]} {ARROW} {name}",
         "EVO_FRIENDSHIP": lambda: f"High friendship {ARROW} {name}",
         "EVO_FRIENDSHIP_DAY": lambda: f"Day friendship {ARROW} {name}",
         "EVO_FRIENDSHIP_NIGHT": lambda: f"Night friendship {ARROW} {name}",
@@ -214,3 +214,28 @@ def check_page_widths(repo: Path, consts) -> list[tuple[str, str, int]]:
             if px > LINE_WIDTH_PX:
                 wide.append((species, line, px))
     return wide
+
+
+# --- Hack 7 - frente D: linha de amizade, sempre a 6ª da página (y = EVOLUTION_PAGE_TEXT_Y + 5 * 16) ---
+# GetFriendshipLineText (src/pokemon_summary_screen.c): "<corações> <n>/255 <frase><marca>"
+HEART = "{EMOJI_HEART}"
+FRIENDSHIP_PHRASES = ("Odeia você", "Te encara feio", "Ainda desconfia", "Pegando confiança",
+                      "Amigável", "Muito feliz", "Ama você!")
+FRIENDSHIP_MARK = " (220+)"
+FRIENDSHIP_MARK_FROM = 220          # amizade que faz o Eevee evoluir (EVO_FRIENDSHIP_*)
+FRIENDSHIP_LINE_SIZE = 48           # FRIENDSHIP_LINE_SIZE do C (buffer na pilha), com o terminador
+FRIENDSHIP_SCREEN_POINTS = ("resumo_amizade_eevee",)
+# primeira amizade de cada faixa (0-6 corações)
+FRIENDSHIP_BAND_STARTS = (0, 1, 50, 100, 150, 200, 255)
+
+
+def friendship_hearts(friendship: int) -> int:
+    return max(i for i, start in enumerate(FRIENDSHIP_BAND_STARTS) if friendship >= start)
+
+
+def friendship_line(friendship: int) -> str:
+    """O texto esperado da linha de amizade (com o placeholder {EMOJI_HEART})."""
+    hearts = friendship_hearts(friendship)
+    return (HEART * hearts + (" " if hearts else "") + f"{friendship}/255 "
+            + FRIENDSHIP_PHRASES[hearts]
+            + (FRIENDSHIP_MARK if friendship >= FRIENDSHIP_MARK_FROM else ""))

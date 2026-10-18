@@ -43,6 +43,15 @@ def test_iwram_over_100_percent_fails(tmp_path):
     assert len(failed) == 1 and "IWRAM" in failed[0].detail
 
 
+def test_used_size_in_kb_is_read(tmp_path):
+    """O ld troca a unidade para KB quando o uso é múltiplo exato de 1024 (261120 B = 255 KB)."""
+    log = OK_LOG.replace("261036 B       256 KB     99.58%", "   255 KB       256 KB     99.61%")
+    results = check_build(write_log(tmp_path, log), {})
+    assert by_status(results, "falha") == []
+    ewram = [r for r in results if r.name == "build/EWRAM"]
+    assert len(ewram) == 1 and "261120 B" in ewram[0].detail and "99.61%" in ewram[0].detail
+
+
 def test_missing_memory_report_fails(tmp_path):
     failed = by_status(check_build(write_log(tmp_path, "nada de memória aqui\n"), {}), "falha")
     assert any("EWRAM" in r.detail for r in failed)

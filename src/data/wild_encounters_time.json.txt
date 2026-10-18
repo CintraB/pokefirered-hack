@@ -1,0 +1,43 @@
+{{ doNotModifyHeader }}
+
+#ifdef FIRERED
+const struct WildMonTimeTable gWildMonTimeTables[] =
+{
+## for table in tables
+    {
+        .mapGroup = MAP_GROUP({{ table.map }}),
+        .mapNum = MAP_NUM({{ table.map }}),
+        .species =
+        {
+            {
+## for species in table.morning
+                {{ species }},
+## endfor
+            },
+            {
+## for species in table.day
+                {{ species }},
+## endfor
+            },
+            {
+## for species in table.night
+                {{ species }},
+## endfor
+            },
+        },
+    },
+## endfor
+    {
+        .mapGroup = MAP_GROUP(MAP_UNDEFINED),
+        .mapNum = MAP_NUM(MAP_UNDEFINED),
+    },
+};
+#else
+const struct WildMonTimeTable gWildMonTimeTables[] =
+{
+    {
+        .mapGroup = MAP_GROUP(MAP_UNDEFINED),
+        .mapNum = MAP_NUM(MAP_UNDEFINED),
+    },
+};
+#endif

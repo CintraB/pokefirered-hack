@@ -82,3 +82,4 @@ test/fixtures/*.tmp
 # Planejamento (designs, planos, mockups, workspace dos agentes): fica só local, o Git guarda o resultado
 .superpowers/
 docs/superpowers/
+src/data/wild_encounters_time.h

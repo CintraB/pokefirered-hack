@@ -1166,7 +1166,7 @@ static void PrintMoneyOnCard(void)
 
 static u16 GetCaughtMonsCount(void)
 {
-    if (IsNationalPokedexEnabled())
+    if (IsNationalPokedexUiEnabled())
         return GetNationalPokedexCount(FLAG_GET_CAUGHT);
     else
         return GetKantoPokedexCount(FLAG_GET_CAUGHT);

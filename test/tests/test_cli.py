@@ -466,7 +466,13 @@ def test_registro_dos_cenarios_completos():
     specs = cli.scenarios_for("completo")
     by_name = {s.name: s for s in specs}
     # cada um numa sessão própria da ROM de teste
-    for name in ("shiny", "evolucoes", "resumo_evolucao", "resumo_ivs", "creche", "ovo"):
+    for name in ("shiny", "evolucoes", "resumo_evolucao", "resumo_ivs", "creche", "ovo",
+                 "relogio",  # Hack 7
+                 "clima_visual",  # Hack 7 — frente E
+                 "encontros",  # Hack 7 — frente B
+                 "dex_nacional", "pos_liga",  # Hack 7 — frente C
+                 "evo_dia_noite", "resumo_amizade",  # Hack 7 - frente D
+                 "clima"):  # Hack 7 — frente A
         spec = by_name[name]
         assert (spec.rom, spec.save_from, spec.needs) == (TEST, "captura", None)
     playable = [s.name for s in specs if s.rom == cli.PLAYABLE]
@@ -476,7 +482,13 @@ def test_registro_dos_cenarios_completos():
     groups = cli._groups(specs, None)
     assert [(rom, [s.name for s in g]) for rom, g in groups if rom == TEST] == [
         (TEST, ["shiny"]), (TEST, ["evolucoes"]), (TEST, ["resumo_evolucao"]),
-        (TEST, ["resumo_ivs"]), (TEST, ["creche"]), (TEST, ["ovo"])]
+        (TEST, ["resumo_ivs"]), (TEST, ["creche"]), (TEST, ["ovo"]),
+        (TEST, ["relogio"]),  # Hack 7
+        (TEST, ["clima_visual"]),  # Hack 7 — frente E
+        (TEST, ["encontros"]),  # Hack 7 — frente B
+        (TEST, ["dex_nacional"]), (TEST, ["pos_liga"]),  # Hack 7 — frente C
+        (TEST, ["evo_dia_noite"]), (TEST, ["resumo_amizade"]),  # Hack 7 - frente D
+        (TEST, ["clima"])]  # Hack 7 — frente A
     for spec in specs:
         if spec.save_from is not None:
             assert spec.rom == TEST and any(g[0] is spec for _, g in groups)

@@ -884,6 +884,16 @@ static u8 IsWeatherFadingIn(void)
 void LoadCustomWeatherSpritePalette(const u16 *palette)
 {
     LoadPalette(palette, OBJ_PLTT_ID(gWeatherPtr->weatherPicSpritePalIndex), PLTT_SIZE_4BPP);
+    ApplyGlobalFieldPaletteTint(gWeatherPtr->weatherPicSpritePalIndex); // Hack 7 — frente A: tinted as the default one
+    UpdateSpritePaletteWithWeather(gWeatherPtr->weatherPicSpritePalIndex);
+}
+
+// FRLG keeps a single weather sprite palette (RSE has a second one, PALTAG_WEATHER_2, for the
+// custom palettes), so a weather that replaced it must put the default one back when it ends.
+void RestoreDefaultWeatherSpritePalette(void)
+{
+    LoadPalette(gDefaultWeatherSpritePalette, OBJ_PLTT_ID(gWeatherPtr->weatherPicSpritePalIndex), PLTT_SIZE_4BPP);
+    ApplyGlobalFieldPaletteTint(gWeatherPtr->weatherPicSpritePalIndex);
     UpdateSpritePaletteWithWeather(gWeatherPtr->weatherPicSpritePalIndex);
 }
 

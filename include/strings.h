@@ -1508,6 +1508,10 @@ extern const u8 gText_PokeSum_PageName_Evolution[];
 extern const u8 gText_PokeSum_EvoLevel[];
 extern const u8 gText_PokeSum_EvoItem[];
 extern const u8 gText_PokeSum_EvoLevelHoldItem[];
+extern const u8 gText_PokeSum_EvoLevelUpHoldItem[]; // Hack 7 - frente D
+extern const u8 gText_PokeSum_FriendBand[7][19]; // Hack 7 - frente D
+extern const u8 gText_PokeSum_FriendMark[];
+extern const u8 gText_PokeSum_FriendCount[];
 extern const u8 gText_PokeSum_EvoFriendship[];
 extern const u8 gText_PokeSum_EvoFriendshipDay[];
 extern const u8 gText_PokeSum_EvoFriendshipNight[];
@@ -1583,5 +1587,10 @@ extern const u8 gText_PokeSum_EggOrigin_Trade[];
 extern const u8 gText_PokeSum_EggOrigin_NicePlace[];
 extern const u8 gText_PokeSum_EggOrigin_Spa[];
 extern const u8 gText_PokeSum_EggOrigin_Trade[];
+
+/* Hack 7 — frente A */
+#include "constants/day_night.h"
+extern const u8 *const gText_DayNight_PeriodName[TIME_PERIOD_COUNT];
+extern const u8 *const gText_DayNight_PeriodStart[TIME_PERIOD_COUNT];
 
 #endif //GUARD_STRINGS_H

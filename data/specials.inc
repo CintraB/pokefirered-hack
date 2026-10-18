@@ -452,4 +452,6 @@ gSpecials::
 	def_special UpdateLoreleiDollCollection
 	def_special LoopWingFlapSound
 	def_special CreateEnemyEventMon
+	@ Hack 7 — frente C
+	def_special GetRandomRareEggSpecies
 gSpecialsEnd::

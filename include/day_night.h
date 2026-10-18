@@ -1,0 +1,41 @@
+#ifndef GUARD_DAY_NIGHT_H
+#define GUARD_DAY_NIGHT_H
+
+#include "constants/day_night.h"
+
+u32 DayNight_GetTotalMinutes(void);
+u32 DayNight_GetDay(void);
+u32 DayNight_GetMinuteOfDay(void);
+u8 DayNight_GetPeriodAt(u32 minuteOfDay);
+u8 DayNight_GetPeriod(void);
+bool8 DayNight_IsDayPeriod(u8 period);
+void DayNight_SetClock(u32 day, u32 minuteOfDay);
+void DayNight_Reset(void);
+void DayNight_Tick(void);
+/* Hack 7 — frente A */
+void DayNight_FormatClock(u8 *dest);
+void DayNight_FieldUpdate(void);
+void DayNight_ForgetSeenPeriod(void);
+void DayNight_OnPeriodChange(void);
+u8 DayNight_GetWeatherRegion(u8 mapsec);
+u8 DayNight_RollWeather(u8 region, u32 day, u8 period);
+u8 DayNight_GetMapWeather(u8 headerWeather);
+#define DAY_NIGHT_CLOCK_TEXT_SIZE 20
+#if TESTBUILD
+extern u8 gDayNightClockText[DAY_NIGHT_CLOCK_TEXT_SIZE];
+#endif
+extern u8 gDayNightPopupPeriod;
+
+// Per-channel multiplier of the field palettes, in 1/256
+struct DayNightTint
+{
+    u16 r, g, b;
+};
+
+void DayNight_GetTintAt(u32 minuteOfDay, struct DayNightTint *out);
+bool8 DayNight_ShouldTintCurrentMap(void);
+void DayNight_TintPaletteBuffer(u16 *pal, u16 count);
+void DayNight_RecordFieldTint(void);
+void DayNight_SuspendTint(bool8 suspend);
+
+#endif // GUARD_DAY_NIGHT_H

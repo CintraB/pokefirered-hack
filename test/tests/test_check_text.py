@@ -42,11 +42,11 @@ def failures(results):
 # ---- caractere fora do charmap -------------------------------------------------------------
 
 def test_char_outside_charmap_fails(repo):
-    inc(repo, 'Text_Fixture::\n\t.string "Ação aqui$"\n')
+    inc(repo, 'Text_Fixture::\n\t.string "Ažžo aqui$"\n')
     failed = failures(run(repo))
     assert len(failed) == 1
     assert "caractere fora do charmap" in failed[0].detail
-    assert "ã" in failed[0].detail and "Text_Fixture" in failed[0].detail
+    assert "ž" in failed[0].detail and "Text_Fixture" in failed[0].detail
 
 
 def test_accents_present_in_charmap_pass(repo):
@@ -92,11 +92,11 @@ def test_terminator_not_required_in_c_strings(repo):
 
 
 def test_ifdef_branches_stay_in_one_block_and_are_checked_separately(repo):
-    inc(repo, 'Text_Fixture::\n#ifdef BUGFIX @ comentário\n\t.string "Ação\\n"\n#else\n'
+    inc(repo, 'Text_Fixture::\n#ifdef BUGFIX @ comentário\n\t.string "Ažžo\\n"\n#else\n'
               '\t.string "{FONT_NORMAL}ok\\n"\n#endif\n\t.string "fim$"\n')
     failed = failures(run(repo))
     assert len(failed) == 1  # um bloco só (terminador ok), e só o ramo BUGFIX tem 'ã'
-    assert "'ã'" in failed[0].detail
+    assert "'ž'" in failed[0].detail
 
 
 def test_ifdef_does_not_mix_widths_of_the_two_branches(repo):
@@ -168,19 +168,19 @@ def frozen(repo, label=None, rule=None, file="data/text/pc.inc"):
 
 
 def test_listed_exception_silences_exactly_that_item(repo):
-    inc(repo, 'Text_Fixture::\n\t.string "Ação$"\n\nText_Other::\n\t.string "Ação$"\n')
+    inc(repo, 'Text_Fixture::\n\t.string "Ažžo$"\n\nText_Other::\n\t.string "Ažžo$"\n')
     failed = failures(run(repo, frozen(repo, "Text_Fixture", "charmap")))
     assert len(failed) == 1 and "Text_Other" in failed[0].detail
 
 
 def test_exception_is_per_rule(repo):
-    inc(repo, 'Text_Fixture::\n\t.string "Ação"\n')  # charmap + terminador
+    inc(repo, 'Text_Fixture::\n\t.string "Ažžo"\n')  # charmap + terminador
     failed = failures(run(repo, frozen(repo, rule="charmap")))
     assert len(failed) == 1 and "terminador" in failed[0].detail
 
 
 def test_exception_silences_everything_for_all_three_rules(repo):
-    inc(repo, 'Text_Fixture::\n\t.string "Ação' + "W" * 60 + '"\n')
+    inc(repo, 'Text_Fixture::\n\t.string "Ažžo' + "W" * 60 + '"\n')
     exceptions = frozen(repo)
     assert {e["rule"] for e in exceptions["text"]} == {"charmap", "terminador", "largura"}
     assert run(repo, exceptions) == []
@@ -237,7 +237,7 @@ def test_exception_whose_problem_is_gone_without_text_change_is_obsolete(repo):
 
 
 def test_baseline_roundtrip_is_clean(repo):
-    inc(repo, 'Text_A::\n\t.string "Ação' + "W" * 60 + '"\n\nText_B::\n\t.string "ok$"\n')
+    inc(repo, 'Text_A::\n\t.string "Ažžo' + "W" * 60 + '"\n\nText_B::\n\t.string "ok$"\n')
     put(repo, "src/data/text/quest_log.h", 'const u8 gText_Q[] = _("' + "W" * 60 + '");\n')
     baseline = {"text": compute_baseline(str(repo))}
     assert len(baseline["text"]) == 4
@@ -259,7 +259,7 @@ def test_source_without_known_window_is_not_width_checked(repo):
 
 
 def test_skipped_source_still_gets_charmap_and_terminator_checks(repo):
-    inc(repo, 'Text_Fixture::\n\t.string "Ação"\n', rel="data/text/help_system.inc")
+    inc(repo, 'Text_Fixture::\n\t.string "Ažžo"\n', rel="data/text/help_system.inc")
     assert len(failures(run(repo))) == 2
 
 
@@ -302,7 +302,7 @@ def test_gas_branch_without_terminator_still_fails(repo):
 # ---- outras fontes de texto ----------------------------------------------------------------
 
 def test_map_text_inc_is_scanned(repo):
-    put(repo, "data/maps/Foo/text.inc", 'Foo_Text_A::\n    .string "Ação$"\n')
+    put(repo, "data/maps/Foo/text.inc", 'Foo_Text_A::\n    .string "Ažžo$"\n')
     failed = failures(run(repo))
     assert len(failed) == 1 and failed[0].detail.startswith("data/maps/Foo/text.inc")
 
@@ -313,7 +313,7 @@ def test_c_string_with_concatenated_literals_and_escapes(repo):
         '    "Primeira linha\\n"\n'
         '    "segunda linha\\p"\n'
         '    "terceira$");\n'
-        'const u8 gText_Bad[] = _("Ação");\n')
+        'const u8 gText_Bad[] = _("Ažžo");\n')
     failed = failures(run(repo))
     assert len(failed) == 1
     assert "gText_Bad" in failed[0].detail and failed[0].detail.startswith("src/data/text/fixture.h")
@@ -321,13 +321,13 @@ def test_c_string_with_concatenated_literals_and_escapes(repo):
 
 def test_c_string_array_entry_uses_index_as_label(repo):
     put(repo, "src/data/text/fixture.h",
-        'const u8 gNames[3][8] = {\n    [MOVE_A] = _("OK"),\n    [MOVE_B] = _("Ação"),\n};\n')
+        'const u8 gNames[3][8] = {\n    [MOVE_A] = _("OK"),\n    [MOVE_B] = _("Ažžo"),\n};\n')
     failed = failures(run(repo))
     assert len(failed) == 1 and "MOVE_B" in failed[0].detail
 
 
 def test_c_comments_are_ignored(repo):
-    put(repo, "src/strings.c", '// _("Ação")\n/* _("Ação") */\nconst u8 gText_A[] = _("ok"); // _("Ação")\n')
+    put(repo, "src/strings.c", '// _("Ažžo")\n/* _("Ažžo") */\nconst u8 gText_A[] = _("ok"); // _("Ažžo")\n')
     assert run(repo) == []
 
 
@@ -340,7 +340,7 @@ def test_c_long_line_in_strings_c(repo):
 def test_items_json_description(repo):
     put(repo, "src/data/items.json", json.dumps({"items": [
         {"itemId": "ITEM_A", "description_english": "linha um\\nlinha dois"},
-        {"itemId": "ITEM_B", "description_english": "Ação\\n" + "W" * 60},
+        {"itemId": "ITEM_B", "description_english": "Ažžo\\n" + "W" * 60},
     ]}, ensure_ascii=False))
     failed = failures(run(repo))
     assert {("charmap" in r.detail, "largura" in r.detail) for r in failed} == {(True, False), (False, True)}

@@ -29,6 +29,7 @@
 #include "berry_powder.h"
 #include "pokemon_jump.h"
 #include "event_scripts.h"
+#include "day_night.h"
 
 // this file's functions
 static void ResetMiniGamesResults(void);
@@ -122,6 +123,7 @@ void NewGameInitData(void)
     gSaveBlock2Ptr->unkFlag2 = FALSE;
     InitPlayerTrainerId();
     PlayTimeCounter_Reset();
+    DayNight_Reset();
     ClearPokedexFlags();
     InitEventData();
     ResetFameChecker();

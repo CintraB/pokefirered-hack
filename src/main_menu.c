@@ -647,7 +647,7 @@ static void PrintDexCount(void)
     u16 dexcount;
     if (FlagGet(FLAG_SYS_POKEDEX_GET) == TRUE)
     {
-        if (IsNationalPokedexEnabled())
+        if (IsNationalPokedexUiEnabled())
             dexcount = GetNationalPokedexCount(FLAG_GET_CAUGHT);
         else
             dexcount = GetKantoPokedexCount(FLAG_GET_CAUGHT);

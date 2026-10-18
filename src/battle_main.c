@@ -2870,7 +2870,9 @@ static void TryDoEventsBeforeFirstTurn(void)
                 if (GetWhoStrikesFirst(gBattlerByTurnOrder[i], gBattlerByTurnOrder[j], TRUE) != 0)
                     SwapTurnOrder(i, j);
     }
+    // Hack 7: the scripted battles (Teachy TV, catching tutorial) ignore the field's dynamic weather
     if (!gBattleStruct->overworldWeatherDone
+        && !(gBattleTypeFlags & (BATTLE_TYPE_POKEDUDE | BATTLE_TYPE_OLD_MAN_TUTORIAL))
         && AbilityBattleEffects(0, 0, 0, ABILITYEFFECT_SWITCH_IN_WEATHER, 0) != 0)
     {
         gBattleStruct->overworldWeatherDone = TRUE;

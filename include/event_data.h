@@ -29,6 +29,7 @@ void ClearUpperFlags(void);
 void DisableNationalPokedex(void);
 void EnableNationalPokedex(void);
 bool32 IsNationalPokedexEnabled(void);
+bool32 IsNationalPokedexUiEnabled(void);
 void DisableMysteryEvent(void);
 void EnableMysteryEvent(void);
 bool32 IsMysteryEventEnabled(void);

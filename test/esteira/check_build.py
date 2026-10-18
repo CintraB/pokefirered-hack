@@ -6,7 +6,9 @@ from pathlib import Path
 from esteira.result import Result
 
 # `--print-memory-usage` do ld:  "           EWRAM:      261036 B       256 KB     99.58%"
-_MEMORY = re.compile(r"^\s*(EWRAM|IWRAM):\s+(\d+) B\s+(\d+ [KMG]?B)\s+([\d.]+)%\s*$")
+# O uso sai em KB/MB quando é múltiplo exato de 1024 ("EWRAM:  255 KB  256 KB  99.61%").
+_MEMORY = re.compile(r"^\s*(EWRAM|IWRAM):\s+(\d+) ([KMG]?B)\s+(\d+ [KMG]?B)\s+([\d.]+)%\s*$")
+_UNIT = {"B": 1, "KB": 1 << 10, "MB": 1 << 20, "GB": 1 << 30}
 _REGIONS = ("EWRAM", "IWRAM")
 
 # Mensagens do compilador/linker; exige o ':' antes para não pegar nomes de arquivo como
@@ -51,7 +53,8 @@ def check_build(log_path: str, exceptions: dict) -> list[Result]:
         text = line.strip()
         mem = _MEMORY.match(line)
         if mem:
-            usage[mem.group(1)] = (mem.group(2), mem.group(3), mem.group(4))
+            used = int(mem.group(2)) * _UNIT[mem.group(3)]
+            usage[mem.group(1)] = (str(used), mem.group(4), mem.group(5))
             continue
         kind = _kind(line)
         if kind == "erro":

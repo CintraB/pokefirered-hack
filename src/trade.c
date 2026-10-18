@@ -2756,7 +2756,7 @@ static u32 CanTradeSelectedMon(struct Pokemon * playerParty, int partyCount, int
     }
 
     // Cant trade Eggs or non-Kanto mons if player doesn't have National Dex
-    if (!IsNationalPokedexEnabled())
+    if (!IsNationalPokedexUiEnabled())
     {
         // See comment below
     #ifdef BUGFIX

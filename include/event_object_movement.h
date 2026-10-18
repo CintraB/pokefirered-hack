@@ -233,5 +233,8 @@ u8 GetJumpSpecialWithEffectMovementAction(u32 direction);
 u8 GetFishingBiteDirectionAnimNum(u8 direction);
 void TrySpawnObjectEvents(s16 cameraX, s16 cameraY);
 void ResetObjectEvents(void);
+/* Hack 7 — frente A */
+extern const struct SpritePalette gSpritePalette_GeneralFieldEffect0;
+void ReloadObjectEventPalettes(void);
 
 #endif // GUARD_EVENT_OBJECT_MOVEMENT_H

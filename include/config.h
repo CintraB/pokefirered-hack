@@ -23,6 +23,13 @@
 #define SWITCH_GBA_COMPAT 1
 #endif
 
+// Hack 7: 1 shows the National Pokedex in every screen from the start (Pokedex, summary,
+// trainer card, save/continue menus, trade, easy chat). FLAG_SYS_NATIONAL_DEX is untouched and
+// keeps marking the post-League event used by scripts.
+#ifndef NATIONAL_DEX_FROM_START
+#define NATIONAL_DEX_FROM_START 1
+#endif
+
 // Fire Red likely forgot to define NDEBUG/NOAGBPRN before release, leading
 // to the inclusion of asserts in the retail ROM.
 // Revision 10 disabled asserts in some other way, but isagbprint/etc is still present there.

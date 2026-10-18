@@ -1,4 +1,5 @@
 #include "play_time.h"
+#include "day_night.h"
 
 static u8 sPlayTimeCounterState;
 
@@ -32,6 +33,8 @@ void PlayTimeCounter_Stop(void)
 
 void PlayTimeCounter_Update(void)
 {
+    if (sPlayTimeCounterState != STOPPED)
+        DayNight_Tick();
     if (sPlayTimeCounterState == RUNNING)
     {
         gSaveBlock2Ptr->playTimeVBlanks++;

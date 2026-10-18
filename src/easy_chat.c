@@ -405,7 +405,7 @@ static u16 GetRandomUnlockedTrendySaying(void)
 
 static bool8 EC_IsNationalPokedexEnabled(void)
 {
-    return IsNationalPokedexEnabled();
+    return IsNationalPokedexUiEnabled();
 }
 
 static u16 GetRandomECPokemon(void)
@@ -515,7 +515,7 @@ static void PopulateECGroups(void)
         sEasyChatSelectionData->groups[sEasyChatSelectionData->numGroups++] = EC_GROUP_MOVE_2;
     }
 
-    if (IsNationalPokedexEnabled())
+    if (IsNationalPokedexUiEnabled())
         sEasyChatSelectionData->groups[sEasyChatSelectionData->numGroups++] = EC_GROUP_POKEMON_2;
 }
 

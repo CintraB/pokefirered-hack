@@ -26,6 +26,14 @@
 #include "constants/daycare.h"
 #include "constants/maps.h"
 #include "constants/moves.h"
+// Hack 7 (day/night)
+#include "day_night.h"
+// Hack 7 — frente B
+#include "wild_encounter.h"
+extern u32 TestSpeciesOnMap(u8 mapGroup, u8 mapNum, u16 species);
+extern u32 TestLandSpecies(u8 mapGroup, u8 mapNum, u8 slot, u8 period);
+// Hack 7 — frente C
+#include "pokemon_storage_system.h"
 
 STATIC_ASSERT(TEST_TEXT_SIZE >= SUMMARY_PAGE_TEXT_SIZE, TestTextHoldsASummaryPage);
 
@@ -136,6 +144,27 @@ static u32 EvolutionTarget(u32 arg0, u32 arg1)
         return 0xFFFFFFFF;
     CreateTestMon(&gEnemyParty[0], species, level, heldItem);
     return GetEvolutionTargetSpecies(&gEnemyParty[0], mode, evolutionItem);
+}
+
+// Hack 7 front D: friendship line of the EVOLUTION page. mode 0: GetFriendshipLineText(arg0) into
+// gTestText; 1: the line the open summary printed; 2: sets the friendship of gPlayerParty[arg0] to 0.
+static u32 FriendshipText(u32 arg0, u32 mode)
+{
+    u8 zero = 0;
+
+    gTestText[0] = EOS;
+    if (mode == 2)
+    {
+        if (arg0 >= CalculatePlayerPartyCount())
+            return 0xFFFFFFFF;
+        SetMonData(&gPlayerParty[arg0], MON_DATA_FRIENDSHIP, &zero);
+        return GetMonData(&gPlayerParty[arg0], MON_DATA_FRIENDSHIP);
+    }
+    if (mode == 0)
+        GetFriendshipLineText(gTestText, arg0);
+    else if (!PokeSum_TestCopyFriendshipText(gTestText))
+        return 0xFFFFFFFF;
+    return StringLength(gTestText);
 }
 
 // Hack 4: the EVOLUTION page text, either built by the same function the summary screen uses
@@ -485,6 +514,65 @@ static u32 SpeedOrder(u32 arg0, u32 arg1)
 }
 // --- end of Hack 6 -------------------------------------------------------------------------
 
+// Hack 7 front C: post-League scene (rare egg)
+// Marks the first n Kanto species seen and caught, without turning the National Dex on;
+// result = Kanto species caught.
+static u32 SetKantoOwned(u32 n)
+{
+    u16 i;
+
+    if (n > KANTO_DEX_COUNT)
+        n = KANTO_DEX_COUNT;
+    for (i = 1; i <= n; i++)
+    {
+        GetSetPokedexFlag(i, FLAG_SET_SEEN);
+        GetSetPokedexFlag(i, FLAG_SET_CAUGHT);
+    }
+    return GetKantoPokedexCount(FLAG_GET_CAUGHT);
+}
+
+// Fills every box slot with a plain mon; result = filled slots.
+static u32 FillPC(void)
+{
+    struct Pokemon mon;
+    u32 box, slot, count = 0;
+
+    CreateMon(&mon, SPECIES_RATTATA, 5, TEST_MON_FIXED_IV, TRUE, 0, OT_ID_PLAYER_ID, 0);
+    for (box = 0; box < TOTAL_BOXES_COUNT; box++)
+    {
+        for (slot = 0; slot < IN_BOX_COUNT; slot++)
+        {
+            gPokemonStoragePtr->boxes[box][slot] = mon.box;
+            count++;
+        }
+    }
+    return count;
+}
+
+static u32 SetFlagHook(u32 flag, u32 on)
+{
+    if (flag >= FLAGS_COUNT)
+        return 0xFFFFFFFF;
+    if (on)
+        FlagSet(flag);
+    else
+        FlagClear(flag);
+    return FlagGet(flag);
+}
+// --- end of Hack 7 front C ------------------------------------------------------------------
+
+// Hack 7 — frente A: wild battle started by a field script, as setwildbattle + dowildbattle do
+#include "script.h"
+#include "script_pokemon_util.h"
+
+static const u8 sWildBattleScript[] =
+{
+    0x69, // lockall
+    0xB7, // dowildbattle
+    0x6B, // releaseall
+    0x02, // end
+};
+
 void TestHooks_Run(void)
 {
     u32 result = 0;
@@ -538,6 +626,53 @@ void TestHooks_Run(void)
     case TEST_CMD_SET_VAR:          VarSet(gTestMailbox.arg0, gTestMailbox.arg1); result = VarGet(gTestMailbox.arg0); break;
     case TEST_CMD_GAIN_EVS:         result = GainEVs(gTestMailbox.arg0, gTestMailbox.arg1); break;
     case TEST_CMD_SPEED_ORDER:      result = SpeedOrder(gTestMailbox.arg0, gTestMailbox.arg1); break;
+    // Hack 7 (day/night): the in-game clock
+    case TEST_CMD_SET_CLOCK:
+        DayNight_SetClock(gTestMailbox.arg0, gTestMailbox.arg1);
+        result = DayNight_GetMinuteOfDay();
+        break;
+    case TEST_CMD_CLOCK_INFO:       result = DayNight_GetMinuteOfDay() | DayNight_GetPeriod() << 16; break;
+    // Hack 7 front A: start
+    case TEST_CMD_TINT_AT:
+    {
+        struct DayNightTint tint;
+
+        DayNight_GetTintAt(gTestMailbox.arg0, &tint);
+        result = tint.r | tint.g << 10 | tint.b << 20;
+        break;
+    }
+    case TEST_CMD_ROLL_WEATHER:
+        result = DayNight_RollWeather(gTestMailbox.arg0, gTestMailbox.arg1 & 0xFFFFFF, gTestMailbox.arg1 >> 24);
+        break;
+    case TEST_CMD_START_WILD_BATTLE:
+        CreateScriptedWildMon(gTestMailbox.arg0, gTestMailbox.arg1, ITEM_NONE);
+        ScriptContext_SetupScript(sWildBattleScript);
+        result = 1;
+        break;
+    // Hack 7 front A: end
+    // Hack 7 front B: start
+    case TEST_CMD_LAND_SPECIES:
+        result = TestLandSpecies(gTestMailbox.arg0 >> 8, gTestMailbox.arg0 & 0xFF, gTestMailbox.arg1 & 0xFF, gTestMailbox.arg1 >> 8);
+        break;
+    case TEST_CMD_SPECIES_ON_MAP:
+        result = TestSpeciesOnMap(gTestMailbox.arg0 >> 8, gTestMailbox.arg0 & 0xFF, gTestMailbox.arg1);
+        break;
+
+    // Hack 7 front B: end
+    // Hack 7 front C: start
+    case TEST_CMD_RARE_EGG_ROLL:    result = GetRandomRareEggSpecies(); break;
+    case TEST_CMD_SET_KANTO_OWNED:  result = SetKantoOwned(gTestMailbox.arg0); break;
+    case TEST_CMD_FILL_PC:          result = FillPC(); break;
+    case TEST_CMD_SET_FLAG:         result = SetFlagHook(gTestMailbox.arg0, gTestMailbox.arg1); break;
+    // Hack 7 front C: end
+    // Hack 7 front D: start
+    case TEST_CMD_FRIENDSHIP_TEXT:
+        result = FriendshipText(gTestMailbox.arg0, gTestMailbox.arg1);
+        break;
+    // Hack 7 front D: end
+    // Hack 7 front E: start
+
+    // Hack 7 front E: end
     default:
         result = 0xFFFFFFFF;
         break;

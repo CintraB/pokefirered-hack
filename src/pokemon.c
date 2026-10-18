@@ -9,6 +9,7 @@
 #include "battle_anim.h"
 #include "item.h"
 #include "event_data.h"
+#include "day_night.h"
 #include "util.h"
 #include "pokemon_storage_system.h"
 #include "battle_gfx_sfx_util.h"
@@ -2682,7 +2683,7 @@ s32 CalculateBaseDamage(struct BattlePokemon *attacker, struct BattlePokemon *de
             }
 
             // Any weather except sun weakens solar beam
-            if ((gBattleWeather & (B_WEATHER_RAIN | B_WEATHER_SANDSTORM | B_WEATHER_HAIL_TEMPORARY)) && gCurrentMove == MOVE_SOLAR_BEAM)
+            if ((gBattleWeather & (B_WEATHER_RAIN | B_WEATHER_SANDSTORM | B_WEATHER_HAIL)) && gCurrentMove == MOVE_SOLAR_BEAM) // Hack 7 — frente A
                 damage /= 2;
 
             // Sun boosts Fire, weakens Water
@@ -5118,20 +5119,14 @@ u16 GetEvolutionTargetSpecies(struct Pokemon *mon, u8 type, u16 evolutionItem)
                 if (friendship >= 220)
                     targetSpecies = gEvolutionTable[species][i].targetSpecies;
                 break;
-            // FR/LG removed the time of day evolutions due to having no RTC.
+            // Hack 7: FR/LG have no RTC, so the in-game clock decides (evening counts as night)
             case EVO_FRIENDSHIP_DAY:
-                /*
-                RtcCalcLocalTime();
-                if (gLocalTime.hours >= 12 && gLocalTime.hours < 24 && friendship >= 220)
+                if (friendship >= 220 && DayNight_IsDayPeriod(DayNight_GetPeriod()))
                     targetSpecies = gEvolutionTable[species][i].targetSpecies;
-                */
                 break;
             case EVO_FRIENDSHIP_NIGHT:
-                /*
-                RtcCalcLocalTime();
-                if (gLocalTime.hours >= 0 && gLocalTime.hours < 12 && friendship >= 220)
+                if (friendship >= 220 && !DayNight_IsDayPeriod(DayNight_GetPeriod()))
                     targetSpecies = gEvolutionTable[species][i].targetSpecies;
-                */
                 break;
             case EVO_LEVEL:
                 if (gEvolutionTable[species][i].param <= level)
@@ -5173,6 +5168,11 @@ u16 GetEvolutionTargetSpecies(struct Pokemon *mon, u8 type, u16 evolutionItem)
             // wins, so Slowpoke's King's Rock entry comes after its plain level one.
             case EVO_LEVEL_HOLD_ITEM:
                 if (EVO_HOLD_ITEM_LEVEL <= level && gEvolutionTable[species][i].param == heldItem)
+                    targetSpecies = gEvolutionTable[species][i].targetSpecies;
+                break;
+            // Hack 7: any level up while holding the item (Feebas + Prism Scale), item is kept
+            case EVO_LEVEL_UP_HOLD_ITEM:
+                if (gEvolutionTable[species][i].param == heldItem)
                     targetSpecies = gEvolutionTable[species][i].targetSpecies;
                 break;
             }
@@ -5901,7 +5901,7 @@ u16 SpeciesToPokedexNum(u16 species)
 {
     species = SpeciesToNationalPokedexNum(species);
 
-    if (!IsNationalPokedexEnabled() && species > KANTO_SPECIES_END)
+    if (!IsNationalPokedexUiEnabled() && species > KANTO_SPECIES_END)
         return 0xFFFF;
     return species;
 }

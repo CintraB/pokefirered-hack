@@ -2406,7 +2406,7 @@ static void MoveDeoxysObject(u8 num)
 {
     u8 mapObjId;
     LoadPalette(sDeoxysObjectPals[num], OBJ_PLTT_ID(10), PLTT_SIZEOF(4));
-    ApplyGlobalFieldPaletteTint(10);
+    ApplyGlobalFieldPaletteTintRange(10, 4);
     TryGetObjectEventIdByLocalIdAndMap(LOCALID_BIRTH_ISLAND_EXTERIOR_ROCK, gSaveBlock1Ptr->location.mapNum, gSaveBlock1Ptr->location.mapGroup, &mapObjId);
     if (num == 0)
         PlaySE(SE_M_CONFUSE_RAY);
@@ -2452,7 +2452,7 @@ void SetDeoxysTrianglePalette(void)
 {
     u8 num = VarGet(VAR_DEOXYS_INTERACTION_NUM);
     LoadPalette(sDeoxysObjectPals[num], OBJ_PLTT_ID(10), PLTT_SIZEOF(4));
-    ApplyGlobalFieldPaletteTint(10);
+    ApplyGlobalFieldPaletteTintRange(10, 4);
 }
 
 bool8 IsBadEggInParty(void)
@@ -2552,4 +2552,12 @@ static void Task_WingFlapSound(u8 taskId)
     }
     if (data[0] == gSpecialVar_0x8004 - 1)
         DestroyTask(taskId);
+}
+
+// Hack 7 — frente C
+u16 GetRandomRareEggSpecies(void)
+{
+    static const u16 sRareEggSpecies[] = {SPECIES_LARVITAR, SPECIES_BAGON, SPECIES_BELDUM};
+
+    return sRareEggSpecies[Random() % NELEMS(sRareEggSpecies)];
 }

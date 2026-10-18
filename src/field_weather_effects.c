@@ -4,6 +4,7 @@
 #include "event_object_movement.h"
 #include "field_weather.h"
 #include "field_weather_effects.h"
+#include "overworld.h"
 #include "random.h"
 #include "script.h"
 #include "constants/weather.h"
@@ -190,6 +191,7 @@ static void DestroyCloudSprites(void)
     }
 
     FreeSpriteTilesByTag(GFXTAG_CLOUD);
+    RestoreDefaultWeatherSpritePalette();
     gWeatherPtr->cloudSpritesCreated = FALSE;
 }
 
@@ -755,6 +757,8 @@ void Snow_InitAll(void)
 
 void Snow_Main(void)
 {
+    // RSE never advanced this timer, so WaitSnowflakeSprite kept each snowflake hidden once its fall ended
+    gWeatherPtr->snowflakeTimer++;
     if (gWeatherPtr->initStep == 0 && !UpdateVisibleSnowflakeSprites())
     {
         gWeatherPtr->weatherGfxLoaded = TRUE;
@@ -900,7 +904,6 @@ static void InitSnowflakeSpriteMovement(struct Sprite *sprite)
 
 static void WaitSnowflakeSprite(struct Sprite *sprite)
 {
-    // Timer is never incremented
     if (gWeatherPtr->snowflakeTimer > 18)
     {
         sprite->invisible = FALSE;
@@ -1339,7 +1342,10 @@ void FogHorizontal_Main(void)
     {
     case 0:
         CreateFogHorizontalSprites();
-        if (gWeatherPtr->currWeather == WEATHER_FOG_HORIZONTAL)
+        // Lighter outdoors so the trees stay readable; indoors (Pokemon Tower) as in RSE
+        if (gWeatherPtr->currWeather == WEATHER_FOG_HORIZONTAL && IsMapTypeOutdoors(gMapHeader.mapType))
+            Weather_SetTargetBlendCoeffs(9, 11, 3);
+        else if (gWeatherPtr->currWeather == WEATHER_FOG_HORIZONTAL)
             Weather_SetTargetBlendCoeffs(12, 8, 3);
         else
             Weather_SetTargetBlendCoeffs(4, 16, 0);
@@ -1984,6 +1990,7 @@ static void DestroySandstormSprites(void)
 
         gWeatherPtr->sandstormSpritesCreated = FALSE;
         FreeSpriteTilesByTag(GFXTAG_SANDSTORM);
+        RestoreDefaultWeatherSpritePalette();
     }
 
     if (gWeatherPtr->sandstormSwirlSpritesCreated)

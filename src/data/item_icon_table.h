@@ -64,7 +64,7 @@ static const u32 *const sItemIconTable[ITEMS_COUNT + 1][2] =
     [ITEM_POWER_LENS]     = {gItemIcon_PowerItem, gItemIconPalette_PowerLens},
     [ITEM_POWER_BAND]     = {gItemIcon_PowerItem, gItemIconPalette_PowerBand},
     [ITEM_POWER_ANKLET]   = {gItemIcon_PowerItem, gItemIconPalette_PowerAnklet},
-    [ITEM_03C]            = {gItemIcon_QuestionMark, gItemIconPalette_QuestionMark},
+    [ITEM_PRISM_SCALE]     = {gItemIcon_PrismScale, gItemIconPalette_PrismScale},
     [ITEM_03D]            = {gItemIcon_QuestionMark, gItemIconPalette_QuestionMark},
     [ITEM_03E]            = {gItemIcon_QuestionMark, gItemIconPalette_QuestionMark},
     // Vitamins

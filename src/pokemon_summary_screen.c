@@ -2666,17 +2666,19 @@ void GetEvolutionPageText(u8 *dest, u16 species)
         case EVO_FRIENDSHIP:
             line = gText_PokeSum_EvoFriendship;
             break;
-        // FireRed has no clock: GetEvolutionTargetSpecies skips the day/night evolutions
         case EVO_FRIENDSHIP_DAY:
             line = gText_PokeSum_EvoFriendshipDay;
-            suffix = gText_PokeSum_EvoNotPossible;
             break;
         case EVO_FRIENDSHIP_NIGHT:
             line = gText_PokeSum_EvoFriendshipNight;
-            suffix = gText_PokeSum_EvoNotPossible;
             break;
-        // Nothing in FireRed raises beauty (no Pokéblocks), but a Feebas traded from R/S/E
-        // with enough beauty still evolves on level up
+        // Hack 7: Feebas + Prism Scale
+        case EVO_LEVEL_UP_HOLD_ITEM:
+            CopyItemName(evo->param, gStringVar2);
+            line = gText_PokeSum_EvoLevelUpHoldItem;
+            break;
+        // No species uses this method anymore (Feebas evolves with the Prism Scale since Hack 7);
+        // the line stays in case one is given beauty again
         case EVO_BEAUTY:
             line = gText_PokeSum_EvoBeauty;
             suffix = gText_PokeSum_EvoTradedOnly;
@@ -2720,8 +2722,38 @@ void GetEvolutionPageText(u8 *dest, u16 species)
         StringCopy(dest, gText_PokeSum_EvoNone);
 }
 
+// Hack 7 - frente D: friendship line, always the 6th line of the EVOLUTION page
+#define CHAR_EMOJI_HEART 0xE7   // CHAR_EXTRA_SYMBOL char (charmap.txt: EMOJI_HEART = F9 E7)
+
+#define FRIENDSHIP_LINE_SIZE 48 // with the terminator
+
+void GetFriendshipLineText(u8 *dest, u8 friendship)
+{
+    static const u8 sBandStarts[] = {0, 1, 50, 100, 150, 200, 255};
+    u8 hearts = ARRAY_COUNT(sBandStarts) - 1;
+    u8 i;
+
+    while (friendship < sBandStarts[hearts])
+        hearts--;
+    for (i = 0; i < hearts; i++)
+    {
+        *dest++ = CHAR_EXTRA_SYMBOL;
+        *dest++ = CHAR_EMOJI_HEART;
+    }
+    if (hearts != 0)
+        *dest++ = CHAR_SPACE;
+    ConvertIntToDecimalStringN(gStringVar1, friendship, STR_CONV_MODE_LEFT_ALIGN, 3);
+    dest = StringExpandPlaceholders(dest, gText_PokeSum_FriendCount);
+    *dest++ = CHAR_SPACE;
+    dest = StringCopy(dest, gText_PokeSum_FriendBand[hearts]);
+    if (friendship >= 220)
+        StringCopy(dest, gText_PokeSum_FriendMark);
+}
+
 static void PrintEvolutionPage(void)
 {
+    u8 friendshipText[FRIENDSHIP_LINE_SIZE];
+
     if (sMonSummaryScreen->isEgg)
         return;
 
@@ -2731,6 +2763,13 @@ static void PrintEvolutionPage(void)
                                  0, EVOLUTION_PAGE_LINE_SPACING,
                                  sLevelNickTextColors[0], TEXT_SKIP_DRAW,
                                  sMonSummaryScreen->pageText);
+
+    GetFriendshipLineText(friendshipText, GetMonData(&sMonSummaryScreen->currentMon, MON_DATA_FRIENDSHIP));
+    AddTextPrinterParameterized4(sMonSummaryScreen->windowIds[POKESUM_WIN_RIGHT_PANE], FONT_NORMAL,
+                                 EVOLUTION_PAGE_TEXT_X, EVOLUTION_PAGE_TEXT_Y + 5 * 16,
+                                 0, EVOLUTION_PAGE_LINE_SPACING,
+                                 sLevelNickTextColors[0], TEXT_SKIP_DRAW,
+                                 friendshipText);
 }
 
 // Columns of the IVs/EVs page, in px from the start of the text (right-aligned numbers end at
@@ -2896,6 +2935,15 @@ bool32 PokeSum_TestCopyPageText(u8 *dest)
     if (sMonSummaryScreen == NULL)
         return FALSE;
     StringCopy(dest, sMonSummaryScreen->pageText);
+    return TRUE;
+}
+
+// Hack 7 - frente D: the friendship line the open EVOLUTION page printed
+bool32 PokeSum_TestCopyFriendshipText(u8 *dest)
+{
+    if (sMonSummaryScreen == NULL)
+        return FALSE;
+    GetFriendshipLineText(dest, GetMonData(&sMonSummaryScreen->currentMon, MON_DATA_FRIENDSHIP));
     return TRUE;
 }
 #endif
