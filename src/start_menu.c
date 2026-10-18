@@ -611,6 +611,7 @@ static bool8 StartMenuLinkPlayerCallback(void)
     if (!gPaletteFade.active)
     {
         PlayRainStoppingSoundEffect();
+        DestroyStartMenuClockWindow(); /* Hack 7 — frente A */
         CleanupOverworldWindowsAndTilemaps();
         ShowTrainerCardInLink(gLocalLinkPlayerId, CB2_ReturnToFieldWithOpenMenu);
         return TRUE;

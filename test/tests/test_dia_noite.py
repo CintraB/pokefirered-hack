@@ -122,9 +122,9 @@ def test_relogio_destruido_com_safari():
         seguinte = resto[1].strip()
         assert seguinte == "DestroyStartMenuClockWindow();", (
             f"chamada em {texto[:pos].count(chr(10)) + 2}: falta DestroyStartMenuClockWindow() logo depois")
-    # mais uma chamada, ao entrar no fluxo de salvar (a Safari não tem SALVAR): sem ela a janela
+    # mais duas: ao entrar no fluxo de salvar (a Safari não tem SALVAR) e no callback do menu de link; sem elas a janela
     # vaza no SAVE confirmado e é recriada por cima no cancelado
-    assert texto.count("DestroyStartMenuClockWindow();") == len(chamadas) + 1
+    assert texto.count("DestroyStartMenuClockWindow();") == len(chamadas) + 2
     save1 = re.search(r"static bool8 StartCB_Save1\(void\)\n\{\n(.*?)\n\}", texto, re.S)
     assert save1, "StartCB_Save1 não encontrado"
     corpo = save1.group(1)
@@ -145,3 +145,16 @@ def test_aviso_so_com_jogador_livre():
     ow = (REPO_ROOT / "src" / "overworld.c").read_text(encoding="utf-8")
     basic = re.search(r"static void OverworldBasic\(void\)\n\{(.*?)\n\}", ow, re.S).group(1)
     assert "DayNight_FieldUpdate();" in basic
+
+
+def test_relogio_destruido_antes_de_limpar_as_janelas():
+    """CleanupOverworldWindowsAndTilemaps apaga a tabela de janelas: toda chamada em start_menu.c
+    tem de ser precedida (nas 6 linhas anteriores) da destruição da janela da hora, senão
+    sClockWindowOpen fica verdadeiro com o id velho."""
+    linhas = (REPO_ROOT / "src" / "start_menu.c").read_text(encoding="utf-8").split("\n")
+    chamadas = [i for i, l in enumerate(linhas) if l.strip() == "CleanupOverworldWindowsAndTilemaps();"]
+    assert len(chamadas) >= 6, chamadas
+    for i in chamadas:
+        antes = "\n".join(linhas[max(0, i - 6):i])
+        assert "DestroyStartMenuClockWindow();" in antes, (
+            f"start_menu.c:{i + 1}: CleanupOverworldWindowsAndTilemaps sem DestroyStartMenuClockWindow antes")
