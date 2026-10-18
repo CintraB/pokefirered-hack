@@ -2440,6 +2440,7 @@ static bool8 MapLdr_Credits(void)
     case 0:
         InitOverworldBgs_NoResetHeap();
         LoadMapFromWarp(FALSE);
+        SetSavedWeather(gMapHeader.weather); // Hack 7: the credits show the header's weather, not the roll
         (*state)++;
         break;
     case 1:

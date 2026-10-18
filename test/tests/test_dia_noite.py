@@ -573,3 +573,23 @@ def test_clima_do_campo_fora_das_batalhas_roteirizadas():
                      r"&& !\(gBattleTypeFlags & \(BATTLE_TYPE_POKEDUDE \| BATTLE_TYPE_OLD_MAN_TUTORIAL\)\)\s*"
                      r"&& AbilityBattleEffects\(0, 0, 0, ABILITYEFFECT_SWITCH_IN_WEATHER, 0\) != 0\)", main)
     assert main.count("ABILITYEFFECT_SWITCH_IN_WEATHER") == 1
+
+
+
+def test_creditos_com_o_clima_do_mapa():
+    """Os créditos passeiam pelos mapas com LoadMapFromWarp, que sorteia o clima: logo depois,
+    o carregador dos créditos volta ao clima do cabeçalho (nenhum mapa dos créditos troca o clima
+    por script, então nada se perde)."""
+    ow = _src("src/overworld.c")
+    loader = re.search(r"static bool8 MapLdr_Credits\(void\)\n\{\n(.*?)\n\}", ow, re.S).group(1)
+    assert re.search(r"LoadMapFromWarp\(FALSE\);\n\s*SetSavedWeather\(gMapHeader\.weather\);", loader)
+    assert loader.index("SetSavedWeather(gMapHeader.weather);") < loader.index("StartWeather();")
+    credits = _src("src/credits.c")
+    mapas = re.findall(r"CREDITSOVWLDLOADMAP\(MAP_(\w+),", credits)
+    assert len(mapas) == 13, mapas
+    for mapa in mapas:
+        pasta = "".join(p.capitalize() if not p.isdigit() else p for p in mapa.split("_"))
+        pasta = pasta.replace("North", "_North")
+        scripts = REPO_ROOT / "data" / "maps" / pasta / "scripts.inc"
+        assert scripts.exists(), scripts
+        assert "setweather" not in scripts.read_text(encoding="utf-8"), mapa
