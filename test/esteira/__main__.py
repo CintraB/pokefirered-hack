@@ -388,6 +388,9 @@ def _print_summary(suite: Suite, meta: dict, report: str) -> None:
           f"{counts['ok']} ok em {meta['tempo_total']:.1f} s")
     for name, seconds in meta["tempos"].items():
         print(f"  {name}: {seconds:.1f} s")
+    if "semente" in meta:
+        print(f"sementes das partes do shiny/creche: ESTEIRA_SEED={meta['semente']} "
+              "(repita com ela para reproduzir as contagens)")
     print(f"relatório: {report}")
 
 
@@ -420,9 +423,11 @@ def run_mode(args: argparse.Namespace) -> int:
     video_path.unlink(missing_ok=True)
     jobs = paralelo.jobs()
     parallel = jobs > 1 and args.only is None
+    salt = None
     if parallel and args.modo == "completo":
+        salt = paralelo.run_salt()
         starter, rotated, nao_testada, recorder = _run_parallel(args, specs, out, suite, tempos,
-                                                                jobs, started_wall)
+                                                                jobs, started_wall, salt)
     else:
         recorder = None if args.sem_video else VideoRecorder()
         starter, rotated, nao_testada = _run_sequential(args, specs, out, suite, tempos,
@@ -436,6 +441,8 @@ def run_mode(args: argparse.Namespace) -> int:
             "commit": _git_commit(), "modo": args.modo, "tempos": tempos,
             "tempo_total": time.monotonic() - start, "nao_testada": nao_testada,
             "processos": jobs}
+    if salt is not None:   # sementes das partes do shiny/creche: ESTEIRA_SEED reproduz
+        meta["semente"] = f"0x{salt:08x}"
     (out / "meta.json").write_text(json.dumps(meta, ensure_ascii=False, indent=1) + "\n",
                                    encoding="utf-8")
     report = write_report(suite, str(out), meta)
@@ -576,7 +583,7 @@ _EXPECTED_SECONDS = {"shiny": 500, "creche": 220, "floresta_brock": 90, "evoluco
 
 def _session_task(group: list[ScenarioSpec], rom: str, elf: str, out_dir: str, starter: str,
                   save_from: str | None, video: bool, bridges: set[str], part: int, parts: int,
-                  bridge_event=None) -> dict:
+                  bridge_event=None, salt: int = 0) -> dict:
     """Roda no processo filho: uma sessão de emulador com a cadeia do grupo."""
     suite = Suite()
     tempos: dict[str, float] = {}
@@ -584,7 +591,7 @@ def _session_task(group: list[ScenarioSpec], rom: str, elf: str, out_dir: str, s
     on_bridge = (lambda name: bridge_event.set()) if bridge_event is not None else None
     with open_context(rom, elf, out_dir, starter, suite, save_from=save_from,
                       recorder=recorder) as ctx:
-        ctx.part, ctx.parts = part, parts
+        ctx.part, ctx.parts, ctx.seed = part, parts, salt
         _run_scenarios(group, ctx, None, tempos, bridges, on_bridge)
     return {"results": suite.results, "tempos": tempos,
             "video": recorder.export() if recorder is not None else None}
@@ -640,7 +647,7 @@ def _drop_session_dir(sub: Path, helper: bool) -> None:
 
 
 def _run_parallel(args: argparse.Namespace, specs: list[ScenarioSpec], out: Path, suite: Suite,
-                  tempos: dict[str, float], jobs: int, started_wall: float
+                  tempos: dict[str, float], jobs: int, started_wall: float, salt: int = 0
                   ) -> tuple[str | None, bool, bool, VideoRecorder | None]:
     nao_testada = False
     starter: str | None = args.starter
@@ -676,7 +683,8 @@ def _run_parallel(args: argparse.Namespace, specs: list[ScenarioSpec], out: Path
         static_suite.add(_static_failure(exc))
     static = static_suite.results
 
-    print(f"[paralelo] até {jobs} processos ao mesmo tempo (ESTEIRA_JOBS)", flush=True)
+    print(f"[paralelo] até {jobs} processos ao mesmo tempo (ESTEIRA_JOBS); sementes das partes: "
+          f"{paralelo.seed_label(salt)}", flush=True)
     with paralelo.Pool(jobs) as pool:
         if exceptions is not None:
             pool.submit("texto", lambda: _text_task(exceptions), priority=1000)
@@ -701,7 +709,8 @@ def _run_parallel(args: argparse.Namespace, specs: list[ScenarioSpec], out: Path
                     expected = 10_000    # caminho crítico: sai antes de tudo
                 pool.submit(key, (lambda g=group, r=rom, e=elf, d=str(sub or out), sf=save_from,
                                   b=bridges, p=part, n=parts, ev=event:
-                                  _session_task(g, r, e, d, starter, sf, video, b, p, n, ev)),
+                                  _session_task(g, r, e, d, starter, sf, video and p == 0, b, p, n,
+                                                ev, salt)),
                             priority=expected)
                 tasks[key] = (index, part, sub)
 

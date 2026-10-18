@@ -40,7 +40,7 @@ from ..breeding import (BATCH, CONFIGS, EGG_PERSONALITY_TRIALS, EGG_SHINY_SAMPLE
                         chi_square, egg_move_probability, egg_moves, female_probability,
                         header_defines, iv_distribution, mean_and_std, nature_distribution,
                         proportion_interval, species_info, unpack_records, z_score)
-from ..paralelo import part_data, part_label, seed_rng, share
+from ..paralelo import part_data, part_label, seed_label, seed_rng, share
 from ..result import Result, Suite
 from ..hooks import (CMD_BREED_EGGS, CMD_BREED_SETUP, CMD_EGG_PERSONALITY, CMD_EGG_SHINIES,
                      CMD_GAIN_EVS, CMD_SPEED_ORDER, Mailbox)
@@ -283,7 +283,8 @@ class BreedingScenario(BreedingStats, CatchSaveScenario):
         assert not wrong, f"{len(wrong)} ovo(s) de espécie errada ou sem a marca de ovo: {wrong[:3]}"
         seconds = time.monotonic() - t0
         if self.ctx.parts > 1:
-            self._partial = {"records": recs, "compat": compat, "seconds": seconds}
+            self._partial = {"records": recs, "compat": compat, "seconds": seconds,
+                             "seed": self.ctx.seed}
             return generation_detail(config, recs, compat, seconds,
                                      part_label(self.ctx.part, self.ctx.parts))
         return generation_detail(config, recs, compat, seconds)
@@ -321,7 +322,8 @@ class BreedingScenario(BreedingStats, CatchSaveScenario):
         self.measures[f"ovos_shiny_{'charm' if with_charm else 'sem_charm'}"] = shinies
         seconds = time.monotonic() - t0
         if parts > 1:
-            self._partial = {"shinies": shinies, "frames": frames, "seconds": seconds}
+            self._partial = {"shinies": shinies, "frames": frames, "seconds": seconds,
+                             "seed": self.ctx.seed}
             return (f"{part_label(part, parts)}: {shinies} shiny em {samples} ovos; {frames} "
                     f"quadros, {_fmt(seconds)} s (a faixa é conferida na soma das partes)")
         return egg_rate_detail(shinies, frames, seconds, with_charm)
@@ -386,7 +388,7 @@ class BreedingScenario(BreedingStats, CatchSaveScenario):
         try:
             self._flow("creche: CONTINUAR com o save do modo rápido na build de teste", self._start)
             if self.ctx.parts > 1:   # cada parte com a sua sequência do RNG (paralelo.part_seed)
-                seed_rng(self.emu, self.game.syms, "creche", self.ctx.part)
+                seed_rng(self.emu, self.game.syms, "creche", self.ctx.part, self.ctx.seed)
             for config in CONFIGS:
                 self._config(config)
             if self.ctx.part == 0:
@@ -466,6 +468,8 @@ def merge_breeding(parts_results: list[list[Result]]) -> list[Result]:
             suite.run(result.name, lambda: egg_rate_detail(
                 sum(d["shinies"] for d in datas), sum(d["frames"] for d in datas),
                 sum(d["seconds"] for d in datas), with_charm, parts))
+        for r in suite.results:   # a semente reproduz os ovos (README: ESTEIRA_SEED)
+            r.detail += f"; {seed_label(datas[0].get('seed', 0))}"
         merged.extend(suite.results)
     return merged
 

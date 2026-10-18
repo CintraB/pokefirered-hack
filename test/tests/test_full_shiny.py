@@ -19,7 +19,7 @@ def scenario(bag: int = 0) -> ShinyScenario:
     sc.game = SimpleNamespace(bag_quantity=lambda item: bag, syms=syms)
     sc.charm = 0x177
     sc.measures = {}
-    sc.ctx = SimpleNamespace(part=0, parts=1)
+    sc.ctx = SimpleNamespace(part=0, parts=1, seed=0)
     return sc
 
 
@@ -50,13 +50,13 @@ def test_parte_do_modo_paralelo_semeia_o_rng_e_conta_so_a_fatia():
     from esteira import paralelo
     from esteira.scenarios.full_shiny import SHINY_SAMPLES
     sc = scenario(bag=0)
-    sc.ctx = SimpleNamespace(part=1, parts=6)
+    sc.ctx = SimpleNamespace(part=1, parts=6, seed=0x1234)
     writes, calls = [], []
     sc.emu = SimpleNamespace(frames=lambda n: 0, write=lambda addr, data: writes.append((addr, data)))
     sc.box = SimpleNamespace(call=lambda *a, **k: calls.append(a) or 7)
     detail = sc._rate(with_charm=True)
-    seed = paralelo.part_seed("shiny", 1 * 6 + 1)
+    seed = paralelo.part_seed("shiny", 1 * 6 + 1, 0x1234)
     assert writes == [(0x03007590, seed.to_bytes(4, "little"))]
     assert calls[0][1:] == (paralelo.share(SHINY_SAMPLES, 1, 6), 1)
-    assert sc._partial == {"shinies": 7, "frames": 0, "bag": 0}
+    assert sc._partial == {"shinies": 7, "frames": 0, "bag": 0, "seed": 0x1234}
     assert "parte 2/6" in detail

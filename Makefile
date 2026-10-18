@@ -233,6 +233,9 @@ FIRERED_SWITCH_LOG := $(BUILD_DIR)/firered_switch$(if $(filter 1,$(TESTBUILD)),_
 # stays usable: 10 by default, `make firered_switch ESTEIRA_JOBS=4` (or the environment variable)
 # to change it. The Switch build uses it as -j unless the command line already has a -j.
 ESTEIRA_JOBS ?= 10
+# Same rule as test/esteira/paralelo.py: anything but a positive integer means 10; at most 64.
+override ESTEIRA_JOBS := $(shell n='$(strip $(ESTEIRA_JOBS))'; case "$$n" in (''|*[!0-9]*) n=10;; esac; \
+	n=$$(expr "$$n" + 0); [ "$$n" -ge 1 ] || n=10; [ "$$n" -le 64 ] || n=64; echo $$n)
 export ESTEIRA_JOBS
 ESTEIRA_J = $(if $(filter -j%,$(MAKEFLAGS)),,-j$(ESTEIRA_JOBS))
 firered_switch:

@@ -25,7 +25,7 @@ pytestmark = pytest.mark.filterwarnings(
 # --- paralelo.py ---------------------------------------------------------------------------------
 
 @pytest.mark.parametrize("raw, want", [(None, 10), ("4", 4), ("1", 1), ("0", 10), ("x", 10),
-                                       (" 12 ", 12)])
+                                       (" 12 ", 12), ("999", 64)])
 def test_teto_vem_de_ESTEIRA_JOBS(monkeypatch, raw, want):
     if raw is None:
         monkeypatch.delenv("ESTEIRA_JOBS", raising=False)
@@ -85,7 +85,7 @@ def _overlaps(folder: Path) -> int:
 
 
 def test_pool_nunca_passa_do_teto_e_devolve_os_valores(tmp_path):
-    with paralelo.Pool(3) as pool:
+    with paralelo.Pool(2) as pool:
         for i in range(7):
             pool.submit(f"t{i}", lambda i=i: _stamp(tmp_path, f"t{i}", 0.3))
         got = {}
@@ -93,20 +93,20 @@ def test_pool_nunca_passa_do_teto_e_devolve_os_valores(tmp_path):
             for done in pool.step():
                 assert done.error is None
                 got[done.key] = done.value
-        assert pool.peak <= 3
+        assert pool.peak <= 2
     assert got == {f"t{i}": f"t{i}" for i in range(7)}
-    assert _overlaps(tmp_path) == 3                               # usou o paralelismo
+    assert _overlaps(tmp_path) == 2                               # usou o paralelismo
     assert len({json.loads(p.read_text())[2] for p in tmp_path.glob("*.json")}) == 7   # processos
 
 
 def test_pool_conta_as_vagas_de_um_make(tmp_path):
-    with paralelo.Pool(4) as pool:
-        pool.submit("make", lambda: _stamp(tmp_path, "make", 0.4), slots=3, priority=10)
+    with paralelo.Pool(2) as pool:
+        pool.submit("make", lambda: _stamp(tmp_path, "make", 0.4), slots=2, priority=10)
         for i in range(3):
             pool.submit(f"t{i}", lambda i=i: _stamp(tmp_path, f"t{i}", 0.2))
         while pool.busy():
             pool.step()
-        assert pool.peak <= 4
+        assert pool.peak <= 2
 
 
 def test_pool_erro_da_tarefa_volta_como_traceback():
@@ -177,7 +177,7 @@ def env(tmp_path, monkeypatch):
     monkeypatch.setattr(cli, "REFS_DIR", str(tmp_path / "referencias"))
     monkeypatch.setattr(cli, "check_text", lambda repo, exceptions: [])
     monkeypatch.setattr(cli, "_git_commit", lambda: "abc1234")
-    monkeypatch.setenv("ESTEIRA_JOBS", "4")
+    monkeypatch.setenv("ESTEIRA_JOBS", "2")   # no máximo 2 filhos por worker do xdist
 
     @contextmanager
     def fake_open(rom, elf, out, starter, suite=None, save_from=None, recorder=None):
@@ -263,11 +263,11 @@ def test_paralelo_da_os_mesmos_resultados_que_o_sequencial_na_mesma_ordem(env, m
     assert main(argv(env, "completo", "--starter", "BULBASAUR")) == 0
     paralelo_out = names_and_status(env)
     meta = json.loads((env / "out" / "meta.json").read_text())
-    assert meta["processos"] == 4
+    assert meta["processos"] == 2 and meta["semente"].startswith("0x")
     assert list(meta["tempos"]) == ["a", "cap", "pc", "master", "dividido", "evo", "depois",
                                     "vídeo (codificação)"]
     printed = capsys.readouterr().out
-    assert "[paralelo] até 4 processos" in printed
+    assert "[paralelo] até 2 processos" in printed
     monkeypatch.setenv("ESTEIRA_JOBS", "1")
     assert main(argv(env, "completo", "--starter", "BULBASAUR")) == 0
     assert names_and_status(env) == paralelo_out
@@ -388,3 +388,100 @@ def test_video_com_falha_numa_sessao_vira_aviso_no_merge():
     merged = cli._merge_videos([rec.export()])
     with pytest.raises(RuntimeError, match="shots"):
         merged.save("/nao/importa.webp")
+
+
+# --- revisão: sal por execução, encerramento, resultado ilegível -------------------------------
+
+def test_sal_da_execucao_sorteado_ou_fixado_por_ESTEIRA_SEED(monkeypatch):
+    monkeypatch.delenv("ESTEIRA_SEED", raising=False)
+    salts = {paralelo.run_salt() for _ in range(8)}
+    assert len(salts) > 1 and all(0 <= s < 2 ** 32 for s in salts)
+    monkeypatch.setenv("ESTEIRA_SEED", "0x00c0ffee")
+    assert paralelo.run_salt() == 0xC0FFEE
+    monkeypatch.setenv("ESTEIRA_SEED", "12")
+    assert paralelo.run_salt() == 12
+    # o sal muda as sementes; as janelas continuam disjuntas para o mesmo sal
+    a = [paralelo.part_seed("shiny", k, 0xC0FFEE) for k in range(3)]
+    assert a != [paralelo.part_seed("shiny", k, 12) for k in range(3)]
+    assert paralelo.lcg_jump(a[0], paralelo.SEED_WINDOW) == a[1]
+    assert paralelo.seed_label(0xC0FFEE) == "ESTEIRA_SEED=0x00c0ffee"
+
+
+def test_merge_mostra_a_semente_no_detalhe():
+    from esteira.scenarios.full_shiny import RATE_NAMES, merge_shiny
+    part = [Result(RATE_NAMES[True], "ok", "", data={"shinies": 49, "frames": 1, "bag": 1,
+                                                      "seed": 0xABC})]
+    merged = merge_shiny([part, part])
+    assert merged[0].detail.endswith("ESTEIRA_SEED=0x00000abc")
+
+
+def test_meta_e_resumo_trazem_a_semente_e_ESTEIRA_SEED_reproduz(env, monkeypatch, capsys):
+    scenarios(monkeypatch, host=False)
+    monkeypatch.setenv("ESTEIRA_SEED", "0x1234abcd")
+    assert main(argv(env, "completo", "--starter", "BULBASAUR")) == 0
+    assert json.loads((env / "out" / "meta.json").read_text())["semente"] == "0x1234abcd"
+    assert "ESTEIRA_SEED=0x1234abcd" in capsys.readouterr().out
+
+
+def _tree_with_finally(marker: Path, pidfile: Path) -> None:
+    import subprocess
+    try:
+        proc = subprocess.Popen(["sleep", "60"])     # como o make do master
+        pidfile.write_text(str(proc.pid))
+        proc.wait()
+    finally:
+        marker.write_text("finally rodou")
+
+
+def _alive(pid: int) -> bool:
+    try:
+        os.kill(pid, 0)
+    except ProcessLookupError:
+        return False
+    stat = Path(f"/proc/{pid}/stat")
+    return stat.is_file() and stat.read_text().split()[2] != "Z"
+
+
+def test_close_encerra_a_arvore_da_tarefa_e_os_finally_rodam(tmp_path):
+    marker, pidfile = tmp_path / "finally", tmp_path / "pid"
+    pool = paralelo.Pool(2)
+    pool.submit("master", lambda: _tree_with_finally(marker, pidfile))
+    deadline = time.time() + 10
+    while not pidfile.exists() and time.time() < deadline:
+        pool.step(timeout=0.05)
+    grandchild = int(pidfile.read_text())
+    pool.close()                                     # como num erro de outra tarefa / Ctrl-C
+    assert marker.read_text() == "finally rodou"
+    deadline = time.time() + 5
+    while _alive(grandchild) and time.time() < deadline:
+        time.sleep(0.05)
+    assert not _alive(grandchild), "o processo aberto pela tarefa ficou órfão"
+
+
+def test_resultado_ilegivel_vira_erro_da_tarefa(monkeypatch):
+    def broken_load(fh):
+        raise AttributeError("classe sumiu")
+    monkeypatch.setattr(paralelo.pickle, "load", broken_load)
+    with paralelo.Pool(1) as pool:
+        pool.submit("x", lambda: 1)
+        done = []
+        while pool.busy():
+            done += pool.step()
+    assert "classe sumiu" in done[0].error
+
+
+def test_so_a_parte_1_de_um_cenario_dividido_grava_video(env, monkeypatch):
+    log = env / "video.log"
+    real = cli._session_task
+
+    def spy(group, rom, elf, out_dir, starter, save_from, video, bridges, part, parts, *rest):
+        with open(log, "a") as fh:
+            fh.write(f"{group[0].name} {part} {video}\n")
+        return real(group, rom, elf, out_dir, starter, save_from, video, bridges, part, parts,
+                    *rest)
+    monkeypatch.setattr(cli, "_session_task", spy)
+    scenarios(monkeypatch, host=False)
+    assert main(argv(env, "completo", "--starter", "BULBASAUR")) == 0
+    lines = sorted(log.read_text().splitlines())
+    assert lines == ["a 0 True", "dividido 0 True", "dividido 1 False", "dividido 2 False",
+                     "evo 0 True"]

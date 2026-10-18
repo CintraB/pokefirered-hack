@@ -38,7 +38,7 @@ import sys
 from ..emu import KEY_A, KEY_B, KEY_UP
 from ..game import POKEMON_SIZE, decode_mon
 from ..hooks import CMD_CHECK_SHINY, CMD_COUNT_SHINIES, CMD_SET_DEX_COMPLETE, Mailbox
-from ..paralelo import part_data, part_label, seed_rng, share
+from ..paralelo import part_data, part_label, seed_label, seed_rng, share
 from ..result import Result, Suite
 from . import ScenarioContext
 from .base import TEXT_PERIOD, Abort
@@ -146,6 +146,8 @@ def merge_shiny(parts_results: list[list[Result]]) -> list[Result]:
         suite.run(result.name, lambda: rate_detail(
             sum(d["shinies"] for d in datas), sum(d["frames"] for d in datas), with_charm,
             datas[0]["bag"], parts))
+        for r in suite.results:   # a semente reproduz a contagem (README: ESTEIRA_SEED)
+            r.detail += f"; {seed_label(datas[0].get('seed', 0))}"
         merged.extend(suite.results)
     return merged
 
@@ -216,7 +218,8 @@ class ShinyScenario(PcMenuMixin, CatchSaveScenario):
                 f"charm na bolsa = {bag_before} antes da taxa "
                 f"{'com' if with_charm else 'sem'} charm")
         if parts > 1:   # fatias com sequências do RNG disjuntas (paralelo.part_seed)
-            seed_rng(self.emu, self.game.syms, "shiny", int(with_charm) * parts + part)
+            seed_rng(self.emu, self.game.syms, "shiny", int(with_charm) * parts + part,
+                     self.ctx.seed)
         start = self.emu.frames(0)
         shinies = self.box.call(CMD_COUNT_SHINIES, samples, int(with_charm),
                                 timeout=samples * FRAMES_PER_MON_LIMIT, poll=COUNT_POLL)
@@ -226,7 +229,8 @@ class ShinyScenario(PcMenuMixin, CatchSaveScenario):
         assert bag_after == bag_before, (
             f"o atalho mexeu na bolsa: charm {bag_before} -> {bag_after}")
         if parts > 1:
-            self._partial = {"shinies": shinies, "frames": frames, "bag": bag_before}
+            self._partial = {"shinies": shinies, "frames": frames, "bag": bag_before,
+                             "seed": self.ctx.seed}
             return (f"{part_label(part, parts)}: {shinies} shiny em {samples}; {frames} quadros "
                     "(a faixa é conferida na soma das partes)")
         return rate_detail(shinies, frames, with_charm, bag_before)

@@ -475,12 +475,26 @@ ESTEIRA_JOBS=1 make test-full              # o modo sequencial de antes (~16 min
   ovos por taxa) e o processo principal soma as fatias e aplica **as mesmas faixas** (±3σ, ±4σ,
   qui-quadrado) ao total. A parte 1 faz o roteiro inteiro (Dex completa, PC, Oak, charm,
   personalidade, EVs, Velocidade); as outras só CONTINUAR e as contagens. Para as fatias não
-  repetirem a mesma sequência, cada parte grava no `gRngValue` do jogo uma semente fixa
-  (`esteira/paralelo.py`, `part_seed`): sementes separadas por 2^27 passos do gerador, então as
-  sequências nunca se cruzam e o resultado é o mesmo a cada execução, com 4 ou 10 processos (o
-  número de partes não depende do teto). Os números diferem dos do modo sequencial (outras
-  sequências do RNG), não as faixas nem os nomes; o detalhe diz "em 6 processos".
+  repetirem a mesma sequência, cada parte grava no `gRngValue` do jogo uma semente
+  (`esteira/paralelo.py`, `part_seed`) separada das outras por 2^27 passos do gerador, então as
+  sequências nunca se cruzam. As sementes partem de um **sal sorteado a cada execução**: cada
+  `make test-full` usa outras sequências (um falso vermelho estatístico não se repete). O sal
+  aparece no detalhe de cada resultado juntado (`ESTEIRA_SEED=0x...`), no fim do resumo do
+  terminal e no `meta.json` (`"semente"`). Os números diferem dos do modo sequencial, não as
+  faixas nem os nomes; o detalhe diz "em 6 processos".
+- **Reproduzir um vermelho do shiny/creche**: rode de novo com o sal daquela execução, com a
+  mesma ROM; as contagens saem iguais (o número de partes não depende do teto, então vale com
+  qualquer `ESTEIRA_JOBS` > 1):
+
+  ```bash
+  ESTEIRA_SEED=0x1234abcd make test-full
+  ```
 - `--only` e `ESTEIRA_JOBS=1` rodam como antes, tudo num processo só, sem dividir nada.
+- `ESTEIRA_JOBS` que não seja inteiro positivo vale 10, e o teto máximo é 64 (no Makefile e na
+  esteira). Um `-jN` explícito na linha do make vale como está (não é cortado pelo teto).
+- Ctrl-C ou erro de infraestrutura no meio: cada sessão roda num grupo de processos próprio e é
+  encerrada com SIGTERM (os `finally` rodam: o `master` apaga a worktree em `/tmp` e o `make`
+  dele morre junto); só se não sair em 30 s leva SIGKILL.
 
 **Pular o desenho dos quadros (medido, não adotado):** o runner pode deixar de desenhar os quadros
 que não viram tela nem vídeo (o `frameskip` do mGBA; a emulação não muda: memória, quadro e tela
@@ -614,10 +628,9 @@ tipos de Hidden Power) e medidas, e uma coluna que encavale na anterior também 
   (p ≥ 1e-5) e as duas taxas de shiny dos ovos a ±3σ dão **~1% de falso vermelho** por execução.
   Um vermelho isolado num item do `creche`, perto do limite, vale rodar de novo (`--only creche`)
   antes de investigar.
-- **No modo paralelo as contagens do `shiny` e da `creche` têm sementes fixas** (veja
-  Paralelismo): repetir o `make test-full` com a mesma ROM dá os mesmos números, então um falso
-  vermelho estatístico se repete. Para tirar a dúvida, rode com outras sequências do RNG:
-  `--only shiny`/`--only creche` (sessão inteira, sem semente) ou `ESTEIRA_JOBS=1 make test-full`.
+- **No modo paralelo** um vermelho do `shiny`/`creche` traz no detalhe o sal da execução
+  (`ESTEIRA_SEED=0x...`): `make test-full` de novo usa outro sal (outras sequências do RNG), e
+  `ESTEIRA_SEED=<o do detalhe> make test-full` reproduz exatamente as mesmas contagens.
 - **Brock no modo completo** é adaptativo, mas **probabilístico**: treina até um nível e tenta
   algumas vezes; com azar nos golpes/RNG pode perder todas as tentativas e reprovar sem que o jogo
   tenha problema.

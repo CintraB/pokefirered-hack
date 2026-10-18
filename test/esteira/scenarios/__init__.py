@@ -36,6 +36,7 @@ class ScenarioContext:
     # de `parts`; 0 de 1 = o cenário inteiro, como no modo sequencial
     part: int = 0
     parts: int = 1
+    seed: int = 0   # sal das sementes das partes nesta execução (paralelo.run_salt)
 
 
 @contextmanager
