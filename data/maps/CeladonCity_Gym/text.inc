@@ -1,152 +1,152 @@
 CeladonCity_Gym_Text_ErikaIntro::
-    .string "Hello…\n"
-    .string "Lovely weather, isn't it?\l"
-    .string "It's so pleasant…\p"
-    .string "…Oh, dear…\n"
-    .string "I must have dozed off. Welcome.\p"
-    .string "My name is ERIKA.\n"
-    .string "I am the LEADER of CELADON GYM.\p"
-    .string "I am a student of the art of\n"
-    .string "flower arranging.\p"
-    .string "My POKéMON are solely of the\n"
-    .string "GRASS type.\p"
-    .string "…Oh, I'm sorry, I had no idea that\n"
-    .string "you wished to challenge me.\p"
-    .string "Very well, but I shall not lose.{PLAY_BGM MUS_ENCOUNTER_GYM_LEADER}$"
+    .string "Olá…\n"
+    .string "Que tempo agradável, não é?\l"
+    .string "É tão tranquilo…\p"
+    .string "…Ah, meu Deus…\n"
+    .string "Acho que cochilei. Boas-vindas ao\l"
+    .string "Ginásio.\p"
+    .string "Meu nome é Erika.\n"
+    .string "Sou a Líder do Ginásio de Celadon.\p"
+    .string "Sou estudante da arte do\n"
+    .string "arranjo de flores.\p"
+    .string "Os meus Pokémon são unicamente do\n"
+    .string "tipo Planta.\p"
+    .string "…Oh, perdoe-me, não imaginei que\n"
+    .string "você desejasse me desafiar.\p"
+    .string "Muito bem, mas não pretendo perder.{PLAY_BGM MUS_ENCOUNTER_GYM_LEADER}$"
 
 CeladonCity_Gym_Text_ErikaDefeat::
     .string "Oh!\n"
-    .string "I concede defeat.\l"
-    .string "You are remarkably strong.\p"
-    .string "I must confer on you the\n"
-    .string "RAINBOWBADGE.$"
+    .string "Admito a derrota.\l"
+    .string "Você é notavelmente forte.\p"
+    .string "Devo conceder a você a\n"
+    .string "Insígnia Arco-íris.$"
 
 CeladonCity_Gym_Text_ErikaPostBattle::
-    .string "You are cataloging POKéMON?\n"
-    .string "I must say I'm impressed.\p"
-    .string "I would never collect POKéMON if\n"
-    .string "they were unattractive.$"
+    .string "Você está catalogando Pokémon?\n"
+    .string "Devo dizer que estou impressionada.\p"
+    .string "Eu jamais colecionaria Pokémon se\n"
+    .string "eles fossem desagradáveis aos olhos.$"
 
 CeladonCity_Gym_Text_ExplainRainbowBadgeTakeThis::
-    .string "The RAINBOWBADGE will make\n"
-    .string "POKéMON up to Lv. 50 obey.\p"
-    .string "It also allows POKéMON to use\n"
-    .string "STRENGTH in and out of battle.\p"
-    .string "Please also take this with you.$"
+    .string "A Insígnia Arco-íris faz os\n"
+    .string "Pokémon até o Nv. 50 obedecerem.\p"
+    .string "Ela também permite que os Pokémon\n"
+    .string "usem Força dentro e fora de batalha.\p"
+    .string "Por favor, leve isto também.$"
 
 CeladonCity_Gym_Text_ReceivedTM19FromErika::
-    .string "{PLAYER} received TM19\n"
-    .string "from ERIKA.$"
+    .string "{PLAYER} recebeu a MT19\n"
+    .string "da Erika.$"
 
 CeladonCity_Gym_Text_ExplainTM19::
-    .string "TM19 contains GIGA DRAIN.\p"
-    .string "Half the damage it inflicts is\n"
-    .string "drained to heal your POKéMON.\p"
-    .string "Wouldn't you agree that it's a\n"
-    .string "wonderful move?$"
+    .string "A MT19 contém Gigadreno.\p"
+    .string "Metade do dano causado é\n"
+    .string "absorvido para curar o seu Pokémon.\p"
+    .string "Não concorda que é um golpe\n"
+    .string "maravilhoso?$"
 
 CeladonCity_Gym_Text_ShouldMakeRoomForThis::
-    .string "You should make room for this.$"
+    .string "Você deveria abrir espaço para isto.$"
 
 CeladonCity_Gym_Text_KayIntro::
-    .string "I should tell you about this GYM.\p"
-    .string "Only real ladies are allowed in\n"
-    .string "here!$"
+    .string "Preciso falar sobre este Ginásio.\p"
+    .string "Só damas de verdade podem entrar\n"
+    .string "aqui!$"
 
 CeladonCity_Gym_Text_KayDefeat::
-    .string "You're too rough!$"
+    .string "Você é muito bruto!$"
 
 CeladonCity_Gym_Text_KayPostBattle::
-    .string "Bleaah!\n"
-    .string "I hope ERIKA wipes you out!$"
+    .string "Bleeeh!\n"
+    .string "Tomara que a Erika acabe com você!$"
 
 CeladonCity_Gym_Text_BridgetIntro::
-    .string "Oh, welcome.\n"
-    .string "I was getting bored.$"
+    .string "Ah, olá.\n"
+    .string "Eu estava ficando entediada.$"
 
 CeladonCity_Gym_Text_BridgetDefeat::
-    .string "My makeup!$"
+    .string "A minha maquiagem!$"
 
 CeladonCity_Gym_Text_BridgetPostBattle::
-    .string "GRASS-type POKéMON are tough\n"
-    .string "against the WATER type.\p"
-    .string "They also have an edge on ROCK-\n"
-    .string "and GROUND-type POKéMON.$"
+    .string "Pokémon do tipo Planta são fortes\n"
+    .string "contra o tipo Água.\p"
+    .string "Eles também levam vantagem sobre\n"
+    .string "os Pokémon dos tipos Pedra e Terra.$"
 
 CeladonCity_Gym_Text_TinaIntro::
-    .string "…Weren't you peeking in here\n"
-    .string "earlier?$"
+    .string "…Não foi você que estava\n"
+    .string "espiando aqui há pouco?$"
 
 CeladonCity_Gym_Text_TinaDefeat::
-    .string "You're an eye-opener!$"
+    .string "Você abriu os meus olhos!$"
 
 CeladonCity_Gym_Text_TinaPostBattle::
-    .string "Oh, you were looking at ERIKA…\n"
-    .string "You weren't looking at me…$"
+    .string "Ah, você estava olhando a Erika…\n"
+    .string "Não estava olhando para mim…$"
 
 CeladonCity_Gym_Text_TamiaIntro::
-    .string "Look, look!\n"
-    .string "See my POKéMON!\p"
-    .string "I like the GRASS type.\n"
-    .string "I like how they're easy to raise.$"
+    .string "Olha, olha!\n"
+    .string "Veja os meus Pokémon!\p"
+    .string "Eu gosto do tipo Planta.\n"
+    .string "São tão fáceis de criar!$"
 
 CeladonCity_Gym_Text_TamiaDefeat::
-    .string "No!$"
+    .string "Não!$"
 
 CeladonCity_Gym_Text_TamiaPostBattle::
-    .string "We only use GRASS-type POKéMON at\n"
-    .string "our GYM.\p"
-    .string "Why? We also use them for making\n"
-    .string "flower arrangements!$"
+    .string "Só usamos Pokémon do tipo Planta\n"
+    .string "no nosso Ginásio.\p"
+    .string "Por quê? Porque também os usamos\n"
+    .string "nos arranjos de flores!$"
 
 CeladonCity_Gym_Text_LisaIntro::
-    .string "Oh, hey!\p"
-    .string "We don't like BUG- or FIRE-type\n"
-    .string "POKéMON in here!$"
+    .string "Ah, olá!\p"
+    .string "Não gostamos de Pokémon do tipo\n"
+    .string "Inseto ou Fogo por aqui!$"
 
 CeladonCity_Gym_Text_LisaDefeat::
-    .string "Oh!\n"
-    .string "You!$"
+    .string "Ah!\n"
+    .string "Você!$"
 
 CeladonCity_Gym_Text_LisaPostBattle::
-    .string "Our LEADER ERIKA might be quiet,\n"
-    .string "but she's famous around here.$"
+    .string "A nossa Líder Erika pode ser\n"
+    .string "quietinha, mas é famosa por aqui.$"
 
 CeladonCity_Gym_Text_LoriIntro::
-    .string "Pleased to meet you.\n"
-    .string "My hobby is POKéMON training.$"
+    .string "Muito prazer.\n"
+    .string "Meu passatempo é treinar Pokémon.$"
 
 CeladonCity_Gym_Text_LoriDefeat::
     .string "Oh!\n"
-    .string "Splendid!$"
+    .string "Esplêndido!$"
 
 CeladonCity_Gym_Text_LoriPostBattle::
-    .string "I have a blind date coming up.\n"
-    .string "I have to learn to be polite,\l"
-    .string "especially if I have to battle.$"
+    .string "Tenho um encontro às cegas em breve.\n"
+    .string "Preciso aprender a ser educada,\l"
+    .string "principalmente se tiver que batalhar.$"
 
 CeladonCity_Gym_Text_MaryIntro::
-    .string "Welcome to CELADON GYM!\p"
-    .string "You'd better not underestimate\n"
-    .string "the nice ladies here.$"
+    .string "Boas-vindas ao Ginásio de Celadon!\p"
+    .string "É melhor não subestimar as\n"
+    .string "moças gentis daqui.$"
 
 CeladonCity_Gym_Text_MaryDefeat::
-    .string "Oh!\n"
-    .string "Beaten!$"
+    .string "Ah!\n"
+    .string "Derrotada!$"
 
 CeladonCity_Gym_Text_MaryPostBattle::
-    .string "I didn't bring my best POKéMON.\n"
-    .string "Wait until next time!$"
+    .string "Não trouxe o meu melhor Pokémon.\n"
+    .string "Espere só até a próxima vez!$"
 
 CeladonCity_Gym_Text_GymStatue::
-    .string "CELADON POKéMON GYM\n"
-    .string "LEADER: ERIKA\p"
-    .string "WINNING TRAINERS:\n"
+    .string "Ginásio Pokémon de Celadon\n"
+    .string "Líder: Erika\p"
+    .string "Treinadores vencedores:\n"
     .string "{RIVAL}$"
 
 CeladonCity_Gym_Text_GymStatuePlayerWon::
-    .string "CELADON POKéMON GYM\n"
-    .string "LEADER: ERIKA\p"
-    .string "WINNING TRAINERS:\n"
+    .string "Ginásio Pokémon de Celadon\n"
+    .string "Líder: Erika\p"
+    .string "Treinadores vencedores:\n"
     .string "{RIVAL}, {PLAYER}$"
-

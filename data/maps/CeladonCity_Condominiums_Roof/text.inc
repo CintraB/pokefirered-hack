@@ -1,3 +1,2 @@
 CeladonCity_Condominiums_Roof_Text_IKnowEverything::
-    .string "I KNOW EVERYTHING!$"
-
+    .string "EU SEI DE TUDO!$"

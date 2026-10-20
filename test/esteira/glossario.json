@@ -9189,6 +9189,105 @@
    "detectar": false,
    "frente": "D",
    "obs": "decisão D4 do Cintra (18/10): classe dos 2 ADMIN da Equipe Rocket (trainers.h usa TRAINER_CLASS_TEAM_ROCKET + nome \"ADMIN\"; exige classe própria — frente D/trainers)"
+  },
+  {
+   "en": "BERRY POWDER",
+   "pt": "Pó de Fruta",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true,
+   "frente": "A1",
+   "obs": "pó obtido amassando frutas (Cerulean, Frente A)"
+  },
+  {
+   "en": "WIRELESS ADAPTER",
+   "pt": "Adaptador Sem Fio",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "frente": "A1",
+   "obs": "Wireless Adapter"
+  },
+  {
+   "en": "POKéMON WIRELESS CLUB",
+   "pt": "Clube Sem Fio Pokémon",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "frente": "A1",
+   "obs": "andar de cima do Centro Pokémon"
+  },
+  {
+   "en": "DIRECT CORNER",
+   "pt": "Canto Direto",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "frente": "A1",
+   "obs": "balcão do Clube Sem Fio"
+  },
+  {
+   "en": "TRADE CORNER",
+   "pt": "Canto de Troca",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "frente": "A1",
+   "obs": "sala do Clube Sem Fio"
+  },
+  {
+   "en": "COLOSSEUM",
+   "pt": "Coliseu",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "frente": "A1",
+   "obs": "sala do Clube Sem Fio"
+  },
+  {
+   "en": "UNION ROOM",
+   "pt": "Sala União",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "frente": "A1",
+   "obs": "andar de cima do Centro Pokémon"
+  },
+  {
+   "en": "CYCLING ROAD",
+   "pt": "Ciclovia",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true,
+   "frente": "A1",
+   "obs": "Rota 17"
+  },
+  {
+   "en": "CELADON MANSION",
+   "pt": "Mansão de Celadon",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true,
+   "frente": "A1",
+   "obs": "prédio de Celadon"
+  },
+  {
+   "en": "TRAINER TIPS",
+   "pt": "Dicas de Treinador",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "frente": "A1",
+   "obs": "placas de dica"
+  },
+  {
+   "en": "COINS",
+   "pt": "moedas",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "frente": "A1",
+   "obs": "fichas do Cassino (Porta-moedas)"
   }
  ],
  "proibidos": [
