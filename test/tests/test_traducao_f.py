@@ -28,7 +28,7 @@ DEX_RANGES = [
 
 DEX_WIDTH_PX = 30 * 8
 DEX_LINES = 3
-IMPERIAL = re.compile(r"\b(?:\d[\d.,]*\s*(?:p[ée]s|polegadas?|libras?|onças?|milhas?|jardas?)|fahrenheit)\b", re.I)
+IMPERIAL = re.compile(r"\b(?:\d[\d.,]*\s*(?:p[ée]s|polegadas?|libras?|onças?|milhas?|jardas?|n[óo]s|knots?|yd|ft|lbs?|mph)|fahrenheit)\b", re.I)
 # Entrada com #if/#else que a extração da checagem não lê: medida aqui (variantes inclusive)
 SPECIAL = {"gChikoritaPokedexText"}
 
@@ -125,6 +125,26 @@ def test_termos_compostos_nao_sao_partidos_na_quebra():
                 if " ".join(words[:i]) + "\\n" + " ".join(words[i:]) in text:
                     split.append(f"{label}: {term}")
     assert split == []
+
+
+# Valor + quebra + unidade ("cerca de 1\nkm"): a unidade sozinha no começo da linha lê mal
+NUMBER_BREAK_UNIT = re.compile(
+    r"\d[.,]?\\n(?:km/h|km|cm|mm|m|kg|g|°C|graus|volts|horas|anos|segundos|minutos|dias|semanas|tentáculos)\b")
+
+
+def test_valor_e_unidade_nao_sao_partidos_na_quebra():
+    found = []
+    for label in _labels():
+        text = "".join(re.findall(r'"([^"]*)"', _body(label)))
+        for m in NUMBER_BREAK_UNIT.finditer(text):
+            found.append(f"{label}: ...{text[max(0, m.start() - 12):m.end() + 8]}")
+    assert found == []
+
+
+def test_regex_de_valor_partido_reconhece_os_casos_da_revisao():
+    assert NUMBER_BREAK_UNIT.search(r"a cerca de 1\nkm de distância")
+    assert NUMBER_BREAK_UNIT.search(r"mais de 95\nkm/h.")
+    assert not NUMBER_BREAK_UNIT.search(r"a cerca de 1 km\nde distância")
 
 
 def test_chikorita_cabe_nas_duas_revisoes():
