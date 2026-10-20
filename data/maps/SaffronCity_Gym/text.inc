@@ -56,8 +56,8 @@ SaffronCity_Gym_Text_AmandaPostBattle::
     .string "Numa batalha entre iguais, vence\n"
     .string "quem tem a vontade mais forte.\p"
     .string "Se quiser derrotar a Sabrina,\n"
-    .string "concentre-se e exija de si mesmo a\l"
-    .string "vitória.$"
+    .string "concentre-se e conquiste a vitória\l"
+    .string "com a sua vontade.$"
 
 SaffronCity_Gym_Text_JohanIntro::
     .string "O nosso poder invisível assusta você?$"
@@ -137,7 +137,7 @@ SaffronCity_Gym_Text_PrestonPostBattle::
     .string "sua mente!$"
 
 SaffronCity_Gym_Text_GymGuyAdvice::
-    .string "Fala, campeão em formação!\p"
+    .string "Fala, grande promessa!\p"
     .string "Os Pokémon da Sabrina usam poder\n"
     .string "psíquico em vez de força bruta.\p"
     .string "Pokémon do tipo Lutador são\n"

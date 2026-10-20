@@ -176,3 +176,41 @@ def test_nome_do_glossario_nao_e_partido_na_quebra(rel):
                 if chr(92) in m.group(0):
                     partidos.append(f"{rotulo}: {nome!r}")
     assert partidos == []
+
+
+# {STR_VAR_n}/{B_BUFF*}: a esteira mede esses placeholders como 0 px; aqui valem 10 letras largas
+PLACEHOLDER = re.compile(r"\{(?:STR_VAR_\d|B_BUFF\d|B_COPY_VAR_\d)\}")
+
+
+@pytest.mark.parametrize("rel", ARQUIVOS)
+def test_linha_com_placeholder_cabe_com_nome_largo(rel):
+    env = ct._load_env(REPO_ROOT)
+    estouros = []
+    rotulo = None
+    for linha in (REPO_ROOT / rel).read_text(encoding="utf-8").splitlines():
+        m = re.match(r"^(\w+)::", linha)
+        if m:
+            rotulo = m.group(1)
+            continue
+        s = re.match(r'\s*\.string "(.*)"$', linha)
+        if not s or not PLACEHOLDER.search(s.group(1)) or re.search(r"[぀-ヿ]", s.group(1)):
+            continue
+        texto = re.sub(r"(?:\\[nlp])+$", "", PLACEHOLDER.sub("M" * 10, s.group(1)))
+        largura = ct.measure(texto, env, "normal").widest
+        if largura > 208:
+            estouros.append(f"{rotulo}: {largura} px: {s.group(1)}")
+    assert estouros == []
+
+
+# Regra de 20/10: o jogador pode ser menina; a fala dirigida a ele (ou {PLAYER} em 3ª pessoa) não marca gênero
+JOGADOR_COM_GENERO = ("você é bom!", "ser ganancioso", "campeão em formação", "de si mesmo", "tão bruto",
+                      "ser discreto", "um Treinador incrivelmente", "cara de vencedor", "Que Treinador incrível",
+                      "um Treinador com a sua", "Treinador problemático", "Bem-vindo", "Seja bem-vindo",
+                      "Mestre de Caratê que", "meu único e inigualável")
+
+
+@pytest.mark.parametrize("rel", ARQUIVOS)
+def test_jogador_sem_genero_marcado(rel):
+    corpo = "".join(re.findall(r'\.string "(.*)"', (REPO_ROOT / rel).read_text(encoding="utf-8")))
+    corpo = re.sub(r"\\[nlp]", " ", corpo)
+    assert [f for f in JOGADOR_COM_GENERO if f in corpo] == []

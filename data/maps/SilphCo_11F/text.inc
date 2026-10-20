@@ -29,7 +29,7 @@ SilphCo_11F_Text_ThatsOurSecretPrototype::
     .string "Bola Mestra.\p"
     .string "Ela captura qualquer Pokémon sem\n"
     .string "falhar!\p"
-    .string "Mas é melhor ser discreto ao usá-la.$"
+    .string "Mas é melhor usá-la com discrição.$"
 
 SilphCo_11F_Text_YouHaveNoRoomForThis::
     .string "Você não tem espaço para isto.$"

@@ -4,7 +4,7 @@ SevenIsland_TanobyRuins_Text_BrandonIntro::
 
 SevenIsland_TanobyRuins_Text_BrandonDefeat::
     .string "Isso foi desnecessário.\n"
-    .string "Não precisava ser tão bruto.$"
+    .string "Não precisava pegar tão pesado.$"
 
 SevenIsland_TanobyRuins_Text_BrandonPostBattle::
     .string "As Ruínas de Tanoby têm pelo menos\n"

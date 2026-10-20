@@ -16,9 +16,10 @@ SevenIsland_House_Room1_Text_ChallengeVisitingTrainer::
     .string "Boas-vindas, visitante!\p"
     .string "Deixe-me contar uma coisa. Há uma\n"
     .string "sala escondida no porão.\p"
-    .string "Um Treinador chamado {STR_VAR_1} está lá agora.\p"
-    .string "Diga, você veio desafiar {STR_VAR_1}, estou\n"
-    .string "certo?$"
+    .string "Um Treinador chamado\n"
+    .string "{STR_VAR_1} está lá agora.\p"
+    .string "Diga, você veio desafiar\n"
+    .string "{STR_VAR_1}, estou certo?$"
 
 SevenIsland_House_Room1_Text_OhYouWontBattle::
     .string "Ah…\n"

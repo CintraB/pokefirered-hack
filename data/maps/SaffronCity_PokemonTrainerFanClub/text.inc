@@ -9,8 +9,8 @@ SaffronCity_PokemonTrainerFanClub_Text_YourePlayerWereYourFansNow::
     .string "Você é {PLAYER}!\p"
     .string "Estávamos falando de você agora\n"
     .string "mesmo!\p"
-    .string "Estávamos comentando que apareceu\n"
-    .string "um Treinador incrivelmente bom!\p"
+    .string "Estávamos comentando que surgiu\n"
+    .string "alguém incrivelmente bom de batalha!\p"
     .string "E essa pessoa é você!\n"
     .string "Você é muito legal!\p"
     .string "Então decidimos que vamos ser o seu\n"
@@ -36,8 +36,8 @@ SaffronCity_PokemonTrainerFanClub_Text_WasYourFanNotAnymore::
     .string "Eu era seu fã antes.\p"
     .string "Mas agora você parece ter perdido a\n"
     .string "garra que tinha.\p"
-    .string "Ultimamente, acho que {STR_VAR_1} anda bem mais\n"
-    .string "legal.$"
+    .string "Ultimamente, acho que\n"
+    .string "{STR_VAR_1} anda bem mais legal.$"
 
 SaffronCity_PokemonTrainerFanClub_Text_EveryonesYourFanButICantBe::
     .string "Ah!\n"
@@ -47,7 +47,8 @@ SaffronCity_PokemonTrainerFanClub_Text_EveryonesYourFanButICantBe::
     .string "Eu entendo o motivo.\n"
     .string "Sei que você é forte.\p"
     .string "Mas sabe de uma coisa?\p"
-    .string "Depois que virei fã de {STR_VAR_1}, não consigo\n"
+    .string "Depois que virei fã de\n"
+    .string "{STR_VAR_1}, não consigo\l"
     .string "simplesmente deixar de ser.$"
 
 SaffronCity_PokemonTrainerFanClub_Text_TrainersCoolWhenBattling::
@@ -92,7 +93,7 @@ SaffronCity_PokemonTrainerFanClub_Text_BrocksFanToBitterEnd::
 SaffronCity_PokemonTrainerFanClub_Text_BrocksLastWordOnCool::
     .string "O Brock é o máximo, e ponto final!\p"
     .string "Aquele, sim, é um cara que eu quero\n"
-    .string "ser quando crescer!$"
+    .string "ser!$"
 
 SaffronCity_PokemonTrainerFanClub_Text_HadPleasureOfWatchingYouBattle::
     .string "{PLAYER}, tive o prazer de assistir às\n"
@@ -106,8 +107,8 @@ SaffronCity_PokemonTrainerFanClub_Text_HadPleasureOfWatchingYouBattle::
 SaffronCity_PokemonTrainerFanClub_Text_NeverSeenTrainerOfYourMagnificence::
     .string "Viajei por muitas terras, perto e\n"
     .string "longe.\p"
-    .string "Mas nunca vi um Treinador com a sua\n"
-    .string "magnificência.\p"
+    .string "Mas nunca vi alguém com a sua\n"
+    .string "magnificência em batalha.\p"
     .string "Tenha coragem nas suas habilidades e\n"
     .string "continue batalhando!\p"
     .string "Faça-me essa promessa, jovem ídolo!$"
@@ -121,7 +122,7 @@ SaffronCity_PokemonTrainerFanClub_Text_HmmAndYouAre::
 SaffronCity_PokemonTrainerFanClub_Text_YouveStillAWaysToGo::
     .string "Ah, então você é {PLAYER}, de quem\n"
     .string "tanto falam.\p"
-    .string "Realmente tem cara de vencedor.\p"
+    .string "Realmente tem cara de quem vence.\p"
     .string "Mas, para eu aceitar você como um\n"
     .string "verdadeiro grande nome dos Pokémon…\p"
     .string "… …\p"
@@ -193,8 +194,9 @@ SaffronCity_PokemonTrainerFanClub_Text_ImLoneTrainerFan::
     .string "Todo mundo virou seu fã.\p"
     .string "Então, depois de tudo que passamos,\n"
     .string "sou o único fã de {STR_VAR_1}?\p"
-    .string "Bem, ser o único fã de {STR_VAR_1} combina\n"
-    .string "comigo, de qualquer jeito.$"
+    .string "Bem, ser o único fã de\n"
+    .string "{STR_VAR_1} combina comigo,\l"
+    .string "de qualquer jeito.$"
 
 SaffronCity_PokemonTrainerFanClub_Text_AdoreWayYouBattle::
     .string "Nossa!\n"
@@ -214,7 +216,8 @@ SaffronCity_PokemonTrainerFanClub_Text_ImYourNumberOneFan::
     .string "Viva, viva, {PLAYER}!$"
 
 SaffronCity_PokemonTrainerFanClub_Text_TrainerHasBeenOnFire::
-    .string "Ultimamente, {STR_VAR_1} está pegando fogo.\p"
+    .string "Ultimamente,\n"
+    .string "{STR_VAR_1} está pegando fogo.\p"
     .string "O jeito como ele batalha… É\n"
     .string "exatamente como eu gosto!$"
 
@@ -244,8 +247,8 @@ SaffronCity_PokemonTrainerFanClub_Text_WhyCantOthersSeeMastersDignity::
     .string "dignidade que ele simplesmente exala?$"
 
 SaffronCity_PokemonTrainerFanClub_Text_BelieveInMasterWithAllMyHeart::
-    .string "Eu acredito no Mestre {STR_VAR_1} de todo o\n"
-    .string "coração.\p"
+    .string "Eu acredito no Mestre\n"
+    .string "{STR_VAR_1} de todo o coração.\p"
     .string "Mesmo que eu seja a única a\n"
     .string "acreditar nele.\p"
     .string "Mas nunca vou me sentir sozinha.\p"

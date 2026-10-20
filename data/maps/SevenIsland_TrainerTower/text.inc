@@ -15,7 +15,7 @@ SevenIsland_TrainerTower_Text_RodetteIntro::
     .string "peculiares estão dormindo.$"
 
 SevenIsland_TrainerTower_Text_RodetteDefeat::
-    .string "Que Treinador incrível!$"
+    .string "Que talento incrível!$"
 
 SevenIsland_TrainerTower_Text_RodettePostBattle::
     .string "Em algum lugar desta ilha, Pokémon\n"

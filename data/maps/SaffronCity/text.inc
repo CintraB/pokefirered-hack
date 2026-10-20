@@ -50,8 +50,8 @@ SaffronCity_Text_Pidgeot::
     .string "Pidgeot: Bi bibii!$"
 
 SaffronCity_Text_SawRocketBossEscaping::
-    .string "Vi o Chefe da Rocket fugindo do\n"
-    .string "prédio da Silph.$"
+    .string "Vi o Chefe da Equipe Rocket\n"
+    .string "fugindo do prédio da Silph.$"
 
 SaffronCity_Text_ImASecurityGuard::
     .string "Sou segurança.\p"
@@ -65,8 +65,7 @@ SaffronCity_Text_HesTakingASnooze::
 
 SaffronCity_Text_CitySign::
     .string "Cidade de Saffron\n"
-    .string "Brilhante e Dourada Terra do\l"
-    .string "Comércio$"
+    .string "Reluzente Terra Dourada do Comércio$"
 
 SaffronCity_Text_FightingDojo::
     .string "Dojo de Luta$"

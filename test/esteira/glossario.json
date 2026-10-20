@@ -6542,7 +6542,7 @@
    "categoria": "lugar",
    "detectar": true,
    "frente": "C1",
-   "obs": "Fã-clube de Treinadores Pokémon (Saffron)"
+   "obs": "Fã-clube de Treinadores Pokémon (Saffron); como substantivo comum em fala, minúsculo (fã-clube)"
   },
   {
    "en": "PRESIDENT",
@@ -6569,7 +6569,7 @@
    "categoria": "lugar",
    "detectar": true,
    "frente": "C1",
-   "obs": "nome da embarcação mantido"
+   "obs": "embarcação (não é lugar; categoria lugar só pelo nome próprio); nome mantido"
   },
   {
    "en": "SAFFRON CITY POKéMON GYM",
@@ -6642,6 +6642,15 @@
    "detectar": false,
    "frente": "C1",
    "obs": "forma cheia de Dentes Ouro, para fala e cartaz"
+  },
+  {
+   "en": "BAIT",
+   "pt": "Isca",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true,
+   "frente": "C1",
+   "obs": "Zona de Safári (golpe/ação de jogar isca); o menu de batalha do Safári ainda está em inglês"
   },
   {
    "en": "COMET PUNCH",

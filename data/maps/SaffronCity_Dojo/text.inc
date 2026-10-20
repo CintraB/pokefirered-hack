@@ -34,7 +34,7 @@ SaffronCity_Dojo_Text_MikePostBattle::
     .string "Eu sou café pequeno perto dele!$"
 
 SaffronCity_Dojo_Text_HidekiIntro::
-    .string "Dizem que você é bom!\n"
+    .string "Dizem que você manda bem!\n"
     .string "Mostre!$"
 
 SaffronCity_Dojo_Text_HidekiDefeat::
@@ -89,7 +89,7 @@ SaffronCity_Dojo_Text_ReceivedMonFromKarateMaster2::
     .string "{STR_VAR_1}を　もらった！$"
 
 SaffronCity_Dojo_Text_BetterNotGetGreedy::
-    .string "Melhor não ser ganancioso…$"
+    .string "Melhor não exagerar na ganância…$"
 
 SaffronCity_Dojo_Text_EnemiesOnEverySide::
     .string "Inimigos por todos os lados!$"
