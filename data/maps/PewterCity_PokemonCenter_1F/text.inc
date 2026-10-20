@@ -1,27 +1,27 @@
 PewterCity_PokemonCenter_1F_Text_TeamRocketMtMoonImOnPhone::
-    .string "What!?\p"
-    .string "TEAM ROCKET is at MT. MOON?\n"
-    .string "Huh?\p"
-    .string "I'm on the phone!\n"
-    .string "Scram!$"
+    .string "O quê!?\p"
+    .string "A Equipe Rocket está no Monte Lua?\n"
+    .string "Hã?\p"
+    .string "Estou no telefone!\n"
+    .string "Cai fora!$"
 
 PewterCity_PokemonCenter_1F_Text_Jigglypuff::
-    .string "JIGGLYPUFF: Puu pupuu!$"
+    .string "Jigglypuff: Puuu pupuu!$"
 
 PewterCity_PokemonCenter_1F_Text_WhenJiggylypuffSingsMonsGetDrowsy::
-    .string "Yawn!\p"
-    .string "When JIGGLYPUFF sings, POKéMON get\n"
-    .string "drowsy…\p"
-    .string "…Me, too…\n"
-    .string "Snore…$"
+    .string "Aaaah!\p"
+    .string "Quando o Jigglypuff canta, os\n"
+    .string "Pokémon ficam com sono…\p"
+    .string "…Eu também…\n"
+    .string "Ronc…$"
 
 PewterCity_PokemonCenter_1F_Text_TradingMyClefairyForPikachu::
-    .string "I really want a PIKACHU, so I'm\n"
-    .string "trading my CLEFAIRY for one.$"
+    .string "Eu quero muito um Pikachu, então\n"
+    .string "vou trocar o meu Clefairy por um.$"
 
 PewterCity_PokemonCenter_1F_Text_TradingPikachuWithKid::
-    .string "I'm trading POKéMON with that kid\n"
-    .string "there.\p"
-    .string "I had two PIKACHU, so I figured\n"
-    .string "I might as well trade one.$"
+    .string "Estou trocando Pokémon com aquela\n"
+    .string "criança ali.\p"
+    .string "Eu tinha dois Pikachu, então pensei:\n"
+    .string "por que não trocar um?$"
 

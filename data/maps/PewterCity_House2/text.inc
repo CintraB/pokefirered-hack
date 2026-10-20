@@ -1,14 +1,15 @@
 PewterCity_House2_Text_MonsLearnTechniquesAsTheyGrow::
-    .string "POKéMON learn new techniques as\n"
-    .string "they grow.\p"
-    .string "But some moves must be taught to\n"
-    .string "them by people.$"
+    .string "Os Pokémon aprendem novas técnicas\n"
+    .string "à medida que crescem.\p"
+    .string "Mas alguns golpes precisam ser\n"
+    .string "ensinados por pessoas.$"
 
 PewterCity_House2_Text_MonsEasierCatchIfStatused::
-    .string "A POKéMON becomes easier to \n"
-    .string "catch if it has a status problem.\p"
-    .string "Sleep, poison, burn, or paralysis…\n"
-    .string "Those are all effective.\p"
-    .string "But catching POKéMON is never\n"
-    .string "a sure thing!$"
+    .string "Um Pokémon fica mais fácil de\n"
+    .string "capturar se tiver um problema de\l"
+    .string "status.\p"
+    .string "Sono, envenenamento, queimadura\n"
+    .string "ou paralisia… Todos funcionam.\p"
+    .string "Mas capturar Pokémon nunca é\n"
+    .string "garantido!$"
 
