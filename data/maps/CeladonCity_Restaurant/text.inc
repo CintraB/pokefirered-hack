@@ -1,37 +1,37 @@
 CeladonCity_Restaurant_Text_TakingBreakRightNow::
-    .string "Hi!\p"
-    .string "Sorry, but we're taking a break\n"
-    .string "right now.$"
+    .string "Olá!\p"
+    .string "Desculpe, mas estamos em pausa\n"
+    .string "agora.$"
 
 CeladonCity_Restaurant_Text_OftenGoToDrugstore::
-    .string "My POKéMON are weak, so I often\n"
-    .string "have to go to the DRUGSTORE.$"
+    .string "Meus Pokémon são fracos, então\n"
+    .string "vivo indo à farmácia.$"
 
 CeladonCity_Restaurant_Text_PsstBasementUnderGameCorner::
-    .string "Psst! There's a basement under the\n"
-    .string "GAME CORNER, I hear.$"
+    .string "Psiu! Dizem que existe um porão\n"
+    .string "debaixo do Cassino.$"
 
 CeladonCity_Restaurant_Text_ManLostItAllAtSlots::
-    .string "Munch…\p"
-    .string "The man at that table lost it all\n"
-    .string "at the slots.$"
+    .string "Nham…\p"
+    .string "O homem naquela mesa perdeu tudo\n"
+    .string "nos caça-níqueis.$"
 
 CeladonCity_Restaurant_Text_TakeThisImBusted::
-    .string "Go ahead! Laugh!\n"
-    .string "I'm flat-out busted!\p"
-    .string "No more slots for me!\n"
-    .string "I'm going straight!\p"
-    .string "Here!\n"
-    .string "I won't be needing this anymore!$"
+    .string "Vai, pode rir!\n"
+    .string "Estou completamente falido!\p"
+    .string "Chega de caça-níqueis para mim!\n"
+    .string "Vou tomar jeito!\p"
+    .string "Tome!\n"
+    .string "Não vou mais precisar disto!$"
 
 CeladonCity_Restaurant_Text_ReceivedCoinCaseFromMan::
-    .string "{PLAYER} received a COIN CASE\n"
-    .string "from the man.$"
+    .string "{PLAYER} recebeu um Porta-moedas\n"
+    .string "do homem.$"
 
 CeladonCity_Restaurant_Text_MakeRoomForThis::
-    .string "Make room for this!$"
+    .string "Abra espaço para isto!$"
 
 CeladonCity_Restaurant_Text_ThoughtIdWinItBack::
-    .string "I always thought I was going to\n"
-    .string "win it back…$"
+    .string "Eu sempre achei que ia\n"
+    .string "recuperar tudo…$"
 

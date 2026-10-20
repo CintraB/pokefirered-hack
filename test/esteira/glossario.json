@@ -9216,6 +9216,159 @@
    "detectar": true,
    "frente": "F",
    "obs": "apelido do Exeggutor na Pokédex"
+  },
+  {
+   "en": "BERRY POWDER",
+   "pt": "Pó de Fruta",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true,
+   "frente": "A1",
+   "obs": "pó obtido amassando frutas (Cerulean, Frente A)"
+  },
+  {
+   "en": "WIRELESS ADAPTER",
+   "pt": "Adaptador Sem Fio",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "frente": "A1",
+   "obs": "aparelho do Clube Sem Fio; 17 letras (passa do limite de 13 de item): fica em 'interface' porque não é item de bolsa"
+  },
+  {
+   "en": "POKéMON WIRELESS CLUB",
+   "pt": "Clube Sem Fio Pokémon",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "frente": "A1",
+   "obs": "andar de cima do Centro Pokémon; 21 letras (passa do limite de 18 de lugar): fica em 'interface' porque não é nome de seção do mapa (não aparece no aviso de entrada), só termo de diálogo"
+  },
+  {
+   "en": "DIRECT CORNER",
+   "pt": "Canto Direto",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true,
+   "frente": "A1",
+   "obs": "balcão do Clube Sem Fio"
+  },
+  {
+   "en": "TRADE CORNER",
+   "pt": "Canto de Troca",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true,
+   "frente": "A1",
+   "obs": "sala do Clube Sem Fio"
+  },
+  {
+   "en": "COLOSSEUM",
+   "pt": "Coliseu",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true,
+   "frente": "A1",
+   "obs": "sala do Clube Sem Fio"
+  },
+  {
+   "en": "UNION ROOM",
+   "pt": "Sala União",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true,
+   "frente": "A1",
+   "obs": "andar de cima do Centro Pokémon"
+  },
+  {
+   "en": "CYCLING ROAD",
+   "pt": "Ciclovia",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true,
+   "frente": "A1",
+   "obs": "Rota 17"
+  },
+  {
+   "en": "CELADON MANSION",
+   "pt": "Mansão de Celadon",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true,
+   "frente": "A1",
+   "obs": "prédio de Celadon"
+  },
+  {
+   "en": "TRAINER TIPS",
+   "pt": "Dicas de Treinador",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "frente": "A1",
+   "obs": "placas de dica"
+  },
+  {
+   "en": "COINS",
+   "pt": "moedas",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "frente": "A1",
+   "obs": "fichas do Cassino (Porta-moedas)"
+  },
+  {
+   "en": "VERMILION PORT",
+   "pt": "Porto Vermilion",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true,
+   "frente": "A1",
+   "obs": "sem 'de', como 'Cidade Vermilion' (D1)"
+  },
+  {
+   "en": "PRIZE EXCHANGE",
+   "pt": "Troca de Prêmios",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "frente": "A1",
+   "obs": "placa do Cassino"
+  },
+  {
+   "en": "POKéMON Storage System",
+   "pt": "Sistema de Armazenamento de Pokémon",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "frente": "A1",
+   "obs": "sistema de PC do Bill"
+  },
+  {
+   "en": "BURN HEAL (forma cheia)",
+   "pt": "Cura Queimadura",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": false,
+   "frente": "A1",
+   "obs": "forma cheia de Cura Queimad."
+  },
+  {
+   "en": "BIKE VOUCHER (forma cheia)",
+   "pt": "Vale Bicicleta",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": false,
+   "frente": "A1",
+   "obs": "forma cheia de Vale Bicicl."
+  },
+  {
+   "en": "GUARD SPEC. (forma cheia)",
+   "pt": "Guarda Especial",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": false,
+   "frente": "A1",
+   "obs": "forma cheia de Guarda Esp."
   }
  ],
  "proibidos": [
