@@ -9206,7 +9206,7 @@
    "categoria": "interface",
    "detectar": true,
    "frente": "A1",
-   "obs": "Wireless Adapter"
+   "obs": "aparelho do Clube Sem Fio; 17 letras (passa do limite de 13 de item): fica em 'interface' porque não é item de bolsa"
   },
   {
    "en": "POKéMON WIRELESS CLUB",
@@ -9215,7 +9215,7 @@
    "categoria": "interface",
    "detectar": true,
    "frente": "A1",
-   "obs": "andar de cima do Centro Pokémon"
+   "obs": "andar de cima do Centro Pokémon; 21 letras (passa do limite de 18 de lugar): fica em 'interface' porque não é nome de seção do mapa (não aparece no aviso de entrada), só termo de diálogo"
   },
   {
    "en": "DIRECT CORNER",

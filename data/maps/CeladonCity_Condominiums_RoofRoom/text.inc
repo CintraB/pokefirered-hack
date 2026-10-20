@@ -22,8 +22,8 @@ CeladonCity_Condominiums_RoofRoom_Text_ReadWhichHeading::
 
 CeladonCity_Condominiums_RoofRoom_Text_ExplainWirelessClub::
     .string "O Clube Sem Fio Pokémon fica no\n"
-    .string "andar de cima dos Centros\l"
-    .string "Pokémon.\p"
+    .string "andar de cima dos\l"
+    .string "Centros Pokémon.\p"
     .string "Vá até um deles para se conectar\n"
     .string "com amigos usando o seu\l"
     .string "Adaptador Sem Fio.$"

@@ -6,6 +6,7 @@ largura, linhas, letras, charmap) e os rótulos iguais aos da base inglesa. Task
 acrescentar o grupo em `GRUPOS`.
 """
 
+import json
 import re
 import shutil
 import subprocess
@@ -145,14 +146,34 @@ def test_jogador_sem_genero_e_termos_exatos(rel):
         assert bad not in body, (rel, bad)
 
 
+def _multiword_terms():
+    """Todo termo PT de duas ou mais palavras do glossário de máquina, mais os nomes acima."""
+    data = json.loads((REPO_ROOT / "test" / "esteira" / "glossario.json").read_text(encoding="utf-8"))
+    names = {t["pt"] for t in data["termos"] if " " in t["pt"]} | set(NAMES_NOT_SPLIT)
+    # "Centros Pokémon", "Insígnias Rocha": plural simples com "s" na última palavra de cada trecho
+    plurals = set()
+    for name in names:
+        words = name.split(" ")
+        for j, w in enumerate(words):
+            if w[-1:].isalpha() and not w.endswith("s"):
+                plurals.add(" ".join(words[:j] + [w + "s"] + words[j + 1:]))
+    return sorted(names | plurals)
+
+
+TERMS = _multiword_terms()
+
+
 @pytest.mark.parametrize("rel", FILES)
 def test_nomes_nao_sao_partidos_na_quebra(rel):
     body = _flat(rel)
-    for name in NAMES_NOT_SPLIT:
+    found = []
+    for name in TERMS:
         for i, ch in enumerate(name):
             if ch == " ":
                 for br in ("\\n", "\\l"):
-                    assert name[:i] + br + name[i + 1:] not in body, (rel, name)
+                    if name[:i] + br + name[i + 1:] in body:
+                        found.append(name)
+    assert found == [], rel
 
 
 @pytest.mark.parametrize("rel", FILES)
