@@ -9369,6 +9369,231 @@
    "detectar": false,
    "frente": "A1",
    "obs": "forma cheia de Guarda Esp."
+  },
+  {
+   "en": "Lavaridge Town",
+   "pt": "Cidade de Lavaridge",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true,
+   "frente": "G1",
+   "obs": "descrição do Biscoito Lava"
+  },
+  {
+   "en": "Mauville City",
+   "pt": "Cidade de Mauville",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true,
+   "frente": "G1",
+   "obs": "descrição da Chave Porão"
+  },
+  {
+   "en": "New Mauville",
+   "pt": "Nova Mauville",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true,
+   "frente": "G1",
+   "obs": "descrição da Chave Porão"
+  },
+  {
+   "en": "Shoal Cave",
+   "pt": "Caverna do Baixio",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true,
+   "frente": "G1",
+   "obs": "combina com Sal do Baixio / Concha Baixio"
+  },
+  {
+   "en": "Abandoned Ship",
+   "pt": "Navio Abandonado",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true,
+   "frente": "G1",
+   "obs": "descrição das chaves do navio"
+  },
+  {
+   "en": "Battle Tower",
+   "pt": "Torre de Batalha",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true,
+   "frente": "G1",
+   "obs": "descrição dos escudos de enfeite"
+  },
+  {
+   "en": "Art Museum",
+   "pt": "Museu de Arte",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true,
+   "frente": "G1",
+   "obs": "descrição do Adorno de Vidro"
+  },
+  {
+   "en": "Bike Shop",
+   "pt": "Loja de Bicicletas",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true,
+   "frente": "G1",
+   "obs": "descrição do Vale Bicicl."
+  },
+  {
+   "en": "Berry Blender",
+   "pt": "Liquidificador de Frutas",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true,
+   "frente": "G1",
+   "obs": "descrição do Porta-blocos"
+  },
+  {
+   "en": "Berry Crusher",
+   "pt": "Triturador de Frutas",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true,
+   "frente": "G1",
+   "obs": "descrição do Pote de Pó"
+  },
+  {
+   "en": "Berry Powder",
+   "pt": "Pó de Fruta",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true,
+   "frente": "G1",
+   "obs": "descrição do Pote de Pó"
+  },
+  {
+   "en": "Running Shoes",
+   "pt": "Tênis de Corrida",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true,
+   "frente": "G1",
+   "obs": "descrição da Bicicleta"
+  },
+  {
+   "en": "COIN",
+   "pt": "Moeda",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": false,
+   "frente": "G1",
+   "obs": "descrição do Porta-moedas (Moedas do Cassino)"
+  },
+  {
+   "en": "CONTEST",
+   "pt": "Torneio",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "frente": "G1",
+   "obs": "Passe Torneio; Torneios Pokémon"
+  },
+  {
+   "en": "COOL (condição)",
+   "pt": "Estilo",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "frente": "G1",
+   "obs": "condição de Torneio, lenços (Lenço Verm.)"
+  },
+  {
+   "en": "BEAUTY (condição)",
+   "pt": "Beleza",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "frente": "G1",
+   "obs": "condição de Torneio, lenços (Lenço Azul)"
+  },
+  {
+   "en": "CUTE (condição)",
+   "pt": "Fofura",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "frente": "G1",
+   "obs": "condição de Torneio, lenços (Lenço Rosa)"
+  },
+  {
+   "en": "SMART (condição)",
+   "pt": "Esperteza",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "frente": "G1",
+   "obs": "condição de Torneio, lenços (Lenço Verde)"
+  },
+  {
+   "en": "TOUGH (condição)",
+   "pt": "Vigor",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "frente": "G1",
+   "obs": "condição de Torneio, lenços (Lenço Amarelo)"
+  },
+  {
+   "en": "DOLL (enfeite)",
+   "pt": "Boneco",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": false,
+   "frente": "G1",
+   "obs": "enfeites: Boneco X (\"Bon. X\" quando passa de 15 letras)"
+  },
+  {
+   "en": "DESK (enfeite)",
+   "pt": "Mesa",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": false,
+   "frente": "G1",
+   "obs": "enfeites"
+  },
+  {
+   "en": "CHAIR (enfeite)",
+   "pt": "Cadeira",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": false,
+   "frente": "G1",
+   "obs": "enfeites (\"Cad.\" nos nomes longos)"
+  },
+  {
+   "en": "CUSHION (enfeite)",
+   "pt": "Almofada",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": false,
+   "frente": "G1",
+   "obs": "enfeites (\"Almof.\" nos nomes)"
+  },
+  {
+   "en": "MAT (enfeite)",
+   "pt": "Tapete",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": false,
+   "frente": "G1",
+   "obs": "enfeites; tapetes de nota usam Dó Ré Mi Fá Sol Lá Si"
+  },
+  {
+   "en": "POSTER (enfeite)",
+   "pt": "Pôster",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": false,
+   "frente": "G1",
+   "obs": "enfeites"
   }
  ],
  "proibidos": [
