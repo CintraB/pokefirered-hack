@@ -163,6 +163,31 @@ def _g1_texts() -> dict[str, str]:
 
 def test_quebra_de_linha_nao_parte_nome_nem_termo():
     terms = _glossary_terms()
+    # quebra num espaço ("Loja de\nBicicletas") ou num ponto sem espaço ("S.\nS. Anne")
     split = [f"{label}: {term}" for label, text in _g1_texts().items()
-             for term in terms if term in text.replace("\\n", " ") and term not in text]
+             for term in terms
+             if term not in text and (term in text.replace("\\n", " ") or term in text.replace("\\n", ""))]
     assert split == []
+
+
+def test_fruta_cabe_em_duas_linhas_na_bolsa_de_frutas():
+    """berry_pouch.c:229-231 e :762: janela de 4 tiles de altura, texto em y = 2, linhas de 14 px."""
+    items = json.loads((REPO_ROOT / "src/data/items.json").read_text(encoding="utf-8"))["items"]
+    berries = [it for it in items if it["pocket"] == "POCKET_BERRY_POUCH"]
+    assert len(berries) == 43
+    long = [it["itemId"] for it in berries if it["description_english"].count("\\n") > 1]
+    assert long == []
+
+
+def test_descricao_de_item_cabe_na_janela_mais_estreita(env):
+    """Item no PC de Pokémon (pokemon_storage_system_misc.c:1151): 25 tiles com x = 2, 198 px."""
+    items = json.loads((REPO_ROOT / "src/data/items.json").read_text(encoding="utf-8"))["items"]
+    wide = [f"{it['itemId']}: {ct.measure(it['description_english'], env, 'normal').widest} px"
+            for it in items if it["description_english"] != "?????"
+            and ct.measure(it["description_english"], env, "normal").widest > 198]
+    assert wide == []
+
+
+@pytest.fixture(scope="module")
+def env():
+    return ct._load_env(REPO_ROOT)
