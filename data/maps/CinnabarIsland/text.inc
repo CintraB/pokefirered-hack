@@ -50,7 +50,7 @@ CinnabarIsland_Text_AllRightLetsGo::
     .string "Vamos lá!$"
 
 CinnabarIsland_Text_IllBeWaitingInPokeCenter::
-    .string "Quê, está ocupado demais?\p"
+    .string "Quê, está sem tempo?\p"
     .string "Bom, tudo bem.\n"
     .string "O barco ainda nem chegou mesmo.\p"
     .string "Vou esperar no Centro Pokémon\n"
@@ -73,5 +73,6 @@ CinnabarIsland_Text_IfYouHaveTriPassYouCanGoAgain::
     .string "novo.\p"
     .string "Se você tiver um Passe Triplo,\n"
     .string "sempre poderá pegar uma balsa para\l"
-    .string "lá, no Porto de Vermilion.\p"
+    .string "lá, no Porto Vermilion.\p"
     .string "Certo, obrigado pela companhia!$"
+

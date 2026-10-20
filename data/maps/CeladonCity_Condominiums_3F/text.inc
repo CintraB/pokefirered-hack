@@ -38,5 +38,6 @@ CeladonCity_Condominiums_3F_Text_ItsScriptBetterNotLookAtEnding::
     .string "Melhor não olhar o final!$"
 
 CeladonCity_Condominiums_3F_Text_GameFreakDevelopmentRoom::
-    .string "Sala de Desenvolvimento da GAME\n"
-    .string "FREAK$"
+    .string "Sala de Desenvolvimento\n"
+    .string "da GAME FREAK$"
+

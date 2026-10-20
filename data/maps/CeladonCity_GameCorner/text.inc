@@ -29,7 +29,7 @@ CeladonCity_GameCorner_Text_HereAreYourCoins::
     .string "Aqui estão as suas moedas!$"
 
 CeladonCity_GameCorner_Text_RumoredTeamRocketRunsThisPlace::
-    .string "Fique quieto sobre isso.\p"
+    .string "Isso fica entre nós.\p"
     .string "Dizem por aí que este lugar é\n"
     .string "dirigido pela Equipe Rocket.$"
 
@@ -57,8 +57,8 @@ CeladonCity_GameCorner_Text_WinOrLoseItsOnlyLuck::
 
 CeladonCity_GameCorner_Text_GymGuyAdvice::
     .string "Ei!\p"
-    .string "Você tem coisas melhores para\n"
-    .string "fazer, aspirante a campeão!\p"
+    .string "Quem quer ser campeão tem\n"
+    .string "coisas melhores para fazer!\p"
     .string "A Líder do Ginásio de Celadon é a\n"
     .string "Erika.\p"
     .string "Ela usa Pokémon do tipo Planta e\n"
@@ -118,7 +118,7 @@ CeladonCity_GameCorner_Text_GruntDefeat::
     .string "Droga!$"
 
 CeladonCity_GameCorner_Text_GruntPostBattle::
-    .string "O Esconderijo da Equipe Rocket\n"
+    .string "O Esconderijo Rocket\n"
     .string "pode ser descoberto!\p"
     .string "Preciso avisar o Chefe!$"
 
@@ -149,3 +149,4 @@ CeladonCity_GameCorner_Text_OutToLunch::
 CeladonCity_GameCorner_Text_SomeonesKeys::
     .string "As chaves de alguém!\n"
     .string "Essa pessoa já volta.$"
+

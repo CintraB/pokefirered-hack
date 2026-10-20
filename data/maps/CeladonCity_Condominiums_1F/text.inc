@@ -35,3 +35,4 @@ CeladonCity_Condominiums_1F_Text_Nidoran::
 CeladonCity_Condominiums_1F_Text_ManagersSuite::
     .string "Mansão de Celadon\n"
     .string "Suíte do Gerente$"
+

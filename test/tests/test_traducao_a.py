@@ -48,6 +48,11 @@ def results():
     return ct.check_text(str(REPO_ROOT), {"text": []}, english="desligado")
 
 
+def test_base_inglesa_disponivel(results):
+    """Sem a base, `controle` e `glossario` não rodam (o aviso não cita arquivo): não pode ficar verde calado."""
+    assert [r.detail for r in results if "base inglesa indisponível" in r.detail] == []
+
+
 def _mine(results, rule=None):
     return [r for r in results if r.status != "ok" and any(f in r.detail for f in FILES)
             and (rule is None or r.name == f"texto/{rule}")]
@@ -59,7 +64,7 @@ def test_nenhum_achado_das_regras_nos_arquivos_da_frente(results, rule):
 
 
 def test_nenhum_achado_de_texto_nos_arquivos_da_frente(results):
-    # qualquer outra regra de texto (inclusive avisos de base indisponível) também
+    # qualquer outra regra de texto, com os arquivos da frente no detalhe
     assert [f"{r.name}: {r.detail}" for r in _mine(results)] == []
 
 
@@ -112,3 +117,52 @@ def test_sem_termos_ingleses_em_caixa_alta(rel):
     text = re.sub(r"{[^}]*}", "", text)
     for old in ("POKéMON", "TRAINER", "GYM", "BADGE", "TEAM ROCKET", "POKé BALL", "BERRY", "STORE", "LEADER"):
         assert old not in re.sub(r"@.*", "", text), (rel, old)
+
+
+# Regras de 20/10: jogador sem gênero marcado; termos do glossário exatos; nomes não partidos na quebra
+PLAYER_GENDERED = ("Fique quieto", "muito bruto", "parceiro,", "ocupado demais", "perdedor", "Aspirante a campeão",
+                   "Seja bem-vindo", "Bem-vindo")
+WRONG_FORMS = ("Esconderijo da Equipe Rocket", "Porto de Vermilion",
+               # decisões do Cintra de 20/10: forma cheia em fala; títulos de jogo no original
+               "Superrepel.", "Cura Queimad.", "Vale Bicicl.", "Guarda Esp.", "Expl. Sônica", "Rajada Fogo",
+               "Esmaga Pedra", "Atq. Esp.", "Def. Esp.", "Vermelho e Verde")
+NAMES_NOT_SPLIT = ("Equipe Rocket", "GAME FREAK", "Loja de Celadon", "Pó de Fruta", "Canto Direto",
+                   "Sistema de Armazenamento de Pokémon", "Centro Pokémon", "Loja de Bicicletas",
+                   "Cura Queimadura", "Vale Bicicleta", "Guarda Especial", "Explosão Sônica", "Rajada de Fogo",
+                   "Esmagamento de Pedras", "Ataque Especial", "Defesa Especial", "Red e Green")
+
+
+def _flat(rel):
+    text = (REPO_ROOT / rel).read_text(encoding="utf-8")
+    body = "".join(re.findall(r'\.string "(.*)"', text))
+    return body
+
+
+@pytest.mark.parametrize("rel", FILES)
+def test_jogador_sem_genero_e_termos_exatos(rel):
+    body = _flat(rel)
+    for bad in PLAYER_GENDERED + WRONG_FORMS:
+        assert bad not in body, (rel, bad)
+
+
+@pytest.mark.parametrize("rel", FILES)
+def test_nomes_nao_sao_partidos_na_quebra(rel):
+    body = _flat(rel)
+    for name in NAMES_NOT_SPLIT:
+        for i, ch in enumerate(name):
+            if ch == " ":
+                for br in ("\\n", "\\l"):
+                    assert name[:i] + br + name[i + 1:] not in body, (rel, name)
+
+
+@pytest.mark.parametrize("rel", FILES)
+def test_fim_de_arquivo_igual_ao_da_base(rel):
+    """O fim do arquivo (linha em branco final) é o da versão inglesa."""
+    if shutil.which("git") is None:
+        pytest.skip("sem git")
+    out = subprocess.run(["git", "-C", str(REPO_ROOT), "show", f"{ct.TRANSLATION_BASE}:{rel}"], capture_output=True)
+    if out.returncode != 0:
+        pytest.skip("sem o commit base da tradução")
+    base = out.stdout.decode("utf-8")
+    now = (REPO_ROOT / rel).read_text(encoding="utf-8")
+    assert len(now) - len(now.rstrip("\n")) == len(base) - len(base.rstrip("\n"))

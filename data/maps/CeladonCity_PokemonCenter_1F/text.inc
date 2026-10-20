@@ -12,3 +12,4 @@ CeladonCity_PokemonCenter_1F_Text_RodeHereFromFuchsia::
 CeladonCity_PokemonCenter_1F_Text_GoToCyclingRoadIfIHadBike::
     .string "Se eu tivesse uma bicicleta, iria\n"
     .string "para a Ciclovia!$"
+

@@ -60,15 +60,17 @@ CeruleanCity_House1_Text_ObeyLv70RockSmash::
     .string "Os Pokémon de nível mais alto,\n"
     .string "porém, serão rebeldes em batalha.\p"
     .string "A Insígnia também permite usar o\n"
-    .string "golpe Esmaga Pedra fora de batalha.$"
+    .string "golpe Esmagamento de Pedras fora de\l"
+    .string "batalha.$"
 
 CeruleanCity_House1_Text_SpStatsWaterfall::
-    .string "Os atributos Atq. Esp. e Def. Esp.\n"
-    .string "de todos os seus Pokémon sobem\l"
-    .string "um pouco.\p"
+    .string "Os atributos Ataque Especial e\n"
+    .string "Defesa Especial de todos os seus\l"
+    .string "Pokémon sobem um pouco.\p"
     .string "A Insígnia também permite usar o\n"
     .string "golpe Cachoeira fora de batalha.$"
 
 CeruleanCity_House1_Text_AllMonsWillObeyYou::
     .string "Todos os Pokémon vão obedecer a\n"
     .string "você!$"
+

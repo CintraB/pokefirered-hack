@@ -34,3 +34,4 @@ CeladonCity_Restaurant_Text_MakeRoomForThis::
 CeladonCity_Restaurant_Text_ThoughtIdWinItBack::
     .string "Eu sempre achei que ia\n"
     .string "recuperar tudo…$"
+

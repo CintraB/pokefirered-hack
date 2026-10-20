@@ -1,7 +1,7 @@
 CeruleanCity_BikeShop_Text_WelcomeToBikeShop::
     .string "Olá!\n"
-    .string "Boas-vindas à nossa Loja de\l"
-    .string "Bicicletas.\p"
+    .string "Boas-vindas à nossa\n"
+    .string "Loja de Bicicletas.\p"
     .string "Temos a bicicleta perfeita para\n"
     .string "você!$"
 
@@ -11,13 +11,13 @@ CeruleanCity_BikeShop_Text_SorryYouCantAffordIt::
 
 CeruleanCity_BikeShop_Text_OhBikeVoucherHereYouGo::
     .string "Ah, isso é…\p"
-    .string "Um Vale Bicicl.!\p"
+    .string "Um Vale Bicicleta!\p"
     .string "Certo!\n"
     .string "Aqui está!$"
 
 CeruleanCity_BikeShop_Text_ExchangedVoucherForBicycle::
     .string "{PLAYER} trocou o\n"
-    .string "Vale Bicicl. por uma Bicicleta.$"
+    .string "Vale Bicicleta por uma Bicicleta.$"
 
 CeruleanCity_BikeShop_Text_ThankYouComeAgain::
     .string "Obrigado!\n"
@@ -55,3 +55,4 @@ CeruleanCity_BikeShop_Text_GermanFoldableBicyleFinallyOnMarket::
 
 CeruleanCity_BikeShop_Text_ShinyNewBicycle::
     .string "Uma bicicleta novinha em folha!$"
+

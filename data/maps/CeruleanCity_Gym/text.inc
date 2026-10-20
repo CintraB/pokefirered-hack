@@ -49,8 +49,8 @@ CeruleanCity_Gym_Text_DianaDefeat::
 
 CeruleanCity_Gym_Text_DianaPostBattle::
     .string "Você precisa enfrentar outros\n"
-    .string "Treinadores para saber o quanto\l"
-    .string "é bom de verdade.$"
+    .string "Treinadores para descobrir o seu\l"
+    .string "verdadeiro valor.$"
 
 CeruleanCity_Gym_Text_LuisIntro::
     .string "Splash!\p"
@@ -68,7 +68,7 @@ CeruleanCity_Gym_Text_LuisPostBattle::
 
 CeruleanCity_Gym_Text_GymGuyAdvice::
     .string "E aí!\n"
-    .string "Aspirante a campeão!\p"
+    .string "Rumo ao título de campeão!\p"
     .string "Deixe-me dar um conselho!\p"
     .string "A Líder, Misty, é uma profissional\n"
     .string "que usa Pokémon do tipo Água.\p"
@@ -80,8 +80,8 @@ CeruleanCity_Gym_Text_GymGuyAdvice::
 CeruleanCity_Gym_Text_WeMakePrettyGoodTeam::
     .string "Você venceu a Misty!\n"
     .string "Viu? O que foi que eu disse?\p"
-    .string "Você e eu, parceiro, formamos uma\n"
-    .string "dupla e tanto!$"
+    .string "Eu e você formamos uma dupla\n"
+    .string "e tanto, hein!$"
 
 CeruleanCity_Gym_Text_GymStatue::
     .string "Ginásio Pokémon de Cerulean\n"
@@ -94,3 +94,4 @@ CeruleanCity_Gym_Text_GymStatuePlayerWon::
     .string "Líder: Misty\p"
     .string "Treinadores vencedores:\n"
     .string "{RIVAL}, {PLAYER}$"
+

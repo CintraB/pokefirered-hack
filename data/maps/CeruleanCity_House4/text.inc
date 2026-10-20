@@ -62,3 +62,4 @@ CeruleanCity_House4_Text_YourBerryPouchIsFull::
     .string "Hm? O seu Porta-frutas está cheio.\n"
     .string "Então o meu presente fica por\l"
     .string "entregar.$"
+

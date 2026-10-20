@@ -21,3 +21,4 @@ CeruleanCity_House2_Text_TeamRocketTryingToDigIntoNoGood::
 
 CeruleanCity_House2_Text_TeamRocketLeftWayOut::
     .string "A Equipe Rocket deixou uma saída!$"
+

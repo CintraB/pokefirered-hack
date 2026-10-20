@@ -44,7 +44,7 @@ CeladonCity_DepartmentStore_3F_Text_TVGameShop::
     .string "3º andar: Loja de Videogames$"
 
 CeladonCity_DepartmentStore_3F_Text_RedGreenBothArePokemon::
-    .string "Vermelho e Verde!\n"
+    .string "Red e Green!\n"
     .string "Os dois são Pokémon!$"
 
 Text_CounterTeach::

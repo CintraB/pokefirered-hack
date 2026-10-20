@@ -4,9 +4,9 @@ CeladonCity_DepartmentStore_5F_Text_ExplainStatEnhancers::
     .string "PS Mais aumenta os PS base de\n"
     .string "um Pokémon.\p"
     .string "Cálcio eleva o atributo base de\n"
-    .string "Atq. Esp. de um Pokémon.\p"
+    .string "Ataque Especial de um Pokémon.\p"
     .string "Zinco aumenta o atributo base de\n"
-    .string "Def. Esp. de um Pokémon.\p"
+    .string "Defesa Especial de um Pokémon.\p"
     .string "Carbos melhora o atributo base de\n"
     .string "Velocidade.$"
 
@@ -20,3 +20,4 @@ CeladonCity_DepartmentStore_5F_Text_HereForStatEnhancers::
 
 CeladonCity_DepartmentStore_5F_Text_Drugstore::
     .string "5º andar: Farmácia$"
+

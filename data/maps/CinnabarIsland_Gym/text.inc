@@ -7,7 +7,8 @@ CinnabarIsland_Gym_Text_BlaineIntro::
     .string "intenso!\p"
     .string "Eles incineram todos os desafiantes!\p"
     .string "Rá!\n"
-    .string "É melhor você ter uma Cura Queimad.!{PLAY_BGM}{MUS_ENCOUNTER_GYM_LEADER}$"
+    .string "É melhor você ter\l"
+    .string "uma Cura Queimadura!{PLAY_BGM}{MUS_ENCOUNTER_GYM_LEADER}$"
 
 CinnabarIsland_Gym_Text_BlaineDefeat::
     .string "Queimei até virar nada!\n"
@@ -15,7 +16,7 @@ CinnabarIsland_Gym_Text_BlaineDefeat::
     .string "Você conquistou a Insígnia Vulcão.$"
 
 CinnabarIsland_Gym_Text_FireBlastIsUltimateFireMove::
-    .string "Rajada Fogo é o golpe de fogo\n"
+    .string "Rajada de Fogo é o golpe de fogo\n"
     .string "definitivo.\p"
     .string "Não o desperdice com Pokémon\n"
     .string "do tipo Água.$"
@@ -32,7 +33,7 @@ CinnabarIsland_Gym_Text_ReceivedTM38FromBlaine::
     .string "do Blaine.$"
 
 CinnabarIsland_Gym_Text_BlainePostBattle::
-    .string "A MT38 contém Rajada Fogo.\n"
+    .string "A MT38 contém Rajada de Fogo.\n"
     .string "Ensine-a a Pokémon do tipo Fogo.\p"
     .string "Vulpix ou Charmeleon seriam ideais\n"
     .string "para esse golpe.$"
@@ -132,12 +133,12 @@ CinnabarIsland_Gym_Text_ZacPostBattle::
 
 CinnabarIsland_Gym_Text_GymGuyAdvice::
     .string "E aí!\n"
-    .string "Aspirante a campeão!\p"
+    .string "Rumo ao título de campeão!\p"
     .string "O esquentado do Blaine é um\n"
     .string "profissional em Pokémon de Fogo.\p"
     .string "Apague o ânimo dele com água!\p"
     .string "É melhor levar algumas\n"
-    .string "Cura Queimad. também.$"
+    .string "Cura Queimadura também.$"
 
 CinnabarIsland_Gym_Text_GymGuyPostVictory::
     .string "{PLAYER}!\n"
@@ -193,3 +194,4 @@ CinnabarIsland_Gym_Text_CorrectGoOnThrough::
 CinnabarIsland_Gym_Text_SorryBadCall::
     .string "Que pena!\n"
     .string "Resposta errada!$"
+

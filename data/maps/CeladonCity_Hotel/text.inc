@@ -15,3 +15,4 @@ CeladonCity_Hotel_Text_WhyDidSheBringBrother::
 CeladonCity_Hotel_Text_SisBroughtMeOnVacation::
     .string "Eba! Estou de férias!\n"
     .string "A minha irmã me trouxe! Demais!$"
+

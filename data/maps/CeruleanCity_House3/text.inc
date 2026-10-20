@@ -3,3 +3,4 @@ CeruleanCity_House3_Text_PleaseTradeWithMyHusband::
     .string "Você está colecionando Pokémon\n"
     .string "para a sua Pokédex, não é?\p"
     .string "Poderia fazer uma troca com ele?$"
+

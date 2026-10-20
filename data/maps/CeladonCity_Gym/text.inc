@@ -55,7 +55,7 @@ CeladonCity_Gym_Text_KayIntro::
     .string "aqui!$"
 
 CeladonCity_Gym_Text_KayDefeat::
-    .string "Você é muito bruto!$"
+    .string "Você pega pesado!$"
 
 CeladonCity_Gym_Text_KayPostBattle::
     .string "Bleeeh!\n"
@@ -150,3 +150,4 @@ CeladonCity_Gym_Text_GymStatuePlayerWon::
     .string "Líder: Erika\p"
     .string "Treinadores vencedores:\n"
     .string "{RIVAL}, {PLAYER}$"
+

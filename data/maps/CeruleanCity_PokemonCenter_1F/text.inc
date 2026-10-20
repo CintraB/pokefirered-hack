@@ -24,3 +24,4 @@ CeruleanCity_PokemonCenter_1F_Text_TryTradingUpstairs::
     .string "variedade com as trocas.\p"
     .string "Os Pokémon que você recebe em\n"
     .string "trocas também crescem rápido.$"
+

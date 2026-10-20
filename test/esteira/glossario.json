@@ -9221,7 +9221,7 @@
    "en": "DIRECT CORNER",
    "pt": "Canto Direto",
    "fonte": "criado",
-   "categoria": "interface",
+   "categoria": "lugar",
    "detectar": true,
    "frente": "A1",
    "obs": "balcão do Clube Sem Fio"
@@ -9230,7 +9230,7 @@
    "en": "TRADE CORNER",
    "pt": "Canto de Troca",
    "fonte": "criado",
-   "categoria": "interface",
+   "categoria": "lugar",
    "detectar": true,
    "frente": "A1",
    "obs": "sala do Clube Sem Fio"
@@ -9239,7 +9239,7 @@
    "en": "COLOSSEUM",
    "pt": "Coliseu",
    "fonte": "criado",
-   "categoria": "interface",
+   "categoria": "lugar",
    "detectar": true,
    "frente": "A1",
    "obs": "sala do Clube Sem Fio"
@@ -9248,7 +9248,7 @@
    "en": "UNION ROOM",
    "pt": "Sala União",
    "fonte": "criado",
-   "categoria": "interface",
+   "categoria": "lugar",
    "detectar": true,
    "frente": "A1",
    "obs": "andar de cima do Centro Pokémon"
@@ -9288,6 +9288,60 @@
    "detectar": true,
    "frente": "A1",
    "obs": "fichas do Cassino (Porta-moedas)"
+  },
+  {
+   "en": "VERMILION PORT",
+   "pt": "Porto Vermilion",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true,
+   "frente": "A1",
+   "obs": "sem 'de', como 'Cidade Vermilion' (D1)"
+  },
+  {
+   "en": "PRIZE EXCHANGE",
+   "pt": "Troca de Prêmios",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "frente": "A1",
+   "obs": "placa do Cassino"
+  },
+  {
+   "en": "POKéMON Storage System",
+   "pt": "Sistema de Armazenamento de Pokémon",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "frente": "A1",
+   "obs": "sistema de PC do Bill"
+  },
+  {
+   "en": "BURN HEAL (forma cheia)",
+   "pt": "Cura Queimadura",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": false,
+   "frente": "A1",
+   "obs": "forma cheia de Cura Queimad."
+  },
+  {
+   "en": "BIKE VOUCHER (forma cheia)",
+   "pt": "Vale Bicicleta",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": false,
+   "frente": "A1",
+   "obs": "forma cheia de Vale Bicicl."
+  },
+  {
+   "en": "GUARD SPEC. (forma cheia)",
+   "pt": "Guarda Especial",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": false,
+   "frente": "A1",
+   "obs": "forma cheia de Guarda Esp."
   }
  ],
  "proibidos": [

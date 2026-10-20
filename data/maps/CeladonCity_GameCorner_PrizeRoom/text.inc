@@ -35,3 +35,4 @@ CeladonCity_GameCorner_PrizeRoom_Text_OopsNotEnoughRoom::
 
 CeladonCity_GameCorner_PrizeRoom_Text_OhFineThen::
     .string "あっ そう$"
+

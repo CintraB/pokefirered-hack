@@ -12,8 +12,8 @@ CeruleanCity_House1_Text_HaveJustTheThing::
 
 CeruleanCity_House1_Text_GoCrushBerriesAtDirectCorner::
     .string "Há uma novidade no segundo andar\n"
-    .string "dos Centros Pokémon, no Canto\l"
-    .string "Direto.\p"
+    .string "dos Centros Pokémon, no\n"
+    .string "Canto Direto.\p"
     .string "Instalaram uma máquina com\n"
     .string "Adaptador Sem Fio para amassar\l"
     .string "Frutas.\p"
@@ -58,8 +58,8 @@ CeruleanCity_House1_Text_DontHaveEnoughBerryPowder::
 CeruleanCity_House1_Text_TradeMoreBerryPowder::
     .string "Este é mesmo um ótimo Pó de Fruta.\n"
     .string "Vai render um excelente remédio.\p"
-    .string "Gostaria de trocar mais Pó de\n"
-    .string "Fruta por outra coisa?$"
+    .string "Gostaria de trocar mais\n"
+    .string "Pó de Fruta por outra coisa?$"
 
 CeruleanCity_House1_Text_HopeToSeeYouAgain::
     .string "Tudo bem, então.\n"
@@ -68,3 +68,4 @@ CeruleanCity_House1_Text_HopeToSeeYouAgain::
 CeruleanCity_House1_Text_SeeMeIfYoudLikeToTradePowder::
     .string "Venha falar comigo se quiser\n"
     .string "trocar o seu Pó de Fruta.$"
+

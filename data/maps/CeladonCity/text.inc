@@ -33,8 +33,7 @@ CeladonCity_Text_GetLostOrIllPunchYou::
     .string "Some daqui ou eu te soco.$"
 
 CeladonCity_Text_KeepOutOfTeamRocketsWay::
-    .string "Não fique no caminho da Equipe\n"
-    .string "Rocket!$"
+    .string "Saia do caminho da Equipe Rocket!$"
 
 CeladonCity_Text_ExplainXAccuracyDireHit::
     .string "Dicas de Treinador\p"
@@ -42,8 +41,8 @@ CeladonCity_Text_ExplainXAccuracyDireHit::
     .string "dos golpes.\p"
     .string "Golpe Certo aumenta a chance de\n"
     .string "acertar golpes críticos.\p"
-    .string "Compre esses itens na Loja de\n"
-    .string "Celadon!$"
+    .string "Compre esses itens\n"
+    .string "na Loja de Celadon!$"
 
 CeladonCity_Text_CitySign::
     .string "Cidade de Celadon\n"
@@ -63,7 +62,7 @@ CeladonCity_Text_DeptStoreSign::
 
 CeladonCity_Text_GuardSpecProtectsFromStatus::
     .string "Dicas de Treinador\p"
-    .string "Guarda Esp. protege os Pokémon\n"
+    .string "Guarda Especial protege os Pokémon\n"
     .string "de golpes que reduzem atributos\l"
     .string "durante a batalha.\p"
     .string "Compre esse item na\n"
@@ -114,3 +113,4 @@ CeladonCity_Text_SomeoneStoleSilphScope::
     .string "tenho certeza.\p"
     .string "Mas eu o perdi de vista!\n"
     .string "Para onde ele foi?$"
+

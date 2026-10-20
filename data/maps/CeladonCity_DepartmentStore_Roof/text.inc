@@ -79,3 +79,4 @@ CeladonCity_DepartmentStore_Roof_Text_NoMoreRoomForStuff::
 
 CeladonCity_DepartmentStore_Roof_Text_NotThirsty::
     .string "Sem sede!$"
+

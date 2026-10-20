@@ -1,5 +1,5 @@
 CeladonCity_DepartmentStore_2F_Text_SuperRepelMorePowerfulRepel::
-    .string "O Superrepel. mantém os Pokémon\n"
+    .string "O Superrepelente mantém os Pokémon\n"
     .string "fracos longe…\p"
     .string "Hmm, é um Repelente mais potente.$"
 

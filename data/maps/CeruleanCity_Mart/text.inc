@@ -12,3 +12,4 @@ CeruleanCity_Mart_Text_DoYouKnowAboutRareCandy::
     .string "Ele não é vendido nas lojas.\p"
     .string "Acho que ele faz os Pokémon\n"
     .string "crescerem muito rápido, de repente.$"
+

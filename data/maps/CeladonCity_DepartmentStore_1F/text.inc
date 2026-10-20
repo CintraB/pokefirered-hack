@@ -14,3 +14,4 @@ CeladonCity_DepartmentStore_1F_Text_FloorDescriptions::
 
 CeladonCity_DepartmentStore_1F_Text_ServiceCounter::
     .string "1º andar: Balcão de Serviços$"
+

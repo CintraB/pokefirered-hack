@@ -19,12 +19,13 @@ CeruleanCity_Text_RivalPostBattle::
     .string "páginas novas!\p"
     .string "Afinal, o Bill é famoso no mundo\n"
     .string "todo como Pokémaníaco.\p"
-    .string "Foi ele quem inventou o Sistema de\n"
-    .string "Armazenamento de Pokémon no PC.\p"
+    .string "Foi ele quem inventou o\n"
+    .string "Sistema de Armazenamento de Pokémon\n"
+    .string "no PC.\p"
     .string "Como você usa o sistema dele,\n"
     .string "devia ir agradecer.\p"
     .string "Bom, é melhor eu ir andando!\n"
-    .string "Fui! Até mais, perdedor!$"
+    .string "Fui! Tente não ficar para trás!$"
 
 CeruleanCity_Text_OhRightLittlePresentAsFavor::
     .string "Ah, é mesmo.\p"
@@ -107,7 +108,7 @@ CeruleanCity_Text_PeopleHereWereRobbed::
 
 CeruleanCity_Text_SlowbroUseSonicboom::
     .string "Certo! Slowbro!\n"
-    .string "Use Expl. Sônica!$"
+    .string "Use Explosão Sônica!$"
 
 CeruleanCity_Text_SlowbroPayAttention::
     .string "Vamos, Slowbro, preste atenção!$"
@@ -179,3 +180,4 @@ CeruleanCity_Text_GymSign::
     .string "Ginásio Pokémon de Cerulean\n"
     .string "Líder: Misty\l"
     .string "A sereia moleca!$"
+
