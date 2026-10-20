@@ -1,15 +1,15 @@
 PokemonTower_2F_Text_RivalIntro::
-    .string "{RIVAL}: Hey, {PLAYER}!\n"
-    .string "What brings you here?\l"
-    .string "Is your POKéMON dead?\p"
-    .string "Hey! It's alive!\p"
-    .string "I can at least make them faint!\n"
-    .string "Let's go!$"
+    .string "{RIVAL}: Ei, {PLAYER}!\n"
+    .string "O que traz você aqui?\l"
+    .string "O seu Pokémon morreu?\p"
+    .string "Ei! Ele está vivo!\p"
+    .string "Pelo menos posso fazê-lo desmaiar!\n"
+    .string "Vamos lá!$"
 
 PokemonTower_2F_Text_RivalDefeat::
-    .string "What?\n"
-    .string "You stinker!\p"
-    .string "I took it easy on you, too!$"
+    .string "O quê?\n"
+    .string "Que pestinha!\p"
+    .string "E eu ainda peguei leve com você!$"
 
 @ Unused. Translated below
 @ Aw, man! They really kicked the bucket! Weak! Do them a favor and raise them more properly.
@@ -20,19 +20,19 @@ PokemonTower_2F_Text_RivalVictory::
     .string "もっと　ちゃんと　そだてて　やれよ$"
 
 PokemonTower_2F_Text_RivalPostBattle::
-    .string "How's your POKéDEX coming?\n"
-    .string "I just caught a CUBONE!\p"
-    .string "I can't find the bigger MAROWAK.\n"
-    .string "Where could they be?\p"
-    .string "I bet there aren't any left!\p"
-    .string "Well, I better get going.\n"
-    .string "I've got a lot to accomplish,\l"
-    .string "unlike you.\p"
-    .string "Smell ya later!$"
+    .string "Como vai a sua Pokédex?\n"
+    .string "Acabei de capturar um Cubone!\p"
+    .string "Não acho o Marowak, o maior.\n"
+    .string "Onde será que eles estão?\p"
+    .string "Aposto que não sobrou nenhum!\p"
+    .string "Bom, é melhor eu ir.\n"
+    .string "Tenho muito o que fazer,\l"
+    .string "ao contrário de você.\p"
+    .string "Fui! Até mais!$"
 
 PokemonTower_2F_Text_SilphScopeCouldUnmaskGhosts::
-    .string "Even we could not identify the\n"
-    .string "wayward ghosts.\p"
-    .string "A SILPH SCOPE might be able to\n"
-    .string "unmask them.$"
+    .string "Nem nós conseguimos identificar os\n"
+    .string "fantasmas teimosos.\p"
+    .string "Um Visor Silph talvez consiga\n"
+    .string "desmascará-los.$"
 

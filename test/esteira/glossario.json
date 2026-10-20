@@ -6757,6 +6757,34 @@
    "obs": "✂ de: Chute Giratório"
   },
   {
+   "en": "RUNNING SHOES",
+   "pt": "Tênis Corrida",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true,
+   "frente": "B",
+   "completo": "Tênis de Corrida",
+   "obs": "✂ 13 letras; a fala usa a forma cheia. Entregue pelo assistente do Prof. Carvalho em Pewter (não está em items.json)"
+  },
+  {
+   "en": "POKéMON HOUSE",
+   "pt": "Casa Pokémon",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true,
+   "frente": "B",
+   "obs": "casa do Sr. Fuji ao pé da Torre Pokémon"
+  },
+  {
+   "en": "LIFT KEY (forma cheia)",
+   "pt": "Chave do Elevador",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": false,
+   "frente": "B",
+   "obs": "forma cheia de Chave Elevad. (LIFT KEY), usada em fala"
+  },
+  {
    "en": "TWINEEDLE",
    "pt": "Agulha Dupla",
    "fonte": "GO+TCG",

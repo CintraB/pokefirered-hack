@@ -1,51 +1,52 @@
 PokemonTower_5F_Text_RestHereInPurifiedSpace::
-    .string "Come, child!\n"
-    .string "I have purified this space.\l"
-    .string "You can rest here.$"
+    .string "Venha, criança!\n"
+    .string "Purifiquei este espaço.\l"
+    .string "Aqui você pode descansar.$"
 
 PokemonTower_5F_Text_TammyIntro::
-    .string "Give…me…\n"
-    .string "your…all…$"
+    .string "Dê…me…\n"
+    .string "o seu…tudo…$"
 
 PokemonTower_5F_Text_TammyDefeat::
-    .string "Gasp!$"
+    .string "Arf!$"
 
 PokemonTower_5F_Text_TammyPostBattle::
-    .string "I was under possession.$"
+    .string "Eu estava possuída.$"
 
 PokemonTower_5F_Text_RuthIntro::
-    .string "You…shall…\n"
-    .string "join…us…$"
+    .string "Você…deve…\n"
+    .string "se juntar…a nós…$"
 
 PokemonTower_5F_Text_RuthDefeat::
-    .string "What a nightmare!$"
+    .string "Que pesadelo!$"
 
 PokemonTower_5F_Text_RuthPostBattle::
-    .string "I was possessed.$"
+    .string "Eu estava possuída.$"
 
 PokemonTower_5F_Text_KarinaIntro::
-    .string "Zombies!$"
+    .string "Zumbis!$"
 
 PokemonTower_5F_Text_KarinaDefeat::
-    .string "Ha?$"
+    .string "Hã?$"
 
 PokemonTower_5F_Text_KarinaPostBattle::
-    .string "I regained my senses.$"
+    .string "Recuperei os sentidos.$"
 
 PokemonTower_5F_Text_JanaeIntro::
     .string "Urgah…\n"
     .string "Urff…$"
 
 PokemonTower_5F_Text_JanaeDefeat::
-    .string "Whoo!$"
+    .string "Uuf!$"
 
 PokemonTower_5F_Text_JanaePostBattle::
-    .string "I fell to evil spirits despite my\n"
-    .string "training in the mountains…$"
+    .string "Caí nas garras de espíritos\n"
+    .string "malignos, apesar do meu treino\l"
+    .string "nas montanhas…$"
 
 PokemonTower_5F_Text_PurifiedZoneMonsFullyHealed::
-    .string "Entered the purified and protected\n"
-    .string "zone.\p"
-    .string "{PLAYER}'s POKéMON were fully\n"
-    .string "healed.$"
+    .string "Você entrou na zona purificada e\n"
+    .string "protegida.\p"
+    .string "Os Pokémon de {PLAYER} foram\n"
+    .string "totalmente curados.$"
 
