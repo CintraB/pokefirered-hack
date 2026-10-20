@@ -122,7 +122,10 @@ def test_sem_termos_ingleses_em_caixa_alta(rel):
 
 # Regras de 20/10: jogador sem gênero marcado; termos do glossário exatos; nomes não partidos na quebra
 PLAYER_GENDERED = ("Fique quieto", "muito bruto", "parceiro,", "ocupado demais", "perdedor", "Aspirante a campeão",
-                   "Seja bem-vindo", "Bem-vindo")
+                   "Seja bem-vindo", "Bem-vindo",
+                   # padrões que escaparam na C1 + o Treinador referido ao jogador
+                   "você é bom", "ganancioso", "campeão em formação", "tão bruto", "ser discreto",
+                   "habilidade como", "ser um Treinador")
 WRONG_FORMS = ("Esconderijo da Equipe Rocket", "Porto de Vermilion",
                # decisões do Cintra de 20/10: forma cheia em fala; títulos de jogo no original
                "Superrepel.", "Cura Queimad.", "Vale Bicicl.", "Guarda Esp.", "Expl. Sônica", "Rajada Fogo",
@@ -187,3 +190,33 @@ def test_fim_de_arquivo_igual_ao_da_base(rel):
     base = out.stdout.decode("utf-8")
     now = (REPO_ROOT / rel).read_text(encoding="utf-8")
     assert len(now) - len(now.rstrip("\n")) == len(base) - len(base.rstrip("\n"))
+
+
+# Regra de 20/10: a esteira mede {STR_VAR_n}/{B_BUFF*}/{B_COPY_VAR_*} como 0 px; aqui eles valem 10 "M" (largos)
+VARIABLE_PLACEHOLDER = re.compile(r"\{(?:STR_VAR_\d|B_BUFF\d|B_COPY_VAR_\d)\}")
+DIALOG_PX = 208
+
+
+@pytest.fixture(scope="module")
+def env():
+    return ct._load_env(REPO_ROOT)
+
+
+@pytest.mark.parametrize("rel", FILES)
+def test_linhas_com_placeholder_variavel_cabem_com_10_letras_largas(rel, env):
+    text = (REPO_ROOT / rel).read_text(encoding="utf-8")
+    too_wide = []
+    for m in re.finditer(r'^(\w+)::\n((?:[ \t]+\.string ".*"\n?)+)', text, re.M):
+        raw = "".join(re.findall(r'\.string "(.*)"', m.group(2)))
+        if not VARIABLE_PLACEHOLDER.search(raw):
+            continue
+        measured = ct.measure(VARIABLE_PLACEHOLDER.sub("MMMMMMMMMM", raw), env, "normal")
+        if measured.widest > DIALOG_PX:
+            too_wide.append(f"{m.group(1)}: {measured.widest} px")
+    assert too_wide == []
+
+
+def test_ha_texto_com_placeholder_variavel_no_grupo():
+    """Garante que a checagem acima tem o que medir (se um dia não houver, o teste avisa)."""
+    n = sum(bool(VARIABLE_PLACEHOLDER.search((REPO_ROOT / rel).read_text(encoding="utf-8"))) for rel in FILES)
+    assert n >= 1

@@ -127,8 +127,8 @@ CeruleanCity_Text_HardToControlMonsObedience::
     .string "Não! Está errado!\n"
     .string "É tão difícil controlar Pokémon!\p"
     .string "A obediência dos seus Pokémon\n"
-    .string "depende da sua habilidade como\l"
-    .string "Treinador.$"
+    .string "depende do quanto você sabe\l"
+    .string "treiná-los.$"
 
 CeruleanCity_Text_SlowbroTookSnooze::
     .string "Slowbro tirou uma soneca…$"
@@ -151,9 +151,8 @@ CeruleanCity_Text_ThisIsCeruleanCave::
     .string "Esta é a Caverna Cerulean.\p"
     .string "Pokémon terrivelmente fortes\n"
     .string "vivem lá dentro.\p"
-    .string "É preciso ser um Treinador muito\n"
-    .string "especial para ter permissão de\l"
-    .string "entrar.\p"
+    .string "Só quem é muito especial tem\n"
+    .string "permissão para entrar lá.\p"
     .string "Para começar, você teria que ser\n"
     .string "forte o bastante para se tornar\l"
     .string "Campeão da Liga Pokémon.\p"
