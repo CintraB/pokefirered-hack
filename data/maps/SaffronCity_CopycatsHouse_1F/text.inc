@@ -1,13 +1,13 @@
 SaffronCity_CopycatsHouse_1F_Text_DaughterIsSelfCentered::
-    .string "My daughter is so self-centered.\n"
-    .string "She has but a few friends.$"
+    .string "Minha filha é muito egocêntrica.\n"
+    .string "Tem pouquíssimos amigos.$"
 
 SaffronCity_CopycatsHouse_1F_Text_DaughterLikesToMimicPeople::
-    .string "My daughter likes to mimic people.\n"
-    .string "It's rather vexing.\p"
-    .string "Her mimicry has earned her the\n"
-    .string "nickname COPYCAT around here.$"
+    .string "Minha filha adora imitar as pessoas.\n"
+    .string "É bem irritante.\p"
+    .string "Por causa disso, ganhou por aqui o\n"
+    .string "apelido de Imitadora.$"
 
 SaffronCity_CopycatsHouse_1F_Text_Chansey::
-    .string "CHANSEY: Chaan! Sii!$"
+    .string "Chansey: Chaan! Sii!$"
 

@@ -1,15 +1,16 @@
 SafariZone_East_Text_KeepAnyItemFoundOnSafari::
-    .string "You can keep any item you find in\n"
-    .string "the SAFARI ZONE.\p"
-    .string "But, you'll run out of time if you\n"
-    .string "try for all of them at once.$"
+    .string "Você pode ficar com qualquer item\n"
+    .string "que encontrar na Zona de Safári.\p"
+    .string "Mas o seu tempo vai acabar se tentar\n"
+    .string "pegar todos de uma vez.$"
 
 SafariZone_East_Text_PrizeInDeepestPartOfSafariZone::
-    .string "Go to the deepest part of the\n"
-    .string "SAFARI ZONE. You will win a prize!$"
+    .string "Vá até a parte mais funda da\n"
+    .string "Zona de Safári. Você vai ganhar um\l"
+    .string "prêmio!$"
 
 SafariZone_East_Text_MyEeveeEvolvedIntoFlareon::
-    .string "My EEVEE evolved into FLAREON.\p"
-    .string "But, a friend's EEVEE turned into a\n"
-    .string "VAPOREON. I wonder why?$"
+    .string "Meu Eevee evoluiu para Flareon.\p"
+    .string "Mas o Eevee de um amigo virou\n"
+    .string "Vaporeon. Por que será?$"
 
