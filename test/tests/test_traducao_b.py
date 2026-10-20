@@ -96,11 +96,63 @@ def test_linhas_com_placeholder_cabem_com_10_letras_largas(rel):
     env = ct._load_env(REPO_ROOT)
     too_wide = []
     for entry in ct._extract(rel, "inc", (REPO_ROOT / rel).read_text(encoding="utf-8")):
-        if not isinstance(entry, ct._Entry) or not _VARIABLE.search(entry.texts[0]):
+        if not isinstance(entry, ct._Entry):
             continue
         rule = ct.rule_for(entry.file, entry.label)
-        text = _VARIABLE.sub("MMMMMMMMMM", entry.texts[0])
-        measured = ct.measure(text, env, rule.font)
-        if rule.px is not None and measured.widest > rule.px:
-            too_wide.append(f"{entry.label}: {measured.widest} px > {rule.px}")
+        for variant in entry.texts:                     # todas as variantes de #ifdef
+            if not _VARIABLE.search(variant):
+                continue
+            measured = ct.measure(_VARIABLE.sub("MMMMMMMMMM", variant), env, rule.font)
+            if rule.px is not None and measured.widest > rule.px:
+                too_wide.append(f"{entry.label}: {measured.widest} px > {rule.px}")
     assert too_wide == []
+
+
+# Regra de 20/10: nomes e termos do glossário não são partidos na quebra de linha (\n, \l, \p)
+EXTRA_NAMES = ("Equipe Rocket", "Liga Pokémon", "Campeão da Liga Pokémon", "Hall da Fama Pokémon", "Ginásios Pokémon",
+               "Tênis de Corrida", "Mapa da Cidade", "Arremesso Sísmico", "Tumba de Rochas", "Devorador de Sonhos",
+               "Chave do Elevador", "Pedra Lunar", "Casa Pokémon", "Laboratório Pokémon", "Âmbar Antigo",
+               "Visor Silph", "Monte Lua", "Torre Pokémon", "Túnel de Pedra", "Usina Elétrica", "Elite Quatro")
+
+
+def _flat(rel):
+    text = (REPO_ROOT / rel).read_text(encoding="utf-8")
+    return "".join(re.findall(r'\.string "(.*)"', text))
+
+
+def _multiword_terms():
+    data = json.loads((REPO_ROOT / "test" / "esteira" / "glossario.json").read_text(encoding="utf-8"))
+    names = {t["pt"] for t in data["termos"] if " " in t["pt"]} | set(EXTRA_NAMES)
+    plurals = set()
+    for name in names:
+        words = name.split(" ")
+        for j, w in enumerate(words):
+            if w[-1:].isalpha() and not w.endswith("s"):
+                plurals.add(" ".join(words[:j] + [w + "s"] + words[j + 1:]))
+    return sorted(names | plurals)
+
+
+TERMS = _multiword_terms()
+
+
+@pytest.mark.parametrize("rel", FILES)
+def test_nomes_nao_sao_partidos_na_quebra(rel):
+    body = _flat(rel)
+    found = []
+    for name in TERMS:
+        for i, ch in enumerate(name):
+            if ch == " ":
+                for br in (chr(92) + c for c in "nlp"):
+                    if name[:i] + br + name[i + 1:] in body:
+                        found.append(name)
+    assert found == [], rel
+
+
+@pytest.mark.parametrize("rel", FILES)
+def test_fim_de_arquivo_igual_ao_da_base(rel):
+    out = subprocess.run(["git", "-C", str(REPO_ROOT), "show", f"{ct.TRANSLATION_BASE}:{rel}"], capture_output=True)
+    if out.returncode != 0:
+        pytest.skip("sem o commit base da tradução")
+    base = out.stdout.decode("utf-8")
+    now = (REPO_ROOT / rel).read_text(encoding="utf-8")
+    assert len(now) - len(now.rstrip("\n")) == len(base) - len(base.rstrip("\n"))

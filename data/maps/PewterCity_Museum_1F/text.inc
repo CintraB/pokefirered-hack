@@ -59,8 +59,8 @@ PewterCity_Museum_1F_Text_WantYouToGetAmberExamined::
     .string "Mas os meus colegas simplesmente\n"
     .string "ignoram o que eu digo.\p"
     .string "Por isso, tenho um favor a pedir!\p"
-    .string "Quero que você faça examinar isto\n"
-    .string "em algum Laboratório Pokémon.$"
+    .string "Quero que você leve isto para\n"
+    .string "examinar num Laboratório Pokémon.$"
 
 PewterCity_Museum_1F_Text_ReceivedOldAmberFromMan::
     .string "{PLAYER} recebeu o Âmbar Antigo\n"

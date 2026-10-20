@@ -36,8 +36,8 @@ Route10_Text_HermanPostBattle::
     .string "Não gosto de ninguém melhor que eu!$"
 
 Route10_Text_HeidiIntro::
-    .string "Já fui a alguns Ginásios\n"
-    .string "Pokémon.\p"
+    .string "Já estive em alguns\n"
+    .string "Ginásios Pokémon.\p"
     .string "…Mas sempre perco.$"
 
 Route10_Text_HeidiDefeat::

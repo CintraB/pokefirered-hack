@@ -1,8 +1,8 @@
 PokemonLeague_HallOfFame_Text_OakCongratulations::
     .string "CARVALHO: Hã-hém!\n"
     .string "Parabéns, {PLAYER}!\p"
-    .string "Este andar é o Hall da Fama\n"
-    .string "Pokémon.\p"
+    .string "Este andar abriga o\n"
+    .string "Hall da Fama Pokémon.\p"
     .string "Os Campeões da Liga Pokémon são\n"
     .string "homenageados aqui por seus feitos.\p"
     .string "Os Pokémon deles também são\n"

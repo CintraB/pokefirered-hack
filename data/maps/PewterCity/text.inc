@@ -23,8 +23,8 @@ Text_DreamEaterTaught::
 PewterCity_Text_ClefairyCameFromMoon::
     .string "Os Clefairy vieram da Lua.\n"
     .string "Pelo menos é o que dizem.\p"
-    .string "Eles apareceram depois que Pedras\n"
-    .string "Lunares caíram no Monte Lua.$"
+    .string "Eles apareceram depois que\n"
+    .string "Pedras Lunares caíram no Monte Lua.$"
 
 PewterCity_Text_BrockOnlySeriousTrainerHere::
     .string "Não há muitos Treinadores Pokémon\n"
@@ -95,7 +95,7 @@ PewterCity_Text_GymSign::
 
 PewterCity_Text_CitySign::
     .string "Cidade de Pewter\n"
-    .string "Uma cidade de cinza e pedra$"
+    .string "Uma cidade cinza como pedra$"
 
 @ The below 3 JP texts are unused. Possibly a cut NPC meant to give the player the Berry Pouch
 PewterCity_Text_DefeatedBrockYouCanHaveTreasure::
@@ -148,8 +148,8 @@ PewterCity_Text_MustBeGoingBackToLab::
 PewterCity_Text_RunningShoesLetterFromMom::
     .string "Há uma carta anexada…\p"
     .string "Para {PLAYER},\p"
-    .string "Aqui vai um par de Tênis de\n"
-    .string "Corrida para você, meu amor.\p"
+    .string "Aqui vai um par de Tênis de Corrida\n"
+    .string "para você, meu amor.\p"
     .string "Lembre-se: vou sempre torcer por\n"
     .string "você! Nunca desista!\p"
     .string "Da sua mãe$"

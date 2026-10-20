@@ -8,7 +8,7 @@ PokemonTower_2F_Text_RivalIntro::
 
 PokemonTower_2F_Text_RivalDefeat::
     .string "O quê?\n"
-    .string "Que audácia a sua!\p"
+    .string "Que pestinha!\p"
     .string "E eu ainda peguei leve com você!$"
 
 @ Unused. Translated below
@@ -28,7 +28,7 @@ PokemonTower_2F_Text_RivalPostBattle::
     .string "Bom, é melhor eu ir.\n"
     .string "Tenho muito o que fazer,\l"
     .string "ao contrário de você.\p"
-    .string "Fui! Vê se não fica para trás!$"
+    .string "Fui! Até mais!$"
 
 PokemonTower_2F_Text_SilphScopeCouldUnmaskGhosts::
     .string "Nem nós conseguimos identificar os\n"

@@ -38,8 +38,8 @@ PokemonLeague_LancesRoom_Text_Defeat::
 PokemonLeague_LancesRoom_Text_PostBattle::
     .string "Não acredito que os meus dragões\n"
     .string "perderam para você, {PLAYER}.\p"
-    .string "O título de Campeão da Liga\n"
-    .string "Pokémon agora é seu!\p"
+    .string "O título de Campeão da Liga Pokémon\n"
+    .string "agora é seu!\p"
     .string "…Ou seria, mas ainda falta mais\n"
     .string "um desafio.\p"
     .string "Há mais um Treinador a enfrentar!\n"
@@ -47,6 +47,6 @@ PokemonLeague_LancesRoom_Text_PostBattle::
     .string "{RIVAL}!\p"
     .string "Ele derrotou a Elite Quatro antes\n"
     .string "de você.\p"
-    .string "Ele é o verdadeiro Campeão da Liga\n"
-    .string "Pokémon.$"
+    .string "Ele é o verdadeiro\n"
+    .string "Campeão da Liga Pokémon.$"
 

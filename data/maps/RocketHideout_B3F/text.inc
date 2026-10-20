@@ -23,5 +23,5 @@ RocketHideout_B3F_Text_Grunt2Defeat::
 RocketHideout_B3F_Text_Grunt2PostBattle::
     .string "Pode ir!\p"
     .string "Mas você não consegue operar o\n"
-    .string "elevador sem a Chave do Elevador$"
+    .string "elevador sem a Chave do Elevador.$"
 
