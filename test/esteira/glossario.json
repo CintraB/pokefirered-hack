@@ -9497,15 +9497,6 @@
    "obs": "prédio de Celadon"
   },
   {
-   "en": "TRAINER TIPS",
-   "pt": "Dicas de Treinador",
-   "fonte": "criado",
-   "categoria": "interface",
-   "detectar": true,
-   "frente": "A1",
-   "obs": "placas de dica"
-  },
-  {
    "en": "COINS",
    "pt": "moedas",
    "fonte": "criado",
