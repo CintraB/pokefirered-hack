@@ -53,8 +53,7 @@ Help_Text_Greetings::
 	.string "então consulte-as sempre, por favor.$"
 
 Help_Text_PlayingForFirstTime::
-	.string "Estou jogando pela primeira vez.\n"
-	.string "Ajuda!$"
+	.string "Primeira vez jogando. Ajuda!$"
 
 Help_Text_WhatShouldIBeDoing::
 	.string "O que devo fazer?$"
@@ -111,7 +110,7 @@ Help_Text_WhatIsStatusProblem::
 	.string "O que é um problema de status?$"
 
 Help_Text_WhatHappensIfAllMyMonsFaint::
-	.string "E se todos os meus Pokémon desmaiarem?$"
+	.string "E se todos os Pokémon desmaiarem?$"
 
 Help_Text_CantCatchMons::
 	.string "Não consigo capturar Pokémon!$"
@@ -147,8 +146,7 @@ Help_Text_WantToMakeMonStronger::
 	.string "Quero fortalecer meu Pokémon.$"
 
 Help_Text_FoeMonsTooStrong::
-	.string "Os Pokémon adversários são fortes\n"
-	.string "demais!$"
+	.string "Os adversários são fortes demais!$"
 
 Help_Text_WhatDoIDoInCave::
 	.string "O que faço numa caverna?$"
@@ -178,7 +176,7 @@ Help_Text_WhatDoIDoInSafari::
 	.string "O que faço no Jogo do Safári?$"
 
 Help_Text_WhatAreSafariRules::
-	.string "Quais são as regras do Jogo do Safári?$"
+	.string "Quais as regras do Jogo do Safári?$"
 
 Help_Text_WantToEndSafari::
 	.string "Quero encerrar este Jogo do Safári!$"
@@ -254,11 +252,12 @@ Help_Text_AnswerWhatHappenedToItemIGot::
 
 Help_Text_AnswerWhatAreMyAdventureBasics::
 	.string "Se os Pokémon se ferirem em batalha,\n"
-	.string "leve-os a um Centro Pokémon para que a\n"
-	.string "equipe os cure. Crie o hábito de salvar\n"
-	.string "o jogo e registrar seu progresso. Antes\n"
-	.string "de viajar para longe, abasteça-se de\n"
-	.string "itens de cura nas Poké Marts.$"
+	.string "leve-os a um Centro Pokémon para que\n"
+	.string "os atendentes os curem. Crie o hábito\n"
+	.string "de salvar o jogo e registrar seu\n"
+	.string "progresso. Antes de viajar para longe,\n"
+	.string "abasteça-se de itens de cura nas\n"
+	.string "Poké Marts.$"
 
 Help_Text_AnswerHowAreRoadsForestsDifferent::
 	.string "As florestas são basicamente iguais às\n"
@@ -329,9 +328,9 @@ Help_Text_AnswerWhatIsStatusProblem::
 	.string "causada num Pokémon pelo ataque do\n"
 	.string "adversário. Inclui queimadura,\n"
 	.string "paralisia, envenenamento, sono e\n"
-	.string "congelamento. Eles podem ser curados\n"
-	.string "em um Centro Pokémon ou com o item\n"
-	.string "apropriado.$"
+	.string "congelamento. Esses problemas podem\n"
+	.string "ser curados em um Centro Pokémon ou\n"
+	.string "com o item apropriado.$"
 
 Help_Text_AnswerWhatHappensIfAllMyMonsFaint::
 	.string "Se todos os Pokémon da sua equipe\n"
@@ -623,7 +622,7 @@ Help_Text_UsingProfOaksPC::
 	.string " Usando “PC do Prof. Carvalho”$"
 
 Help_Text_OpeningMenu::
-	.string "Abrindo o Menu$"
+	.string "Abrindo o menu$"
 
 Help_Text_UsingFight::
 	.string " Usando “Lutar”$"
@@ -693,8 +692,8 @@ Help_Text_HowToUsePokemon::
 
 Help_Text_HowToUseSummary::
 	.string "{CIRCLE_1} Escolha “Resumo”.\n"
-	.string "{CIRCLE_2} Aperte esquerda ou direita no {PLUS}\n"
-	.string "   Direcional para ver as informações:\n"
+	.string "{CIRCLE_2} Aperte esquerda ou direita\n"
+	.string "   no {PLUS} Direcional para ver:\n"
 	.string "   “Dados”\n"
 	.string "   “Atributos”\n"
 	.string "   “Golpes”$"
@@ -726,8 +725,8 @@ Help_Text_HowToUseBag::
 
 Help_Text_HowToUseAnItem::
 	.string "{CIRCLE_1} Escolha o bolso “Itens”.\n"
-	.string "{CIRCLE_2} Aperte para cima ou para baixo no {PLUS}\n"
-	.string "   Direcional para escolher um item.\n"
+	.string "{CIRCLE_2} Aperte para cima ou para baixo no\n"
+	.string "   {PLUS} Direcional para escolher um item.\n"
 	.string "{CIRCLE_3} Escolha “Usar” para usar o item\n"
 	.string "   escolhido.\n"
 	.string "Alguns itens não podem ser usados,\n"
@@ -735,8 +734,8 @@ Help_Text_HowToUseAnItem::
 
 Help_Text_HowToUseKeyItem::
 	.string "{CIRCLE_1} Escolha o bolso “Itens-chave”.\n"
-	.string "{CIRCLE_2} Aperte para cima ou para baixo no {PLUS}\n"
-	.string "   Direcional para escolher um\n"
+	.string "{CIRCLE_2} Aperte para cima ou para baixo no\n"
+	.string "   {PLUS} Direcional para escolher um\n"
 	.string "   item-chave.\n"
 	.string "{CIRCLE_3} Escolha “Usar” para usar o\n"
 	.string "   item-chave escolhido.$"
@@ -769,17 +768,17 @@ Help_Text_HowToUseSave::
 
 Help_Text_HowToUseOption::
 	.string "{CIRCLE_1} Escolha “Opções” no menu.\n"
-	.string "{CIRCLE_2} Aperte para cima ou para baixo no {PLUS}\n"
-	.string "   Direcional para escolher uma opção e\n"
-	.string "   depois aperte esquerda ou direita\n"
-	.string "   para alterar os ajustes.\n"
+	.string "{CIRCLE_2} Aperte para cima ou para baixo no\n"
+	.string "   {PLUS} Direcional para escolher uma\n"
+	.string "   opção e depois aperte esquerda ou\n"
+	.string "   direita para alterar os ajustes.\n"
 	.string "{CIRCLE_3} Escolha “Cancelar” ou aperte o\n"
 	.string "   Botão B depois de fazer as mudanças.$"
 
 Help_Text_HowToUsePotion::
 	.string "{CIRCLE_1} Abra o menu.\n"
-	.string "{CIRCLE_2} Aperte para cima ou para baixo no {PLUS}\n"
-	.string "   Direcional e escolha “Bolsa”.\n"
+	.string "{CIRCLE_2} Aperte para cima ou para baixo no\n"
+	.string "   {PLUS} Direcional e escolha “Bolsa”.\n"
 	.string "{CIRCLE_3} Escolha “Poção” no bolso “Itens”.\n"
 	.string "{CIRCLE_4} Escolha “Usar”.\n"
 	.string "{CIRCLE_5} Escolha o Pokémon a ser curado.$"
@@ -825,7 +824,7 @@ Help_Text_HowToRideBicycle::
 	.string "   escolha a “Bicicleta”.\n"
 	.string "{CIRCLE_2} Para andar de bicicleta, escolha\n"
 	.string "   “Usar”. Você também pode\n"
-	.string "   “Registrar” a bicicleta para usá-la\n"
+	.string "   “Registrar” a Bicicleta para usá-la\n"
 	.string "   na hora apertando SELECT.$"
 
 Help_Text_HowToEnterName::

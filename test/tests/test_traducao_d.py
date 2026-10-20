@@ -28,7 +28,17 @@ TRANSLATED: dict[str, list[tuple[str, str | None]]] = {
 # Japonês deixado como está no original (a ajuda tem uma linha de "faça por conta própria")
 JAPANESE_LABELS = {"data/text/help_system.inc": {"Help_Text_TryDoingItOnYourOwn"}}
 
+# Ajuda: perguntas, títulos da lista e cabeçalho da resposta ocupam UMA linha, desenhada em x = 8
+# (src/help_system_util.c:722-724) num bitmap de 208 px, e o cabeçalho da resposta tem só 24 px de
+# altura (help_system_util.c:597). A regra da esteira trata esses rótulos como resposta (7 linhas),
+# então o limite de 1 linha e 200 px fica aqui até a task T3 acrescentá-lo ao check_text.
+HELP_FILE = "data/text/help_system.inc"
+HELP_SPACE_PX = 4
+HELP_ONE_LINE_PX = 200
+_NOT_ONE_LINE = re.compile(r"Help_Text_(Desc|Greetings|Answer|HowTo|TryDoing)")
+
 _LABEL = re.compile(r"^(\w+)::", re.M)
+_BREAK = re.compile(r"\\[nlp]")
 
 
 def _labels(rel: str) -> set[str]:
@@ -40,6 +50,11 @@ def _labels(rel: str) -> set[str]:
         end = names.index(stop) if stop is not None else len(names)
         wanted.update(names[start:end])
     return wanted
+
+
+@lru_cache(maxsize=1)
+def _entries() -> tuple:
+    return tuple(e for e in ct._sources(REPO_ROOT) if isinstance(e, ct._Entry))
 
 
 @lru_cache(maxsize=1)
@@ -69,27 +84,29 @@ def test_faixa_traduzida_sem_achados(rel):
 
 
 @pytest.mark.parametrize("rel", sorted(TRANSLATED))
-def test_faixa_nao_tem_mais_inglês(rel):
-    entries = [e for e in ct._sources(REPO_ROOT) if isinstance(e, ct._Entry) and e.file == rel]
-    allowed = ct._english_allowed_names([e for e in ct._sources(REPO_ROOT) if isinstance(e, ct._Entry)])
+def test_faixa_nao_tem_mais_ingles(rel):
+    entries = _entries()
+    allowed = ct._english_allowed_names(list(entries))
     labels = _labels(rel) - JAPANESE_LABELS.get(rel, set())
-    left = {e.label: ct._english_words(e, allowed) for e in entries if e.label in labels}
+    left = {e.label: ct._english_words(e, allowed) for e in entries if e.file == rel and e.label in labels}
     assert {label: words for label, words in left.items() if words} == {}
 
 
-def test_ajuda_d1_mantem_a_faixa_toda():
-    """A D1 traduziu todos os rótulos da faixa (cada um mudou em relação à base inglesa), menos o japonês."""
-    rel = "data/text/help_system.inc"
-    base = ct._load_base(REPO_ROOT, ct.TRANSLATION_BASE, {})
-    assert not isinstance(base, str), base
-    labels = _labels(rel) - JAPANESE_LABELS[rel]
-    unchanged = []
-    for label in sorted(labels):
-        old = base.texts.get((rel, label)) if base is not None else None
-        entry = next((e for e in ct._sources(REPO_ROOT) if isinstance(e, ct._Entry)
-                      and e.file == rel and e.label == label), None)
-        assert entry is not None, label
-        if old == entry.texts:
-            unchanged.append(label)
-    # "PC", "Sair"... mudam sempre: nenhum rótulo da faixa pode ficar idêntico ao inglês
-    assert unchanged == []
+def test_ajuda_perguntas_e_titulos_em_uma_linha_de_200_px():
+    """Perguntas e títulos da ajuda: 1 linha só (sem \\n) e no máximo 200 px (lista em x = 8)."""
+    labels = _labels(HELP_FILE) - JAPANESE_LABELS[HELP_FILE]
+    env = ct._load_env(REPO_ROOT)
+    checked, problems = 0, []
+    for e in _entries():
+        if e.file != HELP_FILE or e.label not in labels or _NOT_ONE_LINE.match(e.label):
+            continue
+        checked += 1
+        text = "".join(e.texts)
+        if len(e.texts) != 1 or _BREAK.search(text):
+            problems.append(f"{e.label}: mais de uma linha")
+            continue
+        width = ct.measure(text, env, "normal", HELP_SPACE_PX).widest
+        if width > HELP_ONE_LINE_PX:
+            problems.append(f"{e.label}: {width} px > {HELP_ONE_LINE_PX}")
+    assert checked > 90, checked          # a faixa D1 tem ~99 perguntas e títulos
+    assert problems == []

@@ -9288,6 +9288,69 @@
    "detectar": false,
    "frente": "D",
    "obs": "condição de status (queimadura, paralisia...)"
+  },
+  {
+   "en": "POKéMON LIST",
+   "pt": "Lista de Pokémon",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "frente": "D",
+   "obs": "item do menu da Pokédex (gText_PokemonList)"
+  },
+  {
+   "en": "HABITATS OF POKéMON",
+   "pt": "Habitats dos Pokémon",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "frente": "D",
+   "obs": "comando citado na ajuda do Pokédex; o menu atual da Pokédex usa Área"
+  },
+  {
+   "en": "SEARCH",
+   "pt": "Buscar",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "frente": "D",
+   "obs": "item do menu da Pokédex (gText_SearchNoColor)"
+  },
+  {
+   "en": "BALL (menu do Safári)",
+   "pt": "Bola",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "frente": "D",
+   "obs": "comando do menu de batalha do Safári"
+  },
+  {
+   "en": "OPEN",
+   "pt": "Abrir",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "frente": "D",
+   "obs": "comando do Estojo de MT"
+  },
+  {
+   "en": "WITHDRAW ITEM",
+   "pt": "Retirar Item",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "frente": "D",
+   "obs": "comando do PC de {PLAYER} (Depósito de Itens)"
+  },
+  {
+   "en": "DEPOSIT ITEM",
+   "pt": "Guardar Item",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "frente": "D",
+   "obs": "comando do PC de {PLAYER} (Depósito de Itens)"
   }
  ],
  "proibidos": [
