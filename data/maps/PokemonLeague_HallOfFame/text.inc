@@ -8,8 +8,8 @@ PokemonLeague_HallOfFame_Text_OakCongratulations::
     .string "Os Pokémon deles também são\n"
     .string "registrados no Hall da Fama.\p"
     .string "{PLAYER}!\p"
-    .string "Você se esforçou muito para se\n"
-    .string "tornar o novo Campeão da Liga.\p"
+    .string "Você se esforçou muito para\n"
+    .string "conquistar o título de Campeão.\p"
     .string "Parabéns, {PLAYER}! Você e os seus\n"
     .string "Pokémon agora estão no Hall da Fama!$"
 

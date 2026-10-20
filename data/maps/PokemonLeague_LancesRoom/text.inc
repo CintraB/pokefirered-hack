@@ -32,14 +32,14 @@ PokemonLeague_LancesRoom_Text_RematchIntro::
 
 PokemonLeague_LancesRoom_Text_Defeat::
     .string "É isso!\p"
-    .string "Odeio admitir, mas você tem o\n"
-    .string "talento de um mestre Pokémon!$"
+    .string "Odeio admitir, mas você domina\n"
+    .string "os Pokémon como poucos!$"
 
 PokemonLeague_LancesRoom_Text_PostBattle::
     .string "Não acredito que os meus dragões\n"
     .string "perderam para você, {PLAYER}.\p"
-    .string "Você agora é o Campeão da Liga\n"
-    .string "Pokémon!\p"
+    .string "O título de Campeão da Liga\n"
+    .string "Pokémon agora é seu!\p"
     .string "…Ou seria, mas ainda falta mais\n"
     .string "um desafio.\p"
     .string "Há mais um Treinador a enfrentar!\n"

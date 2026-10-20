@@ -61,8 +61,8 @@ PokemonLeague_ChampionsRoom_Text_PostBattle::
     .string "Por que eu perdi?\p"
     .string "Nunca errei em nada ao criar\n"
     .string "os meus Pokémon…\p"
-    .string "Droga! Você é o novo Campeão\n"
-    .string "da Liga Pokémon!\p"
+    .string "Droga! O título de Campeão da\n"
+    .string "Liga Pokémon agora é seu!\p"
     .string "Embora eu não queira admitir…$"
 
 PokemonLeague_ChampionsRoom_Text_OakPlayer::
@@ -71,8 +71,8 @@ PokemonLeague_ChampionsRoom_Text_OakPlayer::
 PokemonLeague_ChampionsRoom_Text_OakCongratulations::
     .string "CARVALHO: Então você venceu!\n"
     .string "Meus sinceros parabéns!\p"
-    .string "Você é o novo Campeão da Liga\n"
-    .string "Pokémon!\p"
+    .string "O título de Campeão da Liga\n"
+    .string "Pokémon agora é seu!\p"
     .string "Você mudou muito desde que partiu\n"
     .string "com {STR_VAR_1} para trabalhar\l"
     .string "na Pokédex.\p"

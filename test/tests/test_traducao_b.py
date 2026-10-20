@@ -85,3 +85,22 @@ def test_base_inglesa_disponivel():
     """Sem a base inglesa as regras `controle` e `glossario` não rodam: o teste não pode passar calado."""
     missing = [r.detail for r in _results() if "base inglesa indispon" in r.detail]
     assert missing == []
+
+
+_VARIABLE = re.compile(r"\{(?:STR_VAR_\d|B_BUFF\d|B_COPY_VAR_\d)\}")
+
+
+@pytest.mark.parametrize("rel", FILES)
+def test_linhas_com_placeholder_cabem_com_10_letras_largas(rel):
+    """A esteira mede {STR_VAR_n} como 0 px: aqui o placeholder vira 10 'M' (nome de espécie no pior caso)."""
+    env = ct._load_env(REPO_ROOT)
+    too_wide = []
+    for entry in ct._extract(rel, "inc", (REPO_ROOT / rel).read_text(encoding="utf-8")):
+        if not isinstance(entry, ct._Entry) or not _VARIABLE.search(entry.texts[0]):
+            continue
+        rule = ct.rule_for(entry.file, entry.label)
+        text = _VARIABLE.sub("MMMMMMMMMM", entry.texts[0])
+        measured = ct.measure(text, env, rule.font)
+        if rule.px is not None and measured.widest > rule.px:
+            too_wide.append(f"{entry.label}: {measured.widest} px > {rule.px}")
+    assert too_wide == []

@@ -57,7 +57,7 @@ PewterCity_Gym_Text_BrockPostBattle::
     .string "Há todo tipo de Treinador neste\n"
     .string "nosso mundo enorme.\p"
     .string "Você parece ter muito talento\n"
-    .string "como Treinador Pokémon.\p"
+    .string "para treinar Pokémon.\p"
     .string "Então deixe-me dar uma sugestão.\p"
     .string "Vá ao Ginásio de Cerulean e teste\n"
     .string "as suas habilidades.$"
@@ -82,8 +82,8 @@ PewterCity_Gym_Text_LiamPostBattle::
 PewterCity_Gym_Text_LetMeTakeYouToTheTop::
     .string "Oi!\n"
     .string "Quer sonhar alto?\p"
-    .string "Você tem coragem de sonhar em ser\n"
-    .string "o campeão Pokémon?\p"
+    .string "Você tem coragem de sonhar com o\n"
+    .string "título de campeão Pokémon?\p"
     .string "Eu não sou Treinador, mas posso\n"
     .string "ensinar como vencer.\p"
     .string "Deixe-me levar você ao topo!$"
@@ -106,17 +106,18 @@ PewterCity_Gym_Text_ItsFreeLetsGetHappening::
 
 PewterCity_Gym_Text_YoureChampMaterial::
     .string "Eu sabia!\n"
-    .string "Você tem cara de campeão Pokémon!$"
+    .string "Você tem tudo para conquistar o\n"
+    .string "título de campeão Pokémon!$"
 
 PewterCity_Gym_Text_GymStatue::
     .string "Ginásio Pokémon de Pewter\n"
     .string "Líder: Brock\p"
-    .string "Treinadores vencedores:\n"
+    .string "Quem já venceu o Ginásio:\n"
     .string "{RIVAL}$"
 
 PewterCity_Gym_Text_GymStatuePlayerWon::
     .string "Ginásio Pokémon de Pewter\n"
     .string "Líder: Brock\p"
-    .string "Treinadores vencedores:\n"
+    .string "Quem já venceu o Ginásio:\n"
     .string "{RIVAL}, {PLAYER}$"
 
