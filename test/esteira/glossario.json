@@ -6455,6 +6455,195 @@
    "tela": "Geral"
   },
   {
+   "en": "REST HOUSE",
+   "pt": "Casa de Descanso",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true,
+   "frente": "C1",
+   "obs": "placa das casas da Zona de Safári"
+  },
+  {
+   "en": "SECRET HOUSE",
+   "pt": "Casa Secreta",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true,
+   "frente": "C1",
+   "obs": "Zona de Safári (prêmio da MO03)"
+  },
+  {
+   "en": "TRAINER TIPS",
+   "pt": "Dicas de Treinador",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "frente": "C1",
+   "obs": "título das placas de dica"
+  },
+  {
+   "en": "REQUEST NOTICE",
+   "pt": "Procura-se",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "frente": "C1",
+   "obs": "título do cartaz do Diretor do Safári"
+  },
+  {
+   "en": "SAFARI WARDEN",
+   "pt": "Diretor do Safári",
+   "fonte": "criado",
+   "categoria": "personagem",
+   "detectar": true,
+   "frente": "C1",
+   "obs": "dono dos Dentes Ouro"
+  },
+  {
+   "en": "WARDEN",
+   "pt": "Diretor",
+   "fonte": "criado",
+   "categoria": "personagem",
+   "detectar": true,
+   "frente": "C1",
+   "obs": "assinatura do cartaz do Safári"
+  },
+  {
+   "en": "MR. PSYCHIC",
+   "pt": "Sr. Psíquico",
+   "fonte": "criado",
+   "categoria": "personagem",
+   "detectar": true,
+   "frente": "C1",
+   "obs": "Cidade de Saffron (MT29)"
+  },
+  {
+   "en": "KARATE MASTER",
+   "pt": "Mestre de Caratê",
+   "fonte": "criado",
+   "categoria": "personagem",
+   "detectar": true,
+   "frente": "C1",
+   "obs": "Dojo de Saffron"
+  },
+  {
+   "en": "FIGHTING DOJO",
+   "pt": "Dojo de Luta",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true,
+   "frente": "C1",
+   "obs": "Cidade de Saffron"
+  },
+  {
+   "en": "FAN CLUB",
+   "pt": "Fã-clube",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true,
+   "frente": "C1",
+   "obs": "Fã-clube de Treinadores Pokémon (Saffron)"
+  },
+  {
+   "en": "PRESIDENT",
+   "pt": "Presidente",
+   "fonte": "criado",
+   "categoria": "personagem",
+   "detectar": true,
+   "frente": "C1",
+   "obs": "Silph Co."
+  },
+  {
+   "en": "SECRETARY",
+   "pt": "Secretária",
+   "fonte": "criado",
+   "categoria": "personagem",
+   "detectar": true,
+   "frente": "C1",
+   "obs": "Silph Co."
+  },
+  {
+   "en": "SEAGALLOP FERRY",
+   "pt": "balsa Seagallop",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true,
+   "frente": "C1",
+   "obs": "nome da embarcação mantido"
+  },
+  {
+   "en": "SAFFRON CITY POKéMON GYM",
+   "pt": "Ginásio Pokémon de Saffron",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true,
+   "frente": "C1",
+   "obs": "placa do Ginásio"
+  },
+  {
+   "en": "MR. PSYCHIC'S HOUSE",
+   "pt": "Casa do Sr. Psíquico",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "frente": "C1",
+   "obs": "placa de Saffron; texto de placa, não nome de mapa (o limite de 18 letras do aviso de mapa não vale)"
+  },
+  {
+   "en": "SILPH CO. OFFICE BUILDING",
+   "pt": "Prédio de Escritórios da Silph Co.",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "frente": "C1",
+   "obs": "placa de Saffron; texto de placa, não nome de mapa (o limite de 18 letras do aviso de mapa não vale)"
+  },
+  {
+   "en": "SILPH CO. HEAD OFFICE",
+   "pt": "Sede da Silph Co.",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true,
+   "frente": "C1",
+   "obs": "placas dos andares"
+  },
+  {
+   "en": "POKéMON TRAINER FAN CLUB",
+   "pt": "Fã-clube de Treinadores Pokémon",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true,
+   "frente": "C1",
+   "obs": "placa de Saffron"
+  },
+  {
+   "en": "SEVAULT CANYON ENTRANCE",
+   "pt": "Entrada do Cânion Sevault",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "frente": "C1",
+   "obs": "placa da entrada; texto de placa, não nome de mapa (o limite de 18 letras do aviso de mapa não vale)"
+  },
+  {
+   "en": "TRAINER TOWER ENTRANCE",
+   "pt": "Entrada da Torre do Treinador",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "frente": "C1",
+   "obs": "placa da Ilha Sete; texto de placa, não nome de mapa (o limite de 18 letras do aviso de mapa não vale)"
+  },
+  {
+   "en": "GOLD TEETH (forma cheia)",
+   "pt": "Dentes de Ouro",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": false,
+   "frente": "C1",
+   "obs": "forma cheia de Dentes Ouro, para fala e cartaz"
+  },
+  {
    "en": "COMET PUNCH",
    "pt": "Soco Cometa",
    "fonte": "TCG",

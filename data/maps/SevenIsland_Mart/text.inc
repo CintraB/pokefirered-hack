@@ -1,17 +1,19 @@
 SevenIsland_Mart_Text_MonHavePersonalitiesOfTheirOwn::
-    .string "POKéMON have personalities of their\n"
-    .string "own, just like people.\p"
-    .string "My PIKACHU has a HASTY nature,\n"
-    .string "so it grew to be a speedy POKéMON.$"
+    .string "Pokémon têm personalidade própria,\n"
+    .string "assim como as pessoas.\p"
+    .string "O meu Pikachu tem natureza\n"
+    .string "Apressada, então cresceu e virou um\l"
+    .string "Pokémon veloz.$"
 
 SevenIsland_Mart_Text_PreparationsCompleteForRuins::
-    .string "Okay, preparations are complete\n"
-    .string "for me to explore the RUINS.$"
+    .string "Pronto, os preparativos estão\n"
+    .string "completos para eu explorar as\l"
+    .string "Ruínas.$"
 
 SevenIsland_Mart_Text_NeedToFishOnSevenIsland::
-    .string "I need to fish on SEVEN ISLAND.\p"
-    .string "That will complete my fishing tour\n"
-    .string "of the SEVII ISLANDS.\p"
-    .string "I'd better stock up on some\n"
-    .string "POKé BALLS first, though.$"
+    .string "Preciso pescar na Ilha Sete.\p"
+    .string "Isso completará a minha turnê de\n"
+    .string "pescaria pelas Ilhas Sevii.\p"
+    .string "Mas é melhor eu estocar umas\n"
+    .string "Poké Bolas primeiro.$"
 
