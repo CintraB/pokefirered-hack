@@ -1,0 +1,114 @@
+"""Frente A da tradução: diálogos dos mapas (`data/maps/*/text.inc`), grupo a grupo.
+
+Para os arquivos de cada grupo já traduzido: nenhum inglês sobrando (função de relatório de inglês
+da checagem de texto), nenhum achado das regras de texto da esteira (`controle`, `glossario`,
+largura, linhas, letras, charmap) e os rótulos iguais aos da base inglesa. Task seguinte da frente:
+acrescentar o grupo em `GRUPOS`.
+"""
+
+import re
+import shutil
+import subprocess
+from functools import lru_cache
+from pathlib import Path
+
+import pytest
+
+from esteira import check_text as ct
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
+
+# grupo -> pastas de mapa (text.inc) traduzidas
+GRUPOS = {
+    "A1": [
+        "CeladonCity", "CeladonCity_Condominiums_1F", "CeladonCity_Condominiums_2F",
+        "CeladonCity_Condominiums_3F", "CeladonCity_Condominiums_Roof", "CeladonCity_Condominiums_RoofRoom",
+        "CeladonCity_DepartmentStore_1F", "CeladonCity_DepartmentStore_2F", "CeladonCity_DepartmentStore_3F",
+        "CeladonCity_DepartmentStore_4F", "CeladonCity_DepartmentStore_5F", "CeladonCity_DepartmentStore_Roof",
+        "CeladonCity_GameCorner", "CeladonCity_GameCorner_PrizeRoom", "CeladonCity_Gym", "CeladonCity_Hotel",
+        "CeladonCity_House1", "CeladonCity_PokemonCenter_1F", "CeladonCity_Restaurant", "CeruleanCave_B1F",
+        "CeruleanCity", "CeruleanCity_BikeShop", "CeruleanCity_Gym", "CeruleanCity_House1", "CeruleanCity_House2",
+        "CeruleanCity_House3", "CeruleanCity_House4", "CeruleanCity_House5", "CeruleanCity_Mart",
+        "CeruleanCity_PokemonCenter_1F", "CinnabarIsland", "CinnabarIsland_Gym",
+    ],
+}
+FILES = [f"data/maps/{m}/text.inc" for maps in GRUPOS.values() for m in maps]
+
+# Inglês que a checagem conta mas é legítimo: (arquivo, palavras, textos) -> motivo
+ENGLISH_EXCEPTIONS = {
+    # "TO" = Treinador Original (glossário: OT -> TO); "to" está na lista de palavras inglesas
+    "data/maps/CeladonCity_DepartmentStore_3F/text.inc": (2, 1),
+}
+
+
+@pytest.fixture(scope="module")
+def results():
+    if shutil.which("git") is None:
+        pytest.skip("sem git")
+    return ct.check_text(str(REPO_ROOT), {"text": []}, english="desligado")
+
+
+def _mine(results, rule=None):
+    return [r for r in results if r.status != "ok" and any(f in r.detail for f in FILES)
+            and (rule is None or r.name == f"texto/{rule}")]
+
+
+@pytest.mark.parametrize("rule", ["largura", "linhas", "letras", "charmap", "terminador", "controle", "glossario"])
+def test_nenhum_achado_das_regras_nos_arquivos_da_frente(results, rule):
+    assert [f"{r.detail}" for r in _mine(results, rule)] == []
+
+
+def test_nenhum_achado_de_texto_nos_arquivos_da_frente(results):
+    # qualquer outra regra de texto (inclusive avisos de base indisponível) também
+    assert [f"{r.name}: {r.detail}" for r in _mine(results)] == []
+
+
+def test_nenhum_ingles_sobrando():
+    report = ct.english_report(str(REPO_ROOT))
+    left = {}
+    for f in FILES:
+        c = report.get(f)
+        if c is None:
+            continue
+        if (c.words, c.texts) == ENGLISH_EXCEPTIONS.get(f):
+            continue
+        left[f] = (c.words, c.texts, c.examples)
+    assert left == {}
+
+
+def test_excecao_do_to_continua_sendo_so_a_sigla():
+    """A única exceção do relatório de inglês é a sigla TO (Treinador Original)."""
+    text = (REPO_ROOT / "data/maps/CeladonCity_DepartmentStore_3F/text.inc").read_text(encoding="utf-8")
+    block = text[text.index("OTStandsForOriginalTrainer::"):]
+    block = block[:block.index("$")]
+    words = ct._plain_words(block.replace(".string", " "))
+    assert [w for w in words if w.lower() in ct.ENGLISH_WORDS] == ["TO", "TO"]
+
+
+@lru_cache(maxsize=None)
+def _base_labels(rel):
+    out = subprocess.run(["git", "-C", str(REPO_ROOT), "show", f"{ct.TRANSLATION_BASE}:{rel}"],
+                         capture_output=True)
+    if out.returncode != 0:
+        return None
+    return re.findall(r"^(\w+)::", out.stdout.decode("utf-8"), re.M)
+
+
+@pytest.mark.parametrize("rel", FILES)
+def test_rotulos_iguais_aos_da_base(rel):
+    if shutil.which("git") is None:
+        pytest.skip("sem git")
+    base = _base_labels(rel)
+    if base is None:
+        pytest.skip("sem o commit base da tradução")
+    now = re.findall(r"^(\w+)::", (REPO_ROOT / rel).read_text(encoding="utf-8"), re.M)
+    assert now == base
+
+
+@pytest.mark.parametrize("rel", FILES)
+def test_sem_termos_ingleses_em_caixa_alta(rel):
+    text = (REPO_ROOT / rel).read_text(encoding="utf-8")
+    # nomes de golpe/item do jogo inglês que não podem sobrar em caixa alta no diálogo
+    text = re.sub(r"{[^}]*}", "", text)
+    for old in ("POKéMON", "TRAINER", "GYM", "BADGE", "TEAM ROCKET", "POKé BALL", "BERRY", "STORE", "LEADER"):
+        assert old not in re.sub(r"@.*", "", text), (rel, old)
