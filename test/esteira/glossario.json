@@ -9189,6 +9189,33 @@
    "detectar": false,
    "frente": "D",
    "obs": "decisão D4 do Cintra (18/10): classe dos 2 ADMIN da Equipe Rocket (trainers.h usa TRAINER_CLASS_TEAM_ROCKET + nome \"ADMIN\"; exige classe própria — frente D/trainers)"
+  },
+  {
+   "en": "Ayers Rock",
+   "pt": "Uluru",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true,
+   "frente": "F",
+   "obs": "Pokédex do Ponyta; nome aborígene do monólito, que evita \"Rock\" em PT-BR"
+  },
+  {
+   "en": "The Bomb Ball",
+   "pt": "Bola-Bomba",
+   "fonte": "criado",
+   "categoria": "personagem",
+   "detectar": true,
+   "frente": "F",
+   "obs": "apelido do Electrode na Pokédex"
+  },
+  {
+   "en": "The Walking Tropical Rainforest",
+   "pt": "Floresta Tropical Ambulante",
+   "fonte": "criado",
+   "categoria": "personagem",
+   "detectar": true,
+   "frente": "F",
+   "obs": "apelido do Exeggutor na Pokédex"
   }
  ],
  "proibidos": [
