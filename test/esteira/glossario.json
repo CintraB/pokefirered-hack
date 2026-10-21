@@ -9811,6 +9811,168 @@
    "detectar": false,
    "frente": "G1",
    "obs": "enfeites"
+  },
+  {
+   "en": "MAILBOX",
+   "pt": "Caixa de Cartas",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "frente": "D",
+   "obs": "carta = MAIL (glossário §2.10); PC de {PLAYER}"
+  },
+  {
+   "en": "SAFARI GAME",
+   "pt": "Jogo do Safári",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "frente": "D",
+   "obs": "atividade da Zona de Safári; \"Safári\" como em Zona de Safári / Bola Safári"
+  },
+  {
+   "en": "POCKET",
+   "pt": "bolso",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "frente": "D",
+   "obs": "bolso da Bolsa (bolso Itens, Itens-chave, Poké Bolas)"
+  },
+  {
+   "en": "HELP System",
+   "pt": "sistema de Ajuda",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "frente": "D",
+   "obs": "a ajuda do jogo"
+  },
+  {
+   "en": "Control Pad",
+   "pt": "Direcional",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "frente": "D",
+   "obs": "{PLUS} Direcional; Botão A/B/L/R para os demais botões"
+  },
+  {
+   "en": "MENU",
+   "pt": "menu",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "frente": "D",
+   "obs": "menu Start, minúsculo no meio da frase"
+  },
+  {
+   "en": "SHIFT (menu da equipe)",
+   "pt": "Entrar",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "frente": "D",
+   "obs": "comando do grupo em batalha que põe o Pokémon escolhido em campo; colide com SHIFT de BATTLE STYLE (Troca) e SWITCH (Trocar), revisar com a frente do menu da equipe"
+  },
+  {
+   "en": "TM",
+   "pt": "MT",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "frente": "D",
+   "obs": "Máquina Técnica"
+  },
+  {
+   "en": "HM",
+   "pt": "MO",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "frente": "D",
+   "obs": "Máquina Oculta"
+  },
+  {
+   "en": "HIDDEN move",
+   "pt": "golpe oculto",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "frente": "D",
+   "obs": "golpe de MO"
+  },
+  {
+   "en": "status problem",
+   "pt": "problema de status",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "frente": "D",
+   "obs": "condição de status (queimadura, paralisia...)"
+  },
+  {
+   "en": "POKéMON LIST",
+   "pt": "Lista de Pokémon",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "frente": "D",
+   "obs": "item do menu da Pokédex (gText_PokemonList)"
+  },
+  {
+   "en": "HABITATS OF POKéMON",
+   "pt": "Habitats dos Pokémon",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "frente": "D",
+   "obs": "comando citado na ajuda do Pokédex; o menu atual da Pokédex usa Área"
+  },
+  {
+   "en": "SEARCH",
+   "pt": "Buscar",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "frente": "D",
+   "obs": "item do menu da Pokédex (gText_SearchNoColor)"
+  },
+  {
+   "en": "BALL (menu do Safári)",
+   "pt": "Bola",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "frente": "D",
+   "obs": "comando do menu de batalha do Safári"
+  },
+  {
+   "en": "OPEN",
+   "pt": "Abrir",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "frente": "D",
+   "obs": "comando do Estojo de MT"
+  },
+  {
+   "en": "WITHDRAW ITEM",
+   "pt": "Retirar Item",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "frente": "D",
+   "obs": "comando do PC de {PLAYER} (Depósito de Itens)"
+  },
+  {
+   "en": "DEPOSIT ITEM",
+   "pt": "Guardar Item",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "frente": "D",
+   "obs": "comando do PC de {PLAYER} (Depósito de Itens)"
   }
  ],
  "proibidos": [
