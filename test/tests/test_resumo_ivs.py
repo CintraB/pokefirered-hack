@@ -16,8 +16,9 @@ import pytest
 
 from esteira import hooks
 from esteira.check_text import WIDTH_RULES, _ivev_page_results, width_limit
-from esteira.ivev_page import (COL_EV, COL_EV_END, COL_GRADE, COL_IV_END, COL_OVERALL,
-                               COL_PERCENT, LINE_WIDTH_PX, LINES, SCREEN_POINTS, SHOWCASE,
+from esteira.ivev_page import (COL_EV, COL_EV_END, COL_GRADE, COL_IV_END, COL_OVERALL, EV,
+                               HIDDEN_POWER, IV_TOTAL, COL_PERCENT, LINE_WIDTH_PX, LINES,
+                               SCREEN_POINTS, SHOWCASE,
                                SOURCE_FILES, STATS, TEXT_X, WINDOW_WIDTH_PX, IvEvPage,
                                check_page_widths, hidden_power, iv_grade, load_type_names,
                                percent, total_grade, worst_cases)
@@ -46,17 +47,17 @@ def _function(source: str, signature: str) -> str:
 
 # --- contas (design: docs/superpowers/specs/2026-10-17-pagina-ivs-evs-design.md) ---------------
 
-@pytest.mark.parametrize("iv, grade", [(31, "Perfect"), (30, "Excellent"), (26, "Excellent"),
-                                       (25, "Very good"), (16, "Very good"), (15, "Good"),
-                                       (1, "Good"), (0, "Poor")])
+@pytest.mark.parametrize("iv, grade", [(31, "Perfeito"), (30, "Excelente"), (26, "Excelente"),
+                                       (25, "Muito bom"), (16, "Muito bom"), (15, "Bom"),
+                                       (1, "Bom"), (0, "Fraco")])
 def test_nivel_de_cada_iv(iv, grade):
     assert iv_grade(iv) == grade
 
 
-@pytest.mark.parametrize("total, grade", [(186, "Perfect"), (185, "Outstanding"), (151, "Outstanding"),
-                                          (150, "Above average"), (121, "Above average"),
-                                          (120, "Average"), (91, "Average"), (90, "Below average"),
-                                          (0, "Below average")])
+@pytest.mark.parametrize("total, grade", [(186, "Perfeito"), (185, "Excepcional"), (151, "Excepcional"),
+                                          (150, "Acima da média"), (121, "Acima da média"),
+                                          (120, "Na média"), (91, "Na média"), (90, "Abaixo da média"),
+                                          (0, "Abaixo da média")])
 def test_avaliacao_geral(total, grade):
     assert total_grade(total) == grade
 
@@ -91,12 +92,12 @@ def test_hidden_power_usa_a_ordem_da_batalha():
 
 def test_casos_do_design_e_do_cenario():
     mewtwo = PAGE.text(*SHOWCASE[0][1:])
-    assert PAGE.decode(mewtwo).startswith("IV TOTAL 186/186{SKIP 106}100%{SKIP 136}Perfect / HP")
-    assert PAGE.decode(mewtwo).endswith("HIDDEN POWER Sombr. 70{SKIP 144}EV{SKIP 164}510/510")
+    assert PAGE.decode(mewtwo).startswith("IV total 186/186{SKIP 106}100%{SKIP 136}Perfeito / PS")
+    assert PAGE.decode(mewtwo).endswith("Poder Oculto Sombr. 70{SKIP 144}EV{SKIP 164}510/510")
     magikarp = PAGE.decode(PAGE.text(*SHOWCASE[1][1:]))
-    assert "IV TOTAL 0/186{SKIP 106}0%{SKIP 136}Below average" in magikarp
+    assert "IV total 0/186{SKIP 106}0%{SKIP 136}Abaixo da média" in magikarp
     eevee = PAGE.decode(PAGE.text(*SHOWCASE[2][1:]))
-    for grade in ("Very good", "Excellent", "Good"):    # 25/16, 26/30, 15/1
+    for grade in ("Muito bom", "Excelente", "Bom"):    # 25/16, 26/30, 15/1
         assert grade in eevee
     assert len(PAGE.text(*SHOWCASE[0][1:]).split(b"\xfe")) == LINES
 
@@ -117,7 +118,7 @@ def test_textos_de_strings_c_batem_com_o_python():
                                                      "Average", "BelowAverage")] \
         == [total_grade(t) for t in (186, 160, 130, 100, 50)]
     assert (s["gText_PokeSum_IvTotal"], s["gText_PokeSum_Ev"], s["gText_PokeSum_HiddenPower"]) == (
-        "IV TOTAL", "EV", "HIDDEN POWER")
+        IV_TOTAL, EV, HIDDEN_POWER)
     assert s["gText_PokeSum_PageName_IvsEvs"] == "IVs/EVs"
 
 

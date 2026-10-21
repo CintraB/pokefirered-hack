@@ -9189,6 +9189,213 @@
    "detectar": false,
    "frente": "D",
    "obs": "decisão D4 do Cintra (18/10): classe dos 2 ADMIN da Equipe Rocket (trainers.h usa TRAINER_CLASS_TEAM_ROCKET + nome \"ADMIN\"; exige classe própria — frente D/trainers)"
+  },
+  {
+   "en": "WIRELESS ADAPTER",
+   "pt": "Adaptador Sem Fio",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "frente": "E",
+   "obs": "src/strings.c (gText_WirelessNotConnected...)"
+  },
+  {
+   "en": "WIRELESS COMMUNICATION",
+   "pt": "Comunicação Sem Fio",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "frente": "E",
+   "obs": "Presente Misterioso e status sem fio"
+  },
+  {
+   "en": "UNION ROOM",
+   "pt": "Sala União",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true,
+   "frente": "E",
+   "obs": "sala de link do Centro Pokémon (gText_UnionRoom)"
+  },
+  {
+   "en": "DIRECT CORNER",
+   "pt": "Canto Direto",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true,
+   "frente": "E",
+   "obs": "gText_DirectCorner"
+  },
+  {
+   "en": "TRADE CENTER",
+   "pt": "Centro de Trocas",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true,
+   "frente": "E",
+   "obs": "gText_TradeCenter"
+  },
+  {
+   "en": "COLOSSEUM",
+   "pt": "Coliseu",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true,
+   "frente": "E",
+   "obs": "gText_Colosseum"
+  },
+  {
+   "en": "BERRY CRUSH",
+   "pt": "Esmaga Frutas",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "frente": "E",
+   "obs": "minijogo (gText_BerryCrush)"
+  },
+  {
+   "en": "POKéMON JUMP",
+   "pt": "Pulo Pokémon",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "frente": "E",
+   "obs": "minijogo (gText_PokemonJump)"
+  },
+  {
+   "en": "DODRIO BERRY-PICKING",
+   "pt": "Colheita do Dodrio",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "frente": "E",
+   "obs": "minijogo (gText_DodrioBerryPicking)"
+  },
+  {
+   "en": "BERRY POWDER",
+   "pt": "Pó de Fruta",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "frente": "E",
+   "obs": "Esmaga Frutas (gText_BerryCrush_GainedXUnitsOfPowder)"
+  },
+  {
+   "en": "WONDER CARD",
+   "pt": "Cartão Maravilha",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "frente": "E",
+   "obs": "Presente Misterioso"
+  },
+  {
+   "en": "WONDER NEWS",
+   "pt": "Notícias Maravilha",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "frente": "E",
+   "obs": "Presente Misterioso"
+  },
+  {
+   "en": "STAMP",
+   "pt": "Selo",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "frente": "E",
+   "obs": "Presente Misterioso"
+  },
+  {
+   "en": "MAILBOX",
+   "pt": "Caixa de Correio",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "frente": "E",
+   "obs": "PC de itens (gText_Mailbox)"
+  },
+  {
+   "en": "SAFARI GAME",
+   "pt": "Jogo Safári",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "frente": "E",
+   "obs": "ajuda do menu Start (gStartMenuDesc_Retire)"
+  },
+  {
+   "en": "TRENDY SAYING",
+   "pt": "Bordão da moda",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "frente": "E",
+   "obs": "Easy Chat (gEasyChatGroupName_TrendySaying)"
+  },
+  {
+   "en": "fateful encounter",
+   "pt": "encontro do destino",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "frente": "E",
+   "obs": "memória do Treinador no resumo (gText_PokeSum_*Fateful*)"
+  },
+  {
+   "en": "IV TOTAL",
+   "pt": "IV total",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "frente": "E",
+   "obs": "página IVs/EVs (Hack 5)"
+  },
+  {
+   "en": "TOSS (menu da bolsa)",
+   "pt": "Largar",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "frente": "E",
+   "obs": "encurtado: 'Descartar' (glossário) mede 50 px e o menu de contexto da bolsa/porta-frutas tem 48 px (gOtherText_Toss)"
+  },
+  {
+   "en": "TOSS (Presente Misterioso)",
+   "pt": "Apagar",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "frente": "E",
+   "obs": "lista Receber/Enviar/Apagar dos Cartões Maravilha, 48 px (gText_Toss)"
+  },
+  {
+   "en": "DESELECT",
+   "pt": "Desfazer",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "frente": "E",
+   "obs": "encurtado: 'Desmarcar' mede 51 px e o menu de contexto tem 48 px (gOtherText_Deselect)"
+  },
+  {
+   "en": "PROF. OAK'S PC (menu do PC)",
+   "pt": "PC Prof. Carvalho",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "frente": "E",
+   "obs": "encurtado: 'PC do Prof. Carvalho' mede 115 px e o menu do PC tem 104 px (gText_ProfOakSPc)"
+  },
+  {
+   "en": "ITEMFINDER (forma cheia)",
+   "pt": "Detector de Itens",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": false,
+   "frente": "E",
+   "obs": "forma cheia de Detector Item, para texto corrido (decisão de 20/10); gText_Itemfinder* em src/strings.c"
   }
  ],
  "proibidos": [

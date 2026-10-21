@@ -6,13 +6,15 @@ Este módulo calcula, de forma independente, os valores (nível de cada IV, tota
 geral, Hidden Power) e o texto ESPERADO, byte a byte, para comparar com o da build de teste
 (hooks.Mailbox.ivev_text). Design: docs/superpowers/specs/2026-10-17-pagina-ivs-evs-design.md.
 
-    IV TOTAL 161/186     87%   Outstanding
-    HP          31 Perfect           EV 252
-    ATTACK      28 Excellent         EV   0
-    ...                              (SP. ATK, SP. DEF, SPEED)
-    HIDDEN POWER FIRE 70             EV 510/510
+    IV total 161/186     87%   Excepcional
+    PS          31 Perfeito          EV 252
+    Ataque      28 Excelente         EV   0
+    ...                              (Atq. Esp., Def. Esp., Veloc.)
+    Poder Oculto Fogo 70             EV 510/510
 
-IVs e EVs aqui vão na ordem da página: HP, ATTACK, DEFENSE, SP. ATK, SP. DEF, SPEED.
+IVs e EVs aqui vão na ordem da página: PS, Ataque, Defesa, Atq. Esp., Def. Esp., Velocidade.
+Textos em PT-BR desde a tradução (frente E); "Velocidade" vai abreviada ("Veloc.") porque o IV
+termina em COL_IV_END = 66 px e a palavra inteira mede 57 px.
 """
 
 import re
@@ -21,11 +23,12 @@ from pathlib import Path
 from .charmap import Charmap
 from .check_text import _load_widths
 
-STATS = ("HP", "ATTACK", "DEFENSE", "SP. ATK", "SP. DEF", "SPEED")
+STATS = ("PS", "Ataque", "Defesa", "Atq. Esp.", "Def. Esp.", "Veloc.")
+IV_TOTAL, EV, HIDDEN_POWER = "IV total", "EV", "Poder Oculto"
 MAX_IV, MAX_TOTAL_IVS, MAX_EV, MAX_TOTAL_EVS = 31, 186, 255, 510
-IV_GRADES = ((31, "Perfect"), (26, "Excellent"), (16, "Very good"), (1, "Good"), (0, "Poor"))
-TOTAL_GRADES = ((186, "Perfect"), (151, "Outstanding"), (121, "Above average"), (91, "Average"),
-                (0, "Below average"))
+IV_GRADES = ((31, "Perfeito"), (26, "Excelente"), (16, "Muito bom"), (1, "Bom"), (0, "Fraco"))
+TOTAL_GRADES = ((186, "Perfeito"), (151, "Excepcional"), (121, "Acima da média"), (91, "Na média"),
+                (0, "Abaixo da média"))
 
 # Colunas (px desde o início do texto; IVEV_COL_* em src/pokemon_summary_screen.c)
 COL_IV_END, COL_GRADE, COL_PERCENT, COL_OVERALL, COL_EV, COL_EV_END = 66, 72, 106, 136, 144, 182
@@ -115,15 +118,15 @@ class IvEvPage:
     def lines(self, ivs: tuple[int, ...], evs: tuple[int, ...]) -> list[bytes]:
         total = sum(ivs)
         hp_type, hp_power = hidden_power(ivs)
-        lines = [self._enc(f"IV TOTAL {total}/{MAX_TOTAL_IVS}") + SKIP + bytes([COL_PERCENT])
+        lines = [self._enc(f"{IV_TOTAL} {total}/{MAX_TOTAL_IVS}") + SKIP + bytes([COL_PERCENT])
                  + self._enc(f"{percent(total)}%") + SKIP + bytes([COL_OVERALL])
                  + self._enc(total_grade(total))]
         for name, iv, ev in zip(STATS, ivs, evs):
             lines.append(self._enc(name) + self._right(iv, COL_IV_END) + SKIP + bytes([COL_GRADE])
-                         + self._enc(iv_grade(iv)) + SKIP + bytes([COL_EV]) + self._enc("EV")
+                         + self._enc(iv_grade(iv)) + SKIP + bytes([COL_EV]) + self._enc(EV)
                          + self._right(ev, COL_EV_END))
-        lines.append(self._enc(f"HIDDEN POWER {self.type_names[hp_type]} {hp_power}")
-                     + SKIP + bytes([COL_EV]) + self._enc("EV") + self._right(sum(evs), COL_EV_END)
+        lines.append(self._enc(f"{HIDDEN_POWER} {self.type_names[hp_type]} {hp_power}")
+                     + SKIP + bytes([COL_EV]) + self._enc(EV) + self._right(sum(evs), COL_EV_END)
                      + self._enc(f"/{MAX_TOTAL_EVS}"))
         return lines
 

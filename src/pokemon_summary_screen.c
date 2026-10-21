@@ -3100,7 +3100,7 @@ static void PokeSum_PrintTrainerMemo_Mon_HeldByOT(void)
     u8 level;
     u8 metLocation;
     u8 levelStr[5];
-    u8 mapNameStr[32];
+    u8 mapNameStr[32], metPlaceStr[32]; // the name, then the name with "na"/"no"/"nas"/"em"
     u8 natureMetOrHatchedAtLevelStr[152];
 
     DynamicPlaceholderTextUtil_Reset();
@@ -3126,7 +3126,7 @@ static void PokeSum_PrintTrainerMemo_Mon_HeldByOT(void)
             StringCopy(mapNameStr, gText_PokeSum_ATrade);
     }
 
-    DynamicPlaceholderTextUtil_SetPlaceholderPtr(2, mapNameStr);
+    DynamicPlaceholderTextUtil_SetPlaceholderPtr(2, PokeSum_BufferMetPlace(metPlaceStr, mapNameStr));
 
     // These pairs of strings are bytewise identical to each other in English,
     // but Japanese uses different grammar for Bold and Gentle natures.
@@ -3174,7 +3174,7 @@ static void PokeSum_PrintTrainerMemo_Mon_NotHeldByOT(void)
     u8 level;
     u8 metLocation;
     u8 levelStr[5];
-    u8 mapNameStr[32];
+    u8 mapNameStr[32], metPlaceStr[32]; // the name, then the name with "na"/"no"/"nas"/"em"
     u8 natureMetOrHatchedAtLevelStr[152];
 
     DynamicPlaceholderTextUtil_Reset();
@@ -3223,7 +3223,7 @@ static void PokeSum_PrintTrainerMemo_Mon_NotHeldByOT(void)
     else
         StringCopy(mapNameStr, gText_PokeSum_ATrade);
 
-    DynamicPlaceholderTextUtil_SetPlaceholderPtr(2, mapNameStr);
+    DynamicPlaceholderTextUtil_SetPlaceholderPtr(2, PokeSum_BufferMetPlace(metPlaceStr, mapNameStr));
 
     // These pairs of strings are bytewise identical to each other in English,
     // but Japanese uses different grammar for Bold and Gentle natures.
@@ -5731,4 +5731,45 @@ static bool32 MapSecIsInKantoOrSevii(u8 mapSec)
 static void ShowPokemonSummaryScreen_NullParty(void)
 {
     ShowPokemonSummaryScreen(NULL, 0, 0, CB2_ReturnToField, PSS_MODE_NORMAL);
+}
+
+// PT-BR: in the Trainer Memo the met location goes with "em" contracted with the article that
+// its first word asks for ("na Rota 1", "no Monte Lua", "nas Ilhas Seafoam"). The word lists
+// (one word per line) are in src/strings.c; a first word in no list ("uma troca", "algum
+// lugar") gets a plain "em".
+static bool8 PokeSum_WordsInclude(const u8 *words, const u8 *word, u8 length)
+{
+    while (*words != EOS)
+    {
+        u8 i = 0;
+
+        while (i < length && words[i] == word[i])
+            i++;
+        if (i == length && (words[i] == CHAR_NEWLINE || words[i] == EOS))
+            return TRUE;
+        while (*words != CHAR_NEWLINE && *words != EOS)
+            words++;
+        if (*words == CHAR_NEWLINE)
+            words++;
+    }
+    return FALSE;
+}
+
+u8 *PokeSum_BufferMetPlace(u8 *dest, const u8 *place)
+{
+    const u8 *preposition;
+    u8 length = 0;
+
+    while (place[length] != CHAR_SPACE && place[length] != EOS)
+        length++;
+    if (PokeSum_WordsInclude(gText_PokeSum_PlaceWordsFem, place, length))
+        preposition = gText_PokeSum_PlaceInFem;
+    else if (PokeSum_WordsInclude(gText_PokeSum_PlaceWordsMasc, place, length))
+        preposition = gText_PokeSum_PlaceInMasc;
+    else if (PokeSum_WordsInclude(gText_PokeSum_PlaceWordsFemPlural, place, length))
+        preposition = gText_PokeSum_PlaceInFemPlural;
+    else
+        preposition = gText_PokeSum_PlaceIn;
+    StringCopy(StringCopy(dest, preposition), place);
+    return dest;
 }
