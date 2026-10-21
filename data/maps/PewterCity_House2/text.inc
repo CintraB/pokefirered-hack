@@ -6,8 +6,8 @@ PewterCity_House2_Text_MonsLearnTechniquesAsTheyGrow::
 
 PewterCity_House2_Text_MonsEasierCatchIfStatused::
     .string "Um Pokémon fica mais fácil de\n"
-    .string "capturar se tiver um problema de\l"
-    .string "status.\p"
+    .string "capturar se tiver um\l"
+    .string "problema de status.\p"
     .string "Sono, envenenamento, queimadura\n"
     .string "ou paralisia… Todos funcionam.\p"
     .string "Mas capturar Pokémon nunca é\n"
