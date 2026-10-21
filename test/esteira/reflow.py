@@ -322,7 +322,9 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--var", action="append", default=[], metavar="NOME=N[d]",
                         help="pior caso de um placeholder variável: STR_VAR_1=13 (13 letras) ou STR_VAR_1=5d "
                              "(número de 5 algarismos); padrão 10 letras, ou o declarado em "
-                             "janelas_uso.VAR_CONTENTS para o rótulo; pode repetir")
+                             "janelas_uso.VAR_CONTENTS para o rótulo; pode repetir. Só PRÉVIA: a checagem "
+                             "(check_text) não vê o --var, só o VAR_CONTENTS; num .inc sem --rotulo vale "
+                             "para todos os rótulos do arquivo")
     args = parser.parse_args(argv)
     try:
         variaveis = dict(parse_var(spec) for spec in args.var)

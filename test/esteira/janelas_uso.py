@@ -75,17 +75,22 @@ class VarContent(NamedTuple):
     """Exceção por contexto do pior caso de um placeholder variável (check_text.VAR_SIZES: 10 letras).
     Neste arquivo/rótulo, o código que enche o buffer prova o que vai em `var`: `chars` letras (nome de
     item = 13, ITEM_NAME_MAX_CHARS) ou, com `digits`, um número de até `chars` algarismos. `source` cita
-    o arquivo:linha desse código (o teste confere). Só declare o que o código prova."""
+    o arquivo:linha desse código (o teste confere). Só declare o que o código prova.
+    Vale para a checagem (check_text) e para o reflow de um `.inc`; o `--var` da CLI do reflow é só
+    prévia e não chega à checagem."""
     file: str                  # arquivo do texto (fnmatch), ex.: "data/maps/CeladonCity_GameCorner/text.inc"
-    label: str                 # rótulo (fnmatch)
-    var: str                   # placeholder sem chaves (fnmatch), ex.: "STR_VAR_1"
+    label: str                 # rótulo (fnmatch; `gX` também cobre o repetido `gX#2`)
+    var: str                   # nome LITERAL de um placeholder de check_text.VAR_SIZES, sem chaves:
+                               # "STR_VAR_1", "B_BUFF2", "DYNAMIC" (cobre todo {DYNAMIC n} do texto)
     chars: int
     source: str
     digits: bool = False
 
 
 # Uma linha por (arquivo, rótulo, placeholder), em ordem alfabética de arquivo e rótulo (as frentes da
-# tradução acrescentam em paralelo: a ordem espalha as inserções e evita conflito no merge).
+# tradução acrescentam em paralelo: a ordem espalha as inserções e evita conflito no merge). A ordem não
+# decide nada: duas entradas que casem com o mesmo texto e placeholder são erro (ValueError em
+# check_text.var_sizes e teste test_var_contents_never_overlap); padrão largo só sem sobreposição.
 _TOWER_TIME = ("tempo da Trainer Tower: minutos, segundos e centésimos com 2 algarismos cada "
                "(PRINT_TOWER_TIME, src/trainer_tower.c:883-885)")
 VAR_CONTENTS: list[VarContent] = [

@@ -749,7 +749,7 @@ inglês que entrar depois na `hack-switch` e for trazida para a tradução apare
   `python3 -m esteira.check_text --ingles [arquivo...]` (em `test/`).
 - `largura` no **pior caso** dos placeholders de conteúdo variável (`VAR_SIZES` em
   `check_text.py`): no texto mudado (ou novo), `{STR_VAR_n}`, `{B_BUFF1..3}`, `{B_COPY_VAR_n}`,
-  `{B_26}`, `{UNKNOWN_STR}` medem **10 letras** na letra mais larga da fonte (o tamanho de um nome
+  `{B_26}`, `{UNKNOWN_STR}`, `{DYNAMIC n}` (Quest Log, Union Room, minijogos) medem **10 letras** na letra mais larga da fonte (o tamanho de um nome
   de Pokémon, que cobre nome de jogador/rival e "LT. SURGE"); `{KUN}` (vazio no FRLG) e as falas
   `{B_TRAINER*_LOSE/WIN_TEXT}` medem 0. O inglês confia em nomes curtos e muitas vezes estoura
   nessa medida, por isso o critério é **"sem piorar a base"**: o texto traduzido reprova se a
@@ -760,9 +760,11 @@ inglês que entrar depois na `hack-switch` e for trazida para a tradução apare
   **Exceção por contexto** (`VAR_CONTENTS` em `test/esteira/janelas_uso.py`): quando o código que
   enche o buffer prova o conteúdo, declare `VarContent(arquivo, rótulo, "STR_VAR_1", N,
   "fonte arquivo:linha", digits=True)` (número de até N algarismos) ou com `digits=False` (N
-  letras, ex.: nome de item = 13). Arquivo, rótulo e placeholder aceitam fnmatch; a citação
+  letras, ex.: nome de item = 13). Arquivo e rótulo aceitam fnmatch; o placeholder é o nome
+  **literal** de `VAR_SIZES` (`"STR_VAR_1"`, `"DYNAMIC"` cobre todo `{DYNAMIC n}`); a citação
   arquivo:linha é obrigatória (teste) e a entrada tem de casar com um texto real que tenha o
-  placeholder. Mantenha a lista em ordem alfabética de arquivo e rótulo.
+  placeholder. Duas entradas para o mesmo texto e placeholder são erro, então a ordem não decide
+  nada; mantenha a lista em ordem alfabética de arquivo e rótulo (só para o merge das frentes).
 - Quebra de linha: `python3 -m esteira.reflow` refaz `\n`/`\l` medindo como a checagem
   (`--texto "..." --largura 208`, ou um `.inc` com `--rotulo X --escrever`; sem `--largura` usa a
   janela da regra do arquivo). Só mexe na caixa que tem linha estourada, e nela só na linha que
@@ -771,7 +773,9 @@ inglês que entrar depois na `hack-switch` e for trazida para a tradução apare
   linhas recuadas dele ficam uma por linha; `--forcar` refaz tudo do zero. Os placeholders
   variáveis medem o pior caso (10 letras, ou o `VAR_CONTENTS` do rótulo no modo `.inc`), então a
   quebra deixa espaço para o nome; `--var STR_VAR_1=5d` (5 algarismos) ou `--var STR_VAR_1=13`
-  (13 letras) muda um deles (pode repetir). Atenção: num `.inc` inteiro sem `--rotulo`, rótulo
+  (13 letras) muda um deles (pode repetir). O `--var` é só **prévia**: a checagem não o vê e
+  usa só o `VAR_CONTENTS`; quebrou contando com um número, declare o contexto, ou o check
+  reprova. Num `.inc` sem `--rotulo`, o `--var` vale para todos os rótulos do arquivo, e rótulo
   ainda em inglês que estoure no pior caso também é refeito.
 
 Página EVOLUTION do resumo (Hack 4): os textos `gText_PokeSum_Evo*` de `src/strings.c` têm o

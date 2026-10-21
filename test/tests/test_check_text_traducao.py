@@ -315,6 +315,26 @@ def test_context_declares_a_number_or_an_item_name(repo, monkeypatch):
     assert len(failures(run_base(repo, sha))) == 1
 
 
+def test_dynamic_placeholder_is_measured_in_the_worst_case(repo):
+    # {DYNAMIC n} recebe espécie, apelido, jogador ou gStringVar1 (src/quest_log_events.c:1026, :1320);
+    # janela do Quest Log: 238 px
+    rel = "src/data/text/quest_log.h"
+    put(repo, rel, 'const u8 gText_QL_X[] = _("{DYNAMIC 0x00} ' + "A" * 33 + '");\n')    # 204 / 264
+    git(repo, "add", "-A")
+    git(repo, "-c", "user.name=t", "-c", "user.email=t@t", "commit", "-q", "-m", "base ql")
+    sha = git(repo, "rev-parse", "HEAD")
+    put(repo, rel, 'const u8 gText_QL_X[] = _("{DYNAMIC 0x00} ' + "A" * 32 + 'i");\n')   # 262: não piora
+    assert failures(run_base(repo, sha)) == []
+    put(repo, rel, 'const u8 gText_QL_X[] = _("{DYNAMIC 0x00} ' + "A" * 34 + '");\n')    # 210 / 270
+    (failed,) = failures(run_base(repo, sha))
+    assert "gText_QL_X" in failed.detail and "270 px" in failed.detail and "limite 238" in failed.detail
+    assert "{DYNAMIC} = 10 letras" in failed.detail and "264" in failed.detail
+    put(repo, rel, 'const u8 gText_QL_X[] = _("Olá, {DYNAMIC 0x00}!");\nconst u8 gText_QL_New[] = _("{DYNAMIC 0x01} '
+        + "A" * 30 + '");\n')                                                               # novo: 246
+    (failed,) = failures(run_base(repo, sha))
+    assert "gText_QL_New" in failed.detail and "246 px" in failed.detail
+
+
 def test_worst_case_finding_can_be_frozen_like_any_width_finding(repo):
     from esteira.check_text import compute_baseline
     sha = with_base(repo, "{STR_VAR_1} AAAA.$")

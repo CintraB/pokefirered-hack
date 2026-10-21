@@ -137,6 +137,9 @@ def _help_list_labels(repo: Path) -> tuple[str, ...]:
     return tuple(dict.fromkeys(labels))
 
 
+# Lido do repo da própria ferramenta (as regras são fixas, sem o repo checado); se a regex deixar de
+# casar uma tabela, a lista encolhe em silêncio: test_help_list_labels_come_from_the_help_system_tables
+# exige mais de 100 rótulos e uma amostra de cada tabela.
 _HELP_LIST_LABELS = _help_list_labels(Path(__file__).resolve().parents[2])
 _C_RESIDUE = ("textos soltos de outros .c/.h (troca, link, minijogos, menus, cenas): a janela sai de onde "
               "cada rótulo é usado (esteira/janelas_uso.py); rótulo sem uso indexável (macro, item "
@@ -419,25 +422,44 @@ VAR_SIZES: dict[str, VarSize] = {
     # textos fixos do R/S (src/strings.c:7-14, o maior de FR/LG), sem uso no FRLG
     "VERSION": VarSize(8), "EVIL_TEAM": VarSize(5), "GOOD_TEAM": VarSize(5), "EVIL_LEADER": VarSize(6),
     "GOOD_LEADER": VarSize(6), "EVIL_LEGENDARY": VarSize(7), "GOOD_LEGENDARY": VarSize(7),
+    # {DYNAMIC n} (F7 n): o ponteiro n de DynamicPlaceholderTextUtil_SetPlaceholderPtr
+    # (src/dynamic_placeholder_text_util.c:97-110), usado no Quest Log, Union Room, minijogos e diploma:
+    # espécie (src/quest_log_events.c:1026), apelido "Ovo" (:1028), gStringVar1 (:1320), jogador...
+    "DYNAMIC": VarSize(_MON),
 }
 # Medem 0 de propósito: {KUN} (gExpandedPlaceholder_Kun/Chan vazios, src/strings.c:5-6) e
 # {B_TRAINER1/2_LOSE/WIN_TEXT} (a fala inteira do Treinador, src/battle_message.c:2105-2134, medida
 # no próprio rótulo de onde vem).
 
 
+def var_content_matches(vc, file: str, label: str) -> bool:
+    """A exceção por contexto `vc` (janelas_uso.VarContent) vale para este texto? Arquivo e rótulo
+    por fnmatch; `gX#2` (rótulo C repetido) também casa com o padrão de `gX`."""
+    return fnmatch.fnmatchcase(file, vc.file) and (fnmatch.fnmatchcase(label, vc.label)
+                                                   or fnmatch.fnmatchcase(label.split("#")[0], vc.label))
+
+
+def has_var(text: str, name: str) -> bool:
+    """O texto usa o placeholder variável `name` ({STR_VAR_1}, ou {DYNAMIC 0x00} com argumento)?"""
+    return re.search(r"\{" + re.escape(name) + r"(?:\s[^}]*)?\}", text) is not None
+
+
 def var_sizes(file: str, label: str) -> dict[str, VarSize]:
     """Pior caso de cada placeholder variável num texto: VAR_SIZES com as exceções por contexto de
-    esteira/janelas_uso.VAR_CONTENTS que casam com o arquivo e o rótulo (a última que casar vale)."""
+    esteira/janelas_uso.VAR_CONTENTS que casam com o arquivo e o rótulo. Duas entradas para o mesmo
+    texto e placeholder são erro (ValueError): a ordem da lista não decide nada."""
     from esteira import janelas_uso
     sizes = dict(VAR_SIZES)
-    base_label = label.split("#")[0]
+    seen: dict[str, object] = {}
     for vc in janelas_uso.VAR_CONTENTS:
-        if fnmatch.fnmatchcase(file, vc.file) and (fnmatch.fnmatchcase(label, vc.label)
-                                                   or fnmatch.fnmatchcase(base_label, vc.label)):
-            for name in VAR_SIZES:
-                if fnmatch.fnmatchcase(name, vc.var):
-                    sizes[name] = VarSize(vc.chars, vc.digits)
+        if var_content_matches(vc, file, label) and vc.var in VAR_SIZES:
+            if vc.var in seen:
+                raise ValueError(f"VAR_CONTENTS: entradas sobrepostas para {file}: {label} {{{vc.var}}}: "
+                                 f"{seen[vc.var]} e {vc}")
+            seen[vc.var] = vc
+            sizes[vc.var] = VarSize(vc.chars, vc.digits)
     return sizes
+
 
 # Caneta: {CLEAR_TO n}/{SKIP n} levam a x = n, {CLEAR n} avança n (src/text.c, RenderText)
 _PEN_CODES = ("CLEAR_TO", "SKIP", "CLEAR")
@@ -1029,7 +1051,7 @@ def _worst_case_problem(entry: _Entry, old: tuple[str, ...] | None, rule: Rule |
     if base is not None and cur <= base:
         return None
     used = [f"{{{name}}} = {sizes[name].describe()}" for name in sizes
-            if any("{" + name + "}" in t for t in entry.texts)]
+            if any(has_var(t, name) for t in entry.texts)]
     detail = (f"largura excedida no pior caso ({', '.join(used)}): linha com {cur} px, limite {rule.px} px"
               + (f"; a base inglesa ia a {base} px" if base is not None and base > rule.px else ""))
     return (RULE_WIDTH, detail, cur)
