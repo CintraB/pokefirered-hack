@@ -11,7 +11,9 @@ Regras (nome usado em `excecoes.json`):
   terminador  bloco `.string`/`.braille` sem `$` no fim;
   largura     linha mais larga que a janela (`WIDTH_RULES`: px, fonte, espaço; os textos com
               `by_usage` — strings.c, Easy Chat, textos soltos de .c — são medidos na janela
-              de cada lugar onde o rótulo é usado: esteira/janelas_uso.py);
+              de cada lugar onde o rótulo é usado: esteira/janelas_uso.py); no texto mudado em
+              relação à base inglesa, também com {STR_VAR_n}/{B_BUFF*}... no pior caso (VAR_SIZES,
+              exceções por contexto em janelas_uso.VAR_CONTENTS), sem passar do que a base passava;
   linhas      mais linhas que a janela comporta;
   letras      campo de nome com mais bytes que o buffer do C;
   controle    os códigos de controle e placeholders diferem do texto da base inglesa
@@ -70,7 +72,8 @@ ITEM_NAME_MAX_CHARS = 13
 
 class Rule(NamedTuple):
     """Janela de uma fonte de texto. A primeira regra que casar (arquivo e, se houver, rótulo)
-    vale. `prefix`: começo do rótulo, ou padrão fnmatch se tiver `*`/`?`/`[`. `px`/`lines`/
+    vale. `prefix`: começo do rótulo, padrão fnmatch se tiver `*`/`?`/`[`, ou o rótulo exato se terminar
+    em `$`. `px`/`lines`/
     `chars` = None: aquela medida não se aplica (o motivo fica em `source`)."""
     pattern: str
     prefix: str | None
@@ -106,6 +109,38 @@ _HELP = ("ajuda: HelpSystemRenderText num bitmap de 26 tiles mostrado nas coluna
          "linhas de 15 px (src/help_system_util.c:398) e 14 de glifo: 6 * 15 + 14 = 104 px, 7 linhas")
 _HELP_MOUSEOVER = ("Help_Text_DescWhatShouldIDo", "Help_Text_DescHowDoIDoThis", "Help_Text_DescWhatDoesThisTermMean",
                    "Help_Text_DescAboutThisGame", "Help_Text_DescTypeMatchupList", "Help_Text_DescExit")
+# Itens das listas da ajuda (tópicos, perguntas, "Usando...", termos, assuntos, tipos) e o "Cancelar"
+# que fecha cada lista: são lidos das tabelas de src/help_system.c, porque são ~180 rótulos sem prefixo
+# comum. Cada um é desenhado numa linha da lista e, depois, como título da resposta.
+_HELP_LIST_TABLES = ("sHelpSystemTopicPtrs", "sHelpSystemSpecializedQuestionTextPtrs", "sHelpSystemMenuTopicTextPtrs",
+                     "sHelpSystemTermTextPtrs", "sHelpSystemGeneralTopicTextPtrs", "sHelpSystemTypeMatchupTextPtrs")
+_HELP_LIST = ("item de lista e título da ajuda: na lista, uma linha por item em x = left + 8 "
+              "(src/help_system_util.c:722-724) com left = 0 (src/help_system.c:1965, :2019) no bitmap de 26 tiles "
+              "(src/help_system_util.c:265); na resposta, o mesmo texto é o título em x = 0, e a resposta começa "
+              "24 px abaixo, em gDecompressionBuffer + 0x9C0 = 3 linhas de tiles (src/help_system_util.c:598-599): "
+              "1 linha de 200 px; o espaço avança 4 px (src/help_system_util.c:538); tabelas em src/help_system.c "
+              "(sHelpSystem*Ptrs; \"Cancelar\" em src/help_system.c:2014)")
+
+
+def _help_list_labels(repo: Path) -> tuple[str, ...]:
+    """Rótulos das tabelas de itens de lista da ajuda (src/help_system.c) e o Help_Text_Cancel."""
+    try:
+        source = (repo / "src" / "help_system.c").read_text(encoding="utf-8")
+    except OSError:
+        return ()
+    labels: list[str] = []
+    for table in _HELP_LIST_TABLES:
+        m = re.search(rf"\b{table}\[[^\]]*\]\s*=\s*\{{(.*?)\}};", source, re.S)
+        if m:
+            labels += re.findall(r"\bHelp_Text_\w+", m.group(1))
+    labels.append("Help_Text_Cancel")
+    return tuple(dict.fromkeys(labels))
+
+
+# Lido do repo da própria ferramenta (as regras são fixas, sem o repo checado); se a regex deixar de
+# casar uma tabela, a lista encolhe em silêncio: test_help_list_labels_come_from_the_help_system_tables
+# exige mais de 100 rótulos e uma amostra de cada tabela.
+_HELP_LIST_LABELS = _help_list_labels(Path(__file__).resolve().parents[2])
 _C_RESIDUE = ("textos soltos de outros .c/.h (troca, link, minijogos, menus, cenas): a janela sai de onde "
               "cada rótulo é usado (esteira/janelas_uso.py); rótulo sem uso indexável (macro, item "
               "posicional) fica sem medida")
@@ -121,6 +156,8 @@ WIDTH_RULES: list[Rule] = [
     *[Rule("data/text/help_system.inc", label, 26 * 8 - 2, _HELP + "; descrição do tópico sob o cursor em "
            "x = 2, 5 tiles de altura em y = 6 (src/help_system_util.c:606): 2 linhas", lines=2, space=4)
       for label in _HELP_MOUSEOVER],
+    *[Rule("data/text/help_system.inc", label + "$", 26 * 8 - 8, _HELP_LIST, lines=1, space=4)
+      for label in _HELP_LIST_LABELS],
     Rule("data/text/help_system.inc", None, 26 * 8, _HELP, lines=7, space=4),
     Rule("data/text/fame_checker.inc", "gFameCheckerPersonName_", 8 * 8 - 8,
          "lista do Fame Checker: FCWINDOWID_LIST .width = 8 tiles (src/fame_checker.c:476-480), nome em "
@@ -243,7 +280,9 @@ WIDTH_RULES: list[Rule] = [
          "descrição de golpe: no resumo, [POKESUM_WIN_MOVES_4] .width = 15 tiles (src/pokemon_summary_screen.c:879-883) "
          "com x = 7 (src/pokemon_summary_screen.c:3359-3360), a mais estreita; no tutor, janela de 15 tiles "
          "(src/learn_move.c:300-304) com x = 1 (src/learn_move.c:842); 4 linhas (13 tiles de altura a partir "
-         "de y = 42 no resumo, 8 tiles no tutor)", lines=4),
+         "de y = 42 no resumo, 8 tiles no tutor); também é a descrição da MT/MO (src/data/items.json.txt:17-18) "
+         "no estojo e na loja de MT: WIN_DESCRIPTION de 18 tiles (src/tm_case.c:254-261) com x = 2 "
+         "(src/tm_case.c:743), 142 px e 4 linhas, mais folgada", lines=4),
     Rule("src/data/pokemon/pokedex_text_fr.h", None, 30 * 8,
          "entrada da Pokédex: sWindowTemplate_DexEntry_FlavorText .width = 30 tiles "
          "(src/pokedex_screen.c:618-623), centralizada em 240 px pela linha mais larga "
@@ -277,10 +316,21 @@ WIDTH_RULES: list[Rule] = [
          "bolsa [19] (src/item_menu.c:70) = cor de 5 bytes (src/item_menu.c:283) + 13 + EOS; na lista da "
          "bolsa o nome vai em x = 9 (src/item_menu.c:652) e a quantidade em x = 110 (src/item_menu.c:716)",
          chars=ITEM_NAME_MAX_CHARS),
-    Rule("src/data/items.json", None, 200,
-         "janela de descrição da mochila: sDefaultBagWindowsStd[1].width = 25 tiles (src/bag.c:33), texto em "
-         "x = 0 (src/item_menu.c:756), 6 tiles de altura (src/bag.c:34): 3 linhas; as descrições originais "
-         "medem no máx. 198 px. Lojas, TM case e bolsa de frutas usam outras janelas e não são modeladas",
+    Rule("src/data/items.json", "ITEM_[TH]M[0-9][0-9]", None,
+         "descrição de MT/MO sem tela: o gItems[].description de todo item do estojo de MT aponta para "
+         "gMoveDescription_* (src/data/items.json.txt:17-18), então o estojo, a loja de MT e o PC mostram a "
+         "descrição do golpe (medida em src/move_descriptions.c) e este texto nunca aparece"),
+    Rule("src/data/items.json", "ITEM_*_BERRY", 198,
+         "descrição de fruta: na bolsa de frutas, janela 1 de 25 tiles e .height = 4 (src/berry_pouch.c:226-233) "
+         "com o texto em x = 0, y = 2 (src/berry_pouch.c:764) e linhas de 14 px: 2 linhas (a 3ª fica com 2 px); "
+         "segurada por um Pokémon, aparece no PC de Pokémon em x = 2 (src/pokemon_storage_system_misc.c:1149) "
+         "na janela de 25 tiles (src/pokemon_storage_system_tasks.c:207-214): 198 px", lines=2),
+    Rule("src/data/items.json", None, 198,
+         "descrição de item: na mochila, sDefaultBagWindowsStd[1].width = 25 tiles (src/bag.c:33), texto em "
+         "x = 0 (src/item_menu.c:756), 6 tiles de altura (src/bag.c:34): 3 linhas de 200 px; segurado por um "
+         "Pokémon, aparece no PC de Pokémon em x = 2 (src/pokemon_storage_system_misc.c:1149) na janela 2 de "
+         "25 tiles (src/pokemon_storage_system_tasks.c:207-214): 198 px, a mais estreita (as originais medem "
+         "no máx. 198). Loja e PC de itens: 25 tiles com x = 0, mais folgados; frutas e MTs têm regra própria",
          lines=3),
     Rule("src/data/trainers.h", "*.trainerName", None,
          "nome de Treinador: trainerName[12] (include/battle.h:122)", chars=11),
@@ -313,8 +363,8 @@ RULE_OBSOLETE = "obsoleta"
 
 # Placeholders que viram texto em tempo de execução: medem o maior nome possível, em letras da
 # fonte (o maior nome de cada campo: include/constants/global.h, include/battle_main.h,
-# include/data.h, include/battle.h). Os demais ({STR_VAR_n}, {B_BUFF*}, {B_COPY_VAR_*}...)
-# têm conteúdo variado demais e medem 0.
+# include/data.h, include/battle.h). Os de conteúdo variado ({STR_VAR_n}, {B_BUFF*}...) ficam em
+# VAR_SIZES, medidos no pior caso só nos textos mudados em relação à base inglesa.
 _MON = 10
 DYNAMIC_LETTERS: dict[str, int] = {
     "PLAYER": PLAYER_NAME_CHARS, "RIVAL": PLAYER_NAME_CHARS,
@@ -337,6 +387,79 @@ _PREFIXED = ("B_ATK_NAME_WITH_PREFIX_MON1", "B_ATK_NAME_WITH_PREFIX", "B_DEF_NAM
 _PREFIX_ONLY = ("B_ATK_PREFIX1", "B_DEF_PREFIX1", "B_ATK_PREFIX2", "B_DEF_PREFIX2", "B_ATK_PREFIX3",
                 "B_DEF_PREFIX3")
 _PREFIX_LABEL = re.compile(r"^sText_\w*Prefix\d*$")
+
+
+class VarSize(NamedTuple):
+    """Tamanho no pior caso do que o jogo põe num placeholder variável: `chars` letras na letra mais
+    larga da fonte ou, com `digits`, `chars` algarismos no algarismo mais largo."""
+    chars: int
+    digits: bool = False
+
+    def describe(self) -> str:
+        return f"{self.chars} {'algarismos' if self.digits else 'letras'}"
+
+
+# Placeholders de conteúdo variável (Task T3 da tradução). O inglês confia em nomes curtos e muitas
+# vezes estoura nessa medida, por isso ela só vale para texto mudado em relação à base inglesa (ou
+# novo), com o critério "sem piorar a base" (_worst_case_problem). Pior caso padrão: 10 letras, o
+# tamanho de _MON (POKEMON_NAME_LENGTH, include/constants/global.h:63), que cobre nome de jogador ou
+# rival (7), espécie (10) e "LT. SURGE" (9). Um texto cujo conteúdo o código C prova (número de N
+# algarismos, nome de item de 13 letras...) declara isso em esteira/janelas_uso.VAR_CONTENTS.
+VAR_SIZES: dict[str, VarSize] = {
+    # gStringVar1..3 (src/string_util.c:371-384): nome, espécie, item, número, texto de tabela...
+    **{name: VarSize(_MON) for name in ("STR_VAR_1", "STR_VAR_2", "STR_VAR_3")},
+    # gUnknownStringVar (src/string_util.c:361-364); sem uso no FRLG
+    "UNKNOWN_STR": VarSize(_MON),
+    # batalha: {B_BUFF1..3} expandem gBattleTextBuff1..3 (src/battle_message.c:1846-1875) com nome de
+    # golpe (12), tipo, apelido com ou sem prefixo, atributo, espécie, habilidade (12), item (13) ou
+    # número (src/battle_message.c:2207-2300); {B_COPY_VAR_n} = gStringVar1..3 (src/battle_message.c:1877-1885);
+    # {B_26} = apelido (src/battle_message.c:2135-2136). Padrão de 10 letras; o contexto pode subir ou descer.
+    **{name: VarSize(_MON) for name in ("B_BUFF1", "B_BUFF2", "B_BUFF3", "B_COPY_VAR_1", "B_COPY_VAR_2",
+                                        "B_COPY_VAR_3", "B_26")},
+    # apelidos do charmap para FD 08/09/0C/0D (nome de Treinador/Pokémon na batalha), sem uso no texto
+    **{name: VarSize(_MON) for name in ("ATTACKING_TRAINER", "DEFENDING_TRAINER", "ATTACKING_MON",
+                                        "DEFENDING_MON")},
+    # textos fixos do R/S (src/strings.c:7-14, o maior de FR/LG), sem uso no FRLG
+    "VERSION": VarSize(8), "EVIL_TEAM": VarSize(5), "GOOD_TEAM": VarSize(5), "EVIL_LEADER": VarSize(6),
+    "GOOD_LEADER": VarSize(6), "EVIL_LEGENDARY": VarSize(7), "GOOD_LEGENDARY": VarSize(7),
+    # {DYNAMIC n} (F7 n): o ponteiro n de DynamicPlaceholderTextUtil_SetPlaceholderPtr
+    # (src/dynamic_placeholder_text_util.c:97-110), usado no Quest Log, Union Room, minijogos e diploma:
+    # espécie (src/quest_log_events.c:1026), apelido "Ovo" (:1028), gStringVar1 (:1320), jogador...
+    "DYNAMIC": VarSize(_MON),
+}
+# Medem 0 de propósito: {KUN} (gExpandedPlaceholder_Kun/Chan vazios, src/strings.c:5-6) e
+# {B_TRAINER1/2_LOSE/WIN_TEXT} (a fala inteira do Treinador, src/battle_message.c:2105-2134, medida
+# no próprio rótulo de onde vem).
+
+
+def var_content_matches(vc, file: str, label: str) -> bool:
+    """A exceção por contexto `vc` (janelas_uso.VarContent) vale para este texto? Arquivo e rótulo
+    por fnmatch; `gX#2` (rótulo C repetido) também casa com o padrão de `gX`."""
+    return fnmatch.fnmatchcase(file, vc.file) and (fnmatch.fnmatchcase(label, vc.label)
+                                                   or fnmatch.fnmatchcase(label.split("#")[0], vc.label))
+
+
+def has_var(text: str, name: str) -> bool:
+    """O texto usa o placeholder variável `name` ({STR_VAR_1}, ou {DYNAMIC 0x00} com argumento)?"""
+    return re.search(r"\{" + re.escape(name) + r"(?:\s[^}]*)?\}", text) is not None
+
+
+def var_sizes(file: str, label: str) -> dict[str, VarSize]:
+    """Pior caso de cada placeholder variável num texto: VAR_SIZES com as exceções por contexto de
+    esteira/janelas_uso.VAR_CONTENTS que casam com o arquivo e o rótulo. Duas entradas para o mesmo
+    texto e placeholder são erro (ValueError): a ordem da lista não decide nada."""
+    from esteira import janelas_uso
+    sizes = dict(VAR_SIZES)
+    seen: dict[str, object] = {}
+    for vc in janelas_uso.VAR_CONTENTS:
+        if var_content_matches(vc, file, label) and vc.var in VAR_SIZES:
+            if vc.var in seen:
+                raise ValueError(f"VAR_CONTENTS: entradas sobrepostas para {file}: {label} {{{vc.var}}}: "
+                                 f"{seen[vc.var]} e {vc}")
+            seen[vc.var] = vc
+            sizes[vc.var] = VarSize(vc.chars, vc.digits)
+    return sizes
+
 
 # Caneta: {CLEAR_TO n}/{SKIP n} levam a x = n, {CLEAR n} avança n (src/text.c, RenderText)
 _PEN_CODES = ("CLEAR_TO", "SKIP", "CLEAR")
@@ -379,6 +502,7 @@ class _Env:
     char_bytes: dict[str, int] = field(default_factory=dict)
     name_bytes: dict[str, int] = field(default_factory=dict)
     prefix_px: dict[str, int] = field(default_factory=dict)                # fonte -> prefixo de batalha
+    max_digit: dict[str, int] = field(default_factory=dict)                # fonte -> algarismo mais largo
 
     def placeholder_px(self, word: str, font: str, no_prefix: bool = False) -> int | None:
         """Largura de um placeholder de nome (None se não for um deles)."""
@@ -448,8 +572,10 @@ def _load_env(repo: Path) -> _Env:
                     font_macros[font][m.group(1)] = table[0x100 | data[1]]
     max_letter = {font: max(w for ch, w in widths[font].items() if ch.isalnum() and ch.isascii())
                   for font in tables}
+    max_digit = {font: max(w for ch, w in widths[font].items() if ch.isdigit() and ch.isascii())
+                 for font in tables}
     return _Env(chars, widths["normal"], names, font_macros["normal"], PLAYER_NAME_CHARS * max_letter["normal"],
-                widths, font_macros, max_letter, char_bytes, name_bytes)
+                widths, font_macros, max_letter, char_bytes, name_bytes, max_digit=max_digit)
 
 
 # ---- extração dos textos -------------------------------------------------------------------
@@ -727,6 +853,8 @@ def _sources(repo: Path) -> Iterator[_Entry | Result]:
 def _label_matches(label: str, prefix: str | None) -> bool:
     if prefix is None:
         return True
+    if prefix.endswith("$"):
+        return label == prefix[:-1]
     if any(ch in prefix for ch in "*?["):
         return fnmatch.fnmatchcase(label, prefix)
     return label.startswith(prefix)
@@ -793,8 +921,10 @@ class _Measure(NamedTuple):
 
 
 def measure(text: str, env: _Env, font: str = "normal", space: int | None = None,
-            braille: bool = False, no_prefix: bool = False) -> _Measure:
-    """Mede um texto cru como o jogo o imprime."""
+            braille: bool = False, no_prefix: bool = False,
+            variables: dict[str, VarSize] | None = None) -> _Measure:
+    """Mede um texto cru como o jogo o imprime. `variables`: tamanho de cada placeholder variável
+    ({STR_VAR_n}, {B_BUFF*}...; ver var_sizes); sem ele, esses placeholders medem 0."""
     widest = width = 0
     latin_only = True
     lines = 1
@@ -863,6 +993,9 @@ def measure(text: str, env: _Env, font: str = "normal", space: int | None = None
                 dynamic = env.placeholder_px(word, cur_font, no_prefix)
                 if dynamic is not None:
                     width += dynamic
+                elif variables and word in variables:
+                    size = variables[word]
+                    width += size.chars * (env.max_digit[cur_font] if size.digits else env.max_letter[cur_font])
                 elif word in env.font_macros[cur_font]:
                     width += env.font_macros[cur_font][word]
                 elif word not in env.names and not _NUMBER.match(word):
@@ -897,6 +1030,31 @@ def _analyze(text: str, needs_terminator: bool, rule: Rule | None, env: _Env,
     if rule is not None and rule.chars is not None and m.nbytes > rule.chars:
         problems.append((RULE_CHARS, f"nome longo demais: {m.nbytes} letras, limite {rule.chars}", m.nbytes))
     return problems
+
+
+def _worst_case_problem(entry: _Entry, old: tuple[str, ...] | None, rule: Rule | None,
+                        env: _Env) -> _Problem | None:
+    """Largura com os placeholders variáveis no pior caso (var_sizes), para um texto mudado em relação
+    à base inglesa (`old`; None = rótulo novo). Critério "sem piorar a base": a linha mais larga pode
+    passar da janela só até onde a mesma medida do rótulo inglês já passava; rótulo novo não pode passar."""
+    if rule is None or rule.px is None or entry.braille:
+        return None
+    sizes = var_sizes(entry.file, entry.label)
+
+    def widest(texts: tuple[str, ...]) -> int:
+        return max(measure(t, env, rule.font, rule.space, False, rule.no_prefix, sizes).widest for t in texts)
+
+    cur = widest(entry.texts)
+    if cur <= rule.px:
+        return None
+    base = widest(old) if old else None
+    if base is not None and cur <= base:
+        return None
+    used = [f"{{{name}}} = {sizes[name].describe()}" for name in sizes
+            if any(has_var(t, name) for t in entry.texts)]
+    detail = (f"largura excedida no pior caso ({', '.join(used)}): linha com {cur} px, limite {rule.px} px"
+              + (f"; a base inglesa ia a {base} px" if base is not None and base > rule.px else ""))
+    return (RULE_WIDTH, detail, cur)
 
 
 # ---- controle: códigos de controle iguais aos da base inglesa ------------------------------
@@ -1181,23 +1339,30 @@ def _scan(root: Path, base: str | None, english: str = "desligado") -> _Scan:
     for entry in raw:
         key = (entry.file, entry.label)
         rules_of[key] = usage.get(key) or [(rule_for(entry.file, entry.label), None)]
+        # arquivo mudado: compara rótulo a rótulo; arquivo novo: tudo é novo (sem original)
+        compared = base_info is not None and (entry.file in base_info.changed or entry.file not in base_info.present)
+        old = base_info.texts.get(key) if compared else None
+        changed = compared and old != entry.texts
         problems = []
         seen_rules: set[str] = set()
         for rule, where in rules_of[key]:
-            for text in entry.texts:
-                for name, detail, value in _analyze(text, entry.needs_terminator, rule, env, entry.braille):
-                    if name in seen_rules and name in (RULE_WIDTH, RULE_LINES, RULE_CHARS):
-                        continue      # a primeira janela que estoura basta
-                    if where and name in (RULE_WIDTH, RULE_LINES, RULE_CHARS):
-                        detail = f"{detail} (janela de {where})"
-                    if (name, detail, value) not in problems:
-                        problems.append((name, detail, value))
-                    if name in (RULE_WIDTH, RULE_LINES, RULE_CHARS):
-                        seen_rules.add(name)
-        if base_info is not None and (entry.file in base_info.changed or entry.file not in base_info.present):
-            # arquivo mudado: compara rótulo a rótulo; arquivo novo: só o glossário (sem original)
-            old = base_info.texts.get((entry.file, entry.label))
-            if old != entry.texts:
+            found = [p for text in entry.texts
+                     for p in _analyze(text, entry.needs_terminator, rule, env, entry.braille)]
+            if changed:
+                worst = _worst_case_problem(entry, old, rule, env)
+                if worst:
+                    found.append(worst)
+            for name, detail, value in found:
+                if name in seen_rules and name in (RULE_WIDTH, RULE_LINES, RULE_CHARS):
+                    continue      # a primeira janela que estoura basta
+                if where and name in (RULE_WIDTH, RULE_LINES, RULE_CHARS):
+                    detail = f"{detail} (janela de {where})"
+                if (name, detail, value) not in problems:
+                    problems.append((name, detail, value))
+                if name in (RULE_WIDTH, RULE_LINES, RULE_CHARS):
+                    seen_rules.add(name)
+        if compared:
+            if changed:
                 if old is not None:
                     control = _control_problem(entry.texts, old, glyphs)
                     if control:
@@ -1282,6 +1447,9 @@ def check_text(repo: str, exceptions: dict, english: str = ENGLISH_MODE,
         for rule in (RULE_CONTROL, RULE_GLOSSARY):
             results.append(Result(f"texto/{rule}", "aviso",
                                   f"base inglesa indisponível ({scan.base_note}): a regra {rule} não rodou"))
+        results.append(Result(f"texto/{RULE_WIDTH}", "aviso",
+                              f"base inglesa indisponível ({scan.base_note}): a largura no pior caso dos "
+                              "placeholders variáveis ({STR_VAR_n}, {B_BUFF*}...) não rodou"))
     entries = scan.entries
     frozen = exceptions.get("text", [])
     applied: set[tuple[str, str, str]] = set()  # exceções que de fato calaram um achado

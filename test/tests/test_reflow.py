@@ -154,7 +154,7 @@ def test_player_counts_as_seven_wide_letters():
 
 def test_control_codes_stay_attached_and_in_place():
     text = "Você recebeu {COLOR RED}{STR_VAR_1}{COLOR DARK_GRAY} de {PLAYER}!{PAUSE 0x20}\\p$"
-    assert reflow(text, 208) == text
+    assert reflow(text, 209) == text           # 149 px + {STR_VAR_1} no pior caso (60)
     narrow = reflow(text, 100)
     assert narrow.replace("\\n", " ").replace("\\l", " ") == text
 
@@ -253,3 +253,50 @@ def test_cli_rejects_unknown_label(tmp_path):
     inc.write_text('Text_A::\n\t.string "Oi.$"\n', encoding="utf-8")
     done = run_cli("--largura", "208", str(inc), "--rotulo", "Text_X")
     assert done.returncode != 0 and "Text_X" in done.stderr
+
+
+# ---- placeholders variáveis no pior caso (T3) ----------------------------------------------
+
+def test_str_var_counts_as_ten_wide_letters():
+    assert line_widths("{STR_VAR_1}") == [60] and line_widths("{B_BUFF1}") == [60]
+
+
+def test_reflow_leaves_room_for_the_name():
+    # "Um Treinador chamado " + {STR_VAR_1} + " está lá agora." mede 206 px com o nome a 0 px
+    text = "Um Treinador chamado {STR_VAR_1} está lá agora.$"
+    out = reflow(text, 208)
+    assert out != text and max(line_widths(out)) <= 208
+    assert out.replace("\\n", " ").replace("\\l", " ") == text
+
+
+def test_reflow_with_a_declared_number_needs_less_room():
+    from esteira.check_text import VarSize
+    text = "Você tem {STR_VAR_1} moedas guardadas!$"
+    assert reflow(text, 208) != text                                        # 10 letras: não cabe
+    assert reflow(text, 208, variaveis={"STR_VAR_1": VarSize(5, digits=True)}) == text
+
+
+def test_reflow_inc_uses_the_context_of_the_label(monkeypatch):
+    from esteira import janelas_uso
+    from esteira.reflow import reflow_inc
+    source = 'X_Text_A::\n\t.string "Você tem {STR_VAR_1} moedas guardadas!$"\n'
+    new, done, _ = reflow_inc(source, None, None, None, None, None, "data/maps/X/text.inc")
+    assert done == ["X_Text_A"]
+    monkeypatch.setattr(janelas_uso, "VAR_CONTENTS", [janelas_uso.VarContent(
+        "data/maps/X/text.inc", "X_Text_A", "STR_VAR_1", 5, "número (src/x.c:1)", digits=True)])
+    new, done, _ = reflow_inc(source, None, None, None, None, None, "data/maps/X/text.inc")
+    assert done == [] and new == source
+
+
+def test_cli_var_option():
+    text = "Você tem {STR_VAR_1} moedas guardadas!$"
+    done = run_cli("--largura", "208", "--texto", text)
+    assert done.returncode == 0, done.stderr
+    assert done.stdout.strip() != text
+    done = run_cli("--largura", "208", "--texto", text, "--var", "STR_VAR_1=5d")
+    assert done.returncode == 0, done.stderr
+    assert done.stdout.strip() == text
+    done = run_cli("--largura", "208", "--texto", text, "--var", "STR_VAR_1=13")
+    assert done.returncode == 0 and done.stdout.strip() != text
+    done = run_cli("--largura", "208", "--texto", text, "--var", "STR_VAR_1=x")
+    assert done.returncode != 0

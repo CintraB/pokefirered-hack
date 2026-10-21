@@ -688,9 +688,14 @@ janela, tirada dos templates do código, com arquivo:linha de cada uma em `WIDTH
 (a ajuda usa 4 px), máximo de linhas e, nos campos de nome, máximo de bytes do buffer. As
 principais: diálogo 208 px (mapas, scripts, quase todo `data/text`, Union Room, TV Educativa,
 Pokédude, fala do Carvalho); mensagem de batalha 222 px (28 tiles, x = 2); tutorial do
-Carvalho na batalha 208; ajuda 208 px com espaço de 4 px e 7 linhas; Fame Checker 208 (caixa),
+Carvalho na batalha 208; ajuda 208 px com espaço de 4 px e 7 linhas, e os itens das listas da
+ajuda (tópicos, perguntas, "Usando...", termos, assuntos, tipos e "Cancelar", lidos das tabelas
+`sHelpSystem*Ptrs` de `src/help_system.c`) **1 linha de 200 px**: saem em x = 8 na lista e viram o
+título da resposta, que começa 24 px abaixo; Fame Checker 208 (caixa),
 56 (nomes) e 84 em FONT_SMALL (quadro do ícone); descrição de golpe 113 px e 4 linhas; entrada da
-Pokédex 240 px e 3 linhas; descrição de item 200 px e 3 linhas; nome de item 13 letras e 101 px;
+Pokédex 240 px e 3 linhas; descrição de item 198 px e 3 linhas (a mochila tem 200, mas o item no PC
+de Pokémon sai em x = 2), de fruta 198 px e **2** linhas (bolsa de frutas), e a de MT/MO no
+`items.json` sem medida (o jogo mostra a descrição do golpe, `src/data/items.json.txt:17-18`); nome de item 13 letras e 101 px;
 golpe 12 letras e 64 px em FONT_SMALL; habilidade 12; tipo 6; fruta 6; classe 12; espécie 10;
 categoria da Pokédex 11; nome de lugar 108 px e 18 letras (`mapName[19]` do mapa da região);
 nome sugerido 7.
@@ -716,7 +721,9 @@ encostar no que vem alinhado à direita.
 Cobertura: `python3 -m esteira.check_text --regras`.
 Os caracteres
 ({PLAYER}/{RIVAL} medem 7 letras; nomes de batalha `{B_*}` o maior nome do campo, e os
-`_WITH_PREFIX` somam o prefixo mais largo) e o espaçamento entre letras seguem o jogo;
+`_WITH_PREFIX` somam o prefixo mais largo; `{STR_VAR_n}`, `{B_BUFF*}`, `{B_COPY_VAR_n}` e os outros
+placeholders de conteúdo variável medem 0 no texto igual à base e o pior caso no texto traduzido,
+veja "Tradução") e o espaçamento entre letras seguem o jogo;
 `{CLEAR_TO n}`/`{SKIP n}` levam a caneta a n px e `{CLEAR n}` avança n.
 
 **Tradução** (`TRANSLATION_BASE` em `check_text.py`: o SHA completo de `3a8d861f5`, o commit da
@@ -728,7 +735,7 @@ inglês que entrar depois na `hack-switch` e for trazida para a tradução apare
   em qualquer ordem; só `\n`, `\l` e `\p` podem mudar, e macros que só imprimem glifo
   (`{LV_2}`, `{PKMN}`, `{ID}`, `{NO}`) podem virar texto ("Nv."). Pasta sem `.git` (fixtures,
   espelho do teste lento): as regras não rodam; com `.git` mas git falhando ou sem o commit base:
-  aviso `texto/controle` e `texto/glossario` com o motivo. Objeto ausente da base: os rótulos do
+  aviso `texto/controle`, `texto/glossario` e `texto/largura` (pior caso) com o motivo. Objeto ausente da base: os rótulos do
   arquivo contam como novos.
 - `glossario`: texto mudado (ou novo) com variante proibida ("Pokébola", "Professor Oak", "HP",
   "Team Rocket"...) ou termo inglês do glossário que sobrou ("POKé BALL", "PALLET TOWN" ou
@@ -740,17 +747,41 @@ inglês que entrar depois na `hack-switch` e for trazida para a tradução apare
   texto). Lista de permissões: nomes de espécie e de Treinador, créditos (`gCreditsString_*`),
   japonês (`gJPText_*`), teclados (`src/keyboard_text.c`). Por arquivo:
   `python3 -m esteira.check_text --ingles [arquivo...]` (em `test/`).
+- `largura` no **pior caso** dos placeholders de conteúdo variável (`VAR_SIZES` em
+  `check_text.py`): no texto mudado (ou novo), `{STR_VAR_n}`, `{B_BUFF1..3}`, `{B_COPY_VAR_n}`,
+  `{B_26}`, `{UNKNOWN_STR}`, `{DYNAMIC n}` (Quest Log, Union Room, minijogos) medem **10 letras** na letra mais larga da fonte (o tamanho de um nome
+  de Pokémon, que cobre nome de jogador/rival e "LT. SURGE"); `{KUN}` (vazio no FRLG) e as falas
+  `{B_TRAINER*_LOSE/WIN_TEXT}` medem 0. O inglês confia em nomes curtos e muitas vezes estoura
+  nessa medida, por isso o critério é **"sem piorar a base"**: o texto traduzido reprova se a
+  linha mais larga dele, no pior caso, passa da janela **e** passa da mesma medida do rótulo na
+  base inglesa (rótulo novo, sem inglês: não pode passar da janela). Texto igual à base não é
+  medido assim. O achado diz o pior caso usado ("{STR_VAR_1} = 10 letras") e quanto a base ia.
+  Sem base (fixtures, espelho): não roda; base indisponível: aviso `texto/largura`.
+  **Exceção por contexto** (`VAR_CONTENTS` em `test/esteira/janelas_uso.py`): quando o código que
+  enche o buffer prova o conteúdo, declare `VarContent(arquivo, rótulo, "STR_VAR_1", N,
+  "fonte arquivo:linha", digits=True)` (número de até N algarismos) ou com `digits=False` (N
+  letras, ex.: nome de item = 13). Arquivo e rótulo aceitam fnmatch; o placeholder é o nome
+  **literal** de `VAR_SIZES` (`"STR_VAR_1"`, `"DYNAMIC"` cobre todo `{DYNAMIC n}`); a citação
+  arquivo:linha é obrigatória (teste) e a entrada tem de casar com um texto real que tenha o
+  placeholder. Duas entradas para o mesmo texto e placeholder são erro, então a ordem não decide
+  nada; mantenha a lista em ordem alfabética de arquivo e rótulo (só para o merge das frentes).
 - Quebra de linha: `python3 -m esteira.reflow` refaz `\n`/`\l` medindo como a checagem
   (`--texto "..." --largura 208`, ou um `.inc` com `--rotulo X --escrever`; sem `--largura` usa a
   janela da regra do arquivo). Só mexe na caixa que tem linha estourada, e nela só na linha que
   estoura (o excesso desce para a seguinte): placas, listas (`{CIRCLE_n}`, `{CIRCLE_DOT}`,
   `{TRIANGLE}`, `{BIG_MULT_X}`) e recuos ficam; item que termina em ":" abre sublista, e as
-  linhas recuadas dele ficam uma por linha; `--forcar` refaz tudo do zero.
+  linhas recuadas dele ficam uma por linha; `--forcar` refaz tudo do zero. Os placeholders
+  variáveis medem o pior caso (10 letras, ou o `VAR_CONTENTS` do rótulo no modo `.inc`), então a
+  quebra deixa espaço para o nome; `--var STR_VAR_1=5d` (5 algarismos) ou `--var STR_VAR_1=13`
+  (13 letras) muda um deles (pode repetir). O `--var` é só **prévia**: a checagem não o vê e
+  usa só o `VAR_CONTENTS`; quebrou contando com um número, declare o contexto, ou o check
+  reprova. Num `.inc` sem `--rotulo`, o `--var` vale para todos os rótulos do arquivo, e rótulo
+  ainda em inglês que estoure no pior caso também é refeito.
 
 Página EVOLUTION do resumo (Hack 4): os textos `gText_PokeSum_Evo*` de `src/strings.c` têm o
 limite da janela da página, 222 px (28 tiles com o texto em x = 2, `sWindowTemplates_Evolution`
 e `EVOLUTION_PAGE_TEXT_X` em `src/pokemon_summary_screen.c`). Como eles têm `{STR_VAR_*}` (nível,
-item, espécie), que aqui medem 0, a checagem também monta a página de **toda** espécie com os
+item, espécie), que no rótulo sozinho medem 0 (ou o pior caso genérico, no texto traduzido), a checagem também monta a página de **toda** espécie com os
 nomes de verdade e mede cada linha (`test/esteira/evolution_page.py`): um item ou espécie
 renomeado que estoure a janela reprova como `texto/largura`. Hoje a linha mais larga é a do
 Umbreon, 220 px.

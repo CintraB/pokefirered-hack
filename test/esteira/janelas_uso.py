@@ -71,6 +71,46 @@ SHARED_ROWS: list[SharedRow] = [
 ]
 
 
+class VarContent(NamedTuple):
+    """Exceção por contexto do pior caso de um placeholder variável (check_text.VAR_SIZES: 10 letras).
+    Neste arquivo/rótulo, o código que enche o buffer prova o que vai em `var`: `chars` letras (nome de
+    item = 13, ITEM_NAME_MAX_CHARS) ou, com `digits`, um número de até `chars` algarismos. `source` cita
+    o arquivo:linha desse código (o teste confere). Só declare o que o código prova.
+    Vale para a checagem (check_text) e para o reflow de um `.inc`; o `--var` da CLI do reflow é só
+    prévia e não chega à checagem."""
+    file: str                  # arquivo do texto (fnmatch), ex.: "data/maps/CeladonCity_GameCorner/text.inc"
+    label: str                 # rótulo (fnmatch; `gX` também cobre o repetido `gX#2`)
+    var: str                   # nome LITERAL de um placeholder de check_text.VAR_SIZES, sem chaves:
+                               # "STR_VAR_1", "B_BUFF2", "DYNAMIC" (cobre todo {DYNAMIC n} do texto)
+    chars: int
+    source: str
+    digits: bool = False
+
+
+# Uma linha por (arquivo, rótulo, placeholder), em ordem alfabética de arquivo e rótulo (as frentes da
+# tradução acrescentam em paralelo: a ordem espalha as inserções e evita conflito no merge). A ordem não
+# decide nada: duas entradas que casem com o mesmo texto e placeholder são erro (ValueError em
+# check_text.var_sizes e teste test_var_contents_never_overlap); padrão largo só sem sobreposição.
+_TOWER_TIME = ("tempo da Trainer Tower: minutos, segundos e centésimos com 2 algarismos cada "
+               "(PRINT_TOWER_TIME, src/trainer_tower.c:883-885)")
+VAR_CONTENTS: list[VarContent] = [
+    *(VarContent("data/maps/TrainerTower_Lobby/text.inc", "TrainerTower_Text_XMinYZSec", var, 2,
+                 _TOWER_TIME + "; ttower_gettime (data/scripts/trainer_tower.inc:320) chama GetCurrentTime "
+                 "(src/trainer_tower.c:888-897)", digits=True) for var in ("STR_VAR_1", "STR_VAR_2", "STR_VAR_3")),
+    *(VarContent("src/battle_message.c", "gText_XMinYZSec", var, 2,
+                 _TOWER_TIME + "; quadro de tempos (src/trainer_tower.c:913-914, :1066-1067)", digits=True)
+      for var in ("STR_VAR_1", "STR_VAR_2", "STR_VAR_3")),
+    VarContent("src/strings.c", "gText_Coins", "STR_VAR_1", 4,
+               "moedas: ConvertIntToDecimalStringN(gStringVar1, coinAmount, ..., 4) (src/coins.c:54, :72)", digits=True),
+    *(VarContent("src/strings.c", "gText_MenuSafariStats", var, n,
+                 "Safari: passos (3), limite 600 (3) e bolas (2) (src/start_menu.c:275-277)", digits=True)
+      for var, n in (("STR_VAR_1", 3), ("STR_VAR_2", 3), ("STR_VAR_3", 2))),
+    VarContent("src/strings.c", "gText_PokedollarVar1", "STR_VAR_1", 6,
+               "dinheiro: ConvertIntToDecimalStringN(gStringVar1, amount, ..., 6) (src/money.c:78, :95); preço na "
+               "loja com SHOP_PRICE_DIGITS = 5 (src/shop.c:602, :613)", digits=True),
+]
+
+
 # Chamadas que montam menu/lista: o texto que passa por elas tem de cair numa regra específica
 MENU_CALL = re.compile(r"^call:\w*(?:Menu|List|PrintTextArray|ActionText|Multichoice)\w*$")
 # Menu montado à mão: AddTextPrinterParameterized* numa função que também põe o cursor de menu
