@@ -1,7 +1,7 @@
-"""Hack 4: a página EVOLUTION do resumo do Pokémon (4ª página, depois de KNOWN MOVES).
+"""Hack 4: a página EVOLUTION do resumo do Pokémon (4ª página, depois de Golpes).
 
 O jogo monta o texto em `GetEvolutionPageText` (src/pokemon_summary_screen.c) a partir de
-`gEvolutionTable`: uma linha por entrada da espécie, na ordem da tabela, ou "Does not evolve.".
+`gEvolutionTable`: uma linha por entrada da espécie, na ordem da tabela, ou "Não evolui.".
 Este módulo gera, de forma independente, o texto ESPERADO a partir dos fontes
 (src/data/pokemon/evolution.h, src/data/text/species_names.h, src/data/items.json) e o
 codifica com o charmap do jogo, para comparar byte a byte com o que a build de teste devolve
@@ -12,17 +12,18 @@ Formatos (➡ = {RIGHT_ARROW_2}, "Lv" = {LV_2}, os glifos do jogo):
     EVO_LEVEL / EVO_LEVEL_NINJASK   Lv 16 ➡ IVYSAUR
     EVO_ITEM                        Pedra de Fogo ➡ ARCANINE
     EVO_LEVEL_HOLD_ITEM             Lv 37 + Revest. Metal ➡ STEELIX   (nível fixo 37 do Hack 3)
-    EVO_FRIENDSHIP                  High friendship ➡ CROBAT
+    EVO_FRIENDSHIP                  Amizade alta ➡ CROBAT
     EVO_LEVEL_UP_HOLD_ITEM          Subir nível + Escama Prisma ➡ MILOTIC   (Hack 7, qualquer nível)
-    EVO_FRIENDSHIP_DAY / _NIGHT     Day friendship ➡ ESPEON   (Hack 7: relógio do jogo, sem sufixo)
-    EVO_BEAUTY                      High beauty ➡ X (R/S/E only; nenhuma espécie usa mais)
-    EVO_LEVEL_ATK_GT/EQ/LT_DEF      Lv 20, ATK > DEF ➡ HITMONLEE
-    EVO_LEVEL_SILCOON / _CASCOON    Lv 7 (random) ➡ SILCOON
-    EVO_LEVEL_SHEDINJA              Lv 20, free slot ➡ SHEDINJA
-    EVO_TRADE / EVO_TRADE_ITEM      Trade ➡ X / Trade + ITEM ➡ X   (não sobrou nenhuma no jogo)
+    EVO_FRIENDSHIP_DAY / _NIGHT     Amizade de dia ➡ ESPEON   (Hack 7: relógio do jogo, sem sufixo)
+    EVO_BEAUTY                      Beleza alta ➡ X (só R/S/E; nenhuma espécie usa mais)
+    EVO_LEVEL_ATK_GT/EQ/LT_DEF      Lv 20, Atq > Def ➡ HITMONLEE
+    EVO_LEVEL_SILCOON / _CASCOON    Lv 7 (sorteio) ➡ SILCOON
+    EVO_LEVEL_SHEDINJA              Lv 20 + vaga ➡ SHEDINJA
+    EVO_TRADE / EVO_TRADE_ITEM      Troca ➡ X / Troca + ITEM ➡ X   (não sobrou nenhuma no jogo)
 Dia/noite (Hack 7): o relógio do jogo decide (DayNight_IsDayPeriod), então Eevee mostra Espeon e
-Umbreon sem sufixo; Feebas evolui com a Escama Prisma. EVO_BEAUTY ("R/S/E only") continua no
-código, mas nenhuma espécie usa mais o método desde o Hack 7.
+Umbreon sem sufixo; Feebas evolui com a Escama Prisma. EVO_BEAUTY ("só R/S/E") continua no
+código, mas nenhuma espécie usa mais o método desde o Hack 7. Textos em PT-BR desde a tradução
+(frente E): "Não evolui.", " (impossível)", " (só R/S/E)".
 """
 
 import json
@@ -35,9 +36,9 @@ from .evolutions import EVOLUTION_TABLE, HOLD_ITEM_LEVEL, load_evolution_table
 
 LV = "{LV_2}"
 ARROW = "{RIGHT_ARROW_2}"
-NOT_POSSIBLE = " (impossible)"
-TRADED_ONLY = " (R/S/E only)"
-NO_EVOLUTION = "Does not evolve."
+NOT_POSSIBLE = " (impossível)"
+TRADED_ONLY = " (só R/S/E)"
+NO_EVOLUTION = "Não evolui."
 # sufixo das evoluções que o jogo sozinho não dispara
 SUFFIXES = {"EVO_BEAUTY": TRADED_ONLY}
 
@@ -83,18 +84,18 @@ def evolution_line(method: str, param: str, target: str, species_names: dict[str
         "EVO_ITEM": lambda: f"{item_names[param]} {ARROW} {name}",
         "EVO_LEVEL_HOLD_ITEM": lambda: f"{LV} {HOLD_ITEM_LEVEL} + {item_names[param]} {ARROW} {name}",
         "EVO_LEVEL_UP_HOLD_ITEM": lambda: f"Subir nível + {item_names[param]} {ARROW} {name}",
-        "EVO_FRIENDSHIP": lambda: f"High friendship {ARROW} {name}",
-        "EVO_FRIENDSHIP_DAY": lambda: f"Day friendship {ARROW} {name}",
-        "EVO_FRIENDSHIP_NIGHT": lambda: f"Night friendship {ARROW} {name}",
-        "EVO_BEAUTY": lambda: f"High beauty {ARROW} {name}",
-        "EVO_LEVEL_ATK_GT_DEF": lambda: f"{LV} {param}, ATK > DEF {ARROW} {name}",
-        "EVO_LEVEL_ATK_EQ_DEF": lambda: f"{LV} {param}, ATK = DEF {ARROW} {name}",
-        "EVO_LEVEL_ATK_LT_DEF": lambda: f"{LV} {param}, ATK < DEF {ARROW} {name}",
-        "EVO_LEVEL_SILCOON": lambda: f"{LV} {param} (random) {ARROW} {name}",
-        "EVO_LEVEL_CASCOON": lambda: f"{LV} {param} (random) {ARROW} {name}",
-        "EVO_LEVEL_SHEDINJA": lambda: f"{LV} {param}, free slot {ARROW} {name}",
-        "EVO_TRADE": lambda: f"Trade {ARROW} {name}",
-        "EVO_TRADE_ITEM": lambda: f"Trade + {item_names[param]} {ARROW} {name}",
+        "EVO_FRIENDSHIP": lambda: f"Amizade alta {ARROW} {name}",
+        "EVO_FRIENDSHIP_DAY": lambda: f"Amizade de dia {ARROW} {name}",
+        "EVO_FRIENDSHIP_NIGHT": lambda: f"Amizade de noite {ARROW} {name}",
+        "EVO_BEAUTY": lambda: f"Beleza alta {ARROW} {name}",
+        "EVO_LEVEL_ATK_GT_DEF": lambda: f"{LV} {param}, Atq > Def {ARROW} {name}",
+        "EVO_LEVEL_ATK_EQ_DEF": lambda: f"{LV} {param}, Atq = Def {ARROW} {name}",
+        "EVO_LEVEL_ATK_LT_DEF": lambda: f"{LV} {param}, Atq < Def {ARROW} {name}",
+        "EVO_LEVEL_SILCOON": lambda: f"{LV} {param} (sorteio) {ARROW} {name}",
+        "EVO_LEVEL_CASCOON": lambda: f"{LV} {param} (sorteio) {ARROW} {name}",
+        "EVO_LEVEL_SHEDINJA": lambda: f"{LV} {param} + vaga {ARROW} {name}",
+        "EVO_TRADE": lambda: f"Troca {ARROW} {name}",
+        "EVO_TRADE_ITEM": lambda: f"Troca + {item_names[param]} {ARROW} {name}",
     }
     if method not in lines:
         return None

@@ -23,6 +23,10 @@ void GetFriendshipLineText(u8 *dest, u8 friendship);
 // IVs/EVs page: IV total, % and overall grade; IV, grade and EV per stat; Hidden Power and EV
 // total, one line each. Columns are placed with {SKIP x} codes.
 void GetIvEvPageText(u8 *dest, struct Pokemon *mon);
+// PT-BR Trainer Memo: `place` with "em" contracted with the article its first word asks for
+// ("na Rota 1", "no Monte Lua", "nas Ilhas Seafoam"; plain "em" for a word in no list).
+// Returns dest.
+u8 *PokeSum_BufferMetPlace(u8 *dest, const u8 *place);
 
 #if TESTBUILD
 u32 PokeSum_TestGetState(void);

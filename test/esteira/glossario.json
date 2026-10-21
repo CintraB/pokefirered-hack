@@ -9973,6 +9973,159 @@
    "detectar": true,
    "frente": "D",
    "obs": "comando do PC de {PLAYER} (Depósito de Itens)"
+  },
+  {
+   "en": "WIRELESS COMMUNICATION",
+   "pt": "Comunicação Sem Fio",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "frente": "E",
+   "obs": "Presente Misterioso e status sem fio"
+  },
+  {
+   "en": "TRADE CENTER",
+   "pt": "Centro de Trocas",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true,
+   "frente": "E",
+   "obs": "gText_TradeCenter"
+  },
+  {
+   "en": "BERRY CRUSH",
+   "pt": "Esmaga Frutas",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "frente": "E",
+   "obs": "minijogo (gText_BerryCrush)"
+  },
+  {
+   "en": "POKéMON JUMP",
+   "pt": "Pulo Pokémon",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "frente": "E",
+   "obs": "minijogo (gText_PokemonJump)"
+  },
+  {
+   "en": "DODRIO BERRY-PICKING",
+   "pt": "Colheita do Dodrio",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "frente": "E",
+   "obs": "minijogo (gText_DodrioBerryPicking)"
+  },
+  {
+   "en": "WONDER CARD",
+   "pt": "Cartão Maravilha",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "frente": "E",
+   "obs": "Presente Misterioso"
+  },
+  {
+   "en": "WONDER NEWS",
+   "pt": "Notícias Maravilha",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "frente": "E",
+   "obs": "Presente Misterioso"
+  },
+  {
+   "en": "STAMP",
+   "pt": "Selo",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "frente": "E",
+   "obs": "Presente Misterioso"
+  },
+  {
+   "en": "TRENDY SAYING",
+   "pt": "Bordão da moda",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "frente": "E",
+   "obs": "Easy Chat (gEasyChatGroupName_TrendySaying)"
+  },
+  {
+   "en": "fateful encounter",
+   "pt": "encontro do destino",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "frente": "E",
+   "obs": "memória do Treinador no resumo (gText_PokeSum_*Fateful*)"
+  },
+  {
+   "en": "IV TOTAL",
+   "pt": "IV total",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "frente": "E",
+   "obs": "página IVs/EVs (Hack 5)"
+  },
+  {
+   "en": "TOSS (menu da bolsa)",
+   "pt": "Largar",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "frente": "E",
+   "obs": "encurtado: 'Descartar' (glossário) mede 50 px e o menu de contexto da bolsa/porta-frutas tem 48 px (gOtherText_Toss)"
+  },
+  {
+   "en": "TOSS (Presente Misterioso)",
+   "pt": "Apagar",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "frente": "E",
+   "obs": "lista Receber/Enviar/Apagar dos Cartões Maravilha, 48 px (gText_Toss)"
+  },
+  {
+   "en": "DESELECT",
+   "pt": "Tirar",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "frente": "E",
+   "obs": "'Desmarcar' mede 51 px e o menu de contexto tem 48 px; 'Tirar' = desregistrar o item do botão SELECT (gOtherText_Deselect)"
+  },
+  {
+   "en": "PROF. OAK'S PC (menu do PC)",
+   "pt": "PC Prof. Carvalho",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "frente": "E",
+   "obs": "encurtado: 'PC do Prof. Carvalho' mede 115 px e o menu do PC tem 104 px (gText_ProfOakSPc)"
+  },
+  {
+   "en": "ITEMFINDER (forma cheia)",
+   "pt": "Detector de Itens",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": false,
+   "frente": "E",
+   "obs": "forma cheia de Detector Item, para texto corrido (decisão de 20/10); gText_Itemfinder* em src/strings.c"
+  },
+  {
+   "en": "ROOFTOP",
+   "pt": "Terraço",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true,
+   "frente": "E",
+   "obs": "andar do elevador e aviso de mapa (gText_Rooftop/gText_Rooftop2); \"Cobertura\" estourava o mapName[25] do aviso na Loja de Celadon (src/map_name_popup.c)"
   }
  ],
  "proibidos": [
