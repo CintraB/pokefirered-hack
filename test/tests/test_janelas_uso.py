@@ -307,3 +307,23 @@ def test_every_measuring_usage_rule_cites_existing_lines():
         for path, first, last in cited:
             lines = (REPO_ROOT / path).read_text(encoding="utf-8").splitlines()
             assert int(last or first) <= len(lines), (rule.file, path, first)
+
+
+# ---- conteúdo dos placeholders variáveis (VAR_CONTENTS) ------------------------------------
+
+def test_every_var_content_cites_the_code_and_matches_a_real_text():
+    """Cada exceção por contexto cita o código que enche o buffer e casa com algum texto do jogo
+    que tem aquele placeholder (exceção morta não fica)."""
+    from esteira.check_text import _sources
+    from esteira.janelas_uso import VAR_CONTENTS
+    import fnmatch
+    texts = [e for e in _sources(REPO_ROOT) if hasattr(e, "texts")]
+    for vc in VAR_CONTENTS:
+        cited = re.findall(r"((?:src|data|include)/[\w./-]+\.(?:c|h|inc|s)):(\d+)(?:-(\d+))?", vc.source)
+        assert cited, f"exceção sem arquivo:linha: {vc}"
+        for path, first, last in cited:
+            lines = (REPO_ROOT / path).read_text(encoding="utf-8").splitlines()
+            assert int(last or first) <= len(lines), (vc, path, first)
+        assert vc.chars > 0
+        assert any(fnmatch.fnmatchcase(e.file, vc.file) and fnmatch.fnmatchcase(e.label, vc.label)
+                   and any("{" + vc.var + "}" in t for t in e.texts) for e in texts), vc

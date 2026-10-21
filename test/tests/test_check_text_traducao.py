@@ -109,7 +109,7 @@ def test_line_breaks_may_change(repo):
 
 
 def test_placeholders_may_change_order(repo):
-    translate(repo, two="Você recebeu {STR_VAR_2} de {STR_VAR_1}.$")
+    translate(repo, two="Recebeu {STR_VAR_2} de {STR_VAR_1}.$")
     assert run(repo) == []
 
 
@@ -134,10 +134,12 @@ def test_without_git_there_is_no_base_and_no_complaint(tmp_path):
     assert check_text(str(tmp_path), {"text": []}, english="desligado") == []
 
 
-def test_unknown_base_is_an_aviso_of_both_rules(repo):
+def test_unknown_base_is_an_aviso_of_the_three_rules(repo):
     results = check_text(str(repo), {"text": []}, base="0123456789abcdef0123", english="desligado")
-    assert [(r.name, r.status) for r in results] == [("texto/controle", "aviso"), ("texto/glossario", "aviso")]
+    assert [(r.name, r.status) for r in results] == [("texto/controle", "aviso"), ("texto/glossario", "aviso"),
+                                                     ("texto/largura", "aviso")]
     assert all("base" in r.detail and "não rodou" in r.detail for r in results)
+    assert "pior caso" in results[2].detail
 
 
 def test_broken_git_is_an_aviso_not_silence(repo):
@@ -145,7 +147,8 @@ def test_broken_git_is_an_aviso_not_silence(repo):
     shutil.rmtree(repo / ".git")
     (repo / ".git").write_text("gitdir: C:/nao/existe/.git/worktrees/x\n", encoding="utf-8")
     results = check_text(str(repo), {"text": []}, english="desligado")
-    assert [(r.name, r.status) for r in results] == [("texto/controle", "aviso"), ("texto/glossario", "aviso")]
+    assert [(r.name, r.status) for r in results] == [("texto/controle", "aviso"), ("texto/glossario", "aviso"),
+                                                     ("texto/largura", "aviso")]
     assert "git" in results[0].detail
 
 
@@ -225,3 +228,97 @@ def test_glossary_exception_is_respected(repo):
     exc = {"text": [{"file": "data/text/pc.inc", "label": "Text_Ball", "rule": "glossario",
                      "fingerprint": fingerprint(("Aqui está uma Pokébola.$",))}]}
     assert run(repo, exc) == []
+
+
+# ---- largura no pior caso dos placeholders variáveis ({STR_VAR_n}, {B_BUFF*}...) -----------
+# 'A' = 6 px, 'i' = 4, espaço = 6; {STR_VAR_n}/{B_BUFF*} medem 10 letras de 6 px = 60 px.
+
+def with_base(repo, base, rel="data/text/route23.inc", label="Text_Var", extra=""):
+    """Grava `label` com o texto `base` (inglês) e commita: vira a base dos testes."""
+    put(repo, rel, f'{label}::\n\t.string "{base}"\n' + extra)
+    git(repo, "add", "-A")
+    git(repo, "-c", "user.name=t", "-c", "user.email=t@t", "commit", "-q", "-m", "base var")
+    return git(repo, "rev-parse", "HEAD")
+
+
+def run_base(repo, base_sha, exceptions=None):
+    return check_text(str(repo), exceptions if exceptions is not None else {"text": []}, base=base_sha,
+                      english="desligado")
+
+
+def test_str_var_line_that_fits_at_zero_but_not_with_a_ten_letter_name_fails(repo):
+    sha = with_base(repo, "{STR_VAR_1} AAAA.$")
+    put(repo, "data/text/route23.inc", 'Text_Var::\n\t.string "{STR_VAR_1} ' + "A" * 30 + '$"\n')   # 186 / 246
+    (failed,) = failures(run_base(repo, sha))
+    assert failed.name == "texto/largura" and "Text_Var" in failed.detail
+    assert "pior caso" in failed.detail and "246 px" in failed.detail and "limite 208" in failed.detail
+    assert "{STR_VAR_1} = 10 letras" in failed.detail
+
+
+def test_translation_may_overflow_up_to_what_the_english_base_already_did(repo):
+    sha = with_base(repo, "{STR_VAR_1} " + "A" * 28 + "$")                       # 174 / 234: o inglês já estoura
+    put(repo, "data/text/route23.inc", 'Text_Var::\n\t.string "{STR_VAR_1} ' + "A" * 27 + 'i$"\n')  # 232
+    assert failures(run_base(repo, sha)) == []
+    put(repo, "data/text/route23.inc", 'Text_Var::\n\t.string "{STR_VAR_1} ' + "A" * 29 + '$"\n')   # 240
+    (failed,) = failures(run_base(repo, sha))
+    assert "240 px" in failed.detail and "234" in failed.detail
+
+
+def test_the_base_allowance_does_not_excuse_a_line_that_overflows_without_names(repo):
+    sha = with_base(repo, "{STR_VAR_1} " + "A" * 28 + "$")                       # base: 234 no pior caso
+    put(repo, "data/text/route23.inc", 'Text_Var::\n\t.string "{STR_VAR_1} oi\\n' + "A" * 35 + '$"\n')  # 210 fixo
+    (failed,) = failures(run_base(repo, sha))
+    assert "210 px" in failed.detail and "pior caso" not in failed.detail
+
+
+def test_untouched_english_that_overflows_in_the_worst_case_is_the_base(repo):
+    sha = with_base(repo, "{STR_VAR_1} " + "A" * 28 + "$",
+                    extra='\nText_Other::\n\t.string "Hello.$"\n')
+    put(repo, "data/text/route23.inc", 'Text_Var::\n\t.string "{STR_VAR_1} ' + "A" * 28 + '$"\n'
+        '\nText_Other::\n\t.string "Olá.$"\n')                                      # arquivo mudado, rótulo igual
+    assert failures(run_base(repo, sha)) == []
+
+
+def test_new_label_without_english_is_measured_strictly(repo):
+    sha = with_base(repo, "Hello.$")
+    put(repo, "data/text/route23.inc", 'Text_Var::\n\t.string "Olá.$"\n'
+        '\nText_New::\n\t.string "{STR_VAR_2} ' + "A" * 25 + '$"\n')                 # 156 / 216
+    (failed,) = failures(run_base(repo, sha))
+    assert "Text_New" in failed.detail and "216 px" in failed.detail
+
+
+def test_battle_buffers_are_measured_in_the_worst_case(repo):
+    base_sha = git(repo, "rev-parse", "HEAD")
+    translate(repo, gained="{B_BUFF1} " + "A" * 20 + "{B_BUFF2}\\n{B_BUFF3} PE!\\p")   # 126 / 246 > 222
+    (failed,) = failures(run_base(repo, base_sha))
+    assert failed.detail.startswith("src/battle_message.c: sText_Gained:") and "246 px" in failed.detail
+    assert "limite 222" in failed.detail
+    translate(repo, gained="{B_BUFF1} " + "A" * 16 + "{B_BUFF2}\\n{B_BUFF3} PE!\\p")    # 222
+    assert failures(run_base(repo, base_sha)) == []
+
+
+def test_context_declares_a_number_or_an_item_name(repo, monkeypatch):
+    from esteira import janelas_uso
+    sha = with_base(repo, "{STR_VAR_1} AAAA.$")
+    put(repo, "data/text/route23.inc", 'Text_Var::\n\t.string "{STR_VAR_1} ' + "A" * 28 + '$"\n')   # 174
+    assert len(failures(run_base(repo, sha))) == 1                                  # 10 letras: 234
+    number = janelas_uso.VarContent("data/text/route23.inc", "Text_Var", "STR_VAR_1", 5,
+                                    "número de 5 algarismos (src/x.c:1)", digits=True)
+    monkeypatch.setattr(janelas_uso, "VAR_CONTENTS", [number])
+    assert failures(run_base(repo, sha)) == []                                      # 5 algarismos: 204
+    item = number._replace(chars=13, digits=False, source="nome de item (src/x.c:1)")
+    monkeypatch.setattr(janelas_uso, "VAR_CONTENTS", [item])
+    (failed,) = failures(run_base(repo, sha))
+    assert "252 px" in failed.detail and "{STR_VAR_1} = 13 letras" in failed.detail
+    other = number._replace(label="Text_Outro")                                    # outro rótulo: não vale
+    monkeypatch.setattr(janelas_uso, "VAR_CONTENTS", [other])
+    assert len(failures(run_base(repo, sha))) == 1
+
+
+def test_worst_case_finding_can_be_frozen_like_any_width_finding(repo):
+    from esteira.check_text import compute_baseline
+    sha = with_base(repo, "{STR_VAR_1} AAAA.$")
+    put(repo, "data/text/route23.inc", 'Text_Var::\n\t.string "{STR_VAR_1} ' + "A" * 30 + '$"\n')
+    (exc,) = compute_baseline(str(repo), base=sha)
+    assert exc["rule"] == "largura" and exc["valor"] == 246
+    assert failures(run_base(repo, sha, {"text": [exc]})) == []
