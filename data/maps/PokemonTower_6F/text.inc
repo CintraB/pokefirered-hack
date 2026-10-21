@@ -1,23 +1,23 @@
 PokemonTower_6F_Text_AngelicaIntro::
-    .string "Give…me…\n"
-    .string "blood…$"
+    .string "Dê…me…\n"
+    .string "sangue…$"
 
 PokemonTower_6F_Text_AngelicaDefeat::
-    .string "Groan!$"
+    .string "Argh!$"
 
 PokemonTower_6F_Text_AngelicaPostBattle::
-    .string "I feel anemic and weak…$"
+    .string "Sinto-me anêmica e fraca…$"
 
 PokemonTower_6F_Text_EmiliaIntro::
     .string "Urff…\n"
     .string "Kwaah!$"
 
 PokemonTower_6F_Text_EmiliaDefeat::
-    .string "Something fell out!$"
+    .string "Algo caiu!$"
 
 PokemonTower_6F_Text_EmiliaPostBattle::
-    .string "My hair didn't fall out!\n"
-    .string "It was a malevolent spirit!$"
+    .string "O meu cabelo não caiu!\n"
+    .string "Foi um espírito maligno!$"
 
 PokemonTower_6F_Text_JenniferIntro::
     .string "Ke…ke…ke…\n"
@@ -27,17 +27,17 @@ PokemonTower_6F_Text_JenniferDefeat::
     .string "Keee!$"
 
 PokemonTower_6F_Text_JenniferPostBattle::
-    .string "What's going on here?$"
+    .string "O que está acontecendo aqui?$"
 
 PokemonTower_6F_Text_BeGoneIntruders::
-    .string "Be gone…\n"
-    .string "Intruders…$"
+    .string "Fora…\n"
+    .string "Intrusos…$"
 
 PokemonTower_6F_Text_GhostWasCubonesMother::
-    .string "The ghost was the restless spirit\n"
-    .string "of CUBONE's mother!$"
+    .string "O fantasma era o espírito inquieto\n"
+    .string "da mãe do Cubone!$"
 
 PokemonTower_6F_Text_MothersSpiritWasCalmed::
-    .string "The mother's spirit was calmed.\p"
-    .string "It departed to the afterlife…$"
+    .string "O espírito da mãe foi acalmado.\p"
+    .string "Ela partiu para o além…$"
 

@@ -1,52 +1,51 @@
 SevenIsland_TanobyRuins_Text_BrandonIntro::
-    .string "Do you know anything about this\n"
-    .string "stone chamber?$"
+    .string "Você sabe alguma coisa sobre esta\n"
+    .string "câmara de pedra?$"
 
 SevenIsland_TanobyRuins_Text_BrandonDefeat::
-    .string "That was uncalled for.\n"
-    .string "You didn't have to be so rough.$"
+    .string "Isso foi desnecessário.\n"
+    .string "Não precisava pegar tão pesado.$"
 
 SevenIsland_TanobyRuins_Text_BrandonPostBattle::
-    .string "The TANOBY RUINS date back at\n"
-    .string "least 1,500 years.\p"
-    .string "But it's a baffling mystery as to\n"
-    .string "why it was built in the first place.$"
+    .string "As Ruínas de Tanoby têm pelo menos\n"
+    .string "1.500 anos.\p"
+    .string "Mas é um mistério desconcertante por\n"
+    .string "que foram construídas, para começar.$"
 
 SevenIsland_TanobyRuins_Text_BenjaminIntro::
-    .string "A mystic POKéMON is said to sleep\n"
-    .string "inside here.$"
+    .string "Dizem que um Pokémon místico dorme\n"
+    .string "aqui dentro.$"
 
 SevenIsland_TanobyRuins_Text_BenjaminDefeat::
-    .string "I'm not much good in battle.$"
+    .string "Não sou muito bom de batalha.$"
 
 SevenIsland_TanobyRuins_Text_BenjaminPostBattle::
-    .string "I hear there are other ruins like\n"
-    .string "the one here.\p"
-    .string "Might they be the resting places\n"
-    .string "of other mystic POKéMON?$"
+    .string "Ouvi dizer que há outras ruínas como\n"
+    .string "esta.\p"
+    .string "Será que são o local de descanso de\n"
+    .string "outros Pokémon místicos?$"
 
 SevenIsland_TanobyRuins_Text_EdnaIntro::
-    .string "CLIFFORD is teaching me how to\n"
-    .string "paint.$"
+    .string "O Clifford está me ensinando a pintar.$"
 
 SevenIsland_TanobyRuins_Text_EdnaDefeat::
-    .string "We might get in trouble for being\n"
-    .string "noisy here.$"
+    .string "Podemos nos meter em encrenca por\n"
+    .string "fazer barulho aqui.$"
 
 SevenIsland_TanobyRuins_Text_EdnaPostBattle::
-    .string "I said that I wanted to paint an\n"
-    .string "old building.\p"
-    .string "So CLIFFORD brought me here.$"
+    .string "Eu disse que queria pintar um prédio\n"
+    .string "antigo.\p"
+    .string "Aí o Clifford me trouxe aqui.$"
 
 SevenIsland_TanobyRuins_Text_CliffordIntro::
-    .string "Today, in addition to our lesson,\n"
-    .string "we came to see the chamber.$"
+    .string "Hoje, além da nossa aula, viemos ver\n"
+    .string "a câmara.$"
 
 SevenIsland_TanobyRuins_Text_CliffordDefeat::
-    .string "My, how extraordinary.$"
+    .string "Veja só, que extraordinário.$"
 
 SevenIsland_TanobyRuins_Text_CliffordPostBattle::
-    .string "Ah, so you are studying POKéMON\n"
-    .string "on your own…\p"
-    .string "Yes, you certainly are quite the\n"
-    .string "extraordinary person, indeed.$"
+    .string "Ah, então você estuda os Pokémon por\n"
+    .string "conta própria…\p"
+    .string "Sim, você é de fato uma pessoa\n"
+    .string "extraordinária, realmente.$"

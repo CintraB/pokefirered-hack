@@ -1,82 +1,82 @@
 CeladonCity_DepartmentStore_Roof_Text_ImThirstyGiveHerDrink::
-    .string "I'm thirsty!\n"
-    .string "I want something to drink!\p"
-    .string "{FONT_NORMAL}Give her a drink?$"
+    .string "Estou com sede!\n"
+    .string "Quero algo para beber!\p"
+    .string "{FONT_NORMAL}Dar uma bebida a ela?$"
 
 CeladonCity_DepartmentStore_Roof_Text_GiveWhichDrink::
-    .string "Give her which drink?$"
+    .string "Dar qual bebida a ela?$"
 
 CeladonCity_DepartmentStore_Roof_Text_YayFreshWaterHaveThis::
-    .string "Yay!\p"
-    .string "FRESH WATER!\p"
-    .string "Thank you!\n"
-    .string "You can have this from me!$"
+    .string "Oba!\p"
+    .string "Água Fresca!\p"
+    .string "Obrigada!\n"
+    .string "Fique com isto, é um presente!$"
 
 Text_ReceivedItemFromLittleGirl::
-    .string "{PLAYER} received a {STR_VAR_2}\n"
-    .string "from the little girl.$"
+    .string "{PLAYER} recebeu {STR_VAR_2}\n"
+    .string "da menininha.$"
 
 CeladonCity_DepartmentStore_Roof_Text_ExplainTM16::
-    .string "TM16 contains LIGHT SCREEN.\p"
-    .string "It's a move that weakens the power\n"
-    .string "of special attacks by your foe.$"
+    .string "A MT16 contém Tela de Luz.\p"
+    .string "É um golpe que enfraquece o poder\n"
+    .string "dos ataques especiais do inimigo.$"
 
 CeladonCity_DepartmentStore_Roof_Text_YaySodaPopHaveThis::
-    .string "Yay!\p"
-    .string "SODA POP!\p"
-    .string "Thank you!\n"
-    .string "You can have this from me!$"
+    .string "Oba!\p"
+    .string "Refrigerante!\p"
+    .string "Obrigada!\n"
+    .string "Fique com isto, é um presente!$"
 
 CeladonCity_DepartmentStore_Roof_Text_ExplainTM20::
-    .string "TM20 contains SAFEGUARD.\p"
-    .string "It's a move that prevents status\n"
-    .string "problems among your POKéMON.$"
+    .string "A MT20 contém Salvaguarda.\p"
+    .string "É um golpe que protege os seus\n"
+    .string "Pokémon contra problemas de status.$"
 
 CeladonCity_DepartmentStore_Roof_Text_YayLemonadeHaveThis::
-    .string "Yay!\p"
-    .string "LEMONADE!\p"
-    .string "Thank you!\n"
-    .string "You can have this from me!$"
+    .string "Oba!\p"
+    .string "Limonada!\p"
+    .string "Obrigada!\n"
+    .string "Fique com isto, é um presente!$"
 
 CeladonCity_DepartmentStore_Roof_Text_ExplainTM33::
-    .string "TM33 contains REFLECT.\p"
-    .string "It's a move that weakens the power\n"
-    .string "of physical attacks by your foe.$"
+    .string "A MT33 contém Refletir.\p"
+    .string "É um golpe que enfraquece o poder\n"
+    .string "dos ataques físicos do inimigo.$"
 
 CeladonCity_DepartmentStore_Roof_Text_DontHaveSpaceForThis::
-    .string "You don't have space for this!$"
+    .string "Você não tem espaço para isto!$"
 
 CeladonCity_DepartmentStore_Roof_Text_ImNotThirstyAfterAll::
-    .string "No, thank you!\n"
-    .string "I'm not thirsty after all!$"
+    .string "Não, obrigada!\n"
+    .string "Na verdade, não estou com sede!$"
 
 CeladonCity_DepartmentStore_Roof_Text_MySisterIsImmature::
-    .string "My sister is a TRAINER, believe it\n"
-    .string "or not.\p"
-    .string "But, she's so immature, she drives\n"
-    .string "me nuts!$"
+    .string "Minha irmã é Treinadora, acredite\n"
+    .string "se quiser.\p"
+    .string "Mas ela é tão infantil que me\n"
+    .string "deixa maluco!$"
 
 CeladonCity_DepartmentStore_Roof_Text_ImThirstyIWantDrink::
-    .string "I'm thirsty!\n"
-    .string "I want something to drink!$"
+    .string "Estou com sede!\n"
+    .string "Quero algo para beber!$"
 
 CeladonCity_DepartmentStore_Roof_Text_FloorSign::
-    .string "ROOFTOP SQUARE:\n"
-    .string "VENDING MACHINES$"
+    .string "Terraço:\n"
+    .string "Máquinas de Bebidas$"
 
 CeladonCity_DepartmentStore_Roof_Text_VendingMachineWhatDoesItHave::
-    .string "A vending machine!\n"
-    .string "What does it have?$"
+    .string "Uma máquina de bebidas!\n"
+    .string "O que será que tem nela?$"
 
 CeladonCity_DepartmentStore_Roof_Text_NotEnoughMoney::
-    .string "Oops, not enough money!$"
+    .string "Ops, falta dinheiro!$"
 
 CeladonCity_DepartmentStore_Roof_Text_DrinkCanPoppedOut::
-    .string "A can of {STR_VAR_1} popped out!$"
+    .string "Saiu uma lata de {STR_VAR_1}!$"
 
 CeladonCity_DepartmentStore_Roof_Text_NoMoreRoomForStuff::
-    .string "There's no more room for stuff!$"
+    .string "Não há mais espaço para coisas!$"
 
 CeladonCity_DepartmentStore_Roof_Text_NotThirsty::
-    .string "Not thirsty!$"
+    .string "Sem sede!$"
 

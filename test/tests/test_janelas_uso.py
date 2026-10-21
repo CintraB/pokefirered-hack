@@ -307,3 +307,45 @@ def test_every_measuring_usage_rule_cites_existing_lines():
         for path, first, last in cited:
             lines = (REPO_ROOT / path).read_text(encoding="utf-8").splitlines()
             assert int(last or first) <= len(lines), (rule.file, path, first)
+
+
+# ---- conteúdo dos placeholders variáveis (VAR_CONTENTS) ------------------------------------
+
+def test_every_var_content_cites_the_code_and_matches_a_real_text():
+    """Cada exceção por contexto cita o código que enche o buffer e casa com algum texto do jogo
+    que tem aquele placeholder (exceção morta não fica)."""
+    from esteira.check_text import VAR_SIZES, _sources, has_var, var_content_matches
+    from esteira.janelas_uso import VAR_CONTENTS
+    texts = [e for e in _sources(REPO_ROOT) if hasattr(e, "texts")]
+    for vc in VAR_CONTENTS:
+        cited = re.findall(r"((?:src|data|include)/[\w./-]+\.(?:c|h|inc|s)):(\d+)(?:-(\d+))?", vc.source)
+        assert cited, f"exceção sem arquivo:linha: {vc}"
+        for path, first, last in cited:
+            lines = (REPO_ROOT / path).read_text(encoding="utf-8").splitlines()
+            assert int(last or first) <= len(lines), (vc, path, first)
+        assert vc.chars > 0
+        assert vc.var in VAR_SIZES, f"var é o nome literal de um placeholder de VAR_SIZES: {vc}"
+        assert any(var_content_matches(vc, e.file, e.label) and any(has_var(t, vc.var) for t in e.texts)
+                   for e in texts), vc
+
+
+def test_var_contents_never_overlap():
+    """Duas entradas para o mesmo texto e placeholder são proibidas: assim a ordem da lista não
+    decide nada (ela é alfabética só para o merge das frentes)."""
+    from esteira.check_text import _sources, var_content_matches
+    from esteira.janelas_uso import VAR_CONTENTS
+    for e in (e for e in _sources(REPO_ROOT) if hasattr(e, "texts")):
+        hits = [vc for vc in VAR_CONTENTS if var_content_matches(vc, e.file, e.label)]
+        dup = [v for v in {vc.var for vc in hits} if sum(vc.var == v for vc in hits) > 1]
+        assert not dup, (e.file, e.label, dup)
+
+
+def test_overlapping_var_contents_are_an_error(monkeypatch):
+    import pytest as _pytest
+    from esteira import janelas_uso
+    from esteira.check_text import var_sizes
+    a = janelas_uso.VarContent("src/x.c", "gText_*", "STR_VAR_1", 5, "x (src/x.c:1)", digits=True)
+    monkeypatch.setattr(janelas_uso, "VAR_CONTENTS", [a, a._replace(label="gText_A", chars=3)])
+    with _pytest.raises(ValueError, match="sobrep"):
+        var_sizes("src/x.c", "gText_A")
+    assert var_sizes("src/x.c", "gText_B")["STR_VAR_1"].chars == 5

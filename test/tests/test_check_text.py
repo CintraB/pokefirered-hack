@@ -150,6 +150,8 @@ def test_player_and_rival_count_as_seven_wide_chars(repo):
 
 
 def test_control_placeholders_have_zero_width(repo):
+    # sem base inglesa (pasta sem .git) o {STR_VAR_1} mede 0: o pior caso só vale para texto mudado
+    # em relação à base (test_check_text_traducao.py)
     body = "{COLOR RED}{SHADOW LIGHT_RED}" + "A" * 34 + "i{PAUSE 0x20}{STR_VAR_1}{PLAY_BGM MUS_OBTAIN_BADGE}"
     inc(repo, f'Text_Fixture::\n\t.string "{body}$"\n')
     assert run(repo) == []
@@ -268,13 +270,14 @@ def test_skipped_source_still_gets_charmap_and_terminator_checks(repo):
     assert len(failures(run(repo))) == 3
 
 
-def test_item_description_limit_is_200(repo):
+def test_item_description_limit_is_198(repo):
+    # a mochila tem 200 px (x = 0), mas o item no PC de Pokémon sai em x = 2 na janela de 25 tiles
     put(repo, "src/data/items.json", json.dumps({"items": [
         {"itemId": "ITEM_OK", "description_english": "A" * 33},       # 198 px
-        {"itemId": "ITEM_BAD", "description_english": "A" * 34},      # 204 px
+        {"itemId": "ITEM_BAD", "description_english": "A" * 33 + "i"},  # 202 px
     ]}))
-    failed = failures(run(repo))
-    assert len(failed) == 1 and "ITEM_BAD" in failed[0].detail and "limite 200" in failed[0].detail
+    (failed,) = failures(run(repo))
+    assert "ITEM_BAD" in failed.detail and "limite 198" in failed.detail
 
 
 def test_quest_log_limit_is_238(repo):
@@ -549,6 +552,31 @@ def test_help_system_mouseover_descriptions_are_206_px(repo):
     assert labels == ["Help_Text_DescExit"]
 
 
+def test_help_list_items_and_titles_are_one_line_of_200_px(repo):
+    # perguntas, tópicos e termos: uma linha da lista em x = 8 e o título da resposta (24 px de altura)
+    inc(repo, 'Help_Text_PlayingForFirstTime::\n\t.string "' + "A" * 33 + '$"\n\n'           # 198 px
+              'Help_Text_WhatShouldIBeDoing::\n\t.string "' + "A" * 33 + 'i$"\n\n'           # 202 px
+              'Help_Text_HP::\n\t.string "Pontos\\nde Saúde$"\n\n'                          # 2 linhas
+              'Help_Text_Cancel::\n\t.string "Cancelar$"\n\n'
+              'Help_Text_DefineHP::\n\t.string "' + "A" * 34 + 'i\\n2\\n3$"\n',              # resposta: 208 px
+        rel="data/text/help_system.inc")
+    failed = failures(run(repo))
+    assert sorted(r.detail.split(": ")[1] for r in failed) == ["Help_Text_HP", "Help_Text_WhatShouldIBeDoing"]
+    assert any("202 px, limite 200" in r.detail for r in failed)
+    assert any("2 linhas, limite 1" in r.detail for r in failed)
+
+
+def test_help_list_labels_come_from_the_help_system_tables():
+    from esteira.check_text import _HELP_LIST_LABELS
+    for label in ("Help_Text_WhatShouldIDo", "Help_Text_PlayingForFirstTime", "Help_Text_UsingPokedex",
+                  "Help_Text_HP", "Help_Text_TheHelpSystem", "Help_Text_UsingTypeMatchupList", "Help_Text_Cancel"):
+        assert label in _HELP_LIST_LABELS, label
+    for label in ("Help_Text_HowToUsePokedex", "Help_Text_DefineHP", "Help_Text_DescWhatShouldIDo"):
+        assert label not in _HELP_LIST_LABELS, label
+        assert rule_for("data/text/help_system.inc", label).lines != 1
+    assert len(_HELP_LIST_LABELS) > 100
+
+
 def test_help_system_answers_have_at_most_seven_lines(repo):
     # 13 tiles de altura, linhas de 15 px e glifo de 14: 6 * 15 + 14 = 104 px
     inc(repo, 'Help_Text_A::\n\t.string "1\\n2\\n3\\n4\\n5\\n6\\n7$"\n\n'
@@ -629,6 +657,32 @@ def test_item_description_has_at_most_three_lines(repo):
     ]}))
     (failed,) = failures(run(repo))
     assert "ITEM_A" in failed.detail and "4 linhas, limite 3" in failed.detail
+
+
+def test_berry_description_has_at_most_two_lines(repo):
+    # bolsa de frutas: janela de 4 tiles de altura com o texto em y = 2 (src/berry_pouch.c:226-233, :764)
+    put(repo, "src/data/items.json", json.dumps({"items": [
+        {"itemId": "ITEM_CHERI_BERRY", "english": "A", "description_english": "um\\ndois"},
+        {"itemId": "ITEM_PECHA_BERRY", "english": "A", "description_english": "um\\ndois\\ntrês"},
+        {"itemId": "ITEM_POTION", "english": "A", "description_english": "um\\ndois\\ntrês"},
+    ]}, ensure_ascii=False))
+    (failed,) = failures(run(repo))
+    assert "ITEM_PECHA_BERRY" in failed.detail and "3 linhas, limite 2" in failed.detail
+
+
+def test_tm_description_in_items_json_is_not_shown_and_not_measured(repo):
+    # o jogo mostra a descrição do golpe (gMoveDescription_*, src/data/items.json.txt:17-18)
+    put(repo, "src/data/items.json", json.dumps({"items": [
+        {"itemId": "ITEM_TM01", "english": "TM01", "description_english": "W" * 60 + "\\n2\\n3\\n4"},
+        {"itemId": "ITEM_HM08", "english": "HM08", "description_english": "W" * 60},
+        {"itemId": "ITEM_TM_CASE", "english": "A", "description_english": "W" * 60},
+    ]}))
+    (failed,) = failures(run(repo))
+    assert "ITEM_TM_CASE" in failed.detail
+    rule = rule_for("src/data/items.json", "ITEM_TM01")
+    assert rule.px is None and rule.lines is None and "gMoveDescription" in rule.source
+    move = rule_for("src/move_descriptions.c", "gMoveDescription_Pound")
+    assert "src/tm_case.c" in move.source and move.px <= 142
 
 
 @pytest.mark.parametrize("rel, decl, limit", [
@@ -766,8 +820,12 @@ def test_window_citations_point_at_the_templates():
     assert item.chars == ITEM_NAME_MAX_CHARS and "ITEM_NAME_LENGTH 14" in cited_text(item)
     assert "[19]" in cited_text(item) and "item_X = 9" in cited_text(item) and "0x6e" in cited_text(item)
     desc = rule_for("src/data/items.json", "ITEM_POTION")
-    assert desc.px == 200 and desc.lines == 3
+    assert desc.px == 198 and desc.lines == 3
     assert ".width = 25" in cited_text(desc) and ".height = 6" in cited_text(desc)
+    assert "description, 2, 0" in cited_text(desc)          # PC de Pokémon: x = 2
+    berry = rule_for("src/data/items.json", "ITEM_CHERI_BERRY")
+    assert berry.px == 198 and berry.lines == 2
+    assert ".height = 4" in cited_text(berry) and "str, 0, 2" in cited_text(berry)
     move = rule_for("src/move_descriptions.c", "gMoveDescription_Pound")
     assert move.px == 113 and move.lines == 4 and ".width = 15" in cited_text(move) and "7, 42" in cited_text(move)
     help_ = rule_for("data/text/help_system.inc", "Help_Text_DefineHP")
@@ -779,6 +837,16 @@ def test_every_text_of_the_real_repo_has_a_rule():
     orphans = sorted({(e.file, e.label) for e in _sources(REPO_ROOT)
                       if not isinstance(e, Result) and rule_for(e.file, e.label) is None})
     assert orphans == [], orphans[:10]
+
+
+def test_real_berry_and_tm_rules_match_exactly_their_pockets():
+    """A regra de fruta (2 linhas) pega toda fruta da bolsa de frutas, e a de MT/MO (sem tela)
+    pega só os itens do estojo de MT."""
+    items = json.loads((REPO_ROOT / "src/data/items.json").read_text(encoding="utf-8"))["items"]
+    for item in items:
+        rule = rule_for("src/data/items.json", item["itemId"])
+        assert (rule.lines == 2) == (item["pocket"] == "POCKET_BERRY_POUCH"), item["itemId"]
+        assert (rule.px is None) == (item["pocket"] == "POCKET_TM_CASE"), item["itemId"]
 
 
 def test_real_repo_scans_all_sources():

@@ -1,15 +1,16 @@
 PewterCity_House1_Text_Nidoran::
-    .string "NIDORAN♂: Bowbow!$"
+    .string "Nidoran♂: Au au!$"
 
 PewterCity_House1_Text_NidoranSit::
-    .string "NIDORAN, sit!$"
+    .string "Nidoran, senta!$"
 
 PewterCity_House1_Text_TradeMonsAreFinicky::
-    .string "Our POKéMON's an outsider, so it's\n"
-    .string "finicky and hard to handle.\p"
-    .string "An outsider is a POKéMON that you\n"
-    .string "get in a trade.\p"
-    .string "It grows fast, but it may ignore an\n"
-    .string "unskilled TRAINER in battle.\p"
-    .string "If only we had some BADGES…$"
+    .string "O nosso Pokémon veio de fora, então\n"
+    .string "é temperamental e difícil de lidar.\p"
+    .string "Pokémon de fora é aquele que você\n"
+    .string "recebe numa troca.\p"
+    .string "Ele cresce rápido, mas pode ignorar\n"
+    .string "um Treinador inexperiente em luta.\p"
+    .string "Se ao menos tivéssemos algumas\n"
+    .string "Insígnias…$"
 

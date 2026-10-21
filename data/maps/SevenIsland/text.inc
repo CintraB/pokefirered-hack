@@ -1,38 +1,38 @@
 Text_SwordsDanceTeach::
-    .string "Not many people come out here.\p"
-    .string "If I train here, I'm convinced that\n"
-    .string "I'll get stronger and stronger.\p"
-    .string "Yep, stronger and stronger…\p"
-    .string "How would you like to learn a move\n"
-    .string "like that? It's SWORDS DANCE.$"
+    .string "Pouca gente vem até aqui.\p"
+    .string "Se eu treinar aqui, tenho certeza de\n"
+    .string "que ficarei cada vez mais forte.\p"
+    .string "É, cada vez mais forte…\p"
+    .string "Que tal aprender um golpe assim? É\n"
+    .string "Dança das Espadas.$"
 
 Text_SwordsDanceDeclined::
-    .string "Well, that's fine, too.$"
+    .string "Bem, tudo bem também.$"
 
 Text_SwordsDanceWhichMon::
-    .string "All right, pick which POKéMON\n"
-    .string "I should teach it to.$"
+    .string "Certo, escolha a qual Pokémon devo\n"
+    .string "ensiná-lo.$"
 
 Text_SwordsDanceTaught::
-    .string "If only we could keep getting\n"
-    .string "stronger and stronger, eh?$"
+    .string "Se ao menos pudéssemos continuar\n"
+    .string "ficando cada vez mais fortes, hein?$"
 
 SevenIsland_Text_IslandSign::
-    .string "SEVEN ISLAND\n"
-    .string "Quest Island of Infinity$"
+    .string "Ilha Sete\n"
+    .string "Ilha da Busca Infinita$"
 
 SevenIsland_Text_IslandsMadeInSevenDays::
-    .string "These islands are called the SEVII\n"
-    .string "ISLANDS because there are seven.\p"
-    .string "…Or at least that's what the young\n"
-    .string "people believe.\p"
-    .string "The truth is, these islands are so\n"
-    .string "named because they are said to\l"
-    .string "have been made in seven days.$"
+    .string "Estas ilhas se chamam Ilhas Sevii\n"
+    .string "porque são sete.\p"
+    .string "…Ou pelo menos é nisso que os jovens\n"
+    .string "acreditam.\p"
+    .string "A verdade é que o nome vem do fato\n"
+    .string "de dizerem que elas foram feitas em\l"
+    .string "sete dias.$"
 
 SevenIsland_Text_IslandVirtuallyUntouched::
-    .string "This island has been left virtually\n"
-    .string "untouched in its natural state.\p"
-    .string "It could be a little difficult to\n"
-    .string "hike around because of that.$"
+    .string "Esta ilha foi deixada praticamente\n"
+    .string "intocada, em seu estado natural.\p"
+    .string "Por isso, pode ser meio difícil fazer\n"
+    .string "trilhas por aqui.$"
 

@@ -1,17 +1,17 @@
 CeladonCity_DepartmentStore_1F_Text_WelcomeToDeptStore::
-    .string "Hello!\n"
-    .string "Welcome to CELADON DEPT. STORE.\p"
-    .string "The board on the right describes\n"
-    .string "the store layout.$"
+    .string "Olá!\n"
+    .string "Boas-vindas à Loja de Celadon.\p"
+    .string "O quadro à direita mostra como\n"
+    .string "a loja é organizada.$"
 
 CeladonCity_DepartmentStore_1F_Text_FloorDescriptions::
-    .string "1F: SERVICE COUNTER\p"
-    .string "2F: TRAINER'S MARKET\p"
-    .string "3F: TV GAME SHOP\p"
-    .string "4F: WISE MAN GIFTS\p"
-    .string "5F: DRUGSTORE\p"
-    .string "ROOFTOP SQUARE: VENDING MACHINES$"
+    .string "1º andar: Balcão de Serviços\p"
+    .string "2º andar: Mercado do Treinador\p"
+    .string "3º andar: Loja de Videogames\p"
+    .string "4º andar: Presentes do Sábio\p"
+    .string "5º andar: Farmácia\p"
+    .string "Terraço: Máquinas de Bebidas$"
 
 CeladonCity_DepartmentStore_1F_Text_ServiceCounter::
-    .string "1F: SERVICE COUNTER$"
+    .string "1º andar: Balcão de Serviços$"
 

@@ -1,20 +1,20 @@
 SaffronCity_House_Text_DontLookAtMyLetter::
-    .string "…Thank you for writing.\n"
-    .string "I hope to see you soon!\p"
-    .string "…Hey!\n"
-    .string "Don't look at my letter!$"
+    .string "…Agradeço por ter escrito.\n"
+    .string "Espero ver você em breve!\p"
+    .string "…Ei!\n"
+    .string "Não olhe a minha carta!$"
 
 SaffronCity_House_Text_Pidgey::
-    .string "PIDGEY: Kurukkoo!$"
+    .string "Pidgey: Kurukkoo!$"
 
 SaffronCity_House_Text_GettingCopycatPokeDoll::
-    .string "The COPYCAT is cute!\n"
-    .string "I'm getting her a POKé DOLL.$"
+    .string "A Imitadora é uma gracinha!\n"
+    .string "Vou dar uma Boneca Poké para ela.$"
 
 SaffronCity_House_Text_ExplainPPUp::
-    .string "I was given a PP UP as a gift.\p"
-    .string "It's used to increase the PP of\n"
-    .string "a POKéMON's move.\p"
-    .string "I should use it on a powerful move\n"
-    .string "with only a few PP.$"
+    .string "Ganhei um PP Mais de presente.\p"
+    .string "Serve para aumentar os PP de um\n"
+    .string "golpe de um Pokémon.\p"
+    .string "Vou usá-lo num golpe poderoso que\n"
+    .string "tenha poucos PP.$"
 

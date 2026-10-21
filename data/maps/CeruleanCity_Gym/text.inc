@@ -1,92 +1,97 @@
 CeruleanCity_Gym_Text_MistyIntro::
-    .string "Hi, you're a new face!\p"
-    .string "Only those TRAINERS who have a\n"
-    .string "policy about POKéMON can turn pro.\p"
-    .string "What is your approach when you\n"
-    .string "catch and train POKéMON?\p"
-    .string "My policy is an all-out offensive\n"
-    .string "with WATER-type POKéMON!{PLAY_BGM}{MUS_ENCOUNTER_GYM_LEADER}$"
+    .string "Oi, você é um rosto novo!\p"
+    .string "Só os Treinadores que têm uma\n"
+    .string "filosofia sobre Pokémon podem\l"
+    .string "virar profissionais.\p"
+    .string "Qual é a sua abordagem quando\n"
+    .string "captura e treina Pokémon?\p"
+    .string "A minha filosofia é o ataque total\n"
+    .string "com Pokémon do tipo Água!{PLAY_BGM}{MUS_ENCOUNTER_GYM_LEADER}$"
 
 CeruleanCity_Gym_Text_ExplainTM03::
-    .string "TM03 teaches WATER PULSE.\p"
-    .string "Use it on an aquatic POKéMON!$"
+    .string "A MT03 ensina Pulso d'Água.\p"
+    .string "Use-a em um Pokémon aquático!$"
 
 CeruleanCity_Gym_Text_ExplainCascadeBadge::
-    .string "The CASCADEBADGE makes all\n"
-    .string "POKéMON up to Lv. 30 obey.\p"
-    .string "That includes even outsiders you\n"
-    .string "got in trades.\p"
-    .string "There's more. You can now use CUT\n"
-    .string "anytime, even out of battle.\p"
-    .string "You can CUT down small trees to\n"
-    .string "open new pathways.\p"
-    .string "You can also have my favorite TM.$"
+    .string "A Insígnia Cascata faz todos os\n"
+    .string "Pokémon até o Nv. 30 obedecerem.\p"
+    .string "Isso inclui até os forasteiros que\n"
+    .string "você conseguiu em trocas.\p"
+    .string "Tem mais. Agora você pode usar\n"
+    .string "Cortar a qualquer hora, até fora de\l"
+    .string "batalha.\p"
+    .string "Você pode cortar árvores pequenas\n"
+    .string "para abrir novos caminhos.\p"
+    .string "Leve também a minha MT favorita.$"
 
 CeruleanCity_Gym_Text_ReceivedTM03FromMisty::
-    .string "{PLAYER} received TM03\n"
-    .string "from MISTY.$"
+    .string "{PLAYER} recebeu a MT03\n"
+    .string "da Misty.$"
 
 CeruleanCity_Gym_Text_BetterMakeRoomForThis::
-    .string "You better make room for this!$"
+    .string "É melhor abrir espaço para isto!$"
 
 CeruleanCity_Gym_Text_MistyDefeat::
-    .string "Wow!\n"
-    .string "You're too much!\p"
-    .string "All right!\p"
-    .string "You can have the CASCADEBADGE to\n"
-    .string "show you beat me.$"
+    .string "Uau!\n"
+    .string "Você é demais!\p"
+    .string "Tudo bem!\p"
+    .string "Pode ficar com a Insígnia Cascata\n"
+    .string "como prova de que me venceu.$"
 
 CeruleanCity_Gym_Text_DianaIntro::
-    .string "What? You?\n"
-    .string "I'm more than good enough for you!\p"
-    .string "MISTY won't have to be bothered.$"
+    .string "O quê? Você?\n"
+    .string "Sou mais do que suficiente para\l"
+    .string "você!\p"
+    .string "A Misty não precisa se incomodar.$"
 
 CeruleanCity_Gym_Text_DianaDefeat::
-    .string "You overwhelmed me!$"
+    .string "Você me atropelou!$"
 
 CeruleanCity_Gym_Text_DianaPostBattle::
-    .string "You have to face other TRAINERS\n"
-    .string "to see how good you really are.$"
+    .string "Você precisa enfrentar outros\n"
+    .string "Treinadores para descobrir o seu\l"
+    .string "verdadeiro valor.$"
 
 CeruleanCity_Gym_Text_LuisIntro::
     .string "Splash!\p"
-    .string "I'm first up!\n"
-    .string "Let's do it!$"
+    .string "Eu sou o primeiro!\n"
+    .string "Vamos nessa!$"
 
 CeruleanCity_Gym_Text_LuisDefeat::
-    .string "That can't be!$"
+    .string "Não pode ser!$"
 
 CeruleanCity_Gym_Text_LuisPostBattle::
-    .string "MISTY is a TRAINER who's going to\n"
-    .string "keep improving.\p"
-    .string "She won't lose to someone like you!$"
+    .string "A Misty é uma Treinadora que vai\n"
+    .string "continuar evoluindo.\p"
+    .string "Ela não vai perder para alguém\n"
+    .string "como você!$"
 
 CeruleanCity_Gym_Text_GymGuyAdvice::
-    .string "Yo!\n"
-    .string "Champ in the making!\p"
-    .string "Let me give you some advice!\p"
-    .string "The LEADER, MISTY, is a pro who\n"
-    .string "uses WATER-type POKéMON.\p"
-    .string "You can drain all their water with\n"
-    .string "GRASS-type POKéMON.\p"
-    .string "Or, you might use ELECTRIC-type\n"
-    .string "POKéMON and zap them!$"
+    .string "E aí!\n"
+    .string "Rumo ao título de campeão!\p"
+    .string "Deixe-me dar um conselho!\p"
+    .string "A Líder, Misty, é uma profissional\n"
+    .string "que usa Pokémon do tipo Água.\p"
+    .string "Você pode secar toda a água deles\n"
+    .string "com Pokémon do tipo Planta.\p"
+    .string "Ou pode usar Pokémon do tipo\n"
+    .string "Elétrico e dar um choque neles!$"
 
 CeruleanCity_Gym_Text_WeMakePrettyGoodTeam::
-    .string "You beat MISTY!\n"
-    .string "See, what'd I tell ya?\p"
-    .string "You and me, kid, we make a pretty\n"
-    .string "darn-good team!$"
+    .string "Você venceu a Misty!\n"
+    .string "Viu? O que foi que eu disse?\p"
+    .string "Eu e você formamos uma dupla\n"
+    .string "e tanto, hein!$"
 
 CeruleanCity_Gym_Text_GymStatue::
-    .string "CERULEAN POKéMON GYM\n"
-    .string "LEADER: MISTY\p"
-    .string "WINNING TRAINERS:\n"
+    .string "Ginásio Pokémon de Cerulean\n"
+    .string "Líder: Misty\p"
+    .string "Treinadores vencedores:\n"
     .string "{RIVAL}$"
 
 CeruleanCity_Gym_Text_GymStatuePlayerWon::
-    .string "CERULEAN POKéMON GYM\n"
-    .string "LEADER: MISTY\p"
-    .string "WINNING TRAINERS:\n"
+    .string "Ginásio Pokémon de Cerulean\n"
+    .string "Líder: Misty\p"
+    .string "Treinadores vencedores:\n"
     .string "{RIVAL}, {PLAYER}$"
 

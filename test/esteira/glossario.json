@@ -6455,6 +6455,204 @@
    "tela": "Geral"
   },
   {
+   "en": "REST HOUSE",
+   "pt": "Casa de Descanso",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true,
+   "frente": "C1",
+   "obs": "placa das casas da Zona de Safári"
+  },
+  {
+   "en": "SECRET HOUSE",
+   "pt": "Casa Secreta",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true,
+   "frente": "C1",
+   "obs": "Zona de Safári (prêmio da MO03)"
+  },
+  {
+   "en": "TRAINER TIPS",
+   "pt": "Dicas de Treinador",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "frente": "C1",
+   "obs": "título das placas de dica"
+  },
+  {
+   "en": "REQUEST NOTICE",
+   "pt": "Procura-se",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "frente": "C1",
+   "obs": "título do cartaz do Diretor do Safári"
+  },
+  {
+   "en": "SAFARI WARDEN",
+   "pt": "Diretor do Safári",
+   "fonte": "criado",
+   "categoria": "personagem",
+   "detectar": true,
+   "frente": "C1",
+   "obs": "dono dos Dentes Ouro"
+  },
+  {
+   "en": "WARDEN",
+   "pt": "Diretor",
+   "fonte": "criado",
+   "categoria": "personagem",
+   "detectar": true,
+   "frente": "C1",
+   "obs": "assinatura do cartaz do Safári"
+  },
+  {
+   "en": "MR. PSYCHIC",
+   "pt": "Sr. Psíquico",
+   "fonte": "criado",
+   "categoria": "personagem",
+   "detectar": true,
+   "frente": "C1",
+   "obs": "Cidade de Saffron (MT29)"
+  },
+  {
+   "en": "KARATE MASTER",
+   "pt": "Mestre de Caratê",
+   "fonte": "criado",
+   "categoria": "personagem",
+   "detectar": true,
+   "frente": "C1",
+   "obs": "Dojo de Saffron"
+  },
+  {
+   "en": "FIGHTING DOJO",
+   "pt": "Dojo de Luta",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true,
+   "frente": "C1",
+   "obs": "Cidade de Saffron"
+  },
+  {
+   "en": "FAN CLUB",
+   "pt": "Fã-clube",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true,
+   "frente": "C1",
+   "obs": "Fã-clube de Treinadores Pokémon (Saffron); como substantivo comum em fala, minúsculo (fã-clube)"
+  },
+  {
+   "en": "PRESIDENT",
+   "pt": "Presidente",
+   "fonte": "criado",
+   "categoria": "personagem",
+   "detectar": true,
+   "frente": "C1",
+   "obs": "Silph Co."
+  },
+  {
+   "en": "SECRETARY",
+   "pt": "Secretária",
+   "fonte": "criado",
+   "categoria": "personagem",
+   "detectar": true,
+   "frente": "C1",
+   "obs": "Silph Co."
+  },
+  {
+   "en": "SEAGALLOP FERRY",
+   "pt": "balsa Seagallop",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true,
+   "frente": "C1",
+   "obs": "embarcação (não é lugar; categoria lugar só pelo nome próprio); nome mantido"
+  },
+  {
+   "en": "SAFFRON CITY POKéMON GYM",
+   "pt": "Ginásio Pokémon de Saffron",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true,
+   "frente": "C1",
+   "obs": "placa do Ginásio"
+  },
+  {
+   "en": "MR. PSYCHIC'S HOUSE",
+   "pt": "Casa do Sr. Psíquico",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "frente": "C1",
+   "obs": "placa de Saffron; texto de placa, não nome de mapa (o limite de 18 letras do aviso de mapa não vale)"
+  },
+  {
+   "en": "SILPH CO. OFFICE BUILDING",
+   "pt": "Prédio de Escritórios da Silph Co.",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "frente": "C1",
+   "obs": "placa de Saffron; texto de placa, não nome de mapa (o limite de 18 letras do aviso de mapa não vale)"
+  },
+  {
+   "en": "SILPH CO. HEAD OFFICE",
+   "pt": "Sede da Silph Co.",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true,
+   "frente": "C1",
+   "obs": "placas dos andares"
+  },
+  {
+   "en": "POKéMON TRAINER FAN CLUB",
+   "pt": "Fã-clube de Treinadores Pokémon",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true,
+   "frente": "C1",
+   "obs": "placa de Saffron"
+  },
+  {
+   "en": "SEVAULT CANYON ENTRANCE",
+   "pt": "Entrada do Cânion Sevault",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "frente": "C1",
+   "obs": "placa da entrada; texto de placa, não nome de mapa (o limite de 18 letras do aviso de mapa não vale)"
+  },
+  {
+   "en": "TRAINER TOWER ENTRANCE",
+   "pt": "Entrada da Torre do Treinador",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "frente": "C1",
+   "obs": "placa da Ilha Sete; texto de placa, não nome de mapa (o limite de 18 letras do aviso de mapa não vale)"
+  },
+  {
+   "en": "GOLD TEETH (forma cheia)",
+   "pt": "Dentes de Ouro",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": false,
+   "frente": "C1",
+   "obs": "forma cheia de Dentes Ouro, para fala e cartaz"
+  },
+  {
+   "en": "BAIT",
+   "pt": "Isca",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true,
+   "frente": "C1",
+   "obs": "Zona de Safári (golpe/ação de jogar isca); o menu de batalha do Safári ainda está em inglês"
+  },
+  {
    "en": "COMET PUNCH",
    "pt": "Soco Cometa",
    "fonte": "TCG",
@@ -6557,6 +6755,34 @@
    "detectar": true,
    "frente": "Task 2",
    "obs": "✂ de: Chute Giratório"
+  },
+  {
+   "en": "RUNNING SHOES",
+   "pt": "Tênis Corrida",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true,
+   "frente": "B",
+   "completo": "Tênis de Corrida",
+   "obs": "✂ 13 letras; a fala usa a forma cheia. Entregue pelo assistente do Prof. Carvalho em Pewter (não está em items.json)"
+  },
+  {
+   "en": "POKéMON HOUSE",
+   "pt": "Casa Pokémon",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true,
+   "frente": "B",
+   "obs": "casa do Sr. Fuji ao pé da Torre Pokémon"
+  },
+  {
+   "en": "LIFT KEY (forma cheia)",
+   "pt": "Chave do Elevador",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": false,
+   "frente": "B",
+   "obs": "forma cheia de Chave Elevad. (LIFT KEY), usada em fala"
   },
   {
    "en": "TWINEEDLE",
@@ -9191,13 +9417,562 @@
    "obs": "decisão D4 do Cintra (18/10): classe dos 2 ADMIN da Equipe Rocket (trainers.h usa TRAINER_CLASS_TEAM_ROCKET + nome \"ADMIN\"; exige classe própria — frente D/trainers)"
   },
   {
+   "en": "Ayers Rock",
+   "pt": "Uluru",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true,
+   "frente": "F",
+   "obs": "Pokédex do Ponyta; nome aborígene do monólito, que evita \"Rock\" em PT-BR"
+  },
+  {
+   "en": "The Bomb Ball",
+   "pt": "Bola-Bomba",
+   "fonte": "criado",
+   "categoria": "personagem",
+   "detectar": true,
+   "frente": "F",
+   "obs": "apelido do Electrode na Pokédex"
+  },
+  {
+   "en": "The Walking Tropical Rainforest",
+   "pt": "Floresta Tropical Ambulante",
+   "fonte": "criado",
+   "categoria": "personagem",
+   "detectar": true,
+   "frente": "F",
+   "obs": "apelido do Exeggutor na Pokédex"
+  },
+  {
+   "en": "BERRY POWDER",
+   "pt": "Pó de Fruta",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true,
+   "frente": "A1",
+   "obs": "pó obtido amassando frutas (Cerulean, Frente A)"
+  },
+  {
    "en": "WIRELESS ADAPTER",
    "pt": "Adaptador Sem Fio",
    "fonte": "criado",
    "categoria": "interface",
    "detectar": true,
-   "frente": "E",
-   "obs": "src/strings.c (gText_WirelessNotConnected...)"
+   "frente": "A1",
+   "obs": "aparelho do Clube Sem Fio; 17 letras (passa do limite de 13 de item): fica em 'interface' porque não é item de bolsa"
+  },
+  {
+   "en": "POKéMON WIRELESS CLUB",
+   "pt": "Clube Sem Fio Pokémon",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "frente": "A1",
+   "obs": "andar de cima do Centro Pokémon; 21 letras (passa do limite de 18 de lugar): fica em 'interface' porque não é nome de seção do mapa (não aparece no aviso de entrada), só termo de diálogo"
+  },
+  {
+   "en": "DIRECT CORNER",
+   "pt": "Canto Direto",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true,
+   "frente": "A1",
+   "obs": "balcão do Clube Sem Fio"
+  },
+  {
+   "en": "TRADE CORNER",
+   "pt": "Canto de Troca",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true,
+   "frente": "A1",
+   "obs": "sala do Clube Sem Fio"
+  },
+  {
+   "en": "COLOSSEUM",
+   "pt": "Coliseu",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true,
+   "frente": "A1",
+   "obs": "sala do Clube Sem Fio"
+  },
+  {
+   "en": "UNION ROOM",
+   "pt": "Sala União",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true,
+   "frente": "A1",
+   "obs": "andar de cima do Centro Pokémon"
+  },
+  {
+   "en": "CYCLING ROAD",
+   "pt": "Ciclovia",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true,
+   "frente": "A1",
+   "obs": "Rota 17"
+  },
+  {
+   "en": "CELADON MANSION",
+   "pt": "Mansão de Celadon",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true,
+   "frente": "A1",
+   "obs": "prédio de Celadon"
+  },
+  {
+   "en": "COINS",
+   "pt": "moedas",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "frente": "A1",
+   "obs": "fichas do Cassino (Porta-moedas)"
+  },
+  {
+   "en": "VERMILION PORT",
+   "pt": "Porto Vermilion",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true,
+   "frente": "A1",
+   "obs": "sem 'de', como 'Cidade Vermilion' (D1)"
+  },
+  {
+   "en": "PRIZE EXCHANGE",
+   "pt": "Troca de Prêmios",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "frente": "A1",
+   "obs": "placa do Cassino"
+  },
+  {
+   "en": "POKéMON Storage System",
+   "pt": "Sistema de Armazenamento de Pokémon",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "frente": "A1",
+   "obs": "sistema de PC do Bill"
+  },
+  {
+   "en": "BURN HEAL (forma cheia)",
+   "pt": "Cura Queimadura",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": false,
+   "frente": "A1",
+   "obs": "forma cheia de Cura Queimad."
+  },
+  {
+   "en": "BIKE VOUCHER (forma cheia)",
+   "pt": "Vale Bicicleta",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": false,
+   "frente": "A1",
+   "obs": "forma cheia de Vale Bicicl."
+  },
+  {
+   "en": "GUARD SPEC. (forma cheia)",
+   "pt": "Guarda Especial",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": false,
+   "frente": "A1",
+   "obs": "forma cheia de Guarda Esp."
+  },
+  {
+   "en": "Lavaridge Town",
+   "pt": "Cidade de Lavaridge",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true,
+   "frente": "G1",
+   "obs": "descrição do Biscoito Lava"
+  },
+  {
+   "en": "Mauville City",
+   "pt": "Cidade de Mauville",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true,
+   "frente": "G1",
+   "obs": "descrição da Chave Porão"
+  },
+  {
+   "en": "New Mauville",
+   "pt": "Nova Mauville",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true,
+   "frente": "G1",
+   "obs": "descrição da Chave Porão"
+  },
+  {
+   "en": "Shoal Cave",
+   "pt": "Caverna do Baixio",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true,
+   "frente": "G1",
+   "obs": "combina com Sal do Baixio / Concha Baixio"
+  },
+  {
+   "en": "Abandoned Ship",
+   "pt": "Navio Abandonado",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true,
+   "frente": "G1",
+   "obs": "descrição das chaves do navio"
+  },
+  {
+   "en": "Battle Tower",
+   "pt": "Torre de Batalha",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true,
+   "frente": "G1",
+   "obs": "descrição dos escudos de enfeite"
+  },
+  {
+   "en": "Art Museum",
+   "pt": "Museu de Arte",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true,
+   "frente": "G1",
+   "obs": "descrição do Adorno de Vidro"
+  },
+  {
+   "en": "Bike Shop",
+   "pt": "Loja de Bicicletas",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true,
+   "frente": "G1",
+   "obs": "descrição do Vale Bicicl."
+  },
+  {
+   "en": "Berry Blender",
+   "pt": "Liquidificador de Frutas",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true,
+   "frente": "G1",
+   "obs": "descrição do Porta-blocos"
+  },
+  {
+   "en": "Berry Crusher",
+   "pt": "Triturador de Frutas",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true,
+   "frente": "G1",
+   "obs": "descrição do Pote de Pó"
+  },
+  {
+   "en": "Berry Powder",
+   "pt": "Pó de Fruta",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true,
+   "frente": "G1",
+   "obs": "descrição do Pote de Pó"
+  },
+  {
+   "en": "Running Shoes",
+   "pt": "Tênis de Corrida",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true,
+   "frente": "G1",
+   "obs": "descrição da Bicicleta"
+  },
+  {
+   "en": "COIN",
+   "pt": "Moeda",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": false,
+   "frente": "G1",
+   "obs": "descrição do Porta-moedas (Moedas do Cassino)"
+  },
+  {
+   "en": "CONTEST",
+   "pt": "Torneio",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "frente": "G1",
+   "obs": "Passe Torneio; Torneios Pokémon"
+  },
+  {
+   "en": "COOL (condição)",
+   "pt": "Estilo",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "frente": "G1",
+   "obs": "condição de Torneio, lenços (Lenço Verm.)"
+  },
+  {
+   "en": "BEAUTY (condição)",
+   "pt": "Beleza",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "frente": "G1",
+   "obs": "condição de Torneio, lenços (Lenço Azul)"
+  },
+  {
+   "en": "CUTE (condição)",
+   "pt": "Fofura",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "frente": "G1",
+   "obs": "condição de Torneio, lenços (Lenço Rosa)"
+  },
+  {
+   "en": "SMART (condição)",
+   "pt": "Esperteza",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "frente": "G1",
+   "obs": "condição de Torneio, lenços (Lenço Verde)"
+  },
+  {
+   "en": "TOUGH (condição)",
+   "pt": "Vigor",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "frente": "G1",
+   "obs": "condição de Torneio, lenços (Lenço Amarelo)"
+  },
+  {
+   "en": "DOLL (enfeite)",
+   "pt": "Boneco",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": false,
+   "frente": "G1",
+   "obs": "enfeites: Boneco X (\"Bon. X\" quando passa de 15 letras)"
+  },
+  {
+   "en": "DESK (enfeite)",
+   "pt": "Mesa",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": false,
+   "frente": "G1",
+   "obs": "enfeites"
+  },
+  {
+   "en": "CHAIR (enfeite)",
+   "pt": "Cadeira",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": false,
+   "frente": "G1",
+   "obs": "enfeites (\"Cad.\" nos nomes longos)"
+  },
+  {
+   "en": "CUSHION (enfeite)",
+   "pt": "Almofada",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": false,
+   "frente": "G1",
+   "obs": "enfeites (\"Almof.\" nos nomes)"
+  },
+  {
+   "en": "MAT (enfeite)",
+   "pt": "Tapete",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": false,
+   "frente": "G1",
+   "obs": "enfeites; tapetes de nota usam Dó Ré Mi Fá Sol Lá Si"
+  },
+  {
+   "en": "POSTER (enfeite)",
+   "pt": "Pôster",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": false,
+   "frente": "G1",
+   "obs": "enfeites"
+  },
+  {
+   "en": "MAILBOX",
+   "pt": "Caixa de Cartas",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "frente": "D",
+   "obs": "carta = MAIL (glossário §2.10); PC de {PLAYER}"
+  },
+  {
+   "en": "SAFARI GAME",
+   "pt": "Jogo do Safári",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "frente": "D",
+   "obs": "atividade da Zona de Safári; \"Safári\" como em Zona de Safári / Bola Safári"
+  },
+  {
+   "en": "POCKET",
+   "pt": "bolso",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "frente": "D",
+   "obs": "bolso da Bolsa (bolso Itens, Itens-chave, Poké Bolas)"
+  },
+  {
+   "en": "HELP System",
+   "pt": "sistema de Ajuda",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "frente": "D",
+   "obs": "a ajuda do jogo"
+  },
+  {
+   "en": "Control Pad",
+   "pt": "Direcional",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "frente": "D",
+   "obs": "{PLUS} Direcional; Botão A/B/L/R para os demais botões"
+  },
+  {
+   "en": "MENU",
+   "pt": "menu",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "frente": "D",
+   "obs": "menu Start, minúsculo no meio da frase"
+  },
+  {
+   "en": "SHIFT (menu da equipe)",
+   "pt": "Entrar",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "frente": "D",
+   "obs": "comando do grupo em batalha que põe o Pokémon escolhido em campo; colide com SHIFT de BATTLE STYLE (Troca) e SWITCH (Trocar), revisar com a frente do menu da equipe"
+  },
+  {
+   "en": "TM",
+   "pt": "MT",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "frente": "D",
+   "obs": "Máquina Técnica"
+  },
+  {
+   "en": "HM",
+   "pt": "MO",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "frente": "D",
+   "obs": "Máquina Oculta"
+  },
+  {
+   "en": "HIDDEN move",
+   "pt": "golpe oculto",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "frente": "D",
+   "obs": "golpe de MO"
+  },
+  {
+   "en": "status problem",
+   "pt": "problema de status",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "frente": "D",
+   "obs": "condição de status (queimadura, paralisia...)"
+  },
+  {
+   "en": "POKéMON LIST",
+   "pt": "Lista de Pokémon",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "frente": "D",
+   "obs": "item do menu da Pokédex (gText_PokemonList)"
+  },
+  {
+   "en": "HABITATS OF POKéMON",
+   "pt": "Habitats dos Pokémon",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "frente": "D",
+   "obs": "comando citado na ajuda do Pokédex; o menu atual da Pokédex usa Área"
+  },
+  {
+   "en": "SEARCH",
+   "pt": "Buscar",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "frente": "D",
+   "obs": "item do menu da Pokédex (gText_SearchNoColor)"
+  },
+  {
+   "en": "BALL (menu do Safári)",
+   "pt": "Bola",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "frente": "D",
+   "obs": "comando do menu de batalha do Safári"
+  },
+  {
+   "en": "OPEN",
+   "pt": "Abrir",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "frente": "D",
+   "obs": "comando do Estojo de MT"
+  },
+  {
+   "en": "WITHDRAW ITEM",
+   "pt": "Retirar Item",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "frente": "D",
+   "obs": "comando do PC de {PLAYER} (Depósito de Itens)"
+  },
+  {
+   "en": "DEPOSIT ITEM",
+   "pt": "Guardar Item",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "frente": "D",
+   "obs": "comando do PC de {PLAYER} (Depósito de Itens)"
   },
   {
    "en": "WIRELESS COMMUNICATION",
@@ -9209,24 +9984,6 @@
    "obs": "Presente Misterioso e status sem fio"
   },
   {
-   "en": "UNION ROOM",
-   "pt": "Sala União",
-   "fonte": "criado",
-   "categoria": "lugar",
-   "detectar": true,
-   "frente": "E",
-   "obs": "sala de link do Centro Pokémon (gText_UnionRoom)"
-  },
-  {
-   "en": "DIRECT CORNER",
-   "pt": "Canto Direto",
-   "fonte": "criado",
-   "categoria": "lugar",
-   "detectar": true,
-   "frente": "E",
-   "obs": "gText_DirectCorner"
-  },
-  {
    "en": "TRADE CENTER",
    "pt": "Centro de Trocas",
    "fonte": "criado",
@@ -9234,15 +9991,6 @@
    "detectar": true,
    "frente": "E",
    "obs": "gText_TradeCenter"
-  },
-  {
-   "en": "COLOSSEUM",
-   "pt": "Coliseu",
-   "fonte": "criado",
-   "categoria": "lugar",
-   "detectar": true,
-   "frente": "E",
-   "obs": "gText_Colosseum"
   },
   {
    "en": "BERRY CRUSH",
@@ -9272,15 +10020,6 @@
    "obs": "minijogo (gText_DodrioBerryPicking)"
   },
   {
-   "en": "BERRY POWDER",
-   "pt": "Pó de Fruta",
-   "fonte": "criado",
-   "categoria": "interface",
-   "detectar": true,
-   "frente": "E",
-   "obs": "Esmaga Frutas (gText_BerryCrush_GainedXUnitsOfPowder)"
-  },
-  {
    "en": "WONDER CARD",
    "pt": "Cartão Maravilha",
    "fonte": "criado",
@@ -9306,24 +10045,6 @@
    "detectar": true,
    "frente": "E",
    "obs": "Presente Misterioso"
-  },
-  {
-   "en": "MAILBOX",
-   "pt": "Caixa de Correio",
-   "fonte": "criado",
-   "categoria": "interface",
-   "detectar": true,
-   "frente": "E",
-   "obs": "PC de itens (gText_Mailbox)"
-  },
-  {
-   "en": "SAFARI GAME",
-   "pt": "Jogo Safári",
-   "fonte": "criado",
-   "categoria": "interface",
-   "detectar": true,
-   "frente": "E",
-   "obs": "ajuda do menu Start (gStartMenuDesc_Retire)"
   },
   {
    "en": "TRENDY SAYING",
@@ -9372,12 +10093,12 @@
   },
   {
    "en": "DESELECT",
-   "pt": "Desfazer",
+   "pt": "Tirar",
    "fonte": "criado",
    "categoria": "interface",
    "detectar": true,
    "frente": "E",
-   "obs": "encurtado: 'Desmarcar' mede 51 px e o menu de contexto tem 48 px (gOtherText_Deselect)"
+   "obs": "'Desmarcar' mede 51 px e o menu de contexto tem 48 px; 'Tirar' = desregistrar o item do botão SELECT (gOtherText_Deselect)"
   },
   {
    "en": "PROF. OAK'S PC (menu do PC)",

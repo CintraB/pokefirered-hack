@@ -2,9 +2,10 @@
 
 Mede cada palavra com as mesmas larguras da checagem de texto (esteira/check_text.py: tabelas
 `s*LatinGlyphWidths` de src/text.c pelo charmap.txt, {PLAYER}/{RIVAL} = 7 letras, nomes de
-batalha pelo maior nome) e quebra de forma gulosa: cada linha leva o máximo de palavras que
-cabem. `\\p` (caixa nova) é mantido; dentro de cada caixa a primeira quebra é `\\n` e as
-seguintes `\\l` (rolagem), como no FRLG (`estilo="dialogo"`); `estilo="linhas"` usa só `\\n`
+batalha pelo maior nome, e {STR_VAR_n}/{B_BUFF*} e os outros placeholders variáveis no pior caso:
+10 letras, ou o que janelas_uso.VAR_CONTENTS declara para o rótulo, ou `--var`) e quebra de forma
+gulosa: cada linha leva o máximo de palavras que cabem. `\\p` (caixa nova) é mantido; dentro de
+cada caixa a primeira quebra é `\\n` e as seguintes `\\l` (rolagem), como no FRLG (`estilo="dialogo"`); `estilo="linhas"` usa só `\\n`
 (Pokédex, ajuda, descrições). Códigos de controle ficam grudados na palavra em que estavam.
 
 Formatação intencional é preservada:
@@ -22,6 +23,8 @@ CLI (de test/):
       sem --largura usa a janela da regra do arquivo (check_text.WIDTH_RULES); sem --escrever
       só mostra o resultado; sem --forcar só os rótulos com linha estourada mudam. Blocos com
       #if/.if ficam como estão.
+  --var STR_VAR_1=5d (número de 5 algarismos) ou --var STR_VAR_1=13 (13 letras) muda o pior caso de
+      um placeholder variável (pode repetir).
 """
 
 import argparse
@@ -30,7 +33,7 @@ import sys
 from functools import lru_cache
 from pathlib import Path
 
-from esteira.check_text import _LABEL_LINE, _STRING_LINE, _load_env, measure, rule_for
+from esteira.check_text import VAR_SIZES, VarSize, _LABEL_LINE, _STRING_LINE, _load_env, measure, rule_for, var_sizes
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 _BREAK = re.compile(r"\\[nlp]")
@@ -49,13 +52,25 @@ def _env(repo: str):
     return _load_env(Path(repo))
 
 
-def _width(text: str, fonte: str, espaco: int | None, repo: Path) -> int:
-    return measure(text, _env(str(repo)), fonte, espaco).widest
+def _width(text: str, fonte: str, espaco: int | None, repo: Path, variaveis: dict[str, VarSize] | None = None) -> int:
+    return measure(text, _env(str(repo)), fonte, espaco,
+                   variables=VAR_SIZES if variaveis is None else variaveis).widest
 
 
-def line_widths(texto: str, fonte: str = "normal", espaco: int | None = None, repo: Path = REPO_ROOT) -> list[int]:
-    """Largura em px de cada linha do texto (quebras \\n, \\l, \\p)."""
-    return [_width(line, fonte, espaco, repo) for line in _BREAK.split(texto.rstrip("$"))]
+def line_widths(texto: str, fonte: str = "normal", espaco: int | None = None, repo: Path = REPO_ROOT,
+                variaveis: dict[str, VarSize] | None = None) -> list[int]:
+    """Largura em px de cada linha do texto (quebras \\n, \\l, \\p), com os placeholders variáveis no
+    pior caso (`variaveis`; padrão: check_text.VAR_SIZES, 10 letras)."""
+    return [_width(line, fonte, espaco, repo, variaveis) for line in _BREAK.split(texto.rstrip("$"))]
+
+
+def parse_var(spec: str) -> tuple[str, VarSize]:
+    """`STR_VAR_1=13` (13 letras) ou `STR_VAR_1=5d` (número de 5 algarismos)."""
+    m = re.fullmatch(r"([A-Z_0-9]+)=(\d+)(d?)", spec.strip())
+    if not m or m.group(1) not in VAR_SIZES or int(m.group(2)) <= 0:
+        raise ValueError(f"--var inválido: {spec!r} (ex.: STR_VAR_1=13 ou STR_VAR_1=5d; placeholders: "
+                         f"{', '.join(sorted(VAR_SIZES))})")
+    return m.group(1), VarSize(int(m.group(2)), bool(m.group(3)))
 
 
 def _words(text: str) -> list[tuple[str, str]]:
@@ -99,13 +114,14 @@ def _segments(box: str) -> list[list[str]]:
     return segs
 
 
-def _wrap(seg: list[str], largura_px: int, fonte: str, espaco: int | None, space: int, repo: Path) -> list[str]:
+def _wrap(seg: list[str], largura_px: int, fonte: str, espaco: int | None, space: int, repo: Path,
+          variaveis: dict[str, VarSize] | None = None) -> list[str]:
     first, cont, text, _kind = seg
     budgets = (largura_px - _width(first, fonte, espaco, repo), largura_px - _width(cont, fonte, espaco, repo))
     lines: list[str] = []
     cur, width, gap = "", 0, ""
     for word, after in _words(text):
-        w = _width(word, fonte, espaco, repo)
+        w = _width(word, fonte, espaco, repo, variaveis)
         if not cur:
             cur, width = word, w
         elif width + len(gap) * space + w <= budgets[1 if lines else 0]:
@@ -140,7 +156,8 @@ def _kinds(lines: list[str]) -> list[tuple[str, str]]:
     return out
 
 
-def _spill(box: str, largura_px: int, fonte: str, espaco: int | None, space: int, repo: Path) -> list[str]:
+def _spill(box: str, largura_px: int, fonte: str, espaco: int | None, space: int, repo: Path,
+           variaveis: dict[str, VarSize] | None = None) -> list[str]:
     """Só a linha estourada muda: as palavras do fim descem para o começo da linha seguinte
     (se ela continua o mesmo trecho) ou para uma linha nova, em cascata."""
     lines = _BREAK.split(box)
@@ -163,7 +180,7 @@ def _spill(box: str, largura_px: int, fonte: str, espaco: int | None, space: int
         else:
             line = carry_indent + carry
         carry = ""
-        if _width(line, fonte, espaco, repo) <= largura_px:
+        if _width(line, fonte, espaco, repo, variaveis) <= largura_px:
             out.append(line)
             continue
         indent = _INDENT.match(line).group(1) if _INDENT.match(line) else ""
@@ -171,7 +188,7 @@ def _spill(box: str, largura_px: int, fonte: str, espaco: int | None, space: int
         words = _words(line[len(indent):])
         cur, width, gap, cut = "", _width(indent, fonte, espaco, repo), "", len(words)
         for n, (word, after) in enumerate(words):
-            w = _width(word, fonte, espaco, repo)
+            w = _width(word, fonte, espaco, repo, variaveis)
             if cur and width + len(gap) * space + w > largura_px:
                 cut = n
                 break
@@ -189,10 +206,16 @@ def _spill(box: str, largura_px: int, fonte: str, espaco: int | None, space: int
 
 
 def reflow(texto: str, largura_px: int, fonte: str = "normal", estilo: str = "dialogo",
-           espaco: int | None = None, repo: Path = REPO_ROOT, forcar: bool = False) -> str:
+           espaco: int | None = None, repo: Path = REPO_ROOT, forcar: bool = False,
+           variaveis: dict[str, VarSize] | None = None) -> str:
     """O texto com as quebras refeitas para `largura_px`. Sem `forcar`, só as caixas com linha
     estourada mudam, e nelas só a linha que estoura (o excesso desce para a seguinte); com
-    `forcar`, cada caixa é refeita do zero (gulosa), mantendo itens de lista e recuos."""
+    `forcar`, cada caixa é refeita do zero (gulosa), mantendo itens de lista e recuos.
+    Os placeholders variáveis ({STR_VAR_n}, {B_BUFF*}...) medem o pior caso, como na checagem do
+    texto traduzido (check_text.VAR_SIZES, 10 letras); `variaveis` (nome -> VarSize) muda só os
+    placeholders dados, ex.: {"STR_VAR_1": VarSize(5, digits=True)} para um número de 5 algarismos."""
+    if variaveis is not None:
+        variaveis = {**VAR_SIZES, **variaveis}
     if estilo not in ("dialogo", "linhas"):
         raise ValueError(f"estilo desconhecido: {estilo}")
     end = "$" if texto.endswith("$") else ""
@@ -200,13 +223,14 @@ def reflow(texto: str, largura_px: int, fonte: str = "normal", estilo: str = "di
     space = espaco if espaco is not None else _width(" ", fonte, None, repo)
     out_boxes = []
     for box in body.split("\\p"):
-        if not forcar and max(line_widths(box, fonte, espaco, repo), default=0) <= largura_px:
+        if not forcar and max(line_widths(box, fonte, espaco, repo, variaveis), default=0) <= largura_px:
             out_boxes.append(box)          # cabe: as quebras (placas, listas) ficam como estão
             continue
         if forcar:
-            lines = [line for seg in _segments(box) for line in _wrap(seg, largura_px, fonte, espaco, space, repo)]
+            lines = [line for seg in _segments(box)
+                     for line in _wrap(seg, largura_px, fonte, espaco, space, repo, variaveis)]
         else:
-            lines = _spill(box, largura_px, fonte, espaco, space, repo)
+            lines = _spill(box, largura_px, fonte, espaco, space, repo, variaveis)
         breaks = ["\\n"] + ["\\l" if estilo == "dialogo" else "\\n"] * max(0, len(lines) - 2)
         text = lines[0] if lines else ""
         for brk, line in zip(breaks, lines[1:]):
@@ -232,9 +256,12 @@ _CUT = re.compile(r"^\s*(?:[#.]\s*(?:if|else|elif|endif)\b|@)")
 
 
 def reflow_inc(source: str, rotulo: str | None, largura: int | None, fonte: str | None, estilo: str | None,
-               espaco: int | None, arquivo: str, forcar: bool = False) -> tuple[str, list[str], list[str]]:
+               espaco: int | None, arquivo: str, forcar: bool = False,
+               variaveis: dict[str, VarSize] | None = None) -> tuple[str, list[str], list[str]]:
     """(arquivo reescrito, rótulos refeitos, rótulos vistos). Rótulo cujas caixas cabem fica
-    intacto (a não ser com `forcar`); bloco cortado por #if/.if ou por comentário também."""
+    intacto (a não ser com `forcar`); bloco cortado por #if/.if ou por comentário também.
+    Os placeholders variáveis medem o pior caso do rótulo (check_text.var_sizes: VAR_SIZES com as
+    exceções de janelas_uso.VAR_CONTENTS), e `variaveis` (da CLI, `--var`) passa por cima."""
     lines = source.split("\n")
     out: list[str] = []
     done: list[str] = []
@@ -269,7 +296,8 @@ def reflow_inc(source: str, rotulo: str | None, largura: int | None, fonte: str 
         style = estilo or ("linhas" if rule is not None and rule.lines is not None else "dialogo")
         indent = re.match(r"^(\s*)", line).group(1)
         old = "".join(block)
-        new = reflow(old, px, font, style, space, forcar=forcar)
+        sizes = {**var_sizes(arquivo, label or ""), **(variaveis or {})}
+        new = reflow(old, px, font, style, space, forcar=forcar, variaveis=sizes)
         if new == old:
             out.extend(lines[i:j])     # cabe: o bloco fica exatamente como estava
         else:
@@ -291,12 +319,22 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--rotulo", help="só este rótulo")
     parser.add_argument("--escrever", action="store_true", help="grava o arquivo (sem isto só mostra)")
     parser.add_argument("--forcar", action="store_true", help="refaz também as caixas que já cabem")
+    parser.add_argument("--var", action="append", default=[], metavar="NOME=N[d]",
+                        help="pior caso de um placeholder variável: STR_VAR_1=13 (13 letras) ou STR_VAR_1=5d "
+                             "(número de 5 algarismos); padrão 10 letras, ou o declarado em "
+                             "janelas_uso.VAR_CONTENTS para o rótulo; pode repetir. Só PRÉVIA: a checagem "
+                             "(check_text) não vê o --var, só o VAR_CONTENTS; num .inc sem --rotulo vale "
+                             "para todos os rótulos do arquivo")
     args = parser.parse_args(argv)
+    try:
+        variaveis = dict(parse_var(spec) for spec in args.var)
+    except ValueError as exc:
+        parser.error(str(exc))
     if args.texto is not None:
         if args.largura is None:
             parser.error("--texto precisa de --largura")
         print(reflow(args.texto, args.largura, args.fonte or "normal", args.estilo or "dialogo", args.espaco,
-                     forcar=args.forcar))
+                     forcar=args.forcar, variaveis=variaveis))
         return 0
     if not args.arquivo:
         parser.error("passe --texto ou um arquivo .inc")
@@ -308,7 +346,7 @@ def main(argv: list[str] | None = None) -> int:
     source = path.read_text(encoding="utf-8")
     try:
         new, done, seen = reflow_inc(source, args.rotulo, args.largura, args.fonte, args.estilo, args.espaco,
-                                     rel, args.forcar)
+                                     rel, args.forcar, variaveis)
     except ValueError as exc:
         print(exc, file=sys.stderr)
         return 2

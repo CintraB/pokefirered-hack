@@ -1,19 +1,19 @@
 SevenIsland_PokemonCenter_1F_Text_EventsDependingOnConnections::
-    .string "On this island, different events\n"
-    .string "occur depending on connections.\p"
-    .string "What are those connections?\p"
-    .string "They are for you to discover on\n"
-    .string "your own.$"
+    .string "Nesta ilha, acontecem eventos\n"
+    .string "diferentes dependendo das conexões.\p"
+    .string "Quais são essas conexões?\p"
+    .string "Cabe a você descobrir por conta\n"
+    .string "própria.$"
 
 SevenIsland_PokemonCenter_1F_Text_DidYouRideSeagallopHere::
-    .string "Did you ride a SEAGALLOP ferry\n"
-    .string "to get here?\p"
-    .string "There are at least ten of those\n"
-    .string "high-speed ships.\p"
-    .string "I don't know where they all go,\n"
-    .string "though.$"
+    .string "Você veio até aqui de\n"
+    .string "balsa Seagallop?\p"
+    .string "Existem pelo menos dez dessas\n"
+    .string "embarcações de alta velocidade.\p"
+    .string "Mas não sei para onde vão todas\n"
+    .string "elas.$"
 
 SevenIsland_PokemonCenter_1F_Text_CheckOutTrainerTower::
-    .string "If you're confident, you should\n"
-    .string "check out TRAINER TOWER.$"
+    .string "Se você está confiante, deveria\n"
+    .string "conhecer a Torre do Treinador.$"
 
