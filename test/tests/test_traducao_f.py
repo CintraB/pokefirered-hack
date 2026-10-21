@@ -1,6 +1,6 @@
 """Frente F da tradução (dados de Pokémon): textos da Pokédex.
 
-Task F1: `src/data/pokemon/pokedex_text_fr.h` de `gDummyPokedexText` até `gSunkernPokedexText`.
+Tasks F1 e F2: `src/data/pokemon/pokedex_text_fr.h` inteiro (`gDummyPokedexText` até `gDeoxysPokedexText`).
 Os testes valem para as entradas já traduzidas (acrescentar o último rótulo de cada task nova em
 `DEX_RANGES`): nenhum inglês, nenhum achado de `controle`/`glossario`/janela e nenhuma unidade
 imperial. Modelo: `test_traducao_nomes.py`.
@@ -24,13 +24,15 @@ DEX = "src/data/pokemon/pokedex_text_fr.h"
 # (primeiro rótulo, último rótulo) de cada task, na ordem do arquivo
 DEX_RANGES = [
     ("gDummyPokedexText", "gSunkernPokedexText"),     # F1
+    ("gSunfloraPokedexText", "gDeoxysPokedexText"),   # F2
 ]
 
+BS_N = chr(92) + "n"                                  # a quebra `\n` como aparece no fonte
 DEX_WIDTH_PX = 30 * 8
 DEX_LINES = 3
 IMPERIAL = re.compile(r"\b(?:\d[\d.,]*\s*(?:p[ée]s|polegadas?|libras?|onças?|milhas?|jardas?|n[óo]s|knots?|yd|ft|lbs?|mph)|fahrenheit)\b", re.I)
 # Entrada com #if/#else que a extração da checagem não lê: medida aqui (variantes inclusive)
-SPECIAL = {"gChikoritaPokedexText"}
+SPECIAL = {"gChikoritaPokedexText", "gTyranitarPokedexText"}
 
 
 def _source() -> str:
@@ -59,9 +61,10 @@ def entries():
             if isinstance(e, ct._Entry) and e.file == DEX and e.label in wanted]
 
 
-def test_faixa_da_f1_inteira_foi_extraida(entries):
+def test_arquivo_inteiro_foi_extraido(entries):
     labels = _labels()
-    assert len(labels) == 192                                    # Dummy + 191 espécies
+    assert len(labels) == 192 + 195                              # F1: Dummy + 191 espécies; F2: Sunflora..Deoxys
+    assert labels == re.findall(r"^const u8 (g\w+PokedexText)\[\]", _source(), re.M)   # as faixas cobrem o arquivo todo
     assert {e.label for e in entries} == set(labels) - SPECIAL
 
 
@@ -129,7 +132,9 @@ def test_termos_compostos_nao_sao_partidos_na_quebra():
 
 # Valor + quebra + unidade ("cerca de 1\nkm"): a unidade sozinha no começo da linha lê mal
 NUMBER_BREAK_UNIT = re.compile(
-    r"\d[.,]?\\n(?:km/h|km|cm|mm|m|kg|g|°C|graus|volts|horas|anos|segundos|minutos|dias|semanas|tentáculos)\b")
+    r"(?:\d[.,]?|\b(?:um|uma|dois|duas|três|quatro|cinco|seis|sete|oito|nove|dez|cem|mil))\\n"
+    r"(?:km/h|km|cm|mm|m|kg|g|°C|graus|volts|horas|anos|segundos|minutos|dias|semanas|tentáculos|toneladas"
+    r"|milhões|metros|quilos)\b")
 
 
 def test_valor_e_unidade_nao_sao_partidos_na_quebra():
@@ -144,6 +149,8 @@ def test_valor_e_unidade_nao_sao_partidos_na_quebra():
 def test_regex_de_valor_partido_reconhece_os_casos_da_revisao():
     assert NUMBER_BREAK_UNIT.search(r"a cerca de 1\nkm de distância")
     assert NUMBER_BREAK_UNIT.search(r"mais de 95\nkm/h.")
+    assert NUMBER_BREAK_UNIT.search(r"há cerca de 100\nmilhões de anos")
+    assert NUMBER_BREAK_UNIT.search(r"com seus oito\ntentáculos")
     assert not NUMBER_BREAK_UNIT.search(r"a cerca de 1 km\nde distância")
 
 
@@ -160,6 +167,43 @@ def test_chikorita_cabe_nas_duas_revisoes():
     assert not IMPERIAL.search(body)
 
 
+def test_tyranitar_cabe_nas_duas_revisoes():
+    body = _body("gTyranitarPokedexText")
+    branches = re.split(r"#else|#endif", body.split("#if REVISION == 0")[1])[:2]
+    assert len(branches) == 2                                     # ramo REVISION == 0 e ramo #else
+    for branch in branches:
+        text = "".join(re.findall(r'"([^"]*)"', branch))
+        assert 1 <= len(text.split(BS_N)) <= DEX_LINES
+        assert max(line_widths(text)) <= DEX_WIDTH_PX
+        assert not IMPERIAL.search(text)
+        assert not re.search(r"\b(?:the|and|its|it)\b", text)
+
+
 def test_regra_da_pokedex_continua_240px_3_linhas():
     rule = ct.rule_for(DEX, "gBulbasaurPokedexText")
     assert (rule.px, rule.lines) == (DEX_WIDTH_PX, DEX_LINES)
+
+
+# Fala dirigida ao leitor (o jogador pode ser menino ou menina): frase com "você"/"te"/"lhe" sem
+# particípio ou adjetivo que marque gênero ("sendo observado", "cansado").
+READER = re.compile(r"\b(?:você|vocês|te|lhe)\b", re.I)
+GENDERED = re.compile(r"\b\w{3,}[ai]d[oa]s?\b", re.I)
+
+
+def _gendered_reader_sentences(text: str) -> list[str]:
+    flat = text.replace(BS_N, " ")
+    return [sent for sent in re.split(r"(?<=[.!?])\s+", flat) if READER.search(sent) and GENDERED.search(sent)]
+
+
+def test_leitor_sem_genero_marcado_no_arquivo_inteiro():
+    found = []
+    for label in _labels():
+        text = "".join(re.findall(r'"([^"]*)"', _body(label)))
+        found += [f"{label}: {sent}" for sent in _gendered_reader_sentences(text)]
+    assert found == []
+
+
+def test_regex_do_leitor_reconhece_o_caso_da_revisao():
+    assert _gendered_reader_sentences("Se você sente que está sendo observado no escuro.")
+    assert not _gendered_reader_sentences("Se você sentir olhos te vigiando no escuro, é o Haunter.")
+    assert not _gendered_reader_sentences("Dizem que o Pokémon, ao ser perseguido, atrai o agressor.")
