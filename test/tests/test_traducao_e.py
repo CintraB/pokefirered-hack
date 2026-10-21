@@ -96,9 +96,17 @@ def test_nenhum_achado_das_regras_de_texto_nos_arquivos_da_frente():
     # sem a base inglesa as regras controle/glossario não rodam: o teste não pode passar calado
     unavailable = [r.detail for r in results if "base inglesa indisponível" in r.detail]
     assert unavailable == [], unavailable
-    found =[f"{r.name}: {r.detail}" for r in results
+    found = [f"{r.name}: {r.detail}" for r in results
              if r.status == "falha" and any(f"{f}:" in r.detail for f in FILES)]
     assert found == []
+
+
+def test_moedas_cabem_na_caixa_em_fonte_pequena(env):
+    """PrintCoinsString (src/coins.c:66-76): "9999 moedas" em FONT_SMALL, alinhado à direita em 64 px
+    (a regra de janelas_uso para gText_Coins mede na fonte pequena desde a E1)."""
+    coins = (REPO_ROOT / "src" / "coins.c").read_text(encoding="utf-8")
+    assert "AddTextPrinterParameterized(windowId, FONT_SMALL, gStringVar4, 64 - width" in coins
+    assert ct.measure(S["gText_Coins"].replace("{STR_VAR_1}", "9999"), env, "small").widest <= 64
 
 
 def test_creditos_e_japones_ficam():
@@ -150,7 +158,13 @@ def test_placeholders_medidos_como_10_letras_largas(env):
     assert wide == []
 
 
-STRING_VAR_SIZES = {"1": 32, "2": 20, "3": 20}   # gStringVar1/2/3 (src/string_util.c)
+def _string_var_sizes() -> dict[str, int]:
+    """Tamanho de gStringVar1/2/3, lido de src/string_util.c."""
+    text = (REPO_ROOT / "src" / "string_util.c").read_text(encoding="utf-8")
+    return {n: int(size, 0) for n, size in re.findall(r"u8 gStringVar([123])\[(\w+)\]", text)}
+
+
+STRING_VAR_SIZES = _string_var_sizes()
 _COPY_TO_VAR = re.compile(r"(?:StringCopy|StringExpandPlaceholders|StringAppend)\(gStringVar([123])\w*,\s*(g\w+)\)")
 
 
@@ -175,6 +189,78 @@ def test_texto_do_estojo_de_mt_comeca_com_str_var_1():
     """src/tm_case.c pula os 2 primeiros bytes ({STR_VAR_1}) de gText_Var1IsSelected."""
     assert S["gText_Var1IsSelected"].startswith("{STR_VAR_1}")
     assert "gText_Var1IsSelected + 2" in (REPO_ROOT / "src" / "tm_case.c").read_text(encoding="utf-8")
+
+
+# Aviso de nome do mapa com andar (MapNamePopupPrintMapNameOnWindow/MapNamePopupAppendFloorNum,
+# src/map_name_popup.c): u8 mapName[25] = nome + " " + ("B")N"F" ou gText_Rooftop2, sem limite de
+# cópia; janela de 152 px com andar e 176 px no terraço (FLOOR_ROOFTOP = 127)
+POPUP_BUFFER = 25
+FLOOR_ROOFTOP = 127
+# IsCeladonDeptStoreMapsec (src/region_map.c): nos mapas CeladonCity_DepartmentStore_* o nome é o
+# da seção especial ("Loja de Celadon")
+CELADON_DEPT_STORE_NAME = "MAPSEC_SPECIAL_AREA"
+
+
+def test_aviso_de_mapa_com_andar_cabe_no_buffer(env):
+    """"Loja de Celadon Cobertura" (25 letras + EOS) estourava mapName[25] no terraço da loja."""
+    sections = json.loads((REPO_ROOT / "src/data/region_map/region_map_sections.json").read_text(
+        encoding="utf-8"))["map_sections"]
+    names = {s["id"]: s["name"] for s in sections if s.get("name")}
+    popup = (REPO_ROOT / "src" / "map_name_popup.c").read_text(encoding="utf-8")
+    assert "u8 mapName[25];" in popup and "StringCopy(dest, gText_Rooftop2)" in popup
+    problems, seen = [], 0
+    for path in sorted((REPO_ROOT / "data" / "maps").glob("*/map.json")):
+        data = json.loads(path.read_text(encoding="utf-8"))
+        floor = data.get("floor_number", 0)
+        if not floor or not data.get("show_map_name", True):
+            continue
+        mapsec = data["region_map_section"]
+        if mapsec == "MAPSEC_CELADON_CITY" and data["name"].startswith("CeladonCity_DepartmentStore_"):
+            mapsec = CELADON_DEPT_STORE_NAME        # GetMapName usa o nome especial dentro da loja
+        for mapsec in (mapsec,):
+            if mapsec not in names:
+                continue
+            seen += 1
+            if floor == FLOOR_ROOFTOP:
+                suffix, width = S["gText_Rooftop2"], 176
+            else:
+                suffix, width = ("B" if floor < 0 else "") + f"{abs(floor)}F", 152
+            text = f"{names[mapsec]} {suffix}"
+            m = ct.measure(text, env)
+            if m.nbytes + 1 > POPUP_BUFFER or m.widest > width:
+                problems.append(f"{path.parent.name}: '{text}' {m.nbytes + 1} bytes, {m.widest} px")
+    assert seen and problems == []
+
+
+def _tmhm_moves() -> list[str]:
+    """Golpes das MT/MO na ordem dos itens (sTMHMMoves, src/data/party_menu.h)."""
+    text = (REPO_ROOT / "src/data/party_menu.h").read_text(encoding="utf-8")
+    body = text[text.index("static const u16 sTMHMMoves[] ="):]
+    moves = re.findall(r"\b(MOVE_\w+)", body[:body.index("};")])
+    names = dict(re.findall(r'\[(MOVE_\w+)\]\s*=\s*_\("((?:[^"\\]|\\.)*)"\)',
+                            (REPO_ROOT / "src/data/text/move_names.h").read_text(encoding="utf-8")))
+    return [names[m] for m in moves]
+
+
+TM_CASE_SELECTED_PX = 15 * 8      # WIN_SELECTED_MSG .width = 15 (src/tm_case.c:263-271), x = 0
+
+
+def test_mt_selecionada_cabe_no_estojo(env):
+    """tm_case.c monta "{FONT_SMALL}Nº01 {FONT_NORMAL}<golpe>" (GetTMNumberAndMoveString) e anexa
+    gText_Var1IsSelected sem o {STR_VAR_1}; a 1ª linha cabe na janela de 120 px para toda MT/MO."""
+    tail = S["gText_Var1IsSelected"][len("{STR_VAR_1}"):]
+    moves = _tmhm_moves()
+    assert len(moves) == 58
+    wide = []
+    for i, move in enumerate(moves):
+        number = f"{i + 1:02d}" if i < 50 else "{CLEAR_TO 18}" + S["gText_NumberClear01"] + str(i - 49)
+        if i < 50:
+            number = S["gText_NumberClear01"] + number
+        text = "{FONT_SMALL}" + number + " {FONT_NORMAL}" + move + tail
+        px = ct.measure(text, env).widest
+        if px > TM_CASE_SELECTED_PX:
+            wide.append(f"{move}: {px} px")
+    assert wide == []
 
 
 # --- memória do Treinador: "Natureza X." e o lugar com a preposição -----------------------------

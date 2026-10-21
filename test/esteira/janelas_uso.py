@@ -264,6 +264,8 @@ USAGE_RULES: list[UsageRule] = [
       "(src/shop.c:642-643)", label="gText_*Hyphens"),
     U("src/shop.c", "*", DIALOG_PX, _DIALOG + "; mensagens da loja"),
     U("src/money.c", "*", 8 * 8 - 2, "caixa de dinheiro: 8 tiles (src/money.c:123)"),
+    U("src/coins.c", "*", 8 * 8 - 2, "caixa de moedas: 8 tiles (src/coins.c:83), número e \"moedas\" em FONT_SMALL "
+      "(src/coins.c:73-75)", font="small", label="gText_Coins"),
     U("src/coins.c", "*", 8 * 8 - 2, "caixa de moedas: 8 tiles (src/coins.c:83)"),
     U("src/berry_powder.c", "*", 8 * 8 - 2, "caixa de pó de frutas: 8 tiles (src/berry_powder.c:120)"),
     U("src/item_pc.c", "table:sItemPcSubmenuOptions", 7 * 8 - 8,

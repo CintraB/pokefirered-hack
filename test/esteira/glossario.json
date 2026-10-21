@@ -10117,6 +10117,15 @@
    "detectar": false,
    "frente": "E",
    "obs": "forma cheia de Detector Item, para texto corrido (decisão de 20/10); gText_Itemfinder* em src/strings.c"
+  },
+  {
+   "en": "ROOFTOP",
+   "pt": "Terraço",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true,
+   "frente": "E",
+   "obs": "andar do elevador e aviso de mapa (gText_Rooftop/gText_Rooftop2); \"Cobertura\" estourava o mapName[25] do aviso na Loja de Celadon (src/map_name_popup.c)"
   }
  ],
  "proibidos": [

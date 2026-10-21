@@ -47,13 +47,13 @@ FIXED = {
                          f"{LV} 37 + Pedra do Rei {ARROW} SLOWKING"],
     "SPECIES_FEEBAS": [f"Subir nível + Escama Prisma {ARROW} MILOTIC"],
     "SPECIES_TAUROS": ["Não evolui."],
-    "SPECIES_WURMPLE": [f"{LV} 7 (aleatório) {ARROW} SILCOON",
-                        f"{LV} 7 (aleatório) {ARROW} CASCOON"],
+    "SPECIES_WURMPLE": [f"{LV} 7 (sorteio) {ARROW} SILCOON",
+                        f"{LV} 7 (sorteio) {ARROW} CASCOON"],
     "SPECIES_NINCADA": [f"{LV} 20 {ARROW} NINJASK",
-                        f"{LV} 20, vaga livre {ARROW} SHEDINJA"],
-    "SPECIES_TYROGUE": [f"{LV} 20, Ataque < Defesa {ARROW} HITMONCHAN",
-                        f"{LV} 20, Ataque > Defesa {ARROW} HITMONLEE",
-                        f"{LV} 20, Ataque = Defesa {ARROW} HITMONTOP"],
+                        f"{LV} 20 + vaga {ARROW} SHEDINJA"],
+    "SPECIES_TYROGUE": [f"{LV} 20, Atq < Def {ARROW} HITMONCHAN",
+                        f"{LV} 20, Atq > Def {ARROW} HITMONLEE",
+                        f"{LV} 20, Atq = Def {ARROW} HITMONTOP"],
 }
 
 
