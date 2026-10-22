@@ -288,6 +288,8 @@ class _Ctx:
     by_key: dict[tuple[str, str], ct._Entry] = field(default_factory=dict)
     alts_cache: dict[tuple, list] = field(default_factory=dict)
     files: dict[str, str] = field(default_factory=dict)      # scripts e map.json lidos (compartilhado)
+    prefix_bytes: int = 0
+    designated: dict[str, dict[str, str]] = field(default_factory=dict)   # tabela -> {[CONST] = rótulo}      # o maior prefixo de nome de batalha (sText_*Prefix*, src/battle_message.c)
 
     def read(self, rel: str) -> str:
         if rel not in self.files:
@@ -446,6 +448,10 @@ _COPY_CALLS = {
     # frase do Easy Chat: colunas x linhas de palavras com espaço/quebra (src/easy_chat.c:188-213);
     # nunca automática: o número de palavras vem dos argumentos, então a frase é declarada
     "ConvertEasyChatWordsToString": ("ecphrase", 0, None),
+    # texto de batalha com os {B_*} expandidos (src/battle_message.c:1779-1782): o ...ToDisplayedString
+    # escreve sempre em gDisplayedStringBattle[300] (src/battle_main.c:123)
+    "BattleStringExpandPlaceholdersToDisplayedString": ("battle", None, 0),
+    "BattleStringExpandPlaceholders": ("battle", 1, 0),
     # guarda o ponteiro e o aviso de mapa copia depois para mapName[25] (src/map_name_popup.c:241-247, :198-200)
     "ShowFieldMessagePopup": ("pointer", None, 0),
 }
@@ -458,7 +464,12 @@ EXPANDS = {
                          "VERSION", "EVIL_TEAM", "GOOD_TEAM", "EVIL_LEADER", "GOOD_LEADER", "EVIL_LEGENDARY",
                          "GOOD_LEGENDARY"}),
     "dynamic": frozenset({"DYNAMIC"}),
+    # BattleStringExpandPlaceholders (src/battle_message.c:1829-2204): os nomes e buffers de batalha
+    "battle": frozenset({*ct.DYNAMIC_LETTERS, *ct._PREFIXED, *ct._PREFIX_ONLY, "B_BUFF1", "B_BUFF2", "B_BUFF3",
+                         "B_COPY_VAR_1", "B_COPY_VAR_2", "B_COPY_VAR_3", "B_26"}),
 }
+# chamadas que entram no inventário mesmo com a origem não resolvida (a declaração diz o texto)
+_ALWAYS_LISTED = ("battle", "pointer")
 
 
 class Call(NamedTuple):
@@ -492,10 +503,12 @@ def _calls(cf: _CFile) -> list[Call]:
         args = _split_args(src[open_paren + 1:close - 1])
         before = src[max(0, m.start() - 40):m.start()].rstrip()
         # a definição/declaração da própria função (u8 *StringCopy(u8 *dest, ...)) não é chamada
-        if re.search(r"(?:\bu8|\bvoid|\bconst|\bbool8|\bu16|\bs32)\s*\**\s*$", before):
+        if re.search(r"(?:\bu8|\bvoid|\bconst|\bbool8|\bbool32|\bu16|\bu32|\bs32)\s*\**\s*$", before):
             continue
         chained = bool(re.search(r"(?<![=!<>])=$|\breturn$|[(,]$", before))
         f = cf.function_at(m.start())
+        if name == "BattleStringExpandPlaceholdersToDisplayedString":
+            args, di = args + ["gDisplayedStringBattle"], len(args)
         out.append(Call(cf.rel, cf.line(m.start()), f[0] if f else None, name, kind,
                         args[di] if di is not None and di < len(args) else "",
                         args[si] if si is not None and si < len(args) else "", chained))
@@ -536,6 +549,11 @@ def _source_part(expr: str, file: str, ctx: _Ctx, func: str | None = None) -> Pa
         if _lookup(ctx.by_name, name, file) and not _is_local(name, file, func, ctx):
             return Text(name, file=file, offset=off)
         return None
+    # entrada com índice constante de tabela com designadores: gBattleStringsTable[STRINGID_X - BASE]
+    m = re.fullmatch(r"([A-Za-z_]\w*)\s*\[\s*([A-Z_][A-Z0-9_]*)\s*(?:-\s*\w+\s*)?\]", e)
+    if m and m.group(2) in ctx.designated.get(m.group(1), {}):
+        defs = ctx.tables.get(m.group(1))
+        return Text(ctx.designated[m.group(1)][m.group(2)], file=defs[0][0] if defs else file)
     m = re.fullmatch(r"([A-Za-z_]\w*)\s*(?:\[[^\]]*\]\s*)+(?:\.([A-Za-z_]\w*))?", e)
     if m and m.group(1) in ctx.tables:
         part = Text(m.group(1), file=file, field=m.group(2))
@@ -548,7 +566,7 @@ def _source_part(expr: str, file: str, ctx: _Ctx, func: str | None = None) -> Pa
 # ---- alternativas e bytes ------------------------------------------------------------------
 
 def text_bytes(text: str, env: ct._Env, expand: frozenset[str] = frozenset(),
-               sizes: dict[str, ct.VarSize] | None = None) -> int:
+               sizes: dict[str, ct.VarSize] | None = None, prefix_bytes: int = 0) -> int:
     """Bytes que o texto ocupa no buffer, sem o EOS. Acentuada = 1 byte; placeholder = os bytes do
     charmap, menos os que a função de cópia expande (`expand`), que medem o pior caso: {PLAYER}/
     {RIVAL} 7 letras, os de VAR_SIZES (`sizes`) o tamanho declarado."""
@@ -564,7 +582,11 @@ def text_bytes(text: str, env: ct._Env, expand: frozenset[str] = frozenset(),
         elif kind == "ph":
             words = value.split()
             if words and words[0] in expand:
-                if words[0] in ct.DYNAMIC_LETTERS:
+                if words[0] in ct._PREFIXED:          # "Wild "/"Foe " + apelido
+                    n += prefix_bytes + ct._MON
+                elif words[0] in ct._PREFIX_ONLY:
+                    n += prefix_bytes
+                elif words[0] in ct.DYNAMIC_LETTERS:
                     n += ct.DYNAMIC_LETTERS[words[0]]
                 elif words[0] in sizes:
                     n += sizes[words[0]].chars
@@ -582,7 +604,7 @@ def text_bytes(text: str, env: ct._Env, expand: frozenset[str] = frozenset(),
 def _entry_bytes(entry: ct._Entry, texts: tuple[str, ...], ctx: _Ctx, expand: str, offset: int) -> int:
     words = EXPANDS.get(expand, frozenset())
     sizes = ct.var_sizes(entry.file, entry.label) if words else None
-    return max(text_bytes(t, ctx.env, words, sizes) for t in texts) - offset
+    return max(text_bytes(t, ctx.env, words, sizes, ctx.prefix_bytes) for t in texts) - offset
 
 
 def _alt_of(entry: ct._Entry, ctx: _Ctx, expand: str, offset: int = 0) -> Alt:
@@ -777,7 +799,17 @@ def build_context(repo: Path, entries: list[ct._Entry] | None = None, base: ct._
                for p in sorted((repo / "include").rglob("*.h"))}
     tables = _scan_tables(c_files, {}, by_name, labels_by_pos)
     arrays = _scan_arrays({r: cf for r, cf in c_files.items() if r.endswith(".c")}, headers)
-    return _Ctx(repo, env, entries, base, by_name, tables, c_files, arrays, _defines(repo), by_key)
+    prefix = max((text_bytes(e.texts[0], env) for e in entries
+                  if e.file == "src/battle_message.c" and ct._PREFIX_LABEL.match(e.label)), default=0)
+    designated: dict[str, dict[str, str]] = {}
+    for cf in c_files.values():
+        for m in _TABLE_START.finditer(cf.source):
+            body = cf.source[m.end():_match_close(cf.source, m.end() - 1, "{", "}")]
+            pairs = re.findall(r"\[\s*([A-Z_][A-Z0-9_]*)[^\]\n]*\]\s*=\s*([A-Za-z_]\w*)\s*[,}]", body)
+            if pairs:
+                designated.setdefault(m.group(1), {}).update({k: v for k, v in pairs if v in by_name})
+    return _Ctx(repo, env, entries, base, by_name, tables, c_files, arrays, _defines(repo), by_key, {}, {}, prefix,
+                designated)
 
 
 @lru_cache(maxsize=2)
@@ -798,11 +830,19 @@ def with_texts(ctx: _Ctx, changes: dict[tuple[str, str], str], base: ct._Base | 
         if "#" not in e.label:
             by_name[e.label].append(e)
     same_base = isinstance(base, str)
+    if same_base and ctx.base is not None:
+        # arquivo que era igual à base passa a ser "mudado": o texto de antes é a base dele
+        newly = {f for f, _l in changes if f not in ctx.base.changed and f in ctx.base.present}
+        if newly:
+            texts = dict(ctx.base.texts)
+            texts.update({(e.file, e.label): e.texts for e in ctx.entries if e.file in newly})
+            base, same_base = ct._Base(texts, ctx.base.changed | newly, ctx.base.present), False
     # as alternativas já medidas que não usam nenhum texto trocado continuam valendo (com a mesma base)
     cache = ({k: v for k, v in ctx.alts_cache.items() if not any(a.key in changes for a in v)}
              if same_base else {})
     return _Ctx(ctx.repo, ctx.env, entries, ctx.base if same_base else base, by_name, ctx.tables,
-                ctx.c_files, ctx.arrays, ctx.defines, {(e.file, e.label): e for e in entries}, cache, ctx.files)
+                ctx.c_files, ctx.arrays, ctx.defines, {(e.file, e.label): e for e in entries}, cache, ctx.files,
+                ctx.prefix_bytes, ctx.designated)
 
 
 # ---- caminhos dos scripts ----------------------------------------------------------------------
@@ -964,7 +1004,7 @@ def classify_calls(ctx: _Ctx, declared: list[Declared] | None = None) -> list[Cl
         for c in calls:
             part = parts[c]
             key = (c.func, _norm(c.dest))
-            if part is None and not (c.kind == "append" and key in translatable):
+            if part is None and not (c.kind == "append" and key in translatable) and c.kind not in _ALWAYS_LISTED:
                 continue
             decs = tuple(d for d in declared if declared_matches(d, c))
             buf = _dest_buffer(c, ctx) if c.dest else None
@@ -990,6 +1030,7 @@ def c_paths(ctx: _Ctx, classified: list[Classified] | None = None,
         if cl.status == "auto":
             expand = cl.call.kind if cl.call.kind in EXPANDS else ""
             out.append(BufferPath(cl.call.site, cl.call.text, cl.buffer, (cl.part,), expand, "auto"))
+    # (com origem não resolvida, a chamada de _ALWAYS_LISTED fica pendente até ser declarada)
     for d in declared:
         if d.buffer is None:
             continue
@@ -1025,8 +1066,8 @@ class Measure(NamedTuple):
 
 def measure_path(path: BufferPath, ctx: _Ctx) -> list[Measure] | None:
     """Total no pior caso de cada alternativa de cada parte; None se alguma parte não resolveu.
-    A base é a do caminho: o pior caso com os textos ingleses (a maior alternativa de cada parte);
-    rótulo novo (sem inglês) não tem base."""
+    Base: num caminho de um texto só, o mesmo rótulo em inglês; num caminho composto (texto + texto,
+    palavra x3), o pior caso do caminho com os textos ingleses. Rótulo novo (sem inglês) não tem base."""
     parts = [(p, _alts(p, ctx, path.expand)) for p in path.parts]
     if any(not alts for _p, alts in parts):
         return None
@@ -1040,7 +1081,9 @@ def measure_path(path: BufferPath, ctx: _Ctx) -> list[Measure] | None:
         others_cur = sum(cur_max) - cur_max[i]
         for a in alts:
             total = a.cur * p.times + others_cur + 1
-            base_total = None if a.base is None else path_base
+            # caminho de um texto só: a base é o próprio rótulo em inglês; composto: o pior caso do caminho
+            single = len(parts) == 1 and p.times == 1
+            base_total = None if a.base is None else (a.base + 1 if single else path_base)
             names = [a.name if j == i else widest[j] for j in range(len(parts))]
             names = [f"{n} (x{q.times})" if q.times > 1 else n for n, (q, _a) in zip(names, parts)]
             out.append(Measure(a, total, base_total, " + ".join(names)))
@@ -1048,8 +1091,9 @@ def measure_path(path: BufferPath, ctx: _Ctx) -> list[Measure] | None:
 
 
 def overflows(path: BufferPath, ctx: _Ctx) -> list[Measure]:
-    """Alternativas que estouram o buffer e passam do pior caso do caminho na base inglesa (o inglês
-    que já estoura não reprova a tradução que estoura igual ou menos); rótulo novo não pode estourar."""
+    """Alternativas que estouram o buffer e passam da base inglesa (measure_path: o próprio rótulo, ou
+    o pior caso do caminho composto); o inglês que já estoura não reprova a tradução que estoura igual
+    ou menos; rótulo novo não pode estourar."""
     found = []
     for m in measure_path(path, ctx) or ():
         if m.total > path.buffer.size and (m.base_total is None or m.total > m.base_total):
@@ -1285,6 +1329,23 @@ DECLARED: list[Declared] = [
     Declared(_BM, "ExpandBattleTextBuffPlaceholders", r"sText_BerrySuffix", BufRef("gStringVar2"),
              (Fixed("BERRY_NAME_LENGTH", "nome da fruta Enigma (BERRY_NAME_LENGTH)"), Text("sText_BerrySuffix", file=_BM)),
              why="B_BUFF_ITEM da Fruta Enigma em batalha de link: nome + sText_BerrySuffix (src/battle_message.c:2298-2299)"),
+    Declared(_BM, "BattleStringExpandPlaceholdersToDisplayedString", r".*", None,
+             why="implementação (src/battle_message.c:1779-1782): medida em quem chama"),
+    Declared(_BM, "BufferStringBattle", r"stringPtr", BufRef("gDisplayedStringBattle"),
+             (Files(_BM),), expand="battle",
+             why="mensagem de batalha: stringPtr é qualquer texto de batalha (gBattleStringsTable e os sText_* "
+                 "escolhidos em BufferStringBattle, src/battle_message.c:1545-1776), expandido em "
+                 "gDisplayedStringBattle[300]; mede todo texto de src/battle_message.c"),
+    Declared("src/battle_controller_pokedude.c", r"\w+", r"GetPokedudeText\(\)", BufRef("gDisplayedStringBattle"),
+             (Text("sPokedudeTexts_Battle", "sPokedudeTexts_Status", "sPokedudeTexts_TypeMatchup",
+                   "sPokedudeTexts_Catching", file="src/battle_controller_pokedude.c"),), expand="battle",
+             why="Pokédude (data/text/pokedude.inc): GetPokedudeText (src/battle_controller_pokedude.c:2659-2672) "
+                 "expandido em gDisplayedStringBattle[300] (:2558, :2619)"),
+    Declared("src/battle_controller_oak_old_man.c", r"\w+", r"text", BufRef("gDisplayedStringBattle"),
+             (Text("gText_InflictingDamageIsKey", "gText_LoweringStats", "gText_OakNoRunningFromATrainer",
+                   "gText_WinEarnsPrizeMoney", "gText_HowDissapointing"),), expand="battle",
+             why="tutorial do Carvalho: PrintOakTextWithMainBgDarkened(text) (src/battle_controller_oak_old_man.c:"
+                 "721-741) expande em gDisplayedStringBattle[300] (:775)"),
     Declared(_BM, "ChooseMoveUsedParticle", r".*", BufRef("gBattleTextBuff1"),
              why="partícula do golpe usado em gBattleTextBuff1 (src/battle_message.c:1685, :2341-2343)"),
     Declared(_BM, "ChooseTypeOfMoveUsedString", r".*", BufRef("gBattleTextBuff2"),

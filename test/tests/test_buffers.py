@@ -227,3 +227,43 @@ def test_check_text_roda_a_regra_de_buffer(monkeypatch):
         pytest.skip("sem git ou sem a base inglesa: a regra não roda")
     results = ct.check_text(str(REPO_ROOT), {"text": []}, english="desligado")
     assert sentinel in results and calls and calls[0] is not None
+
+
+# --- texto de batalha em gDisplayedStringBattle[300] (escopo 10 da T4) --------------------------------
+
+POKEDUDE = "data/text/pokedude.inc"
+
+
+def _pokedude_path(ctx):
+    paths = [p for p in bf.c_paths(ctx) if p.site.startswith("src/battle_controller_pokedude.c:")
+             and p.origin == "declarado"]
+    assert len(paths) == 1
+    return paths[0]
+
+
+def test_texto_do_pokedude_vai_para_gdisplayedstringbattle(ctx):
+    """battle_controller_pokedude.c:2558/2619: GetPokedudeText() expandido em gDisplayedStringBattle[300]."""
+    path = _pokedude_path(ctx)
+    assert (path.buffer.name, path.buffer.size, path.expand) == ("gDisplayedStringBattle", 300, "battle")
+    calls = [c.call.line for c in bf.classify_calls(ctx) if c.call.file == "src/battle_controller_pokedude.c"
+             and any(d.buffer and d.buffer.name == "gDisplayedStringBattle" and d.parts for d in c.declared)]
+    assert len(calls) == 2
+    alts = {a.key[1]: a for a in bf._alts(path.parts[0], ctx, "battle") if a.key}
+    assert alts["Pokedude_Text_ButterfreeDoubleResistsGrass"].base >= 300     # o inglês já passa de 300
+
+
+def test_pokedude_pode_ir_ate_o_ingles_mas_nao_alem(ctx):
+    key = (POKEDUDE, "Pokedude_Text_ButterfreeDoubleResistsGrass")
+    english = ctx.base_texts(ctx.by_key[key])[0]
+    assert _failures(bf.with_texts(ctx, {key: english}), "Pokedude_Text_ButterfreeDoubleResistsGrass") == []
+    base_worst = max(m.base_total for m in bf.measure_path(_pokedude_path(ctx), ctx) if m.base_total)
+    longer = english.replace("$", " " + "M" * (base_worst - 300 + 10) + "$")
+    found = _failures(bf.with_texts(ctx, {key: longer}), "Pokedude_Text_ButterfreeDoubleResistsGrass")
+    assert found and "gDisplayedStringBattle[300]" in found[0] and f"a base inglesa já ia a {base_worst}" in found[0]
+
+
+def test_mensagem_de_batalha_expande_os_nomes(ctx):
+    """{B_ATK_NAME_WITH_PREFIX} = prefixo mais longo + 10 letras; {B_BUFF1} = 10 letras."""
+    words = bf.EXPANDS["battle"]
+    assert bf.text_bytes("{B_ATK_NAME_WITH_PREFIX}!$", ctx.env, words, prefix_bytes=5) == 5 + 10 + 1
+    assert bf.text_bytes("{B_BUFF1}$", ctx.env, words, ct.VAR_SIZES) == 10

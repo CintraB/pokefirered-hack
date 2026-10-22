@@ -877,10 +877,10 @@ def test_cli_reports(repo, capsys):
 
 def test_real_repo_has_no_unfrozen_failures():
     exceptions = json.loads((REPO_ROOT / "test" / "excecoes.json").read_text(encoding="utf-8"))
-    # o estouro de buffer conhecido (esteira/buffers.KNOWN_OVERFLOWS) é aviso de propósito, como uma
-    # exceção congelada que ainda vale; o obsoleto ("não ocorre mais") continua contando aqui
+    # os achados conhecidos (esteira/buffers.KNOWN_OVERFLOWS, check_text.KNOWN_FINDINGS) são aviso de
+    # propósito, como uma exceção congelada que ainda vale; o obsoleto ("não ocorre mais") continua contando
     results = [r for r in check_text(str(REPO_ROOT), exceptions) if r.name != "texto/ingles"
-               and not (r.name == "texto/buffer" and r.status == "aviso" and "(conhecido:" in r.detail)]
+               and not (r.status == "aviso" and "(conhecido:" in r.detail)]
     assert results == [], [r.detail for r in results[:5]]  # nem falha nova, nem exceção obsoleta
 
 

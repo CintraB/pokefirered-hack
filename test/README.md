@@ -792,6 +792,22 @@ Página IVs/EVs (Hack 5): mesma janela (222 px, `sWindowTemplates_Ivs`, texto em
 tipos de Hidden Power) e medidas, e uma coluna que encavale na anterior também reprova
 (`check_page_widths` em `test/esteira/ivev_page.py`).
 
+### Linhas por caixa no diálogo padrão (regra `linhas`)
+
+A caixa de mensagem padrão tem 4 tiles de altura = **2 linhas** (`sStandardTextBox_WindowTemplates`,
+`src/new_menu_helpers.c:36-44`): `\n` desce uma linha, `\l` rola (o texto seguinte fica na 2ª), `\p`
+limpa. Uma 3ª linha numa caixa (dois `\n` antes do próximo `\p`, ou `\n` depois de `\l`) sai da
+janela e é cortada **sem aviso**. As regras do diálogo (`data/maps/*/text.inc`, `data/scripts/*.inc`,
+`data/event_scripts.s`, os `data/text/*.inc` de msgbox, a fala do Carvalho e os textos de `.c` cuja
+janela de uso é o diálogo padrão) têm `box_lines=2`: no texto mudado em relação à base, uma caixa com
+mais de 2 linhas reprova (`texto/linhas`), a menos que o mesmo rótulo em inglês já tivesse tantas
+quanto (rótulo novo: estrito). `box_lines()` em `check_text.py` mede um texto.
+
+**Achados conhecidos** (`KNOWN_FINDINGS` em `check_text.py`): achado de regra nova que já estava
+na `hack-switch` e tem frente dona vira `aviso` "(conhecido: ...)" enquanto o texto (fingerprint) e a
+medida forem os mesmos; corrigido, vira aviso "não ocorre mais" (tire a entrada); mudado e ainda
+errado, volta a reprovar.
+
 ### Buffers de string (regra `buffer`, `test/esteira/buffers.py`)
 
 Texto copiado em tempo de execução para um array de tamanho fixo **trava o jogo** se passar do
@@ -816,13 +832,20 @@ cada caminho de cópia, com o arquivo:linha de onde a cópia acontece:
   o motivo e arquivo:linha. Um teste reprova cópia de texto traduzível que não esteja nem medida
   nem declarada, e declaração que não case com nenhuma chamada;
 - **aviso de mapa**: um caminho por `map.json` com andar: nome do lugar (o especial da Loja de
-  Celadon) + " " + andar ("B1F") ou `gText_Rooftop2`, em `mapName[25]`.
+  Celadon) + " " + andar ("B1F") ou `gText_Rooftop2`, em `mapName[25]`;
+- **texto de batalha** em `gDisplayedStringBattle[300]` (`BattleStringExpandPlaceholders*`, com os
+  `{B_*}` expandidos: nome de 10 letras, prefixo "Wild "/"Foe " + 10, `{B_BUFF*}` 10): toda mensagem
+  de `src/battle_message.c` (`BufferStringBattle`), as falas do Pokédude (`data/text/pokedude.inc`,
+  via `GetPokedudeText`) e do tutorial do Carvalho, e as mensagens da cena de evolução. O inglês do
+  Pokédude já passa de 300 (`Pokedude_Text_ButterfreeDoubleResistsGrass`, 308): a tradução pode ir
+  até o pior caso inglês, não além.
 
 Quando a função expande os placeholders, cada um mede o pior caso da largura: `{PLAYER}`/`{RIVAL}`
 7 letras, `{STR_VAR_n}`/`{DYNAMIC n}` 10 (ou o `VAR_CONTENTS` do rótulo). Concatenação soma a
 maior alternativa de cada parte. **Critério**: igual ao da largura no pior caso, "sem piorar a
-base": a alternativa (um rótulo) reprova se o total passa do buffer **e** do total do mesmo
-rótulo na base inglesa; rótulo novo não pode passar. Só roda com a base (sem `.git`, não roda;
+base": a alternativa (um rótulo) reprova se o total passa do buffer **e** da base inglesa: num
+caminho de um texto só, o mesmo rótulo em inglês; num caminho composto (texto + texto, 3 palavras
+do Easy Chat), o pior caso do caminho em inglês. Rótulo novo não pode passar. Só roda com a base (sem `.git`, não roda;
 base indisponível: aviso `texto/buffer`). O inglês que já estoura fica documentado no relatório
 da T4 e a tradução pode ir até ele. Estouro já mergeado com dono vai para `KNOWN_OVERFLOWS`
 (aviso, não reprova, enquanto o total for o mesmo; corrigido, vira aviso de obsoleto).

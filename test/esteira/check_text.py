@@ -14,7 +14,8 @@ Regras (nome usado em `excecoes.json`):
               de cada lugar onde o rótulo é usado: esteira/janelas_uso.py); no texto mudado em
               relação à base inglesa, também com {STR_VAR_n}/{B_BUFF*}... no pior caso (VAR_SIZES,
               exceções por contexto em janelas_uso.VAR_CONTENTS), sem passar do que a base passava;
-  linhas      mais linhas que a janela comporta;
+  linhas      mais linhas que a janela comporta; no diálogo padrão (`box_lines`), mais de 2 linhas
+              visíveis numa caixa, no texto mudado em relação à base (sem piorar a base);
   letras      campo de nome com mais bytes que o buffer do C;
   controle    os códigos de controle e placeholders diferem do texto da base inglesa
               (`TRANSLATION_BASE`; `\\n`, `\\l` e `\\p` podem mudar);
@@ -87,12 +88,19 @@ class Rule(NamedTuple):
     space: int | None = None   # largura do espaço, quando o renderizador não usa a da tabela
     no_prefix: bool = False    # {B_*_NAME_WITH_PREFIX} é sempre do jogador: só o nome, sem prefixo
     by_usage: bool = False     # a janela sai de onde o rótulo é usado (esteira/janelas_uso.py)
+    box_lines: int | None = None   # máximo de linhas visíveis por caixa (entre \p): a caixa de diálogo
+                                   # padrão mostra 2; a 3ª linha é cortada sem aviso (box_lines())
 
 
 # Largura útil (px) por fonte de texto, derivada dos templates de janela do repo (arquivo:linha
 # de cada um em `source`). O espaçamento entre letras (`letterSpacing`) não conta: só é somado a
 # texto japonês (src/text.c:854).
 DIALOG_WIDTH_PX = 26 * 8
+# A caixa de diálogo padrão tem 4 tiles de altura = 2 linhas (sStandardTextBox_WindowTemplates,
+# src/new_menu_helpers.c:36-44): `\n` desce uma linha, `\l` rola e escreve de novo na 2ª, `\p`
+# limpa. Uma 3ª linha (dois `\n` na mesma caixa, ou `\n` depois de `\l`) sai fora da janela e
+# CopyGlyphToWindow a corta sem aviso.
+DIALOG_BOX_LINES = 2
 _DIALOG = ("diálogo padrão: sStandardTextBox_WindowTemplates .width = 26 tiles (src/new_menu_helpers.c:40), "
            "texto em x = 0 (src/new_menu_helpers.c:411)")
 _DIALOG_INC = ("aide", "berries", "competitive_brothers", "day_care", "eon_ticket", "flavor_text",
@@ -148,12 +156,16 @@ _C_RESIDUE = ("textos soltos de outros .c/.h (troca, link, minijogos, menus, cen
               "posicional) fica sem medida")
 
 WIDTH_RULES: list[Rule] = [
-    Rule("data/maps/*/text.inc", None, DIALOG_WIDTH_PX, _DIALOG),
-    *[Rule(f"data/text/{name}.inc", None, DIALOG_WIDTH_PX, _DIALOG + "; usado só via msgbox/message")
+    Rule("data/maps/*/text.inc", None, DIALOG_WIDTH_PX, _DIALOG, box_lines=DIALOG_BOX_LINES),
+    *[Rule(f"data/text/{name}.inc", None, DIALOG_WIDTH_PX, _DIALOG + "; usado só via msgbox/message",
+           box_lines=DIALOG_BOX_LINES)
       for name in _DIALOG_INC],
-    Rule("data/scripts/*.inc", None, DIALOG_WIDTH_PX, _DIALOG + "; scripts comuns (msgbox/message)"),
-    Rule("data/event_scripts.s", None, DIALOG_WIDTH_PX, _DIALOG + "; scripts comuns (msgbox/message)"),
-    Rule("data/mystery_event_msg.s", None, DIALOG_WIDTH_PX, _DIALOG + "; scripts de evento misterioso (msgbox)"),
+    Rule("data/scripts/*.inc", None, DIALOG_WIDTH_PX, _DIALOG + "; scripts comuns (msgbox/message)",
+         box_lines=DIALOG_BOX_LINES),
+    Rule("data/event_scripts.s", None, DIALOG_WIDTH_PX, _DIALOG + "; scripts comuns (msgbox/message)",
+         box_lines=DIALOG_BOX_LINES),
+    Rule("data/mystery_event_msg.s", None, DIALOG_WIDTH_PX, _DIALOG + "; scripts de evento misterioso (msgbox)",
+         box_lines=DIALOG_BOX_LINES),
     # -- textos longos (data/text) --
     *[Rule("data/text/help_system.inc", label, 26 * 8 - 2, _HELP + "; descrição do tópico sob o cursor em "
            "x = 2, 5 tiles de altura em y = 6 (src/help_system_util.c:606): 2 linhas", lines=2, space=4)
@@ -189,14 +201,15 @@ WIDTH_RULES: list[Rule] = [
          "(src/oak_speech.c:967, src/oak_speech.c:1026)"),
     Rule("data/text/new_game_intro.inc", "gOakSpeech_Text_", DIALOG_WIDTH_PX,
          "fala do Carvalho: janela 0 do diálogo padrão (InitStandardTextBoxWindows, src/oak_speech.c:754), "
-         "FONT_MALE em x = 0 (src/oak_speech.c:1124-1133); " + _DIALOG),
+         "FONT_MALE em x = 0 (src/oak_speech.c:1124-1133); " + _DIALOG, box_lines=DIALOG_BOX_LINES),
     Rule("data/text/pokedex_rating.inc", None, DIALOG_WIDTH_PX,
-         _DIALOG + "; ShowFieldMessage (src/prof_pc.c:108) e msgbox"),
+         _DIALOG + "; ShowFieldMessage (src/prof_pc.c:108) e msgbox", box_lines=DIALOG_BOX_LINES),
     Rule("data/text/pc_transfer.inc", None, DIALOG_WIDTH_PX,
          _DIALOG + "; também na tela de nome (janela 0, src/naming_screen.c:752-755) e como mensagem de batalha "
          "(222 px, mais larga): vale a mais estreita"),
     Rule("data/text/save.inc", None, DIALOG_WIDTH_PX,
-         _DIALOG + "; PrintSaveTextWithFollowupFunc usa a janela 0 (src/start_menu.c:687-691)"),
+         _DIALOG + "; PrintSaveTextWithFollowupFunc usa a janela 0 (src/start_menu.c:687-691)",
+         box_lines=DIALOG_BOX_LINES),
     Rule("data/text/braille.inc", None, None,
          "braille: alfabeto próprio (tools/preproc/asm_file.cpp, mapa `encoding`) e janela de "
          "src/braille_text.c; só o alfabeto e o terminador são checados"),
@@ -1035,6 +1048,40 @@ def _analyze(text: str, needs_terminator: bool, rule: Rule | None, env: _Env,
     return problems
 
 
+def box_lines(text: str) -> int:
+    """Maior linha que o texto alcança numa caixa: `\\n` desce uma linha, `\\l` rola (o texto
+    seguinte fica na 2ª linha), `\\p` abre caixa nova. Quebra no fim do texto não abre linha."""
+    worst = line = 1
+    pending = None
+    for kind, value in _tokenize(text):
+        if kind == "break":
+            pending = value
+            continue
+        if kind == "char" and value == "$":
+            break
+        if pending is not None:
+            line = 1 if pending == "p" else (line + 1 if pending == "n" else 2)
+            pending = None
+        worst = max(worst, line)
+    return worst
+
+
+def _box_lines_problem(entry: _Entry, old: tuple[str, ...] | None, rule: Rule | None) -> _Problem | None:
+    """Caixa com mais linhas que a janela mostra (`box_lines`), no texto mudado em relação à base:
+    reprova se passa do limite e da mesma medida do rótulo inglês; rótulo novo não pode passar."""
+    if rule is None or rule.box_lines is None or entry.braille:
+        return None
+    cur = max(box_lines(t) for t in entry.texts)
+    if cur <= rule.box_lines:
+        return None
+    base = max(box_lines(t) for t in old) if old else None
+    if base is not None and cur <= base:
+        return None
+    return (RULE_LINES, f"linhas demais numa caixa: {cur} linhas visíveis numa caixa de {rule.box_lines} "
+            "(a linha a mais é cortada sem aviso; use \\l para rolar ou \\p para outra caixa)"
+            + (f"; a base inglesa ia a {base}" if base is not None and base > rule.box_lines else ""), cur)
+
+
 def _worst_case_problem(entry: _Entry, old: tuple[str, ...] | None, rule: Rule | None,
                         env: _Env) -> _Problem | None:
     """Largura com os placeholders variáveis no pior caso (var_sizes), para um texto mudado em relação
@@ -1297,8 +1344,9 @@ def _usage_rules(raw: list[_Entry], texts: dict[str, str]) -> dict[tuple[str, st
                     unmatched.append(f"{use_file} ({ctx})")
                     continue
                 key = (u.px, u.font, u.lines, u.chars, u.source)
+                box = DIALOG_BOX_LINES if u.source.startswith(janelas_uso._DIALOG) else None
                 found.setdefault(key, (Rule(e.file, e.label, u.px, f"usado em {use_file} ({ctx}): {u.source}",
-                                            u.font, u.lines, u.chars), f"{use_file}, {ctx}"))
+                                            u.font, u.lines, u.chars, box_lines=box), f"{use_file}, {ctx}"))
             if not found:
                 why = ("sem uso no código: texto morto" if not uses
                        else "usado sem regra de janela: " + ", ".join(unmatched[:3]))
@@ -1357,6 +1405,9 @@ def _scan(root: Path, base: str | None, english: str = "desligado") -> _Scan:
                 worst = _worst_case_problem(entry, old, rule, env)
                 if worst:
                     found.append(worst)
+                boxes = _box_lines_problem(entry, old, rule)
+                if boxes:
+                    found.append(boxes)
             for name, detail, value in found:
                 if name in seen_rules and name in (RULE_WIDTH, RULE_LINES, RULE_CHARS):
                     continue      # a primeira janela que estoura basta
@@ -1439,6 +1490,33 @@ def _shared_row_results(root: Path, raw: list[_Entry]) -> list[Result]:
     return out
 
 
+class KnownFinding(NamedTuple):
+    """Achado de uma regra nova que já está na hack-switch e tem dona: vira `aviso` (não reprova)
+    enquanto o texto for o mesmo (fingerprint) e a medida também; corrigido, vira aviso de
+    obsoleto. Diferente de `excecoes.json` (que cala), o aviso aparece em todo relatório."""
+    file: str
+    label: str
+    rule: str
+    fingerprint: str
+    valor: int | None
+    why: str
+
+
+_A = "frente A (diálogos dos mapas; test_traducao_a.py)"
+_B = "frente B (diálogos dos mapas, grupo B1; test_traducao_b.py)"
+# Achados da regra de linhas por caixa (escopo 9 da T4) na hack-switch de 21/10
+KNOWN_FINDINGS: list[KnownFinding] = [
+    KnownFinding("data/maps/CeruleanCity/text.inc", "CeruleanCity_Text_RivalPostBattle", RULE_LINES,
+                 "7906b49b3401e259", 3, _A),
+    KnownFinding("data/maps/CeruleanCity_BikeShop/text.inc", "CeruleanCity_BikeShop_Text_WelcomeToBikeShop", RULE_LINES,
+                 "d31bd77a491db522", 3, _A),
+    KnownFinding("data/maps/CeruleanCity_House5/text.inc", "CeruleanCity_House1_Text_GoCrushBerriesAtDirectCorner",
+                 RULE_LINES, "d187176f10dc8744", 3, _A),
+    KnownFinding("data/maps/PewterCity_Gym/text.inc", "PewterCity_Gym_Text_YoureChampMaterial", RULE_LINES,
+                 "30ce918d7e9986f5", 3, _B),
+]
+
+
 def check_text(repo: str, exceptions: dict, english: str = ENGLISH_MODE,
                base: str | None = TRANSLATION_BASE) -> list[Result]:
     """Todas as regras sobre os textos de `repo`. `base`: commit da versão inglesa (None = sem
@@ -1478,13 +1556,25 @@ def check_text(repo: str, exceptions: dict, english: str = ENGLISH_MODE,
             continue
         silenced[(exc["file"], exc["label"], exc["rule"])] = exc
 
-    for (file, label), (_fp, problems) in entries.items():
+    known = {(k.file, k.label, k.rule): k for k in KNOWN_FINDINGS}
+    known_used: set[KnownFinding] = set()
+    for (file, label), (fp, problems) in entries.items():
         for rule, detail, value in problems:
             exc = silenced.get((file, label, rule))
             if exc is not None and exc.get("valor") in (None, value):
                 applied.add((file, label, rule))
                 continue
+            k = known.get((file, label, rule))
+            if k is not None and k.fingerprint == fp and k.valor in (None, value):
+                known_used.add(k)
+                results.append(Result(f"texto/{rule}", "aviso", f"{file}: {label}: {detail} (conhecido: {k.why})"))
+                continue
             results.append(Result(f"texto/{rule}", "falha", f"{file}: {label}: {detail}"))
+    for k in KNOWN_FINDINGS:
+        if k not in known_used and (k.file, k.label) in entries:
+            results.append(Result(f"texto/{k.rule}", "aviso",
+                                  f"achado conhecido não ocorre mais em {k.file}: {k.label} ({k.rule}); remova-o "
+                                  "de KNOWN_FINDINGS (esteira/check_text.py)"))
 
     for exc in frozen:
         file, label, rule = exc["file"], exc["label"], exc["rule"]
