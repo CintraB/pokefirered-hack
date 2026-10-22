@@ -173,21 +173,36 @@ def test_fim_de_arquivo_igual_ao_da_base(rel):
 B2_FILES = GROUPS["B2"]
 PLAYER_GENDERED = ("Fique quieto", "muito bruto", "parceiro,", "ocupado demais", "Aspirante a campeão",
                    "Seja bem-vindo", "Bem-vindo", "você é bom", "ganancioso", "Esteja pronto", "Fique pronto",
-                   "jovem amigo", "meu amigo", "Satisfeito?", "querido.", "Você é perfeito", "Você é fofo")
+                   "jovem amigo", "meu amigo", "Satisfeito?", "querido.", "Você é perfeito", "Você é fofo",
+                   "Seu ratinho", "Ora, seu!")
 WRONG_FORMS = ("inches", "polegadas", "Equipe Rocket Manda", "Detector Item", "Rota Marítima", "Gym", "GYM",
                "Guru da Pesca", "Pokemon", "POKéMON")
+
+
+# insulto/vocativo "seu"/"sua" + substantivo ou nada, sem falso positivo em "seu Pokémon", "seu estilo" etc.
+PLAYER_INSULT = re.compile(r"(?:^|[ ,.!?…])[Ss]eu (?:ratinho|bobinho|danadinho|safadinho|bobo|chato|tolo|idiota|louco|burro|"
+                           r"pestinha|moleque|fedelho|covarde|bruto|paspalho)\b|Ora, seu[!,.]|"
+                           r"(?:^|[ ,.!?…])[Ss]ua (?:bobinha|tola|chata|idiota|louca|burra|covarde)\b")
+
+
+def test_b2_padrao_de_insulto_pega_os_casos_conhecidos():
+    for bad in ("Seu ratinho!", "Ora, seu!", "Você, seu bobo!", "Sua tola!"):
+        assert PLAYER_INSULT.search(bad), bad
+    for ok in ("Seu Pokémon é forte.", "Gostei do seu estilo.", "Que pestinha!", "Se a sua Pokédex tiver dados"):
+        assert not PLAYER_INSULT.search(ok), ok
 
 
 @pytest.mark.parametrize("rel", B2_FILES)
 def test_b2_jogador_sem_genero_e_formas_erradas(rel):
     body = _flat(rel)
+    assert not PLAYER_INSULT.search(body.replace("GIA: JES, seu bobo!", "")), (rel, PLAYER_INSULT.search(body))
     for bad in PLAYER_GENDERED + WRONG_FORMS:
         assert bad not in body, (rel, bad)
 
 
 def test_b2_tamanho_do_magikarp_em_centimetros():
-    """O tamanho vem de FormatMonSizeRecord (cm com vírgula decimal; "inches" só no ramo UNITS_IMPERIAL):
-    o texto traduzido nunca fala de polegadas."""
+    """O tamanho vem de FormatMonSizeRecord, que só converte para polegadas com UNITS_IMPERIAL (a build
+    ENGLISH o definia; agora o config.h fixa UNITS_METRIC): o texto fala sempre em cm."""
     body = _flat("data/maps/Route12_FishingHouse/text.inc")
     assert "{STR_VAR_2} cm" in body and "{STR_VAR_3} cm" in body
     assert "inch" not in body
@@ -200,7 +215,9 @@ def test_b2_termos_criados_no_glossario():
     assert terms["FISHING GURU"] == "Mestre da Pesca"
     assert terms["SILENCE BRIDGE"] == "Ponte do Silêncio"
     assert terms["EXP. SHARE (forma cheia)"] == "Compartilhador de Exp."
-    body = _flat("data/maps/Route12_FishingHouse/text.inc") + _flat("data/maps/Route12/text.inc")         + _flat("data/maps/Route13/text.inc") + _flat("data/maps/Route15_WestEntrance_2F/text.inc")
+    body = (_flat("data/maps/Route12_FishingHouse/text.inc") + _flat("data/maps/Route12/text.inc")
+            + _flat("data/maps/Route13/text.inc") + _flat("data/maps/Route15_WestEntrance_2F/text.inc")
+            + _flat("data/maps/Route19/text.inc"))
     for pt in ("Mestre da Pesca", "Ponte do Silêncio", "Área de Pesca Esportiva", "Compartilhador de Exp."):
         assert pt in body, pt
 
@@ -209,7 +226,14 @@ def test_b2_assistentes_do_carvalho_falam_igual():
     """As 4 falas de recompensa dos assistentes usam a mesma redação (e só a primeira de cada par muda o item)."""
     for rel in ("data/maps/Route10_PokemonCenter_1F/text.inc", "data/maps/Route11_EastEntrance_2F/text.inc",
                 "data/maps/Route15_WestEntrance_2F/text.inc", "data/maps/Route16_NorthEntrance_2F/text.inc"):
-        body = _flat(rel)
-        assert "assistentes do Prof. Carvalho" in body or "Sou um dos assistentes" in body, rel
+        body = re.sub(r"\\[nlp]", " ", _flat(rel))
+        assert "Sou um dos assistentes do Prof. Carvalho" in body, rel
         assert "me diga uma coisa" in body and "Aqui está!" in body, rel
         assert "do assistente." in body, rel
+
+
+def test_b2_config_h_nao_define_unidades_imperiais():
+    """O Magikarp (e qualquer UNITS_*) sai em cm: o config.h não pode voltar a definir UNITS_IMPERIAL."""
+    config = re.sub(r"//.*", "", (REPO_ROOT / "include" / "config.h").read_text(encoding="utf-8"))
+    assert "#define UNITS_METRIC" in config
+    assert "UNITS_IMPERIAL" not in config

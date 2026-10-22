@@ -6791,7 +6791,7 @@
    "categoria": "personagem",
    "detectar": true,
    "frente": "B",
-   "obs": "o Guru da Pesca de Vermilion e o irmão dele na Rota 12 (a frente A, VermilionCity_House1, deve usar o mesmo)"
+   "obs": "o Guru da Pesca de Vermilion e o irmão dele na Rota 12; as frentes que ainda têm o termo em inglês (VermilionCity_House1, FuchsiaCity_House2, SSAnne_B1F_Room4) devem usar o mesmo"
   },
   {
    "en": "SILENCE BRIDGE",
@@ -6801,6 +6801,15 @@
    "detectar": true,
    "frente": "B",
    "obs": "placa da Rota 13 (não é seção do mapa)"
+  },
+  {
+   "en": "SEA ROUTE 19",
+   "pt": "Rota 19 (marítima)",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true,
+   "frente": "B",
+   "obs": "placa da Rota 19; \"Rota 19\" fica no texto porque ROUTE 19 está no glossário (18 letras, cabe no limite de lugar)"
   },
   {
    "en": "EXP. SHARE (forma cheia)",

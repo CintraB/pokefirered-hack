@@ -122,7 +122,7 @@ Route15_Text_YazminPostBattle::
 
 Route15_Text_RouteSign::
     .string "Rota 15\n"
-    .string "Ao oeste: Cidade de Fuchsia$"
+    .string "A oeste: Cidade de Fuchsia$"
 
 Route15_Text_MyaIntro::
     .string "MYA: Você é a pessoa certa.\n"

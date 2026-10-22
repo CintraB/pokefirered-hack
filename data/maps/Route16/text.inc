@@ -23,7 +23,7 @@ Route16_Text_LukeIntro::
     .string "Vem brincar, camundongo!$"
 
 Route16_Text_LukeDefeat::
-    .string "Seu ratinho!$"
+    .string "Que pestinha!$"
 
 Route16_Text_LukePostBattle::
     .string "Eu odeio perder!\n"

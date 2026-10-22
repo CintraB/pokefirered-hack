@@ -57,7 +57,7 @@ Route17_Text_ZeekIntro::
     .string "não evolui. Por quê?$"
 
 Route17_Text_ZeekDefeat::
-    .string "Ora, seu!$"
+    .string "Ora essa!$"
 
 Route17_Text_ZeekPostBattle::
     .string "Talvez alguns Pokémon precisem de\n"

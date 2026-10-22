@@ -123,7 +123,7 @@ Route14_Text_MalikPostBattle::
 
 Route14_Text_RouteSign::
     .string "Rota 14\n"
-    .string "Ao oeste: Cidade de Fuchsia$"
+    .string "A oeste: Cidade de Fuchsia$"
 
 Route14_Text_KiriIntro::
     .string "KIRI: JAN, vamos nos esforçar muito,\n"
