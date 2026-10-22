@@ -59,8 +59,8 @@ Os relatórios são arquivos normais do Windows: abra o `relatorio.html` com dup
      EWRAM/IWRAM em 100% ou mais reprovam;
    - **textos do jogo**: caractere fora do charmap, falta de terminador, linha larga demais
      para a caixa, linhas demais, nome longo demais para o buffer, sintaxe; e, para a tradução,
-     códigos de controle diferentes do original, termo fora do glossário e o inglês que sobrou
-     (aviso de progresso);
+     códigos de controle diferentes do original, termo fora do glossário, texto copiado para um
+     buffer fixo menor que ele (regra `buffer`) e o inglês que sobrou (aviso de progresso);
    - **3 roteiros no emulador**: `abertura` (nome, inicial, batalha do rival), `rota1`
      (passos, Rota 1, encomenda do Oak) e `captura` (loja, captura com apelido, Poção, Centro,
      salvar, reiniciar e continuar).
@@ -791,6 +791,52 @@ Página IVs/EVs (Hack 5): mesma janela (222 px, `sWindowTemplates_Ivs`, texto em
 `{SKIP x}`, são montadas para os textos e números mais largos (todos os níveis, avaliações e
 tipos de Hidden Power) e medidas, e uma coluna que encavale na anterior também reprova
 (`check_page_widths` em `test/esteira/ivev_page.py`).
+
+### Buffers de string (regra `buffer`, `test/esteira/buffers.py`)
+
+Texto copiado em tempo de execução para um array de tamanho fixo **trava o jogo** se passar do
+tamanho: `StringCopy` copia até o EOS, sem conferir nada. Casos da rodada 1: "Bolso de itens-chave"
+(20 letras + EOS) no `gStringVar3[20]` pelo `bufferstdstring` da mensagem de item obtido (travava a
+encomenda do Viridian Mart) e "Loja de Celadon Cobertura" (25 + EOS) no `mapName[25]` do aviso de
+mapa. A regra mede **bytes + EOS** (letra acentuada = 1 byte; placeholder = os bytes do charmap)
+contra o tamanho **lido do C** (`u8 gStringVar3[20]`, `u8 mapName[25]`, `#define` resolvidos), em
+cada caminho de cópia, com o arquivo:linha de onde a cópia acontece:
+
+- **scripts**: `bufferstdstring` (a entrada de `gStdStringPtrs`, e a tabela inteira contra o menor
+  `gStringVarN`), `bufferstring`/`vbufferstring`, `bufferitemname`, `bufferitemnameplural` (nome +
+  o sufixo de plural mais comprido) e `buffermovename`, em `data/maps/*/scripts.inc`,
+  `data/scripts/*.inc` e `data/event_scripts.s`; o `STR_VAR_n` dá o buffer (`gStringVar1` 32,
+  `gStringVar2`/`3` 20, `src/string_util.c`);
+- **C automático**: `StringCopy`/`StringCopyN`/`StringCopyPadded`/`StringExpandPlaceholders`/
+  `DynamicPlaceholderTextUtil_ExpandPlaceholders`/`CopyItemName`/`GetMapName*`/`CopyEasyChatWord`
+  com destino num array de tamanho conhecido (global, local da função, campo de struct) e origem
+  traduzível (rótulo de texto, tabela de textos como `gMoveNames[i]`, nome de item ou de lugar);
+- **C declarado** (`DECLARED`): concatenação (texto + texto ou número: nível, HP, ID, "Nº",
+  separadores), destino ponteiro (o código prova qual buffer é) e os caminhos isentos, cada um com
+  o motivo e arquivo:linha. Um teste reprova cópia de texto traduzível que não esteja nem medida
+  nem declarada, e declaração que não case com nenhuma chamada;
+- **aviso de mapa**: um caminho por `map.json` com andar: nome do lugar (o especial da Loja de
+  Celadon) + " " + andar ("B1F") ou `gText_Rooftop2`, em `mapName[25]`.
+
+Quando a função expande os placeholders, cada um mede o pior caso da largura: `{PLAYER}`/`{RIVAL}`
+7 letras, `{STR_VAR_n}`/`{DYNAMIC n}` 10 (ou o `VAR_CONTENTS` do rótulo). Concatenação soma a
+maior alternativa de cada parte. **Critério**: igual ao da largura no pior caso, "sem piorar a
+base": a alternativa (um rótulo) reprova se o total passa do buffer **e** do total do mesmo
+rótulo na base inglesa; rótulo novo não pode passar. Só roda com a base (sem `.git`, não roda;
+base indisponível: aviso `texto/buffer`). O inglês que já estoura fica documentado no relatório
+da T4 e a tradução pode ir até ele. Estouro já mergeado com dono vai para `KNOWN_OVERFLOWS`
+(aviso, não reprova, enquanto o total for o mesmo; corrigido, vira aviso de obsoleto).
+
+**Só esta checagem**, nos textos de uma frente (em `test/`, no WSL):
+
+```bash
+python3 -m esteira.buffers ../data/maps/X/text.inc ../src/strings.c   # caminhos relativos ao repo também valem: src/strings.c
+python3 -m esteira.buffers --todos src/data/items.json                 # todo caminho medido, com bytes/tamanho
+```
+
+Sai com código 1 se houver estouro novo. Para testar um texto antes de gravar, use
+`buffers.with_texts(buffers.repo_context(repo), {(arquivo, rótulo): "texto"})` com
+`buffers.check_buffers(repo, ctx=...)` (modelo em `test/tests/test_buffers.py`).
 
 ## Limitações conhecidas
 

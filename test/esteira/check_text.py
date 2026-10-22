@@ -21,7 +21,9 @@ Regras (nome usado em `excecoes.json`):
   glossario   texto mudado em relação à base com variante proibida ou termo inglês do glossário
               (`esteira/glossario.json`);
   ingles      palavras inglesas (modo `progresso`: um aviso com o total; `bloqueante`: falha
-              por texto; `desligado`).
+              por texto; `desligado`);
+  buffer      texto copiado em tempo de execução para um buffer fixo (gStringVar1/2/3, mapName[25]...)
+              maior que ele, sem piorar a base inglesa (esteira/buffers.py; só roda com a base).
 
 Só devolve problemas (`falha`, ou `aviso` para o inglês em progresso, a base ausente e as
 exceções obsoletas); texto sem problema não gera `Result`.
@@ -359,6 +361,7 @@ RULE_SYNTAX = "sintaxe"
 RULE_CONTROL = "controle"
 RULE_GLOSSARY = "glossario"
 RULE_ENGLISH = "ingles"
+RULE_BUFFER = "buffer"          # esteira/buffers.py: texto copiado para um buffer fixo maior que ele
 RULE_OBSOLETE = "obsoleta"
 
 # Placeholders que viram texto em tempo de execução: medem o maior nome possível, em letras da
@@ -1265,6 +1268,8 @@ class _Scan(NamedTuple):
     raw: list[_Entry]
     base_note: str | None          # motivo de a comparação com a base não ter rodado
     rules: dict[tuple[str, str], list[tuple[Rule, str | None]]]   # janelas de cada texto (e onde é usado)
+    base: "_Base | None" = None    # textos da base inglesa (None: sem .git ou base indisponível)
+    env: "_Env | None" = None
 
 
 _USAGE_SCRIPTS = ("data/event_scripts.s",)
@@ -1379,7 +1384,7 @@ def _scan(root: Path, base: str | None, english: str = "desligado") -> _Scan:
                 problems.append((RULE_ENGLISH, f"texto em inglês ({len(words)} palavras: "
                                  f"{', '.join(dict.fromkeys(words))})", None))
         entries[(entry.file, entry.label)] = (fingerprint(entry.texts), problems)
-    return _Scan(syntax, entries, raw, note, rules_of)
+    return _Scan(syntax, entries, raw, note, rules_of, base_info, env)
 
 
 def _evolution_page_results(root: Path) -> list[Result]:
@@ -1450,6 +1455,13 @@ def check_text(repo: str, exceptions: dict, english: str = ENGLISH_MODE,
         results.append(Result(f"texto/{RULE_WIDTH}", "aviso",
                               f"base inglesa indisponível ({scan.base_note}): a largura no pior caso dos "
                               "placeholders variáveis ({STR_VAR_n}, {B_BUFF*}...) não rodou"))
+        results.append(Result(f"texto/{RULE_BUFFER}", "aviso",
+                              f"base inglesa indisponível ({scan.base_note}): o estouro de buffer de string "
+                              "(esteira/buffers.py) não rodou"))
+    elif scan.base is not None:
+        # estouro de buffer de string (Task T4): só com a base, pelo critério "sem piorar a base"
+        from esteira.buffers import check_buffers
+        results += check_buffers(Path(repo), scan.raw, scan.base, scan.env)
     entries = scan.entries
     frozen = exceptions.get("text", [])
     applied: set[tuple[str, str, str]] = set()  # exceções que de fato calaram um achado
