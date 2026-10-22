@@ -32,6 +32,21 @@ GRUPOS = {
         "CeruleanCity_House3", "CeruleanCity_House4", "CeruleanCity_House5", "CeruleanCity_Mart",
         "CeruleanCity_PokemonCenter_1F", "CinnabarIsland", "CinnabarIsland_Gym",
     ],
+    "A2": [
+        "CinnabarIsland_Mart", "CinnabarIsland_PokemonCenter_1F", "CinnabarIsland_PokemonLab_Entrance",
+        "CinnabarIsland_PokemonLab_ExperimentRoom", "CinnabarIsland_PokemonLab_Lounge",
+        "CinnabarIsland_PokemonLab_ResearchRoom", "DiglettsCave_NorthEntrance",
+        "DiglettsCave_SouthEntrance", "FiveIsland", "FiveIsland_House1", "FiveIsland_House2",
+        "FiveIsland_LostCave_Room1", "FiveIsland_LostCave_Room10", "FiveIsland_LostCave_Room4",
+        "FiveIsland_Meadow", "FiveIsland_MemorialPillar", "FiveIsland_PokemonCenter_1F",
+        "FiveIsland_ResortGorgeous", "FiveIsland_ResortGorgeous_House", "FiveIsland_RocketWarehouse",
+        "FiveIsland_WaterLabyrinth", "FourIsland", "FourIsland_House1", "FourIsland_IcefallCave_Back",
+        "FourIsland_LoreleisHouse", "FourIsland_Mart", "FourIsland_PokemonCenter_1F", "FuchsiaCity",
+        "FuchsiaCity_Gym", "FuchsiaCity_House1", "FuchsiaCity_House2", "FuchsiaCity_House3",
+        "FuchsiaCity_Mart", "FuchsiaCity_PokemonCenter_1F", "FuchsiaCity_SafariZone_Entrance",
+        "FuchsiaCity_SafariZone_Office", "FuchsiaCity_WardensHouse", "IndigoPlateau_PokemonCenter_1F",
+        "LavenderTown",
+    ],
 }
 FILES = [f"data/maps/{m}/text.inc" for maps in GRUPOS.values() for m in maps]
 
@@ -125,15 +140,25 @@ PLAYER_GENDERED = ("Fique quieto", "muito bruto", "parceiro,", "ocupado demais",
                    "Seja bem-vindo", "Bem-vindo",
                    # padrões que escaparam na C1 + o Treinador referido ao jogador
                    "você é bom", "ganancioso", "campeão em formação", "tão bruto", "ser discreto",
-                   "habilidade como", "ser um Treinador")
+                   "habilidade como", "ser um Treinador",
+                   # A2: adjetivos/particípios dirigidos ao jogador
+                   "frustrado", "jovem amigo", "esmagado", "Você é pesado", "criança Treinadora")
 WRONG_FORMS = ("Esconderijo da Equipe Rocket", "Porto de Vermilion",
                # decisões do Cintra de 20/10: forma cheia em fala; títulos de jogo no original
                "Superrepel.", "Cura Queimad.", "Vale Bicicl.", "Guarda Esp.", "Expl. Sônica", "Rajada Fogo",
-               "Esmaga Pedra", "Atq. Esp.", "Def. Esp.", "Vermelho e Verde")
+               "Esmaga Pedra", "Atq. Esp.", "Def. Esp.", "Vermelho e Verde",
+               # A2: forma cheia de golpe em fala; nomes do glossário
+               "Raio Congel.", "P. Corporal", "Zona do Safári", "Safari Zone")
 NAMES_NOT_SPLIT = ("Equipe Rocket", "GAME FREAK", "Loja de Celadon", "Pó de Fruta", "Canto Direto",
                    "Sistema de Armazenamento de Pokémon", "Centro Pokémon", "Loja de Bicicletas",
                    "Cura Queimadura", "Vale Bicicleta", "Guarda Especial", "Explosão Sônica", "Rajada de Fogo",
-                   "Esmagamento de Pedras", "Ataque Especial", "Defesa Especial", "Red e Green")
+                   "Esmagamento de Pedras", "Ataque Especial", "Defesa Especial", "Red e Green",
+                   # A2: golpe em forma cheia, títulos e nomes que não estão (ou estão sem flexão) no glossário
+                   "Pancada Corporal", "Raio Congelante", "Sr. Fuji", "Dr. Fuji", "Máquina de Ressurreição",
+                   "Ovo de Pokémon", "Ovos de Pokémon", "Pokédex Nacional", "Elite Quatro", "Liga Pokémon",
+                   "Srta. Selphy", "Chefe Giovanni", "Casa Pokémon Voluntária",
+                   # termo criado pela frente B (registrado no glossário dela; aqui só para a quebra)
+                   "Mestre da Pesca")
 
 
 def _flat(rel):
@@ -220,3 +245,19 @@ def test_ha_texto_com_placeholder_variavel_no_grupo():
     """Garante que a checagem acima tem o que medir (se um dia não houver, o teste avisa)."""
     n = sum(bool(VARIABLE_PLACEHOLDER.search((REPO_ROOT / rel).read_text(encoding="utf-8"))) for rel in FILES)
     assert n >= 1
+
+
+# Buffers (gStringVar1/2/3: 20 bytes, 19 letras): nomes de item que os scripts do grupo copiam com
+# bufferitemname (fósseis do laboratório de Cinnabar) têm de caber no campo do item (13 letras).
+def test_nomes_de_item_bufferizados_pelos_scripts_do_grupo_cabem():
+    items = {i["itemId"]: i["english"]
+             for i in json.loads((REPO_ROOT / "src/data/items.json").read_text(encoding="utf-8"))["items"]}
+    found = []
+    for rel in FILES:
+        scripts = (REPO_ROOT / rel).with_name("scripts.inc")
+        if not scripts.exists():
+            continue
+        for item in re.findall(r"bufferitemname\s+STR_VAR_\d,\s*(ITEM_\w+)", scripts.read_text(encoding="utf-8")):
+            found.append(item)
+            assert len(items[item]) <= 13, (item, items[item])
+    assert "ITEM_HELIX_FOSSIL" in found and "ITEM_OLD_AMBER" in found
