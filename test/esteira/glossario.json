@@ -6785,6 +6785,33 @@
    "obs": "forma cheia de Chave Elevad. (LIFT KEY), usada em fala"
   },
   {
+   "en": "FISHING GURU",
+   "pt": "Mestre da Pesca",
+   "fonte": "criado",
+   "categoria": "personagem",
+   "detectar": true,
+   "frente": "B",
+   "obs": "o Guru da Pesca de Vermilion e o irmão dele na Rota 12 (a frente A, VermilionCity_House1, deve usar o mesmo)"
+  },
+  {
+   "en": "SILENCE BRIDGE",
+   "pt": "Ponte do Silêncio",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true,
+   "frente": "B",
+   "obs": "placa da Rota 13 (não é seção do mapa)"
+  },
+  {
+   "en": "EXP. SHARE (forma cheia)",
+   "pt": "Compartilhador de Exp.",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": false,
+   "frente": "B",
+   "obs": "forma cheia de Compart. Exp. (EXP. SHARE), usada em fala"
+  },
+  {
    "en": "TWINEEDLE",
    "pt": "Agulha Dupla",
    "fonte": "GO+TCG",
