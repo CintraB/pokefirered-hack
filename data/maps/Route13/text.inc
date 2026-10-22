@@ -73,7 +73,7 @@ Route13_Text_LolaIntro::
 
 Route13_Text_LolaDefeat::
     .string "Ai!\n"
-    .string "Sua pestinha!$"
+    .string "Que pestinha!$"
 
 Route13_Text_LolaPostBattle::
     .string "Será que Pokémon macho é mais forte\n"

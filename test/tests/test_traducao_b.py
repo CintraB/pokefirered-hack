@@ -182,11 +182,11 @@ WRONG_FORMS = ("inches", "polegadas", "Equipe Rocket Manda", "Detector Item", "R
 # insulto/vocativo "seu"/"sua" + substantivo ou nada, sem falso positivo em "seu Pokémon", "seu estilo" etc.
 PLAYER_INSULT = re.compile(r"(?:^|[ ,.!?…])[Ss]eu (?:ratinho|bobinho|danadinho|safadinho|bobo|chato|tolo|idiota|louco|burro|"
                            r"pestinha|moleque|fedelho|covarde|bruto|paspalho)\b|Ora, seu[!,.]|"
-                           r"(?:^|[ ,.!?…])[Ss]ua (?:bobinha|tola|chata|idiota|louca|burra|covarde)\b")
+                           r"(?:^|[ ,.!?…])[Ss]ua (?:pestinha|ratinha|bobinha|danadinha|safadinha|bruta|moleca|fedelha|paspalha|tola|chata|idiota|louca|burra|covarde)\b")
 
 
 def test_b2_padrao_de_insulto_pega_os_casos_conhecidos():
-    for bad in ("Seu ratinho!", "Ora, seu!", "Você, seu bobo!", "Sua tola!"):
+    for bad in ("Seu ratinho!", "Ora, seu!", "Você, seu bobo!", "Sua tola!", "Sua pestinha!", "Ai! Sua ratinha!"):
         assert PLAYER_INSULT.search(bad), bad
     for ok in ("Seu Pokémon é forte.", "Gostei do seu estilo.", "Que pestinha!", "Se a sua Pokédex tiver dados"):
         assert not PLAYER_INSULT.search(ok), ok
