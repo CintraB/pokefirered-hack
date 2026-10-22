@@ -32,7 +32,7 @@ LavenderTown_Text_SilphScopeNotice::
     .string "Silph Co.$"
 
 LavenderTown_Text_VolunteerPokemonHouse::
-    .string "Casa Pokémon Voluntária\n"
+    .string "Casa de Voluntários Pokémon\n"
     .string "de Lavender$"
 
 LavenderTown_Text_PokemonTowerSign::

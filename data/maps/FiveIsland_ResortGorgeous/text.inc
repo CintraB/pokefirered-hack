@@ -17,7 +17,7 @@ FiveIsland_ResortGorgeous_Text_CelinaIntro::
 
 FiveIsland_ResortGorgeous_Text_CelinaDefeat::
     .string "Esta derrota…\n"
-    .string "Sinto que estou ficando em branco…$"
+    .string "Me deu um branco…$"
 
 FiveIsland_ResortGorgeous_Text_CelinaPostBattle::
     .string "Gillian?\n"
@@ -26,11 +26,11 @@ FiveIsland_ResortGorgeous_Text_CelinaPostBattle::
 
 FiveIsland_ResortGorgeous_Text_RaynaIntro::
     .string "Hmm…\n"
-    .string "O ângulo, não está bem certo…$"
+    .string "O ângulo… não está bem certo…$"
 
 FiveIsland_ResortGorgeous_Text_RaynaDefeat::
     .string "Ah…\n"
-    .string "Meus sentimentos, estão azuis…$"
+    .string "Meus sentimentos… estão cinzentos…$"
 
 FiveIsland_ResortGorgeous_Text_RaynaPostBattle::
     .string "O céu e o mar…\n"

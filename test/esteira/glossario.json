@@ -10207,6 +10207,15 @@
    "detectar": true,
    "frente": "A2",
    "obs": "placa da casa do Diretor da Zona de Safári (Fuchsia)"
+  },
+  {
+   "en": "LAVENDER VOLUNTEER POKéMON HOUSE",
+   "pt": "Casa de Voluntários Pokémon",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true,
+   "frente": "A2",
+   "obs": "placa em Lavender (2 linhas, com \"de Lavender\" na 2ª); não é nome de seção do mapa, então o limite do aviso não se aplica; para reavaliar"
   }
  ],
  "proibidos": [

@@ -156,7 +156,7 @@ NAMES_NOT_SPLIT = ("Equipe Rocket", "GAME FREAK", "Loja de Celadon", "Pó de Fru
                    # A2: golpe em forma cheia, títulos e nomes que não estão (ou estão sem flexão) no glossário
                    "Pancada Corporal", "Raio Congelante", "Sr. Fuji", "Dr. Fuji", "Máquina de Ressurreição",
                    "Ovo de Pokémon", "Ovos de Pokémon", "Pokédex Nacional", "Elite Quatro", "Liga Pokémon",
-                   "Srta. Selphy", "Chefe Giovanni", "Casa Pokémon Voluntária",
+                   "Srta. Selphy", "Chefe Giovanni", "Casa de Voluntários Pokémon",
                    # termo criado pela frente B (registrado no glossário dela; aqui só para a quebra)
                    "Mestre da Pesca")
 
@@ -261,3 +261,34 @@ def test_nomes_de_item_bufferizados_pelos_scripts_do_grupo_cabem():
             found.append(item)
             assert len(items[item]) <= 13, (item, items[item])
     assert "ITEM_HELIX_FOSSIL" in found and "ITEM_OLD_AMBER" in found
+
+
+# Gênero do jogador, padrão genérico (fix da A2): "você" (ou {PLAYER}) + verbo de ligação + adjetivo/particípio
+# masculino (-o, -ado, -ido, -oso, -udo), como "Você ser rápido" ou "você está pronto". A lista exata
+# `PLAYER_GENDERED` só serve contra regressão; esta pega o que ainda não foi visto. Gerúndio (-ndo) não conta.
+_COPULA = r"(?:é|está|estava|era|foi|ser|estar|ficar|fica|ficou|parece|estiver|for|seja)"
+_INTENS = r"(?:(?:muito|bem|tão|mais|menos|meio|bastante|realmente|sempre)\s+)?"
+GENDERED_ADJ = re.compile(
+    rf"\b(?:[Vv]ocê|{{PLAYER}})\s+(?:não\s+)?{_COPULA}\s+{_INTENS}(?!\w*ndo\b)(\w+(?:o|ado|ido|oso|udo))\b")
+# palavra terminada em -o que segue "você é/está/..." sem marcar o gênero do jogador (palavra -> motivo)
+GENDERED_ADJ_OK: dict[str, str] = {}
+
+
+def _sentences(rel):
+    body = _flat(rel)
+    body = re.sub(r"\{[^}]*\}", lambda m: "{PLAYER}" if m.group(0) == "{PLAYER}" else " ", body)
+    return re.sub(r"\[nlp]", " ", body)
+
+
+@pytest.mark.parametrize("rel", FILES)
+def test_nenhum_adjetivo_masculino_dirigido_ao_jogador(rel):
+    text = _sentences(rel)
+    found = [m.group(0) for m in GENDERED_ADJ.finditer(text) if m.group(1) not in GENDERED_ADJ_OK]
+    assert found == [], rel
+
+
+def test_padrao_de_genero_pega_o_caso_da_a2():
+    """Mutação: o 'Você ser rápido' que passou pela A2 tem de ser achado."""
+    assert GENDERED_ADJ.search("Então! Você ser rápido e me dar isso!")
+    assert GENDERED_ADJ.search("Você está pronto?")
+    assert not GENDERED_ADJ.search("Você está fazendo algo e você andar logo")

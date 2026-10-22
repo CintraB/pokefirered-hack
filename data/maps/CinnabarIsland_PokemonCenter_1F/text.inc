@@ -5,8 +5,8 @@ CinnabarIsland_PokemonCenter_1F_Text_CinnabarGymLocked::
     .string "em algum lugar.\p"
     .string "Será que está naquela mansão\n"
     .string "incendiada?\p"
-    .string "Dizem que o amigo do Líder do\n"
-    .string "Ginásio morava lá.$"
+    .string "Dizem que lá morava um amigo\n"
+    .string "do Líder do Ginásio.$"
 
 CinnabarIsland_PokemonCenter_1F_Text_VisitUnionRoom::
     .string "Você tem muitos amigos?\p"

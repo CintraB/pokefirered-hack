@@ -48,8 +48,8 @@ FourIsland_IcefallCave_Back_Text_NotTellingYouThat::
 FourIsland_IcefallCave_Back_Text_LoreleiWellDeepFreezeYou::
     .string "Lorelei: Se não confessarem,\n"
     .string "vamos congelar vocês.\p"
-    .string "A minha Lapras está furiosa com o\n"
-    .string "que fizeram com os amigos dela.\p"
+    .string "O meu Lapras está furioso com o\n"
+    .string "que fizeram com os amigos dele.\p"
     .string "Vai, Lapras!\n"
     .string "Raio Congelante…$"
 

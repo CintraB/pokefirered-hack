@@ -64,7 +64,7 @@ CinnabarIsland_PokemonLab_ExperimentRoom_Text_ThatFossilIsOfMonMakeItLiveAgain::
 @ TODO: Resolve text dump error below?
 CinnabarIsland_PokemonLab_ExperimentRoom_Text_HandedFossilToWeirdDoctor::
     .string "Então!\n"
-    .string "Você ser rápido e me dar isso!\p"
+    .string "Você andar logo e me dar isso!\p"
     .string "{FONT_NORMAL}{PLAYER} entregou {STR_VAR_2}\n"
     .string "ao doutor esquisito.$"
 

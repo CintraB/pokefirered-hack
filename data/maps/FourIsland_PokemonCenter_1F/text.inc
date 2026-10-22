@@ -1,6 +1,6 @@
 @ The 5 texts below are supposed to be in FourIsland_House1
 Text_BodySlamTeach::
-    .string "Pronto?\n"
+    .string "Lá vai!\n"
     .string "Boing!\p"
     .string "Estamos numa disputa de\n"
     .string "Pancada Corporal para ver quem\l"
