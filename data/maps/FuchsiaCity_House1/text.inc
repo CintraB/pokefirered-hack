@@ -1,17 +1,18 @@
 FuchsiaCity_House1_Text_WardenIsOldHasFalseTeeth::
-    .string "The SAFARI ZONE's WARDEN is old, \n"
-    .string "but he's still very much active.\p"
-    .string "All his teeth are false, though.$"
+    .string "O Diretor da Zona de Safári é idoso,\n"
+    .string "mas continua muito ativo.\p"
+    .string "Só que todos os dentes dele são\n"
+    .string "postiços.$"
 
 FuchsiaCity_House1_Text_BillIsMyGrandson::
     .string "Hmm?\n"
-    .string "You've met BILL?\p"
-    .string "He's my grandson!\p"
-    .string "He always liked collecting things,\n"
-    .string "even as a child!$"
+    .string "Você conheceu o Bill?\p"
+    .string "Ele é meu neto!\p"
+    .string "Ele sempre gostou de colecionar\n"
+    .string "coisas, até quando era criança!$"
 
 FuchsiaCity_House1_Text_BillFilesHisOwnMonData::
-    .string "BILL files his own POKéMON data on\n"
-    .string "his PC.\p"
-    .string "Did he show you?$"
+    .string "O Bill guarda os próprios dados de\n"
+    .string "Pokémon no PC dele.\p"
+    .string "Ele mostrou para você?$"
 

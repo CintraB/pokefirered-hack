@@ -1,36 +1,37 @@
 Text_MetronomeTeach::
     .string "Tch-tch-tch!\n"
-    .string "I'll teach you a nifty move.\p"
-    .string "Teach it to a POKéMON, and watch\n"
-    .string "the fun unfold!\p"
-    .string "It's a move called METRONOME.\n"
-    .string "Does it strike your fancy?$"
+    .string "Vou ensinar um golpe bacana.\p"
+    .string "Ensine a um Pokémon e veja a\n"
+    .string "diversão começar!\p"
+    .string "É um golpe chamado Metrônomo.\n"
+    .string "O que acha, gostou?$"
 
 Text_MetronomeDeclined::
-    .string "I tell you, it's a lot of fun!$"
+    .string "Eu garanto, é muito divertido!$"
 
 Text_MetronomeWhichMon::
-    .string "Okay!\n"
-    .string "Which POKéMON should I teach?$"
+    .string "Beleza!\n"
+    .string "A qual Pokémon devo ensinar?$"
 
 Text_MetronomeTaught::
     .string "Tch-tch-tch!\n"
-    .string "That's the sound of a METRONOME.\p"
-    .string "It tweaks your POKéMON's brain into\n"
-    .string "using moves it doesn't even know.$"
+    .string "Esse é o som de um metrônomo.\p"
+    .string "Ele mexe com o cérebro do seu\n"
+    .string "Pokémon para usar golpes que ele\l"
+    .string "nem conhece.$"
 
 CinnabarIsland_PokemonLab_ExperimentRoom_Text_HaveYouAFossilForMe::
-    .string "Hiya!\p"
-    .string "I am important doctor.\n"
-    .string "Yes, very much so, indeed.\p"
-    .string "Here, I study rare POKéMON fossils.\n"
-    .string "All the time, I study.\p"
-    .string "You!\n"
-    .string "Have you a fossil for me?$"
+    .string "Oi-oi!\p"
+    .string "Eu ser doutor importante.\n"
+    .string "Sim, muito mesmo, sim.\p"
+    .string "Aqui eu estudar fósseis raros de\n"
+    .string "Pokémon. O tempo todo, estudar.\p"
+    .string "Você!\n"
+    .string "Ter fóssil para mim?$"
 
 CinnabarIsland_PokemonLab_ExperimentRoom_Text_NoIsTooBad::
-    .string "No!\n"
-    .string "Is too bad!$"
+    .string "Não!\n"
+    .string "Ser muito ruim!$"
 
 @ Unused
 CinnabarIsland_PokemonLab_ExperimentRoom_Text_TakesTimeGoForWalkJP::
@@ -39,14 +40,14 @@ CinnabarIsland_PokemonLab_ExperimentRoom_Text_TakesTimeGoForWalkJP::
     .string "ブラブラ　してくると　よろしー！$"
 
 CinnabarIsland_PokemonLab_ExperimentRoom_Text_FossilMonBackToLife::
-    .string "You late.\n"
-    .string "Where were you?\p"
-    .string "Your fossil is back to life!\n"
-    .string "It was {STR_VAR_1} like I think!$"
+    .string "Você atrasar.\n"
+    .string "Onde estar?\p"
+    .string "Seu fóssil voltar à vida!\n"
+    .string "Ser {STR_VAR_1}, como eu pensar!$"
 
 CinnabarIsland_PokemonLab_ExperimentRoom_Text_ReceivedMonFromDoctor::
-    .string "{PLAYER} received the {STR_VAR_1}\n"
-    .string "from the doctor.$"
+    .string "{PLAYER} recebeu {STR_VAR_1}\n"
+    .string "do doutor.$"
 
 @ Unused
 CinnabarIsland_PokemonLab_ExperimentRoom_Text_NoRoomForPokemon::
@@ -54,24 +55,24 @@ CinnabarIsland_PokemonLab_ExperimentRoom_Text_NoRoomForPokemon::
 
 CinnabarIsland_PokemonLab_ExperimentRoom_Text_ThatFossilIsOfMonMakeItLiveAgain::
     .string "Oh!\n"
-    .string "That is {STR_VAR_2}, it is!\p"
-    .string "It is fossil of {STR_VAR_1},\n"
-    .string "a POKéMON that is already extinct!\p"
-    .string "My Resurrection Machine will make\n"
-    .string "that POKéMON live again!$"
+    .string "Isso ser {STR_VAR_2}, sim!\p"
+    .string "Ser fóssil de {STR_VAR_1},\n"
+    .string "Pokémon que já ser extinto!\p"
+    .string "Minha Máquina de Ressurreição fazer\n"
+    .string "esse Pokémon viver de novo!$"
 
 @ TODO: Resolve text dump error below?
 CinnabarIsland_PokemonLab_ExperimentRoom_Text_HandedFossilToWeirdDoctor::
-    .string "So!\n"
-    .string "You hurry and give me that!\p"
-    .string "{FONT_NORMAL}{PLAYER} handed over the\n"
-    .string "{STR_VAR_2} to the weird doctor.$"
+    .string "Então!\n"
+    .string "Você andar logo e me dar isso!\p"
+    .string "{FONT_NORMAL}{PLAYER} entregou {STR_VAR_2}\n"
+    .string "ao doutor esquisito.$"
 
 CinnabarIsland_PokemonLab_ExperimentRoom_Text_TakesTimeGoForWalk::
-    .string "I take a little time!\n"
-    .string "You go for walk a little while!$"
+    .string "Eu levar um tempinho!\n"
+    .string "Você ir passear um pouquinho!$"
 
 CinnabarIsland_PokemonLab_ExperimentRoom_Text_YouComeAgain::
     .string "Aiyah!\n"
-    .string "You come again!$"
+    .string "Você voltar de novo!$"
 

@@ -1,35 +1,36 @@
 FuchsiaCity_House3_Text_WouldYouLikeToForgetMove::
-    .string "Uh…\n"
-    .string "Oh, yes, I'm the MOVE DELETER.\p"
-    .string "I can make POKéMON forget their\n"
-    .string "moves.\p"
-    .string "Would you like me to do that?$"
+    .string "Hã…\n"
+    .string "Ah, sim, eu sou o\n"
+    .string "Apagador de Golpes.\p"
+    .string "Posso fazer um Pokémon esquecer\n"
+    .string "os golpes dele.\p"
+    .string "Quer que eu faça isso?$"
 
 FuchsiaCity_House3_Text_WhichMonShouldForgetMove::
-    .string "Which POKéMON should forget a\n"
-    .string "move?$"
+    .string "Qual Pokémon deve esquecer um\n"
+    .string "golpe?$"
 
 FuchsiaCity_House3_Text_WhichMoveShouldBeForgotten::
-    .string "Which move should be forgotten?$"
+    .string "Qual golpe deve ser esquecido?$"
 
 FuchsiaCity_House3_Text_MonOnlyKnowsOneMove::
-    .string "{STR_VAR_1} seems to know only one\n"
-    .string "move…$"
+    .string "{STR_VAR_1} parece conhecer só um\n"
+    .string "golpe…$"
 
 FuchsiaCity_House3_Text_MonsMoveShouldBeForgotten::
-    .string "Hm! {STR_VAR_1}'s {STR_VAR_2}?\n"
-    .string "That move should be forgotten?$"
+    .string "Hm! {STR_VAR_2} de {STR_VAR_1}?\n"
+    .string "Esse golpe deve ser esquecido?$"
 
 FuchsiaCity_House3_Text_MonHasForgottenMoveCompletely::
-    .string "It worked to perfection!\p"
-    .string "{STR_VAR_1} has forgotten\n"
-    .string "{STR_VAR_2} completely.$"
+    .string "Funcionou à perfeição!\p"
+    .string "{STR_VAR_1} esqueceu\n"
+    .string "{STR_VAR_2} por completo.$"
 
 FuchsiaCity_House3_Text_ComeAgainToForgetOtherMoves::
-    .string "Come again if there are other\n"
-    .string "moves to be forgotten.$"
+    .string "Volte se houver outros golpes\n"
+    .string "para esquecer.$"
 
 FuchsiaCity_House3_Text_NoEggShouldKnowMoves::
-    .string "What?\n"
-    .string "No EGG should know any moves.$"
+    .string "O quê?\n"
+    .string "Nenhum Ovo deveria conhecer golpes.$"
 
