@@ -155,14 +155,20 @@ def test_ajuda_perguntas_e_titulos_em_uma_linha_de_200_px():
 
 
 @lru_cache(maxsize=1)
-def _base_entries() -> dict:
-    """Rótulo -> textos da ajuda na base inglesa (git show do commit base da tradução)."""
-    kind = dict(ct._source_files(REPO_ROOT))[HELP_FILE]
+def _base_text() -> str | None:
+    """A ajuda na base inglesa (git show do commit base da tradução); None se a base não existe."""
     out = subprocess.run(["git", "-C", str(REPO_ROOT), "show", f"{ct.TRANSLATION_BASE}:{HELP_FILE}"],
                          capture_output=True)
-    assert out.returncode == 0, "base inglesa indisponível: git show da ajuda falhou"
-    return {e.label: e.texts for e in ct._extract(HELP_FILE, kind, out.stdout.decode("utf-8"))
-            if isinstance(e, ct._Entry)}
+    return out.stdout.decode("utf-8") if out.returncode == 0 else None
+
+
+@lru_cache(maxsize=1)
+def _base_entries() -> dict:
+    """Rótulo -> textos da ajuda na base inglesa."""
+    base = _base_text()
+    assert base is not None, "base inglesa indisponível: git show da ajuda falhou"
+    kind = dict(ct._source_files(REPO_ROOT))[HELP_FILE]
+    return {e.label: e.texts for e in ct._extract(HELP_FILE, kind, base) if isinstance(e, ct._Entry)}
 
 
 def test_ajuda_inteira_nenhum_rotulo_identico_ao_ingles():
@@ -179,28 +185,17 @@ def test_ajuda_inteira_nenhum_rotulo_identico_ao_ingles():
     assert [label for label in SAME_AS_ENGLISH if base[label] != by_label[label].texts] == []
 
 
-@lru_cache(maxsize=1)
-def _base_labels() -> list[str] | None:
-    out = subprocess.run(["git", "-C", str(REPO_ROOT), "show", f"{ct.TRANSLATION_BASE}:{HELP_FILE}"],
-                         capture_output=True)
-    if out.returncode != 0:
-        return None
-    return _LABEL.findall(out.stdout.decode("utf-8"))
-
-
 def test_rotulos_da_ajuda_iguais_aos_da_base():
-    base = _base_labels()
+    base = _base_text()
     if base is None:
         pytest.skip("sem o commit base da tradução")
-    assert _LABEL.findall((REPO_ROOT / HELP_FILE).read_text(encoding="utf-8")) == base
+    assert _LABEL.findall((REPO_ROOT / HELP_FILE).read_text(encoding="utf-8")) == _LABEL.findall(base)
 
 
 def test_fim_de_arquivo_da_ajuda_igual_ao_da_base():
-    out = subprocess.run(["git", "-C", str(REPO_ROOT), "show", f"{ct.TRANSLATION_BASE}:{HELP_FILE}"],
-                         capture_output=True)
-    if out.returncode != 0:
+    base = _base_text()
+    if base is None:
         pytest.skip("sem o commit base da tradução")
-    base = out.stdout.decode("utf-8")
     now = (REPO_ROOT / HELP_FILE).read_text(encoding="utf-8")
     assert len(now) - len(now.rstrip("\n")) == len(base) - len(base.rstrip("\n"))
 
@@ -346,14 +341,18 @@ def test_rotulos_de_batalha_da_ajuda_seguem_o_glossario():
 
 
 def test_rotulos_de_batalha_batem_com_battle_message_quando_traduzido():
+    """Cada menu (batalha e Safári) é conferido assim que for traduzido; skip só enquanto os dois estão em inglês."""
     source = (REPO_ROOT / "src/battle_message.c").read_text(encoding="utf-8")
     menu = re.search(r'gText_BattleMenu\[\]\s*=\s*_\("((?:[^"\\]|\\.)*)"\)', source).group(1)
     safari = re.search(r'gText_SafariZoneMenu\[\]\s*=\s*_\("((?:[^"\\]|\\.)*)"\)', source).group(1)
-    if "FIGHT" in menu or "BAIT" in safari:
+    menu_pending, safari_pending = "FIGHT" in menu, "BAIT" in safari
+    if menu_pending and safari_pending:
         pytest.skip("battle_message.c ainda em inglês na base (frente da batalha): rótulos do glossário")
-    assert "Lutar" in menu and "Fugir" in menu and "Fugir" in safari
-    for label in ("Bola", "Isca", "Pedra"):
-        assert label in safari
+    if not menu_pending:
+        assert "Lutar" in menu and "Fugir" in menu
+    if not safari_pending:
+        for label in ("Bola", "Isca", "Pedra", "Fugir"):
+            assert label in safari
 
 
 def test_ajuda_nao_usa_rotulos_antigos():
@@ -366,16 +365,12 @@ def test_ajuda_nao_usa_rotulos_antigos():
 # ---- regras de 20/10: jogador sem gênero, nomes não partidos, placeholders a 10 letras ------------
 
 PLAYER_GENDERED = ("Bem-vindo", "Bem-vinda", "obrigado", "obrigada", "sozinho", "sozinha", "pronto,", "avisado",
-                   "ocupado", "cansado", "protagonista", "Fique quieto")
+                   "ocupado", "cansado", "protagonista", "personagem principal", "Fique quieto")
 WRONG_FORMS = ("Atq.Esp.", "Def.Esp.", "Entrar", "Vermelho e Verde")
 
 
-def _flat_raw() -> str:
-    return _help_text()
-
-
 def test_ajuda_sem_genero_do_jogador_e_formas_erradas():
-    body = _flat_raw()
+    body = _help_text()
     for bad in PLAYER_GENDERED + WRONG_FORMS:
         assert bad not in body, bad
 
@@ -398,7 +393,7 @@ def _multiword_terms() -> list[str]:
 
 
 def test_nomes_nao_sao_partidos_na_quebra_da_ajuda():
-    body = _flat_raw()
+    body = _help_text()
     found = []
     for name in _multiword_terms():
         for i, ch in enumerate(name):

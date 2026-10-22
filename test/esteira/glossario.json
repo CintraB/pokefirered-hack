@@ -10011,6 +10011,24 @@
    "obs": "gText_NextDataCancel (Pokédex, src/strings.c); citado na ajuda do Pokédex"
   },
   {
+   "en": "PLAY TIME",
+   "pt": "Tempo de jogo",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "frente": "D",
+   "obs": "forma cheia de Tempo (Cartão de Treinador, gText_TrainerCardTime); tópico da ajuda"
+  },
+  {
+   "en": "Super effective! (legenda)",
+   "pt": "Supereficaz!",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "frente": "D",
+   "obs": "forma curta de É supereficaz! na legenda da tabela de tipos da ajuda"
+  },
+  {
    "en": "WIRELESS COMMUNICATION",
    "pt": "Comunicação Sem Fio",
    "fonte": "criado",

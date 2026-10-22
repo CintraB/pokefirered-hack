@@ -185,7 +185,7 @@ Help_Text_WhatIsAGym::
 	.string "O que é um Ginásio?$"
 
 Help_Text_AnswerPlayingForFirstTime::
-	.string "Você vira o personagem principal e\n"
+	.string "Você assume o papel principal e\n"
 	.string "explora o mundo dos Pokémon.\n"
 	.string "Conversando com as pessoas e\n"
 	.string "resolvendo mistérios, novos caminhos se\n"
@@ -843,11 +843,10 @@ Help_Text_HowToUsePC::
 Help_Text_HowToUseBillsPC::
 	.string "{CIRCLE_1} Escolha “{STR_VAR_1}” no PC.\n"
 	.string "{CIRCLE_2} Escolha um dos três primeiros itens\n"
-	.string "   do menu para acessar o\n"
-	.string "Sistema de Armazenamento de Pokémon.\n"
+	.string "   do menu para acessar as Caixas.\n"
 	.string "Se capturar um Pokémon com seis na\n"
 	.string "equipe, ele vai direto para uma Caixa\n"
-	.string "do Sistema!$"
+	.string "do PC!$"
 
 Help_Text_HowToUseWithdraw::
 	.string "{CIRCLE_1} Escolha um Pokémon na Caixa aberta\n"
@@ -1468,7 +1467,7 @@ Help_Text_DefineEvolution::
 Help_Text_DefineStatusProblem::
 	.string "Problemas de status:\n"
 	.string "Sono: impede o uso de golpes.\n"
-	.string "Veneno: causa perda constante de PS.\n"
+	.string "Envenenamento: perda constante de PS.\n"
 	.string "Paralisia: pode impedir golpes.\n"
 	.string "Queimadura: perde PS e reduz o Ataque.\n"
 	.string "Congelamento: impede o uso de golpes.\n"
@@ -1528,10 +1527,10 @@ Help_Text_DescTheHelpSystem::
 	.string "seu progresso no jogo. Elas foram\n"
 	.string "feitas para apoiar você quando\n"
 	.string "precisar. Se houver algo que você não\n"
-	.string "entende, consulte o sistema de Ajuda!$"
+	.string "entenda, consulte o sistema de Ajuda!$"
 
 Help_Text_DescTheGame::
-	.string "Você vira o personagem principal e\n"
+	.string "Você assume o papel principal e\n"
 	.string "explora o mundo dos Pokémon!\n"
 	.string "Conversando com as pessoas e\n"
 	.string "resolvendo mistérios, novos caminhos se\n"
