@@ -1,87 +1,92 @@
 Route21_South_Text_JackIntro::
-	.string "I caught my POKéMON at sea.$"
+	.string "Capturei meus Pokémon no mar.$"
 
 Route21_South_Text_JackDefeat::
-	.string "Diver!!\n"
-	.string "Down!!$"
+	.string "Mergulho!!\n"
+	.string "Fui ao fundo!!$"
 
 Route21_South_Text_JackPostBattle::
-	.string "Where'd you catch your POKéMON?$"
+	.string "Onde você capturou seus Pokémon?$"
 
 Route21_South_Text_JeromeIntro::
-	.string "Right now, I'm in a triathlon meet.$"
+	.string "Agora estou numa competição de\n"
+	.string "triatlo.$"
 
 Route21_South_Text_JeromeDefeat::
-	.string "Pant…\n"
-	.string "Pant… Pant…$"
+	.string "Ufa…\n"
+	.string "Ufa… Ufa…$"
 
 Route21_South_Text_JeromePostBattle::
-	.string "I'm beat! But, I still have the\n"
-	.string "bike race and marathon left!$"
+	.string "Estou exausto! Mas ainda faltam a\n"
+	.string "corrida de bicicleta e a maratona!$"
 
 Route21_South_Text_RolandIntro::
 	.string "Ahh!\n"
-	.string "Feel the sun and the wind!$"
+	.string "Sinta o sol e o vento!$"
 
 Route21_South_Text_RolandDefeat::
-	.string "Yow!\n"
-	.string "I lost!$"
+	.string "Ai!\n"
+	.string "Perdi!$"
 
 Route21_South_Text_RolandPostBattle::
-	.string "I'm sunburnt to a crisp!$"
+	.string "Estou queimado de sol, torrado!$"
 
 Route21_South_Text_ClaudeIntro::
-	.string "Hey, don't scare away the fish!$"
+	.string "Ei, não espante os peixes!$"
 
 Route21_South_Text_ClaudeDefeat::
-	.string "Sorry! I'm just so frustrated from\n"
-	.string "not catching anything.$"
+	.string "Desculpe! Estou muito frustrado por\n"
+	.string "não pescar nada.$"
 
 Route21_South_Text_ClaudePostBattle::
-	.string "Sheesh, I haven't caught a thing.\n"
-	.string "Could this place actually be a\l"
-	.string "giant pool or something?$"
+	.string "Nossa, não peguei nada.\n"
+	.string "Será que este lugar é uma piscina\l"
+	.string "gigante ou algo assim?$"
 
 Route21_South_Text_NolanIntro::
-	.string "Keep me company till I get a hit.$"
+	.string "Me faça companhia até eu fisgar\n"
+	.string "alguma coisa.$"
 
 Route21_South_Text_NolanDefeat::
-	.string "That burned some time.$"
+	.string "Isso ajudou a passar o tempo.$"
 
 Route21_South_Text_NolanPostBattle::
-	.string "Oh wait!\n"
-	.string "I got a bite! Yeah!$"
+	.string "Opa, espera!\n"
+	.string "Fisguei! Isso aí!$"
 
 Route21_North_Text_LilIntro::
-	.string "LIL: Huh? A battle?\n"
-	.string "IAN, can't you do it alone?$"
+	.string "LIL: Hã? Uma batalha?\n"
+	.string "IAN, você não pode fazer isso\l"
+	.string "sozinho?$"
 
 Route21_North_Text_LilDefeat::
-	.string "LIL: Oh, see?\n"
-	.string "We lost. Happy now?$"
+	.string "LIL: Viu só?\n"
+	.string "Perdemos. Feliz agora?$"
 
 Route21_North_Text_LilPostBattle::
-	.string "LIL: I'm tired.\n"
-	.string "Can't we go home already?$"
+	.string "LIL: Estou cansada.\n"
+	.string "Será que a gente não pode ir para\l"
+	.string "casa já?$"
 
 Route21_North_Text_LilNotEnoughMons::
-	.string "LIL: Huh? A battle?\n"
-	.string "I can't be bothered to do it alone.\l"
-	.string "Bring two POKéMON, won't you?$"
+	.string "LIL: Hã? Uma batalha?\n"
+	.string "Não tenho paciência para fazer isso\l"
+	.string "sozinha.\l"
+	.string "Traga dois Pokémon, pode ser?$"
 
 Route21_North_Text_IanIntro::
-	.string "IAN: My sis doesn't get enough\n"
-	.string "exercise, so I made her come.$"
+	.string "IAN: Minha irmã se exercita pouco,\n"
+	.string "então fiz ela vir.$"
 
 Route21_North_Text_IanDefeat::
-	.string "IAN: Awww, Sis!\n"
-	.string "Get it together!$"
+	.string "IAN: Ahh, mana!\n"
+	.string "Se concentra!$"
 
 Route21_North_Text_IanPostBattle::
-	.string "IAN: Come on, Sis!\p"
-	.string "You're not going to lose weight\n"
-	.string "like this!$"
+	.string "IAN: Vamos, mana!\p"
+	.string "Assim você não vai emagrecer!$"
 
 Route21_North_Text_IanNotEnoughMons::
-	.string "IAN: We want a two-on-two battle.\n"
-	.string "So can you bring two POKéMON?$"
+	.string "IAN: Queremos uma batalha dois\n"
+	.string "contra dois.\l"
+	.string "Então você pode trazer dois Pokémon?$"
