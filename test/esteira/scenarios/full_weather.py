@@ -72,7 +72,7 @@ LEAD_SPECIES, LEAD_LEVEL = "SPECIES_MAGIKARP", 50   # 1º golpe Splash, mais rá
 HAIL_TURNS = 3
 HAIL_DURATION = 1                   # weatherDuration escrito depois da abertura: acaba no 1º turno
 WISH_WEATHER_DURATION = 0x28        # gWishFutureKnock.weatherDuration (struct WishFutureKnock, include/battle.h)
-HAIL_TEXT = "It started to hail!"
+HAIL_TEXT = "Começou a cair granizo!"     # sText_StartedHail (src/battle_message.c)
 BATTLE_CASES = (   # (fluxo, mapa, ponto, região, período, clima do campo, (máscara, esperado) na batalha)
     ("areia", "MAP_ROUTE3", ROUTE3_SPOT, dn.REGION_SAND, dn.AFTERNOON, dn.WEATHER_SANDSTORM,
      (B_WEATHER_SANDSTORM, B_WEATHER_SANDSTORM)),
@@ -283,7 +283,7 @@ class WeatherScenario(ClockScenario):
         while HAIL_TEXT not in self._battle_text():
             assert spent < 1200, (f"sem \"{HAIL_TEXT}\" na abertura: gBattleWeather = "
                                   f"{self._battle_weather():#x}, texto \"{self._battle_text()}\"")
-            self.emu.press(KEY_A, hold=2, release=2)   # "Wild PIKACHU appeared!" etc.
+            self.emu.press(KEY_A, hold=2, release=2)   # "Um Pikachu selvagem apareceu!" etc.
             spent += 4
         self.emu.frames(4)
         self._shot("batalha_granizo")

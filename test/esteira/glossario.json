@@ -10126,6 +10126,159 @@
    "detectar": true,
    "frente": "E",
    "obs": "andar do elevador e aviso de mapa (gText_Rooftop/gText_Rooftop2); \"Cobertura\" estourava o mapName[25] do aviso na Loja de Celadon (src/map_name_popup.c)"
+  },
+  {
+   "en": "ANNOUNCER",
+   "pt": "Locutor",
+   "fonte": "criado",
+   "categoria": "personagem",
+   "detectar": true,
+   "frente": "G2",
+   "obs": "alto-falante da Zona de Safári, como rótulo de fala \"LOCUTOR:\" (sText_OutOfSafariBalls)"
+  },
+  {
+   "en": "POKé DUDE",
+   "pt": "Poké Dude",
+   "fonte": "criado",
+   "categoria": "personagem",
+   "detectar": false,
+   "frente": "G2",
+   "obs": "nome próprio mantido (nomes de personagem não mudam); sText_PokedudeUsedItem; data/text/pokedude.inc (E2) deve usar o mesmo"
+  },
+  {
+   "en": "GHOST (Pokémon não identificado)",
+   "pt": "Fantasma",
+   "fonte": "criado",
+   "categoria": "batalha",
+   "detectar": false,
+   "frente": "G2",
+   "obs": "o Marowak sem o Visor Silph; mesmo nome de gText_Ghost (src/strings.c); fala \"FANTASMA:\""
+  },
+  {
+   "en": "Wild {X} (no meio da frase)",
+   "pt": "{X} selvagem",
+   "fonte": "criado",
+   "categoria": "batalha",
+   "detectar": false,
+   "frente": "G2",
+   "obs": "sufixo montado no código (sText_WildPkmnPrefix); o artigo fica no texto: \"O Rattata selvagem\""
+  },
+  {
+   "en": "Foe {X}",
+   "pt": "{X} inimigo",
+   "fonte": "criado",
+   "categoria": "batalha",
+   "detectar": false,
+   "frente": "G2",
+   "obs": "sufixo montado no código (sText_FoePkmnPrefix); \"O Pidgey inimigo usou Investida!\""
+  },
+  {
+   "en": "Ally / Foe (lado)",
+   "pt": "equipe aliada / equipe inimiga",
+   "fonte": "criado",
+   "categoria": "batalha",
+   "detectar": false,
+   "frente": "G2",
+   "obs": "{B_ATK_PREFIX1..3}: \"A equipe aliada está protegida por um véu!\""
+  },
+  {
+   "en": "rose! / sharply rose! / fell! / harshly fell!",
+   "pt": "Aumentou / Aumentou muito / Diminuiu / Diminuiu muito",
+   "fonte": "criado",
+   "categoria": "batalha",
+   "detectar": false,
+   "frente": "G2",
+   "obs": "verbo antes do atributo, que leva o artigo: \"Aumentou muito o Ataque do Pidgey inimigo!\""
+  },
+  {
+   "en": "whited out",
+   "pt": "apagou",
+   "fonte": "criado",
+   "categoria": "batalha",
+   "detectar": false,
+   "frente": "G2",
+   "obs": "\"{PLAYER} apagou!\" (sem marcar gênero do jogador)"
+  },
+  {
+   "en": "flinched",
+   "pt": "hesitou",
+   "fonte": "criado",
+   "categoria": "batalha",
+   "detectar": false,
+   "frente": "G2",
+   "obs": "sText_PkmnFlinched"
+  },
+  {
+   "en": "PERISH count",
+   "pt": "contagem fatal",
+   "fonte": "criado",
+   "categoria": "batalha",
+   "detectar": false,
+   "frente": "G2",
+   "obs": "Canção Fatal: \"O Gengar está com contagem fatal 2!\""
+  },
+  {
+   "en": "It's a one-hit KO!",
+   "pt": "Nocaute de um golpe só!",
+   "fonte": "criado",
+   "categoria": "batalha",
+   "detectar": false,
+   "frente": "G2",
+   "obs": "sText_OneHitKO"
+  },
+  {
+   "en": "Gotcha!",
+   "pt": "Peguei!",
+   "fonte": "criado",
+   "categoria": "batalha",
+   "detectar": false,
+   "frente": "G2",
+   "obs": "captura (sText_GotchaPkmnCaught)"
+  },
+  {
+   "en": "ROCK (menu do Safári)",
+   "pt": "Pedra",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "frente": "G2",
+   "obs": "gText_SafariZoneMenu e sText_ThrewARock"
+  },
+  {
+   "en": "Link standby…",
+   "pt": "Aguardando conexão…",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "frente": "G2",
+   "obs": "gText_LinkStandby"
+  },
+  {
+   "en": "Win / Loss / Draw",
+   "pt": "Vitória / Derrota / Empate",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "frente": "G2",
+   "obs": "resultado da batalha por link"
+  },
+  {
+   "en": "CLEAR TIME",
+   "pt": "Tempo Final",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "frente": "G2",
+   "obs": "gText_ClearTime (sem uso)"
+  },
+  {
+   "en": "Bad EGG",
+   "pt": "Ovo Ruim",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "frente": "G2",
+   "obs": "gText_BadEgg, vira apelido (10 letras)"
   }
  ],
  "proibidos": [
