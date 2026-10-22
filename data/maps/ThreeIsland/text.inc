@@ -87,12 +87,12 @@ ThreeIsland_Text_Biker2Defeat::
 ThreeIsland_Text_Biker2PostBattle::
     .string "Qual é o seu problema, se\n"
     .string "estressando desse jeito?\p"
-    .string "Nada a ver, cara!$"
+    .string "Nada a ver!$"
 
 ThreeIsland_Text_Biker3Intro::
     .string "A gente convidou o chefe para vir\n"
     .string "aqui, mas você tinha que estragar!\p"
-    .string "Você nos envergonhou, cara!$"
+    .string "Você nos envergonhou!$"
 
 ThreeIsland_Text_Biker3Defeat::
     .string "… … …   … … …$"
@@ -104,8 +104,7 @@ ThreeIsland_Text_Biker3PostBattle::
 ThreeIsland_Text_PaxtonIntro::
     .string "Estou de olho em você e acho que já\n"
     .string "chega.\p"
-    .string "O que você é, amigo deles ou\n"
-    .string "algo assim?\p"
+    .string "Você é da turma deles ou algo assim?\p"
     .string "Então acho que vai batalhar comigo\n"
     .string "no lugar deles.$"
 

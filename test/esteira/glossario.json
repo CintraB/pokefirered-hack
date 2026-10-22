@@ -6668,7 +6668,7 @@
    "categoria": "lugar",
    "detectar": true,
    "frente": "C2",
-   "obs": "Tiksi é nome de cidade real (Rússia) e fica; em fala corrente, minúsculo: \"a filial de Tiksi\""
+   "obs": "Tiksi é nome de cidade real (Rússia) e fica; em fala também com maiúscula: \"a Filial de Tiksi\""
   },
   {
    "en": "POKéMON REPORT",
@@ -6698,13 +6698,13 @@
    "obs": "evento da Torre do Treinador (desafio cronometrado do balcão até o dono no terraço)"
   },
   {
-   "en": "Time Board",
+   "en": "TIME BOARD",
    "pt": "Quadro de Tempos",
    "fonte": "criado",
    "categoria": "interface",
-   "detectar": false,
+   "detectar": true,
    "frente": "C2",
-   "obs": "placar de melhores tempos do Contra-Relógio"
+   "obs": "placar de melhores tempos do Contra-Relógio; o jogo tem gText_TimeBoard em src/battle_message.c (\"TIME BOARD\"), a frente que traduzir esse arquivo usa o mesmo termo"
   },
   {
    "en": "SIX ISLE PORT",

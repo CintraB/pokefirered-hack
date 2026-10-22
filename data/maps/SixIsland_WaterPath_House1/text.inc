@@ -41,8 +41,8 @@ SixIsland_WaterPath_House1_Text_YourBagIsFull::
     .string "A minha recompensa não cabe.$"
 
 SixIsland_WaterPath_House1_Text_BiggestHeracrossIsXInches::
-    .string "O maior Heracross que eu já vi\n"
-    .string "medindo até agora tem:\p"
+    .string "O maior Heracross que eu já medi\n"
+    .string "até agora tem:\p"
     .string "{STR_VAR_3} cm!$"
 
 SixIsland_WaterPath_House1_Text_BlankChartOfSomeSort::

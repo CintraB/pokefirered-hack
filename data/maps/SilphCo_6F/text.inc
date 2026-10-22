@@ -51,7 +51,7 @@ SilphCo_6F_Text_Grunt1PostBattle::
 SilphCo_6F_Text_TaylorIntro::
     .string "Aquele Presidente miserável!\p"
     .string "Bem feito por ele ter me despachado\n"
-    .string "para a filial de Tiksi!\p"
+    .string "para a Filial de Tiksi!\p"
     .string "Foi por isso que a Equipe Rocket\n"
     .string "veio atrás de nós, tenho certeza!$"
 
@@ -59,7 +59,7 @@ SilphCo_6F_Text_TaylorDefeat::
     .string "Droga!$"
 
 SilphCo_6F_Text_TaylorPostBattle::
-    .string "Filial de Tiksi?\n"
+    .string "A Filial de Tiksi?\n"
     .string "Fica numa terra de ninguém na Rússia!$"
 
 SilphCo_6F_Text_Grunt2Intro::

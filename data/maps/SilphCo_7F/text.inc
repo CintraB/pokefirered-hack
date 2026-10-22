@@ -1,5 +1,5 @@
 SilphCo_7F_Text_HaveMonForSavingUs::
-    .string "Ah! Oi! Você não é da Rocket!\n"
+    .string "Oi! Você não é da Equipe Rocket!\n"
     .string "Veio nos salvar?\l"
     .string "Puxa, muito obrigado!\p"
     .string "Quero que você fique com este\n"
@@ -33,8 +33,9 @@ SilphCo_7F_Text_SavedAtLast::
     .string "たすかったよ　ありがと！$"
 
 SilphCo_7F_Text_RocketsAfterMasterBall::
-    .string "A Rocket queria a Bola Mestra, que\n"
-    .string "captura qualquer Pokémon.$"
+    .string "A Equipe Rocket estava atrás da\n"
+    .string "Bola Mestra, que captura qualquer\l"
+    .string "Pokémon.$"
 
 SilphCo_7F_Text_CanceledMasterBallProject::
     .string "Cancelamos o projeto da Bola Mestra\n"
@@ -119,7 +120,7 @@ SilphCo_7F_Text_RivalIntro::
 
 SilphCo_7F_Text_RivalDefeat::
     .string "Poxa!\n"
-    .string "Então você encara o Chefe da\l"
+    .string "Então você está à altura do Chefe da\l"
     .string "Equipe Rocket!$"
 
 SilphCo_7F_Text_RivalVictory::

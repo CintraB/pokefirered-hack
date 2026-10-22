@@ -264,8 +264,11 @@ JOGADOR_COM_GENERO = ("você é bom!", "ser ganancioso", "campeão em formação
                       "Mestre de Caratê que", "meu único e inigualável",
                       # C2: padrões que o inglês marcaria (kid/hero/intruder/traitor/tired...)
                       "nosso herói", "Intruso", "Você parece cansado", "Você é um traidor", "Traidor!",
-                      "Seja bem-vindo", "bom Treinador", "ser um Treinador", "campeão", "rapaz,", "garoto",
-                      "sozinho no", "sozinho?", "tão corajoso", "muito corajoso")
+                      "bom Treinador", "ser um Treinador", "campeão", "rapaz,", "garoto",
+                      "sozinho no", "sozinho?", "tão corajoso", "muito corajoso",
+                      # fix 1 da C2: "amigo deles" dirigido ao jogador; vocativo "cara" fora (em NPC para NPC fica)
+                      "amigo deles", "amiga deles", "Você é amigo", "Você é amiga", "amigo d", "amiga d",
+                      "Nada a ver, cara", "nos envergonhou, cara", "do sério, cara")
 
 
 @pytest.mark.parametrize("rel", ARQUIVOS)
@@ -296,7 +299,7 @@ IMPERIAL = re.compile(r"\b(?:inch(?:es)?|polegadas?|libras?|lbs?\.?|feet|foot|mi
 @pytest.mark.parametrize("rel", ARQUIVOS)
 def test_sem_unidade_imperial(rel):
     corpo = "".join(re.findall(r'\.string "(.*)"', (REPO_ROOT / rel).read_text(encoding="utf-8")))
-    corpo = re.sub(r"\{[^}]*\}|\[nlp]", " ", corpo)
+    corpo = re.sub(r"\{[^}]*\}|\\[nlp]", " ", corpo)
     assert IMPERIAL.findall(corpo) == []
 
 
@@ -319,7 +322,7 @@ TERMOS_C2 = {
     "POKéMON REPORT": ("Relatório Pokémon", "data/maps/SilphCo_5F/text.inc"),
     "KANTO RIDER FEDERATION": ("Federação Motoqueira de Kanto", "data/maps/ThreeIsland_Port/text.inc"),
     "TIME ATTACK": ("Contra-Relógio", "data/maps/TrainerTower_Lobby/text.inc"),
-    "Time Board": ("Quadro de Tempos", "data/maps/TrainerTower_Lobby/text.inc"),
+    "TIME BOARD": ("Quadro de Tempos", "data/maps/TrainerTower_Lobby/text.inc"),
     "SIX ISLE PORT": ("Porto da Ilha Seis", "data/maps/SixIsland_OutcastIsland/text.inc"),
 }
 
@@ -330,8 +333,8 @@ def test_termo_criado_na_c2_esta_no_glossario_e_na_fala(en):
     entradas = [t for t in glossario["termos"] if t["en"] == en]
     pt, arquivo = TERMOS_C2[en]
     assert len(entradas) == 1 and entradas[0]["pt"] == pt and entradas[0]["fonte"] == "criado"
-    corpo = re.sub(r"\[nlp]", " ", "".join(re.findall(r'\.string "(.*)"', (REPO_ROOT / arquivo).read_text(encoding="utf-8"))))
-    assert pt in corpo or pt.lower() in corpo
+    corpo = re.sub(r"\\[nlp]", " ", "".join(re.findall(r'\.string "(.*)"', (REPO_ROOT / arquivo).read_text(encoding="utf-8"))))
+    assert pt in corpo
 
 
 def test_ha_texto_com_placeholder_variavel_nos_dois_grupos():

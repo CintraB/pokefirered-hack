@@ -1,7 +1,7 @@
 SixIsland_OutcastIsland_Text_RocketIntro::
     .string "Não tem Pokémon raro nenhum por\n"
     .string "aqui! Nenhum!\p"
-    .string "Isso me tira do sério, cara.\n"
+    .string "Isso me tira do sério.\n"
     .string "Vou descontar em você!$"
 
 SixIsland_OutcastIsland_Text_RocketDefeat::

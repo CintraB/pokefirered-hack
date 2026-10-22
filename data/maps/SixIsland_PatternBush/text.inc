@@ -85,7 +85,7 @@ SixIsland_PatternBush_Text_CordellDefeat::
 
 SixIsland_PatternBush_Text_CordellPostBattle::
     .string "Pois é, cês da cidade chegam aqui\n"
-    .string "todos pomposos, com um chapéu\l"
+    .string "na maior pompa, com um chapéu\l"
     .string "espalhafatoso desses…\p"
     .string "Que tal me dar ele?$"
 
@@ -114,8 +114,8 @@ SixIsland_PatternBush_Text_JoanaDefeat::
     .string "Será que sou a única garota assim?$"
 
 SixIsland_PatternBush_Text_JoanaPostBattle::
-    .string "Vou continuar coletando Pokémon\n"
-    .string "Inseto.\p"
+    .string "Vou continuar coletando\n"
+    .string "Pokémon Inseto.\p"
     .string "Será que sou a única garota assim?$"
 
 SixIsland_PatternBush_Text_RileyIntro::
