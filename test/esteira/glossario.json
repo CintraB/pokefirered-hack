@@ -10126,6 +10126,123 @@
    "detectar": true,
    "frente": "E",
    "obs": "andar do elevador e aviso de mapa (gText_Rooftop/gText_Rooftop2); \"Cobertura\" estourava o mapName[25] do aviso na Loja de Celadon (src/map_name_popup.c)"
+  },
+  {
+   "en": "DAY-CARE MAN",
+   "pt": "Dono da Creche",
+   "fonte": "criado",
+   "categoria": "personagem",
+   "detectar": true,
+   "frente": "E",
+   "obs": "casal da Creche Pokémon (data/text/day_care.inc); a Dona é a DAY-CARE LADY"
+  },
+  {
+   "en": "DAY-CARE LADY",
+   "pt": "Dona da Creche",
+   "fonte": "criado",
+   "categoria": "personagem",
+   "detectar": true,
+   "frente": "E",
+   "obs": "casal da Creche Pokémon (data/text/day_care.inc)"
+  },
+  {
+   "en": "POKé DUDE",
+   "pt": "Cara Pokémon",
+   "fonte": "criado",
+   "categoria": "personagem",
+   "detectar": true,
+   "frente": "E",
+   "obs": "apresentador do tutorial de batalha (data/text/pokedude.inc); a TV Educativa (E3) deve usar o mesmo termo"
+  },
+  {
+   "en": "STICKER",
+   "pt": "adesivo",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "frente": "E",
+   "obs": "adesivos do Cartão de Treinador (casa da Ilha Quatro)"
+  },
+  {
+   "en": "HALL OF FAME STICKER",
+   "pt": "Adesivo do Hall da Fama",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "frente": "E",
+   "obs": "data/text/trainer_card.inc"
+  },
+  {
+   "en": "EGG STICKER",
+   "pt": "Adesivo do Ovo",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "frente": "E",
+   "obs": "data/text/trainer_card.inc"
+  },
+  {
+   "en": "VICTORY STICKER",
+   "pt": "Adesivo da Vitória",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "frente": "E",
+   "obs": "data/text/trainer_card.inc"
+  },
+  {
+   "en": "POKéMON CABLE CLUB",
+   "pt": "Clube Cabo Pokémon",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "frente": "E",
+   "obs": "par do Clube Sem Fio Pokémon: 18 letras, mas só termo de diálogo (não é nome de seção do mapa)"
+  },
+  {
+   "en": "TIME CAPSULE",
+   "pt": "Cápsula do Tempo",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "frente": "E",
+   "obs": "sala do Clube Cabo Pokémon (event_scripts.s)"
+  },
+  {
+   "en": "POKéMON PRINTER",
+   "pt": "Impressora Pokémon",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "frente": "E",
+   "obs": "máquina do Cassino de Celadon que imprime no Cartão de Treinador"
+  },
+  {
+   "en": "STAMP CARD",
+   "pt": "Cartão de Selos",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "frente": "E",
+   "obs": "Presente Misterioso (mystery_event_msg.s); STAMP = Selo"
+  },
+  {
+   "en": "BATTLE COUNT CARD",
+   "pt": "Cartão Contador de Batalhas",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "frente": "E",
+   "obs": "Presente Misterioso (mystery_event_msg.s)"
+  },
+  {
+   "en": "AIDE",
+   "pt": "assistente",
+   "fonte": "criado",
+   "categoria": "personagem",
+   "detectar": false,
+   "frente": "E",
+   "obs": "assistentes do Prof. Carvalho (data/text/pokedex_rating.inc, aide.inc)"
   }
  ],
  "proibidos": [

@@ -1,26 +1,27 @@
 gText_WouldYouLikeToSaveTheGame::
-	.string "Would you like to save the game?$"
+	.string "Quer salvar o jogo?$"
 
 gText_AlreadySaveFile_WouldLikeToOverwrite::
-	.string "There is already a saved file.\n"
-	.string "Is it okay to overwrite it?$"
+	.string "Já existe um jogo salvo.\n"
+	.string "Pode sobrescrevê-lo?$"
 
 gText_SavingDontTurnOffThePower::
-	.string "SAVING…\n"
-	.string "DON'T TURN OFF THE POWER.$"
+	.string "Salvando…\n"
+	.string "Não desligue o aparelho.$"
 
 gText_PlayerSavedTheGame::
-	.string "{PLAYER} saved the game.$"
+	.string "{PLAYER} salvou o jogo.$"
 
 gText_SaveFailed2::
 	.string "セーブに　しっぱい　しました‥$"
 
 gText_DifferentGameFile::
-	.string "WARNING!\p"
-	.string "There is a different game file that\n"
-	.string "is already saved.\p"
-	.string "If you save now, the other file's\n"
-	.string "adventure, including items and\l"
-	.string "POKéMON, will be entirely lost.\p"
-	.string "Are you sure you want to save now\n"
-	.string "and overwrite the other save file?$"
+	.string "ATENÇÃO!\p"
+	.string "Há outro arquivo de jogo\n"
+	.string "já salvo.\p"
+	.string "Se você salvar agora, a aventura do\n"
+	.string "outro arquivo, incluindo itens e\l"
+	.string "Pokémon, será perdida por completo.\p"
+	.string "Tem certeza de que quer salvar\n"
+	.string "agora e sobrescrever o outro\l"
+	.string "arquivo?$"
