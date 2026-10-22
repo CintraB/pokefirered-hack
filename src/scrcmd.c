@@ -1633,9 +1633,9 @@ bool8 ScrCmd_bufferitemname(struct ScriptContext * ctx)
 
 static const u8 sText_S[] = _("s");
 
-// PT-BR: "Poké Bola" -> "Poké Bolas" e "Fruta Cheri" -> "Frutas Cheri" (o "s" entra
-// depois da primeira palavra). O destino é gStringVar1/2/3 (20 bytes): o nome mais
-// longo com o "s" tem 15 letras.
+// PT-BR plural: "Poké Bola" -> "Poké Bolas" and "Fruta Cheri" -> "Frutas Cheri" (the "s"
+// goes after the first word). The destination is gStringVar1/2/3 (20 bytes): the longest
+// name with the "s" takes 15 bytes.
 bool8 ScrCmd_bufferitemnameplural(struct ScriptContext * ctx)
 {
     u8 stringVarIndex = ScriptReadByte(ctx);

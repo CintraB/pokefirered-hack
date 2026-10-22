@@ -1320,8 +1320,8 @@ CableClub_Text_NeedTwoMonsToTrade::
 	.string "menos dois Pokémon com você.$"
 
 CableClub_Text_CantTradeEnigmaBerry::
-	.string "Um Pokémon segurando a Fruta\n"
-	.string "{STR_VAR_1} não pode ser trocado.$"
+	.string "Um Pokémon com a Fruta {STR_VAR_1}\n"
+	.string "não pode ser trocado.$"
 
 CableClub_Text_PleaseWaitBCancel::
 	.string "Aguarde.\n"
@@ -1395,7 +1395,7 @@ Text_TerminateLinkIfYouLeaveRoom::
 
 Text_TerminateLinkConfirmation::
 	.string "Encerrando o link…\n"
-	.string "Você será acompanhado até a saída\l"
+	.string "Vamos acompanhar você até a saída\l"
 	.string "da sala. Aguarde.$"
 
 Text_TrainerTooBusyToNotice::
@@ -1498,9 +1498,8 @@ CableClub_Text_NeedTwoMonsForUnionRoom::
 	.string "ter pelo menos dois Pokémon.$"
 
 CableClub_Text_NoEnigmaBerryInUnionRoom::
-	.string "Nenhum Pokémon segurando a Fruta\n"
-	.string "{STR_VAR_1} pode entrar na\l"
-	.string "Sala União.$"
+	.string "Pokémon com a Fruta {STR_VAR_1}\n"
+	.string "não pode entrar na Sala União.$"
 
 CableClub_Text_UnionRoomAdapterNotConnected::
 	.string "Esta é a Sala União do\n"
@@ -1542,9 +1541,9 @@ Text_DodrioBerryPickingInfo::
 	.string "“Colheita do Dodrio”\p"
 	.string "Comande as três cabeças do DODRIO\n"
 	.string "para pegar as Frutas que caem.\p"
-	.string "Aperte para a direita, para cima ou\n"
-	.string "para a esquerda no {PLUS} Direcional\n"
-	.string "para mover as cabeças.\p"
+	.string "Aperte direita, cima ou esquerda\n"
+	.string "no {PLUS} Direcional para mover\l"
+	.string "as cabeças.\p"
 	.string "Para jogar, é preciso ter\n"
 	.string "um DODRIO.$"
 

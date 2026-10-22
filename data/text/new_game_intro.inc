@@ -240,6 +240,6 @@ gOakSpeech_Text_LetsGo::
     .string "{PLAYER}!\p"
     .string "A sua própria lenda Pokémon\n"
     .string "está prestes a começar!\p"
-    .string "Um mundo de sonhos e aventuras\n"
-    .string "com os Pokémon espera por você!\n"
+    .string "Um mundo de sonhos e aventuras com\n"
+    .string "os Pokémon espera por você!\p"
     .string "Vamos lá!$"

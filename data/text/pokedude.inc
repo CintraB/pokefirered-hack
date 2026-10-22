@@ -46,8 +46,8 @@ Pokedude_Text_WaterNotVeryEffectiveAgainstGrass::
 	.string "do tipo Planta/Venenoso.\p"
 	.string "O ataque do tipo Água é absorvido\n"
 	.string "pelo Pokémon do tipo Planta…\p"
-	.string "Como resultado, o golpe fica não\n"
-	.string "muito eficaz e causa apenas\l"
+	.string "Como resultado, o golpe não é muito\n"
+	.string "eficaz e causa apenas\l"
 	.string "metade do dano normal.$"
 
 Pokedude_Text_GrassEffectiveAgainstWater::
@@ -72,14 +72,13 @@ Pokedude_Text_ShiftingUsesTurn::
 Pokedude_Text_ButterfreeDoubleResistsGrass::
 	.string "O BUTTERFREE é um Pokémon do tipo\n"
 	.string "Inseto/Voador.\p"
-	.string "Contra esse Pokémon, um ataque do\n"
-	.string "tipo Planta…\p"
-	.string "…causa só metade do dano normal\n"
-	.string "em um Pokémon do tipo Inseto…\p"
-	.string "…E também causa só metade do\n"
-	.string "dano em um Pokémon do tipo Voador.\p"
-	.string "Por isso, o BUTTERFREE, sendo um\n"
-	.string "Pokémon Inseto/Voador, sofre só\l"
+	.string "Contra ele, um ataque do tipo\n"
+	.string "Planta…\p"
+	.string "…causa só metade do dano em um\n"
+	.string "Pokémon do tipo Inseto…\p"
+	.string "…E também só metade do dano em um\n"
+	.string "Pokémon do tipo Voador.\p"
+	.string "Por isso, o BUTTERFREE sofre só\n"
 	.string "um quarto do dano normal.$"
 
 Pokedude_Text_ButterfreeGoodAgainstOddish::

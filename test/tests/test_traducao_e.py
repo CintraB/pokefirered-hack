@@ -544,7 +544,56 @@ def test_e2_outros_textos_que_vao_para_buffers_cabem():
         assert ct.measure(S[label], env).nbytes + 1 <= sizes["2"], label                   # cor do cartão, moedas
     storage = (REPO_ROOT / "include" / "pokemon_storage_system.h").read_text(encoding="utf-8")
     assert "#define BOX_NAME_LENGTH         8" in storage                                  # bufferboxname STR_VAR_1/3
-    assert 8 + 1 <= sizes["2"]
+    # nome padrão da caixa = gText_Box + 2 algarismos (src/pokemon_storage_system_menu.c:415-416), guardado em
+    # boxNames[BOX_NAME_LENGTH + 1] e copiado para STR_VAR_1/3
+    assert ct.measure(S["gText_Box"], env).nbytes + 2 + 1 <= 8 + 1 <= sizes["2"]
+
+
+# --- caixa de diálogo padrão: 2 linhas visíveis -----------------------------------------------------
+
+# Janela padrão = 4 tiles de altura (src/new_menu_helpers.c:36-44) = 2 linhas; a 3ª só aparece se for aberta
+# com \l (rolagem). Um \n depois de \l ou 2 \n na mesma caixa cai fora da janela. Páginas de texto corrido
+# (guia de controles, páginas do Pikachu) têm janela própria.
+E2_OWN_WINDOW = ("gControlsGuide_Text_", "gPikachuIntro_Text_")
+
+
+def test_e2_nenhuma_caixa_de_dialogo_com_mais_de_2_linhas_visiveis():
+    problems = []
+    for rel in E2_FILES:
+        for label, body in _e2_blocks((REPO_ROOT / rel).read_text(encoding="utf-8")).items():
+            if label.startswith(E2_OWN_WINDOW) or re.search(r"[　-鿿]", body):
+                continue
+            for box in body.rstrip("$").split(BS_P):
+                if box.count(BS_N) > 1 or re.search(re.escape(BS_L) + r"[^\\]*" + re.escape(BS_N), box):
+                    problems.append(f"{rel}:{label}: {box[:60]}")
+    assert problems == []
+
+
+# Texto de batalha (Cara Pokémon, src/battle_controller_pokedude.c) e mensagens de caixa (battle_message.c)
+# vão para gDisplayedStringBattle[300] (src/battle_main.c:123)
+BATTLE_STRING_BUFFER = 300
+
+
+def test_e2_textos_que_vao_para_gdisplayedstringbattle_cabem(env):
+    battle = (REPO_ROOT / "src" / "battle_main.c").read_text(encoding="utf-8")
+    assert f"gDisplayedStringBattle[{BATTLE_STRING_BUFFER}]" in battle
+    blocks = _e2_blocks((REPO_ROOT / "data/text/pokedude.inc").read_text(encoding="utf-8"))
+    blocks.update({k: v for k, v in _e2_blocks((REPO_ROOT / "data/text/pc_transfer.inc").read_text(
+        encoding="utf-8")).items() if k.startswith("Text_MonSentToBox")})
+    assert len(blocks) > 20
+    over = {k: ct.measure(v, env).nbytes + 1 for k, v in blocks.items() if ct.measure(v, env).nbytes + 1 > BATTLE_STRING_BUFFER}
+    assert over == {}
+
+
+# Particípio/adjetivo dirigido ao jogador (regra de 20/10): "será acompanhado", "foi convidado"...
+E2_PLAYER_PARTICIPLE = re.compile(r"\bVocê (?:será|foi|está|ficou|vai ser|fica) (?:\w+(?:ado|ido|ada|ida)|bom|ótimo|esperto|forte)\b")
+
+
+@pytest.mark.parametrize("rel", E2_FILES)
+def test_e2_sem_participio_marcado_dirigido_ao_jogador(rel):
+    body = "".join(re.findall(r'\.string "(.*)"', (REPO_ROOT / rel).read_text(encoding="utf-8")))
+    body = re.sub(r"\\[nlp]", " ", body)
+    assert E2_PLAYER_PARTICIPLE.findall(body) == []
 
 
 # --- janelas de linhas fixas -----------------------------------------------------------------------
