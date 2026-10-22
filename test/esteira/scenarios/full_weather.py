@@ -17,8 +17,8 @@ Sessão própria da ROM de teste a partir do .sav do `captura` (`save_from="capt
   relógios cujo sorteio de INLAND não é NONE;
 - `clima/caverna`: Mt. Moon (subterrâneo) → WEATHER_NONE com o mesmo tipo de sorteio;
 - `clima/batalha_granizo` (Task 5): Four Island com neve, atalho START_WILD_BATTLE (Pikachu nível 5)
-  → depois da abertura gBattleWeather tem B_WEATHER_HAIL_PERMANENT, a mensagem "It started to
-  hail!" (tela `batalha_granizo`); aí gWishFutureKnock.weatherDuration = 1 na RAM (o granizo
+  → depois da abertura gBattleWeather tem B_WEATHER_HAIL_PERMANENT, a mensagem "Começou a cair
+  granizo!" (tela `batalha_granizo`); aí gWishFutureKnock.weatherDuration = 1 na RAM (o granizo
   temporário acabaria no fim do 1º turno: sem a guarda de B_WEATHER_HAIL_PERMANENT o contador,
   que começa em 0, daria a volta para 255 e a checagem não pegaria nada) e o granizo continua
   depois de 3 turnos (Splash de um Magikarp nível 50 no lugar do 1º do time, para o Pikachu não

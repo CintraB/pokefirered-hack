@@ -10227,15 +10227,6 @@
    "obs": "alto-falante da Zona de Safári, como rótulo de fala \"LOCUTOR:\" (sText_OutOfSafariBalls)"
   },
   {
-   "en": "POKé DUDE",
-   "pt": "Poké Dude",
-   "fonte": "criado",
-   "categoria": "personagem",
-   "detectar": false,
-   "frente": "G2",
-   "obs": "nome próprio mantido (nomes de personagem não mudam); sText_PokedudeUsedItem; data/text/pokedude.inc (E2) deve usar o mesmo"
-  },
-  {
    "en": "GHOST (Pokémon não identificado)",
    "pt": "Fantasma",
    "fonte": "criado",
@@ -10324,15 +10315,6 @@
    "detectar": false,
    "frente": "G2",
    "obs": "captura (sText_GotchaPkmnCaught)"
-  },
-  {
-   "en": "ROCK (menu do Safári)",
-   "pt": "Pedra",
-   "fonte": "criado",
-   "categoria": "interface",
-   "detectar": false,
-   "frente": "G2",
-   "obs": "gText_SafariZoneMenu e sText_ThrewARock"
   },
   {
    "en": "Link standby…",

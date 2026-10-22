@@ -393,13 +393,47 @@ def test_cada_pagina_tem_no_maximo_duas_linhas():
     assert over == []
 
 
-PLAYER_GENDERED = ("avisado", "avisada", "ladrão", "derrotado", "sozinho", "preparado", "Seja bem-vindo")
+# Fala dirigida ao jogador com gênero marcado (regras de 20/10 e 21/10): palavras soltas, o insulto
+# "Seu X!"/"Ora, seu!" (o possessivo "Seu {STR_VAR_1}" não conta), o vocativo "amigo"/"cara" (o
+# termo "Cara Pokémon" não conta), "o protagonista"/"o personagem principal" e o plural masculino
+# que inclui o jogador ("vocês todos").
+PLAYER_GENDERED = tuple(re.compile(p) for p in (
+    r"\bavisad[oa]\b", r"\bladrão\b", r"\bderrotado\b", r"\bsozinho\b", r"\bpreparado\b", r"\bbem-vindo\b",
+    r"(?:^|[!?.…] |\\[nlp])Seu \w+!", r"\b[Oo]ra, seu\b",
+    r"\b[Aa]migo\b", r"\b[Cc]ara\b(?! Pokémon)",
+    r"\bprotagonista\b", r"\bpersonagem principal\b",
+    r"(?i)\bvocês tod[oa]s\b", r"(?i)\btodos vocês\b",
+))
+
+
+def _gendered(text: str) -> list[str]:
+    return [m.group(0) for p in PLAYER_GENDERED for m in p.finditer(text)]
+
+
+def test_padroes_de_genero_do_jogador_pegam_os_casos_conhecidos():
+    caught = ["Ora, seu!", "Seu fracote!", "Valeu, amigo!", "Ei, cara, espere!", "Você é o protagonista.",
+              "Vocês todos são pomposos!", "Você foi avisado."]
+    clean = ["Parabéns! Seu {STR_VAR_1}\\nevoluiu!", "O Cara Pokémon usou\\n{B_LAST_ITEM}!", "Os seus Pokémon.", "O item normalizou seu status!"]
+    assert [t for t in caught if not _gendered(t)] == []
+    assert [t for t in clean if _gendered(t)] == []
 
 
 def test_jogador_sem_genero_marcado():
-    found = [f"{label}: {word}" for label, text in _battle_now().items()
-             for word in PLAYER_GENDERED if word in text]
+    found = [f"{label}: {word}" for label, text in _battle_now().items() for word in _gendered(text)]
     assert found == []
+
+
+# Termos de mais de uma palavra usados nas mensagens de batalha (além dos do glossário)
+BATTLE_TERMS = ("Semente Sanguessuga", "Bolas Safári", "Visor Silph", "Onda de Calor", "Casaco Mágico",
+                "Poder Natural", "Lodo Líquido", "Defesa Especial", "Fosso de Areia", "Ataque Espelhado",
+                "Cara Pokémon", "Fruta Enigma", "Quadro de Tempos", "Atq. Esp.", "Def. Esp.")
+
+
+def test_quebra_de_linha_nao_parte_termo_nas_mensagens_de_batalha():
+    terms = _glossary_terms() | set(BATTLE_TERMS)
+    split = [f"{label}: {term}" for label, text in _battle_now().items() for term in terms
+             if term not in text and any(term in re.sub(r"\\[nlp]", sep, text) for sep in (" ", ""))]
+    assert split == []
 
 
 def test_texto_do_granizo_da_esteira_e_o_do_jogo():
