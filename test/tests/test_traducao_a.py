@@ -265,19 +265,25 @@ def test_nomes_de_item_bufferizados_pelos_scripts_do_grupo_cabem():
 
 # Gênero do jogador, padrão genérico (fix da A2): "você" (ou {PLAYER}) + verbo de ligação + adjetivo/particípio
 # masculino (-o, -ado, -ido, -oso, -udo), como "Você ser rápido" ou "você está pronto". A lista exata
-# `PLAYER_GENDERED` só serve contra regressão; esta pega o que ainda não foi visto. Gerúndio (-ndo) não conta.
+# `PLAYER_GENDERED` só serve contra regressão; esta pega o que ainda não foi visto. Gerúndio (-ndo) não conta;
+# palavra-alvo com 3+ letras e que não seja intensificador (evita "está no Ginásio", "é do tipo", "está muito feliz").
 _COPULA = r"(?:é|está|estava|era|foi|ser|estar|ficar|fica|ficou|parece|estiver|for|seja)"
-_INTENS = r"(?:(?:muito|bem|tão|mais|menos|meio|bastante|realmente|sempre)\s+)?"
+_INTENSIFIERS = r"(?:muito|bem|tão|mais|menos|meio|bastante|realmente|sempre)"
 GENDERED_ADJ = re.compile(
-    rf"\b(?:[Vv]ocê|{{PLAYER}})\s+(?:não\s+)?{_COPULA}\s+{_INTENS}(?!\w*ndo\b)(\w+(?:o|ado|ido|oso|udo))\b")
+    rf"(?<!\w)(?:[Vv]ocê|{{PLAYER}})\s+(?:não\s+)?{_COPULA}\s+(?:{_INTENSIFIERS}\s+)?"
+    rf"(?!{_INTENSIFIERS}\b)(?!\w*ndo\b)(\w{{3,}}(?:o|ado|ido|oso|udo))\b")
 # palavra terminada em -o que segue "você é/está/..." sem marcar o gênero do jogador (palavra -> motivo)
 GENDERED_ADJ_OK: dict[str, str] = {}
 
 
-def _sentences(rel):
-    body = _flat(rel)
+def _one_line(body):
+    """Texto do `.string` achatado: as quebras literais (barra + n, l ou p) viram espaço; só {PLAYER} sobra entre chaves."""
     body = re.sub(r"\{[^}]*\}", lambda m: "{PLAYER}" if m.group(0) == "{PLAYER}" else " ", body)
-    return re.sub(r"\[nlp]", " ", body)
+    return re.sub(re.escape(chr(92)) + "[nlp]", " ", body)
+
+
+def _sentences(rel):
+    return _one_line(_flat(rel))
 
 
 @pytest.mark.parametrize("rel", FILES)
@@ -287,8 +293,26 @@ def test_nenhum_adjetivo_masculino_dirigido_ao_jogador(rel):
     assert found == [], rel
 
 
-def test_padrao_de_genero_pega_o_caso_da_a2():
-    """Mutação: o 'Você ser rápido' que passou pela A2 tem de ser achado."""
-    assert GENDERED_ADJ.search("Então! Você ser rápido e me dar isso!")
-    assert GENDERED_ADJ.search("Você está pronto?")
-    assert not GENDERED_ADJ.search("Você está fazendo algo e você andar logo")
+@pytest.mark.parametrize("raw", [
+    "Então! Você ser rápido e me dar isso!",
+    "Você está pronto?",
+    r"Você ser\nrápido",                    # quebra de linha entre o verbo e o adjetivo
+    r"Você está\pmuito cansado",            # quebra de caixa + intensificador
+    "{PLAYER} está pronto",                 # {PLAYER} em 3ª pessoa
+    "Sim, {PLAYER} foi esperto",
+])
+def test_padrao_de_genero_acha_adjetivo_masculino(raw):
+    """Mutações: o 'Você ser rápido' que passou pela A2 e as formas que o primeiro regex deixava passar."""
+    assert GENDERED_ADJ.search(_one_line(raw)), raw
+
+
+@pytest.mark.parametrize("raw", [
+    "Você está fazendo algo e você andar logo",
+    "Você está no Ginásio",
+    "você é do tipo Água",
+    "Você foi ao centro",
+    "Você está muito feliz",
+    "Você é tão forte",
+])
+def test_padrao_de_genero_nao_acusa_falso_positivo(raw):
+    assert not GENDERED_ADJ.search(_one_line(raw)), raw

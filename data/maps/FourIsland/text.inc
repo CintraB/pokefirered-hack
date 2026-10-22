@@ -10,7 +10,7 @@ FourIsland_Text_LoreleiHasReturned::
 FourIsland_Text_LoreleiMetLaprasAsChild::
     .string "A Lorelei foi embora de novo.\p"
     .string "Imagino que o Lapras dela seja\n"
-    .string "aquela que conheceu na infância.\p"
+    .string "aquele que conheceu na infância.\p"
     .string "Acho que foi na Caverna Gélida\n"
     .string "que ela o capturou.\p"
     .string "Talvez esse Pokémon esteja com\n"
