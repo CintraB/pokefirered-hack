@@ -54,6 +54,42 @@ GRUPOS = {
         "data/maps/SilphCo_10F/text.inc",
         "data/maps/SilphCo_11F/text.inc",
     ],
+    "C2": [
+        "data/maps/SilphCo_1F/text.inc",
+        "data/maps/SilphCo_2F/text.inc",
+        "data/maps/SilphCo_3F/text.inc",
+        "data/maps/SilphCo_4F/text.inc",
+        "data/maps/SilphCo_5F/text.inc",
+        "data/maps/SilphCo_6F/text.inc",
+        "data/maps/SilphCo_7F/text.inc",
+        "data/maps/SilphCo_8F/text.inc",
+        "data/maps/SilphCo_9F/text.inc",
+        "data/maps/SixIsland/text.inc",
+        "data/maps/SixIsland_DottedHole_SapphireRoom/text.inc",
+        "data/maps/SixIsland_GreenPath/text.inc",
+        "data/maps/SixIsland_House/text.inc",
+        "data/maps/SixIsland_Mart/text.inc",
+        "data/maps/SixIsland_OutcastIsland/text.inc",
+        "data/maps/SixIsland_PatternBush/text.inc",
+        "data/maps/SixIsland_PokemonCenter_1F/text.inc",
+        "data/maps/SixIsland_RuinValley/text.inc",
+        "data/maps/SixIsland_WaterPath/text.inc",
+        "data/maps/SixIsland_WaterPath_House1/text.inc",
+        "data/maps/SixIsland_WaterPath_House2/text.inc",
+        "data/maps/ThreeIsland/text.inc",
+        "data/maps/ThreeIsland_BerryForest/text.inc",
+        "data/maps/ThreeIsland_BondBridge/text.inc",
+        "data/maps/ThreeIsland_DunsparceTunnel/text.inc",
+        "data/maps/ThreeIsland_House1/text.inc",
+        "data/maps/ThreeIsland_House2/text.inc",
+        "data/maps/ThreeIsland_House3/text.inc",
+        "data/maps/ThreeIsland_House4/text.inc",
+        "data/maps/ThreeIsland_House5/text.inc",
+        "data/maps/ThreeIsland_Mart/text.inc",
+        "data/maps/ThreeIsland_PokemonCenter_1F/text.inc",
+        "data/maps/ThreeIsland_Port/text.inc",
+        "data/maps/TrainerTower_Lobby/text.inc",
+    ],
 }
 
 ARQUIVOS = sorted({f for files in GRUPOS.values() for f in files})
@@ -166,7 +202,18 @@ def test_nome_do_glossario_nao_e_partido_na_quebra(rel):
              if " " in t["pt"] and len(t["pt"]) > 5 and "{" not in t["pt"] and t["categoria"] != "interface"}
     nomes |= {"Equipe Rocket", "Poké Bola", "Poké Bolas", "Dojo de Luta", "Mestre de Caratê",
               "Deslize de Pedras", "Dança das Espadas", "Repelente Máximo", "Ataque Especial",
-              "Defesa Especial", "Dentes de Ouro"}
+              "Defesa Especial", "Dentes de Ouro",
+              # C2: nomes criados em fala (alguns são "interface" no glossário e ficam fora do filtro acima)
+              "Irmãos Rocket", "Relatório Pokémon", "Quadro de Tempos", "Pontos de Exp.", "Centro Pokémon",
+              "Federação Motoqueira de Kanto", "Filial de Tiksi", "Porto da Ilha Seis",
+              "Bosque das Frutas", "Ponte da União", "Torre do Treinador", "Cartão-chave", "Bola Mestra",
+              "Restaura Tudo", "Onda Trovão", "Líder de Ginásio", "Elite Quatro", "Ilhas Sevii"}
+    # plural simples ("Irmãos Rocket", "Motoqueiros ..."): "s" na última palavra de cada trecho
+    for nome in list(nomes):
+        palavras = nome.split(" ")
+        for j, p in enumerate(palavras):
+            if p[-1:].isalpha() and not p.endswith("s"):
+                nomes.add(" ".join(palavras[:j] + [p + "s"] + palavras[j + 1:]))
     quebra = "(?: |" + chr(92) * 2 + "[nl])"
     partidos = []
     for rotulo, texto in _texto_por_rotulo(rel).items():
@@ -195,7 +242,15 @@ def test_linha_com_placeholder_cabe_com_nome_largo(rel):
         s = re.match(r'\s*\.string "(.*)"$', linha)
         if not s or not PLACEHOLDER.search(s.group(1)) or re.search(r"[぀-ヿ]", s.group(1)):
             continue
-        texto = re.sub(r"(?:\\[nlp])+$", "", PLACEHOLDER.sub("M" * 10, s.group(1)))
+        # pior caso: 10 letras largas, salvo exceção provada no C (VAR_CONTENTS: tempo da Torre = 2 algarismos)
+        tamanhos = ct.var_sizes(rel, rotulo)
+
+        def pior_caso(m, tamanhos=tamanhos):
+            nome = m.group(0)[1:-1]
+            t = tamanhos.get(nome)
+            return ("0" if t is not None and t.digits else "M") * (t.chars if t is not None else 10)
+
+        texto = re.sub(r"(?:\\[nlp])+$", "", PLACEHOLDER.sub(pior_caso, s.group(1)))
         largura = ct.measure(texto, env, "normal").widest
         if largura > 208:
             estouros.append(f"{rotulo}: {largura} px: {s.group(1)}")
@@ -206,7 +261,11 @@ def test_linha_com_placeholder_cabe_com_nome_largo(rel):
 JOGADOR_COM_GENERO = ("você é bom!", "ser ganancioso", "campeão em formação", "de si mesmo", "tão bruto",
                       "ser discreto", "um Treinador incrivelmente", "cara de vencedor", "Que Treinador incrível",
                       "um Treinador com a sua", "Treinador problemático", "Bem-vindo", "Seja bem-vindo",
-                      "Mestre de Caratê que", "meu único e inigualável")
+                      "Mestre de Caratê que", "meu único e inigualável",
+                      # C2: padrões que o inglês marcaria (kid/hero/intruder/traitor/tired...)
+                      "nosso herói", "Intruso", "Você parece cansado", "Você é um traidor", "Traidor!",
+                      "Seja bem-vindo", "bom Treinador", "ser um Treinador", "campeão", "rapaz,", "garoto",
+                      "sozinho no", "sozinho?", "tão corajoso", "muito corajoso")
 
 
 @pytest.mark.parametrize("rel", ARQUIVOS)
@@ -214,3 +273,69 @@ def test_jogador_sem_genero_marcado(rel):
     corpo = "".join(re.findall(r'\.string "(.*)"', (REPO_ROOT / rel).read_text(encoding="utf-8")))
     corpo = re.sub(r"\\[nlp]", " ", corpo)
     assert [f for f in JOGADOR_COM_GENERO if f in corpo] == []
+
+
+@pytest.mark.parametrize("rel", ARQUIVOS)
+def test_fim_de_arquivo_igual_ao_da_base(rel):
+    """O fim do arquivo (linha em branco final, ou não) é o da versão inglesa."""
+    if shutil.which("git") is None:
+        pytest.skip("sem git")
+    out = subprocess.run(["git", "-C", str(REPO_ROOT), "show", f"{ct.TRANSLATION_BASE}:{rel}"], capture_output=True)
+    if out.returncode != 0:
+        pytest.skip("sem o commit base da tradução")
+    base = out.stdout.decode("utf-8")
+    atual = (REPO_ROOT / rel).read_text(encoding="utf-8")
+    assert len(atual) - len(atual.rstrip("\n")) == len(base) - len(base.rstrip("\n"))
+
+
+# Unidades: o jogo passou a usar metro/quilo; nada de pés, polegadas, libras, milhas...
+IMPERIAL = re.compile(r"\b(?:inch(?:es)?|polegadas?|libras?|lbs?\.?|feet|foot|milhas?|jardas?|onças?)\b"
+                      r"|\d\s*(?:ft|pés?|pol\.?)(?!\w)", re.I)
+
+
+@pytest.mark.parametrize("rel", ARQUIVOS)
+def test_sem_unidade_imperial(rel):
+    corpo = "".join(re.findall(r'\.string "(.*)"', (REPO_ROOT / rel).read_text(encoding="utf-8")))
+    corpo = re.sub(r"\{[^}]*\}|\[nlp]", " ", corpo)
+    assert IMPERIAL.findall(corpo) == []
+
+
+def test_medidas_do_heracross_em_centimetros():
+    """O recorde de tamanho vem de `FormatMonSizeRecord` (src/pokemon_size_record.c): com UNITS_METRIC sai
+    "150,0" (cm, vírgula decimal). Os textos dizem "cm" e a altura fixa da casa vizinha (67,0 pol) virou 1,70 m."""
+    casa1 = _texto_por_rotulo("data/maps/SixIsland_WaterPath_House1/text.inc")
+    usos = {r: t for r, t in casa1.items() if re.search(r"\{STR_VAR_[23]\}", t)}
+    assert len(usos) == 4      # as 4 falas com medida (a 5ª, "tabela em branco", não tem número)
+    for rotulo, texto in usos.items():
+        assert not re.search(r"\{STR_VAR_[23]\}(?! cm)", texto), rotulo
+    casa2 = _texto_por_rotulo("data/maps/SixIsland_WaterPath_House2/text.inc")
+    assert "1,70 m" in casa2["SixIsland_WaterPath_House2_Text_MyNeighborMeasuredMe"]
+
+
+# Termos que a C2 criou (glossário "criado") têm de estar registrados e aparecer nas falas
+TERMOS_C2 = {
+    "ROCKET BROTHERS": ("Irmãos Rocket", "data/maps/SilphCo_6F/text.inc"),
+    "TIKSI BRANCH": ("Filial de Tiksi", "data/maps/SilphCo_6F/text.inc"),
+    "POKéMON REPORT": ("Relatório Pokémon", "data/maps/SilphCo_5F/text.inc"),
+    "KANTO RIDER FEDERATION": ("Federação Motoqueira de Kanto", "data/maps/ThreeIsland_Port/text.inc"),
+    "TIME ATTACK": ("Contra-Relógio", "data/maps/TrainerTower_Lobby/text.inc"),
+    "Time Board": ("Quadro de Tempos", "data/maps/TrainerTower_Lobby/text.inc"),
+    "SIX ISLE PORT": ("Porto da Ilha Seis", "data/maps/SixIsland_OutcastIsland/text.inc"),
+}
+
+
+@pytest.mark.parametrize("en", sorted(TERMOS_C2))
+def test_termo_criado_na_c2_esta_no_glossario_e_na_fala(en):
+    glossario = json.loads((REPO_ROOT / "test" / "esteira" / "glossario.json").read_text(encoding="utf-8"))
+    entradas = [t for t in glossario["termos"] if t["en"] == en]
+    pt, arquivo = TERMOS_C2[en]
+    assert len(entradas) == 1 and entradas[0]["pt"] == pt and entradas[0]["fonte"] == "criado"
+    corpo = re.sub(r"\[nlp]", " ", "".join(re.findall(r'\.string "(.*)"', (REPO_ROOT / arquivo).read_text(encoding="utf-8"))))
+    assert pt in corpo or pt.lower() in corpo
+
+
+def test_ha_texto_com_placeholder_variavel_nos_dois_grupos():
+    """A checagem de largura com 10 letras só vale se houver o que medir em cada grupo."""
+    for grupo, arquivos in GRUPOS.items():
+        n = sum(bool(PLACEHOLDER.search((REPO_ROOT / rel).read_text(encoding="utf-8"))) for rel in arquivos)
+        assert n >= 1, grupo
