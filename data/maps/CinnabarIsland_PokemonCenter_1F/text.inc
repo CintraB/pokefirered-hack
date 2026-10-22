@@ -1,38 +1,40 @@
 CinnabarIsland_PokemonCenter_1F_Text_CinnabarGymLocked::
-    .string "I came to visit the CINNABAR GYM,\n"
-    .string "but the door is locked tight.\p"
-    .string "There should be a key for it\n"
-    .string "somewhere.\p"
-    .string "Could it be in that burned-out\n"
-    .string "mansion?\p"
-    .string "The GYM LEADER's friend used to\n"
-    .string "live there, they say.$"
+    .string "Vim visitar o Ginásio de Cinnabar,\n"
+    .string "mas a porta está trancada.\p"
+    .string "Deve haver uma chave para ela\n"
+    .string "em algum lugar.\p"
+    .string "Será que está naquela mansão\n"
+    .string "incendiada?\p"
+    .string "Dizem que o amigo do Líder do\n"
+    .string "Ginásio morava lá.$"
 
 CinnabarIsland_PokemonCenter_1F_Text_VisitUnionRoom::
-    .string "Do you have lots of friends?\p"
-    .string "Linking up with the usual friends\n"
-    .string "is fun, of course.\p"
-    .string "But how about visiting the\n"
-    .string "UNION ROOM every so often?\p"
-    .string "Who knows, you may end up making\n"
-    .string "new friends.\p"
-    .string "I think it would be worth your time\n"
-    .string "to check the UNION ROOM.$"
+    .string "Você tem muitos amigos?\p"
+    .string "Se conectar com os amigos de sempre\n"
+    .string "é divertido, claro.\p"
+    .string "Mas que tal visitar a Sala União\n"
+    .string "de vez em quando?\p"
+    .string "Quem sabe você não acaba fazendo\n"
+    .string "amizades novas.\p"
+    .string "Acho que vale a pena dar uma olhada\n"
+    .string "na Sala União.$"
 
 CinnabarIsland_PokemonCenter_1F_Text_EvolutionCanWaitForNewMoves::
-    .string "POKéMON can still learn techniques\n"
-    .string "after canceling evolution.\p"
-    .string "Evolution can wait until new moves\n"
-    .string "have been learned.$"
+    .string "Os Pokémon ainda podem aprender\n"
+    .string "golpes depois de cancelar a\l"
+    .string "evolução.\p"
+    .string "A evolução pode esperar até que\n"
+    .string "novos golpes sejam aprendidos.$"
 
 CinnabarIsland_PokemonCenter_1F_Text_ReadyToSailToOneIsland::
-    .string "BILL: Hey, you kept me waiting!\n"
-    .string "Ready to set sail to ONE ISLAND?$"
+    .string "Bill: Ei, você me fez esperar!\n"
+    .string "Está a postos para zarpar rumo\l"
+    .string "à Ilha Um?$"
 
 CinnabarIsland_PokemonCenter_1F_Text_OhNotDoneYet::
-    .string "Oh, you're still not done yet?$"
+    .string "Ah, você ainda não terminou?$"
 
 CinnabarIsland_PokemonCenter_1F_Text_LetsGo::
-    .string "Well, that's it.\n"
-    .string "Let's go!$"
+    .string "Bom, é isso.\n"
+    .string "Vamos lá!$"
 

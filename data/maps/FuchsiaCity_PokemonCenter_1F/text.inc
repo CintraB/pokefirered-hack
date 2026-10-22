@@ -1,18 +1,18 @@
 FuchsiaCity_PokemonCenter_1F_Text_CantBecomeGoodTrainerWithOneMon::
-    .string "You can't become a good TRAINER\n"
-    .string "with just one strong POKéMON.\p"
-    .string "But raising many POKéMON evenly\n"
-    .string "is no easy task, either.$"
+    .string "Não dá para ser um bom Treinador\n"
+    .string "com apenas um Pokémon forte.\p"
+    .string "Mas criar muitos Pokémon de forma\n"
+    .string "equilibrada também não é fácil.$"
 
 FuchsiaCity_PokemonCenter_1F_Text_PokemonLeagueWestOfViridian::
-    .string "There's a narrow trail west of\n"
-    .string "VIRIDIAN CITY.\p"
-    .string "It goes to the POKéMON LEAGUE HQ.\n"
-    .string "The HQ governs all TRAINERS.$"
+    .string "Há uma trilha estreita a oeste da\n"
+    .string "Cidade de Viridian.\p"
+    .string "Ela leva à sede da Liga Pokémon.\n"
+    .string "A sede governa todos os Treinadores.$"
 
 FuchsiaCity_PokemonCenter_1F_Text_VisitSafariZoneForPokedex::
-    .string "If you're working on a POKéDEX,\n"
-    .string "visit the SAFARI ZONE.\p"
-    .string "All sorts of rare POKéMON breed\n"
-    .string "there.$"
+    .string "Se você está completando uma\n"
+    .string "Pokédex, visite a Zona de Safári.\p"
+    .string "Todo tipo de Pokémon raro se\n"
+    .string "reproduz lá.$"
 

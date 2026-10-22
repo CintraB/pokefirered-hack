@@ -1,21 +1,22 @@
 @ The 5 texts below are supposed to be in FourIsland_House1
 Text_BodySlamTeach::
-    .string "Ready?\n"
+    .string "Pronto?\n"
     .string "Boing!\p"
-    .string "We're having a BODY SLAM match\n"
-    .string "to see who wimps out first.\p"
-    .string "If you were to join us, you'd be\n"
-    .string "squashed like a bug, though…\p"
-    .string "How about I teach BODY SLAM to\n"
-    .string "a POKéMON of yours instead?$"
+    .string "Estamos numa disputa de\n"
+    .string "Pancada Corporal para ver quem\l"
+    .string "amarela primeiro.\p"
+    .string "Se você entrasse na brincadeira,\n"
+    .string "ia virar uma panqueca…\p"
+    .string "Que tal eu ensinar Pancada Corporal\n"
+    .string "a um dos seus Pokémon?$"
 
 Text_BodySlamDeclined::
-    .string "Come again!\n"
+    .string "Volte sempre!\n"
     .string "Boing!$"
 
 Text_BodySlamWhichMon::
-    .string "Which POKéMON wants to learn how\n"
-    .string "to BODY SLAM?$"
+    .string "Qual Pokémon quer aprender\n"
+    .string "Pancada Corporal?$"
 
 Text_BodySlamTaught::
     .string "Boioing!$"
@@ -25,21 +26,21 @@ FourIsland_House1_Text_FatMan::
     .string "おまえ　おもいなあー！$"
 
 FourIsland_PokemonCenter_1F_Text_RareIceMonsInCave::
-    .string "There's a rare kind of ICE POKéMON\n"
-    .string "that lives in the cave.\p"
-    .string "We get a lot of visitors hoping to\n"
-    .string "see that POKéMON.$"
+    .string "Há uma espécie rara de Pokémon de\n"
+    .string "Gelo que vive na caverna.\p"
+    .string "Recebemos muitos visitantes que\n"
+    .string "esperam ver esse Pokémon.$"
 
 FourIsland_PokemonCenter_1F_Text_DayCarePeopleFoundEggBefore::
-    .string "Oh? A POKéMON EGG?\n"
-    .string "…I have no idea.\p"
-    .string "…Oh, wait. The DAY-CARE people\n"
-    .string "in town were saying something.\p"
-    .string "They said that they'd found EGGS\n"
-    .string "before on their property.$"
+    .string "Ah? Um Ovo de Pokémon?\n"
+    .string "…Não faço ideia.\p"
+    .string "…Ah, espere. O pessoal da\n"
+    .string "Creche Pokémon falou algo.\p"
+    .string "Disseram que já encontraram Ovos\n"
+    .string "no terreno deles.$"
 
 FourIsland_PokemonCenter_1F_Text_NewPokemonJournalHasntArrived::
-    .string "What's this?\p"
-    .string "The new POKéMON JOURNAL hasn't\n"
-    .string "arrived on this island?$"
+    .string "O que é isso?\p"
+    .string "O novo Jornal Pokémon ainda não\n"
+    .string "chegou a esta ilha?$"
 
