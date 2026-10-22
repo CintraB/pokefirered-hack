@@ -399,7 +399,7 @@ def test_cada_pagina_tem_no_maximo_duas_linhas():
 # que inclui o jogador ("vocês todos").
 PLAYER_GENDERED = tuple(re.compile(p) for p in (
     r"\bavisad[oa]\b", r"\bladrão\b", r"\bderrotado\b", r"\bsozinho\b", r"\bpreparado\b", r"\bbem-vindo\b",
-    r"(?:^|[!?.…] |\\[nlp])Seu \w+!", r"\b[Oo]ra, seu\b",
+    r"(?:^|[!?.…] )Seu \w+!", r", seu \w+!", r"\b[Oo]ra, seu\b",
     r"\b[Aa]migo\b", r"\b[Cc]ara\b(?! Pokémon)",
     r"\bprotagonista\b", r"\bpersonagem principal\b",
     r"(?i)\bvocês tod[oa]s\b", r"(?i)\btodos vocês\b",
@@ -407,13 +407,17 @@ PLAYER_GENDERED = tuple(re.compile(p) for p in (
 
 
 def _gendered(text: str) -> list[str]:
-    return [m.group(0) for p in PLAYER_GENDERED for m in p.finditer(text)]
+    flat = re.sub(r"\\[nlp]", " ", text)    # quebra literal vira espaço: o \b vale depois dela
+    return [m.group(0) for p in PLAYER_GENDERED for m in p.finditer(flat)]
 
 
 def test_padroes_de_genero_do_jogador_pegam_os_casos_conhecidos():
     caught = ["Ora, seu!", "Seu fracote!", "Valeu, amigo!", "Ei, cara, espere!", "Você é o protagonista.",
-              "Vocês todos são pomposos!", "Você foi avisado."]
-    clean = ["Parabéns! Seu {STR_VAR_1}\\nevoluiu!", "O Cara Pokémon usou\\n{B_LAST_ITEM}!", "Os seus Pokémon.", "O item normalizou seu status!"]
+              "Vocês todos são pomposos!", "Você foi avisado.", "Droga, seu fracote!",
+              "Foi\\navisado.", "Ei,\\ncara!", "Ora,\\nseu!", "Tchau,\\lamigo!", "Ganhei!\\pSeu fracote!",
+              "Você é o\\nprotagonista.", "Vocês\\ntodos!"]
+    clean = ["Parabéns! Seu {STR_VAR_1}\\nevoluiu!", "O Cara Pokémon usou\\n{B_LAST_ITEM}!", "Os seus Pokémon.",
+             "O item normalizou seu status!", "O Pikachu usou\\nCara Pokémon!", "Fala com o\\pCara Pokémon."]
     assert [t for t in caught if not _gendered(t)] == []
     assert [t for t in clean if _gendered(t)] == []
 
