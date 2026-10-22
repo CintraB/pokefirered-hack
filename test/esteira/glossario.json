@@ -9904,12 +9904,12 @@
   },
   {
    "en": "SHIFT (menu da equipe)",
-   "pt": "Entrar",
+   "pt": "Trocar",
    "fonte": "criado",
    "categoria": "interface",
    "detectar": false,
    "frente": "D",
-   "obs": "comando do grupo em batalha que põe o Pokémon escolhido em campo; colide com SHIFT de BATTLE STYLE (Troca) e SWITCH (Trocar), revisar com a frente do menu da equipe"
+   "obs": "comando do grupo em batalha (gText_Shift = Trocar, src/strings.c; Ruling 21); SHIFT de BATTLE STYLE continua Troca e ENTER do Battle Frontier, Entrar"
   },
   {
    "en": "TM",
@@ -9958,21 +9958,21 @@
   },
   {
    "en": "HABITATS OF POKéMON",
-   "pt": "Habitats dos Pokémon",
+   "pt": "Habitats Pokémon",
    "fonte": "criado",
    "categoria": "interface",
    "detectar": true,
    "frente": "D",
-   "obs": "comando citado na ajuda do Pokédex; o menu atual da Pokédex usa Área"
+   "obs": "item do menu da Pokédex (gText_PokemonHabitats, src/strings.c); a ajuda cita este rótulo"
   },
   {
    "en": "SEARCH",
-   "pt": "Buscar",
+   "pt": "Busca",
    "fonte": "criado",
    "categoria": "interface",
    "detectar": false,
    "frente": "D",
-   "obs": "item do menu da Pokédex (gText_SearchNoColor)"
+   "obs": "item do menu da Pokédex (gText_Search/gText_SearchNoColor, src/strings.c)"
   },
   {
    "en": "BALL (menu do Safári)",
@@ -9994,21 +9994,75 @@
   },
   {
    "en": "WITHDRAW ITEM",
-   "pt": "Retirar Item",
+   "pt": "Retirar item",
    "fonte": "criado",
    "categoria": "interface",
    "detectar": true,
    "frente": "D",
-   "obs": "comando do PC de {PLAYER} (Depósito de Itens)"
+   "obs": "comando do PC de {PLAYER} (gText_WithdrawItem2/gText_DepositItem2, src/strings.c: 'item' minúsculo)"
   },
   {
    "en": "DEPOSIT ITEM",
-   "pt": "Guardar Item",
+   "pt": "Guardar item",
    "fonte": "criado",
    "categoria": "interface",
    "detectar": true,
    "frente": "D",
-   "obs": "comando do PC de {PLAYER} (Depósito de Itens)"
+   "obs": "comando do PC de {PLAYER} (gText_WithdrawItem2/gText_DepositItem2, src/strings.c: 'item' minúsculo)"
+  },
+  {
+   "en": "TYPE MATCHUP LIST",
+   "pt": "tabela de tipos",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "frente": "D",
+   "obs": "lista de vantagens entre tipos da ajuda"
+  },
+  {
+   "en": "Game fundamentals",
+   "pt": "Fundamentos do jogo",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "frente": "D",
+   "obs": "tópicos 1-3 da ajuda"
+  },
+  {
+   "en": "FNT (desmaiado)",
+   "pt": "DES",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "frente": "D",
+   "obs": "sigla de desmaiado na ajuda; igual ao ícone de status da H1 (status_icons.png)"
+  },
+  {
+   "en": "NEXT DATA",
+   "pt": "Mais dados",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "frente": "D",
+   "obs": "gText_NextDataCancel (Pokédex, src/strings.c); citado na ajuda do Pokédex"
+  },
+  {
+   "en": "PLAY TIME",
+   "pt": "Tempo de jogo",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "frente": "D",
+   "obs": "forma cheia de Tempo (Cartão de Treinador, gText_TrainerCardTime); tópico da ajuda"
+  },
+  {
+   "en": "Super effective! (legenda)",
+   "pt": "Supereficaz!",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "frente": "D",
+   "obs": "forma curta de É supereficaz! na legenda da tabela de tipos da ajuda"
   },
   {
    "en": "WIRELESS COMMUNICATION",
