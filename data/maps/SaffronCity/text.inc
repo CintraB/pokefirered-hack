@@ -77,10 +77,11 @@ SaffronCity_Text_GymSign::
 
 SaffronCity_Text_FullHealCuresStatus::
     .string "Dicas de Treinador\p"
-    .string "A Cura Total cura todos os problemas\n"
-    .string "de status, como queimadura,\l"
-    .string "paralisia, envenenamento,\l"
-    .string "congelamento e sono.\p"
+    .string "A Cura Total cura todos os\n"
+    .string "problemas de status, como\l"
+    .string "queimadura, paralisia,\l"
+    .string "envenenamento, congelamento\l"
+    .string "e sono.\p"
     .string "Custa um pouco mais, mas é mais\n"
     .string "prática do que comprar vários outros\l"
     .string "itens.$"

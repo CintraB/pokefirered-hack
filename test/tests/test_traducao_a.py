@@ -47,6 +47,13 @@ GRUPOS = {
         "FuchsiaCity_SafariZone_Office", "FuchsiaCity_WardensHouse", "IndigoPlateau_PokemonCenter_1F",
         "LavenderTown",
     ],
+    "A3": [
+        "LavenderTown_House1", "LavenderTown_House2", "LavenderTown_Mart", "LavenderTown_PokemonCenter_1F",
+        "LavenderTown_VolunteerPokemonHouse", "MtEmber_Exterior", "MtEmber_RubyPath_B3F", "MtMoon_1F", "MtMoon_B2F",
+        "OneIsland", "OneIsland_House1", "OneIsland_House2", "OneIsland_KindleRoad",
+        "OneIsland_KindleRoad_EmberSpa", "OneIsland_PokemonCenter_1F", "OneIsland_TreasureBeach", "PalletTown",
+        "PalletTown_PlayersHouse_1F", "PalletTown_PlayersHouse_2F", "PalletTown_ProfessorOaksLab",
+    ],
 }
 FILES = [f"data/maps/{m}/text.inc" for maps in GRUPOS.values() for m in maps]
 
@@ -150,7 +157,12 @@ WRONG_FORMS = ("Esconderijo da Equipe Rocket", "Porto de Vermilion",
                "Superrepel.", "Cura Queimad.", "Vale Bicicl.", "Guarda Esp.", "Expl. Sônica", "Rajada Fogo",
                "Esmaga Pedra", "Atq. Esp.", "Def. Esp.", "Vermelho e Verde",
                # A2: forma cheia de golpe em fala; nomes do glossário
-               "Raio Congel.", "P. Corporal", "Zona do Safári", "Safari Zone")
+               "Raio Congel.", "P. Corporal", "Zona do Safári", "Safari Zone",
+               # A3: forma cheia do item em fala; Oak vira Carvalho; nomes de lugar do glossário
+               "Mapa Cidade", "Passe Arco-íris", "Prof. Oak", "Professor Oak", "OAK", "Monte Ember", "Ilha Kindle",
+               "Ilha 1", "Ilha One",
+               # fix 1 da A3: "menu" minúsculo no meio da frase (glossário); "Visto daqui" concorda com "o Monte"
+               "o Menu", "no Menu", "Vista daqui, o Monte")
 NAMES_NOT_SPLIT = ("Equipe Rocket", "GAME FREAK", "Loja de Celadon", "Pó de Fruta", "Canto Direto",
                    "Sistema de Armazenamento de Pokémon", "Centro Pokémon", "Loja de Bicicletas",
                    "Cura Queimadura", "Vale Bicicleta", "Guarda Especial", "Explosão Sônica", "Rajada de Fogo",
@@ -160,7 +172,12 @@ NAMES_NOT_SPLIT = ("Equipe Rocket", "GAME FREAK", "Loja de Celadon", "Pó de Fru
                    "Ovo de Pokémon", "Ovos de Pokémon", "Pokédex Nacional", "Elite Quatro", "Liga Pokémon",
                    "Srta. Selphy", "Chefe Giovanni", "Casa de Voluntários Pokémon",
                    # termo criado pela frente B (registrado no glossário dela; aqui só para a quebra)
-                   "Mestre da Pesca")
+                   "Mestre da Pesca",
+                   # A3: termos criados (também no glossário) e nomes compostos fora dele
+                   "Campeão da Liga Pokémon", "Cidade de Goldenrod", "Ginásio de Pewter", "Treinador Pokémon",
+                   "Treinadores Pokémon", "Poké Flauta", "Passe Triplo", "Passe 7 Cores", "Fóssil Hélice", "Fóssil Domo",
+                   "Mapa da Cidade", "Armazém Rocket", "Estrada Fagulha", "Monte Brasa", "Spa da Brasa",
+                   "Goldeen precisa de lenha")
 
 
 def _flat(rel):
@@ -193,13 +210,17 @@ def _multiword_terms():
 TERMS = _multiword_terms()
 
 
+# Nome que não cabe numa linha (278 px) e quebra num ponto só, decidido à mão (placa de Pallet): nome -> posição do espaço
+SPLIT_ALLOWED = {"Laboratório de Pesquisa Pokémon do Prof. Carvalho": len("Laboratório de Pesquisa")}
+
+
 @pytest.mark.parametrize("rel", FILES)
 def test_nomes_nao_sao_partidos_na_quebra(rel):
     body = _flat(rel)
     found = []
     for name in TERMS:
         for i, ch in enumerate(name):
-            if ch == " ":
+            if ch == " " and i != SPLIT_ALLOWED.get(name):
                 for br in ("\\n", "\\l"):
                     if name[:i] + br + name[i + 1:] in body:
                         found.append(name)
@@ -318,3 +339,132 @@ def test_padrao_de_genero_acha_adjetivo_masculino(raw):
 ])
 def test_padrao_de_genero_nao_acusa_falso_positivo(raw):
     assert not GENDERED_ADJ.search(_one_line(raw)), raw
+
+
+# ---- A3 (rodada 3) --------------------------------------------------------------------------------------------
+# Regras de 21/10 que valem aqui: vocativo dirigido ao jogador ("cara", "amigo"...) e insulto "Seu X!"/"Ora, seu!"
+# marcam gênero (Ruling 24); "o personagem principal"/"o protagonista" também. Procuramos no texto achatado
+# (`_one_line`: quebras viram espaço), como o regex de adjetivo acima.
+VOCATIVE = re.compile(
+    r"(?:^|[.!?…] |, )(?:[Cc]ara|[Aa]migo|[Aa]miga|[Pp]arceir[oa]|[Gg]aroto|[Gg]arota|[Mm]oleque|[Mm]oleca|[Rr]apaz|"
+    r"[Mm]ocinha|[Mm]eu caro|[Mm]inha cara)(?=[,.!?…])")
+INSULT = re.compile(r"(?:[Oo]ra, |(?:^|[.!?…,] ))[Ss](?:eu|ua)(?: [A-Za-zÀ-ÿ]+)?[!?]|[Oo]ra, seu\b")
+MAIN_CHARACTER = ("personagem principal", "protagonista", "vocês todos")
+
+
+A3_FILES = [f"data/maps/{m}/text.inc" for m in GRUPOS["A3"]]
+# (A1/A2 ficam de fora: a fala dividida por gênero do jogador, como "Obrigado, rapaz!"/"Obrigado, mocinha!" do
+# Diretor, tem rótulos próprios por gênero e fala de propósito com cada um)
+
+
+@pytest.mark.parametrize("rel", A3_FILES)
+def test_sem_vocativo_nem_insulto_que_marca_o_genero_do_jogador(rel):
+    text = _sentences(rel)
+    found = [m.group(0) for m in VOCATIVE.finditer(text)] + [m.group(0) for m in INSULT.finditer(text)]
+    found += [w for w in MAIN_CHARACTER if w in text.lower()]
+    assert found == [], rel
+
+
+@pytest.mark.parametrize("raw", [
+    "Ei, cara! Você viu isso?",
+    "Calma, amigo.",
+    "Cara, que susto!",
+    r"Olha só\n, parceiro!",
+    "Boa sorte, garota!",
+    "Ora, seu!",
+    "Fora daqui, seu idiota!",
+    "Seu bobo!",
+    "Ouça, sua pestinha!",
+    "Ah, o personagem principal chegou",
+    "Vocês todos pomposos",
+])
+def test_padroes_de_vocativo_e_insulto_acham_o_que_marca_o_genero(raw):
+    """Mutações: o que escapou na B2 ("Seu ratinho!", "Ora, seu!") e na C2 ("cara"/"amigo")."""
+    text = _one_line(raw)
+    assert (VOCATIVE.search(text) or INSULT.search(text) or any(w in text.lower() for w in MAIN_CHARACTER)), raw
+
+
+@pytest.mark.parametrize("raw", [
+    "Meu amigo Celio mandou o barco",
+    "o cara que me deu o fora",
+    "Dê um oi ao rapaz por mim!",
+    "O seu jeito de batalhar me lembra alguém",
+    "Que sorte a sua!",
+    "Um amigo do Celio.",
+])
+def test_padroes_de_vocativo_e_insulto_nao_acusam_falso_positivo(raw):
+    text = _one_line(raw)
+    assert not (VOCATIVE.search(text) or INSULT.search(text)), raw
+
+
+# Termos que a A3 criou (glossário "criado") têm de estar registrados e aparecer nas falas
+TERMS_A3 = {
+    "NAME RATER": ("Avaliador de Apelidos", "data/maps/LavenderTown_House2/text.inc"),
+    "POKéMON FAN MAGAZINE": ("Revista Fã de Pokémon", "data/maps/LavenderTown_VolunteerPokemonHouse/text.inc"),
+    "POKéMON INSIDER": ("Pokémon por Dentro", "data/maps/LavenderTown_VolunteerPokemonHouse/text.inc"),
+    "POKéMON FAN": ("Fã de Pokémon", "data/maps/LavenderTown_VolunteerPokemonHouse/text.inc"),
+    "KNOT ISLAND": ("Ilha do Nó", "data/maps/OneIsland/text.inc"),
+    "POKéMON NET CENTER": ("Centro de Rede Pokémon", "data/maps/OneIsland/text.inc"),
+    "NETWORK MACHINE": ("Máquina de Rede", "data/maps/OneIsland_PokemonCenter_1F/text.inc"),
+    "OAK'S POKéMON SEMINAR": ("Seminário Pokémon do Prof. Carvalho", "data/maps/PalletTown_ProfessorOaksLab/text.inc"),
+    "OAK POKéMON RESEARCH LAB": ("Laboratório de Pesquisa Pokémon do Prof. Carvalho", "data/maps/PalletTown/text.inc"),
+    "GOLDENROD CITY": ("Cidade de Goldenrod", "data/maps/OneIsland_PokemonCenter_1F/text.inc"),
+    "POKéMON LEAGUE HQ": ("Sede da Liga Pokémon", "data/maps/PalletTown_ProfessorOaksLab/text.inc"),
+}
+
+
+@pytest.mark.parametrize("en", sorted(TERMS_A3))
+def test_termo_criado_na_a3_esta_no_glossario_e_na_fala(en):
+    glossary = json.loads((REPO_ROOT / "test" / "esteira" / "glossario.json").read_text(encoding="utf-8"))
+    entries = [t for t in glossary["termos"] if t["en"] == en]
+    pt, rel = TERMS_A3[en]
+    assert len(entries) == 1 and entries[0]["pt"] == pt and entries[0]["fonte"] == "criado"
+    assert entries[0].get("frente") == "A3"
+    assert pt in _sentences(rel)
+
+
+# Termos que a A3 recebeu prontos de outras frentes: a fala usa exatamente o que está decidido
+def test_senha_do_armazem_fica_inteira_numa_linha():
+    """"Goldeen precisa de lenha." (1ª senha, definida na A2) não pode ser partida entre linhas nem trocada."""
+    strings = re.findall(r'\.string "(.*)"', (REPO_ROOT / "data/maps/MtEmber_Exterior/text.inc").read_text(encoding="utf-8"))
+    assert any("“Goldeen precisa de lenha.”" in s for s in strings)
+
+
+def test_senha_e_a_mesma_da_a2():
+    outras = (REPO_ROOT / "data/maps/FiveIsland_Meadow/text.inc").read_text(encoding="utf-8")
+    assert "“Goldeen precisa de lenha.”" in outras
+
+
+def test_falas_do_carvalho_usam_o_rotulo_do_glossario():
+    for rel in ("data/maps/PalletTown/text.inc", "data/maps/PalletTown_ProfessorOaksLab/text.inc",
+                "data/maps/PalletTown_PlayersHouse_1F/text.inc"):
+        body = _flat(rel)
+        assert "OAK:" not in body and "Oak:" not in body, rel
+    assert "CARVALHO: " in _flat("data/maps/PalletTown_ProfessorOaksLab/text.inc")
+
+
+@pytest.mark.parametrize("rel", A3_FILES)
+def test_texto_japones_sem_uso_fica_como_na_base(rel):
+    """Os `.string` em japonês (sobras sem tradução inglesa) não são traduzidos: ficam como na base."""
+    if shutil.which("git") is None:
+        pytest.skip("sem git")
+    out = subprocess.run(["git", "-C", str(REPO_ROOT), "show", f"{ct.TRANSLATION_BASE}:{rel}"], capture_output=True)
+    if out.returncode != 0:
+        pytest.skip("sem o commit base da tradução")
+    kana = re.compile("[぀-ヿ]")
+
+    def japanese(text):
+        return {m.group(1): m.group(2) for m in re.finditer(r'^(\w+)::\n((?:[ \t]+\.string ".*"\n?)+)', text, re.M)
+                if kana.search(m.group(2))}
+
+    assert japanese((REPO_ROOT / rel).read_text(encoding="utf-8")) == japanese(out.stdout.decode("utf-8"))
+
+
+# Unidades: o jogo passou a usar metro/quilo; nada de pés, polegadas, libras, milhas...
+IMPERIAL = re.compile(r"\b(?:inch(?:es)?|polegadas?|libras?|lbs?\.?|feet|foot|milhas?|jardas?|onças?)\b"
+                      r"|\d\s*(?:ft|pés?|pol\.?)(?!\w)", re.I)
+
+
+@pytest.mark.parametrize("rel", FILES)
+def test_sem_unidade_imperial(rel):
+    assert IMPERIAL.findall(_sentences(rel)) == []
