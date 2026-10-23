@@ -158,31 +158,53 @@ def test_placeholders_medidos_como_10_letras_largas(env):
     assert wide == []
 
 
-def _string_var_sizes() -> dict[str, int]:
-    """Tamanho de gStringVar1/2/3, lido de src/string_util.c."""
-    text = (REPO_ROOT / "src" / "string_util.c").read_text(encoding="utf-8")
-    return {n: int(size, 0) for n, size in re.findall(r"u8 gStringVar([123])\[(\w+)\]", text)}
-
-
-STRING_VAR_SIZES = _string_var_sizes()
 _COPY_TO_VAR = re.compile(r"(?:StringCopy|StringExpandPlaceholders|StringAppend)\(gStringVar([123])\w*,\s*(g\w+)\)")
 
 
-def test_textos_copiados_para_gstringvar_cabem_no_buffer(env):
+def _buffer_ctx():
+    """Contexto da regra de buffer (esteira/buffers.py, Task T4) com a base inglesa; None sem a base."""
+    from esteira import buffers as bf
+    return bf.repo_context(str(REPO_ROOT))
+
+
+def _measured_labels(ctx, buffer_prefix: str) -> dict[str, int]:
+    """{rótulo de src/strings.c: menor buffer} sobre os caminhos que a regra de buffer mede."""
+    from esteira import buffers as bf
+    out: dict[str, int] = {}
+    for path in bf.buffer_paths(ctx):
+        if not path.buffer.name.startswith(buffer_prefix):
+            continue
+        for part in path.parts:
+            for alt in bf._alts(part, ctx, path.expand):
+                if alt.key and alt.key[0] == "src/strings.c":
+                    out[alt.key[1]] = min(out.get(alt.key[1], 999), path.buffer.size)
+    return out
+
+
+def test_textos_copiados_para_gstringvar_cabem_no_buffer():
     """gStringVar2/3 têm 20 bytes: "Bolso de itens-chave" (20 letras + EOS) estourava o
-    gStringVar3 pelo bufferstdstring da mensagem de item obtido e travava o jogo."""
-    sizes: dict[str, int] = {}
+    gStringVar3 pelo bufferstdstring da mensagem de item obtido e travava o jogo.
+
+    Generalizado pela regra `buffer` da esteira (T4), que roda na checagem de texto e reprova o
+    estouro (test_nenhum_achado_das_regras_de_texto_nos_arquivos_da_frente o pega em strings.c).
+    Aqui fica a garantia de que a regra mede tudo o que este teste media antes: toda cópia direta
+    StringCopy/StringExpandPlaceholders/StringAppend(gStringVarN, gX) e toda entrada de gStdStringPtrs."""
+    ctx = _buffer_ctx()
+    if ctx is None:
+        pytest.skip("sem git ou sem o commit base da tradução: a regra de buffer não roda")
+    measured = _measured_labels(ctx, "gStringVar")
+    expected = set()
     for path in (REPO_ROOT / "src").rglob("*.c"):
-        for var, label in _COPY_TO_VAR.findall(path.read_text(encoding="utf-8", errors="replace")):
-            sizes[label] = min(sizes.get(label, 999), STRING_VAR_SIZES[var])
+        expected |= {label for _var, label in _COPY_TO_VAR.findall(path.read_text(encoding="utf-8", errors="replace"))
+                     if label in S}
     menu = (REPO_ROOT / "src" / "script_menu.c").read_text(encoding="utf-8")
     std = menu[menu.index("gStdStringPtrs[] = {"):]
-    for label in re.findall(r"=\s*(gText_\w+)", std[:std.index("};")]):
-        sizes[label] = min(sizes.get(label, 999), 20)      # bufferstdstring para qualquer STR_VAR
-    over = [f"{label}: {ct.measure(S[label], env).nbytes + 1} bytes > {size}"
-            for label, size in sorted(sizes.items())
-            if label in S and ct.measure(S[label], env).nbytes + 1 > size]
-    assert sizes.get("gText_KeyItemsPocket") == 20 and over == []
+    expected |= set(re.findall(r"=\s*(gText_\w+)", std[:std.index("};")]))
+    assert sorted(expected - set(measured)) == []
+    assert measured["gText_KeyItemsPocket"] == 20
+    from esteira import buffers as bf
+    assert [r.detail for r in bf.check_buffers(REPO_ROOT, ctx=ctx)
+            if r.status == "falha" and "src/strings.c:" in r.detail] == []
 
 
 def test_texto_do_estojo_de_mt_comeca_com_str_var_1():
@@ -194,42 +216,43 @@ def test_texto_do_estojo_de_mt_comeca_com_str_var_1():
 # Aviso de nome do mapa com andar (MapNamePopupPrintMapNameOnWindow/MapNamePopupAppendFloorNum,
 # src/map_name_popup.c): u8 mapName[25] = nome + " " + ("B")N"F" ou gText_Rooftop2, sem limite de
 # cópia; janela de 152 px com andar e 176 px no terraço (FLOOR_ROOFTOP = 127)
-POPUP_BUFFER = 25
 FLOOR_ROOFTOP = 127
-# IsCeladonDeptStoreMapsec (src/region_map.c): nos mapas CeladonCity_DepartmentStore_* o nome é o
-# da seção especial ("Loja de Celadon")
-CELADON_DEPT_STORE_NAME = "MAPSEC_SPECIAL_AREA"
 
 
 def test_aviso_de_mapa_com_andar_cabe_no_buffer(env):
-    """"Loja de Celadon Cobertura" (25 letras + EOS) estourava mapName[25] no terraço da loja."""
+    """"Loja de Celadon Cobertura" (25 letras + EOS) estourava mapName[25] no terraço da loja.
+
+    Os bytes contra o mapName (tamanho lido do C) são da regra `buffer` da esteira (T4,
+    esteira/buffers.popup_paths, um caminho por mapa com andar, com o nome especial da Loja de
+    Celadon); aqui ficam a largura da janela, que a regra não mede, e a garantia de que a regra
+    cobre todos os mapas com andar."""
+    from esteira import buffers as bf
+    ctx = _buffer_ctx()
+    if ctx is None:
+        pytest.skip("sem git ou sem o commit base da tradução: a regra de buffer não roda")
+    paths = bf.popup_paths(ctx)
+    maps = [json.loads(p.read_text(encoding="utf-8")) for p in sorted((REPO_ROOT / "data" / "maps").glob("*/map.json"))]
+    maps = [d for d in maps if d.get("floor_number", 0) and d.get("show_map_name", True)]
+    assert len(paths) == len(maps) > 0 and {p.buffer.size for p in paths} == {25}
+    assert [r.detail for r in bf.check_buffers(REPO_ROOT, ctx=ctx) if r.status == "falha" and "mapName" in r.detail] == []
     sections = json.loads((REPO_ROOT / "src/data/region_map/region_map_sections.json").read_text(
         encoding="utf-8"))["map_sections"]
     names = {s["id"]: s["name"] for s in sections if s.get("name")}
-    popup = (REPO_ROOT / "src" / "map_name_popup.c").read_text(encoding="utf-8")
-    assert "u8 mapName[25];" in popup and "StringCopy(dest, gText_Rooftop2)" in popup
-    problems, seen = [], 0
-    for path in sorted((REPO_ROOT / "data" / "maps").glob("*/map.json")):
-        data = json.loads(path.read_text(encoding="utf-8"))
-        floor = data.get("floor_number", 0)
-        if not floor or not data.get("show_map_name", True):
-            continue
-        mapsec = data["region_map_section"]
-        if mapsec == "MAPSEC_CELADON_CITY" and data["name"].startswith("CeladonCity_DepartmentStore_"):
-            mapsec = CELADON_DEPT_STORE_NAME        # GetMapName usa o nome especial dentro da loja
-        for mapsec in (mapsec,):
-            if mapsec not in names:
-                continue
-            seen += 1
-            if floor == FLOOR_ROOFTOP:
-                suffix, width = S["gText_Rooftop2"], 176
-            else:
-                suffix, width = ("B" if floor < 0 else "") + f"{abs(floor)}F", 152
-            text = f"{names[mapsec]} {suffix}"
-            m = ct.measure(text, env)
-            if m.nbytes + 1 > POPUP_BUFFER or m.widest > width:
-                problems.append(f"{path.parent.name}: '{text}' {m.nbytes + 1} bytes, {m.widest} px")
-    assert seen and problems == []
+    store = bf._celadon_store_maps(ctx)
+    problems = []
+    for data in maps:
+        floor, mapsec = data["floor_number"], data["region_map_section"]
+        if mapsec == "MAPSEC_CELADON_CITY" and data["id"] in store:
+            mapsec = "MAPSEC_SPECIAL_AREA"          # GetMapName usa o nome especial dentro da loja
+        if floor == FLOOR_ROOFTOP:
+            suffix, width = S["gText_Rooftop2"], 176
+        else:
+            suffix, width = ("B" if floor < 0 else "") + f"{abs(floor)}F", 152
+        text = f"{names[mapsec]} {suffix}"
+        px = ct.measure(text, env).widest
+        if px > width:
+            problems.append(f"{data['name']}: '{text}' {px} px > {width}")
+    assert problems == []
 
 
 def _tmhm_moves() -> list[str]:

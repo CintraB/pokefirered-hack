@@ -105,6 +105,9 @@ VAR_CONTENTS: list[VarContent] = [
     *(VarContent("src/strings.c", "gText_MenuSafariStats", var, n,
                  "Safari: passos (3), limite 600 (3) e bolas (2) (src/start_menu.c:275-277)", digits=True)
       for var, n in (("STR_VAR_1", 3), ("STR_VAR_2", 3), ("STR_VAR_3", 2))),
+    VarContent("src/strings.c", "gText_PokeSum_FriendCount", "STR_VAR_1", 3,
+               "amizade (Hack 7): ConvertIntToDecimalStringN(gStringVar1, friendship, ..., 3) "
+               "(src/pokemon_summary_screen.c:2745)", digits=True),
     VarContent("src/strings.c", "gText_PokedollarVar1", "STR_VAR_1", 6,
                "dinheiro: ConvertIntToDecimalStringN(gStringVar1, amount, ..., 6) (src/money.c:78, :95); preço na "
                "loja com SHOP_PRICE_DIGITS = 5 (src/shop.c:602, :613)", digits=True),

@@ -70,7 +70,9 @@ def test_base_inglesa_disponivel(results):
 
 
 def _mine(results, rule=None):
+    # achado conhecido de regra nova (check_text.KNOWN_FINDINGS, T4) é aviso que a frente corrige depois
     return [r for r in results if r.status != "ok" and any(f in r.detail for f in FILES)
+            and not (r.status == "aviso" and "(conhecido:" in r.detail)
             and (rule is None or r.name == f"texto/{rule}")]
 
 
