@@ -1631,9 +1631,11 @@ bool8 ScrCmd_bufferitemname(struct ScriptContext * ctx)
     return FALSE;
 }
 
-static const u8 sText_S[] = _("S");
-static const u8 sText_IES[] = _("IES");
+static const u8 sText_S[] = _("s");
 
+// PT-BR plural: "Poké Bola" -> "Poké Bolas" and "Fruta Cheri" -> "Frutas Cheri" (the "s"
+// goes after the first word). The destination is gStringVar1/2/3 (20 bytes): the longest
+// name with the "s" takes 15 bytes.
 bool8 ScrCmd_bufferitemnameplural(struct ScriptContext * ctx)
 {
     u8 stringVarIndex = ScriptReadByte(ctx);
@@ -1645,13 +1647,16 @@ bool8 ScrCmd_bufferitemnameplural(struct ScriptContext * ctx)
         StringAppend(sScriptStringVars[stringVarIndex], sText_S);
     else if (itemId >= FIRST_BERRY_INDEX && itemId < LAST_BERRY_INDEX && quantity >= 2)
     {
-        u16 strlength = StringLength(sScriptStringVars[stringVarIndex]);
-        if (strlength != 0)
-        {
-            u8 * endptr = sScriptStringVars[stringVarIndex] + strlength;
-            endptr[-1] = EOS;
-            StringAppend(sScriptStringVars[stringVarIndex], sText_IES);
-        }
+        u8 * name = sScriptStringVars[stringVarIndex];
+        u8 * space = name;
+        u8 tail[ITEM_NAME_LENGTH + 1];
+
+        while (*space != EOS && *space != CHAR_SPACE)
+            space++;
+        StringCopy(tail, space);
+        *space = EOS;
+        StringAppend(name, sText_S);
+        StringAppend(name, tail);
     }
 
     return FALSE;

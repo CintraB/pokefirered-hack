@@ -185,7 +185,7 @@ Help_Text_WhatIsAGym::
 	.string "O que é um Ginásio?$"
 
 Help_Text_AnswerPlayingForFirstTime::
-	.string "Você vira o personagem principal e\n"
+	.string "Você assume o papel principal e\n"
 	.string "explora o mundo dos Pokémon.\n"
 	.string "Conversando com as pessoas e\n"
 	.string "resolvendo mistérios, novos caminhos se\n"
@@ -592,7 +592,7 @@ Help_Text_UsingPC::
 	.string "Usando um PC$"
 
 Help_Text_UsingBillsPC::
-	.string " Usando “PC de {STR_VAR_1}”$"
+	.string " Usando “{STR_VAR_1}”$"
 
 Help_Text_UsingWithdraw::
 	.string "  Usando “Retirar”$"
@@ -610,16 +610,16 @@ Help_Text_UsingPlayersPC::
 	.string " Usando “PC de {PLAYER}”$"
 
 Help_Text_UsingWithdrawItem::
-	.string "  Usando “Retirar Item”$"
+	.string "  Usando “Retirar item”$"
 
 Help_Text_UsingDepositItem::
-	.string "  Usando “Guardar Item”$"
+	.string "  Usando “Guardar item”$"
 
 Help_Text_UsingMailbox::
 	.string "  Usando “Caixa de Cartas”$"
 
 Help_Text_UsingProfOaksPC::
-	.string " Usando “PC do Prof. Carvalho”$"
+	.string " Usando “PC Prof. Carvalho”$"
 
 Help_Text_OpeningMenu::
 	.string "Abrindo o menu$"
@@ -631,7 +631,7 @@ Help_Text_UsingPokemon2::
 	.string " Usando “Pokémon”$"
 
 Help_Text_UsingShift::
-	.string "  Usando “Entrar”$"
+	.string "  Usando “Trocar”$"
 
 Help_Text_UsingSummary2::
 	.string "  Usando “Resumo”$"
@@ -649,10 +649,10 @@ Help_Text_UsingItemStorage::
 	.string "Usando o Depósito de Itens$"
 
 Help_Text_UsingWithdrawItem2::
-	.string "  Usando “Retirar Item”$"
+	.string "  Usando “Retirar item”$"
 
 Help_Text_UsingDepositItem2::
-	.string "  Usando “Guardar Item”$"
+	.string "  Usando “Guardar item”$"
 
 Help_Text_UsingMailbox2::
 	.string "Usando a Caixa de Cartas$"
@@ -679,8 +679,8 @@ Help_Text_HowToUsePokedex::
 	.string "{CIRCLE_1} Escolha “Pokédex” no menu.\n"
 	.string "{CIRCLE_2} Escolha um Pokémon com comandos\n"
 	.string "   como “Lista de Pokémon”,\n"
-	.string "   “Habitats dos Pokémon” e\n"
-	.string "   “Buscar”.\n"
+	.string "   “Habitats Pokémon” e\n"
+	.string "   “Busca”.\n"
 	.string "{CIRCLE_3} Escolha um Pokémon para ver\n"
 	.string "   informações detalhadas.$"
 
@@ -795,7 +795,7 @@ Help_Text_HowToUseTownMap::
 Help_Text_HowToUseTM::
 	.string "{CIRCLE_1} Abra o menu.\n"
 	.string "{CIRCLE_2} Abra “Itens-chave” na “Bolsa”.\n"
-	.string "{CIRCLE_3} “Abra” o Estojo de MT.\n"
+	.string "{CIRCLE_3} Escolha “Abrir” no Estojo de MT.\n"
 	.string "{CIRCLE_4} Escolha uma MT e depois “Usar”.\n"
 	.string "{CIRCLE_5} Escolha um Pokémon que possa\n"
 	.string "   aprender o golpe da MT.$"
@@ -803,7 +803,7 @@ Help_Text_HowToUseTM::
 Help_Text_HowToUseHM::
 	.string "{CIRCLE_1} Abra o menu.\n"
 	.string "{CIRCLE_2} Abra “Itens-chave” na “Bolsa”.\n"
-	.string "{CIRCLE_3} “Abra” o Estojo de MT.\n"
+	.string "{CIRCLE_3} Escolha “Abrir” no Estojo de MT.\n"
 	.string "{CIRCLE_4} Escolha uma MO e depois “Usar”.\n"
 	.string "{CIRCLE_5} Escolha um Pokémon que possa\n"
 	.string "   aprendê-la.\n"
@@ -841,13 +841,12 @@ Help_Text_HowToUsePC::
 	.string "   perto do PC e aperte o Botão A.$"
 
 Help_Text_HowToUseBillsPC::
-	.string "{CIRCLE_1} Escolha “PC de {STR_VAR_1}” no PC.\n"
+	.string "{CIRCLE_1} Escolha “{STR_VAR_1}” no PC.\n"
 	.string "{CIRCLE_2} Escolha um dos três primeiros itens\n"
-	.string "   do menu para acessar o Sistema de\n"
-	.string "   Armazenamento de Pokémon.\n"
+	.string "   do menu para acessar as Caixas.\n"
 	.string "Se capturar um Pokémon com seis na\n"
 	.string "equipe, ele vai direto para uma Caixa\n"
-	.string "do Sistema!$"
+	.string "do PC!$"
 
 Help_Text_HowToUseWithdraw::
 	.string "{CIRCLE_1} Escolha um Pokémon na Caixa aberta\n"
@@ -894,7 +893,7 @@ Help_Text_HowToUsePlayersPC::
 	.string "pode retirar os itens guardados no PC.$"
 
 Help_Text_HowToUseWithdrawItem::
-	.string "{CIRCLE_1} Escolha “Retirar Item”.\n"
+	.string "{CIRCLE_1} Escolha “Retirar item”.\n"
 	.string "{CIRCLE_2} Escolha o item a ser retirado.\n"
 	.string "{CIRCLE_3} O item pode ser retirado e colocado\n"
 	.string "   no bolso “Itens” da Bolsa. Também\n"
@@ -902,7 +901,7 @@ Help_Text_HowToUseWithdrawItem::
 	.string "   Pokémon para segurar.$"
 
 Help_Text_HowToUseDepositItem::
-	.string "{CIRCLE_1} Escolha “Guardar Item”.\n"
+	.string "{CIRCLE_1} Escolha “Guardar item”.\n"
 	.string "{CIRCLE_2} Escolha o item da Bolsa a ser\n"
 	.string "   guardado com o {PLUS} Direcional.\n"
 	.string "{CIRCLE_3} Se houver mais de um item a ser\n"
@@ -920,7 +919,7 @@ Help_Text_HowToUseMailbox::
 	.string "   segurá-la.$"
 
 Help_Text_HowToUseProfOaksPC::
-	.string "{CIRCLE_1} Escolha “PC do Prof. Carvalho”\n"
+	.string "{CIRCLE_1} Escolha “PC Prof. Carvalho”\n"
 	.string "   no PC.\n"
 	.string "{CIRCLE_2} O Prof. Carvalho vai avaliar a sua\n"
 	.string "   Pokédex.\n"
@@ -937,949 +936,948 @@ Help_Text_HowToOpenMenu::
 	.string "batalhar etc.$"
 
 Help_Text_HowToUseFight::
-	.string "{CIRCLE_1} Select “FIGHT.”\n"
-	.string "{CIRCLE_2} Select one of the moves shown,\n"
-	.string "and that move will be used!$"
+	.string "{CIRCLE_1} Escolha “Lutar”.\n"
+	.string "{CIRCLE_2} Escolha um dos golpes mostrados\n"
+	.string "e ele será usado!$"
 
 Help_Text_HowToUsePokemon2::
-	.string "{CIRCLE_1} Select “POKéMON.”\n"
-	.string "{CIRCLE_2} Select the POKéMON in your party\n"
-	.string "   that you want to use.\n"
-	.string "{CIRCLE_3} If you have two or more POKéMON\n"
-	.string "   with you, they may be switched by\n"
-	.string "   selecting “SHIFT.” Check POKéMON\n"
-	.string "   data by selecting “SUMMARY.”$"
+	.string "{CIRCLE_1} Escolha “Pokémon”.\n"
+	.string "{CIRCLE_2} Escolha o Pokémon da sua equipe que\n"
+	.string "   quer usar.\n"
+	.string "{CIRCLE_3} Se tiver dois ou mais Pokémon com\n"
+	.string "   você, é possível trocá-los\n"
+	.string "   escolhendo “Trocar”. Veja os dados\n"
+	.string "   do Pokémon escolhendo “Resumo”.$"
 
 Help_Text_HowToUseShift::
-	.string "This command switches the POKéMON in\n"
-	.string "battle with another one in your party.\n"
-	.string "{CIRCLE_1} Select the POKéMON to be sent out.\n"
-	.string "{CIRCLE_2} Select “SHIFT.”\n"
-	.string "{CIRCLE_3} The selected POKéMON will switch\n"
-	.string "   places with the POKéMON in battle!$"
+	.string "Este comando troca o Pokémon em\n"
+	.string "batalha por outro da sua equipe.\n"
+	.string "{CIRCLE_1} Escolha o Pokémon que vai entrar.\n"
+	.string "{CIRCLE_2} Escolha “Trocar”.\n"
+	.string "{CIRCLE_3} O Pokémon escolhido troca de lugar\n"
+	.string "   com o Pokémon em batalha!$"
 
 Help_Text_HowToUseSummary2::
-	.string "{CIRCLE_1} Select “SUMMARY.”\n"
-	.string "{CIRCLE_2} Press left or right on the {PLUS} Control\n"
-	.string "   Pad to check the information:\n"
-	.string "   “POKéMON INFO”\n"
-	.string "   “POKéMON SKILLS”\n"
-	.string "   “KNOWN MOVES”$"
+	.string "{CIRCLE_1} Escolha “Resumo”.\n"
+	.string "{CIRCLE_2} Aperte esquerda ou direita\n"
+	.string "   no {PLUS} Direcional para ver:\n"
+	.string "   “Dados”\n"
+	.string "   “Atributos”\n"
+	.string "   “Golpes”$"
 
 Help_Text_HowToUseBag2::
-	.string "{CIRCLE_1} Select “BAG.”\n"
-	.string "{CIRCLE_2} Press left or right on the {PLUS} Control\n"
-	.string "   Pad to check the data headings:\n"
-	.string "   “ITEMS”\n"
-	.string "   “KEY ITEMS”\n"
-	.string "   “POKé BALLS”\n"
-	.string "   Press up or down to select an item.$"
+	.string "{CIRCLE_1} Escolha “Bolsa”.\n"
+	.string "{CIRCLE_2} Aperte esquerda ou direita no\n"
+	.string "   {PLUS} Direcional para ver os títulos:\n"
+	.string "   “Itens”\n"
+	.string "   “Itens-chave”\n"
+	.string "   “Poké Bolas”\n"
+	.string "   Cima ou baixo para escolher um item.$"
 
 Help_Text_HowToReadPokedex::
-	.string "{CIRCLE_1} POKéMON that you have caught are\n"
-	.string "   identified by a POKé BALL mark on\n"
-	.string "   the POKéDEX list.\n"
-	.string "{CIRCLE_2} A caught POKéMON will provide a\n"
-	.string "   large amount of data.\n"
+	.string "{CIRCLE_1} Pokémon capturados têm uma marca\n"
+	.string "   de Poké Bola na lista da Pokédex.\n"
+	.string "{CIRCLE_2} Um Pokémon capturado traz muitos\n"
+	.string "   dados.\n"
 	.if REVISION < 1
-	.string "{CIRCLE_3} Select “AREA” to display the TOWN\n"
-	.string "   MAP with the POKéMON's habitat(s).$"
+	.string "{CIRCLE_3} Escolha “Área” para ver o\n"
+	.string "   Mapa da Cidade com o habitat dele.$"
 	.else
-	.string "{CIRCLE_3} Select “NEXT DATA” to display the\n"
-	.string "   TOWN MAP with its habitat(s).$"
+	.string "{CIRCLE_3} Escolha “Mais dados” para ver o\n"
+	.string "   Mapa da Cidade com o habitat dele.$"
 	.endif
 
 Help_Text_HowToUseHomePC::
-	.string "{CIRCLE_1} Go up to the PC at home, then press\n"
-	.string "   the A Button.\n"
-	.string "{CIRCLE_2} The PC will turn on.\n"
-	.string "{CIRCLE_3} Select either “ITEM STORAGE” or\n"
-	.string "   “MAILBOX.”$"
+	.string "{CIRCLE_1} Chegue perto do PC em casa e aperte\n"
+	.string "   o Botão A.\n"
+	.string "{CIRCLE_2} O PC vai ligar.\n"
+	.string "{CIRCLE_3} Escolha “Depósito de Itens” ou\n"
+	.string "   “Caixa de Cartas”.$"
 
 Help_Text_HowToUseItemStorage::
-	.string "{CIRCLE_1} Select “WITHDRAW ITEM” to withdraw\n"
-	.string "   an item stored on your PC.\n"
-	.string "{CIRCLE_2} Select “DEPOSIT ITEM” to put \n"
-	.string "   an item from your BAG into your PC.$"
+	.string "{CIRCLE_1} Escolha “Retirar item” para retirar\n"
+	.string "   um item guardado no seu PC.\n"
+	.string "{CIRCLE_2} Escolha “Guardar item” para pôr no\n"
+	.string "   PC um item da sua Bolsa.$"
 
 Help_Text_HowToUseWithdrawItem2::
-	.string "{CIRCLE_1} Select “WITHDRAW ITEM.”\n"
-	.string "{CIRCLE_2} Select the item to be withdrawn.\n"
-	.string "{CIRCLE_3} The item can be withdrawn and\n"
-	.string "   placed in the BAG's ITEMS POCKET.\n"
-	.string "   It may also be directly given to a\n"
-	.string "   POKéMON to hold.$"
+	.string "{CIRCLE_1} Escolha “Retirar item”.\n"
+	.string "{CIRCLE_2} Escolha o item a ser retirado.\n"
+	.string "{CIRCLE_3} O item pode ser retirado e colocado\n"
+	.string "   no bolso “Itens” da Bolsa. Também\n"
+	.string "   pode ser dado diretamente a um\n"
+	.string "   Pokémon para segurar.$"
 
 Help_Text_HowToUseDepositItem2::
-	.string "{CIRCLE_1} Select “DEPOSIT ITEM.”\n"
-	.string "{CIRCLE_2} Select the item in the BAG to be\n"
-	.string "   deposited using the {PLUS} Control Pad.\n"
-	.string "{CIRCLE_3} If there is nothing in the BAG, this\n"
-	.string "   command can't be used!$"
+	.string "{CIRCLE_1} Escolha “Guardar item”.\n"
+	.string "{CIRCLE_2} Escolha com o {PLUS} Direcional o item da\n"
+	.string "   Bolsa a ser guardado.\n"
+	.string "{CIRCLE_3} Se não houver nada na Bolsa, este\n"
+	.string "   comando não pode ser usado!$"
 
 Help_Text_HowToUseMailbox2::
-	.string "When MAIL is taken from a POKéMON,\n"
-	.string "it is moved to the MAILBOX. If it has\n"
-	.string "no MAIL, the MAILBOX can't be used.\n"
-	.string "{CIRCLE_1} Select MAIL by name to read it or\n"
-	.string "   make a POKéMON hold it.$"
+	.string "Ao tirar uma carta de um Pokémon, ela\n"
+	.string "vai para a Caixa de Cartas. Sem cartas,\n"
+	.string "a Caixa de Cartas não pode ser usada.\n"
+	.string "{CIRCLE_1} Escolha uma carta pelo nome para\n"
+	.string "   lê-la ou fazer um Pokémon segurá-la.$"
 
 Help_Text_HowToUseRun::
-	.string "You may not “RUN” from a TRAINER\n"
-	.string "battle!\n"
-	.string "{CIRCLE_1} You may “RUN” from a wild POKéMON.\n"
-	.string "{CIRCLE_2} Your chance of escape is improved\n"
-	.string "   if your POKéMON in battle is fast.$"
+	.string "Não dá para “Fugir” de uma batalha\n"
+	.string "contra um Treinador!\n"
+	.string "{CIRCLE_1} É possível “Fugir” de um Pokémon\n"
+	.string "   selvagem.\n"
+	.string "{CIRCLE_2} A chance de fuga aumenta se o seu\n"
+	.string "   Pokémon em batalha for rápido.$"
 
 Help_Text_HowToRegisterKeyItem::
-	.string "You may “REGISTER” a key item for\n"
-	.string "instant use by pressing SELECT!\n"
-	.string "{CIRCLE_1} Open the “KEY ITEMS” POCKET.\n"
-	.string "{CIRCLE_2} Select the key item, then select\n"
-	.string "   “REGISTER.”$"
+	.string "Você pode “Registrar” um item-chave\n"
+	.string "para usá-lo na hora apertando SELECT!\n"
+	.string "{CIRCLE_1} Abra o bolso “Itens-chave”.\n"
+	.string "{CIRCLE_2} Escolha o item-chave e depois\n"
+	.string "   “Registrar”.$"
 
 Help_Text_HowToUseBall::
-	.string "{CIRCLE_1} Select to throw the special POKé\n"
-	.string "   BALL used only in the SAFARI ZONE.\n"
-	.string "When wild POKéMON appear, throw lots\n"
-	.string "of SAFARI BALLS to catch them!$"
+	.string "{CIRCLE_1} Escolha para lançar a Poké Bola\n"
+	.string "   especial usada só na Zona de Safári.\n"
+	.string "Quando aparecerem Pokémon selvagens,\n"
+	.string "lance muitas Bolas Safári para\n"
+	.string "capturá-los!$"
 
 Help_Text_HowToUseBait::
-	.string "{CIRCLE_1} Select to throw the special food\n"
-	.string "   used only in the SAFARI ZONE.\n"
-	.string "It is POKéMON food rolled up into\n"
-	.string "a ball for easy eating. When BAIT is\n"
-	.string "thrown, the wild POKéMON may get\n"
-	.string "attracted by it, and may not flee!$"
+	.string "{CIRCLE_1} Escolha para lançar a comida\n"
+	.string "   especial usada só na Zona de Safári.\n"
+	.string "É comida de Pokémon enrolada em forma\n"
+	.string "de bola, fácil de comer. Quando a Isca\n"
+	.string "é lançada, o Pokémon selvagem pode se\n"
+	.string "interessar por ela e não fugir!$"
 
 Help_Text_HowToUseRock::
-	.string "{CIRCLE_1} Select to throw a rock lying on\n"
-	.string "   the ground in the SAFARI ZONE.\n"
-	.string "Throwing a rock at a POKéMON may \n"
-	.string "make it run away, but it becomes easier\n"
-	.string "to catch!$"
+	.string "{CIRCLE_1} Escolha para lançar uma pedra caída\n"
+	.string "   no chão da Zona de Safári.\n"
+	.string "Jogar uma pedra num Pokémon pode\n"
+	.string "fazê-lo fugir, mas ele fica mais fácil\n"
+	.string "de capturar!$"
 
 Help_Text_HowToUseHallOfFame::
-	.string "{CIRCLE_1} Select “HALL OF FAME” on the PC.\n"
-	.string "{CIRCLE_2} The POKéMON that have entered the\n"
-	.string "   HALL OF FAME can be examined.$"
+	.string "{CIRCLE_1} Escolha “Hall da Fama” no PC.\n"
+	.string "{CIRCLE_2} É possível examinar os Pokémon que\n"
+	.string "   entraram no Hall da Fama.$"
 
 Help_Text_HP::
-	.string "HP$"
+	.string "PS$"
 
 Help_Text_EXP::
-	.string "EXP. {LEFT_PAREN}EXP. Points{RIGHT_PAREN}$"
+	.string "PE {LEFT_PAREN}Pontos de Experiência{RIGHT_PAREN}$"
 
 Help_Text_Moves::
-	.string "MOVES$"
+	.string "Golpes$"
 
 Help_Text_Attack::
-	.string "ATTACK$"
+	.string "Ataque$"
 
 Help_Text_Defense::
-	.string "DEFENSE$"
+	.string "Defesa$"
 
 Help_Text_SpAtk::
-	.string "SP. ATK$"
+	.string "Atq. Esp.$"
 
 Help_Text_SpDef::
-	.string "SP. DEF$"
+	.string "Def. Esp.$"
 
 Help_Text_Speed::
-	.string "SPEED$"
+	.string "Velocidade$"
 
 Help_Text_Level::
-	.string "Lv. {LEFT_PAREN}Level{RIGHT_PAREN}$"
+	.string "Nv. {LEFT_PAREN}Nível{RIGHT_PAREN}$"
 
 Help_Text_Type::
-	.string "TYPE$"
+	.string "Tipo$"
 
 Help_Text_OT::
-	.string "OT$"
+	.string "TO$"
 
 Help_Text_Item::
-	.string "ITEM$"
+	.string "Item$"
 
 Help_Text_Ability::
-	.string "ABILITY$"
+	.string "Habilidade$"
 
 Help_Text_Money::
-	.string "MONEY$"
+	.string "Dinheiro$"
 
 Help_Text_MoveType::
-	.string "MOVE TYPE$"
+	.string "Tipo do golpe$"
 
 Help_Text_Nature::
-	.string "NATURE$"
+	.string "Natureza$"
 
 Help_Text_IDNo::
-	.string "ID No.$"
+	.string "Nº ID$"
 
 Help_Text_PP::
 	.string "PP$"
 
 Help_Text_Power::
-	.string "POWER$"
+	.string "Poder$"
 
 Help_Text_Accuracy::
-	.string "ACCURACY$"
+	.string "Precisão$"
 
 Help_Text_FNT::
-	.string "FNT$"
+	.string "DES$"
 
 Help_Text_Items::
-	.string "ITEMS$"
+	.string "Itens$"
 
 Help_Text_KeyItems::
-	.string "KEY ITEMS$"
+	.string "Itens-chave$"
 
 Help_Text_PokeBalls::
-	.string "POKé BALLS$"
+	.string "Poké Bolas$"
 
 Help_Text_Pokedex::
-	.string "POKéDEX$"
+	.string "Pokédex$"
 
 Help_Text_PlayTime::
-	.string "PLAY TIME$"
+	.string "Tempo de jogo$"
 
 Help_Text_Badges::
-	.string "BADGES$"
+	.string "Insígnias$"
 
 Help_Text_TextSpeed::
-	.string "TEXT SPEED$"
+	.string "Vel. texto$"
 
 Help_Text_BattleScene::
-	.string "BATTLE SCENE$"
+	.string "Animação$"
 
 Help_Text_BattleStyle::
-	.string "BATTLE STYLE$"
+	.string "Estilo$"
 
 Help_Text_Sound::
-	.string "SOUND$"
+	.string "Áudio$"
 
 Help_Text_ButtonMode::
-	.string "BUTTON MODE$"
+	.string "Botões$"
 
 Help_Text_Frame::
-	.string "FRAME$"
+	.string "Moldura$"
 
 Help_Text_Cancel2::
-	.string "CANCEL$"
+	.string "Cancelar$"
 
 Help_Text_TM::
-	.string "TM$"
+	.string "MT$"
 
 Help_Text_HM::
-	.string "HM$"
+	.string "MO$"
 
 Help_Text_HMMove::
-	.string "HM MOVE$"
+	.string "Golpe oculto$"
 
 Help_Text_Evolution::
-	.string "EVOLUTION$"
+	.string "Evolução$"
 
 Help_Text_StatusProblem::
-	.string "STATUS PROBLEM$"
+	.string "Problema de status$"
 
 Help_Text_Pokemon::
-	.string "POKéMON$"
+	.string "Pokémon$"
 
 Help_Text_IDNo2::
-	.string "ID No.$"
+	.string "Nº ID$"
 
 Help_Text_Money2::
-	.string "MONEY$"
+	.string "Dinheiro$"
 
 Help_Text_Badges2::
-	.string "BADGES$"
+	.string "Insígnias$"
 
 Help_Text_DefineHP::
-	.string "HP indicates a POKéMON's vitality.\n"
-	.string "If a POKéMON's HP drops to zero, it\l"
-	.string "faints and is unable to battle.\l"
-	.string "So, the key in battle is to try to\l"
-	.string "reduce the foe's HP to zero.\l"
-	.string "If your POKéMON are hurt, restore their\l"
-	.string "HP at a POKéMON CENTER or use items.$"
+	.string "PS indicam a vitalidade de um Pokémon.\n"
+	.string "Se os PS chegam a zero, ele desmaia e\n"
+	.string "não pode mais batalhar. Por isso, o\n"
+	.string "segredo da batalha é reduzir os PS do\n"
+	.string "adversário a zero. Se os seus Pokémon\n"
+	.string "estiverem feridos, restaure os PS num\n"
+	.string "Centro Pokémon ou use itens.$"
 
 Help_Text_DefineEXP::
-	.string "EXP. Points stands for “Experience\n"
-	.string "Points.” POKéMON gain EXP. Points by\l"
-	.string "participating in winning battles.\l"
-	.string "When a POKéMON accumulates sufficient\l"
-	.string "EXP. Points, it levels up. The EXP. Bar\l"
-	.string "indicates accumulated EXP. Points.\l"
-	.string "It returns to zero upon leveling up.$"
+	.string "PE significa “Pontos de Experiência”.\n"
+	.string "Os Pokémon ganham PE ao participar de\n"
+	.string "batalhas vencidas. Quando um Pokémon\n"
+	.string "acumula PE suficientes, ele sobe de\n"
+	.string "nível. A barra de PE mostra os PE\n"
+	.string "acumulados. Ela volta a zero ao subir\n"
+	.string "de nível.$"
 
 Help_Text_DefineMoves::
-	.string "POKéMON may learn up to four different\n"
-	.string "moves. There are many kinds of moves\l"
-	.string "including attacks and those with\l"
-	.string "special effects. The kinds of moves\l"
-	.string "that can be learned vary for each\l"
-	.string "POKéMON. Some moves can be learned\l"
-	.string "from items.$"
+	.string "Os Pokémon podem aprender até quatro\n"
+	.string "golpes diferentes. Há muitos tipos de\n"
+	.string "golpe, entre ataques e golpes com\n"
+	.string "efeitos especiais. Os golpes que podem\n"
+	.string "ser aprendidos variam de Pokémon para\n"
+	.string "Pokémon. Alguns golpes podem ser\n"
+	.string "aprendidos com itens.$"
 
 Help_Text_DefineAttack::
-	.string "ATTACK indicates the power of an\n"
-	.string "offensive move. The higher this stat,\l"
-	.string "the more powerful the move.\l"
-	.string "It is applied for the following move\l"
-	.string "types: NORMAL, POISON, GROUND,\l"
-	.string "FLYING, BUG, FIGHTING, ROCK, GHOST,\l"
-	.string "and STEEL.$"
+	.string "Ataque indica o poder de um golpe\n"
+	.string "ofensivo. Quanto maior este atributo,\n"
+	.string "mais forte o golpe. Ele vale para\n"
+	.string "golpes dos seguintes tipos: Normal,\n"
+	.string "Venenoso, Terrestre, Voador, Inseto,\n"
+	.string "Lutador, Pedra, Fantasma e Aço.$"
 
 Help_Text_DefineDefense::
-	.string "DEFENSE indicates the resistance a\n"
-	.string "POKéMON has against physical attacks.\l"
-	.string "The higher this stat, the less damage\l"
-	.string "sustained from a foe's physical hit.$"
+	.string "Defesa indica a resistência de um\n"
+	.string "Pokémon a ataques físicos. Quanto\n"
+	.string "maior este atributo, menos dano ele\n"
+	.string "sofre de um golpe físico do adversário.$"
 
 Help_Text_DefineSpAtk::
-	.string "SP. ATK (Special Attack) indicates the\n"
-	.string "power of a special attack move.\l"
-	.string "The higher this stat, the more powerful\l"
-	.string "the special attack move.\l"
-	.string "It is applied for the following move\l"
-	.string "types: FIRE, WATER, ELECTRIC, GRASS,\l"
-	.string "ICE, PSYCHIC, DRAGON, and DARK.$"
+	.string "Atq. Esp. (Ataque Especial) indica o\n"
+	.string "poder de um golpe de ataque especial.\n"
+	.string "Quanto maior este atributo, mais forte\n"
+	.string "o golpe de ataque especial. Ele vale\n"
+	.string "para golpes dos seguintes tipos: Fogo,\n"
+	.string "Água, Elétrico, Planta, Gelo,\n"
+	.string "Psíquico, Dragão e Sombrio.$"
 
 Help_Text_DefineSpDef::
-	.string "SP. DEF (Special Defense) indicates\n"
-	.string "the resistance a POKéMON has against\l"
-	.string "special attacks.\l"
-	.string "The higher this stat, the less damage\l"
-	.string "sustained from a foe's special attack.$"
+	.string "Def. Esp. (Defesa Especial) indica a\n"
+	.string "resistência de um Pokémon a ataques\n"
+	.string "especiais. Quanto maior este atributo,\n"
+	.string "menos dano ele sofre de um golpe\n"
+	.string "especial do adversário.$"
 
 Help_Text_DefineSpeed::
-	.string "SPEED indicates the agility of a\n"
-	.string "POKéMON. If this stat exceeds the foe's\l"
-	.string "in battle, the POKéMON can make a move\l"
-	.string "before its slower opponent.$"
+	.string "Velocidade indica a agilidade de um\n"
+	.string "Pokémon. Se este atributo for maior que\n"
+	.string "o do adversário em batalha, o Pokémon\n"
+	.string "pode agir antes do oponente mais lento.$"
 
 Help_Text_DefineLevel::
-	.string "Lv. (Level) indicates the growth and\n"
-	.string "strength of a POKéMON.\l"
-	.string "In general, when a POKéMON levels up,\l"
-	.string "its stats such as HP, ATTACK, and\l"
-	.string "DEFENSE rise, making it stronger.\l"
-	.string "POKéMON may learn a new move upon\l"
-	.string "leveling up.$"
+	.string "Nv. (Nível) indica o crescimento e a\n"
+	.string "força de um Pokémon. Em geral, quando\n"
+	.string "um Pokémon sobe de nível, seus\n"
+	.string "atributos, como PS, Ataque e Defesa,\n"
+	.string "aumentam e ele fica mais forte. Um\n"
+	.string "Pokémon pode aprender um golpe novo\n"
+	.string "ao subir de nível.$"
 
 Help_Text_DefineType::
-	.string "POKéMON and moves are classified by\n"
-	.string "type. Every type has advantageous and\l"
-	.string "disadvantageous matchups against\l"
-	.string "other types. For example, like a rock-\l"
-	.string "paper-scissors game, the WATER type is\l"
-	.string "strong against the FIRE type and weak\l"
-	.string "against the GRASS type.$"
+	.string "Pokémon e golpes são classificados por\n"
+	.string "tipo. Cada tipo tem vantagens e\n"
+	.string "desvantagens contra outros tipos. Por\n"
+	.string "exemplo, como no jogo de pedra, papel\n"
+	.string "e tesoura, o tipo Água é forte contra o\n"
+	.string "tipo Fogo e fraco contra o tipo Planta.$"
 
 Help_Text_DefineOT::
-	.string "OT stands for “Original TRAINER,”\n"
-	.string "the first TRAINER to have caught the\l"
-	.string "selected POKéMON.\l"
-	.string "Even if the POKéMON is traded, the OT\l"
-	.string "name will remain unchanged.$"
+	.string "TO é a sigla de “Treinador Original”, o\n"
+	.string "primeiro Treinador que capturou o\n"
+	.string "Pokémon escolhido. Mesmo que o Pokémon\n"
+	.string "seja trocado, o nome do TO não muda.$"
 
 Help_Text_DefineItem::
-	.string "All POKéMON can be made to hold one\n"
-	.string "item each. Some items will be used by\l"
-	.string "the POKéMON automatically in certain\l"
-	.string "situations. To make a POKéMON hold an\l"
-	.string "item, select the item from the BAG and\l"
-	.string "“GIVE” it to the POKéMON.$"
+	.string "Todo Pokémon pode segurar um item.\n"
+	.string "Alguns itens são usados\n"
+	.string "automaticamente pelo Pokémon em certas\n"
+	.string "situações. Para fazer um Pokémon\n"
+	.string "segurar um item, escolha o item na\n"
+	.string "Bolsa e use “Dar” no Pokémon.$"
 
 Help_Text_DefineAbility::
-	.string "All POKéMON have a special ABILITY.\n"
-	.string "There are many different kinds of these\l"
-	.string "abilities, some used in battle, some\l"
-	.string "elsewhere. The abilities differ from\l"
-	.string "species to species. Some species may\l"
-	.string "have more than one kind of ability.$"
+	.string "Todo Pokémon tem uma Habilidade\n"
+	.string "especial. Há muitos tipos de\n"
+	.string "Habilidade, algumas usadas em batalha,\n"
+	.string "outras fora dela. As Habilidades variam\n"
+	.string "de espécie para espécie. Algumas\n"
+	.string "espécies podem ter mais de um tipo de\n"
+	.string "Habilidade.$"
 
 Help_Text_DefineMoney::
-	.string "Whenever you win a battle against a\n"
-	.string "TRAINER, you are given prize money.\l"
-	.string "Save up your prize money so you can\l"
-	.string "enjoy shopping at POKéMON MARTS!$"
+	.string "Sempre que você vence uma batalha\n"
+	.string "contra um Treinador, recebe um prêmio\n"
+	.string "em dinheiro. Junte o dinheiro dos\n"
+	.string "prêmios para aproveitar as compras nos\n"
+	.string "Poké Marts!$"
 
 Help_Text_DefineMoveType::
-	.string "Moves are also classified by types.\n"
-	.string "If a POKéMON of a certain type uses\l"
-	.string "a move of the same type, the move's\l"
-	.string "power is boosted. If the move's type\l"
-	.string "has a matchup advantage against the\l"
-	.string "target, its effectiveness is also\l"
-	.string "boosted.$"
+	.string "Os golpes também são classificados por\n"
+	.string "tipo. Se um Pokémon de certo tipo usa\n"
+	.string "um golpe do mesmo tipo, o poder do\n"
+	.string "golpe aumenta. Se o tipo do golpe tem\n"
+	.string "vantagem contra o alvo, a eficácia\n"
+	.string "também aumenta.$"
 
 Help_Text_DefineNature::
-	.string "All POKéMON have a personality,\n"
-	.string "or “NATURE.” The POKéMON's\l"
-	.string "nature appears to affect how the\l"
-	.string "POKéMON will grow upon leveling up.$"
+	.string "Todo Pokémon tem uma personalidade, ou\n"
+	.string "“Natureza”. A Natureza do Pokémon\n"
+	.string "parece afetar como ele vai crescer ao\n"
+	.string "subir de nível.$"
 
 Help_Text_DefineIDNo::
-	.string "The ID No. is a special number assigned\n"
-	.string "specifically to you as a TRAINER.\l"
-	.string "Together with the OT name, the ID No.\l"
-	.string "is used to precisely identify the\l"
-	.string "Original TRAINER.\l"
-	.string "The ID No. does not change even if the\l"
-	.string "POKéMON is traded.$"
+	.string "O Nº ID é um número especial atribuído\n"
+	.string "só a você como Treinador. Com o nome\n"
+	.string "do TO, o Nº ID identifica com precisão\n"
+	.string "o Treinador Original. O Nº ID não muda,\n"
+	.string "mesmo que o Pokémon seja trocado.$"
 
 Help_Text_DefinePP::
-	.string "PP stands for “Power Points.”\n"
-	.string "It indicates the number of times a\l"
-	.string "certain move can be used in battle.\l"
-	.string "Like HP, PP can be restored by visiting\l"
-	.string "a POKéMON CENTER or using certain\l"
-	.string "items.$"
+	.string "PP significa “Pontos de Poder”. Indica\n"
+	.string "quantas vezes um certo golpe pode ser\n"
+	.string "usado em batalha. Como os PS, os PP\n"
+	.string "podem ser restaurados com certos itens\n"
+	.string "ou num Centro Pokémon.$"
 
 Help_Text_DefinePower::
-	.string "POWER indicates the strength of an\n"
-	.string "attack. The higher this number, the\l"
-	.string "greater the damage that can be\l"
-	.string "inflicted on the foe!$"
+	.string "Poder indica a força de um ataque.\n"
+	.string "Quanto maior este número, maior o dano\n"
+	.string "que pode ser causado ao adversário!$"
 
 Help_Text_DefineAccuracy::
-	.string "ACCURACY indicates the probability of\n"
-	.string "the move hitting the foe.\l"
-	.string "The higher this number, the more likely\l"
-	.string "the move will strike the target.$"
+	.string "Precisão indica a probabilidade de o\n"
+	.string "golpe acertar o adversário. Quanto\n"
+	.string "maior este número, mais provável que o\n"
+	.string "golpe atinja o alvo.$"
 
 Help_Text_DefineFNT::
-	.string "FNT stands for “fainted.”\n"
-	.string "A POKéMON faints if its HP is reduced\l"
-	.string "to zero. It becomes incapable of taking\l"
-	.string "part in battle.\l"
-	.string "Restore a fainted POKéMON at a POKéMON\l"
-	.string "CENTER, or use an item.$"
+	.string "DES é a abreviação de “desmaiado”. Um\n"
+	.string "Pokémon desmaia quando seus PS chegam\n"
+	.string "a zero e fica incapaz de batalhar.\n"
+	.string "Restaure um Pokémon desmaiado num\n"
+	.string "Centro Pokémon ou use um item.$"
 
 Help_Text_DefineItems::
-	.string "Ordinary items bought at any POKéMON\n"
-	.string "MART are placed in the ITEMS POCKET.\l"
-	.string "Items may be used, given to a POKéMON\l"
-	.string "to hold, or tossed out as garbage.$"
+	.string "Itens comuns comprados em qualquer\n"
+	.string "Poké Mart ficam no bolso “Itens”. Os\n"
+	.string "itens podem ser usados, dados a um\n"
+	.string "Pokémon para segurar ou jogados fora.$"
 
 Help_Text_DefineKeyItems::
-	.string "Important items that you find or \n"
-	.string "receive from people are placed in the\l"
-	.string "KEY ITEMS POCKET.\l"
-	.string "Key items may be used, or registered\l"
-	.string "for use instantly with SELECT. Once\l"
-	.string "registered, the item can be used\l"
-	.string "without opening the MENU and BAG.$"
+	.string "Itens importantes que você acha ou\n"
+	.string "recebe de pessoas ficam no bolso\n"
+	.string "“Itens-chave”. Os itens-chave podem\n"
+	.string "ser usados ou registrados para uso\n"
+	.string "imediato com SELECT. Depois de\n"
+	.string "registrado, o item pode ser usado sem\n"
+	.string "abrir o menu e a Bolsa.$"
 
 Help_Text_DefinePokeBalls::
-	.string "POKé BALLS, which are used for\n"
-	.string "catching wild POKéMON, are placed in\l"
-	.string "the POKé BALLS POCKET.\l"
-	.string "POKé BALLS may be bought at POKéMON\l"
-	.string "MARTS. They may be used, given to a\l"
-	.string "POKéMON to hold, or tossed out as\l"
-	.string "garbage.$"
+	.string "As Poké Bolas, usadas para capturar\n"
+	.string "Pokémon selvagens, ficam no bolso\n"
+	.string "“Poké Bolas”. Podem ser compradas nos\n"
+	.string "Poké Marts. Podem ser usadas, dadas a\n"
+	.string "um Pokémon para segurar ou jogadas\n"
+	.string "fora.$"
 
 Help_Text_DefinePokedex::
-	.string "This indicates the number of species of\n"
-	.string "POKéMON you have caught and/or\l"
-	.string "evolved to fill the POKéDEX.\l"
-	.string "Try hard to catch all sorts of\l"
-	.string "POKéMON!$"
+	.string "Indica o número de espécies de Pokémon\n"
+	.string "que você capturou e/ou evoluiu para\n"
+	.string "completar a Pokédex. Esforce-se para\n"
+	.string "capturar todos os tipos de Pokémon!$"
 
 Help_Text_DefinePlayTime::
-	.string "This is the total amount of time that\n"
-	.string "you have played this game.$"
+	.string "Este é o tempo total que você jogou\n"
+	.string "este jogo.$"
 
 Help_Text_DefineBadges::
-	.string "The POKéMON LEAGUE BADGES that you\n"
-	.string "have won are registered and shown.\l"
-	.string "Earn BADGES by defeating GYM LEADERS\l"
-	.string "in various cities and towns.$"
+	.string "As Insígnias da Liga Pokémon que você\n"
+	.string "conquistou são registradas e exibidas\n"
+	.string "aqui. Ganhe Insígnias derrotando\n"
+	.string "Líderes de Ginásio em várias cidades e\n"
+	.string "vilas.$"
 
 Help_Text_DefineTextSpeed::
-	.string "You can adjust how quickly the text is\n"
-	.string "displayed. Choose one: SLOW, MID,\l"
-	.string "or FAST.$"
+	.string "Você pode ajustar a velocidade com\n"
+	.string "que o texto aparece. Escolha uma:\n"
+	.string "Lenta, Média ou Rápida.$"
 
 Help_Text_DefineBattleScene::
-	.string "You can choose to turn the battle\n"
-	.string "animation ON or OFF.$"
+	.string "Você pode escolher se quer ver ou não\n"
+	.string "a animação de batalha.$"
 
 Help_Text_DefineBattleStyle::
-	.string "You can choose whether or not a\n"
-	.string "TRAINER can switch a POKéMON after\l"
-	.string "it has made its foe faint.\l"
-	.string "Set to “SHIFT” if you would like the\l"
-	.string "chance to switch a POKéMON after it\l"
-	.string "has made its foe faint.$"
+	.string "Define se o Treinador pode trocar de\n"
+	.string "Pokémon depois de derrotar o Pokémon\n"
+	.string "do adversário. Escolha “Troca” se\n"
+	.string "quiser ter a chance de trocar de\n"
+	.string "Pokémon depois de derrotar um\n"
+	.string "adversário.$"
 
 Help_Text_DefineSound::
-	.string "You can choose between MONO and\n"
-	.string "STEREO sound output.$"
+	.string "Você pode escolher entre som mono e\n"
+	.string "estéreo.$"
 
 Help_Text_DefineButtonMode::
-	.string "Set to “HELP” to display help messages\n"
-	.string "by pressing the L or R Button.\l"
-	.string "Set to “LR” to enable the switching\l"
-	.string "of the POKéDEX pages and BAG POCKETS\l"
-	.string "using the L and R Buttons.\l"
-	.string "Set to “L=A” to make the L Button\l"
-	.string "work the same as the A Button.$"
+	.string "Ajuste para “Ajuda” para exibir\n"
+	.string "mensagens de ajuda ao apertar o Botão\n"
+	.string "L ou R. Ajuste para “LR” para trocar\n"
+	.string "as páginas da Pokédex e os bolsos da\n"
+	.string "Bolsa com os Botões L e R. Ajuste para\n"
+	.string "“L=A” para o Botão L funcionar como o\n"
+	.string "Botão A.$"
 
 Help_Text_DefineFrame::
-	.string "You may choose the design of the frame\n"
-	.string "around certain menus. Try them out and\l"
-	.string "see what you like.$"
+	.string "Você pode escolher o desenho da\n"
+	.string "moldura de certos menus. Experimente e\n"
+	.string "veja de qual gosta mais.$"
 
 Help_Text_DefineCancel2::
-	.string "The settings will be changed to the\n"
-	.string "selections shown in red, and you will\l"
-	.string "return to the MENU.$"
+	.string "As opções serão alteradas para as\n"
+	.string "escolhas mostradas em vermelho e você\n"
+	.string "voltará ao menu.$"
 
 Help_Text_DefineTM::
-	.string "A TM (Technical Machine) is a device\n"
-	.string "used to teach a move to a POKéMON.\l"
-	.string "There are many different kinds.\l"
-	.string "Moves can be taught only to those\l"
-	.string "POKéMON capable of using them.\l"
-	.string "A TM breaks after a single use.$"
+	.string "Uma MT (Máquina Técnica) é um aparelho\n"
+	.string "usado para ensinar um golpe a um\n"
+	.string "Pokémon. Há muitos tipos. Os golpes só\n"
+	.string "podem ser ensinados a Pokémon capazes\n"
+	.string "de usá-los. Uma MT quebra depois de um\n"
+	.string "único uso.$"
 
 Help_Text_DefineHM::
-	.string "An HM (Hidden Machine) is a device used\n"
-	.string "to teach a HIDDEN move to a POKéMON.\l"
-	.string "A HIDDEN move can be taught only to\l"
-	.string "those POKéMON capable of using it.\l"
-	.string "Unlike a TM, an HM can be used over\l"
-	.string "and over. A HIDDEN move can be tough\l"
-	.string "for a POKéMON to forget.$"
+	.string "Uma MO (Máquina Oculta) é um aparelho\n"
+	.string "usado para ensinar um golpe oculto a\n"
+	.string "um Pokémon. Um golpe oculto só pode\n"
+	.string "ser ensinado a Pokémon capazes de\n"
+	.string "usá-lo. Ao contrário da MT, a MO pode\n"
+	.string "ser usada várias vezes. Esquecer um\n"
+	.string "golpe oculto é difícil.$"
 
 Help_Text_DefineHMMove::
-	.string "HIDDEN moves are those that are\n"
-	.string "especially important for your\l"
-	.string "adventure. To use such a move outside\l"
-	.string "of battle, open the “POKéMON” MENU\l"
-	.string "and make the POKéMON that knows the\l"
-	.string "move use it. A fainted POKéMON may use\l"
-	.string "a HIDDEN move outside of battle.$"
+	.string "Golpes ocultos são os que têm\n"
+	.string "importância especial para a sua\n"
+	.string "aventura. Para usar um desses golpes\n"
+	.string "fora de batalha, abra o menu “Pokémon”\n"
+	.string "e faça o Pokémon que o conhece usá-lo.\n"
+	.string "Um Pokémon desmaiado pode usar um\n"
+	.string "golpe oculto fora de batalha.$"
 
 Help_Text_DefineEvolution::
-	.string "Among POKéMON, there are some that\n"
-	.string "undergo major changes (evolution) upon\l"
-	.string "growing to certain levels. Evolution\l"
-	.string "causes a POKéMON to alter form, change\l"
-	.string "its name, and perhaps change the moves\l"
-	.string "it may learn. Some POKéMON evolve\l"
-	.string "due to reasons other than leveling up.$"
+	.string "Alguns Pokémon passam por grandes\n"
+	.string "mudanças (evolução) ao chegar a\n"
+	.string "certos níveis. A evolução faz o\n"
+	.string "Pokémon mudar de forma e de nome, e\n"
+	.string "talvez mude os golpes que ele pode\n"
+	.string "aprender. Alguns Pokémon evoluem por\n"
+	.string "outros motivos além de subir de nível.$"
 
 Help_Text_DefineStatusProblem::
-	.string "Status problems include:\n"
-	.string "Sleep: Can't use moves.\l"
-	.string "Poison: Causes steady HP loss.\l"
-	.string "Paralysis: May prevent moves.\l"
-	.string "Burn: HP loss and lowers ATTACK.\l"
-	.string "Freeze: Can't use moves.\l"
-	.string "These can be healed with items, etc.$"
+	.string "Problemas de status:\n"
+	.string "Sono: impede o uso de golpes.\n"
+	.string "Envenenamento: perda constante de PS.\n"
+	.string "Paralisia: pode impedir golpes.\n"
+	.string "Queimadura: perde PS e reduz o Ataque.\n"
+	.string "Congelamento: impede o uso de golpes.\n"
+	.string "Podem ser curados com itens etc.$"
 
 Help_Text_DefinePokemon::
-	.string "POKéMON is a name given to describe\n"
-	.string "wondrous creatures that inhabit all\l"
-	.string "corners of this world.\l"
-	.string "People raise POKéMON to be their pets,\l"
-	.string "use them for battling, and so on.$"
+	.string "Pokémon é o nome dado às criaturas\n"
+	.string "maravilhosas que habitam todos os\n"
+	.string "cantos deste mundo. As pessoas criam\n"
+	.string "Pokémon como bichinhos de estimação,\n"
+	.string "usam-nos em batalhas e assim por\n"
+	.string "diante.$"
 
 Help_Text_DefineIDNo2::
-	.string "The ID No. is a special number assigned\n"
-	.string "specifically to you as a TRAINER.\l"
-	.string "Together with the OT name, the ID No.\l"
-	.string "is used to precisely identify the\l"
-	.string "Original TRAINER.\l"
-	.string "The ID No. does not change even if the\l"
-	.string "POKéMON is traded.$"
+	.string "O Nº ID é um número especial atribuído\n"
+	.string "só a você como Treinador. Com o nome\n"
+	.string "do TO, o Nº ID identifica com precisão\n"
+	.string "o Treinador Original. O Nº ID não muda,\n"
+	.string "mesmo que o Pokémon seja trocado.$"
 
 Help_Text_DefineMoney2::
-	.string "Whenever you win a battle against a\n"
-	.string "TRAINER, you are given prize money.\l"
-	.string "Save up your prize money so you can\l"
-	.string "enjoy shopping at POKéMON MARTS!$"
+	.string "Sempre que você vence uma batalha\n"
+	.string "contra um Treinador, recebe um prêmio\n"
+	.string "em dinheiro. Junte o dinheiro dos\n"
+	.string "prêmios para aproveitar as compras nos\n"
+	.string "Poké Marts!$"
 
 Help_Text_DefineBadges2::
-	.string "This indicates the number of POKéMON\n"
-	.string "LEAGUE BADGES that you have won.\l"
-	.string "Earn BADGES by defeating GYM LEADERS\l"
-	.string "in various cities and towns.$"
+	.string "Indica o número de Insígnias que você\n"
+	.string "conquistou na Liga Pokémon. Ganhe\n"
+	.string "Insígnias derrotando Líderes de Ginásio\n"
+	.string "em várias cidades e vilas.$"
 
 Help_Text_TheHelpSystem::
-	.string "The HELP System$"
+	.string "O sistema de Ajuda$"
 
 Help_Text_TheGame::
-	.string "The game$"
+	.string "O jogo$"
 
 Help_Text_WirelessAdapter::
-	.string "Wireless Adapter$"
+	.string "Adaptador Sem Fio$"
 
 Help_Text_GameFundamentals1::
-	.string "Game fundamentals 1$"
+	.string "Fundamentos do jogo 1$"
 
 Help_Text_GameFundamentals2::
-	.string "Game fundamentals 2$"
+	.string "Fundamentos do jogo 2$"
 
 Help_Text_GameFundamentals3::
-	.string "Game fundamentals 3$"
+	.string "Fundamentos do jogo 3$"
 
 Help_Text_WhatArePokemon::
-	.string "What are POKéMON?$"
+	.string "O que são Pokémon?$"
 
 Help_Text_DescTheHelpSystem::
-	.string "The help messages change depending on\n"
-	.string "how much you have progressed in the\l"
-	.string "game. They are designed to support you\l"
-	.string "when you need them. If there is\l"
-	.string "anything that you don't understand,\l"
-	.string "please look up the HELP System!$"
+	.string "As mensagens de ajuda mudam conforme o\n"
+	.string "seu progresso no jogo. Elas foram\n"
+	.string "feitas para apoiar você quando\n"
+	.string "precisar. Se houver algo que você não\n"
+	.string "entenda, consulte o sistema de Ajuda!$"
 
 Help_Text_DescTheGame::
-	.string "You become the main character to\n"
-	.string "explore the world of POKéMON!\l"
-	.string "By talking to people and solving\l"
-	.string "mysteries, new paths will open to you.\l"
-	.string "Strive for the goal together with your\l"
-	.string "wonderful POKéMON!$"
+	.string "Você assume o papel principal e\n"
+	.string "explora o mundo dos Pokémon!\n"
+	.string "Conversando com as pessoas e\n"
+	.string "resolvendo mistérios, novos caminhos se\n"
+	.string "abrirão para você. Lute pelo seu\n"
+	.string "objetivo ao lado dos seus incríveis\n"
+	.string "Pokémon!$"
 
 Help_Text_DescWirelessAdapter::
-	.string "This game communicates over a wireless\n"
-	.string "link using the Wireless Adapter.\p"
-	.string "Go wireless anywhere, anytime, and\n"
-	.string "with anybody!\p"
-	.string "Try playing with the Wireless Adapter\n"
-	.string "always attached!$"
+	.string "Este jogo se comunica por link sem fio\n"
+	.string "usando o Adaptador Sem Fio.\p"
+	.string "Conecte-se sem fio em qualquer lugar,\n"
+	.string "a qualquer hora e com quem quiser!\p"
+	.string "Experimente jogar com o\n"
+	.string "Adaptador Sem Fio sempre conectado!$"
 
 Help_Text_DescGameFundamentals1::
-	.string "Visit every city and town, travel every\n"
-	.string "road, explore every cave, and face\l"
-	.string "every challenge as you strive to\l"
-	.string "become the greatest TRAINER of\l"
-	.string "POKéMON!$"
+	.string "Visite todas as cidades e vilas,\n"
+	.string "percorra todas as rotas, explore todas\n"
+	.string "as cavernas e encare todos os desafios\n"
+	.string "para se tornar o maior Treinador de\n"
+	.string "Pokémon!$"
 
 Help_Text_DescGameFundamentals2::
-	.string "On your adventure, you will be faced\n"
-	.string "with many obstacles. Every obstacle\l"
-	.string "can be overcome by doing something\l"
-	.string "or by solving mysteries. Some obstacles\l"
-	.string "are affected by something that happens\l"
-	.string "far away.$"
+	.string "Na sua aventura, você vai enfrentar\n"
+	.string "muitos obstáculos. Todo obstáculo pode\n"
+	.string "ser superado fazendo algo ou\n"
+	.string "resolvendo mistérios. Alguns obstáculos\n"
+	.string "são afetados por algo que acontece bem\n"
+	.string "longe dali.$"
 
 Help_Text_DescGameFundamentals3::
-	.string "Some of the obstacles in your way can\n"
-	.string "be removed once your POKéMON learn\l"
-	.string "specific moves.$"
+	.string "Alguns obstáculos no seu caminho podem\n"
+	.string "ser removidos quando os seus Pokémon\n"
+	.string "aprendem certos golpes.$"
 
 Help_Text_DescWhatArePokemon::
-	.string "POKéMON are wondrous creatures that\n"
-	.string "are shrouded in mystery. You may meet\l"
-	.string "them all over the world…in tall\l"
-	.string "grass, caves, the sea, and more.\l"
-	.string "They appear to grow obedient to the\l"
-	.string "TRAINERS that caught them.$"
+	.string "Os Pokémon são criaturas maravilhosas\n"
+	.string "envoltas em mistério. Você pode\n"
+	.string "encontrá-los no mundo todo… na grama\n"
+	.string "alta, em cavernas, no mar e mais. Eles\n"
+	.string "parecem ficar obedientes aos\n"
+	.string "Treinadores que os capturaram.$"
 
 Help_Text_UsingTypeMatchupList::
-	.string "Using the Type Matchup List$"
+	.string "Usando a tabela de tipos$"
 
 Help_Text_OwnMoveDark::
-	.string "Own move type: DARK$"
+	.string "Tipo do seu golpe: Sombrio$"
 
 Help_Text_OwnPokemonDark::
-	.string "Own POKéMON type: DARK$"
+	.string "Tipo do seu Pokémon: Sombrio$"
 
 Help_Text_OwnMoveRock::
-	.string "Own move type: ROCK$"
+	.string "Tipo do seu golpe: Pedra$"
 
 Help_Text_OwnPokemonRock::
-	.string "Own POKéMON type: ROCK$"
+	.string "Tipo do seu Pokémon: Pedra$"
 
 Help_Text_OwnMovePsychic::
-	.string "Own move type: PSYCHIC$"
+	.string "Tipo do seu golpe: Psíquico$"
 
 Help_Text_OwnPokemonPsychic::
-	.string "Own POKéMON type: PSYCHIC$"
+	.string "Tipo do seu Pokémon: Psíquico$"
 
 Help_Text_OwnMoveFighting::
-	.string "Own move type: FIGHTING$"
+	.string "Tipo do seu golpe: Lutador$"
 
 Help_Text_OwnPokemonFighting::
-	.string "Own POKéMON type: FIGHTING$"
+	.string "Tipo do seu Pokémon: Lutador$"
 
 Help_Text_OwnMoveGrass::
-	.string "Own move type: GRASS$"
+	.string "Tipo do seu golpe: Planta$"
 
 Help_Text_OwnPokemonGrass::
-	.string "Own POKéMON type: GRASS$"
+	.string "Tipo do seu Pokémon: Planta$"
 
 Help_Text_OwnMoveGhost::
-	.string "Own move type: GHOST$"
+	.string "Tipo do seu golpe: Fantasma$"
 
 Help_Text_OwnPokemonGhost::
-	.string "Own POKéMON type: GHOST$"
+	.string "Tipo do seu Pokémon: Fantasma$"
 
 Help_Text_OwnMoveIce::
-	.string "Own move type: ICE$"
+	.string "Tipo do seu golpe: Gelo$"
 
 Help_Text_OwnPokemonIce::
-	.string "Own POKéMON type: ICE$"
+	.string "Tipo do seu Pokémon: Gelo$"
 
 Help_Text_OwnMoveGround::
-	.string "Own move type: GROUND$"
+	.string "Tipo do seu golpe: Terrestre$"
 
 Help_Text_OwnPokemonGround::
-	.string "Own POKéMON type: GROUND$"
+	.string "Tipo do seu Pokémon: Terrestre$"
 
 Help_Text_OwnMoveElectric::
-	.string "Own move type: ELECTRIC$"
+	.string "Tipo do seu golpe: Elétrico$"
 
 Help_Text_OwnPokemonElectric::
-	.string "Own POKéMON type: ELECTRIC$"
+	.string "Tipo do seu Pokémon: Elétrico$"
 
 Help_Text_OwnMovePoison::
-	.string "Own move type: POISON$"
+	.string "Tipo do seu golpe: Venenoso$"
 
 Help_Text_OwnPokemonPoison::
-	.string "Own POKéMON type: POISON$"
+	.string "Tipo do seu Pokémon: Venenoso$"
 
 Help_Text_OwnMoveDragon::
-	.string "Own move type: DRAGON$"
+	.string "Tipo do seu golpe: Dragão$"
 
 Help_Text_OwnPokemonDragon::
-	.string "Own POKéMON type: DRAGON$"
+	.string "Tipo do seu Pokémon: Dragão$"
 
 Help_Text_OwnMoveNormal::
-	.string "Own move type: NORMAL$"
+	.string "Tipo do seu golpe: Normal$"
 
 Help_Text_OwnPokemonNormal::
-	.string "Own POKéMON type: NORMAL$"
+	.string "Tipo do seu Pokémon: Normal$"
 
 Help_Text_OwnMoveSteel::
-	.string "Own move type: STEEL$"
+	.string "Tipo do seu golpe: Aço$"
 
 Help_Text_OwnPokemonSteel::
-	.string "Own POKéMON type: STEEL$"
+	.string "Tipo do seu Pokémon: Aço$"
 
 Help_Text_OwnMoveFlying::
-	.string "Own move type: FLYING$"
+	.string "Tipo do seu golpe: Voador$"
 
 Help_Text_OwnPokemonFlying::
-	.string "Own POKéMON type: FLYING$"
+	.string "Tipo do seu Pokémon: Voador$"
 
 Help_Text_OwnMoveFire::
-	.string "Own move type: FIRE$"
+	.string "Tipo do seu golpe: Fogo$"
 
 Help_Text_OwnPokemonFire::
-	.string "Own POKéMON type: FIRE$"
+	.string "Tipo do seu Pokémon: Fogo$"
 
 Help_Text_OwnMoveWater::
-	.string "Own move type: WATER$"
+	.string "Tipo do seu golpe: Água$"
 
 Help_Text_OwnPokemonWater::
-	.string "Own POKéMON type: WATER$"
+	.string "Tipo do seu Pokémon: Água$"
 
 Help_Text_OwnMoveBug::
-	.string "Own move type: BUG$"
+	.string "Tipo do seu golpe: Inseto$"
 
 Help_Text_OwnPokemonBug::
-	.string "Own POKéMON type: BUG$"
+	.string "Tipo do seu Pokémon: Inseto$"
 
 Help_Text_HowToUseTypeMatchupList::
-	.string "Depending on the matchup of the\n"
-	.string "move type and the target POKéMON's\l"
-	.string "type, the move's effectiveness varies:\l"
-	.string "{CIRCLE_DOT}: Super effective!\l"
-	.string "{TRIANGLE}: Not very effective\l"
-	.string "{BIG_MULT_X}: Not effective at all\l"
-	.string "(No changes for other matchups.)$"
+	.string "Dependendo do tipo do golpe e do\n"
+	.string "tipo do Pokémon alvo, a eficácia do\n"
+	.string "golpe varia:\n"
+	.string "{CIRCLE_DOT}: Supereficaz!\n"
+	.string "{TRIANGLE}: Não muito eficaz\n"
+	.string "{BIG_MULT_X}: Não afeta\n"
+	.string "(Sem mudanças nas outras combinações.)$"
 
 Help_Text_TypeMatchupOwnMoveDark::
-	.string "Effect on the opposing POKéMON:\p"
-	.string "   {CIRCLE_DOT}: PSYCHIC, GHOST\p"
-	.string "   {TRIANGLE}: FIGHTING, DARK, STEEL$"
+	.string "Seu golpe no Pokémon adversário:\p"
+	.string "   {CIRCLE_DOT}: Psíquico, Fantasma\p"
+	.string "   {TRIANGLE}: Lutador, Sombrio, Aço$"
 
 Help_Text_TypeMatchupOwnPokemonDark::
-	.string "Effect of foe's move on own POKéMON:\p"
-	.string "   {CIRCLE_DOT}: FIGHTING, BUG\p"
-	.string "   {TRIANGLE}: GHOST, DARK\p"
-	.string "   {BIG_MULT_X}: PSYCHIC$"
+	.string "Golpe do adversário no seu Pokémon:\p"
+	.string "   {CIRCLE_DOT}: Lutador, Inseto\p"
+	.string "   {TRIANGLE}: Fantasma, Sombrio\p"
+	.string "   {BIG_MULT_X}: Psíquico$"
 
 Help_Text_TypeMatchupOwnMoveRock::
-	.string "Effect on the opposing POKéMON:\p"
-	.string "   {CIRCLE_DOT}: FIRE, ICE, FLYING, BUG\p"
-	.string "   {TRIANGLE}: FIGHTING, GROUND, STEEL$"
+	.string "Seu golpe no Pokémon adversário:\p"
+	.string "   {CIRCLE_DOT}: Fogo, Gelo, Voador, Inseto\p"
+	.string "   {TRIANGLE}: Lutador, Terrestre, Aço$"
 
 Help_Text_TypeMatchupOwnPokemonRock::
-	.string "Effect of foe's move on own POKéMON:\p"
-	.string "   {CIRCLE_DOT}: WATER, GRASS, FIGHTING,\n"
-	.string "       GROUND, STEEL\p"
-	.string "   {TRIANGLE}: NORMAL, FIRE, POISON, FLYING$"
+	.string "Golpe do adversário no seu Pokémon:\p"
+	.string "   {CIRCLE_DOT}: Água, Planta, Lutador,\n"
+	.string "       Terrestre, Aço\p"
+	.string "   {TRIANGLE}: Normal, Fogo, Venenoso, Voador$"
 
 Help_Text_TypeMatchupOwnMovePsychic::
-	.string "Effect on the opposing POKéMON:\p"
-	.string "   {CIRCLE_DOT}: FIGHTING, POISON\p"
-	.string "   {TRIANGLE}: PSYCHIC, STEEL\p"
-	.string "   {BIG_MULT_X}: DARK$"
+	.string "Seu golpe no Pokémon adversário:\p"
+	.string "   {CIRCLE_DOT}: Lutador, Venenoso\p"
+	.string "   {TRIANGLE}: Psíquico, Aço\p"
+	.string "   {BIG_MULT_X}: Sombrio$"
 
 Help_Text_TypeMatchupOwnPokemonPsychic::
-	.string "Effect of foe's move on own POKéMON:\p"
-	.string "   {CIRCLE_DOT}: BUG, GHOST, DARK\p"
-	.string "   {TRIANGLE}: FIGHTING, PSYCHIC$"
+	.string "Golpe do adversário no seu Pokémon:\p"
+	.string "   {CIRCLE_DOT}: Inseto, Fantasma, Sombrio\p"
+	.string "   {TRIANGLE}: Lutador, Psíquico$"
 
 Help_Text_TypeMatchupOwnMoveFighting::
-	.string "Effect on the opposing POKéMON:\p"
-	.string "   {CIRCLE_DOT}: NORMAL, ICE, ROCK, DARK, STEEL\p"
-	.string "   {TRIANGLE}: POISON, FLYING, PSYCHIC, BUG\p"
-	.string "   {BIG_MULT_X}: GHOST$"
+	.string "Seu golpe no Pokémon adversário:\p"
+	.string "   {CIRCLE_DOT}: Normal, Gelo, Pedra, Sombrio,\n"
+	.string "       Aço\p"
+	.string "   {TRIANGLE}: Venenoso, Voador, Psíquico,\n"
+	.string "       Inseto\p"
+	.string "   {BIG_MULT_X}: Fantasma$"
 
 Help_Text_TypeMatchupOwnPokemonFighting::
-	.string "Effect of foe's move on own POKéMON:\p"
-	.string "   {CIRCLE_DOT}: FLYING, PSYCHIC\p"
-	.string "   {TRIANGLE}: BUG, ROCK, DARK$"
+	.string "Golpe do adversário no seu Pokémon:\p"
+	.string "   {CIRCLE_DOT}: Voador, Psíquico\p"
+	.string "   {TRIANGLE}: Inseto, Pedra, Sombrio$"
 
 Help_Text_TypeMatchupOwnMoveGrass::
-	.string "Effect on the opposing POKéMON:\p"
-	.string "   {CIRCLE_DOT}: WATER, GROUND, ROCK\p"
-	.string "   {TRIANGLE}: FIRE, GRASS, POISON, FLYING,\n"
-	.string "       BUG, DRAGON, STEEL$"
+	.string "Seu golpe no Pokémon adversário:\p"
+	.string "   {CIRCLE_DOT}: Água, Terrestre, Pedra\p"
+	.string "   {TRIANGLE}: Fogo, Planta, Venenoso, Voador,\n"
+	.string "       Inseto, Dragão, Aço$"
 
 Help_Text_TypeMatchupOwnPokemonGrass::
-	.string "Effect of foe's move on own POKéMON:\p"
-	.string "   {CIRCLE_DOT}: FIRE, ICE, POISON, FLYING, BUG\p"
-	.string "   {TRIANGLE}: WATER, ELECTRIC, GRASS, GROUND$"
+	.string "Golpe do adversário no seu Pokémon:\p"
+	.string "   {CIRCLE_DOT}: Fogo, Gelo, Venenoso, Voador,\n"
+	.string "       Inseto\p"
+	.string "   {TRIANGLE}: Água, Elétrico, Planta, Terrestre$"
 
 Help_Text_TypeMatchupOwnMoveGhost::
-	.string "Effect on the opposing POKéMON:\p"
-	.string "   {CIRCLE_DOT}: PSYCHIC, GHOST\p"
-	.string "   {TRIANGLE}: DARK, STEEL\p"
-	.string "   {BIG_MULT_X}: NORMAL$"
+	.string "Seu golpe no Pokémon adversário:\p"
+	.string "   {CIRCLE_DOT}: Psíquico, Fantasma\p"
+	.string "   {TRIANGLE}: Sombrio, Aço\p"
+	.string "   {BIG_MULT_X}: Normal$"
 
 Help_Text_TypeMatchupOwnPokemonGhost::
-	.string "Effect of foe's move on own POKéMON:\p"
-	.string "   {CIRCLE_DOT}: GHOST, DARK\p"
-	.string "   {TRIANGLE}: POISON, BUG\p"
-	.string "   {BIG_MULT_X}: NORMAL, FIGHTING$"
+	.string "Golpe do adversário no seu Pokémon:\p"
+	.string "   {CIRCLE_DOT}: Fantasma, Sombrio\p"
+	.string "   {TRIANGLE}: Venenoso, Inseto\p"
+	.string "   {BIG_MULT_X}: Normal, Lutador$"
 
 Help_Text_TypeMatchupOwnMoveIce::
-	.string "Effect on the opposing POKéMON:\p"
-	.string "   {CIRCLE_DOT}: GRASS, GROUND, FLYING, DRAGON\p"
-	.string "   {TRIANGLE}: FIRE, WATER, ICE, STEEL$"
+	.string "Seu golpe no Pokémon adversário:\p"
+	.string "   {CIRCLE_DOT}: Planta, Terrestre, Voador,\n"
+	.string "       Dragão\p"
+	.string "   {TRIANGLE}: Fogo, Água, Gelo, Aço$"
 
 Help_Text_TypeMatchupOwnPokemonIce::
-	.string "Effect of foe's move on own POKéMON:\p"
-	.string "   {CIRCLE_DOT}: FIRE, FIGHTING, ROCK, STEEL\p"
-	.string "   {TRIANGLE}: ICE$"
+	.string "Golpe do adversário no seu Pokémon:\p"
+	.string "   {CIRCLE_DOT}: Fogo, Lutador, Pedra, Aço\p"
+	.string "   {TRIANGLE}: Gelo$"
 
 Help_Text_TypeMatchupOwnMoveGround::
-	.string "Effect on the opposing POKéMON:\p"
-	.string "   {CIRCLE_DOT}: FIRE, ELECTRIC, POISON, ROCK,\n"
-	.string "       STEEL\p"
-	.string "   {TRIANGLE}: GRASS, BUG\n"
-	.string "   {BIG_MULT_X}: FLYING$"
+	.string "Seu golpe no Pokémon adversário:\p"
+	.string "   {CIRCLE_DOT}: Fogo, Elétrico, Venenoso, Pedra,\n"
+	.string "       Aço\p"
+	.string "   {TRIANGLE}: Planta, Inseto\p"
+	.string "   {BIG_MULT_X}: Voador$"
 
 Help_Text_TypeMatchupOwnPokemonGround::
-	.string "Effect of foe's move on own POKéMON:\p"
-	.string "   {CIRCLE_DOT}: WATER, GRASS, ICE\p"
-	.string "   {TRIANGLE}: POISON, ROCK\p"
-	.string "   {BIG_MULT_X}: ELECTRIC$"
+	.string "Golpe do adversário no seu Pokémon:\p"
+	.string "   {CIRCLE_DOT}: Água, Planta, Gelo\p"
+	.string "   {TRIANGLE}: Venenoso, Pedra\p"
+	.string "   {BIG_MULT_X}: Elétrico$"
 
 Help_Text_TypeMatchupOwnMoveElectric::
-	.string "Effect on the opposing POKéMON:\p"
-	.string "   {CIRCLE_DOT}: WATER, FLYING\p"
-	.string "   {TRIANGLE}: ELECTRIC, GRASS, DRAGON\p"
-	.string "   {BIG_MULT_X}: GROUND$"
+	.string "Seu golpe no Pokémon adversário:\p"
+	.string "   {CIRCLE_DOT}: Água, Voador\p"
+	.string "   {TRIANGLE}: Elétrico, Planta, Dragão\p"
+	.string "   {BIG_MULT_X}: Terrestre$"
 
 Help_Text_TypeMatchupOwnPokemonElectric::
-	.string "Effect of foe's move on own POKéMON:\p"
-	.string "   {CIRCLE_DOT}: GROUND\p"
-	.string "   {TRIANGLE}: ELECTRIC, FLYING, STEEL$"
+	.string "Golpe do adversário no seu Pokémon:\p"
+	.string "   {CIRCLE_DOT}: Terrestre\p"
+	.string "   {TRIANGLE}: Elétrico, Voador, Aço$"
 
 Help_Text_TypeMatchupOwnMovePoison::
-	.string "Effect on the opposing POKéMON:\p"
-	.string "   {CIRCLE_DOT}: GRASS\p"
-	.string "   {TRIANGLE}: POISON, GROUND, ROCK, GHOST\p"
-	.string "   {BIG_MULT_X}: STEEL$"
+	.string "Seu golpe no Pokémon adversário:\p"
+	.string "   {CIRCLE_DOT}: Planta\p"
+	.string "   {TRIANGLE}: Venenoso, Terrestre, Pedra,\n"
+	.string "       Fantasma\p"
+	.string "   {BIG_MULT_X}: Aço$"
 
 Help_Text_TypeMatchupOwnPokemonPoison::
-	.string "Effect of foe's move on own POKéMON:\p"
-	.string "   {CIRCLE_DOT}: GROUND, PSYCHIC\p"
-	.string "   {TRIANGLE}: GRASS, FIGHTING, POISON, BUG$"
+	.string "Golpe do adversário no seu Pokémon:\p"
+	.string "   {CIRCLE_DOT}: Terrestre, Psíquico\p"
+	.string "   {TRIANGLE}: Planta, Lutador, Venenoso,\n"
+	.string "       Inseto$"
 
 Help_Text_TypeMatchupOwnMoveDragon::
-	.string "Effect on the opposing POKéMON:\p"
-	.string "   {CIRCLE_DOT}: DRAGON\p"
-	.string "   {TRIANGLE}: STEEL$"
+	.string "Seu golpe no Pokémon adversário:\p"
+	.string "   {CIRCLE_DOT}: Dragão\p"
+	.string "   {TRIANGLE}: Aço$"
 
 Help_Text_TypeMatchupOwnPokemonDragon::
-	.string "Effect of foe's move on own POKéMON:\p"
-	.string "   {CIRCLE_DOT}: ICE, DRAGON\p"
-	.string "   {TRIANGLE}: FIRE, WATER, ELECTRIC, GRASS$"
+	.string "Golpe do adversário no seu Pokémon:\p"
+	.string "   {CIRCLE_DOT}: Gelo, Dragão\p"
+	.string "   {TRIANGLE}: Fogo, Água, Elétrico, Planta$"
 
 Help_Text_TypeMatchupOwnMoveNormal::
-	.string "Effect on the opposing POKéMON:\p"
-	.string "   {TRIANGLE}: ROCK, STEEL\p"
-	.string "   {BIG_MULT_X}: GHOST$"
+	.string "Seu golpe no Pokémon adversário:\p"
+	.string "   {TRIANGLE}: Pedra, Aço\p"
+	.string "   {BIG_MULT_X}: Fantasma$"
 
 Help_Text_TypeMatchupOwnPokemonNormal::
-	.string "Effect of foe's move on own POKéMON:\p"
-	.string "   {CIRCLE_DOT}: FIGHTING\p"
-	.string "   {BIG_MULT_X}: GHOST$"
+	.string "Golpe do adversário no seu Pokémon:\p"
+	.string "   {CIRCLE_DOT}: Lutador\p"
+	.string "   {BIG_MULT_X}: Fantasma$"
 
 Help_Text_TypeMatchupOwnMoveSteel::
-	.string "Effect on the opposing POKéMON:\p"
-	.string "   {CIRCLE_DOT}: ICE, ROCK\p"
-	.string "   {TRIANGLE}: FIRE, WATER, ELECTRIC, STEEL$"
+	.string "Seu golpe no Pokémon adversário:\p"
+	.string "   {CIRCLE_DOT}: Gelo, Pedra\p"
+	.string "   {TRIANGLE}: Fogo, Água, Elétrico, Aço$"
 
 Help_Text_TypeMatchupOwnPokemonSteel::
-	.string "Effect of foe's move on own POKéMON:\p"
-	.string "   {CIRCLE_DOT}: FIRE, FIGHTING, GROUND\n"
-	.string "   {TRIANGLE}: NORMAL, GRASS, ICE, FLYING,\l"
-	.string "       PSYCHIC, BUG, ROCK, GHOST,\l"
-	.string "       DRAGON, DARK, STEEL\l"
-	.string "   {BIG_MULT_X}: POISON$"
+	.string "Golpe do adversário no seu Pokémon:\p"
+	.string "   {CIRCLE_DOT}: Fogo, Lutador, Terrestre\p"
+	.string "   {TRIANGLE}: Normal, Planta, Gelo, Voador,\n"
+	.string "       Psíquico, Inseto, Pedra,\n"
+	.string "       Fantasma, Dragão, Sombrio, Aço\p"
+	.string "   {BIG_MULT_X}: Venenoso$"
 
 Help_Text_TypeMatchupOwnMoveFlying::
-	.string "Effect on the opposing POKéMON:\p"
-	.string "   {CIRCLE_DOT}: GRASS, FIGHTING, BUG\p"
-	.string "   {TRIANGLE}: ELECTRIC, ROCK, STEEL$"
+	.string "Seu golpe no Pokémon adversário:\p"
+	.string "   {CIRCLE_DOT}: Planta, Lutador, Inseto\p"
+	.string "   {TRIANGLE}: Elétrico, Pedra, Aço$"
 
 Help_Text_TypeMatchupOwnPokemonFlying::
-	.string "Effect of foe's move on own POKéMON:\p"
-	.string "   {CIRCLE_DOT}: ELECTRIC, ICE, ROCK\p"
-	.string "   {TRIANGLE}: GRASS, FIGHTING, BUG\p"
-	.string "   {BIG_MULT_X}: GROUND$"
+	.string "Golpe do adversário no seu Pokémon:\p"
+	.string "   {CIRCLE_DOT}: Elétrico, Gelo, Pedra\p"
+	.string "   {TRIANGLE}: Planta, Lutador, Inseto\p"
+	.string "   {BIG_MULT_X}: Terrestre$"
 
 Help_Text_TypeMatchupOwnMoveFire::
-	.string "Effect on the opposing POKéMON:\p"
-	.string "   {CIRCLE_DOT}: GRASS, ICE, BUG, STEEL\p"
-	.string "   {TRIANGLE}: FIRE, WATER, ROCK, DRAGON$"
+	.string "Seu golpe no Pokémon adversário:\p"
+	.string "   {CIRCLE_DOT}: Planta, Gelo, Inseto, Aço\p"
+	.string "   {TRIANGLE}: Fogo, Água, Pedra, Dragão$"
 
 Help_Text_TypeMatchupOwnPokemonFire::
-	.string "Effect of foe's move on own POKéMON:\p"
-	.string "   {CIRCLE_DOT}: WATER, GROUND, ROCK\p"
-	.string "   {TRIANGLE}: FIRE, GRASS, ICE, BUG, STEEL$"
+	.string "Golpe do adversário no seu Pokémon:\p"
+	.string "   {CIRCLE_DOT}: Água, Terrestre, Pedra\p"
+	.string "   {TRIANGLE}: Fogo, Planta, Gelo, Inseto, Aço$"
 
 Help_Text_TypeMatchupOwnMoveWater::
-	.string "Effect on the opposing POKéMON:\p"
-	.string "   {CIRCLE_DOT}: FIRE, GROUND, ROCK\p"
-	.string "   {TRIANGLE}: WATER, GRASS, DRAGON$"
+	.string "Seu golpe no Pokémon adversário:\p"
+	.string "   {CIRCLE_DOT}: Fogo, Terrestre, Pedra\p"
+	.string "   {TRIANGLE}: Água, Planta, Dragão$"
 
 Help_Text_TypeMatchupOwnPokemonWater::
-	.string "Effect of foe's move on own POKéMON:\p"
-	.string "   {CIRCLE_DOT}: ELECTRIC, GRASS\p"
-	.string "   {TRIANGLE}: FIRE, WATER, ICE, STEEL$"
+	.string "Golpe do adversário no seu Pokémon:\p"
+	.string "   {CIRCLE_DOT}: Elétrico, Planta\p"
+	.string "   {TRIANGLE}: Fogo, Água, Gelo, Aço$"
 
 Help_Text_TypeMatchupOwnMoveBug::
-	.string "Effect on the opposing POKéMON:\p"
-	.string "   {CIRCLE_DOT}: GRASS, PSYCHIC, DARK\p"
-	.string "   {TRIANGLE}: FIRE, FIGHTING, POISON,\n"
-	.string "       FLYING, GHOST, STEEL$"
+	.string "Seu golpe no Pokémon adversário:\p"
+	.string "   {CIRCLE_DOT}: Planta, Psíquico, Sombrio\p"
+	.string "   {TRIANGLE}: Fogo, Lutador, Venenoso, Voador,\n"
+	.string "       Fantasma, Aço$"
 
 Help_Text_TypeMatchupOwnPokemonBug::
-	.string "Effect of foe's move on own POKéMON:\p"
-	.string "   {CIRCLE_DOT}: FIRE, FLYING, ROCK\p"
-	.string "   {TRIANGLE}: GRASS, FIGHTING, GROUND$"
+	.string "Golpe do adversário no seu Pokémon:\p"
+	.string "   {CIRCLE_DOT}: Fogo, Voador, Pedra\p"
+	.string "   {TRIANGLE}: Planta, Lutador, Terrestre$"
 

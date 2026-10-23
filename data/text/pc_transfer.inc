@@ -1,30 +1,30 @@
 Text_MonSentToBoxInSomeonesPC::
-    .string "{STR_VAR_2} was transferred to\n"
-    .string "Someone's PC.\p"
-    .string "It was placed in \n"
-    .string "BOX “{STR_VAR_1}.”$"
+    .string "{STR_VAR_2} foi transferido para\n"
+    .string "o PC de alguém.\p"
+    .string "Foi colocado na\n"
+    .string "Caixa “{STR_VAR_1}.”$"
 
 Text_MonSentToBoxInBillsPC::
-    .string "{STR_VAR_2} was transferred to\n"
-    .string "BILL'S PC.\p"
-    .string "It was placed in \n"
-    .string "BOX “{STR_VAR_1}.”$"
+    .string "{STR_VAR_2} foi transferido para\n"
+    .string "o PC do Bill.\p"
+    .string "Foi colocado na\n"
+    .string "Caixa “{STR_VAR_1}.”$"
 
 Text_MonSentToBoxSomeonesBoxFull::
-    .string "BOX “{STR_VAR_3}” on\n"
-    .string "Someone's PC was full.\p"
-    .string "{STR_VAR_2} was transferred to\n"
-    .string "BOX “{STR_VAR_1}.”$"
+    .string "A Caixa “{STR_VAR_3}” do\n"
+    .string "PC de alguém estava cheia.\p"
+    .string "{STR_VAR_2} foi transferido para\n"
+    .string "a Caixa “{STR_VAR_1}.”$"
 
 Text_MonSentToBoxBillsBoxFull::
-    .string "BOX “{STR_VAR_3}” on\n"
-    .string "BILL'S PC was full.\p"
-    .string "{STR_VAR_2} was transferred to\n"
-    .string "BOX “{STR_VAR_1}.”$"
+    .string "A Caixa “{STR_VAR_3}” do\n"
+    .string "PC do Bill estava cheia.\p"
+    .string "{STR_VAR_2} foi transferido para\n"
+    .string "a Caixa “{STR_VAR_1}.”$"
 
 Text_PlayerObtainedTheMon::
-    .string "{PLAYER} obtained\n"
-    .string "the {STR_VAR_1}!$"
+    .string "{PLAYER} recebeu\n"
+    .string "{STR_VAR_1}!$"
 
 @ Unused. Translated below
 @ You cannot carry any more Pokemon, so {STR_VAR_2} was sent to PC Box {STR_VAR_1}!
@@ -34,6 +34,6 @@ Text_MonSentToBoxInPC::
     .string "{STR_VAR_2}を　てんそうした！$"
 
 Text_NoMoreRoomForPokemon::
-    .string "There's no more room for POKéMON!\p"
-    .string "The POKéMON BOXES are full and\n"
-    .string "can't accept any more!$"
+    .string "Não há mais espaço para Pokémon!\p"
+    .string "As Caixas de Pokémon estão cheias\n"
+    .string "e não aceitam mais nenhum!$"

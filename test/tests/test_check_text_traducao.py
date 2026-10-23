@@ -137,7 +137,7 @@ def test_without_git_there_is_no_base_and_no_complaint(tmp_path):
 def test_unknown_base_is_an_aviso_of_the_three_rules(repo):
     results = check_text(str(repo), {"text": []}, base="0123456789abcdef0123", english="desligado")
     assert [(r.name, r.status) for r in results] == [("texto/controle", "aviso"), ("texto/glossario", "aviso"),
-                                                     ("texto/largura", "aviso")]
+                                                     ("texto/largura", "aviso"), ("texto/buffer", "aviso")]
     assert all("base" in r.detail and "não rodou" in r.detail for r in results)
     assert "pior caso" in results[2].detail
 
@@ -148,7 +148,7 @@ def test_broken_git_is_an_aviso_not_silence(repo):
     (repo / ".git").write_text("gitdir: C:/nao/existe/.git/worktrees/x\n", encoding="utf-8")
     results = check_text(str(repo), {"text": []}, english="desligado")
     assert [(r.name, r.status) for r in results] == [("texto/controle", "aviso"), ("texto/glossario", "aviso"),
-                                                     ("texto/largura", "aviso")]
+                                                     ("texto/largura", "aviso"), ("texto/buffer", "aviso")]
     assert "git" in results[0].detail
 
 

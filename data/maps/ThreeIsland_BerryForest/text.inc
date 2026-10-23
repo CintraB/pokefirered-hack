@@ -1,43 +1,46 @@
 ThreeIsland_BerryForest_Text_HelpScaryPokemon::
-    .string "LOSTELLE: Whimper… Sniff…\n"
-    .string "Oh! Please, help!\p"
-    .string "A scary POKéMON appeared there\n"
-    .string "a little while ago.\p"
-    .string "It kept scaring.\n"
-    .string "It made LOSTELLE scared.\p"
-    .string "I'm too scared to move!\n"
-    .string "But I want to go home…$"
+    .string "Lostelle: Buá… Snif…\n"
+    .string "Ah! Por favor, ajude!\p"
+    .string "Um Pokémon assustador apareceu ali\n"
+    .string "agorinha.\p"
+    .string "Ele ficou me assustando.\n"
+    .string "A Lostelle ficou com medo.\p"
+    .string "Estou com tanto medo que não\n"
+    .string "consigo me mexer!\l"
+    .string "Mas eu quero ir para casa…$"
 
 ThreeIsland_BerryForest_Text_HereItComesAgain::
-    .string "Oh! Here it comes again!\n"
-    .string "No! Go away! It's scaring me!\p"
-    .string "Waaaaaaah!\n"
-    .string "I want my daddy!$"
+    .string "Ah! Lá vem ele de novo!\n"
+    .string "Não! Vá embora! Ele está me\l"
+    .string "assustando!\p"
+    .string "Buááááá!\n"
+    .string "Eu quero o meu papai!$"
 
 ThreeIsland_BerryForest_Text_ThankYouHaveThis::
-    .string "Ohh! That was so scary!\n"
-    .string "Thank you!\p"
-    .string "LOSTELLE came to pick some\n"
-    .string "BERRIES.\p"
-    .string "You can have this!$"
+    .string "Ahh! Que susto!\n"
+    .string "Obrigada!\p"
+    .string "A Lostelle veio colher umas\n"
+    .string "frutas.\p"
+    .string "Pode ficar com isto!$"
 
 ThreeIsland_BerryForest_Text_LetsGoHome::
-    .string "What's your name?\p"
-    .string "LOSTELLE's scared, so can I go\n"
-    .string "with you to my daddy's house?\p"
-    .string "Okay!\n"
-    .string "Let's go home!$"
+    .string "Como você se chama?\p"
+    .string "A Lostelle está com medo, então\n"
+    .string "posso ir com você até a casa do\l"
+    .string "meu papai?\p"
+    .string "Tá bom!\n"
+    .string "Vamos para casa!$"
 
 ThreeIsland_BerryForest_Text_BerryPouchIsFull::
-    .string "Your BERRY POUCH is full.\n"
-    .string "I guess you don't want this.$"
+    .string "O seu Porta-frutas está cheio.\n"
+    .string "Acho que você não quer isto.$"
 
 ThreeIsland_BerryForest_Text_WelcomeToBerryForest::
-    .string "Welcome to the BERRY FOREST\p"
-    .string "Be friendly and share BERRIES with\n"
-    .string "others and POKéMON.$"
+    .string "Boas-vindas ao Bosque das Frutas\p"
+    .string "Seja amigável e divida as frutas\n"
+    .string "com as outras pessoas e os Pokémon.$"
 
 ThreeIsland_BerryForest_Text_BewareWildBerryLovingMons::
-    .string "Beware of wild, BERRY-loving\n"
-    .string "POKéMON!$"
+    .string "Cuidado com os Pokémon selvagens\n"
+    .string "que adoram frutas!$"
 

@@ -1,6 +1,5 @@
 CeruleanCity_BikeShop_Text_WelcomeToBikeShop::
-    .string "Olá!\n"
-    .string "Boas-vindas à nossa\n"
+    .string "Olá! Boas-vindas à nossa\n"
     .string "Loja de Bicicletas.\p"
     .string "Temos a bicicleta perfeita para\n"
     .string "você!$"

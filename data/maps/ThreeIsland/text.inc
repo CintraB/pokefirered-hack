@@ -1,167 +1,164 @@
 ThreeIsland_Text_IslandSign::
-    .string "THREE ISLAND\n"
-    .string "Kin Island of Family Bonding$"
+    .string "Ilha Três\n"
+    .string "Ilha da União Familiar$"
 
 ThreeIsland_Text_IslandBelongsToUs::
-    .string "Hyahoo!\p"
-    .string "From this day on, this island\n"
-    .string "belongs to us!$"
+    .string "Iáhuu!\p"
+    .string "A partir de hoje, esta ilha é\n"
+    .string "nossa!$"
 
 ThreeIsland_Text_GoBackToKanto::
-    .string "We don't need you people bringing\n"
-    .string "your noise and trouble here!\p"
-    .string "We're asking you to go back to\n"
-    .string "KANTO!$"
+    .string "Não precisamos de vocês trazendo\n"
+    .string "barulho e confusão para cá!\p"
+    .string "Exigimos que voltem para\n"
+    .string "Kanto!$"
 
 ThreeIsland_Text_BossIsOnHisWay::
-    .string "Hey, go cry somewhere else.\n"
-    .string "Our boss is on his way.\p"
-    .string "When he gets here, we'll give you\n"
-    .string "a k-rad motorbike show you won't\l"
-    .string "soon forget!$"
+    .string "Ei, vai chorar em outro lugar.\n"
+    .string "O nosso chefe está chegando.\p"
+    .string "Quando ele chegar, vamos dar um\n"
+    .string "show de moto radical que vocês não\l"
+    .string "vão esquecer tão cedo!$"
 
 ThreeIsland_Text_GetOffIslandNow::
-    .string "W-what!? Not on your life!\n"
-    .string "Get off the island now!$"
+    .string "O-o quê!? Nem pensar!\n"
+    .string "Saiam da ilha agora!$"
 
 ThreeIsland_Text_WhosGonnaMakeMe::
-    .string "Who's gonna make me?$"
+    .string "E quem vai me obrigar?$"
 
 ThreeIsland_Text_AreYouBossGoBackToKanto::
-    .string "Are you the boss?\n"
-    .string "Go back to KANTO right now!$"
+    .string "Você é o chefe?\n"
+    .string "Volte para Kanto agora mesmo!$"
 
 ThreeIsland_Text_JustGotHerePal::
-    .string "Hah?\p"
-    .string "I just got here, pal.\p"
-    .string "What's with the hostile attitude?\n"
-    .string "It's mighty cold of you!$"
+    .string "Hã?\p"
+    .string "Eu acabei de chegar, amigo.\p"
+    .string "Que atitude hostil é essa?\n"
+    .string "Vocês são muito frios!$"
 
 ThreeIsland_Text_FollowersRaisingHavoc::
-    .string "Your gang of followers have been\n"
-    .string "raising havoc on their bikes.\p"
-    .string "Do you have any idea how much\n"
-    .string "trouble they've caused us on the\l"
-    .string "island?$"
+    .string "O seu bando de seguidores anda\n"
+    .string "causando o caos com as motos.\p"
+    .string "Faz ideia de quanto problema eles\n"
+    .string "nos deram nesta ilha?$"
 
 ThreeIsland_Text_OughtToBeThankingUs::
-    .string "No, man, I don't get it at all.\p"
-    .string "Look at this place.\n"
-    .string "What do you do for entertainment?\p"
-    .string "You ought to be thanking us for\n"
-    .string "livening up this sleepy village.\p"
-    .string "But hey, if you insist, you can try\n"
-    .string "making us leave.$"
+    .string "Não, cara, eu não entendo mesmo.\p"
+    .string "Olhe só este lugar.\n"
+    .string "O que vocês fazem para se divertir?\p"
+    .string "Deviam nos agradecer por animar este\n"
+    .string "vilarejo pacato.\p"
+    .string "Mas, se vocês insistem, podem tentar\n"
+    .string "nos expulsar.$"
 
 ThreeIsland_Text_YouCowardsToughInPack::
-    .string "Grr… You cowards…\n"
-    .string "So tough in a pack…$"
+    .string "Grr… Seus covardes…\n"
+    .string "Só são valentes em bando…$"
 
 ThreeIsland_Text_WannaMakeSomethingOfYourStaring::
-    .string "You, what are you staring at?\n"
-    .string "Don't you know it's not polite?\p"
-    .string "You wanna make something of it\n"
-    .string "or what?$"
+    .string "Você aí, está olhando o quê?\n"
+    .string "Sabe que isso não é educado?\p"
+    .string "Quer arrumar confusão ou o quê?$"
 
 ThreeIsland_Text_ThatsSmart::
-    .string "That's smart.\n"
-    .string "Keep your nose out of this.$"
+    .string "Boa escolha.\n"
+    .string "Não se meta nisso.$"
 
 ThreeIsland_Text_Biker1Intro::
-    .string "Heh, I like your guts.\n"
-    .string "You'll be losing money to me, but…$"
+    .string "Hehe, gostei da sua coragem.\n"
+    .string "Vai perder dinheiro para mim, mas…$"
 
 ThreeIsland_Text_Biker1Defeat::
-    .string "Wha…\n"
-    .string "What is this kid?!$"
+    .string "O quê…\n"
+    .string "Quem é essa criança?!$"
 
 ThreeIsland_Text_Biker1PostBattle::
-    .string "Aww, man…\n"
-    .string "Don't you dare laugh!$"
+    .string "Poxa, cara…\n"
+    .string "Nem pense em rir!$"
 
 ThreeIsland_Text_Biker2Intro::
-    .string "Aren't you from KANTO?\n"
-    .string "You should be on our side!$"
+    .string "Você não é de Kanto?\n"
+    .string "Devia estar do nosso lado!$"
 
 ThreeIsland_Text_Biker2Defeat::
-    .string "Stop fooling around!$"
+    .string "Chega de brincadeira!$"
 
 ThreeIsland_Text_Biker2PostBattle::
-    .string "What's the matter with you,\n"
-    .string "getting all hot like that?\p"
-    .string "Totally uncool, man!$"
+    .string "Qual é o seu problema, se\n"
+    .string "estressando desse jeito?\p"
+    .string "Nada a ver!$"
 
 ThreeIsland_Text_Biker3Intro::
-    .string "We invited the boss out here,\n"
-    .string "but you had to mess it up!\p"
-    .string "You embarrassed us, man!$"
+    .string "A gente convidou o chefe para vir\n"
+    .string "aqui, mas você tinha que estragar!\p"
+    .string "Você nos envergonhou!$"
 
 ThreeIsland_Text_Biker3Defeat::
     .string "… … …   … … …$"
 
 ThreeIsland_Text_Biker3PostBattle::
-    .string "Boss, I'm telling you, you've gotta\n"
-    .string "do something about this kid!$"
+    .string "Chefe, estou dizendo, você precisa\n"
+    .string "dar um jeito nessa criança!$"
 
 ThreeIsland_Text_PaxtonIntro::
-    .string "I've been watching you, and I'd say\n"
-    .string "you've done enough.\p"
-    .string "What are you, their friend or\n"
-    .string "something?\p"
-    .string "Then I guess you'll be battling me\n"
-    .string "in their place.$"
+    .string "Estou de olho em você e acho que já\n"
+    .string "chega.\p"
+    .string "Você é da turma deles ou algo assim?\p"
+    .string "Então acho que vai batalhar comigo\n"
+    .string "no lugar deles.$"
 
 ThreeIsland_Text_PaxtonDefeat::
-    .string "All right, enough!\n"
-    .string "We'll leave like you wanted!\p"
-    .string "We'll be happy to see the last of\n"
-    .string "this boring island!$"
+    .string "Tá bom, chega!\n"
+    .string "Vamos embora, como você queria!\p"
+    .string "Será um prazer nunca mais ver esta\n"
+    .string "ilha chata!$"
 
 ThreeIsland_Text_PaxtonPostBattle::
-    .string "Humph! Yeah, go right on hanging\n"
-    .string "around with these hayseeds!$"
+    .string "Humpf! É, continue andando com esses\n"
+    .string "caipiras!$"
 
 ThreeIsland_Text_ThankYouOhYourMonGotHurt::
-    .string "Thank you! Those goons were\n"
-    .string "nothing but bad trouble.\p"
-    .string "Oh, look, your POKéMON got hurt\n"
-    .string "on my account.$"
+    .string "Obrigado! Aqueles brutamontes só\n"
+    .string "davam dor de cabeça.\p"
+    .string "Ah, veja só, os seus Pokémon se\n"
+    .string "machucaram por minha causa.$"
 
 ThreeIsland_Text_GivenFullRestore::
-    .string "{PLAYER} was given\n"
-    .string "a FULL RESTORE.$"
+    .string "{PLAYER} recebeu\n"
+    .string "um Restaura Tudo.$"
 
 ThreeIsland_Text_OhYourBagIsFull::
-    .string "Oh?\n"
-    .string "Your BAG is full.$"
+    .string "Ah?\n"
+    .string "A sua Bolsa está cheia.$"
 
 ThreeIsland_Text_YouveGotImpressiveMons::
-    .string "You've got seriously impressive\n"
-    .string "POKéMON with you.$"
+    .string "Você tem Pokémon realmente\n"
+    .string "impressionantes.$"
 
 ThreeIsland_Text_LostelleWentOffTowardsBondBridge::
-    .string "It'd be fantastic if someone as\n"
-    .string "strong as you lived here.\p"
-    .string "I hope you'll at least stay here\n"
-    .string "a while.\p"
-    .string "…I beg your pardon?\n"
-    .string "You're looking for LOSTELLE?\p"
-    .string "LOSTELLE went off towards BOND\n"
-    .string "BRIDGE a while ago.$"
+    .string "Seria fantástico se alguém tão forte\n"
+    .string "quanto você morasse aqui.\p"
+    .string "Espero que pelo menos fique um tempo\n"
+    .string "por aqui.\p"
+    .string "…Como disse?\n"
+    .string "Está procurando a Lostelle?\p"
+    .string "A Lostelle foi em direção à\n"
+    .string "Ponte da União há algum tempo.$"
 
 ThreeIsland_Text_WouldntWantToSeeBikersHereAgain::
-    .string "THREE ISLAND is actually the most\n"
-    .string "populous of the islands here.\p"
-    .string "Still, it could be less sleepy.\p"
-    .string "But I wouldn't want to see goons\n"
-    .string "like those BIKERS here again.$"
+    .string "A Ilha Três é, na verdade, a mais\n"
+    .string "populosa das ilhas daqui.\p"
+    .string "Mesmo assim, podia ser menos pacata.\p"
+    .string "Mas não quero ver brutamontes como\n"
+    .string "aqueles Motoqueiros aqui de novo.$"
 
 ThreeIsland_Text_WhenDodouEvolvesGoingToPlayGame::
-    .string "I'm going to train my DODUO in the\n"
-    .string "BERRY FOREST.\p"
-    .string "When it evolves, I'm going to play\n"
-    .string "a game on TWO ISLAND.$"
+    .string "Vou treinar o meu Doduo no\n"
+    .string "Bosque das Frutas.\p"
+    .string "Quando ele evoluir, vou jogar um\n"
+    .string "pouco na Ilha Dois.$"
 
 ThreeIsland_Text_Doduo::
-    .string "DODUO: Gigiih!$"
+    .string "Doduo: Gigiih!$"
 

@@ -17,8 +17,8 @@ Sessão própria da ROM de teste a partir do .sav do `captura` (`save_from="capt
   relógios cujo sorteio de INLAND não é NONE;
 - `clima/caverna`: Mt. Moon (subterrâneo) → WEATHER_NONE com o mesmo tipo de sorteio;
 - `clima/batalha_granizo` (Task 5): Four Island com neve, atalho START_WILD_BATTLE (Pikachu nível 5)
-  → depois da abertura gBattleWeather tem B_WEATHER_HAIL_PERMANENT, a mensagem "It started to
-  hail!" (tela `batalha_granizo`); aí gWishFutureKnock.weatherDuration = 1 na RAM (o granizo
+  → depois da abertura gBattleWeather tem B_WEATHER_HAIL_PERMANENT, a mensagem "Começou a cair
+  granizo!" (tela `batalha_granizo`); aí gWishFutureKnock.weatherDuration = 1 na RAM (o granizo
   temporário acabaria no fim do 1º turno: sem a guarda de B_WEATHER_HAIL_PERMANENT o contador,
   que começa em 0, daria a volta para 255 e a checagem não pegaria nada) e o granizo continua
   depois de 3 turnos (Splash de um Magikarp nível 50 no lugar do 1º do time, para o Pikachu não
@@ -72,7 +72,7 @@ LEAD_SPECIES, LEAD_LEVEL = "SPECIES_MAGIKARP", 50   # 1º golpe Splash, mais rá
 HAIL_TURNS = 3
 HAIL_DURATION = 1                   # weatherDuration escrito depois da abertura: acaba no 1º turno
 WISH_WEATHER_DURATION = 0x28        # gWishFutureKnock.weatherDuration (struct WishFutureKnock, include/battle.h)
-HAIL_TEXT = "It started to hail!"
+HAIL_TEXT = "Começou a cair granizo!"     # sText_StartedHail (src/battle_message.c)
 BATTLE_CASES = (   # (fluxo, mapa, ponto, região, período, clima do campo, (máscara, esperado) na batalha)
     ("areia", "MAP_ROUTE3", ROUTE3_SPOT, dn.REGION_SAND, dn.AFTERNOON, dn.WEATHER_SANDSTORM,
      (B_WEATHER_SANDSTORM, B_WEATHER_SANDSTORM)),
@@ -283,7 +283,7 @@ class WeatherScenario(ClockScenario):
         while HAIL_TEXT not in self._battle_text():
             assert spent < 1200, (f"sem \"{HAIL_TEXT}\" na abertura: gBattleWeather = "
                                   f"{self._battle_weather():#x}, texto \"{self._battle_text()}\"")
-            self.emu.press(KEY_A, hold=2, release=2)   # "Wild PIKACHU appeared!" etc.
+            self.emu.press(KEY_A, hold=2, release=2)   # "Um Pikachu selvagem apareceu!" etc.
             spent += 4
         self.emu.frames(4)
         self._shot("batalha_granizo")
