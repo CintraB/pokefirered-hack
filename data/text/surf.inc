@@ -1,10 +1,10 @@
 Text_WantToSurf::
-	.string "The water is dyed a deep blue…\n"
-	.string "Would you like to SURF?$"
+	.string "A água tem um azul profundo…\n"
+	.string "Quer usar Surfar?$"
 
 Text_UsedSurf::
-	.string "{STR_VAR_1} used SURF!$"
+	.string "{STR_VAR_1} usou Surfar!$"
 
 Text_CurrentTooFast::
-	.string "The current is much too fast!\n"
-	.string "SURF can't be used here…$"
+	.string "A correnteza é forte demais!\n"
+	.string "Não dá para usar Surfar aqui…$"
