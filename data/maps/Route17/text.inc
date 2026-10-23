@@ -1,131 +1,135 @@
 Route17_Text_RaulIntro::
-    .string "There's no getting rich quick in\n"
-    .string "battling kids.$"
+    .string "Não dá para ficar rico rápido\n"
+    .string "batalhando contra crianças.$"
 
 Route17_Text_RaulDefeat::
-    .string "Burned out!$"
+    .string "Esgotado!$"
 
 Route17_Text_RaulPostBattle::
-    .string "You can find good stuff lying\n"
-    .string "around on CYCLING ROAD.\p"
-    .string "There's good money in picking them\n"
-    .string "up and selling them.$"
+    .string "Dá para achar coisa boa jogada pela\n"
+    .string "Ciclovia.\p"
+    .string "Rende uma boa grana pegar essas\n"
+    .string "coisas e vendê-las.$"
 
 Route17_Text_IsaiahIntro::
-    .string "I'm mighty proud of my bod, kiddo.\n"
-    .string "Come on!$"
+    .string "Tenho muito orgulho do meu corpão,\n"
+    .string "criança.\l"
+    .string "Vem!$"
 
 Route17_Text_IsaiahDefeat::
-    .string "Whoo!$"
+    .string "Uhu!$"
 
 Route17_Text_IsaiahPostBattle::
-    .string "I could belly-bump you outta\n"
-    .string "here!$"
+    .string "Eu poderia te expulsar daqui com uma\n"
+    .string "barrigada!$"
 
 Route17_Text_VirgilIntro::
-    .string "You heading to FUCHSIA?$"
+    .string "Vai para a Cidade de Fuchsia?$"
 
 Route17_Text_VirgilDefeat::
-    .string "Crash and burn!$"
+    .string "Bati e queimei!$"
 
 Route17_Text_VirgilPostBattle::
-    .string "I love racing downhill!$"
+    .string "Adoro descer a ladeira a toda!$"
 
 Route17_Text_BillyIntro::
-    .string "We're BIKERS!\n"
-    .string "We rule the roads, man!$"
+    .string "Somos Motoqueiros!\n"
+    .string "A gente manda nas estradas, cara!$"
 
 Route17_Text_BillyDefeat::
-    .string "Smoked!$"
+    .string "Fui atropelado!$"
 
 Route17_Text_BillyPostBattle::
-    .string "Are you looking for adventure?$"
+    .string "Você está atrás de aventura?$"
 
 Route17_Text_NikolasIntro::
-    .string "Let VOLTORB electrify you!$"
+    .string "Deixe o Voltorb eletrizar você!$"
 
 Route17_Text_NikolasDefeat::
-    .string "Grounded out!$"
+    .string "Aterrado!$"
 
 Route17_Text_NikolasPostBattle::
-    .string "I got my VOLTORB at the abandoned\n"
-    .string "POWER PLANT.$"
+    .string "Peguei meu Voltorb na Usina Elétrica\n"
+    .string "abandonada.$"
 
 Route17_Text_ZeekIntro::
-    .string "I leveled up my POKéMON, but it\n"
-    .string "won't evolve. Why?$"
+    .string "Subi o nível do meu Pokémon, mas ele\n"
+    .string "não evolui. Por quê?$"
 
 Route17_Text_ZeekDefeat::
-    .string "Why, you!$"
+    .string "Ora essa!$"
 
 Route17_Text_ZeekPostBattle::
-    .string "Maybe some POKéMON need element\n"
-    .string "STONES to evolve.$"
+    .string "Talvez alguns Pokémon precisem de\n"
+    .string "Pedras elementais para evoluir.$"
 
 Route17_Text_JamalIntro::
-    .string "I need a little exercise!$"
+    .string "Preciso de um pouco de exercício!$"
 
 Route17_Text_JamalDefeat::
-    .string "Whew!\n"
-    .string "Good workout!$"
+    .string "Ufa!\n"
+    .string "Bom treino!$"
 
 Route17_Text_JamalPostBattle::
-    .string "I'm sure I lost weight there!$"
+    .string "Tenho certeza de que emagreci aqui!$"
 
 Route17_Text_CoreyIntro::
-    .string "Be a rebel!$"
+    .string "Seja rebelde!$"
 
 Route17_Text_CoreyDefeat::
     .string "Aaaargh!$"
 
 Route17_Text_CoreyPostBattle::
-    .string "Be ready to fight for your beliefs!$"
+    .string "Prepare-se para lutar pelas suas\n"
+    .string "crenças!$"
 
 Route17_Text_JaxonIntro::
-    .string "Nice BIKE!\n"
-    .string "How's it handle?$"
+    .string "Bela bicicleta!\n"
+    .string "Como ela é de pilotar?$"
 
 Route17_Text_JaxonDefeat::
-    .string "Shoot!$"
+    .string "Droga!$"
 
 Route17_Text_JaxonPostBattle::
-    .string "The slope makes it hard to steer.$"
+    .string "A descida dificulta a direção.$"
 
 Route17_Text_WilliamIntro::
-    .string "Get lost, kid!\n"
-    .string "I'm bushed!$"
+    .string "Cai fora, criança!\n"
+    .string "Estou morto de cansaço!$"
 
 Route17_Text_WilliamDefeat::
-    .string "Are you satisfied?$"
+    .string "Está feliz agora?$"
 
 Route17_Text_WilliamPostBattle::
-    .string "I need to catch a few z's!$"
+    .string "Preciso tirar uma soneca!$"
 
 Route17_Text_WatchOutForDiscardedItems::
-    .string "It's a notice.\p"
-    .string "Watch out for discarded items.$"
+    .string "É um aviso.\p"
+    .string "Cuidado com itens descartados.$"
 
 Route17_Text_SameSpeciesGrowDifferentRates::
-    .string "TRAINER TIPS\p"
-    .string "All POKéMON are unique.\p"
-    .string "Even POKéMON of the same species\n"
-    .string "and level grow at different rates.$"
+    .string "Dicas de Treinador\p"
+    .string "Todo Pokémon é único.\p"
+    .string "Mesmo Pokémon da mesma espécie e do\n"
+    .string "mesmo nível crescem em ritmos\l"
+    .string "diferentes.$"
 
 Route17_Text_PressBToStayInPlace::
-    .string "TRAINER TIPS\p"
-    .string "Press the B Button to stay in place\n"
-    .string "while on a slope.$"
+    .string "Dicas de Treinador\p"
+    .string "Pressione o botão B para ficar\n"
+    .string "parado numa descida.$"
 
 Route17_Text_RouteSign::
-    .string "ROUTE 17\n"
-    .string "CELADON CITY - FUCHSIA CITY$"
+    .string "Rota 17\n"
+    .string "Cidade de Celadon -\l"
+    .string "Cidade de Fuchsia$"
 
 Route17_Text_DontThrowGameThrowBalls::
-    .string "It's a notice!\p"
-    .string "Don't throw the game, throw POKé\n"
-    .string "BALLS instead!$"
+    .string "É um aviso!\p"
+    .string "Não jogue a partida fora, jogue\n"
+    .string "Poké Bolas!$"
 
 Route17_Text_CyclingRoadSign::
-    .string "CYCLING ROAD\n"
-    .string "Slope ends here!$"
+    .string "Ciclovia\n"
+    .string "A descida termina aqui!$"
 

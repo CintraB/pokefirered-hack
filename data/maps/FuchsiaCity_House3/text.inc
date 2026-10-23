@@ -1,6 +1,5 @@
 FuchsiaCity_House3_Text_WouldYouLikeToForgetMove::
-    .string "Hã…\n"
-    .string "Ah, sim, eu sou o\n"
+    .string "Hã… Ah, sim, eu sou o\n"
     .string "Apagador de Golpes.\p"
     .string "Posso fazer um Pokémon esquecer\n"
     .string "os golpes dele.\p"
