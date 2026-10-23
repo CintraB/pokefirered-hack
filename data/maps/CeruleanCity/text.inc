@@ -20,7 +20,7 @@ CeruleanCity_Text_RivalPostBattle::
     .string "Afinal, o Bill é famoso no mundo\n"
     .string "todo como Pokémaníaco.\p"
     .string "Foi ele quem inventou o\n"
-    .string "Sistema de Armazenamento de Pokémon\n"
+    .string "Sistema de Armazenamento de Pokémon\l"
     .string "no PC.\p"
     .string "Como você usa o sistema dele,\n"
     .string "devia ir agradecer.\p"

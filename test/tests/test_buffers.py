@@ -193,21 +193,46 @@ def test_repo_atual_sem_estouro_novo(ctx):
     assert _failures(ctx) == []
 
 
-def test_estouro_conhecido_vira_aviso_e_some_quando_corrigido(ctx):
-    """"Fruta Ocipêra" (13 letras) passa da linha de 27 bytes da bolsa de frutas (achado da T4 na
-    hack-switch): fica em KNOWN_OVERFLOWS, como aviso, até a frente dona encurtar o nome."""
+def test_nome_de_fruta_cabe_na_linha_da_bolsa_de_frutas(ctx):
+    """Cada linha da lista da bolsa de frutas tem BERRY_POUCH_LIST_STRBUF_SIZE = 28 bytes
+    (src/berry_pouch.c): 15 de enfeite ({FONT_SMALL}{NO}{CLEAR 0x01}, 2 dígitos, espaço, {FONT_NORMAL},
+    EOS) + o nome, que vai até 13 letras. "Fruta Ocipêra" (13 letras, GO) dava 28 e estourava os 27 de
+    antes; o passo subiu para 28 (22/10). 29 bytes continua reprovando."""
     wepear = ("src/data/items.json", "ITEM_WEPEAR_BERRY.name")
-    found = _failures(ctx, "ITEM_WEPEAR_BERRY", known=[])
-    assert found and "sListMenuStrbuf[27]" in found[0] and "28 bytes" in found[0]
-    warnings = [r.detail for r in bf.check_buffers(REPO_ROOT, ctx=ctx) if r.status == "aviso"]
-    assert any("ITEM_WEPEAR_BERRY" in w and "conhecido" in w for w in warnings)
-    fixed = bf.with_texts(ctx, {wepear: "Fruta Wepear"})
-    results = bf.check_buffers(REPO_ROOT, ctx=fixed)
+    assert bf.KNOWN_OVERFLOWS == []
+    assert bf.eval_size("BERRY_POUCH_LIST_STRBUF_SIZE", bf._defines(REPO_ROOT)) == 28
+    assert _failures(ctx, "ITEM_WEPEAR_BERRY") == []
+    assert not [r for r in bf.check_buffers(REPO_ROOT, ctx=ctx) if "ITEM_WEPEAR_BERRY" in r.detail]
+    assert ctx.by_key[wepear].texts == ("Fruta Ocipêra",)
+    for name in ("Fruta Ocipêrab", "Fruta Ocipêrob"):                 # 14 letras = 29 bytes
+        found = _failures(bf.with_texts(ctx, {wepear: name}), "sListMenuStrbuf")
+        assert found and "sListMenuStrbuf[28]" in found[0] and "29 bytes" in found[0], name
+    # a linha inteira (28) é copiada para gStringVar1 (CopySelectedListMenuItemName)
+    var1 = next(m for m in (REPO_ROOT / "src" / "string_util.c").read_text(encoding="utf-8").splitlines()
+                if "gStringVar1[" in m)
+    assert int(var1.split("[")[1].split("]")[0]) >= 28
+
+
+def test_estouro_conhecido_vira_aviso_e_some_quando_corrigido(ctx):
+    """Mecanismo de KNOWN_OVERFLOWS, com um Known de mentira: o estouro vira aviso, o aviso de
+    "não ocorre mais" aparece quando o texto é corrigido e o registro fica preso ao texto."""
+    wepear = ("src/data/items.json", "ITEM_WEPEAR_BERRY.name")
+    over = bf.with_texts(ctx, {wepear: "Fruta Ocipêrab"})              # 29 bytes em sListMenuStrbuf[28]
+    known = bf.Known(wepear[0], wepear[1], "sListMenuStrbuf", 29,
+                     ct.fingerprint(over.by_key[wepear].texts), "de mentira")
+    # o nome de 14 letras estoura também outros buffers (loja, bolsa): o conhecido cobre só o da lista de frutas
+    lista = lambda rs, status: [r for r in rs if r.status == status and "sListMenuStrbuf" in r.detail]
+    assert _failures(over, "sListMenuStrbuf", known=[])
+    results = bf.check_buffers(REPO_ROOT, ctx=over, known=[known])
+    assert lista(results, "falha") == []
+    assert any("(conhecido: de mentira)" in r.detail for r in lista(results, "aviso"))
+    # corrigido (o texto do repo cabe): aviso de obsoleto, sem falha
+    results = bf.check_buffers(REPO_ROOT, ctx=ctx, known=[known])
     assert not [r for r in results if r.status == "falha"]
     assert any("não ocorre mais" in r.detail and "ITEM_WEPEAR_BERRY" in r.detail for r in results)
-    # preso ao texto: outro nome de 13 letras, com o mesmo total, volta a reprovar
-    other = _failures(bf.with_texts(ctx, {wepear: "Fruta Ocipêro"}), "ITEM_WEPEAR_BERRY")
-    assert other and "28 bytes" in other[0]
+    # preso ao texto: outro nome com o mesmo total volta a reprovar
+    other = bf.with_texts(ctx, {wepear: "Fruta Ocipêrob"})
+    assert lista(bf.check_buffers(REPO_ROOT, ctx=other, known=[known]), "falha")
 
 
 def test_origem_com_indice_aninhado_entra_no_inventario(ctx):

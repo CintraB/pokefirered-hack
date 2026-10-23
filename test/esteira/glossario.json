@@ -6848,42 +6848,6 @@
    "obs": "forma cheia de Chave Elevad. (LIFT KEY), usada em fala"
   },
   {
-   "en": "FISHING GURU",
-   "pt": "Mestre da Pesca",
-   "fonte": "criado",
-   "categoria": "personagem",
-   "detectar": true,
-   "frente": "B",
-   "obs": "o Guru da Pesca de Vermilion e o irmão dele na Rota 12; as frentes que ainda têm o termo em inglês (VermilionCity_House1, FuchsiaCity_House2, SSAnne_B1F_Room4) devem usar o mesmo"
-  },
-  {
-   "en": "SILENCE BRIDGE",
-   "pt": "Ponte do Silêncio",
-   "fonte": "criado",
-   "categoria": "lugar",
-   "detectar": true,
-   "frente": "B",
-   "obs": "placa da Rota 13 (não é seção do mapa)"
-  },
-  {
-   "en": "SEA ROUTE 19",
-   "pt": "Rota 19 (marítima)",
-   "fonte": "criado",
-   "categoria": "lugar",
-   "detectar": true,
-   "frente": "B",
-   "obs": "placa da Rota 19; \"Rota 19\" fica no texto porque ROUTE 19 está no glossário (18 letras, cabe no limite de lugar)"
-  },
-  {
-   "en": "EXP. SHARE (forma cheia)",
-   "pt": "Compartilhador de Exp.",
-   "fonte": "criado",
-   "categoria": "item",
-   "detectar": false,
-   "frente": "B",
-   "obs": "forma cheia de Compart. Exp. (EXP. SHARE), usada em fala"
-  },
-  {
    "en": "TWINEEDLE",
    "pt": "Agulha Dupla",
    "fonte": "GO+TCG",
@@ -9966,15 +9930,6 @@
    "obs": "menu Start, minúsculo no meio da frase"
   },
   {
-   "en": "SHIFT (menu da equipe)",
-   "pt": "Trocar",
-   "fonte": "criado",
-   "categoria": "interface",
-   "detectar": false,
-   "frente": "D",
-   "obs": "comando do grupo em batalha (gText_Shift = Trocar, src/strings.c; Ruling 21); SHIFT de BATTLE STYLE continua Troca e ENTER do Battle Frontier, Entrar"
-  },
-  {
    "en": "TM",
    "pt": "MT",
    "fonte": "criado",
@@ -10020,24 +9975,6 @@
    "obs": "item do menu da Pokédex (gText_PokemonList)"
   },
   {
-   "en": "HABITATS OF POKéMON",
-   "pt": "Habitats Pokémon",
-   "fonte": "criado",
-   "categoria": "interface",
-   "detectar": true,
-   "frente": "D",
-   "obs": "item do menu da Pokédex (gText_PokemonHabitats, src/strings.c); a ajuda cita este rótulo"
-  },
-  {
-   "en": "SEARCH",
-   "pt": "Busca",
-   "fonte": "criado",
-   "categoria": "interface",
-   "detectar": false,
-   "frente": "D",
-   "obs": "item do menu da Pokédex (gText_Search/gText_SearchNoColor, src/strings.c)"
-  },
-  {
    "en": "BALL (menu do Safári)",
    "pt": "Bola",
    "fonte": "criado",
@@ -10054,78 +9991,6 @@
    "detectar": false,
    "frente": "D",
    "obs": "comando do Estojo de MT"
-  },
-  {
-   "en": "WITHDRAW ITEM",
-   "pt": "Retirar item",
-   "fonte": "criado",
-   "categoria": "interface",
-   "detectar": true,
-   "frente": "D",
-   "obs": "comando do PC de {PLAYER} (gText_WithdrawItem2/gText_DepositItem2, src/strings.c: 'item' minúsculo)"
-  },
-  {
-   "en": "DEPOSIT ITEM",
-   "pt": "Guardar item",
-   "fonte": "criado",
-   "categoria": "interface",
-   "detectar": true,
-   "frente": "D",
-   "obs": "comando do PC de {PLAYER} (gText_WithdrawItem2/gText_DepositItem2, src/strings.c: 'item' minúsculo)"
-  },
-  {
-   "en": "TYPE MATCHUP LIST",
-   "pt": "tabela de tipos",
-   "fonte": "criado",
-   "categoria": "interface",
-   "detectar": false,
-   "frente": "D",
-   "obs": "lista de vantagens entre tipos da ajuda"
-  },
-  {
-   "en": "Game fundamentals",
-   "pt": "Fundamentos do jogo",
-   "fonte": "criado",
-   "categoria": "interface",
-   "detectar": false,
-   "frente": "D",
-   "obs": "tópicos 1-3 da ajuda"
-  },
-  {
-   "en": "FNT (desmaiado)",
-   "pt": "DES",
-   "fonte": "criado",
-   "categoria": "interface",
-   "detectar": false,
-   "frente": "D",
-   "obs": "sigla de desmaiado na ajuda; igual ao ícone de status da H1 (status_icons.png)"
-  },
-  {
-   "en": "NEXT DATA",
-   "pt": "Mais dados",
-   "fonte": "criado",
-   "categoria": "interface",
-   "detectar": true,
-   "frente": "D",
-   "obs": "gText_NextDataCancel (Pokédex, src/strings.c); citado na ajuda do Pokédex"
-  },
-  {
-   "en": "PLAY TIME",
-   "pt": "Tempo de jogo",
-   "fonte": "criado",
-   "categoria": "interface",
-   "detectar": false,
-   "frente": "D",
-   "obs": "forma cheia de Tempo (Cartão de Treinador, gText_TrainerCardTime); tópico da ajuda"
-  },
-  {
-   "en": "Super effective! (legenda)",
-   "pt": "Supereficaz!",
-   "fonte": "criado",
-   "categoria": "interface",
-   "detectar": false,
-   "frente": "D",
-   "obs": "forma curta de É supereficaz! na legenda da tabela de tipos da ajuda"
   },
   {
    "en": "WIRELESS COMMUNICATION",
@@ -10281,6 +10146,258 @@
    "obs": "andar do elevador e aviso de mapa (gText_Rooftop/gText_Rooftop2); \"Cobertura\" estourava o mapName[25] do aviso na Loja de Celadon (src/map_name_popup.c)"
   },
   {
+   "en": "DAY-CARE MAN",
+   "pt": "Dono da Creche",
+   "fonte": "criado",
+   "categoria": "personagem",
+   "detectar": true,
+   "frente": "E",
+   "obs": "casal da Creche Pokémon (data/text/day_care.inc); a Dona é a DAY-CARE LADY"
+  },
+  {
+   "en": "DAY-CARE LADY",
+   "pt": "Dona da Creche",
+   "fonte": "criado",
+   "categoria": "personagem",
+   "detectar": true,
+   "frente": "E",
+   "obs": "casal da Creche Pokémon (data/text/day_care.inc)"
+  },
+  {
+   "en": "POKé DUDE",
+   "pt": "Cara Pokémon",
+   "fonte": "criado",
+   "categoria": "personagem",
+   "detectar": true,
+   "frente": "E",
+   "obs": "apresentador do tutorial de batalha (data/text/pokedude.inc); a TV Educativa (E3) deve usar o mesmo termo"
+  },
+  {
+   "en": "STICKER",
+   "pt": "adesivo",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "frente": "E",
+   "obs": "adesivos do Cartão de Treinador (casa da Ilha Quatro)"
+  },
+  {
+   "en": "HALL OF FAME STICKER",
+   "pt": "Adesivo do Hall da Fama",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "frente": "E",
+   "obs": "data/text/trainer_card.inc"
+  },
+  {
+   "en": "EGG STICKER",
+   "pt": "Adesivo do Ovo",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "frente": "E",
+   "obs": "data/text/trainer_card.inc"
+  },
+  {
+   "en": "VICTORY STICKER",
+   "pt": "Adesivo da Vitória",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "frente": "E",
+   "obs": "data/text/trainer_card.inc"
+  },
+  {
+   "en": "POKéMON CABLE CLUB",
+   "pt": "Clube Cabo Pokémon",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "frente": "E",
+   "obs": "par do Clube Sem Fio Pokémon: 18 letras, mas só termo de diálogo (não é nome de seção do mapa)"
+  },
+  {
+   "en": "TIME CAPSULE",
+   "pt": "Cápsula do Tempo",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "frente": "E",
+   "obs": "sala do Clube Cabo Pokémon (event_scripts.s)"
+  },
+  {
+   "en": "POKéMON PRINTER",
+   "pt": "Impressora Pokémon",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "frente": "E",
+   "obs": "máquina do Cassino de Celadon que imprime no Cartão de Treinador"
+  },
+  {
+   "en": "STAMP CARD",
+   "pt": "Cartão de Selos",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "frente": "E",
+   "obs": "Presente Misterioso (mystery_event_msg.s); STAMP = Selo"
+  },
+  {
+   "en": "BATTLE COUNT CARD",
+   "pt": "Cartão Contador de Batalhas",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "frente": "E",
+   "obs": "Presente Misterioso (mystery_event_msg.s)"
+  },
+  {
+   "en": "AIDE",
+   "pt": "assistente",
+   "fonte": "criado",
+   "categoria": "personagem",
+   "detectar": false,
+   "frente": "E",
+   "obs": "assistentes do Prof. Carvalho (data/text/pokedex_rating.inc, aide.inc)"
+  },
+  {
+   "en": "FISHING GURU",
+   "pt": "Mestre da Pesca",
+   "fonte": "criado",
+   "categoria": "personagem",
+   "detectar": true,
+   "frente": "B",
+   "obs": "o Guru da Pesca de Vermilion e o irmão dele na Rota 12; as frentes que ainda têm o termo em inglês (VermilionCity_House1, FuchsiaCity_House2, SSAnne_B1F_Room4) devem usar o mesmo"
+  },
+  {
+   "en": "SILENCE BRIDGE",
+   "pt": "Ponte do Silêncio",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true,
+   "frente": "B",
+   "obs": "placa da Rota 13 (não é seção do mapa)"
+  },
+  {
+   "en": "SEA ROUTE 19",
+   "pt": "Rota 19 (marítima)",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true,
+   "frente": "B",
+   "obs": "placa da Rota 19; \"Rota 19\" fica no texto porque ROUTE 19 está no glossário (18 letras, cabe no limite de lugar)"
+  },
+  {
+   "en": "EXP. SHARE (forma cheia)",
+   "pt": "Compartilhador de Exp.",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": false,
+   "frente": "B",
+   "obs": "forma cheia de Compart. Exp. (EXP. SHARE), usada em fala"
+  },
+  {
+   "en": "SHIFT (menu da equipe)",
+   "pt": "Trocar",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "frente": "D",
+   "obs": "comando do grupo em batalha (gText_Shift = Trocar, src/strings.c; Ruling 21); SHIFT de BATTLE STYLE continua Troca e ENTER do Battle Frontier, Entrar"
+  },
+  {
+   "en": "HABITATS OF POKéMON",
+   "pt": "Habitats Pokémon",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "frente": "D",
+   "obs": "item do menu da Pokédex (gText_PokemonHabitats, src/strings.c); a ajuda cita este rótulo"
+  },
+  {
+   "en": "SEARCH",
+   "pt": "Busca",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "frente": "D",
+   "obs": "item do menu da Pokédex (gText_Search/gText_SearchNoColor, src/strings.c)"
+  },
+  {
+   "en": "WITHDRAW ITEM",
+   "pt": "Retirar item",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "frente": "D",
+   "obs": "comando do PC de {PLAYER} (gText_WithdrawItem2/gText_DepositItem2, src/strings.c: 'item' minúsculo)"
+  },
+  {
+   "en": "DEPOSIT ITEM",
+   "pt": "Guardar item",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "frente": "D",
+   "obs": "comando do PC de {PLAYER} (gText_WithdrawItem2/gText_DepositItem2, src/strings.c: 'item' minúsculo)"
+  },
+  {
+   "en": "TYPE MATCHUP LIST",
+   "pt": "tabela de tipos",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "frente": "D",
+   "obs": "lista de vantagens entre tipos da ajuda"
+  },
+  {
+   "en": "Game fundamentals",
+   "pt": "Fundamentos do jogo",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "frente": "D",
+   "obs": "tópicos 1-3 da ajuda"
+  },
+  {
+   "en": "FNT (desmaiado)",
+   "pt": "DES",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "frente": "D",
+   "obs": "sigla de desmaiado na ajuda; igual ao ícone de status da H1 (status_icons.png)"
+  },
+  {
+   "en": "NEXT DATA",
+   "pt": "Mais dados",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "frente": "D",
+   "obs": "gText_NextDataCancel (Pokédex, src/strings.c); citado na ajuda do Pokédex"
+  },
+  {
+   "en": "PLAY TIME",
+   "pt": "Tempo de jogo",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "frente": "D",
+   "obs": "forma cheia de Tempo (Cartão de Treinador, gText_TrainerCardTime); tópico da ajuda"
+  },
+  {
+   "en": "Super effective! (legenda)",
+   "pt": "Supereficaz!",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "frente": "D",
+   "obs": "forma curta de É supereficaz! na legenda da tabela de tipos da ajuda"
+  },
+  {
    "en": "MOVE DELETER",
    "pt": "Apagador de Golpes",
    "fonte": "criado",
@@ -10368,7 +10485,7 @@
    "categoria": "lugar",
    "detectar": true,
    "frente": "A2",
-   "obs": "placa em Lavender (2 linhas, com \"de Lavender\" na 2ª); não é nome de seção do mapa, então o limite do aviso não se aplica; para reavaliar"
+   "obs": "placa em Lavender (2 linhas, com \"de Lavender\" na 2ª); não é nome de seção do mapa, então o limite do aviso não se aplica; aprovado pelo Cintra em 21/10 (sai da lista de reavaliação)"
   },
   {
    "en": "ANNOUNCER",
@@ -10504,6 +10621,15 @@
    "detectar": false,
    "frente": "G2",
    "obs": "gText_BadEgg, vira apelido (10 letras)"
+  },
+  {
+   "en": "SPORTFISHING AREA",
+   "pt": "Pesca Esportiva",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true,
+   "frente": "B2c",
+   "obs": "placa da Rota 12 (Route12_Text_SportfishingArea); decisão do Cintra em 21/10, no lugar de \"Área de Pesca Esportiva\""
   }
  ],
  "proibidos": [
@@ -10601,6 +10727,11 @@
    "variante": "Gym",
    "use": "Ginásio",
    "motivo": "glossário §2.8: Ginásio (GO)"
+  },
+  {
+   "variante": "Área de Pesca Esportiva",
+   "use": "Pesca Esportiva",
+   "motivo": "decisão do Cintra em 21/10: placa da Rota 12"
   }
  ]
 }
