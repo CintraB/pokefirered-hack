@@ -6653,6 +6653,69 @@
    "obs": "Zona de Safári (golpe/ação de jogar isca); o menu de batalha do Safári ainda está em inglês"
   },
   {
+   "en": "ROCKET BROTHERS",
+   "pt": "Irmãos Rocket",
+   "fonte": "criado",
+   "categoria": "personagem",
+   "detectar": true,
+   "frente": "C2",
+   "obs": "os quatro Recrutas da Silph Co. (6F a 9F); \"Irmãos\" sozinho em fala = os irmãos"
+  },
+  {
+   "en": "TIKSI BRANCH",
+   "pt": "Filial de Tiksi",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true,
+   "frente": "C2",
+   "obs": "Tiksi é nome de cidade real (Rússia) e fica; em fala também com maiúscula: \"a Filial de Tiksi\""
+  },
+  {
+   "en": "POKéMON REPORT",
+   "pt": "Relatório Pokémon",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "frente": "C2",
+   "obs": "cartaz informativo da Silph Co. (5F)"
+  },
+  {
+   "en": "KANTO RIDER FEDERATION",
+   "pt": "Federação Motoqueira de Kanto",
+   "fonte": "criado",
+   "categoria": "personagem",
+   "detectar": true,
+   "frente": "C2",
+   "obs": "gangue de Motoqueiros da Ilha Três"
+  },
+  {
+   "en": "TIME ATTACK",
+   "pt": "Contra-Relógio",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "frente": "C2",
+   "obs": "evento da Torre do Treinador (desafio cronometrado do balcão até o dono no terraço)"
+  },
+  {
+   "en": "TIME BOARD",
+   "pt": "Quadro de Tempos",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "frente": "C2",
+   "obs": "placar de melhores tempos do Contra-Relógio; o jogo tem gText_TimeBoard em src/battle_message.c (\"TIME BOARD\"), a frente que traduzir esse arquivo usa o mesmo termo"
+  },
+  {
+   "en": "SIX ISLE PORT",
+   "pt": "Porto da Ilha Seis",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true,
+   "frente": "C2",
+   "obs": "seguindo THREE ISLE PORT = Porto da Ilha Três"
+  },
+  {
    "en": "COMET PUNCH",
    "pt": "Soco Cometa",
    "fonte": "TCG",
