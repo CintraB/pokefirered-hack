@@ -10630,6 +10630,105 @@
    "detectar": true,
    "frente": "B2c",
    "obs": "placa da Rota 12 (Route12_Text_SportfishingArea); decisão do Cintra em 21/10, no lugar de \"Área de Pesca Esportiva\""
+  },
+  {
+   "en": "NAME RATER",
+   "pt": "Avaliador de Apelidos",
+   "fonte": "criado",
+   "categoria": "personagem",
+   "detectar": true,
+   "frente": "A3",
+   "obs": "NPC da Cidade de Lavender que avalia apelidos (LavenderTown_House2); o quest log tem \"NAME RATER'S HOUSE\""
+  },
+  {
+   "en": "POKéMON FAN MAGAZINE",
+   "pt": "Revista Fã de Pokémon",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "frente": "A3",
+   "obs": "título do formulário de sorteio recortado (Casa de Voluntários, Lavender)"
+  },
+  {
+   "en": "POKéMON INSIDER",
+   "pt": "Pokémon por Dentro",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "frente": "A3",
+   "obs": "revista na estante da Casa de Voluntários (Lavender)"
+  },
+  {
+   "en": "POKéMON FAN",
+   "pt": "Fã de Pokémon",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "frente": "A3",
+   "obs": "revista na estante da Casa de Voluntários (Lavender); não é o Fã-clube (POKéMON FAN CLUB)"
+  },
+  {
+   "en": "KNOT ISLAND",
+   "pt": "Ilha do Nó",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true,
+   "frente": "A3",
+   "obs": "apelido da Ilha Um na placa da cidade (\"Friends Gather at Knot Island\")"
+  },
+  {
+   "en": "POKéMON NET CENTER",
+   "pt": "Centro de Rede Pokémon",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true,
+   "frente": "A3",
+   "obs": "placa do Centro Pokémon da Ilha Um (OneIsland_Text_PokemonNetCenterSign)"
+  },
+  {
+   "en": "NETWORK MACHINE",
+   "pt": "Máquina de Rede",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "frente": "A3",
+   "obs": "máquina de troca a distância do Celio (OneIsland_PokemonCenter_1F)"
+  },
+  {
+   "en": "OAK'S POKéMON SEMINAR",
+   "pt": "Seminário Pokémon do Prof. Carvalho",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "frente": "A3",
+   "obs": "programa de rádio do Prof. Carvalho (PalletTown_ProfessorOaksLab; fame_checker.inc tem o mesmo nome)"
+  },
+  {
+   "en": "OAK POKéMON RESEARCH LAB",
+   "pt": "Laboratório de Pesquisa Pokémon do Prof. Carvalho",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true,
+   "frente": "A3",
+   "obs": "placa do laboratório em Pallet (PalletTown_Text_OakPokemonResearchLab; fame_checker.inc tem o mesmo nome); 278 px, não cabe numa linha: a placa quebra depois de \"Pesquisa\""
+  },
+  {
+   "en": "GOLDENROD CITY",
+   "pt": "Cidade de Goldenrod",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true,
+   "frente": "A3",
+   "obs": "cidade natal do Bill, só citada em fala; não é nome de mapa, então o limite do aviso não se aplica"
+  },
+  {
+   "en": "POKéMON LEAGUE HQ",
+   "pt": "Sede da Liga Pokémon",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true,
+   "frente": "A3",
+   "obs": "assinatura do e-mail no laboratório do Carvalho; não é nome de mapa, então o limite do aviso não se aplica; no padrão de \"Sede da Silph Co.\""
   }
  ],
  "proibidos": [

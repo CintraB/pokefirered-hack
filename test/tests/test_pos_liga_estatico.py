@@ -131,7 +131,9 @@ def test_oak_nao_pede_mais_as_pokedex():
     """O Oak não leva mais as Pokédex (o upgrade virou o ovo raro): a fala que pedia as duas acaba
     no "preciso da sua ajuda também"."""
     body = _text_body("PalletTown_ProfessorOaksLab_Text_OakNeedYourHelpToo")
-    assert body == r"OAK: I know, I know.\nOf course I need your help, too.$", body
+    # traduzida na A3 (as quebras de linha são do reflow, por isso se compara o texto achatado)
+    flat = re.sub(r"\\[nlp]", " ", body)
+    assert flat == "CARVALHO: Eu sei, eu sei. É claro que também preciso da sua ajuda.$", body
     scene = _scene()
     assert scene.index("Text_OakNeedYourHelpToo") < scene.index("Text_OakThanksRareEgg")
 
