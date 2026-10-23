@@ -1396,10 +1396,12 @@ DECLARED: list[Declared] = [
              why="ranking do Berry Crush: gText_XDotY3 expandido + espaço + gText_TimesPerSec (src/berry_crush.c:3151-3155)"),
     Declared("src/berry_pouch.c", "GetBerryNameAndIndexForMenu",
              r"gText_FontSmall|gText_NumberClear01|gStringVar1|sText_Space|gText_FontNormal",
-             BufRef("sListMenuStrbuf", size="27", site="src/berry_pouch.c:645 (Alloc(listMenuNumItems * 27))"),
+             BufRef("sListMenuStrbuf", size="BERRY_POUCH_LIST_STRBUF_SIZE",
+                    site="src/berry_pouch.c:645 (Alloc(listMenuNumItems * BERRY_POUCH_LIST_STRBUF_SIZE))"),
              (Text("gText_FontSmall"), Text("gText_NumberClear01"), Fixed(2, "número da fruta"),
               Text("sText_Space", file="src/berry_pouch.c"), Text("gText_FontNormal"), BERRIES),
-             why="lista da bolsa de frutas: montada em gStringVar4 e copiada para &sListMenuStrbuf[i * 27] "
+             why="lista da bolsa de frutas: montada em gStringVar4 e copiada para "
+                 "&sListMenuStrbuf[i * BERRY_POUCH_LIST_STRBUF_SIZE] "
                  "(src/berry_pouch.c:657, :686-696)"),
     Declared("src/day_night.c", "DayNight_FormatClock", r".*",
              BufRef("clockText", "src/start_menu.c", "DrawStartMenuClockWindow"),

@@ -258,7 +258,8 @@ def test_b2c_derrota_do_brock_cabe_em_gdisplayedstringbattle():
     env = ct._load_env(REPO_ROOT)
     text = _inc_label_text("data/maps/PewterCity_Gym/text.inc", "PewterCity_Gym_Text_BrockDefeat")
     total = ct.measure(text, env, "normal").nbytes + 2 + 1
-    total += 7 - env.name_bytes["PLAYER"]
+    for name in ("PLAYER", "RIVAL"):                                   # cada ocorrência vira 7 letras
+        total += text.count("{" + name + "}") * (7 - env.name_bytes[name])
     assert total < size, total
     # o sentido continua: insígnia, direito ao Clarão e o tom do Brock
     flat = re.sub(r"\\[nlp]", " ", text)
@@ -282,10 +283,7 @@ def test_b2c_caixas_de_tres_linhas_corrigidas_e_nada_conhecido_sobrando():
     assert ct.KNOWN_FINDINGS == [] and bf.KNOWN_OVERFLOWS == []
     for rel, label in CAIXAS_B2C:
         text = _inc_label_text(rel, label)
-        for box in text.split("\\p"):
-            # em cada caixa, \n continua na linha seguinte; só \l rola e abre espaço
-            for seg in box.split("\\l"):
-                assert seg.count("\\n") <= 1, (label, box)
+        assert ct.box_lines(text) <= 2, (label, ct.box_lines(text))
     warnings = [r.detail for r in _results() if r.status == "aviso" and "(conhecido:" in r.detail]
     assert warnings == []
 
@@ -295,11 +293,18 @@ def test_b2c_pesca_esportiva_e_fruta_ocipera_no_glossario():
     by_en = {t["en"]: t for t in data["termos"]}
     assert by_en["SPORTFISHING AREA"]["pt"] == "Pesca Esportiva"
     assert by_en["SPORTFISHING AREA"]["fonte"] == "criado" and by_en["SPORTFISHING AREA"]["categoria"] == "lugar"
-    assert by_en["WEPEAR BERRY"]["pt"] == "Fruta Ocipêr" and by_en["WEPEAR BERRY"]["fonte"] == "criado"
-    assert len(by_en["WEPEAR BERRY"]["pt"]) <= 12 and by_en["WEPEAR BERRY"]["pt"].startswith("Fruta ")
+    assert by_en["WEPEAR BERRY"]["pt"] == "Fruta Ocipêra" and by_en["WEPEAR BERRY"]["fonte"] == "GO"
+    assert len(by_en["WEPEAR BERRY"]["pt"]) == 13          # a linha da bolsa de frutas tem 28 bytes (15 + nome)
+    assert "Fruta Ocipêra" not in {p["variante"] for p in data["proibidos"]}
+    assert not {"Ocipêr", "Fruta Ocipêr"} & {p["variante"] for p in data["proibidos"]}
+    berry_c = (REPO_ROOT / "src" / "berry.c").read_text(encoding="utf-8")
+    assert '.name = _("Ocipêr"),' in berry_c                # nome curto da fruta (limite de 6 letras)
     assert "Casa de Voluntários Pokémon" == by_en["LAVENDER VOLUNTEER POKéMON HOUSE"]["pt"]
     assert "aprovado pelo Cintra" in by_en["LAVENDER VOLUNTEER POKéMON HOUSE"]["obs"]
     sign = _flat("data/maps/Route12/text.inc")
     assert "Pesca Esportiva" in sign and "Área de Pesca" not in sign
     items = (REPO_ROOT / "src" / "data" / "items.json").read_text(encoding="utf-8")
-    assert '"Fruta Ocip\\u00ear"' in items and "Ocip\\u00eara" not in items
+    assert '"Fruta Ocip\\u00eara"' in items and '"Fruta Ocip\\u00ear"' not in items
+    pouch = (REPO_ROOT / "src" / "berry_pouch.c").read_text(encoding="utf-8")
+    header = (REPO_ROOT / "include" / "berry_pouch.h").read_text(encoding="utf-8")
+    assert "#define BERRY_POUCH_LIST_STRBUF_SIZE 28" in header and "* 27" not in pouch

@@ -3673,12 +3673,10 @@
   },
   {
    "en": "WEPEAR BERRY",
-   "pt": "Fruta Ocipêr",
-   "fonte": "criado",
+   "pt": "Fruta Ocipêra",
+   "fonte": "GO",
    "categoria": "item",
-   "detectar": true,
-   "frente": "B2c",
-   "obs": "o GO diz \"Fruta Ocipêra\" (13 letras), que dá 28 bytes na linha da bolsa de frutas (27 por linha: {FONT_SMALL}{NO}{CLEAR 0x01}, 2 dígitos, espaço, {FONT_NORMAL}, nome e EOS = 15 + nome); cortou-se o \"a\" final, como o berry.c (\"Ocipêr\")"
+   "detectar": true
   },
   {
    "en": "PINAP BERRY",
@@ -3693,7 +3691,7 @@
    "fonte": "padrão TCG (criado)",
    "categoria": "item",
    "detectar": true,
-   "obs": "a maior tem 12 (a bolsa de frutas só comporta 12: src/berry_pouch.c)"
+   "obs": "a maior, \"Fruta Ocipêra\", tem 13"
   },
   {
    "en": "WIKI BERRY",
@@ -3701,7 +3699,7 @@
    "fonte": "padrão TCG (criado)",
    "categoria": "item",
    "detectar": true,
-   "obs": "a maior tem 12 (a bolsa de frutas só comporta 12: src/berry_pouch.c)"
+   "obs": "a maior, \"Fruta Ocipêra\", tem 13"
   },
   {
    "en": "MAGO BERRY",
@@ -3709,7 +3707,7 @@
    "fonte": "padrão TCG (criado)",
    "categoria": "item",
    "detectar": true,
-   "obs": "a maior tem 12 (a bolsa de frutas só comporta 12: src/berry_pouch.c)"
+   "obs": "a maior, \"Fruta Ocipêra\", tem 13"
   },
   {
    "en": "AGUAV BERRY",
@@ -3717,7 +3715,7 @@
    "fonte": "padrão TCG (criado)",
    "categoria": "item",
    "detectar": true,
-   "obs": "a maior tem 12 (a bolsa de frutas só comporta 12: src/berry_pouch.c)"
+   "obs": "a maior, \"Fruta Ocipêra\", tem 13"
   },
   {
    "en": "IAPAPA BERRY",
@@ -3725,7 +3723,7 @@
    "fonte": "padrão TCG (criado)",
    "categoria": "item",
    "detectar": true,
-   "obs": "a maior tem 12 (a bolsa de frutas só comporta 12: src/berry_pouch.c)"
+   "obs": "a maior, \"Fruta Ocipêra\", tem 13"
   },
   {
    "en": "POMEG BERRY",
@@ -3733,7 +3731,7 @@
    "fonte": "padrão TCG (criado)",
    "categoria": "item",
    "detectar": true,
-   "obs": "a maior tem 12 (a bolsa de frutas só comporta 12: src/berry_pouch.c)"
+   "obs": "a maior, \"Fruta Ocipêra\", tem 13"
   },
   {
    "en": "KELPSY BERRY",
@@ -3741,7 +3739,7 @@
    "fonte": "padrão TCG (criado)",
    "categoria": "item",
    "detectar": true,
-   "obs": "a maior tem 12 (a bolsa de frutas só comporta 12: src/berry_pouch.c)"
+   "obs": "a maior, \"Fruta Ocipêra\", tem 13"
   },
   {
    "en": "QUALOT BERRY",
@@ -3749,7 +3747,7 @@
    "fonte": "padrão TCG (criado)",
    "categoria": "item",
    "detectar": true,
-   "obs": "a maior tem 12 (a bolsa de frutas só comporta 12: src/berry_pouch.c)"
+   "obs": "a maior, \"Fruta Ocipêra\", tem 13"
   },
   {
    "en": "HONDEW BERRY",
@@ -3757,7 +3755,7 @@
    "fonte": "padrão TCG (criado)",
    "categoria": "item",
    "detectar": true,
-   "obs": "a maior tem 12 (a bolsa de frutas só comporta 12: src/berry_pouch.c)"
+   "obs": "a maior, \"Fruta Ocipêra\", tem 13"
   },
   {
    "en": "GREPA BERRY",
@@ -3765,7 +3763,7 @@
    "fonte": "padrão TCG (criado)",
    "categoria": "item",
    "detectar": true,
-   "obs": "a maior tem 12 (a bolsa de frutas só comporta 12: src/berry_pouch.c)"
+   "obs": "a maior, \"Fruta Ocipêra\", tem 13"
   },
   {
    "en": "TAMATO BERRY",
@@ -3773,7 +3771,7 @@
    "fonte": "padrão TCG (criado)",
    "categoria": "item",
    "detectar": true,
-   "obs": "a maior tem 12 (a bolsa de frutas só comporta 12: src/berry_pouch.c)"
+   "obs": "a maior, \"Fruta Ocipêra\", tem 13"
   },
   {
    "en": "CORNN BERRY",
@@ -3781,7 +3779,7 @@
    "fonte": "padrão TCG (criado)",
    "categoria": "item",
    "detectar": true,
-   "obs": "a maior tem 12 (a bolsa de frutas só comporta 12: src/berry_pouch.c)"
+   "obs": "a maior, \"Fruta Ocipêra\", tem 13"
   },
   {
    "en": "MAGOST BERRY",
@@ -3789,7 +3787,7 @@
    "fonte": "padrão TCG (criado)",
    "categoria": "item",
    "detectar": true,
-   "obs": "a maior tem 12 (a bolsa de frutas só comporta 12: src/berry_pouch.c)"
+   "obs": "a maior, \"Fruta Ocipêra\", tem 13"
   },
   {
    "en": "RABUTA BERRY",
@@ -3797,7 +3795,7 @@
    "fonte": "padrão TCG (criado)",
    "categoria": "item",
    "detectar": true,
-   "obs": "a maior tem 12 (a bolsa de frutas só comporta 12: src/berry_pouch.c)"
+   "obs": "a maior, \"Fruta Ocipêra\", tem 13"
   },
   {
    "en": "NOMEL BERRY",
@@ -3805,7 +3803,7 @@
    "fonte": "padrão TCG (criado)",
    "categoria": "item",
    "detectar": true,
-   "obs": "a maior tem 12 (a bolsa de frutas só comporta 12: src/berry_pouch.c)"
+   "obs": "a maior, \"Fruta Ocipêra\", tem 13"
   },
   {
    "en": "SPELON BERRY",
@@ -3813,7 +3811,7 @@
    "fonte": "padrão TCG (criado)",
    "categoria": "item",
    "detectar": true,
-   "obs": "a maior tem 12 (a bolsa de frutas só comporta 12: src/berry_pouch.c)"
+   "obs": "a maior, \"Fruta Ocipêra\", tem 13"
   },
   {
    "en": "PAMTRE BERRY",
@@ -3821,7 +3819,7 @@
    "fonte": "padrão TCG (criado)",
    "categoria": "item",
    "detectar": true,
-   "obs": "a maior tem 12 (a bolsa de frutas só comporta 12: src/berry_pouch.c)"
+   "obs": "a maior, \"Fruta Ocipêra\", tem 13"
   },
   {
    "en": "WATMEL BERRY",
@@ -3829,7 +3827,7 @@
    "fonte": "padrão TCG (criado)",
    "categoria": "item",
    "detectar": true,
-   "obs": "a maior tem 12 (a bolsa de frutas só comporta 12: src/berry_pouch.c)"
+   "obs": "a maior, \"Fruta Ocipêra\", tem 13"
   },
   {
    "en": "DURIN BERRY",
@@ -3837,7 +3835,7 @@
    "fonte": "padrão TCG (criado)",
    "categoria": "item",
    "detectar": true,
-   "obs": "a maior tem 12 (a bolsa de frutas só comporta 12: src/berry_pouch.c)"
+   "obs": "a maior, \"Fruta Ocipêra\", tem 13"
   },
   {
    "en": "BELUE BERRY",
@@ -3845,7 +3843,7 @@
    "fonte": "padrão TCG (criado)",
    "categoria": "item",
    "detectar": true,
-   "obs": "a maior tem 12 (a bolsa de frutas só comporta 12: src/berry_pouch.c)"
+   "obs": "a maior, \"Fruta Ocipêra\", tem 13"
   },
   {
    "en": "LIECHI BERRY",
@@ -3853,7 +3851,7 @@
    "fonte": "padrão TCG (criado)",
    "categoria": "item",
    "detectar": true,
-   "obs": "a maior tem 12 (a bolsa de frutas só comporta 12: src/berry_pouch.c)"
+   "obs": "a maior, \"Fruta Ocipêra\", tem 13"
   },
   {
    "en": "GANLON BERRY",
@@ -3861,7 +3859,7 @@
    "fonte": "padrão TCG (criado)",
    "categoria": "item",
    "detectar": true,
-   "obs": "a maior tem 12 (a bolsa de frutas só comporta 12: src/berry_pouch.c)"
+   "obs": "a maior, \"Fruta Ocipêra\", tem 13"
   },
   {
    "en": "SALAC BERRY",
@@ -3869,7 +3867,7 @@
    "fonte": "padrão TCG (criado)",
    "categoria": "item",
    "detectar": true,
-   "obs": "a maior tem 12 (a bolsa de frutas só comporta 12: src/berry_pouch.c)"
+   "obs": "a maior, \"Fruta Ocipêra\", tem 13"
   },
   {
    "en": "PETAYA BERRY",
@@ -3877,7 +3875,7 @@
    "fonte": "padrão TCG (criado)",
    "categoria": "item",
    "detectar": true,
-   "obs": "a maior tem 12 (a bolsa de frutas só comporta 12: src/berry_pouch.c)"
+   "obs": "a maior, \"Fruta Ocipêra\", tem 13"
   },
   {
    "en": "APICOT BERRY",
@@ -3885,7 +3883,7 @@
    "fonte": "padrão TCG (criado)",
    "categoria": "item",
    "detectar": true,
-   "obs": "a maior tem 12 (a bolsa de frutas só comporta 12: src/berry_pouch.c)"
+   "obs": "a maior, \"Fruta Ocipêra\", tem 13"
   },
   {
    "en": "LANSAT BERRY",
@@ -3893,7 +3891,7 @@
    "fonte": "padrão TCG (criado)",
    "categoria": "item",
    "detectar": true,
-   "obs": "a maior tem 12 (a bolsa de frutas só comporta 12: src/berry_pouch.c)"
+   "obs": "a maior, \"Fruta Ocipêra\", tem 13"
   },
   {
    "en": "STARF BERRY",
@@ -3901,7 +3899,7 @@
    "fonte": "padrão TCG (criado)",
    "categoria": "item",
    "detectar": true,
-   "obs": "a maior tem 12 (a bolsa de frutas só comporta 12: src/berry_pouch.c)"
+   "obs": "a maior, \"Fruta Ocipêra\", tem 13"
   },
   {
    "en": "ENIGMA BERRY",
@@ -3909,7 +3907,7 @@
    "fonte": "padrão TCG (criado)",
    "categoria": "item",
    "detectar": true,
-   "obs": "a maior tem 12 (a bolsa de frutas só comporta 12: src/berry_pouch.c)"
+   "obs": "a maior, \"Fruta Ocipêra\", tem 13"
   },
   {
    "en": "BICYCLE",
@@ -10729,11 +10727,6 @@
    "variante": "Gym",
    "use": "Ginásio",
    "motivo": "glossário §2.8: Ginásio (GO)"
-  },
-  {
-   "variante": "Fruta Ocipêra",
-   "use": "Fruta Ocipêr",
-   "motivo": "13 letras estouram a linha de 27 bytes da bolsa de frutas (src/berry_pouch.c)"
   },
   {
    "variante": "Área de Pesca Esportiva",

@@ -14,9 +14,6 @@ PewterCity_Gym_Text_BrockIntro::
     .string "Pois bem!\n"
     .string "Mostre o seu melhor!{PLAY_BGM}{MUS_ENCOUNTER_GYM_LEADER}$"
 
-@ NOTE: This defeat text actually causes a buffer overflow. It's too long for the gDisplayedStringBattle
-@ buffer that it's put into, and it stomps all over the gBattleTextBuffs after, as well as the otherwise
-@ unused array after that, sFlickerArray. Perhaps that's the reason why said array exists.
 PewterCity_Gym_Text_BrockDefeat::
     .string "Eu subestimei você e,\n"
     .string "por isso, perdi.\p"
@@ -27,7 +24,7 @@ PewterCity_Gym_Text_BrockDefeat::
     .string "do Brock!{PAUSE_MUSIC}{PLAY_BGM}{MUS_OBTAIN_BADGE}{PAUSE 0xFE}{PAUSE 0x56}{RESUME_MUSIC}\p"
     .string "{FONT_MALE}Só de ter a Insígnia Rocha, seus\n"
     .string "Pokémon ficam mais fortes.\p"
-    .string "E ela permite usar Clarão\n"
+    .string "Ela libera o golpe Clarão\n"
     .string "fora das batalhas.$"
 
 PewterCity_Gym_Text_TakeThisWithYou::
@@ -104,8 +101,7 @@ PewterCity_Gym_Text_ItsFreeLetsGetHappening::
 
 PewterCity_Gym_Text_YoureChampMaterial::
     .string "Eu sabia! Você tem tudo para\n"
-    .string "conquistar o título de campeão\l"
-    .string "Pokémon!$"
+    .string "conquistar o título de campeão!$"
 
 PewterCity_Gym_Text_GymStatue::
     .string "Ginásio Pokémon de Pewter\n"
