@@ -10630,6 +10630,87 @@
    "detectar": true,
    "frente": "B2c",
    "obs": "placa da Rota 12 (Route12_Text_SportfishingArea); decisão do Cintra em 21/10, no lugar de \"Área de Pesca Esportiva\""
+  },
+  {
+   "en": "BATTLE TOWER",
+   "pt": "T. Batalha",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": false,
+   "frente": "G3",
+   "obs": "forma curta de Torre de Batalha; palavra do Easy Chat (≤ 12 bytes, src/trainer_card.c easyChatProfile[..][13])"
+  },
+  {
+   "en": "BATTLE ROOM",
+   "pt": "Sala Batalha",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": false,
+   "frente": "G3",
+   "obs": "palavra do Easy Chat (≤ 12 bytes, src/trainer_card.c easyChatProfile[..][13])"
+  },
+  {
+   "en": "SECRET BASE",
+   "pt": "base secreta",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": false,
+   "frente": "G3",
+   "obs": "palavra do Easy Chat (≤ 12 bytes, src/trainer_card.c easyChatProfile[..][13])"
+  },
+  {
+   "en": "{POKEBLOCK}",
+   "pt": "Pokébloco",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": false,
+   "frente": "G3",
+   "obs": "o bloco do Porta-blocos; palavra do Easy Chat (≤ 12 bytes, src/trainer_card.c easyChatProfile[..][13])"
+  },
+  {
+   "en": "{PK}RS",
+   "pt": "Pokérus",
+   "fonte": "criado",
+   "categoria": "status",
+   "detectar": false,
+   "frente": "G3",
+   "obs": "POKéRUS; palavra do Easy Chat (≤ 12 bytes, src/trainer_card.c easyChatProfile[..][13])"
+  },
+  {
+   "en": "DEPT. STORE",
+   "pt": "loja depart.",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": false,
+   "frente": "G3",
+   "obs": "forma curta de loja de departamentos; palavra do Easy Chat (≤ 12 bytes, src/trainer_card.c easyChatProfile[..][13])"
+  },
+  {
+   "en": "1-HIT KO!",
+   "pt": "KO direto!",
+   "fonte": "criado",
+   "categoria": "batalha",
+   "detectar": false,
+   "frente": "G3",
+   "obs": "bordão da moda; palavra do Easy Chat (≤ 12 bytes, src/trainer_card.c easyChatProfile[..][13])"
+  },
+  {
+   "en": "POKéNAV",
+   "pt": "PokéNav",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "frente": "G3",
+   "obs": "nome do aparelho, mantido; palavra do Easy Chat (≤ 12 bytes, src/trainer_card.c easyChatProfile[..][13])"
+  },
+  {
+   "en": "RIBBON",
+   "pt": "fita",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "frente": "G3",
+   "obs": "palavra do Easy Chat (≤ 12 bytes, src/trainer_card.c easyChatProfile[..][13])"
   }
  ],
  "proibidos": [

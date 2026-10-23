@@ -1,114 +1,114 @@
 
-static const u8 sEasyChatWord_Fall[] = _("FALL");
-static const u8 sEasyChatWord_Morning[] = _("MORNING");
-static const u8 sEasyChatWord_Tomorrow[] = _("TOMORROW");
-static const u8 sEasyChatWord_Last[] = _("LAST");
-static const u8 sEasyChatWord_Day[] = _("DAY");
-static const u8 sEasyChatWord_Sometime[] = _("SOMETIME");
-static const u8 sEasyChatWord_Always[] = _("ALWAYS");
-static const u8 sEasyChatWord_Current[] = _("CURRENT");
-static const u8 sEasyChatWord_Forever[] = _("FOREVER");
-static const u8 sEasyChatWord_Days[] = _("DAYS");
-static const u8 sEasyChatWord_End[] = _("END");
-static const u8 sEasyChatWord_Tuesday[] = _("TUESDAY");
-static const u8 sEasyChatWord_Yesterday[] = _("YESTERDAY");
-static const u8 sEasyChatWord_Today[] = _("TODAY");
-static const u8 sEasyChatWord_Friday[] = _("FRIDAY");
-static const u8 sEasyChatWord_Monday[] = _("MONDAY");
-static const u8 sEasyChatWord_Later[] = _("LATER");
-static const u8 sEasyChatWord_Earlier[] = _("EARLIER");
-static const u8 sEasyChatWord_Another[] = _("ANOTHER");
-static const u8 sEasyChatWord_Time[] = _("TIME");
-static const u8 sEasyChatWord_Finish[] = _("FINISH");
-static const u8 sEasyChatWord_Wednesday[] = _("WEDNESDAY");
-static const u8 sEasyChatWord_Soon[] = _("SOON");
-static const u8 sEasyChatWord_Start[] = _("START");
-static const u8 sEasyChatWord_Month[] = _("MONTH");
-static const u8 sEasyChatWord_Stop[] = _("STOP");
-static const u8 sEasyChatWord_Now[] = _("NOW");
-static const u8 sEasyChatWord_Final[] = _("FINAL");
-static const u8 sEasyChatWord_Next[] = _("NEXT");
-static const u8 sEasyChatWord_Age[] = _("AGE");
-static const u8 sEasyChatWord_Saturday[] = _("SATURDAY");
-static const u8 sEasyChatWord_Summer[] = _("SUMMER");
-static const u8 sEasyChatWord_Sunday[] = _("SUNDAY");
-static const u8 sEasyChatWord_Beginning[] = _("BEGINNING");
-static const u8 sEasyChatWord_Spring[] = _("SPRING");
-static const u8 sEasyChatWord_Daytime[] = _("DAYTIME");
-static const u8 sEasyChatWord_Winter[] = _("WINTER");
-static const u8 sEasyChatWord_Daily[] = _("DAILY");
-static const u8 sEasyChatWord_Olden[] = _("OLDEN");
-static const u8 sEasyChatWord_Almost[] = _("ALMOST");
-static const u8 sEasyChatWord_Nearly[] = _("NEARLY");
-static const u8 sEasyChatWord_Thursday[] = _("THURSDAY");
-static const u8 sEasyChatWord_Nighttime[] = _("NIGHTTIME");
-static const u8 sEasyChatWord_Night[] = _("NIGHT");
-static const u8 sEasyChatWord_Week[] = _("WEEK");
+static const u8 sEasyChatWord_Fall[] = _("outono");
+static const u8 sEasyChatWord_Morning[] = _("manhã");
+static const u8 sEasyChatWord_Tomorrow[] = _("amanhã");
+static const u8 sEasyChatWord_Last[] = _("último");
+static const u8 sEasyChatWord_Day[] = _("dia");
+static const u8 sEasyChatWord_Sometime[] = _("um dia");
+static const u8 sEasyChatWord_Always[] = _("sempre");
+static const u8 sEasyChatWord_Current[] = _("atual");
+static const u8 sEasyChatWord_Forever[] = _("para sempre");
+static const u8 sEasyChatWord_Days[] = _("dias");
+static const u8 sEasyChatWord_End[] = _("fim");
+static const u8 sEasyChatWord_Tuesday[] = _("terça");
+static const u8 sEasyChatWord_Yesterday[] = _("ontem");
+static const u8 sEasyChatWord_Today[] = _("hoje");
+static const u8 sEasyChatWord_Friday[] = _("sexta");
+static const u8 sEasyChatWord_Monday[] = _("segunda");
+static const u8 sEasyChatWord_Later[] = _("mais tarde");
+static const u8 sEasyChatWord_Earlier[] = _("mais cedo");
+static const u8 sEasyChatWord_Another[] = _("mais um");
+static const u8 sEasyChatWord_Time[] = _("tempo");
+static const u8 sEasyChatWord_Finish[] = _("terminar");
+static const u8 sEasyChatWord_Wednesday[] = _("quarta");
+static const u8 sEasyChatWord_Soon[] = _("logo");
+static const u8 sEasyChatWord_Start[] = _("começar");
+static const u8 sEasyChatWord_Month[] = _("mês");
+static const u8 sEasyChatWord_Stop[] = _("parar");
+static const u8 sEasyChatWord_Now[] = _("agora");
+static const u8 sEasyChatWord_Final[] = _("final");
+static const u8 sEasyChatWord_Next[] = _("próximo");
+static const u8 sEasyChatWord_Age[] = _("idade");
+static const u8 sEasyChatWord_Saturday[] = _("sábado");
+static const u8 sEasyChatWord_Summer[] = _("verão");
+static const u8 sEasyChatWord_Sunday[] = _("domingo");
+static const u8 sEasyChatWord_Beginning[] = _("começo");
+static const u8 sEasyChatWord_Spring[] = _("primavera");
+static const u8 sEasyChatWord_Daytime[] = _("de dia");
+static const u8 sEasyChatWord_Winter[] = _("inverno");
+static const u8 sEasyChatWord_Daily[] = _("diário");
+static const u8 sEasyChatWord_Olden[] = _("antigamente");
+static const u8 sEasyChatWord_Almost[] = _("quase");
+static const u8 sEasyChatWord_Nearly[] = _("por pouco");
+static const u8 sEasyChatWord_Thursday[] = _("quinta");
+static const u8 sEasyChatWord_Nighttime[] = _("de noite");
+static const u8 sEasyChatWord_Night[] = _("noite");
+static const u8 sEasyChatWord_Week[] = _("semana");
 
 static const struct EasyChatWordInfo sEasyChatGroup_Time[] = {
     {
         .text = sEasyChatWord_Fall,
-        .alphabeticalOrder = 29,
+        .alphabeticalOrder = 26,
         .enabled = TRUE
     },
     {
         .text = sEasyChatWord_Morning,
-        .alphabeticalOrder = 39,
+        .alphabeticalOrder = 2,
         .enabled = TRUE
     },
     {
         .text = sEasyChatWord_Tomorrow,
-        .alphabeticalOrder = 6,
+        .alphabeticalOrder = 38,
         .enabled = TRUE
     },
     {
         .text = sEasyChatWord_Last,
-        .alphabeticalOrder = 18,
-        .enabled = TRUE
-    },
-    {
-        .text = sEasyChatWord_Day,
-        .alphabeticalOrder = 33,
-        .enabled = TRUE
-    },
-    {
-        .text = sEasyChatWord_Sometime,
         .alphabeticalOrder = 7,
         .enabled = TRUE
     },
     {
+        .text = sEasyChatWord_Day,
+        .alphabeticalOrder = 23,
+        .enabled = TRUE
+    },
+    {
+        .text = sEasyChatWord_Sometime,
+        .alphabeticalOrder = 33,
+        .enabled = TRUE
+    },
+    {
         .text = sEasyChatWord_Always,
-        .alphabeticalOrder = 37,
-        .enabled = TRUE
-    },
-    {
-        .text = sEasyChatWord_Current,
-        .alphabeticalOrder = 4,
-        .enabled = TRUE
-    },
-    {
-        .text = sEasyChatWord_Forever,
-        .alphabeticalOrder = 9,
-        .enabled = TRUE
-    },
-    {
-        .text = sEasyChatWord_Days,
         .alphabeticalOrder = 35,
         .enabled = TRUE
     },
     {
+        .text = sEasyChatWord_Current,
+        .alphabeticalOrder = 42,
+        .enabled = TRUE
+    },
+    {
+        .text = sEasyChatWord_Forever,
+        .alphabeticalOrder = 4,
+        .enabled = TRUE
+    },
+    {
+        .text = sEasyChatWord_Days,
+        .alphabeticalOrder = 37,
+        .enabled = TRUE
+    },
+    {
         .text = sEasyChatWord_End,
-        .alphabeticalOrder = 17,
+        .alphabeticalOrder = 9,
         .enabled = TRUE
     },
     {
         .text = sEasyChatWord_Tuesday,
-        .alphabeticalOrder = 10,
+        .alphabeticalOrder = 32,
         .enabled = TRUE
     },
     {
         .text = sEasyChatWord_Yesterday,
-        .alphabeticalOrder = 0,
+        .alphabeticalOrder = 10,
         .enabled = TRUE
     },
     {
@@ -118,37 +118,37 @@ static const struct EasyChatWordInfo sEasyChatGroup_Time[] = {
     },
     {
         .text = sEasyChatWord_Friday,
-        .alphabeticalOrder = 20,
+        .alphabeticalOrder = 13,
         .enabled = TRUE
     },
     {
         .text = sEasyChatWord_Monday,
-        .alphabeticalOrder = 8,
+        .alphabeticalOrder = 29,
         .enabled = TRUE
     },
     {
         .text = sEasyChatWord_Later,
-        .alphabeticalOrder = 14,
+        .alphabeticalOrder = 36,
         .enabled = TRUE
     },
     {
         .text = sEasyChatWord_Earlier,
-        .alphabeticalOrder = 3,
+        .alphabeticalOrder = 22,
         .enabled = TRUE
     },
     {
         .text = sEasyChatWord_Another,
-        .alphabeticalOrder = 16,
+        .alphabeticalOrder = 17,
         .enabled = TRUE
     },
     {
         .text = sEasyChatWord_Time,
-        .alphabeticalOrder = 15,
+        .alphabeticalOrder = 16,
         .enabled = TRUE
     },
     {
         .text = sEasyChatWord_Finish,
-        .alphabeticalOrder = 24,
+        .alphabeticalOrder = 18,
         .enabled = TRUE
     },
     {
@@ -158,92 +158,92 @@ static const struct EasyChatWordInfo sEasyChatGroup_Time[] = {
     },
     {
         .text = sEasyChatWord_Soon,
-        .alphabeticalOrder = 40,
+        .alphabeticalOrder = 24,
         .enabled = TRUE
     },
     {
         .text = sEasyChatWord_Start,
-        .alphabeticalOrder = 28,
-        .enabled = TRUE
-    },
-    {
-        .text = sEasyChatWord_Month,
         .alphabeticalOrder = 43,
         .enabled = TRUE
     },
     {
+        .text = sEasyChatWord_Month,
+        .alphabeticalOrder = 12,
+        .enabled = TRUE
+    },
+    {
         .text = sEasyChatWord_Stop,
-        .alphabeticalOrder = 42,
+        .alphabeticalOrder = 0,
         .enabled = TRUE
     },
     {
         .text = sEasyChatWord_Now,
-        .alphabeticalOrder = 26,
+        .alphabeticalOrder = 8,
         .enabled = TRUE
     },
     {
         .text = sEasyChatWord_Final,
-        .alphabeticalOrder = 38,
-        .enabled = TRUE
-    },
-    {
-        .text = sEasyChatWord_Next,
-        .alphabeticalOrder = 30,
-        .enabled = TRUE
-    },
-    {
-        .text = sEasyChatWord_Age,
-        .alphabeticalOrder = 5,
-        .enabled = TRUE
-    },
-    {
-        .text = sEasyChatWord_Saturday,
-        .alphabeticalOrder = 22,
-        .enabled = TRUE
-    },
-    {
-        .text = sEasyChatWord_Summer,
-        .alphabeticalOrder = 34,
-        .enabled = TRUE
-    },
-    {
-        .text = sEasyChatWord_Sunday,
-        .alphabeticalOrder = 23,
-        .enabled = TRUE
-    },
-    {
-        .text = sEasyChatWord_Beginning,
         .alphabeticalOrder = 25,
         .enabled = TRUE
     },
     {
-        .text = sEasyChatWord_Spring,
-        .alphabeticalOrder = 31,
+        .text = sEasyChatWord_Next,
+        .alphabeticalOrder = 40,
         .enabled = TRUE
     },
     {
-        .text = sEasyChatWord_Daytime,
-        .alphabeticalOrder = 32,
+        .text = sEasyChatWord_Age,
+        .alphabeticalOrder = 34,
         .enabled = TRUE
     },
     {
-        .text = sEasyChatWord_Winter,
+        .text = sEasyChatWord_Saturday,
+        .alphabeticalOrder = 28,
+        .enabled = TRUE
+    },
+    {
+        .text = sEasyChatWord_Summer,
+        .alphabeticalOrder = 21,
+        .enabled = TRUE
+    },
+    {
+        .text = sEasyChatWord_Sunday,
+        .alphabeticalOrder = 39,
+        .enabled = TRUE
+    },
+    {
+        .text = sEasyChatWord_Beginning,
         .alphabeticalOrder = 41,
         .enabled = TRUE
     },
     {
+        .text = sEasyChatWord_Spring,
+        .alphabeticalOrder = 30,
+        .enabled = TRUE
+    },
+    {
+        .text = sEasyChatWord_Daytime,
+        .alphabeticalOrder = 15,
+        .enabled = TRUE
+    },
+    {
+        .text = sEasyChatWord_Winter,
+        .alphabeticalOrder = 44,
+        .enabled = TRUE
+    },
+    {
         .text = sEasyChatWord_Daily,
-        .alphabeticalOrder = 19,
+        .alphabeticalOrder = 6,
         .enabled = TRUE
     },
     {
         .text = sEasyChatWord_Olden,
-        .alphabeticalOrder = 13,
+        .alphabeticalOrder = 14,
         .enabled = TRUE
     },
     {
         .text = sEasyChatWord_Almost,
-        .alphabeticalOrder = 2,
+        .alphabeticalOrder = 19,
         .enabled = TRUE
     },
     {
@@ -253,22 +253,22 @@ static const struct EasyChatWordInfo sEasyChatGroup_Time[] = {
     },
     {
         .text = sEasyChatWord_Thursday,
-        .alphabeticalOrder = 21,
+        .alphabeticalOrder = 20,
         .enabled = TRUE
     },
     {
         .text = sEasyChatWord_Nighttime,
-        .alphabeticalOrder = 44,
+        .alphabeticalOrder = 3,
         .enabled = TRUE
     },
     {
         .text = sEasyChatWord_Night,
-        .alphabeticalOrder = 36,
+        .alphabeticalOrder = 5,
         .enabled = TRUE
     },
     {
         .text = sEasyChatWord_Week,
-        .alphabeticalOrder = 12,
+        .alphabeticalOrder = 31,
         .enabled = TRUE
     }
 };

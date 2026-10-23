@@ -3,6 +3,8 @@
 Task G1: descrições de item (`items.json`), frutas (`berry.c`) e enfeites (`decoration/`).
 Task G2: mensagens de batalha (`src/battle_message.c`), com a gramática montada no código
 (o lado do Pokémon vira sufixo: "o Rattata selvagem", "do Pidgey inimigo").
+Task G3: Easy Chat (`src/data/easy_chat/`): palavras em PT-BR, ordem alfabética PT-BR nos grupos, nos
+golpes e nas listas por letra, falas da Trainer Tower e frases/senhas fixas.
 Cada arquivo traduzido não tem inglês sobrando (função de relatório da checagem de texto) nem
 achado das regras de texto (`controle`, `glossario`, largura, linhas, letras, charmap).
 """
@@ -11,6 +13,7 @@ import json
 import re
 import shutil
 import subprocess
+import unicodedata
 from functools import lru_cache
 from pathlib import Path
 
@@ -28,7 +31,12 @@ G1_FILES = (
     "src/data/decoration/header.h",
 )
 G2_FILES = ("src/battle_message.c",)
-FILES = G1_FILES + G2_FILES
+EC_WORD_GROUPS = ("trainer", "status", "battle", "greetings", "people", "voices", "speech", "endings", "feelings",
+                  "conditions", "actions", "lifestyle", "hobbies", "time", "misc", "adjectives", "events",
+                  "trendy_saying")
+G3_FILES = tuple(f"src/data/easy_chat/easy_chat_group_{g}.h" for g in EC_WORD_GROUPS) + (
+    "src/trainer_tower_sets.c", "data/mystery_event_msg.s")
+FILES = G1_FILES + G2_FILES + G3_FILES
 
 # Descrição que fica como estava: marcador vazio do jogo e texto que o Hack 7 já pôs em PT-BR
 ITEM_DESC_UNCHANGED = {"?????", "Uma escama misteriosa que\\nfaz certo Pokémon evoluir.\\nBrilha com as cores do arco-íris."}
@@ -571,3 +579,341 @@ def test_fala_do_treinador_cabe_em_gDisplayedStringBattle(env):
         if cur > size and cur > old:
             over.append(f"{label}: {cur} bytes (inglês {old})")
     assert over == []
+
+
+# ---- G3: Easy Chat (src/data/easy_chat/, trainer_tower_sets.c, frases fixas) -----------------
+
+EC_DIR = "src/data/easy_chat"
+_EC_STR = re.compile(r'static const u8 (sEasyChatWord_\w+)\[\] = _\("((?:[^"\\]|\\.)*)"\);')
+_EC_ENT = re.compile(r"\.text = (\w+),\s*\.alphabeticalOrder = (\d+),\s*\.enabled = (\w+)")
+# Igual nas duas línguas: pontuação e siglas
+EC_UNCHANGED = {"!", "!!", "?!", "?", "…", "…!", "………", "-", "- - -", "PC", "RPG"}
+EC_WORD_MAX_BYTES = 12        # trainer_card.c: easyChatProfile[...][13] recebe CopyEasyChatWord
+EC_WORD_MAX_PX = 79           # janelas_uso: 2 palavras por linha com {CLEAR 17} na moldura de 24 tiles
+
+
+def _ec_words(source: str) -> list[tuple[str, str, int, str]]:
+    """(variável, texto, alphabeticalOrder, enabled) na ordem do vetor (= índice da palavra)."""
+    strings = dict(_EC_STR.findall(source))
+    return [(v, strings[v], int(o), e) for v, o, e in _EC_ENT.findall(source)]
+
+
+def _ec_now(group: str):
+    return _ec_words(_read(f"{EC_DIR}/easy_chat_group_{group}.h"))
+
+
+def _ec_plain(text: str) -> str:
+    text = text.replace("{PK}", "PK").replace("{POKEBLOCK}", "POKEBLOCK")
+    return "".join(c for c in unicodedata.normalize("NFD", text) if not unicodedata.combining(c))
+
+
+def ec_sort_key(text: str):
+    """Ordem PT-BR do brief: acento conta como a letra base, sem caixa; empate pela grafia."""
+    return (_ec_plain(text).casefold(), text)
+
+
+def ec_letter(text: str) -> str:
+    c = _ec_plain(text)[:1].upper()
+    return c if "A" <= c <= "Z" else "Others"
+
+
+def _names(rel: str, prefix: str) -> dict[str, str]:
+    return dict(re.findall(rf'\[{prefix}_(\w+)\]\s*=\s*_\("([^"]*)"\)', _read(rel)))
+
+
+def _move_names():
+    return _names("src/data/text/move_names.h", "MOVE")
+
+
+def _species_names():
+    return _names("src/data/text/species_names.h", "SPECIES")
+
+
+def _value_list_text(source: str, prefix: str) -> list[str]:
+    return re.findall(rf"\b{prefix}_(\w+),", source.split("{", 1)[1])
+
+
+def _value_list(rel: str, prefix: str) -> list[str]:
+    return _value_list_text(_read(rel), prefix)
+
+
+def _ec_constants() -> dict[str, tuple[str, int]]:
+    return {name: (grp.lower(), int(idx, 16)) for name, grp, idx in re.findall(
+        r"#define (EC_WORD_\w+)\s+\(EC_GROUP_(\w+) << 9\) \| (0x[0-9a-fA-F]+)", _read("include/constants/easy_chat.h"))}
+
+
+def _ec_text_of() -> dict[str, str]:
+    """Constante do Easy Chat (EC_WORD_X, EC_MOVE(X), EC_MOVE2(X), EC_POKEMON(X), EC_POKEMON2(X)) -> texto."""
+    words = {g: _ec_now(g) for g in EC_WORD_GROUPS}
+    out = {name: words[g][i][1] for name, (g, i) in _ec_constants().items()}
+    moves, species = _move_names(), _species_names()
+    for m in moves:
+        out[f"EC_MOVE({m})"] = out[f"EC_MOVE2({m})"] = moves[m]
+    for s in species:
+        out[f"EC_POKEMON({s})"] = out[f"EC_POKEMON2({s})"] = species[s]
+    return out
+
+
+def _need_base(rel: str) -> str:
+    base = _base_text(rel)
+    if base is None:
+        pytest.skip("sem git ou sem o commit base da tradução")
+    return base
+
+
+@pytest.mark.parametrize("group", EC_WORD_GROUPS)
+def test_toda_palavra_do_easy_chat_foi_traduzida(group):
+    before = _ec_words(_need_base(f"{EC_DIR}/easy_chat_group_{group}.h"))
+    now = _ec_now(group)
+    assert [(v, e) for v, _, _, e in now] == [(v, e) for v, _, _, e in before], "a ordem dos vetores define o id"
+    same = [t for (_, t, _, _), (_, old, _, _) in zip(now, before) if t == old and t not in EC_UNCHANGED]
+    assert same == []
+
+
+def test_palavras_do_easy_chat_cabem_na_coluna_e_no_buffer_do_cartao(env):
+    assert "easyChatProfile[TRAINER_CARD_PROFILE_LENGTH][13]" in _read("src/trainer_card.c")
+    bad = []
+    for g in EC_WORD_GROUPS:
+        for v, text, _, _ in _ec_now(g):
+            m = ct.measure(text, env)
+            if m.widest > EC_WORD_MAX_PX or m.nbytes > EC_WORD_MAX_BYTES or m.bad:
+                bad.append(f"{g}/{v} '{text}': {m.widest} px, {m.nbytes} bytes {m.bad}")
+    assert bad == []
+
+
+def test_palavras_do_easy_chat_nao_se_repetem():
+    """Duas palavras com a mesma grafia confundiriam a lista (acento distingue: "avô"/"avó", "e"/"é")."""
+    seen: dict[str, list[str]] = {}
+    for g in EC_WORD_GROUPS:
+        for v, text, _, _ in _ec_now(g):
+            seen.setdefault(text.casefold(), []).append(f"{g}/{v}")
+    assert {t: vs for t, vs in seen.items() if len(vs) > 1} == {}
+
+
+def test_ordem_alfabetica_ptbr_dos_grupos_de_palavras():
+    """alphabeticalOrder da entrada i = índice da i-ésima palavra na ordem (easy_chat.c, GetUnlockedWordsInECGroup)."""
+    for g in EC_WORD_GROUPS:
+        words = _ec_now(g)
+        order = [o for _, _, o, _ in words]
+        assert sorted(order) == list(range(len(words))), f"{g}: não é permutação"
+        shown = [words[o][1] for o in order]
+        assert shown == sorted(shown, key=ec_sort_key), g
+
+
+def test_ordem_alfabetica_ptbr_dos_golpes():
+    names = _move_names()
+    for n in (1, 2):
+        rel = f"{EC_DIR}/easy_chat_group_move_{n}.h"
+        now = _value_list(rel, "MOVE")
+        assert sorted(now) == sorted(_value_list_text(_need_base(rel), "MOVE")), f"golpes do grupo {n} mudaram"
+        assert now == sorted(now, key=lambda m: ec_sort_key(names[m])), n
+
+
+def _letter_lists() -> dict[str, list[list[str]]]:
+    """Letra -> entradas (cada entrada = lista de constantes; o par duplo "-1, 2" vira uma entrada)."""
+    src = _read(f"{EC_DIR}/easy_chat_words_by_letter.h")
+    lists, counts = {}, {}
+    for letter, body in re.findall(r"sEasyChatWordsByLetter_(\w+)\[\] = \{(.*?)\};", src, re.S):
+        toks = [t.strip() for t in re.sub(r"//[^\n]*", "", body).split(",") if t.strip()]
+        counts[letter] = len(toks)
+        entries, i = [], 0
+        while i < len(toks):
+            if toks[i] == "-1":
+                n = int(toks[i + 1])
+                entries.append(toks[i + 2:i + 2 + n])
+                i += 2 + n
+            else:
+                entries.append([toks[i]])
+                i += 1
+        lists[letter] = entries
+    declared = dict(re.findall(r"\.words = sEasyChatWordsByLetter_(\w+),\s*\.numWords = (\d+)", src))
+    assert {k: int(v) for k, v in declared.items()} == counts, "numWords diferente do tamanho do vetor"
+    return lists
+
+
+def test_listas_por_letra_tem_cada_palavra_uma_vez_na_letra_certa_e_em_ordem():
+    lists = _letter_lists()
+    assert list(lists) == ["Others"] + [chr(c) for c in range(ord("A"), ord("Z") + 1)]
+    text_of = _ec_text_of()
+    mons1 = _value_list(f"{EC_DIR}/easy_chat_group_pokemon.h", "SPECIES")
+    mons2 = _value_list(f"{EC_DIR}/easy_chat_group_pokemon2.h", "SPECIES")
+    expected = set(_ec_constants())
+    expected |= {f"EC_MOVE({m})" for m in _value_list(f"{EC_DIR}/easy_chat_group_move_1.h", "MOVE")}
+    expected |= {f"EC_MOVE2({m})" for m in _value_list(f"{EC_DIR}/easy_chat_group_move_2.h", "MOVE")}
+    expected |= {f"EC_POKEMON({s})" for s in mons1} | {f"EC_POKEMON2({s})" for s in mons2}
+    flat = [c for entries in lists.values() for e in entries for c in e]
+    assert len(flat) == len(set(flat)), "palavra duplicada nas listas por letra"
+    assert set(flat) == expected, (sorted(expected - set(flat))[:10], sorted(set(flat) - expected)[:10])
+    for letter, entries in lists.items():
+        for e in entries:
+            texts = {text_of[c] for c in e}
+            assert len(texts) == 1, e                      # par duplo = a mesma espécie nos dois grupos
+            if len(e) > 1:
+                (sp,) = {re.search(r"\((\w+)\)", c).group(1) for c in e}
+                assert e == [f"EC_POKEMON2({sp})", f"EC_POKEMON({sp})"], e
+            assert ec_letter(texts.pop()) == letter, (letter, e)
+        shown = [text_of[e[0]] for e in entries]
+        assert shown == sorted(shown, key=ec_sort_key), letter
+    doubled = {re.search(r"\((\w+)\)", e[0]).group(1) for es in lists.values() for e in es if len(e) > 1}
+    assert doubled == set(mons1) & set(mons2)
+
+
+def test_nenhuma_letra_passa_do_limite_da_tela():
+    """alphabeticalWordsByGroup[27][N] e allWords[N] (easy_chat.c): uma letra com mais de N palavras estoura."""
+    src = _read("src/easy_chat.c")
+    limit = int(re.search(r"alphabeticalWordsByGroup\[27\]\[(\d+)\]", src).group(1))
+    assert int(re.search(r"u16 allWords\[(\d+)\]", src).group(1)) == limit
+    assert {k: len(v) for k, v in _letter_lists().items() if len(v) > limit} == {}
+
+
+def test_habilidades_e_tipos_do_easy_chat_usam_os_nomes_do_jogo():
+    """Grupo "Condição": habilidade = gAbilityNames (Task 2); tipo = forma cheia do glossário (cabe)."""
+    abilities = _names("src/data/text/abilities.h", "ABILITY")
+    types = {"NORMAL": "Normal", "FIGHTING": "Lutador", "FLYING": "Voador", "POISON": "Venenoso", "GROUND": "Terra",
+             "ROCK": "Pedra", "BUG": "Inseto", "GHOST": "Fantasma", "STEEL": "Aço", "FIRE": "Fogo", "WATER": "Água",
+             "GRASS": "Planta", "ELECTRIC": "Elétrico", "PSYCHIC": "Psíquico", "ICE": "Gelo", "DRAGON": "Dragão",
+             "DARK": "Sombrio"}
+    renamed = {"LIGHTNINGROD": "LIGHTNING_ROD", "COMPOUNDEYES": "COMPOUND_EYES"}
+    before = _ec_words(_need_base(f"{EC_DIR}/easy_chat_group_status.h"))
+    checked, wrong = 0, []
+    for (_, en, _, _), (_, pt, _, _) in zip(before, _ec_now("status")):
+        want = types.get(en) or abilities.get(renamed.get(en, en.replace(" ", "_")))
+        if want is None:
+            continue
+        checked += 1
+        if pt != want:
+            wrong.append(f"{en}: '{pt}' (esperado '{want}')")
+    assert wrong == []
+    assert checked == len(types) + 76            # as 76 habilidades da 3ª geração estão no grupo
+
+
+def _ec_phrase(tokens: list[str], text_of: dict[str, str]) -> str:
+    return " ".join(text_of[t] for t in tokens if t not in ("0xFFFF", "EC_WORD_UNDEFINED"))
+
+
+def _c_word_array(rel: str, name: str) -> list[str]:
+    body = re.search(rf"{name}\[\] = \{{[^\n]*\n(.*?)\}};", _read(rel), re.S).group(1)
+    return [t.strip() for t in body.split(",") if t.strip()]
+
+
+def capitalize_phrase(text: str) -> str:
+    """Espelho de CapitalizeEasyChatPhrase (easy_chat.c): maiúscula no início e depois de "!" ou "?"."""
+    out, start = [], True
+    for ch in text:
+        if ch in "!?":
+            start = True
+        elif ch not in " \n" and start:
+            ch, start = ch.upper(), False
+        out.append(ch)
+    return "".join(out)
+
+
+# Frases e senhas que dependem de palavras do Easy Chat (tabela do relatório da G3)
+FIXED_PHRASES = {
+    ("src/easy_chat.c", "sDefaultProfileWords"): "eu adoro Pokémon !",
+    ("src/easy_chat.c", "sDefaultBattleStartWords"): "ei vamos lutar ! aí vou eu !",
+    ("src/easy_chat_2.c", "sECPhrase_MysteryEventIsExciting"): "evento misterioso é emocionante",
+    ("src/easy_chat_2.c", "sECPhrase_LinkTogetherWithAll"): "conexão com todos juntos",
+}
+
+
+def test_frases_e_senhas_fixas_existem_em_portugues():
+    text_of = _ec_text_of()
+    assert {key: _ec_phrase(_c_word_array(*key), text_of) for key in FIXED_PHRASES} == FIXED_PHRASES
+
+
+def test_senha_do_presente_misterioso_da_e2_usa_palavras_reais():
+    """mystery_event_msg.s (E2) cita a senha da pesquisa: “Me dá Treinador incrível” = GIVE_ME, TRAINER, AWESOME."""
+    text_of = _ec_text_of()
+    words = [text_of[c] for c in ("EC_WORD_GIVE_ME", "EC_WORD_TRAINER", "EC_WORD_AWESOME")]
+    assert words == ["me dá", "Treinador", "incrível"]
+    src = re.sub(r'"\s*\n\s*\.string\s*"', "", _read("data/mystery_event_msg.s")).replace("\\n", " ")
+    assert "“" + capitalize_phrase(" ".join(words)) + "”" in src
+
+
+def _tower_speeches() -> list[tuple[int, str, list[str]]]:
+    return _tower_speeches_of(_read("src/trainer_tower_sets.c"))
+
+
+def _tower_speeches_of(source: str) -> list[tuple[int, str, list[str]]]:
+    out = []
+    for n, line in enumerate(source.splitlines(), 1):
+        m = re.search(r"\.speech(\w+) = \{([^}]*)\}", line)
+        if m and "EC_" in m.group(2):
+            out.append((n, m.group(1), [t.strip() for t in m.group(2).split(",")]))
+    return out
+
+
+# Fala da Trainer Tower dirigida ao jogador com gênero marcado ("você é fraco", "meu amigo", "você é um mestre")
+TOWER_PLAYER_GENDERED = re.compile(r"\b[Vv]ocê (?:é|foi|está|era) (?:muito |bem |realmente |o |um )?[a-zà-ÿ]\w*o\b|"
+                                   r"\b(?:[Mm]eu|[Ss]eu) amigo\b|\b[Vv]ocê é (?:o |um )?(?:mestre|Treinador|adversário)\b")
+
+
+def test_padrao_de_genero_da_trainer_tower_pega_os_casos_do_ingles_literal():
+    caught = ["Você é fabuloso", "Você é fraco demais", "Desculpa meu amigo", "Você é um mestre Treinador",
+              "Você está pronto ?", "Você foi perfeito"]
+    clean = ["Você é forte demais", "Você é legal !", "Você é só uma criança ahaha !", "Você é moleza !",
+             "Eu sou Positivo você é Negativo"]   # nome de habilidade, entre o casal
+    assert [t for t in caught if not TOWER_PLAYER_GENDERED.search(t)] == []
+    assert [t for t in clean if TOWER_PLAYER_GENDERED.search(t)] == []
+
+
+# Emendas que a tradução palavra a palavra da frase inglesa produz ("I AM SORRY" -> "eu sou desculpa",
+# "YOU'RE NOT GOING" -> "você é não indo", "WE WON" -> "nós venci", "ARE YOU" -> "está você")
+TOWER_LITERAL = re.compile(r"(?i)\b(?:eu sou desculpa|você é não|é não indo|nós venci|eu precisar|eu querer|"
+                           r"eu ter|está você|eu sou derrotar|eram meu|sensação trêmulo|um pouco moleza)\b")
+
+
+def test_falas_da_trainer_tower_em_portugues_e_sem_genero_do_jogador(env):
+    text_of = _ec_text_of()
+    speeches = _tower_speeches()
+    assert len(speeches) == 240
+    base = {n: toks for n, _, toks in _tower_speeches_of(_need_base("src/trainer_tower_sets.c"))}
+    rewritten = sum(1 for n, _, toks in speeches if base.get(n) != toks)
+    assert rewritten >= 200, "as falas têm de ser refeitas na ordem do português, não só trocadas palavra a palavra"
+    as_english = [capitalize_phrase(_ec_phrase(toks, text_of)) for toks in base.values()]
+    assert sum(1 for p in as_english if TOWER_LITERAL.search(p)) >= 10   # o padrão pega a versão literal
+    bad, literal = [], []
+    for n, kind, toks in speeches:
+        assert len(toks) == 6, n
+        words = [t for t in toks if t != "0xFFFF"]
+        assert all(t in text_of for t in words), (n, [t for t in words if t not in text_of])
+        phrase = capitalize_phrase(_ec_phrase(toks, text_of))
+        if TOWER_PLAYER_GENDERED.search(phrase):
+            bad.append(f"{n} {kind}: {phrase}")
+        if TOWER_LITERAL.search(phrase):
+            literal.append(f"{n}: {phrase}")
+        # TT_ConvertEasyChatMessageToString: 3x2 se couber em 196 px; senão 2x3 (2 palavras por linha)
+        rows3 = [" ".join(text_of[t] for t in toks[i:i + 3] if t != "0xFFFF") for i in (0, 3)]
+        rows2 = [" ".join(text_of[t] for t in toks[i:i + 2] if t != "0xFFFF") for i in (0, 2, 4)]
+        if max(ct.measure(r, env).widest for r in rows3) > 196:
+            assert max(ct.measure(r, env).widest for r in rows2) <= 196, (n, rows2)
+    assert bad == []
+    assert literal == []
+
+
+def test_maiuscula_das_frases_cobre_os_acentos_do_charmap():
+    """A tabela de CapitalizeEasyChatPhrase leva cada minúscula acentuada à sua maiúscula (pelo charmap)
+    e cobre toda letra acentuada que começa uma palavra do Easy Chat."""
+    charmap = {}
+    for ch, code in re.findall(r"^'(.)'\s*=\s*([0-9A-F]{2})\s*$", _read("charmap.txt"), re.M):
+        charmap.setdefault(int(code, 16), ch)
+    defines = {k: int(v, 16) for k, v in re.findall(r"#define (CHAR_\w+)\s+(0x[0-9A-Fa-f]+)",
+                                                     _read("include/characters.h"))}
+    src = _read("src/easy_chat.c")
+    table = re.search(r"sLowerToUpperAccented\[\]\[2\] = \{(.*?)\n\};", src, re.S).group(1)
+    pairs = [tuple(defines[x] if x in defines else int(x, 16) for x in p)
+             for p in re.findall(r"\{(\w+), (\w+)\}", table)]
+    got = {charmap[a]: charmap[b] for a, b in pairs}
+    assert all(lo.upper() == up for lo, up in got.items()), got
+    first = {t[:1] for g in EC_WORD_GROUPS for _, t, _, _ in _ec_now(g)}
+    assert {c for c in first if c.islower() and not c.isascii()} <= set(got)
+    assert "ShowFieldAutoScrollMessage(CapitalizeEasyChatPhrase(gStringVar4));" in src
+    assert _read("src/trainer_tower.c").count("CapitalizeEasyChatPhrase(dest)") == 2
+
+
+def test_termos_novos_do_easy_chat_no_glossario():
+    g = json.loads((REPO_ROOT / "test" / "esteira" / "glossario.json").read_text(encoding="utf-8"))
+    created = {t["pt"] for t in g["termos"] if t.get("frente") == "G3"}
+    assert {"T. Batalha", "Sala Batalha", "base secreta", "Pokébloco", "Pokérus", "loja depart.",
+            "KO direto!"} <= created
