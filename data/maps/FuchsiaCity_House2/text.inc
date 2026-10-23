@@ -1,37 +1,37 @@
 FuchsiaCity_House2_Text_DoYouLikeToFish::
-    .string "I'm the FISHING GURU's older\n"
-    .string "brother.\p"
-    .string "I simply looove fishing!\n"
-    .string "I can't bear to go without.\p"
-    .string "Tell me, do you like to fish?$"
+    .string "Sou o irmão mais velho do\n"
+    .string "Mestre da Pesca.\p"
+    .string "Eu simplesmente adoooro pescar!\n"
+    .string "Não aguento ficar sem.\p"
+    .string "Diga, você gosta de pescar?$"
 
 FuchsiaCity_House2_Text_LikeYourStyleTakeThis::
-    .string "Grand! I like your style.\n"
-    .string "I think we can be friends.\p"
-    .string "Take this and fish, young friend!$"
+    .string "Ótimo! Gostei do seu estilo.\n"
+    .string "Acho que podemos ser amigos.\p"
+    .string "Leve isto e pesque à vontade!$"
 
 FuchsiaCity_House2_Text_ReceivedGoodRod::
-    .string "{PLAYER} received a GOOD ROD from\n"
-    .string "the FISHING GURU's brother.$"
+    .string "{PLAYER} recebeu uma Vara Boa do\n"
+    .string "irmão do Mestre da Pesca.$"
 
 FuchsiaCity_House2_Text_GoodRodCanCatchBetterMons::
-    .string "Fishing is a way of life!\n"
-    .string "It is like the finest poetry.\p"
-    .string "A crummy OLD ROD could only catch\n"
-    .string "MAGIKARP, yes?\p"
-    .string "But with a GOOD ROD, you can\n"
-    .string "catch much better POKéMON.$"
+    .string "Pescar é um estilo de vida!\n"
+    .string "É como a mais fina poesia.\p"
+    .string "Uma Vara Velha vagabunda só pega\n"
+    .string "Magikarp, não é?\p"
+    .string "Mas com uma Vara Boa, dá para\n"
+    .string "pescar Pokémon bem melhores.$"
 
 FuchsiaCity_House2_Text_OhThatsDisappointing::
-    .string "Oh…\n"
-    .string "That's so disappointing…$"
+    .string "Ah…\n"
+    .string "Que decepção…$"
 
 FuchsiaCity_House2_Text_HowAreTheFishBiting::
-    .string "Hello there, {PLAYER}!\p"
-    .string "How are the fish biting?$"
+    .string "Olá, {PLAYER}!\p"
+    .string "Os peixes estão mordendo?$"
 
 FuchsiaCity_House2_Text_YouHaveNoRoomForGift::
-    .string "Oh, no!\p"
-    .string "I had a gift for you, but you have\n"
-    .string "no room for it!$"
+    .string "Ai, não!\p"
+    .string "Eu tinha um presente para você,\n"
+    .string "mas você não tem espaço!$"
 

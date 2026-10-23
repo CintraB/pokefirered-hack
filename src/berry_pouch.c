@@ -642,7 +642,7 @@ static bool8 AllocateListMenuBuffers(void)
     sListMenuItems = Alloc(NUM_BERRIES * sizeof(struct ListMenuItem));
     if (sListMenuItems == NULL)
         return FALSE;
-    sListMenuStrbuf = Alloc(sResources->listMenuNumItems * 27);
+    sListMenuStrbuf = Alloc(sResources->listMenuNumItems * BERRY_POUCH_LIST_STRBUF_SIZE);
     if (sListMenuStrbuf == NULL)
         return FALSE;
     return TRUE;
@@ -654,8 +654,8 @@ static void SetUpListMenuTemplate(void)
     struct BagPocket *pocket = &gBagPockets[POCKET_BERRY_POUCH - 1];
     for (i = 0; i < sResources->listMenuNumItems; i++)
     {
-        GetBerryNameAndIndexForMenu(&sListMenuStrbuf[i * 27], pocket->itemSlots[i].itemId);
-        sListMenuItems[i].label = &sListMenuStrbuf[i * 27];
+        GetBerryNameAndIndexForMenu(&sListMenuStrbuf[i * BERRY_POUCH_LIST_STRBUF_SIZE], pocket->itemSlots[i].itemId);
+        sListMenuItems[i].label = &sListMenuStrbuf[i * BERRY_POUCH_LIST_STRBUF_SIZE];
         sListMenuItems[i].index = i;
     }
     sListMenuItems[i].label = gText_Close;
@@ -698,7 +698,7 @@ static void GetBerryNameAndIndexForMenu(u8 * dest, u16 itemId)
 
 static void CopySelectedListMenuItemName(s16 itemIdx, u8 * dest)
 {
-    StringCopy(dest, &sListMenuStrbuf[itemIdx * 27]);
+    StringCopy(dest, &sListMenuStrbuf[itemIdx * BERRY_POUCH_LIST_STRBUF_SIZE]);
 }
 
 static void BerryPouchMoveCursorFunc(s32 itemIndex, bool8 onInit, struct ListMenu *list)

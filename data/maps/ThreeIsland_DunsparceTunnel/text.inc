@@ -1,27 +1,29 @@
 ThreeIsland_DunsparceTunnel_Text_ProspectingForGold::
-    .string "Hey, there!\n"
-    .string "How's it going?\p"
-    .string "What am I doing here, you ask?\n"
-    .string "Why, I'm prospecting for gold!\p"
-    .string "When I strike it rich, I'm buying\n"
-    .string "a house in KANTO.$"
+    .string "Olá!\n"
+    .string "Como vai?\p"
+    .string "O que eu estou fazendo aqui, você\n"
+    .string "pergunta?\l"
+    .string "Ora, estou garimpando ouro!\p"
+    .string "Quando eu ficar rico, vou comprar\n"
+    .string "uma casa em Kanto.$"
 
 ThreeIsland_DunsparceTunnel_Text_StruckGoldThisIsForYou::
-    .string "Hey, there! How's it going?\n"
-    .string "Did you hear? I've struck gold!\p"
-    .string "You remembered that I was\n"
-    .string "prospecting, didn't you?\p"
-    .string "You can't begin to imagine just\n"
-    .string "how happy I am.\p"
-    .string "So, I'll show you!\n"
-    .string "This is for you!$"
+    .string "Olá! Como vai?\n"
+    .string "Soube? Eu achei ouro!\p"
+    .string "Você se lembrava de que eu estava\n"
+    .string "garimpando, não é?\p"
+    .string "Você nem imagina como estou\n"
+    .string "feliz.\p"
+    .string "Por isso, vou mostrar!\n"
+    .string "Isto é para você!$"
 
 ThreeIsland_DunsparceTunnel_Text_ThatsANugget::
-    .string "That's a NUGGET!\p"
-    .string "I can't give you any nuggets of\n"
-    .string "wisdom, so that'll have to do!$"
+    .string "Isso é uma Pepita!\p"
+    .string "Não tenho nenhuma pepita de\n"
+    .string "sabedoria para dar, então isso vai\l"
+    .string "ter que servir!$"
 
 ThreeIsland_DunsparceTunnel_Text_WhoopsBagCrammedFull::
-    .string "Whoops, your BAG is crammed full!\n"
-    .string "I'll give this to you later.$"
+    .string "Opa, a sua Bolsa está lotada!\n"
+    .string "Eu entrego isto para você depois.$"
 
