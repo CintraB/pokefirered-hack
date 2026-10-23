@@ -1093,3 +1093,111 @@ def test_e3_nivel_cabe_na_caixa_de_vida():
         digits = str(level)
         width = 5 * (3 - len(digits)) + small[0x105] + sum(small[cm.encode(d)[0]] for d in digits)
         assert width <= 24, level
+
+
+# =====================================================================================================
+# Task E4: braille (data/text/braille.inc) em PT-BR sem acento, com cada enigma conferido
+# =====================================================================================================
+
+BRAILLE_INC = "data/text/braille.inc"
+BRAILLE_GLYPH_PX = 16          # GetGlyphWidth_Braille (src/braille_text.c)
+BRAILLE_MAX_CELLS = 11         # maior frase original ("HAS MEANING", "WORLD WAITS"...): mesma posição do cursor
+
+
+def _braille() -> dict[str, str]:
+    text = (REPO_ROOT / BRAILLE_INC).read_text(encoding="utf-8")
+    return {m.group(1): m.group(2) for m in re.finditer(r'^(Braille_Text_\w+)::\n\t\.braille "([^"]*)\$"', text, re.M)}
+
+
+def _script(map_name: str) -> str:
+    return (REPO_ROOT / "data" / "maps" / map_name / "scripts.inc").read_text(encoding="utf-8")
+
+
+def test_e4_braille_sem_ingles_e_sem_acento():
+    report = ct.english_report(str(REPO_ROOT))
+    assert BRAILLE_INC not in report
+    braille = _braille()
+    assert len(braille) == 39
+    allowed = set("ABCDEFGHIJKLMNOPQRSTUVWXYZ ,.")
+    assert {k: v for k, v in braille.items() if not set(v) <= allowed} == {}
+
+
+def test_e4_braille_rotulos_iguais_aos_da_base():
+    base = _e2_base(BRAILLE_INC)
+    if base is None:
+        pytest.skip("sem git ou sem o commit base da tradução")
+    assert re.findall(r"^(\w+)::", base, re.M) == list(_braille())
+
+
+def test_e4_cada_frase_cabe_na_janela_e_o_cursor_fica_no_lugar():
+    """braillemessage imprime em FONT_BRAILLE (16 px por cela) na janela de diálogo de 26 tiles (208 px);
+    braillemessage_wait põe o cursor em x = largura + 27 (getbraillestringwidth + BrailleCursorToggle,
+    src/scrcmd.c, src/field_specials.c). Nenhuma frase passa da maior frase original (11 celas): o cursor
+    nunca passa de onde ficava no jogo inglês."""
+    braille = _braille()
+    over = {k: len(v) for k, v in braille.items() if len(v) * BRAILLE_GLYPH_PX > 208 or len(v) > BRAILLE_MAX_CELLS}
+    assert over == {}
+    assert "return 16;" in (REPO_ROOT / "src" / "braille_text.c").read_text(encoding="utf-8")
+
+
+# Enigmas: o que o jogador lê -> o que precisa fazer (a ação está no mapa/código, não no texto)
+DOTTED_HOLE = {          # andar: (rótulo, frase, warp certo a partir da placa em (6, 5), destino)
+    "B1F": ("Braille_Text_Up", "CIMA", (6, 1), "MAP_SIX_ISLAND_DOTTED_HOLE_B2F"),
+    "B2F": ("Braille_Text_Left", "ESQUERDA", (1, 5), "MAP_SIX_ISLAND_DOTTED_HOLE_B3F"),
+    "B3F": ("Braille_Text_Right", "DIREITA", (11, 5), "MAP_SIX_ISLAND_DOTTED_HOLE_B4F"),
+    "B4F": ("Braille_Text_Down", "BAIXO", (6, 9), "MAP_SIX_ISLAND_DOTTED_HOLE_SAPPHIRE_ROOM"),
+}
+
+
+@pytest.mark.parametrize("floor", sorted(DOTTED_HOLE))
+def test_e4_buraco_pontilhado_a_direcao_lida_e_a_saida_certa(floor):
+    """Cada andar do Buraco Pontilhado tem a placa em (6, 5) e cinco saídas; só a da direção escrita em braille
+    leva ao andar seguinte (as outras voltam ao 1F)."""
+    label, phrase, (x, y), dest = DOTTED_HOLE[floor]
+    assert _braille()[label] == phrase
+    data = json.loads((REPO_ROOT / "data/maps" / f"SixIsland_DottedHole_{floor}" / "map.json").read_text(encoding="utf-8"))
+    sign = [b for b in data["bg_events"] if b.get("script", "").endswith(label.replace("Braille_Text_", "Braille"))]
+    assert [(b["x"], b["y"]) for b in sign] == [(6, 5)]
+    onward = [(w["x"], w["y"]) for w in data["warp_events"] if w["dest_map"] == dest]
+    assert onward == [(x, y)]
+    # as outras saídas devolvem ao 1F (a de (6, 7) é a escada para o andar de cima)
+    others = [w for w in data["warp_events"] if (w["x"], w["y"]) not in ((x, y), (6, 7))]
+    assert len(others) == 3 and {w["dest_map"] for w in others} == {"MAP_SIX_ISLAND_DOTTED_HOLE_1F"}
+    dx, dy = x - 6, y - 5
+    direction = {(0, -1): "CIMA", (0, 1): "BAIXO", (1, 0): "DIREITA", (-1, 0): "ESQUERDA"}[
+        ((dx > 0) - (dx < 0), (dy > 0) - (dy < 0))]
+    assert direction == phrase
+    assert f"braillemessage {label}" in _script("SixIsland_DottedHole_1F")
+
+
+def test_e4_vale_das_ruinas_pede_o_golpe_cortar():
+    """A porta do Buraco Pontilhado diz CORTAR em braille; abrir = usar Cortar virado para o norte em (24, 25)
+    (CutMoveRuinValleyCheck, src/field_specials.c), o mesmo golpe que o jogo chama de Cortar."""
+    assert _braille()["Braille_Text_Cut"] == "CORTAR"
+    moves = (REPO_ROOT / "src/data/text/move_names.h").read_text(encoding="utf-8")
+    assert re.search(r'\[MOVE_CUT\]\s*=\s*_\("([^"]*)"\)', moves).group(1).upper() == "CORTAR"
+    assert "braillemessage Braille_Text_Cut" in _script("SixIsland_RuinValley")
+    specials = (REPO_ROOT / "src" / "field_specials.c").read_text(encoding="utf-8")
+    body = specials[specials.index("bool8 CutMoveRuinValleyCheck(void)"):]
+    body = body[:body.index("\n}\n")]
+    assert "pos.x == 24" in body and "pos.y == 25" in body and "DIR_NORTH" in body
+
+
+def test_e4_monte_brasa_alfabeto_e_mensagem():
+    """B4F: as placas são o alfabeto braille (letras e pontuação, iguais em português); B5F: mensagem lida antes
+    do Rubi, sem ação (braillemessage_wait com o cursor)."""
+    braille = _braille()
+    for label in ("ABC", "GHI", "MNO", "TUV", "DEF", "JKL", "PQRS", "WXYZ"):
+        assert braille[f"Braille_Text_{label}"] == label
+    assert (braille["Braille_Text_Period"], braille["Braille_Text_Comma"]) == (".", ",")
+    b5f = [braille[lab] for lab in re.findall(r"braillemessage(?:_wait)? (Braille_Text_\w+)",
+                                               _script("MtEmber_RubyPath_B5F"))]
+    assert " ".join(b5f) == "TUDO TEM SENTIDO EXISTIR TEM SENTIDO ESTAR VIVO TEM SENTIDO SONHE, SEJA FORTE."
+
+
+def test_e4_sala_da_safira_frase_completa():
+    braille = _braille()
+    room = [braille[lab] for lab in re.findall(r"braillemessage(?:_wait)? (Braille_Text_\w+)",
+                                                _script("SixIsland_DottedHole_SapphireRoom"))]
+    assert " ".join(room) == ("QUE AS DUAS PEDRAS BRILHANTES, A VERMELHA E A AZUL, LIGUEM O PASSADO. DOIS AMIGOS "
+                              "DIVIDINDO O PODER ABREM UMA JANELA A UM NOVO MUNDO. O PROXIMO MUNDO TE ESPERA.")
