@@ -844,6 +844,7 @@ static void BufferBattleTowerTrainerMessage(const u16 *greeting)
     {
         ConvertEasyChatWordsToString(gStringVar4, greeting, 3, 2);
     }
+    CapitalizeEasyChatPhrase(gStringVar4);
 }
 
 void PrintBattleTowerTrainerGreeting(void)

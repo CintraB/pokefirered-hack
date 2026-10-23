@@ -797,12 +797,13 @@ def _c_word_array(rel: str, name: str) -> list[str]:
 
 
 def capitalize_phrase(text: str) -> str:
-    """Espelho de CapitalizeEasyChatPhrase (easy_chat.c): maiúscula no início e depois de "!" ou "?"."""
+    """Espelho de CapitalizeEasyChatPhrase (easy_chat.c): maiúscula no início e depois de "!" ou "?"
+    ("…" e "-" no começo da frase são pulados)."""
     out, start = [], True
     for ch in text:
         if ch in "!?":
             start = True
-        elif ch not in " \n" and start:
+        elif ch not in " \n…-" and start:
             ch, start = ch.upper(), False
         out.append(ch)
     return "".join(out)
@@ -915,5 +916,71 @@ def test_maiuscula_das_frases_cobre_os_acentos_do_charmap():
 def test_termos_novos_do_easy_chat_no_glossario():
     g = json.loads((REPO_ROOT / "test" / "esteira" / "glossario.json").read_text(encoding="utf-8"))
     created = {t["pt"] for t in g["termos"] if t.get("frente") == "G3"}
-    assert {"T. Batalha", "Sala Batalha", "base secreta", "Pokébloco", "Pokérus", "loja depart.",
+    assert {"T. Batalha", "Sala Batalha", "Base Secreta", "Pokébloco", "Pokérus", "Loja Depart.", "Fita",
             "KO direto!"} <= created
+
+
+# Caixa das palavras que são termos do glossário (fix 1 da G3). Regra: a palavra segue a caixa que o termo tem
+# no meio da frase nos textos já traduzidos ("Ovo" 22×0, "Bolsa" 25×4, "Líder" 16×2; "tipo" 0×80, "nome" 0×25).
+# Termo criado pela G3 sem ocorrência no texto usa a caixa do glossário ("Fita", "Base Secreta", "Loja Depart.");
+# "Torneio" é conferido à parte. Rótulos de menu (Sim, Não, Usar…) aparecem em minúscula no texto: ficam assim.
+# Itens e habilidades ficam fora: são nomes próprios ("Pegar" é habilidade; "reviver" é verbo, não o item Reviver).
+EC_TERM_CATEGORIES = ("interface", "batalha", "personagem", "lugar")
+# BALL (Passatempos) é a bola comum; "Bola" com maiúscula no texto é a Poké Bola abreviada
+EC_CASE_OTHER_MEANING = {"bola"}
+
+
+def _running_text() -> str:
+    files = [p for p in (REPO_ROOT / "data").rglob("*.inc")] + [REPO_ROOT / "src/strings.c", REPO_ROOT / BATTLE]
+    return "\n".join(p.read_text(encoding="utf-8") for p in files)
+
+
+def _mid_sentence(text: str, word: str) -> int:
+    """Ocorrências depois de uma palavra minúscula e fora de nome composto ("Poké Bola", "Ultra Bola", "Bola Mestra")."""
+    return len(re.findall(rf"(?<![\wà-úÀ-Ú.'-])[a-zà-ú][a-zà-ú]*,? {re.escape(word)}(?![\wà-ú])(?! [A-ZÀ-Ú])", text))
+
+
+def test_capitalizacao_espelho_pula_reticencias_e_traco():
+    assert capitalize_phrase("… quem é você ?") == "… Quem é você ?"
+    assert capitalize_phrase("- - - ei ! ahaha") == "- - - Ei ! Ahaha"
+    assert capitalize_phrase("iiih !! desculpa") == "Iiih !! Desculpa"
+
+
+def test_palavra_que_e_termo_do_glossario_tem_a_caixa_do_termo():
+    g = json.loads((REPO_ROOT / "test" / "esteira" / "glossario.json").read_text(encoding="utf-8"))
+    terms: dict[str, set[str]] = {}
+    created = {t["pt"] for t in g["termos"] if t.get("frente") == "G3"}
+    for t in g["termos"]:
+        if t["categoria"] in EC_TERM_CATEGORIES and " " not in t["pt"].strip(". ") or t["pt"] in created:
+            terms.setdefault(t["pt"].casefold(), set()).add(t["pt"])
+    text = _running_text()
+    wrong, checked = [], 0
+    for grp in EC_WORD_GROUPS:
+        if grp == "status":
+            continue                                   # tipos e habilidades: test_habilidades_e_tipos_...
+        for v, word, _, _ in _ec_now(grp):
+            glossary = terms.get(word.casefold())
+            if not glossary or word in EC_CASE_OTHER_MEANING:
+                continue
+            checked += 1
+            up, lo = word[:1].upper() + word[1:], word[:1].lower() + word[1:]
+            n_up, n_lo = _mid_sentence(text, up), _mid_sentence(text, lo)
+            if n_up + n_lo:
+                want = up if n_up > n_lo else lo
+            elif glossary & created:
+                want = sorted(glossary & created)[0]
+            else:
+                continue                               # sem uso no texto: qualquer caixa
+            if word != want:
+                wrong.append(f"{grp}/{v} '{word}': esperado '{want}' (meio da frase {n_up}×{n_lo}, glossário {glossary})")
+    assert checked > 20
+    assert wrong == [], wrong
+    text_of = _ec_text_of()
+    assert [text_of[c] for c in ("EC_WORD_EGG", "EC_WORD_BAG", "EC_WORD_MAIL", "EC_WORD_CONTEST")] == \
+        ["Ovo", "Bolsa", "Carta", "Torneio"]
+
+
+def test_maiuscula_tambem_na_mensagem_do_treinador_do_ereader():
+    src = _read("src/battle_tower.c")
+    body = re.search(r"static void BufferBattleTowerTrainerMessage\(.*?\n\}", src, re.S).group(0)
+    assert "CapitalizeEasyChatPhrase(gStringVar4);" in body

@@ -730,19 +730,20 @@ static bool8 IsWordUnlocked(u16 easyChatWord)
 }
 
 // PT-BR: Easy Chat words are lowercase (mixed case, like the rest of the translation), so a phrase shown
-// as a message gets an uppercase letter at its start and after "!" or "?". Returns str.
+// as a message gets an uppercase letter at its start and after "!" or "?" (a leading "…" or "-" is skipped).
+// Returns str.
 static const u8 sLowerToUpperAccented[][2] = {
     {CHAR_a_GRAVE, CHAR_A_GRAVE},
     {CHAR_a_ACUTE, CHAR_A_ACUTE},
-    {0x68, 0x03}, // â -> Â
-    {0x40, 0x42}, // ã -> Ã
-    {0x19, 0x04}, // ç -> Ç
+    {CHAR_a_CIRCUMFLEX, CHAR_A_CIRCUMFLEX},
+    {0x40, 0x42}, // ã -> Ã (Hack 7 glyphs, no CHAR_ name in characters.h)
+    {CHAR_c_CEDILLA, CHAR_C_CEDILLA},
     {CHAR_e_ACUTE, CHAR_E_ACUTE},
-    {0x1C, 0x07}, // ê -> Ê
+    {CHAR_e_CIRCUMFLEX, CHAR_E_CIRCUMFLEX},
     {CHAR_i_ACUTE, CHAR_I_ACUTE},
     {CHAR_o_ACUTE, CHAR_O_ACUTE},
-    {0x24, 0x0F}, // ô -> Ô
-    {0x41, 0x43}, // õ -> Õ
+    {CHAR_o_CIRCUMFLEX, CHAR_O_CIRCUMFLEX},
+    {0x41, 0x43}, // õ -> Õ (Hack 7 glyphs)
     {CHAR_u_ACUTE, CHAR_U_ACUTE},
 };
 
@@ -771,7 +772,8 @@ u8 *CapitalizeEasyChatPhrase(u8 *str)
         {
             sentenceStart = TRUE;
         }
-        else if (*c != CHAR_SPACE && *c != CHAR_NEWLINE && *c != CHAR_PROMPT_SCROLL && sentenceStart)
+        else if (*c != CHAR_SPACE && *c != CHAR_NEWLINE && *c != CHAR_PROMPT_SCROLL
+              && *c != CHAR_ELLIPSIS && *c != CHAR_HYPHEN && sentenceStart)
         {
             *c = EC_ToUpper(*c);
             sentenceStart = FALSE;

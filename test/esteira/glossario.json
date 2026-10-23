@@ -10651,7 +10651,7 @@
   },
   {
    "en": "SECRET BASE",
-   "pt": "base secreta",
+   "pt": "Base Secreta",
    "fonte": "criado",
    "categoria": "lugar",
    "detectar": false,
@@ -10678,7 +10678,7 @@
   },
   {
    "en": "DEPT. STORE",
-   "pt": "loja depart.",
+   "pt": "Loja Depart.",
    "fonte": "criado",
    "categoria": "lugar",
    "detectar": false,
@@ -10705,7 +10705,7 @@
   },
   {
    "en": "RIBBON",
-   "pt": "fita",
+   "pt": "Fita",
    "fonte": "criado",
    "categoria": "interface",
    "detectar": false,
