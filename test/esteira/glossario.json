@@ -9477,7 +9477,7 @@
    "categoria": "personagem",
    "detectar": false,
    "frente": "D",
-   "obs": "decisão D4 do Cintra (18/10): classe dos 2 ADMIN da Equipe Rocket (trainers.h usa TRAINER_CLASS_TEAM_ROCKET + nome \"ADMIN\"; exige classe própria — frente D/trainers)"
+   "obs": "decisão D4 do Cintra (18/10): classe dos 2 ADMIN da Equipe Rocket; feito na D3 com TRAINER_CLASS_ROCKET_ADMIN (\"Executivo\", 9 letras) em trainers.h, trainer_class_names.h, gTrainerMoneyTable e as músicas; o nome do Treinador é \"Rocket\""
   },
   {
    "en": "Ayers Rock",
@@ -10630,6 +10630,141 @@
    "detectar": true,
    "frente": "B2c",
    "obs": "placa da Rota 12 (Route12_Text_SportfishingArea); decisão do Cintra em 21/10, no lugar de \"Área de Pesca Esportiva\""
+  },
+  {
+   "en": "CERULEAN CAPE",
+   "pt": "Cabo Cerulean",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true,
+   "frente": "D3",
+   "obs": "local de origem da Beldade da Rota 25 no Arquivo Fama; como em Cabo Extremo (CAPE BRINK); no texto corrido, \"o cabo\""
+  },
+  {
+   "en": "NUGGET BRIDGE",
+   "pt": "Ponte da Pepita",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true,
+   "frente": "D3",
+   "obs": "Rota 24; como \"Ponte da União\" (BOND BRIDGE) e NUGGET = Pepita"
+  },
+  {
+   "en": "RAGE CANDYBAR",
+   "pt": "Barra de Raiva",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "frente": "D3",
+   "obs": "doce do jogo de Johto citado na fala do Arquivo Fama (Bruno4) e na Ilha Dois; plural \"Barras de Raiva\"; sem item correspondente neste jogo (só texto): categoria interface, fora do limite de 13 letras dos itens"
+  },
+  {
+   "en": "POKéMON CONTEST",
+   "pt": "Torneio Pokémon",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "frente": "D3",
+   "obs": "CONTEST = Torneio (glossário: CONTEST PASS = Passe Torneio); \"Torneio Pokémon da Primavera\" no Jornal Pokémon"
+  },
+  {
+   "en": "GRUNT (nome do Treinador)",
+   "pt": "Rocket",
+   "fonte": "criado",
+   "categoria": "personagem",
+   "detectar": false,
+   "frente": "D3",
+   "obs": "trainerName dos 51 recrutas em trainers.h: classe \"Recruta\" + nome \"Rocket\" = \"Recruta Rocket\" (glossário §2.9)"
+  },
+  {
+   "en": "ADMIN (nome do Treinador)",
+   "pt": "Rocket",
+   "fonte": "criado",
+   "categoria": "personagem",
+   "detectar": false,
+   "frente": "D3",
+   "obs": "trainerName dos 2 executivos: classe \"Executivo\" (TRAINER_CLASS_ROCKET_ADMIN) + nome \"Rocket\" = \"Executivo Rocket\""
+  },
+  {
+   "en": "LT. SURGE (nome do Treinador)",
+   "pt": "SURGE",
+   "fonte": "criado",
+   "categoria": "personagem",
+   "detectar": false,
+   "frente": "D3",
+   "obs": "trainerName em trainers.h e na lista do Arquivo Fama (janela de 56 px: \"Ten. Surge\" mede 57 px); no texto corrido vale \"Ten. Surge\""
+  },
+  {
+   "en": "PROF. OAK (nome na caixa do Arquivo Fama)",
+   "pt": "Carvalho",
+   "fonte": "criado",
+   "categoria": "personagem",
+   "detectar": false,
+   "frente": "D3",
+   "obs": "gFameCheckerPersonName_ProfOak: 56 px (regra da esteira); no \"De:\" da carta vale \"Prof. Carvalho\""
+  },
+  {
+   "en": "ROCKET HIDEOUT (etiqueta do Arquivo Fama)",
+   "pt": "Base Rocket",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": false,
+   "frente": "D3",
+   "obs": "etiqueta de 84 px em FONT_SMALL: \"Esconderijo Rocket\" mede 89 px"
+  },
+  {
+   "en": "WATER LABYRINTH (etiqueta do Arquivo Fama)",
+   "pt": "Labirinto Aquát.",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": false,
+   "frente": "D3",
+   "obs": "etiqueta de 84 px em FONT_SMALL: \"Labirinto Aquático\" mede 87 px"
+  },
+  {
+   "en": "RESORT GORGEOUS (etiqueta do Arquivo Fama)",
+   "pt": "Rec. Esplêndido",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": false,
+   "frente": "D3",
+   "obs": "etiqueta de 84 px em FONT_SMALL: \"Recanto Esplêndido\" mede 89 px"
+  },
+  {
+   "en": "VIRIDIAN CITY (etiqueta do Arquivo Fama)",
+   "pt": "Cidade Viridian",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": false,
+   "frente": "D3",
+   "obs": "etiqueta de 84 px: \"Cidade de Viridian\" mede 86 px (regra 1, sem a preposição)"
+  },
+  {
+   "en": "CERULEAN CITY (etiqueta do Arquivo Fama)",
+   "pt": "Cidade Cerulean",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": false,
+   "frente": "D3",
+   "obs": "etiqueta de 84 px: \"Cidade de Cerulean\" mede 89 px (regra 1)"
+  },
+  {
+   "en": "LAVENDER TOWN (etiqueta do Arquivo Fama)",
+   "pt": "Cidade Lavender",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": false,
+   "frente": "D3",
+   "obs": "etiqueta de 84 px: \"Cidade de Lavender\" mede 89 px (regra 1)"
+  },
+  {
+   "en": "GYM (etiquetas do Arquivo Fama)",
+   "pt": "Ginásio Pewter",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": false,
+   "frente": "D3",
+   "obs": "etiquetas de 84 px: \"Ginásio de Cerulean\" mede 93 px; todos os Ginásios ficam sem \"de\" (Ginásio Pewter/Cerulean/Vermilion/Celadon/Fuchsia/Saffron/Cinnabar/Viridian)"
   }
  ],
  "proibidos": [
