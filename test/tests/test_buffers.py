@@ -205,6 +205,44 @@ def test_estouro_conhecido_vira_aviso_e_some_quando_corrigido(ctx):
     results = bf.check_buffers(REPO_ROOT, ctx=fixed)
     assert not [r for r in results if r.status == "falha"]
     assert any("não ocorre mais" in r.detail and "ITEM_WEPEAR_BERRY" in r.detail for r in results)
+    # preso ao texto: outro nome de 13 letras, com o mesmo total, volta a reprovar
+    other = _failures(bf.with_texts(ctx, {wepear: "Fruta Ocipêro"}), "ITEM_WEPEAR_BERRY")
+    assert other and "28 bytes" in other[0]
+
+
+def test_origem_com_indice_aninhado_entra_no_inventario(ctx):
+    """gStatNamesTable[sStatsToRaise[statIdx]] -> gBattleTextBuff1[16] (src/pokemon.c:5021): o índice
+    aninhado não pode tirar a cópia do inventário."""
+    by_site = {c.call.site: c for c in bf.classify_calls(ctx)}
+    stat = next(c for s, c in by_site.items() if s.startswith("src/pokemon.c:") and "sStatsToRaise[" in c.call.src)
+    assert stat.status == "auto" and (stat.buffer.name, stat.buffer.size) == ("gBattleTextBuff1", 16)
+    assert stat.part.names == ("gStatNamesTable",)
+    # os outros índices aninhados com texto traduzível (src/learn_move.c:649, :758; src/union_room.c:3409, :3414)
+    nested = [c for s, c in by_site.items()
+              if (s.startswith("src/learn_move.c:") and c.call.src.startswith("gMoveNames[")
+                  or s.startswith("src/union_room.c:") and c.call.src.startswith("gTypeNames["))
+              and c.call.src.count("[") > 1]
+    assert len(nested) >= 4 and all(c.status == "auto" for c in nested)
+    assert {"gStringVar2", "listMenuStrbufs"} <= {c.buffer.name for c in nested}
+    long_stat = bf.with_texts(ctx, {("src/battle_message.c", "sText_Speed"): "a Velocidade máxima"})
+    found = _failures(long_stat, "gBattleTextBuff1[16]")
+    assert found and "src/pokemon.c:" in found[0]
+    assert bf._indexed("gStatNamesTable[sStatsToRaise[statIdx]]") == ("gStatNamesTable", None)
+    assert bf._indexed("gBerries[a[b]].name") == ("gBerries", "name")
+    assert bf._indexed("gX + 1") is None
+
+
+def test_mudanca_de_atributo_vai_sozinha_para_o_buffer():
+    """A G2 trocou "sharply " + "rose" por uma frase só ("Aumentou muito"): a declaração mede cada
+    string sozinha, e este teste prende isso ao C (um OU outro, nunca as duas no mesmo buffer)."""
+    src = (REPO_ROOT / "src" / "battle_script_commands.c").read_text(encoding="utf-8")
+    for strong, plain in (("STRINGID_STATHARSHLY", "STRINGID_STATFELL"), ("STRINGID_STATSHARPLY", "STRINGID_STATROSE")):
+        between = src[src.index(f"= {strong};"):src.index(f"= {plain};")]
+        assert "else" in between, strong
+    util = (REPO_ROOT / "src" / "battle_util.c").read_text(encoding="utf-8")
+    i = util.index("gBattleTextBuff2[2] = STRINGID_STATSHARPLY;")
+    assert "gBattleTextBuff2[4] = EOS;" in util[i:i + 200]
+    assert set(bf.STAT_CHANGE_STRINGS) == {"sText_StatSharply", "gBattleText_Rose", "sText_StatHarshly", "sText_StatFell"}
 
 
 def test_fruta_na_bolsa_de_frutas_mede_so_os_nomes_de_fruta(ctx):

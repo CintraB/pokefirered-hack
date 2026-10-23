@@ -526,6 +526,24 @@ def _clean(expr: str) -> str:
     return e
 
 
+def _indexed(e: str) -> tuple[str, str | None] | None:
+    """`TABELA[i]...[j](.campo)?` -> (TABELA, campo), com índices aninhados
+    (`gStatNamesTable[sStatsToRaise[statIdx]]`); None se não for isso."""
+    m = re.match(r"([A-Za-z_]\w*)\s*", e)
+    if not m or m.end() >= len(e) or e[m.end()] != "[":
+        return None
+    i = m.end()
+    while i < len(e) and e[i] == "[":
+        i = _match_close(e, i, "[", "]")
+        while i < len(e) and e[i].isspace():
+            i += 1
+    rest = e[i:]
+    if not rest:
+        return m.group(1), None
+    f = re.fullmatch(r"\.\s*([A-Za-z_]\w*)", rest)
+    return (m.group(1), f.group(1)) if f else None
+
+
 _LOCAL_TYPES = r"\b(?:u8|s8|u16|s16|u32|s32|bool8|bool32|char|int)\b"
 
 
@@ -554,9 +572,9 @@ def _source_part(expr: str, file: str, ctx: _Ctx, func: str | None = None) -> Pa
     if m and m.group(2) in ctx.designated.get(m.group(1), {}):
         defs = ctx.tables.get(m.group(1))
         return Text(ctx.designated[m.group(1)][m.group(2)], file=defs[0][0] if defs else file)
-    m = re.fullmatch(r"([A-Za-z_]\w*)\s*(?:\[[^\]]*\]\s*)+(?:\.([A-Za-z_]\w*))?", e)
-    if m and m.group(1) in ctx.tables:
-        part = Text(m.group(1), file=file, field=m.group(2))
+    indexed = _indexed(e)
+    if indexed and indexed[0] in ctx.tables:
+        part = Text(indexed[0], file=file, field=indexed[1])
         return part if _alts(part, ctx, "") else None
     if re.fullmatch(r"ItemId_GetName\s*\(.*\)", e):
         return ITEMS
@@ -1117,21 +1135,43 @@ class Known(NamedTuple):
     label: str
     buffer: str
     total: int
+    fingerprint: str           # check_text.fingerprint do texto do rótulo quando foi registrado
     why: str
 
 
 # Achados da T4 na hack-switch de 21/10 (rodada 1 mergeada), repassados à frente dona pelo controlador
 KNOWN_OVERFLOWS: list[Known] = [
-    Known("src/data/items.json", "ITEM_WEPEAR_BERRY.name", "sListMenuStrbuf", 28,
+    Known("src/data/items.json", "ITEM_WEPEAR_BERRY.name", "sListMenuStrbuf", 28, "4307cc43fe84859f",
           "\"Fruta Ocipêra\" (13 letras) na lista da bolsa de frutas: cada linha tem 27 bytes "
           "(src/berry_pouch.c:645) e o nome de fruta cabe com até 12; o EOS cai no 1º byte da linha seguinte "
           "(ou 1 byte depois do bloco alocado, se for a última fruta). Dona: nomes de item (Task 2)"),
 ]
 
 
-def _known(m: Measure, buf: Buffer, known: list[Known]) -> Known | None:
-    return next((k for k in known if k.buffer == buf.name and k.total == m.total
-                 and f"{k.file}: {k.label}" in m.content), None)
+def _known(m: Measure, buf: Buffer, known: list[Known], ctx: _Ctx) -> Known | None:
+    """O estouro é um conhecido? Mesmo rótulo, buffer e total, e o texto do rótulo igual ao registrado."""
+    for k in known:
+        entry = ctx.by_key.get((k.file, k.label))
+        if (k.buffer == buf.name and k.total == m.total and f"{k.file}: {k.label}" in m.content
+                and entry is not None and ct.fingerprint(entry.texts) == k.fingerprint):
+            return k
+    return None
+
+
+_CONTEXTS: dict[tuple, _Ctx] = {}
+
+
+def cached_context(repo: Path, entries: list[ct._Entry], base: ct._Base | None, env: ct._Env | None) -> _Ctx:
+    """build_context com cache por processo: a mesma árvore (mesmos textos e a mesma base) reaproveita o C
+    já lido. O pytest chama check_text sobre o repo real em vários módulos; sem isso cada chamada relia o C.
+    A chave são os textos (o código C sem texto não muda durante um processo)."""
+    key = (str(Path(repo).resolve()), hash(tuple((e.file, e.label, e.texts) for e in entries)),
+           None if base is None else (frozenset(base.changed), hash(tuple(sorted(base.texts.items())))))
+    if key not in _CONTEXTS:
+        if len(_CONTEXTS) >= 4:
+            _CONTEXTS.pop(next(iter(_CONTEXTS)))
+        _CONTEXTS[key] = build_context(Path(repo), entries, base, env)
+    return _CONTEXTS[key]
 
 
 def check_buffers(repo: Path, entries: list[ct._Entry] | None = None, base: ct._Base | None = None,
@@ -1140,12 +1180,14 @@ def check_buffers(repo: Path, entries: list[ct._Entry] | None = None, base: ct._
     """Regra `buffer`: um Result `falha` por texto que estoura um buffer (agrupando os lugares onde a
     mesma cópia acontece); `aviso` para os de KNOWN_OVERFLOWS. `base` None = estrito (sem a folga da
     base inglesa)."""
-    ctx = ctx or build_context(Path(repo), entries, base, env)
+    if ctx is None:
+        ctx = (cached_context(Path(repo), entries, base, env) if entries is not None
+               else build_context(Path(repo), entries, base, env))
     known = KNOWN_OVERFLOWS if known is None else known
     groups: dict[tuple, list[BufferPath]] = defaultdict(list)
     for path in buffer_paths(ctx):
         for m in overflows(path, ctx):
-            groups[(path.buffer, m.content, m.total, m.base_total, _known(m, path.buffer, known))].append(path)
+            groups[(path.buffer, m.content, m.total, m.base_total, _known(m, path.buffer, known, ctx))].append(path)
     results = []
     used: set[Known] = set()
     for (buf, content, total, base_total, k), paths in sorted(groups.items(), key=lambda kv: (kv[0][1], kv[0][0])):
@@ -1242,6 +1284,8 @@ _EVO_LINES = ("gText_PokeSum_EvoLevel", "gText_PokeSum_EvoItem", "gText_PokeSum_
               "gText_PokeSum_EvoLevelUpHoldItem", "gText_PokeSum_EvoBeauty", "gText_PokeSum_EvoAtkGtDef",
               "gText_PokeSum_EvoAtkEqDef", "gText_PokeSum_EvoAtkLtDef", "gText_PokeSum_EvoLevelRandom",
               "gText_PokeSum_EvoLevelFreeSlot", "gText_PokeSum_EvoTrade", "gText_PokeSum_EvoTradeItem")
+# as strings de mudança de atributo que vão sozinhas para gBattleTextBuff2 (src/battle_message.c:715-718)
+STAT_CHANGE_STRINGS = ("sText_StatSharply", "gBattleText_Rose", "sText_StatHarshly", "sText_StatFell")
 _UR_DST = ("GetAwaitingCommunicationText|Leader_GetAcceptNewMemberPrompt|GetYouDeclinedTheOfferMessage|"
            "GetYouAskedToJoinGroupPleaseWaitMessage|GetGroupLeaderSentAnOKMessage|GetURoomActivityRejectMsg|"
            "GetURoomActivityStartMsg|GetChatLeaderActionRequestMessage")
@@ -1297,38 +1341,36 @@ DECLARED: list[Declared] = [
              BufRef("text", _BI, "UpdateLeftNoOfBallsTextOnHealthbox"),
              (Text("gText_HighlightRed_Left"), Fixed(2, "Safari Balls, 2 algarismos")),
              why="Safari Balls restantes: text[16] = gText_HighlightRed_Left + número (src/battle_interface.c:1757-1763)"),
-    Declared(_BM, "BattleStringExpandPlaceholders", r"sText_BerrySuffix",
+    Declared(_BM, "BattleStringExpandPlaceholders", r"sText_BerryPrefix|gEnigmaBerries\[.*\]\.name",
              BufRef("text", _BM, "BattleStringExpandPlaceholders"),
-             (Fixed("BERRY_NAME_LENGTH", "nome da fruta Enigma (BERRY_NAME_LENGTH)"), Text("sText_BerrySuffix", file=_BM)),
-             why="item do último efeito: text[30] = nome da fruta Enigma + sText_BerrySuffix "
-                 "(src/battle_message.c:1988-2002)"),
+             (Text("sText_BerryPrefix", file=_BM), Fixed("BERRY_NAME_LENGTH", "nome da fruta Enigma (BERRY_NAME_LENGTH)")),
+             why="item do último efeito: text[30] = sText_BerryPrefix + nome da fruta Enigma "
+                 "(src/battle_message.c:1988-1989, :2001-2002)"),
+    Declared(_BM, r"", r"sText_(Foe|Wild)PkmnPrefix", BufRef("text", _BM, "BattleStringExpandPlaceholders"),
+             (_NICK, Text("sText_FoePkmnPrefix", "sText_WildPkmnPrefix", file=_BM)),
+             why="HANDLE_NICKNAME_STRING_CASE (macro, src/battle_message.c:1807-1820): text[30] = apelido + "
+                 "\" selvagem\"/\" inimigo\" depois do nome"),
     Declared(_BM, "BattleStringExpandPlaceholders", r"", BufRef("text", _BM, "BattleStringExpandPlaceholders"),
              why="item do último efeito: CopyItemName(gLastUsedItem, text) em text[30] (src/battle_message.c:2011, :2017)",
              dest=r"text"),
     # gBattleTextBuffN -> gStringVarN (src/battle_message.c:1849-1871): o menor deles, gStringVar2/3 (20)
     Declared(_BM, "ExpandBattleTextBuffPlaceholders", r"gBattleStringsTable\[.*\]", BufRef("gStringVar2"),
-             (Text("sText_StatSharply", file=_BM), Text("gBattleText_Rose", file=_BM)),
-             why="atributo subiu muito: STRINGID_STATSHARPLY + STRINGID_STATROSE no mesmo gBattleTextBuff2 "
-                 "(src/battle_script_commands.c:6783-6795, src/battle_util.c:2717-2723), expandido em gStringVar2 "
-                 "(src/battle_message.c:1862)"),
-    Declared(_BM, "ExpandBattleTextBuffPlaceholders", r"gBattleStringsTable\[.*\]", BufRef("gStringVar2"),
-             (Text("sText_StatHarshly", file=_BM), Text("sText_StatFell", file=_BM)),
-             why="atributo caiu muito: STRINGID_STATHARSHLY + STRINGID_STATFELL (src/battle_script_commands.c:6759-6772)"),
-    Declared(_BM, "ExpandBattleTextBuffPlaceholders", r"gBattleStringsTable\[.*\]", BufRef("gStringVar2"),
-             (Text("sText_ABoosted", file=_BM),),
-             why="EXP: STRINGID_ABOOSTED no gBattleTextBuff2 (src/battle_script_commands.c:3267); as outras strings "
-                 "da tabela não vão para buffer"),
+             (Text(*STAT_CHANGE_STRINGS, "sText_ABoosted", file=_BM),),
+             why="gBattleTextBuff2 com UMA string da tabela, expandida em gStringVar2 (src/battle_message.c:1862): "
+                 "a mudança de atributo (\"Aumentou muito\" ou \"Aumentou\"..., um OU outro desde a G2: "
+                 "src/battle_script_commands.c:6762-6798, src/battle_util.c:2716-2720; test_buffers confere no C) "
+                 "e o \"a boosted\" da EXP (src/battle_script_commands.c:3267); as outras strings não vão para buffer"),
     Declared(_BM, "ExpandBattleTextBuffPlaceholders",
              r"gMoveNames\[.*\]|gTypeNames\[.*\]|gStatNamesTable\[.*\]|gPokeblockWasTooXStringTable\[.*\]|"
              r"gAbilityNames\[.*\]|sText_EnigmaBerry|", BufRef("gStringVar2"),
              why="gBattleTextBuffN expandido em gStringVarN (src/battle_message.c:1849-1871): golpe, tipo, atributo, "
                  "sabor, habilidade, Fruta Enigma ou item (src/battle_message.c:2221-2313)"),
-    Declared(_BM, "ExpandBattleTextBuffPlaceholders", r"sText_(Foe|Wild)PkmnPrefix|text", BufRef("gStringVar2"),
-             (Text("sText_FoePkmnPrefix", "sText_WildPkmnPrefix", file=_BM), _NICK),
-             why="B_BUFF_MON_NICK_WITH_PREFIX: prefixo + apelido (src/battle_message.c:2253-2263)"),
-    Declared(_BM, "ExpandBattleTextBuffPlaceholders", r"sText_BerrySuffix", BufRef("gStringVar2"),
-             (Fixed("BERRY_NAME_LENGTH", "nome da fruta Enigma (BERRY_NAME_LENGTH)"), Text("sText_BerrySuffix", file=_BM)),
-             why="B_BUFF_ITEM da Fruta Enigma em batalha de link: nome + sText_BerrySuffix (src/battle_message.c:2298-2299)"),
+    Declared(_BM, "ExpandBattleTextBuffPlaceholders", r".*sText_(Foe|Wild)PkmnPrefix.*|text", BufRef("gStringVar2"),
+             (_NICK, Text("sText_FoePkmnPrefix", "sText_WildPkmnPrefix", file=_BM)),
+             why="B_BUFF_MON_NICK_WITH_PREFIX: apelido + \" selvagem\"/\" inimigo\" (src/battle_message.c:2250-2263)"),
+    Declared(_BM, "ExpandBattleTextBuffPlaceholders", r"sText_BerryPrefix|gEnigmaBerries\[.*\]\.name", BufRef("gStringVar2"),
+             (Text("sText_BerryPrefix", file=_BM), Fixed("BERRY_NAME_LENGTH", "nome da fruta Enigma (BERRY_NAME_LENGTH)")),
+             why="B_BUFF_ITEM da Fruta Enigma em batalha de link: sText_BerryPrefix + nome (src/battle_message.c:2298-2299)"),
     Declared(_BM, "BattleStringExpandPlaceholdersToDisplayedString", r".*", None,
              why="implementação (src/battle_message.c:1779-1782): medida em quem chama"),
     Declared(_BM, "BufferStringBattle", r"stringPtr", BufRef("gDisplayedStringBattle"),
@@ -1384,7 +1426,7 @@ DECLARED: list[Declared] = [
              r"CopyEasyChatWordPadded", r".*", None,
              why="frases do Easy Chat (palavra + espaço, várias por linha) nos buffers de quem chama, dimensionados "
                  "para a frase em japonês/inglês; a palavra traduzida é medida na largura da coluna (janelas_uso)"),
-    Declared("src/easy_chat_3.c", r"PrintECFields|PrintECInterfaceTextById|\w*", r".*", None,
+    Declared("src/easy_chat_3.c", r"PrintECFields|ECInterfaceCmd_02", r".*", None,
              why="tela do Easy Chat: ecPrintBuffer[0xC1] com as palavras de uma linha da frase (2 ou 3, com "
                  "{CLEAR 17}); a palavra é medida na largura da coluna (janelas_uso, 79 px)"),
     Declared("src/*", "BufferBattleTowerTrainerMessage|ShowEasyChatMessage|TT_ConvertEasyChatMessageToString", r"",

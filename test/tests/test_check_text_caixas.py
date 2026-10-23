@@ -64,7 +64,9 @@ def test_box_lines_counts_like_the_dialog_box():
     assert box_lines("Uma\\nDuas.$") == 2
     assert box_lines("Uma\\nDuas\\lTrês rola.\\lQuatro rola.$") == 2
     assert box_lines("Uma\\nDuas\\nTrês.$") == 3                 # dois \n na mesma caixa
-    assert box_lines("Uma\\lDuas\\nTrês.$") == 3                 # \n depois de \l
+    # \l rola e mantém a linha (src/text.c:872-879): na 1ª linha não conta como 2ª
+    assert box_lines("Uma\\lDuas\\nTrês.$") == 2
+    assert box_lines("Uma\\nDuas\\lTrês\\nQuatro.$") == 3       # \n depois de \l na 2ª linha
     assert box_lines("Uma\\nDuas\\pTrês\\nQuatro.$") == 2        # \p abre caixa nova
     assert box_lines("Uma\\nDuas\\n$") == 2                      # quebra no fim não abre linha
 

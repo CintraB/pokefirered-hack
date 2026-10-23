@@ -97,9 +97,9 @@ class Rule(NamedTuple):
 # texto japonês (src/text.c:854).
 DIALOG_WIDTH_PX = 26 * 8
 # A caixa de diálogo padrão tem 4 tiles de altura = 2 linhas (sStandardTextBox_WindowTemplates,
-# src/new_menu_helpers.c:36-44): `\n` desce uma linha, `\l` rola e escreve de novo na 2ª, `\p`
-# limpa. Uma 3ª linha (dois `\n` na mesma caixa, ou `\n` depois de `\l`) sai fora da janela e
-# CopyGlyphToWindow a corta sem aviso.
+# src/new_menu_helpers.c:36-44): `\n` desce uma linha, `\l` rola e escreve de novo na mesma linha
+# (src/text.c:872-879), `\p` limpa. Uma 3ª linha (dois `\n` na mesma caixa, ou `\n` depois de `\l`
+# na 2ª linha) sai fora da janela e CopyGlyphToWindow a corta sem aviso.
 DIALOG_BOX_LINES = 2
 _DIALOG = ("diálogo padrão: sStandardTextBox_WindowTemplates .width = 26 tiles (src/new_menu_helpers.c:40), "
            "texto em x = 0 (src/new_menu_helpers.c:411)")
@@ -1049,8 +1049,9 @@ def _analyze(text: str, needs_terminator: bool, rule: Rule | None, env: _Env,
 
 
 def box_lines(text: str) -> int:
-    """Maior linha que o texto alcança numa caixa: `\\n` desce uma linha, `\\l` rola (o texto
-    seguinte fica na 2ª linha), `\\p` abre caixa nova. Quebra no fim do texto não abre linha."""
+    """Maior linha que o texto alcança numa caixa: `\\n` desce uma linha, `\\l` rola a caixa e o
+    texto seguinte fica na mesma linha (a de cima sobe), `\\p` abre caixa nova. Quebra no fim do texto
+    não abre linha."""
     worst = line = 1
     pending = None
     for kind, value in _tokenize(text):
@@ -1060,7 +1061,8 @@ def box_lines(text: str) -> int:
         if kind == "char" and value == "$":
             break
         if pending is not None:
-            line = 1 if pending == "p" else (line + 1 if pending == "n" else 2)
+            # \l rola a janela e volta o X, mas o Y fica (RENDER_STATE_SCROLL_START, src/text.c:872-879)
+            line = 1 if pending == "p" else (line + 1 if pending == "n" else line)
             pending = None
         worst = max(worst, line)
     return worst
@@ -1514,6 +1516,8 @@ KNOWN_FINDINGS: list[KnownFinding] = [
                  RULE_LINES, "d187176f10dc8744", 3, _A),
     KnownFinding("data/maps/PewterCity_Gym/text.inc", "PewterCity_Gym_Text_YoureChampMaterial", RULE_LINES,
                  "30ce918d7e9986f5", 3, _B),
+    KnownFinding("data/maps/FuchsiaCity_House3/text.inc", "FuchsiaCity_House3_Text_WouldYouLikeToForgetMove",
+                 RULE_LINES, "418f04cfa8b0d658", 3, _A + ", A2 (49bf60916)"),
 ]
 
 
@@ -1539,7 +1543,7 @@ def check_text(repo: str, exceptions: dict, english: str = ENGLISH_MODE,
     elif scan.base is not None:
         # estouro de buffer de string (Task T4): só com a base, pelo critério "sem piorar a base"
         from esteira.buffers import check_buffers
-        results += check_buffers(Path(repo), scan.raw, scan.base, scan.env)
+        results += check_buffers(Path(repo), scan.raw, scan.base, scan.env)   # contexto em cache por processo
     entries = scan.entries
     frozen = exceptions.get("text", [])
     applied: set[tuple[str, str, str]] = set()  # exceções que de fato calaram um achado

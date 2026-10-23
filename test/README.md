@@ -795,9 +795,9 @@ tipos de Hidden Power) e medidas, e uma coluna que encavale na anterior também 
 ### Linhas por caixa no diálogo padrão (regra `linhas`)
 
 A caixa de mensagem padrão tem 4 tiles de altura = **2 linhas** (`sStandardTextBox_WindowTemplates`,
-`src/new_menu_helpers.c:36-44`): `\n` desce uma linha, `\l` rola (o texto seguinte fica na 2ª), `\p`
-limpa. Uma 3ª linha numa caixa (dois `\n` antes do próximo `\p`, ou `\n` depois de `\l`) sai da
-janela e é cortada **sem aviso**. As regras do diálogo (`data/maps/*/text.inc`, `data/scripts/*.inc`,
+`src/new_menu_helpers.c:36-44`): `\n` desce uma linha, `\l` rola a caixa e o texto seguinte fica na
+mesma linha (a de cima sobe; `src/text.c:872-879`), `\p` limpa. Uma 3ª linha numa caixa (dois `\n`
+antes do próximo `\p`, ou `\n` depois de `\l` já na 2ª linha) sai da janela e é cortada **sem aviso**. As regras do diálogo (`data/maps/*/text.inc`, `data/scripts/*.inc`,
 `data/event_scripts.s`, os `data/text/*.inc` de msgbox, a fala do Carvalho e os textos de `.c` cuja
 janela de uso é o diálogo padrão) têm `box_lines=2`: no texto mudado em relação à base, uma caixa com
 mais de 2 linhas reprova (`texto/linhas`), a menos que o mesmo rótulo em inglês já tivesse tantas
@@ -848,7 +848,15 @@ caminho de um texto só, o mesmo rótulo em inglês; num caminho composto (texto
 do Easy Chat), o pior caso do caminho em inglês. Rótulo novo não pode passar. Só roda com a base (sem `.git`, não roda;
 base indisponível: aviso `texto/buffer`). O inglês que já estoura fica documentado no relatório
 da T4 e a tradução pode ir até ele. Estouro já mergeado com dono vai para `KNOWN_OVERFLOWS`
-(aviso, não reprova, enquanto o total for o mesmo; corrigido, vira aviso de obsoleto).
+(aviso, não reprova, enquanto o texto do rótulo (fingerprint) e o total forem os mesmos; mudou e
+continua estourando, reprova; corrigido, vira aviso de obsoleto).
+
+Limites conhecidos: origem guardada antes numa variável local (`const u8 *t = gText_X;
+StringCopy(buf, t)`, ex. `src/party_menu.c:1662`) não é vista pelo guarda do inventário; índice
+aninhado (`gStatNamesTable[sStatsToRaise[i]]`) é. Sem `.git` (checkout sem histórico, espelho do teste
+lento) a regra não roda, e os testes de buffer da E1 (`test_traducao_e.py`) pulam. O contexto da regra
+(o C lido) fica em cache por processo (`buffers.cached_context`): as várias chamadas de `check_text` do
+pytest sobre o repo real leem o C uma vez só.
 
 **Só esta checagem**, nos textos de uma frente (em `test/`, no WSL):
 
