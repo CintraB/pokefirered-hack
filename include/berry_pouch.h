@@ -3,6 +3,11 @@
 
 #include "task.h"
 
+// Bytes per berry list entry (sListMenuStrbuf in berry_pouch.c): {FONT_SMALL}{NO}{CLEAR 0x01}, 2 digits,
+// space, {FONT_NORMAL}, name and EOS take 15 bytes plus the name. 28 fits a 13-letter berry name (the
+// original 27 only fit 12); the entry is copied whole to gStringVar1[32] (CopySelectedListMenuItemName).
+#define BERRY_POUCH_LIST_STRBUF_SIZE 28
+
 enum BerryPouchType
 {
     BERRYPOUCH_FROMFIELD,

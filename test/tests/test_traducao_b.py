@@ -120,7 +120,7 @@ EXTRA_NAMES = ("Equipe Rocket", "Liga Pokémon", "Campeão da Liga Pokémon", "H
                "Chave do Elevador", "Pedra Lunar", "Casa Pokémon", "Laboratório Pokémon", "Âmbar Antigo",
                "Visor Silph", "Monte Lua", "Torre Pokémon", "Túnel de Pedra", "Usina Elétrica", "Elite Quatro",
                # B2
-               "Mestre da Pesca", "Ponte do Silêncio", "Área de Pesca Esportiva", "Compartilhador de Exp.",
+               "Mestre da Pesca", "Ponte do Silêncio", "Pesca Esportiva", "Compartilhador de Exp.",
                "Detector de Itens", "Moeda Amuleto", "Poké Flauta", "Cidade Vermilion", "Ilhas Seafoam", "Ilha Cinnabar",
                "Mansão Pokémon", "Loja de Celadon", "Líderes de Ginásio", "Pokémon-pássaro", "Caverna do Diglett",
                "Pedra Eterna", "Prof. Carvalho", "Dicas de Treinador", "Poké Bolas")
@@ -218,7 +218,7 @@ def test_b2_termos_criados_no_glossario():
     body = (_flat("data/maps/Route12_FishingHouse/text.inc") + _flat("data/maps/Route12/text.inc")
             + _flat("data/maps/Route13/text.inc") + _flat("data/maps/Route15_WestEntrance_2F/text.inc")
             + _flat("data/maps/Route19/text.inc"))
-    for pt in ("Mestre da Pesca", "Ponte do Silêncio", "Área de Pesca Esportiva", "Compartilhador de Exp."):
+    for pt in ("Mestre da Pesca", "Ponte do Silêncio", "Pesca Esportiva", "Compartilhador de Exp."):
         assert pt in body, pt
 
 
@@ -237,3 +237,74 @@ def test_b2_config_h_nao_define_unidades_imperiais():
     config = re.sub(r"//.*", "", (REPO_ROOT / "include" / "config.h").read_text(encoding="utf-8"))
     assert "#define UNITS_METRIC" in config
     assert "UNITS_IMPERIAL" not in config
+
+
+# ---- B2c (22/10): achados conhecidos da T4 resolvidos ------------------------------------------
+
+def _inc_label_text(rel, label):
+    for e in ct._extract_inc_text(rel, (REPO_ROOT / rel).read_text(encoding="utf-8")):
+        if isinstance(e, ct._Entry) and e.label == label:
+            return e.texts[0]
+    raise AssertionError(f"rótulo {label} não está em {rel}")
+
+
+def test_b2c_derrota_do_brock_cabe_em_gdisplayedstringbattle():
+    """A fala do Treinador é copiada inteira para gDisplayedStringBattle[300] (src/battle_main.c:123):
+    {PLAYER} expande para 7 letras, {PAUSE_UNTIL_PRESS} entra no fim e há o terminador. A do Brock
+    tinha 366 bytes (o inglês, 377, já estourava); agora precisa caber de verdade, com folga."""
+    size = int(re.search(r"gDisplayedStringBattle\[(\d+)\]", (REPO_ROOT / "src/battle_main.c").read_text(
+        encoding="utf-8")).group(1))
+    assert size == 300
+    env = ct._load_env(REPO_ROOT)
+    text = _inc_label_text("data/maps/PewterCity_Gym/text.inc", "PewterCity_Gym_Text_BrockDefeat")
+    total = ct.measure(text, env, "normal").nbytes + 2 + 1
+    for name in ("PLAYER", "RIVAL"):                                   # cada ocorrência vira 7 letras
+        total += text.count("{" + name + "}") * (7 - env.name_bytes[name])
+    assert total < size, total
+    # o sentido continua: insígnia, direito ao Clarão e o tom do Brock
+    flat = re.sub(r"\\[nlp]", " ", text)
+    for needle in ("Eu subestimei você", "Insígnia Rocha", "Clarão", "{PLAYER} recebeu a Insígnia Rocha"):
+        assert needle in flat, needle
+
+
+CAIXAS_B2C = (
+    ("data/maps/CeruleanCity/text.inc", "CeruleanCity_Text_RivalPostBattle"),
+    ("data/maps/CeruleanCity_BikeShop/text.inc", "CeruleanCity_BikeShop_Text_WelcomeToBikeShop"),
+    ("data/maps/CeruleanCity_House5/text.inc", "CeruleanCity_House1_Text_GoCrushBerriesAtDirectCorner"),
+    ("data/maps/FuchsiaCity_House3/text.inc", "FuchsiaCity_House3_Text_WouldYouLikeToForgetMove"),
+    ("data/maps/PewterCity_Gym/text.inc", "PewterCity_Gym_Text_YoureChampMaterial"),
+)
+
+
+def test_b2c_caixas_de_tres_linhas_corrigidas_e_nada_conhecido_sobrando():
+    """Nenhuma das 5 caixas mostra a 3ª linha por cima da 2ª (a janela tem 2 linhas); e a regra não
+    deixa mais nada em KNOWN_FINDINGS/KNOWN_OVERFLOWS (esteira): nada de aviso '(conhecido:'."""
+    from esteira import buffers as bf
+    assert ct.KNOWN_FINDINGS == [] and bf.KNOWN_OVERFLOWS == []
+    for rel, label in CAIXAS_B2C:
+        text = _inc_label_text(rel, label)
+        assert ct.box_lines(text) <= 2, (label, ct.box_lines(text))
+    warnings = [r.detail for r in _results() if r.status == "aviso" and "(conhecido:" in r.detail]
+    assert warnings == []
+
+
+def test_b2c_pesca_esportiva_e_fruta_ocipera_no_glossario():
+    data = json.loads((REPO_ROOT / "test" / "esteira" / "glossario.json").read_text(encoding="utf-8"))
+    by_en = {t["en"]: t for t in data["termos"]}
+    assert by_en["SPORTFISHING AREA"]["pt"] == "Pesca Esportiva"
+    assert by_en["SPORTFISHING AREA"]["fonte"] == "criado" and by_en["SPORTFISHING AREA"]["categoria"] == "lugar"
+    assert by_en["WEPEAR BERRY"]["pt"] == "Fruta Ocipêra" and by_en["WEPEAR BERRY"]["fonte"] == "GO"
+    assert len(by_en["WEPEAR BERRY"]["pt"]) == 13          # a linha da bolsa de frutas tem 28 bytes (15 + nome)
+    assert "Fruta Ocipêra" not in {p["variante"] for p in data["proibidos"]}
+    assert not {"Ocipêr", "Fruta Ocipêr"} & {p["variante"] for p in data["proibidos"]}
+    berry_c = (REPO_ROOT / "src" / "berry.c").read_text(encoding="utf-8")
+    assert '.name = _("Ocipêr"),' in berry_c                # nome curto da fruta (limite de 6 letras)
+    assert "Casa de Voluntários Pokémon" == by_en["LAVENDER VOLUNTEER POKéMON HOUSE"]["pt"]
+    assert "aprovado pelo Cintra" in by_en["LAVENDER VOLUNTEER POKéMON HOUSE"]["obs"]
+    sign = _flat("data/maps/Route12/text.inc")
+    assert "Pesca Esportiva" in sign and "Área de Pesca" not in sign
+    items = (REPO_ROOT / "src" / "data" / "items.json").read_text(encoding="utf-8")
+    assert '"Fruta Ocip\\u00eara"' in items and '"Fruta Ocip\\u00ear"' not in items
+    pouch = (REPO_ROOT / "src" / "berry_pouch.c").read_text(encoding="utf-8")
+    header = (REPO_ROOT / "include" / "berry_pouch.h").read_text(encoding="utf-8")
+    assert "#define BERRY_POUCH_LIST_STRBUF_SIZE 28" in header and "* 27" not in pouch

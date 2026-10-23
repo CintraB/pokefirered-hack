@@ -10485,7 +10485,7 @@
    "categoria": "lugar",
    "detectar": true,
    "frente": "A2",
-   "obs": "placa em Lavender (2 linhas, com \"de Lavender\" na 2ª); não é nome de seção do mapa, então o limite do aviso não se aplica; para reavaliar"
+   "obs": "placa em Lavender (2 linhas, com \"de Lavender\" na 2ª); não é nome de seção do mapa, então o limite do aviso não se aplica; aprovado pelo Cintra em 21/10 (sai da lista de reavaliação)"
   },
   {
    "en": "ANNOUNCER",
@@ -10621,6 +10621,15 @@
    "detectar": false,
    "frente": "G2",
    "obs": "gText_BadEgg, vira apelido (10 letras)"
+  },
+  {
+   "en": "SPORTFISHING AREA",
+   "pt": "Pesca Esportiva",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true,
+   "frente": "B2c",
+   "obs": "placa da Rota 12 (Route12_Text_SportfishingArea); decisão do Cintra em 21/10, no lugar de \"Área de Pesca Esportiva\""
   }
  ],
  "proibidos": [
@@ -10718,6 +10727,11 @@
    "variante": "Gym",
    "use": "Ginásio",
    "motivo": "glossário §2.8: Ginásio (GO)"
+  },
+  {
+   "variante": "Área de Pesca Esportiva",
+   "use": "Pesca Esportiva",
+   "motivo": "decisão do Cintra em 21/10: placa da Rota 12"
   }
  ]
 }
