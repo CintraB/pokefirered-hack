@@ -632,10 +632,10 @@ static void TT_ConvertEasyChatMessageToString(u16 *ecWords, u8 *dest)
 {
     s32 i;
     ConvertEasyChatWordsToString(dest, ecWords, 3, 2);
-    if ((unsigned)GetStringWidth(FONT_NORMAL, dest, -1) > 196)
+    if ((unsigned)GetStringWidth(FONT_NORMAL, CapitalizeEasyChatPhrase(dest), -1) > 196)
     {
-        // Has to be printed 2x3
-        ConvertEasyChatWordsToString(dest, ecWords, 2, 3);
+        ConvertEasyChatWordsToString(dest, ecWords, 2, 3); // Has to be printed 2x3
+        CapitalizeEasyChatPhrase(dest);
         // Skip line 1
         i = 0;
         while (dest[i++] != CHAR_NEWLINE)
