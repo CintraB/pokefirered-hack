@@ -1504,21 +1504,8 @@ class KnownFinding(NamedTuple):
     why: str
 
 
-_A = "frente A (diálogos dos mapas; test_traducao_a.py)"
-_B = "frente B (diálogos dos mapas, grupo B1; test_traducao_b.py)"
-# Achados da regra de linhas por caixa (escopo 9 da T4) na hack-switch de 21/10
-KNOWN_FINDINGS: list[KnownFinding] = [
-    KnownFinding("data/maps/CeruleanCity/text.inc", "CeruleanCity_Text_RivalPostBattle", RULE_LINES,
-                 "7906b49b3401e259", 3, _A),
-    KnownFinding("data/maps/CeruleanCity_BikeShop/text.inc", "CeruleanCity_BikeShop_Text_WelcomeToBikeShop", RULE_LINES,
-                 "d31bd77a491db522", 3, _A),
-    KnownFinding("data/maps/CeruleanCity_House5/text.inc", "CeruleanCity_House1_Text_GoCrushBerriesAtDirectCorner",
-                 RULE_LINES, "d187176f10dc8744", 3, _A),
-    KnownFinding("data/maps/PewterCity_Gym/text.inc", "PewterCity_Gym_Text_YoureChampMaterial", RULE_LINES,
-                 "30ce918d7e9986f5", 3, _B),
-    KnownFinding("data/maps/FuchsiaCity_House3/text.inc", "FuchsiaCity_House3_Text_WouldYouLikeToForgetMove",
-                 RULE_LINES, "418f04cfa8b0d658", 3, _A + ", A2 (49bf60916)"),
-]
+# Achados da regra de linhas por caixa (escopo 9 da T4) de 21/10 foram todos corrigidos (B2c, 22/10): nenhum conhecido
+KNOWN_FINDINGS: list[KnownFinding] = []
 
 
 def check_text(repo: str, exceptions: dict, english: str = ENGLISH_MODE,

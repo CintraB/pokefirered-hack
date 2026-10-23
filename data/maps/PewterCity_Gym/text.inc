@@ -27,10 +27,8 @@ PewterCity_Gym_Text_BrockDefeat::
     .string "do Brock!{PAUSE_MUSIC}{PLAY_BGM}{MUS_OBTAIN_BADGE}{PAUSE 0xFE}{PAUSE 0x56}{RESUME_MUSIC}\p"
     .string "{FONT_MALE}Só de ter a Insígnia Rocha, seus\n"
     .string "Pokémon ficam mais fortes.\p"
-    .string "Ela também permite usar o golpe\n"
-    .string "Clarão fora das batalhas.\p"
-    .string "Claro, o Pokémon precisa saber\n"
-    .string "o golpe Clarão para usá-lo.$"
+    .string "E ela permite usar Clarão\n"
+    .string "fora das batalhas.$"
 
 PewterCity_Gym_Text_TakeThisWithYou::
     .string "Espere!\n"
@@ -105,9 +103,9 @@ PewterCity_Gym_Text_ItsFreeLetsGetHappening::
     .string "Vamos nessa!$"
 
 PewterCity_Gym_Text_YoureChampMaterial::
-    .string "Eu sabia!\n"
-    .string "Você tem tudo para conquistar o\n"
-    .string "título de campeão Pokémon!$"
+    .string "Eu sabia! Você tem tudo para\n"
+    .string "conquistar o título de campeão\l"
+    .string "Pokémon!$"
 
 PewterCity_Gym_Text_GymStatue::
     .string "Ginásio Pokémon de Pewter\n"
