@@ -301,7 +301,7 @@ WIDTH_RULES: list[Rule] = [
     Rule("src/data/pokemon/pokedex_text_fr.h", None, 30 * 8,
          "entrada da Pokédex: sWindowTemplate_DexEntry_FlavorText .width = 30 tiles "
          "(src/pokedex_screen.c:618-623), centralizada em 240 px pela linha mais larga "
-         "(src/pokedex_screen.c:2875-2883); 7 tiles de altura com o texto em y = 8 (src/pokedex_screen.c:2954): 3 linhas",
+         "(src/pokedex_screen.c:2803-2811); 7 tiles de altura com o texto em y = 8 (src/pokedex_screen.c:2882): 3 linhas",
          lines=3),
     Rule("src/data/pokemon/pokedex_entries.h", "*.categoryName", None,
          "categoria da Pokédex: categoryName[12] (include/pokedex.h:104)", chars=11),

@@ -352,3 +352,116 @@ def test_minors_da_pokedex_herdados_da_f2():
     for label in ("gHoOhPokedexText", "gClamperlPokedexText", "gCameruptPokedexText", "gSalamencePokedexText"):
         text = "".join(re.findall(r'"([^"]*)"', _body(label)))
         assert len(text.split(BS_N)) <= DEX_LINES and max(line_widths(text)) <= DEX_WIDTH_PX, label
+
+
+# ---- Task F4: categorias da Pokédex, ordem "Pokémon Semente" e m/kg na tela ------------------
+
+ENTRIES_H = "src/data/pokemon/pokedex_entries.h"
+SCREEN_C = "src/pokedex_screen.c"
+CATEGORY_CHARS = 11                 # categoryStr[12] e o laço `index < 11` (src/pokedex_screen.c)
+STATS_WINDOW_PX = 13 * 8            # sWindowTemplate_DexEntry_SpeciesStats
+FOOTPRINT_X = 88                    # pegada na mesma janela, à direita de altura/peso
+
+
+def _dex_entries() -> dict[str, dict]:
+    """NATIONAL_DEX_X -> {category, height, weight} de `gPokedexEntries`."""
+    out = {}
+    for m in re.finditer(r"\[(NATIONAL_DEX_\w+)\]\s*=\s*\{(.*?)\n    \}", _read(ENTRIES_H), re.S):
+        body = m.group(2)
+        out[m.group(1)] = {"category": re.search(r'\.categoryName = _\("([^"]*)"\)', body).group(1),
+                           "height": int(re.search(r"\.height = (\d+)", body).group(1)),
+                           "weight": int(re.search(r"\.weight = (\d+)", body).group(1))}
+    return out
+
+
+@pytest.fixture(scope="module")
+def f4_entries():
+    return [e for e in ct._sources(REPO_ROOT)
+            if isinstance(e, ct._Entry) and e.file == ENTRIES_H and e.label.endswith(".categoryName")]
+
+
+def test_f4_todas_as_categorias_extraidas(f4_entries):
+    entries = _dex_entries()
+    assert len(entries) == 387                                     # NONE + 386 espécies
+    assert len(f4_entries) == len(entries)
+
+
+def test_f4_categoria_cabe_em_11_letras():
+    long_ = [f"{k}: {v['category']}" for k, v in _dex_entries().items() if len(v["category"]) > CATEGORY_CHARS]
+    assert long_ == []
+
+
+def test_f4_nenhuma_categoria_em_ingles(f4_entries):
+    assert ct.english_report(str(REPO_ROOT), f4_entries) == {}
+    caps = [k for k, v in _dex_entries().items() if v["category"].isupper() and v["category"] != "DNA"]
+    assert caps == []                                              # caixa alta do jogo inglês ("SEED")
+
+
+def test_f4_categorias_conhecidas():
+    entries = _dex_entries()
+    assert entries["NATIONAL_DEX_BULBASAUR"]["category"] == "Semente"
+    assert entries["NATIONAL_DEX_PIKACHU"]["category"] == "Rato"
+    assert entries["NATIONAL_DEX_MEW"]["category"] == "Inédito"
+    assert entries["NATIONAL_DEX_TOTODILE"]["category"] == entries["NATIONAL_DEX_CROCONAW"]["category"] == "Bocarra"
+
+
+def test_f4_sem_achado_de_regra_nas_categorias():
+    bad = [f"{r.name}: {r.detail}" for r in _results()
+           if r.status == "falha" and r.name.startswith("texto/") and ENTRIES_H in r.detail]
+    assert bad == []
+
+
+def test_f4_ordem_pokemon_semente_e_cabe_na_janela():
+    src = _read(SCREEN_C)
+    body = src[src.index("void DexScreen_PrintMonCategory"):src.index("static void DexScreen_PrintMonMeasure")]
+    assert "gText_PokedexPokemon," not in body
+    assert body.index("gText_PokedexPokemonPrefix") < body.index("FONT_SMALL, categoryStr")
+    strings = _read("src/strings.c")
+    prefix = re.search(r'gText_PokedexPokemonPrefix\[\] = _\("([^"]*)"\)', strings).group(1)
+    assert prefix == "Pokémon "
+    widest = max(line_widths(v["category"], "small")[0] for v in _dex_entries().values())
+    unknown = line_widths("?" * CATEGORY_CHARS, "small")[0]
+    assert line_widths(prefix, "small")[0] + max(widest, unknown) <= STATS_WINDOW_PX
+
+
+def _dex_measure(tenths: int, unit: str) -> str:
+    """Porte de DexScreen_PrintMonMeasure (src/pokedex_screen.c): 3 casas inteiras com espaço à
+    esquerda, vírgula decimal, espaço e a unidade."""
+    tenths = min(tenths, 9999)
+    digits, output = "", False
+    for divisor in (1000, 100, 10):
+        digit = tenths // divisor % 10
+        if digit == 0 and not output and divisor != 10:
+            digits += " "
+        else:
+            output = True
+            digits += str(digit)
+    return f"{digits},{tenths % 10} {unit}"
+
+
+def test_f4_conversao_metrica_casos_conhecidos():
+    e = _dex_entries()
+    pikachu, onix, snorlax = e["NATIONAL_DEX_PIKACHU"], e["NATIONAL_DEX_ONIX"], e["NATIONAL_DEX_SNORLAX"]
+    assert _dex_measure(pikachu["height"], "m") == "  0,4 m"
+    assert _dex_measure(pikachu["weight"], "kg") == "  6,0 kg"
+    assert _dex_measure(onix["height"], "m") == "  8,8 m"
+    assert _dex_measure(onix["weight"], "kg") == "210,0 kg"
+    assert _dex_measure(snorlax["weight"], "kg") == "460,0 kg"
+    assert _dex_measure(e["NATIONAL_DEX_GASTLY"]["weight"], "kg") == "  0,1 kg"
+    assert _dex_measure(e["NATIONAL_DEX_WAILORD"]["height"], "m") == " 14,5 m"
+    assert _dex_measure(e["NATIONAL_DEX_GROUDON"]["weight"], "kg") == "950,0 kg"
+    # nenhum valor da tabela passa de 999,9: as 3 casas inteiras bastam
+    assert max(max(v["height"], v["weight"]) for v in e.values()) <= 9999
+
+
+def test_f4_tela_usa_metro_e_quilo_sem_conversao_imperial():
+    src = _read(SCREEN_C)
+    body = src[src.index("static void DexScreen_PrintMonMeasure"):src.index("void DexScreen_PrintMonFlavorText")]
+    assert "gText_Meters" in body and "gText_Kg" in body and "CHAR_COMMA" in body
+    for imperial in ("gText_Lbs", "4536", "254", "inches", "feet", "lbs", "CHAR_SGL_QUOTE_RIGHT", "CHAR_PERIOD"):
+        assert imperial not in body, imperial
+    assert "gText_Lbs" not in src
+    # o valor começa em x + 30; "999,9 " são 6 casas de 5 px; a unidade termina antes da pegada
+    assert "x += 30;" in body
+    for unit in ("m", "kg"):
+        assert 30 + 6 * 5 + line_widths(unit, "small")[0] <= FOOTPRINT_X
