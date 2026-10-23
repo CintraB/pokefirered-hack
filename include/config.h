@@ -72,11 +72,9 @@
 
 #define ABSPATH(x) (CODE_ROOT x)
 
-#ifdef ENGLISH
-#define UNITS_IMPERIAL
-#else
+// The PT-BR translation uses the metric system everywhere (Pokedex, Magikarp record),
+// so UNITS_IMPERIAL is never defined, even in the ENGLISH build.
 #define UNITS_METRIC
-#endif // ENGLISH
 
 // Crashes may occur due to section reordering in the modern build,
 // so we force BUGFIX here.

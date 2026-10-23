@@ -1,102 +1,102 @@
 SixIsland_WaterPath_Text_RoseIntro::
-    .string "I let a pleasant breeze lead me\n"
-    .string "all the way here.$"
+    .string "Deixei uma brisa agradável me guiar\n"
+    .string "até aqui.$"
 
 SixIsland_WaterPath_Text_RoseDefeat::
-    .string "Giggle… You're so cute when you're\n"
-    .string "determined.$"
+    .string "Hihi… Você fica uma graça quando se\n"
+    .string "esforça.$"
 
 SixIsland_WaterPath_Text_RosePostBattle::
-    .string "I want to go to the woods over\n"
-    .string "there, but…\p"
-    .string "There are lots of BUG POKéMON.\n"
-    .string "They scare me a little.$"
+    .string "Eu queria ir para aquele bosque ali,\n"
+    .string "mas…\p"
+    .string "Há muitos Pokémon Inseto.\n"
+    .string "Eles me dão um pouco de medo.$"
 
 SixIsland_WaterPath_Text_EdwardIntro::
-    .string "I'm practicing in secret so no one\n"
-    .string "can see me.$"
+    .string "Estou treinando em segredo para que\n"
+    .string "ninguém me veja.$"
 
 SixIsland_WaterPath_Text_EdwardDefeat::
-    .string "Nobody saw me losing, right?$"
+    .string "Ninguém me viu perdendo, né?$"
 
 SixIsland_WaterPath_Text_EdwardPostBattle::
-    .string "As a performer, I don't want people\n"
-    .string "to know about the effort I put in.$"
+    .string "Como artista, não quero que as\n"
+    .string "pessoas saibam do esforço que faço.$"
 
 SixIsland_WaterPath_Text_SamirIntro::
-    .string "What, you're suggesting that you're\n"
-    .string "sick of seeing SWIMMERS like me?\p"
-    .string "Aww, don't be hatin'!$"
+    .string "O quê? Está dizendo que cansou de\n"
+    .string "ver Nadadores como eu?\p"
+    .string "Ai, não precisa ter preconceito!$"
 
 SixIsland_WaterPath_Text_SamirDefeat::
-    .string "Oh, no, no, no.$"
+    .string "Ai, não, não, não.$"
 
 SixIsland_WaterPath_Text_SamirPostBattle::
-    .string "I couldn't lift the stigma of being\n"
-    .string "a SWIMMER…$"
+    .string "Eu não consegui me livrar do estigma\n"
+    .string "de ser Nadador…$"
 
 SixIsland_WaterPath_Text_DeniseIntro::
-    .string "My boyfriend's always busy, so I\n"
-    .string "come swimming by myself.$"
+    .string "O meu namorado vive ocupado, então\n"
+    .string "venho nadar sozinha.$"
 
 SixIsland_WaterPath_Text_DeniseDefeat::
-    .string "Awww, I knew this would happen!$"
+    .string "Aaai, eu sabia que ia acontecer!$"
 
 SixIsland_WaterPath_Text_DenisePostBattle::
-    .string "When I can't be with my boyfriend,\n"
-    .string "I spend time with the POKéMON he\l"
-    .string "gave me.$"
+    .string "Quando não posso ficar com o meu\n"
+    .string "namorado, passo o tempo com os\l"
+    .string "Pokémon que ele me deu.$"
 
 SixIsland_WaterPath_Text_EarlIntro::
-    .string "Tell me, where are the mountains\n"
-    .string "around these parts?$"
+    .string "Diga, onde ficam as montanhas por\n"
+    .string "estas bandas?$"
 
 SixIsland_WaterPath_Text_EarlDefeat::
-    .string "I lost my way while I was busy\n"
-    .string "battling!$"
+    .string "Eu me perdi enquanto estava ocupado\n"
+    .string "batalhando!$"
 
 SixIsland_WaterPath_Text_EarlPostBattle::
-    .string "Aren't there any mountains around\n"
-    .string "these parts?$"
+    .string "Será que não existem montanhas por\n"
+    .string "estas bandas?$"
 
 SixIsland_WaterPath_Text_MiuIntro::
-    .string "MIU: Hello, POKéMON!\n"
-    .string "It's time to play!$"
+    .string "Miu: Olá, Pokémon!\n"
+    .string "Hora de brincar!$"
 
 SixIsland_WaterPath_Text_MiuDefeat::
-    .string "MIU: Oh, no!\n"
-    .string "Mommy!$"
+    .string "Miu: Ai, não!\n"
+    .string "Mamãe!$"
 
 SixIsland_WaterPath_Text_MiuPostBattle::
-    .string "MIU: It makes me all sad inside\n"
-    .string "when we lose…$"
+    .string "Miu: Fico toda triste por dentro\n"
+    .string "quando a gente perde…$"
 
 SixIsland_WaterPath_Text_MiuNotEnoughMons::
-    .string "MIU: MIA and I are TWINS.\n"
-    .string "We want to battle together.$"
+    .string "Miu: Eu e a Mia somos gêmeas.\n"
+    .string "Queremos batalhar juntas.$"
 
 SixIsland_WaterPath_Text_MiaIntro::
-    .string "MIA: Hello, POKéMON!\n"
-    .string "It's time to battle!$"
+    .string "Mia: Olá, Pokémon!\n"
+    .string "Hora de batalhar!$"
 
 SixIsland_WaterPath_Text_MiaDefeat::
-    .string "MIA: You're mean!\n"
-    .string "You're bad for winning!$"
+    .string "Mia: Que maldade!\n"
+    .string "É feio ganhar!$"
 
 SixIsland_WaterPath_Text_MiaPostBattle::
-    .string "MIA: Ohh…\n"
-    .string "I'm sorry, my POKéMON…$"
+    .string "Mia: Ahh…\n"
+    .string "Desculpem, meus Pokémon…$"
 
 SixIsland_WaterPath_Text_MiaNotEnoughMons::
-    .string "MIA: Oh, you only have one\n"
-    .string "POKéMON?\p"
-    .string "Don't you feel lonesome?$"
+    .string "Mia: Ah, você só tem um\n"
+    .string "Pokémon?\p"
+    .string "Não é muito solitário?$"
 
 SixIsland_WaterPath_Text_WantedUltimateHorn::
-    .string "Wanted!\n"
-    .string "The Ultimate Horn!$"
+    .string "Procura-se!\n"
+    .string "O Chifre Definitivo!$"
 
 SixIsland_WaterPath_Text_RouteSign::
-    .string "WATER PATH\n"
-    .string "Leads to RUIN VALLEY$"
+    .string "Caminho da Água\n"
+    .string "Leva ao Vale das Ruínas$"
 
