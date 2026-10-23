@@ -3334,8 +3334,10 @@ static bool32 ResetVineGfx(void)
     return TRUE;
 }
 
-static const u8 sPluralTxt[] = _("IES");
+static const u8 sPluralTxt[] = _("s");
 
+// PT-BR plural: "Fruta Cheri" -> "Frutas Cheri" (the "s" goes after the first word, as in
+// ScrCmd_bufferitemnameplural); the English code replaced the last letter with "IES".
 static void PrintPrizeMessage(u16 itemId, u16 quantity)
 {
     CopyItemName(itemId, sPokemonJumpGfx->itemName);
@@ -3344,13 +3346,15 @@ static void PrintPrizeMessage(u16 itemId, u16 quantity)
     {
         if (quantity > 1)
         {
-            int endi = StringLength(sPokemonJumpGfx->itemName);
-            if (endi != 0)
-            {
-                endi--;
-                endi[sPokemonJumpGfx->itemName] = EOS;
-                StringAppend(sPokemonJumpGfx->itemName, sPluralTxt);
-            }
+            u8 *space = sPokemonJumpGfx->itemName;
+            u8 tail[ITEM_NAME_LENGTH + 1];
+
+            while (*space != EOS && *space != CHAR_SPACE)
+                space++;
+            StringCopy(tail, space);
+            *space = EOS;
+            StringAppend(sPokemonJumpGfx->itemName, sPluralTxt);
+            StringAppend(sPokemonJumpGfx->itemName, tail);
         }
     }
     DynamicPlaceholderTextUtil_Reset();

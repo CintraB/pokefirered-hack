@@ -672,3 +672,424 @@ def test_e2_scripts_do_presente_misterioso_cabem_em_995_bytes(env):
             total += ct.measure(text, env).nbytes + 1
         sizes[name] = total
     assert max(sizes.values()) + 200 <= 995, sizes
+
+
+# =====================================================================================================
+# Task E3: resíduos de interface (Union Room, Quest Log, TV Educativa, Presente/Evento Misterioso), plural
+# montado em código (Pulo Pokémon), glifo {LV}/{LV_2} -> "Nv" e limpeza de strings.c
+# =====================================================================================================
+
+E3_FILES = ("src/union_room_message.c", "src/data/text/quest_log.h", "src/data/text/teachy_tv.h",
+            "src/mystery_event_msg.c", "src/mystery_gift_scripts.c", "src/pokemon_jump.c")
+# mensagens de depuração que ficam em inglês (nunca aparecem num jogo normal)
+E3_DEBUG_ENGLISH = {"src/sprite.c": "sDmaOverErrorMsg", "src/battle_anim_status_effects.c": "sText_TaskOver"}
+
+
+def _c_entries(rel: str) -> dict[str, str]:
+    """Rótulo -> texto cru (como no fonte) de cada _("...") do arquivo C."""
+    source = (REPO_ROOT / rel).read_text(encoding="utf-8")
+    return {e.label: e.texts[0] for e in ct._extract_c_text(rel, source)}
+
+
+def _c_base(rel: str) -> dict[str, str] | None:
+    base = _e2_base(rel)
+    return None if base is None else {e.label: e.texts[0] for e in ct._extract_c_text(rel, base)}
+
+
+QL = _c_entries("src/data/text/quest_log.h")
+UR = _c_entries("src/union_room_message.c")
+TV = _c_entries("src/data/text/teachy_tv.h")
+
+
+def test_e3_nenhum_ingles_nos_arquivos_da_frente():
+    report = ct.english_report(str(REPO_ROOT))
+    assert {f: (c.words, c.examples) for f, c in report.items() if f in E3_FILES} == {}
+
+
+def test_e3_mensagens_de_depuracao_ficam_em_ingles():
+    """Únicas exceções do --ingles da E3: texto de depuração que o jogo não mostra ao jogador."""
+    report = ct.english_report(str(REPO_ROOT))
+    for rel, label in E3_DEBUG_ENGLISH.items():
+        assert rel in report and set(report[rel].examples) == {label}, rel
+        base = _c_base(rel)
+        if base is not None:
+            assert _c_entries(rel)[label] == base[label]
+
+
+def test_e3_nenhum_achado_das_regras_de_texto():
+    """largura, linhas, letras, charmap, controle, glossário e buffer nos arquivos da E3 (e no braille, E4);
+    sem a base inglesa as regras controle/glossario não rodam, então o teste não pode passar calado."""
+    results = ct.check_text(str(REPO_ROOT), {"text": []}, english="desligado")
+    unavailable = [r.detail for r in results if "base inglesa indisponível" in r.detail]
+    assert unavailable == [], unavailable
+    found = [f"{r.name}: {r.detail}" for r in results
+             if r.status != "ok" and any(f"{f}:" in r.detail for f in E3_FILES + ("data/text/braille.inc",))]
+    assert found == []
+
+
+@pytest.mark.parametrize("rel", E3_FILES[:5])
+def test_e3_rotulos_iguais_aos_da_base(rel):
+    base = _c_base(rel)
+    if base is None:
+        pytest.skip("sem git ou sem o commit base da tradução")
+    assert list(_c_entries(rel)) == list(base)
+
+
+E3_NAMES_NOT_SPLIT = ("Mural de Trocas", "Troca de Ovo", "Cartão Maravilha", "Cartões Maravilha", "Notícias Maravilha",
+                      "Comunicação Sem Fio", "Cartão de Treinador", "Cartões de Treinador", "Show do Cara Pokémon",
+                      "Líder de Ginásio", "Elite Quatro", "Bolso Itens", "Bolso Itens-chave", "Corda de Fuga",
+                      "golpe oculto", "Estojo de MT", "Cassino Rocket", "Centro Pokémon", "Poké Mart", "Sala União",
+                      "TV Educativa", "Batalha simples", "batalha simples", "batalha dupla", "batalha múltipla",
+                      "Laboratório de Pesquisa Pokémon", "Prof. Carvalho", "Zona de Safári", "Esmaga Frutas",
+                      "Colheita do Dodrio", "Pulo Pokémon", "Fruta Enigma")
+
+
+@pytest.mark.parametrize("rel", E3_FILES[:5])
+def test_e3_nomes_nao_sao_partidos_na_quebra(rel):
+    found = []
+    names = set(_e2_terms()) | set(E3_NAMES_NOT_SPLIT)
+    for label, body in _c_entries(rel).items():
+        for name in names:
+            for i, ch in enumerate(name):
+                if ch == " " and any(name[:i] + br + name[i + 1:] in body for br in (BS_N, BS_L)):
+                    found.append(f"{label}: {name}")
+    assert found == []
+
+
+# Jogador sem gênero marcado (regras de 20/10 e 21/10)
+E3_PLAYER_GENDERED = E2_PLAYER_GENDERED + ("Seu ", "Ora, seu", "amigo,", "Amigo,", "cara,", "Cara,", "o protagonista",
+                                           "o personagem principal", "vocês todos", "Obrigado por", "Bem-vindo")
+_COPULA = r"(?:é|está|estava|era|foi|ser|estar|ficar|fica|ficou|parece|estiver|for|seja)"
+_INTENSIFIERS = r"(?:muito|bem|tão|mais|menos|meio|bastante|realmente|sempre)"
+E3_GENDERED_ADJ = re.compile(
+    rf"(?<!\w)(?:[Vv]ocê|{{PLAYER}})\s+(?:não\s+)?{_COPULA}\s+(?:{_INTENSIFIERS}\s+)?"
+    rf"(?!{_INTENSIFIERS}\b)(?!\w*ndo\b)(\w{{3,}}(?:o|ado|ido|oso|udo))\b")
+
+
+def _flat_c(rel: str) -> str:
+    """Todos os textos do arquivo numa linha só: quebras viram espaço antes de procurar os padrões."""
+    body = " ".join(_c_entries(rel).values())
+    body = re.sub(r"\{[^}]*\}", lambda m: "{PLAYER}" if m.group(0) == "{PLAYER}" else " ", body)
+    return re.sub(r"\\[nlp]", " ", body)
+
+
+@pytest.mark.parametrize("rel", E3_FILES[:5])
+def test_e3_jogador_sem_genero(rel):
+    body = _flat_c(rel)
+    assert [b for b in E3_PLAYER_GENDERED if b in body] == []
+    assert [m.group(0) for m in E3_GENDERED_ADJ.finditer(body)] == []
+    assert E2_PLAYER_PARTICIPLE.findall(body) == []
+
+
+def test_e3_termos_novos_registrados_no_glossario():
+    data = json.loads((REPO_ROOT / "test" / "esteira" / "glossario.json").read_text(encoding="utf-8"))
+    created = {t["en"]: t["pt"] for t in data["termos"] if t.get("frente") == "E" and t["fonte"] == "criado"}
+    expected = {"TRADING BOARD": ("Mural de Trocas", UR), "EGG TRADE": ("Troca de Ovo", UR),
+                "GREETINGS (menu da Sala União)": ("Saudação", UR), "POKé DUDE SHOW": ("Show do Cara Pokémon", TV),
+                "RIBBON": ("Fita", _c_entries("src/mystery_event_msg.c")),
+                "ROCKET GAME CORNER": ("Cassino Rocket", QL), "NAME RATER'S HOUSE": ("Casa do Avaliador", QL),
+                "POKéMON LEAGUE GATE": ("Portão Liga Pokémon", QL), "OAK RESEARCH LAB": ("Lab. do Carvalho", QL),
+                "PEWTER MUSEUM OF SCIENCE (Quest Log)": ("Museu de Ciências", QL),
+                "VOLUNTEER HOUSE (Quest Log)": ("Casa de Voluntários", QL)}
+    for en, (pt, texts) in expected.items():
+        assert created.get(en) == pt, en
+        assert any(pt in t.replace(BS_N, " ").replace(BS_L, " ") for t in texts.values()), en
+
+
+def test_e3_cara_pokemon_na_tv_educativa():
+    body = " ".join(TV.values())
+    assert "Cara Pokémon" in body and "Show do Cara Pokémon" in body
+    assert not re.search(r"Pok[ée] ?Dude|POKé DUDE", body)
+
+
+# --- Quest Log: medida com os nomes reais (a checagem mede todo placeholder como 10 letras, e os nomes de
+# lugar chegam a 18-20 letras) -------------------------------------------------------------------------------
+
+QL_WIDTH = 30 * 8 - 2          # DESC_WIN_WIDTH 30 tiles, texto em x = 2 (src/quest_log.c:40, :1039)
+QL_LINES = 3                   # DESC_WIN_HEIGHT 6 tiles: 3 linhas (sQuestLogTextLineYCoords, src/quest_log.c)
+QL_BUILDINGS = ("Home", "OakResearchLab", "Gym", "PokemonLeagueGate", "ViridianForest", "PewterMuseumOfScience",
+                "MtMoon", "BikeShop", "BillsHouse", "DayCare", "UndergroundPath", "PokemonFanClub", "SSAnne",
+                "DiglettsCave", "RockTunnel", "PowerPlant", "PokemonTower", "VolunteerHouse", "NameRatersHouse",
+                "CeladonDeptStore", "CeladonMansion", "RocketGameCorner", "Restaurant", "RocketHideout",
+                "SafariZone", "WardensHome", "FightingDojo", "SilphCo", "SeafoamIslands", "PokemonMansion",
+                "PokemonResearchLab", "VictoryRoad", "PokemonLeague", "CeruleanCave")
+
+
+def _names(rel: str, pattern: str) -> list[str]:
+    return re.findall(pattern, (REPO_ROOT / rel).read_text(encoding="utf-8"))
+
+
+@lru_cache(maxsize=None)
+def _widest() -> dict[str, str]:
+    """Pior caso real de cada tipo de conteúdo (o nome mais largo na fonte normal)."""
+    env = ct._load_env(REPO_ROOT)
+    sections = json.loads((REPO_ROOT / "src/data/region_map/region_map_sections.json").read_text(encoding="utf-8"))
+    lists = {
+        "map": [s["name"] for s in sections["map_sections"] if s.get("name")],
+        "building": [QL[f"gText_QuestLog_{n}"] for n in QL_BUILDINGS],
+        "mon": _names("src/data/text/species_names.h", r'\[SPECIES_\w+\] = _\("([^"]*)"\)')[1:],
+        "item": _e2_item_names(),
+        "move": _names("src/data/text/move_names.h", r'\[MOVE_\w+\]\s*=\s*_\("([^"]*)"\)'),
+        "trainer": [n for n in _names("src/data/trainers.h", r'\.trainerName = _\("([^"]*)"\)') if n],
+        "player": ["MMMMMMM"],                     # PLAYER_NAME_LENGTH 7, a letra mais larga
+        "box": ["MMMMMMMM"],                       # BOX_NAME_LENGTH 8
+        "outcome": [QL["gText_QuestLog_Win"], QL["gText_QuestLog_Loss"], QL["gText_QuestLog_Draw"]],
+        "adverb": [QL[f"gText_QuestLog_{n}"] for n in ("Handily", "Tenaciously", "Somehow")],
+        "champion_adverb": [QL[f"gText_QuestLog_{n}"] for n in ("Coolly", "Somehow", "Barely")],
+        "count": [QL["gText_QuestLog_JustOne"], QL["gText_QuestLog_Num"].replace("{DYNAMIC 0x04}", "888")],
+        "spot": [QL["gText_QuestLog_ADifferentSpot"], "MMMMMMMM"],
+        "teleport": [QL["gText_QuestLog_Home"], S["gText_PokemonCenter"]],
+        "num3": ["888"], "num6": ["888888"],
+    }
+    return {kind: max(values, key=lambda v: ct.measure(v, env).widest) for kind, values in lists.items()}
+
+
+# rótulo -> conteúdo de cada placeholder (src/quest_log_events.c, LoadEvent_*)
+QL_CONTENTS = {
+    "SwitchMon1WithMon2": {"STR_VAR_1": "mon", "STR_VAR_2": "mon"},
+    "SwappedHeldItemsOnMon": {"STR_VAR_1": "mon", "STR_VAR_2": "item", "STR_VAR_3": "item"},
+    "TookHeldItemFromMon": {"STR_VAR_1": "mon", "STR_VAR_2": "item"},
+    "UsedItemOnMonAtThisLocation": {"STR_VAR_1": "item", "STR_VAR_2": "mon"},
+    "UsedTheItem": {"STR_VAR_1": "item"}, "UsedTheKeyItem": {"STR_VAR_1": "item"},
+    "MonLearnedMoveFromTM": {"STR_VAR_1": "mon", "STR_VAR_2": "move"},
+    "MonReplacedMoveWithTM": {"STR_VAR_1": "mon", "STR_VAR_2": "move", "STR_VAR_3": "move"},
+    "MonLearnedMoveFromHM": {"STR_VAR_1": "mon", "STR_VAR_2": "move"},
+    "MonReplacedMoveWithHM": {"STR_VAR_1": "mon", "STR_VAR_2": "move", "STR_VAR_3": "move"},
+    "PlayerBattledChampionRival": {"0x00": "player", "0x01": "player"},
+    "PlayerSentOutMon1RivalSentOutMon2": {"0x00": "player", "0x01": "mon", "0x02": "player", "0x03": "mon"},
+    "WonTheMatchAsAResult": {"0x00": "champion_adverb"},
+    "StoredItemInPC": {"STR_VAR_1": "item"}, "WithdrewItemFromPC": {"STR_VAR_1": "item"},
+    "TradedMon1ForPersonsMon2": {"STR_VAR_1": "player", "STR_VAR_2": "mon", "STR_VAR_3": "mon"},
+    "SingleBattleWithPersonResultedInOutcome": {"0x00": "player", "0x01": "outcome"},
+    "DoubleBattleWithPersonResultedInOutcome": {"0x00": "player", "0x01": "outcome"},
+    "MultiBattleWithPeopleResultedInOutcome": {"0x00": "player", "0x01": "player", "0x02": "player",
+                                               "0x03": "player", "0x04": "outcome"},
+    "DepartedPlaceInTownForNextDestination": {"STR_VAR_1": "map", "STR_VAR_2": "building"},
+    "SwitchedMonsBetweenBoxes": {"0x00": "box", "0x01": "mon", "0x02": "box", "0x03": "mon"},
+    "MovedMonToNewBox": {"0x00": "box", "0x01": "mon", "0x02": "box"},
+    "SwitchedMonsWithinBox": {"0x00": "box", "0x01": "mon", "0x02": "mon"},
+    "MovedMonWithinBox": {"0x00": "box", "0x01": "mon"},
+    "SwitchedPartyMonForPCMon": {"0x00": "box", "0x01": "mon", "0x02": "mon"},
+    "WithdrewMonFromPC": {"0x00": "box", "0x01": "mon"},
+    "DepositedMonInPC": {"0x00": "mon", "0x01": "box"},
+    "SwitchedMultipleMons": {"0x00": "box", "0x01": "spot"},
+    "GaveMonHeldItemFromPC": {"STR_VAR_1": "item", "STR_VAR_2": "mon"},
+    "SwappedHeldItemFromPC": {"STR_VAR_1": "item", "STR_VAR_2": "mon", "STR_VAR_3": "item"},
+    "TradedMon1ForTrainersMon2": {"STR_VAR_1": "player", "STR_VAR_2": "mon", "STR_VAR_3": "mon"},
+    "BattledTrainerEndedInOutcome": {"STR_VAR_1": "player", "STR_VAR_2": "outcome"},
+    "BoughtItem": {"0x00": "map", "0x01": "item"},
+    "BoughtItemsIncludingItem": {"0x00": "map", "0x01": "item", "0x02": "num6"},
+    "SoldNumOfItem": {"0x00": "player", "0x01": "map", "0x02": "item", "0x03": "count"},
+    "SoldItemsIncludingItem": {"0x00": "map", "0x01": "item", "0x02": "num6"},
+    "UsedSoftboiled": {"STR_VAR_1": "mon"}, "UsedMilkDrink": {"STR_VAR_1": "mon"},
+    "DefeatedWildMon": {"0x00": "map", "0x01": "mon", "0x05": "player"},
+    "DefeatedWildMons": {"0x00": "map", "0x01": "mon", "0x02": "num3"},
+    "CaughtWildMon": {"0x00": "map", "0x03": "mon", "0x05": "player"},
+    "CaughtWildMons": {"0x00": "map", "0x03": "mon", "0x04": "num3"},
+    "DefeatedWildMonAndCaughtWildMon": {"0x00": "map", "0x01": "mon", "0x03": "mon", "0x05": "player"},
+    "DefeatedWildMonAndCaughtWildMons": {"0x00": "map", "0x01": "mon", "0x03": "mon", "0x04": "num3"},
+    "DefeatedWildMonsAndCaughtWildMon": {"0x00": "map", "0x01": "mon", "0x02": "num3", "0x03": "mon",
+                                         "0x05": "player"},
+    "DefeatedWildMonsAndCaughtWildMons": {"0x00": "map", "0x01": "mon", "0x02": "num3", "0x03": "mon",
+                                          "0x04": "num3"},
+    "GaveMonHeldItem": {"STR_VAR_1": "mon", "STR_VAR_2": "item"},
+    "GaveMonHeldItem2": {"STR_VAR_1": "mon", "STR_VAR_2": "item"},
+    **{f"Used{m}": {"STR_VAR_1": "mon"} for m in ("Cut", "Surf", "Strength", "Flash", "RockSmash", "Waterfall",
+                                                   "SweetScent")},
+    "UsedFly": {"STR_VAR_1": "mon", "STR_VAR_2": "map"},
+    "UsedDigInLocation": {"STR_VAR_1": "mon", "STR_VAR_2": "map"},
+    "UsedTeleportToLocation": {"STR_VAR_1": "mon", "STR_VAR_2": "map", "STR_VAR_3": "teleport"},
+    "LeftTownsLocationForNextDestination": {"STR_VAR_1": "map", "STR_VAR_2": "building"},
+    "PlayedGamesAtGameCorner": {"STR_VAR_1": "map"},
+    "GymWasFullOfToughTrainers": {"STR_VAR_1": "map"}, "DepartedGym": {"STR_VAR_1": "map"},
+    "ManagedToGetOutOfLocation": {"STR_VAR_2": "building"},
+    "TookOnGymLeadersMonWithMonAndWon": {"0x00": "map", "0x01": "trainer", "0x02": "mon", "0x03": "mon",
+                                         "0x04": "adverb"},
+    "TookOnEliteFoursMonWithMonAndWon": {"0x00": "trainer", "0x01": "mon", "0x02": "mon", "0x03": "adverb"},
+    "TookOnTrainersMonWithMonAndWon": {"0x00": "map", "0x01": "trainer", "0x02": "mon", "0x03": "mon",
+                                       "0x04": "adverb"},
+    "UsedEscapeRope": {"STR_VAR_2": "map"},
+    "DepartedTheLocationForNextDestination": {"STR_VAR_2": "building"},
+    "DepartedFromLocationToNextDestination": {"STR_VAR_2": "building"},
+    "ObtainedItemInLocation": {"STR_VAR_1": "map", "STR_VAR_2": "item"},
+    "ArrivedInLocation": {"STR_VAR_1": "map"},
+    "SavedGameAtLocation": {"STR_VAR_1": "map"},
+}
+
+
+def _fill(text: str, contents: dict[str, str], widest: dict[str, str]) -> str:
+    for key, kind in contents.items():
+        ph = "{" + key + "}" if key.startswith("STR_VAR") else "{DYNAMIC " + key + "}"
+        assert ph in text, (key, text)
+        text = text.replace(ph, widest[kind])
+    assert not re.search(r"\{(?:STR_VAR_\d|DYNAMIC [0-9x]+)\}", text), text
+    return text
+
+
+def test_e3_quest_log_cabe_na_janela_com_os_nomes_reais(env):
+    """Cada frase do Quest Log com o pior caso real de cada placeholder (nome de lugar mais largo, Pokémon,
+    item, golpe, Treinador, jogador de 7 letras, caixa de 8) cabe em 3 linhas de 238 px."""
+    widest = _widest()
+    texts = {k[len("gText_QuestLog_"):]: v for k, v in QL.items()}
+    sentences = [k for k, v in texts.items() if re.search(r"\{(?:STR_VAR_\d|DYNAMIC [0-9x]+)\}", v)
+                 and k not in ("Num", "UsedDive")]
+    assert sorted(sentences) == sorted(QL_CONTENTS)
+    problems = []
+    for name, contents in QL_CONTENTS.items():
+        m = ct.measure(_fill(texts[name], contents, widest).replace("{PLAYER}", widest["player"]), env)
+        if m.widest > QL_WIDTH or m.lines > QL_LINES:
+            problems.append(f"{name}: {m.widest} px, {m.lines} linhas")
+    assert problems == []
+
+
+def test_e3_quest_log_textos_que_vao_para_gstringvar_cabem(env):
+    """LoadEvent_DepartedLocation copia o lugar para gStringVar2; o Teleporte põe gText_QuestLog_Home ou
+    gText_PokemonCenter em gStringVar3; a batalha da Sala União põe o resultado em gStringVar2; a venda expande
+    gText_QuestLog_Num (até 3 algarismos) em gStringVar3 (src/quest_log_events.c:1458, :1973, :2066, :2140)."""
+    events = (REPO_ROOT / "src" / "quest_log_events.c").read_text(encoding="utf-8")
+    assert "StringCopy(gStringVar2, sLocationNameTexts[locationId]);" in events
+    assert "StringCopy(gStringVar3, gText_QuestLog_Home);" in events
+    assert "StringCopy(gStringVar2, sBattleOutcomeTexts[rOutcome]);" in events
+    assert "DynamicPlaceholderTextUtil_ExpandPlaceholders(gStringVar3, gText_QuestLog_Num);" in events
+    texts = [QL[f"gText_QuestLog_{n}"] for n in QL_BUILDINGS]
+    texts += [QL["gText_QuestLog_Win"], QL["gText_QuestLog_Loss"], QL["gText_QuestLog_Draw"],
+              QL["gText_QuestLog_Home"], S["gText_PokemonCenter"], QL["gText_QuestLog_JustOne"],
+              QL["gText_QuestLog_Num"].replace("{DYNAMIC 0x04}", "888")]
+    limit = min(STRING_VAR_SIZES["2"], STRING_VAR_SIZES["3"])
+    assert [t for t in texts if ct.measure(t, env).nbytes + 1 > limit] == []
+
+
+def test_e3_quest_log_tabelas_de_lugar_e_de_resultado():
+    events = (REPO_ROOT / "src" / "quest_log_events.c").read_text(encoding="utf-8")
+    table = events[events.index("sLocationNameTexts[] ="):]
+    table = table[:table.index("};")]
+    assert set(re.findall(r"gText_QuestLog_(\w+)", table)) == set(QL_BUILDINGS)
+    assert (QL["gText_QuestLog_Win"], QL["gText_QuestLog_Loss"], QL["gText_QuestLog_Draw"]) == (
+        "vitória", "derrota", "empate")
+    assert QL["gText_QuestLog_WardensHome"] == "Casa do Diretor"
+
+
+# --- Union Room: textos que vão para buffers -----------------------------------------------------------------
+
+def test_e3_union_room_textos_que_vao_para_buffers_cabem(env):
+    """Nome da atividade -> gStringVar1[32] (src/union_room.c:450, :1306, :2085); cor do cartão ->
+    trainerCardColorStrBuffer[48] (src/union_room.c:4713, include/union_room.h)."""
+    data = (REPO_ROOT / "src" / "data" / "union_room.h").read_text(encoding="utf-8")
+    table = data[data.index("sLinkGroupActivityNameTexts[] = {"):]
+    labels = set(re.findall(r"=\s*(gText_UR_\w+)", table[:table.index("};")]))
+    assert {"gText_UR_SingleBattle", "gText_UR_BerryPicking", "gText_UR_WonderNews"} <= labels
+    assert all(ct.measure(UR[lab], env).nbytes + 1 <= STRING_VAR_SIZES["1"] for lab in labels)
+    header = (REPO_ROOT / "include" / "union_room.h").read_text(encoding="utf-8")
+    assert "u8 trainerCardColorStrBuffer[48];" in header
+    assert all(ct.measure(UR[f"sText_Its{c}Card"], env).nbytes + 1 <= 48
+               for c in ("Normal", "Bronze", "Copper", "Silver", "Gold"))
+
+
+def test_e3_union_room_rotulos_iguais_aos_menus():
+    assert (UR["gText_UR_SingleBattle"], UR["gText_UR_DoubleBattle"], UR["gText_UR_MultiBattle"]) == (
+        S["gText_SingleBattle"], S["gText_DoubleBattle"], S["gText_MultiBattle"])
+    assert (UR["gText_UR_PokemonJump"], UR["gText_UR_BerryCrush"], UR["gText_UR_BerryPicking"]) == (
+        S["gText_PokemonJump"], S["gText_BerryCrush"], S["gText_DodrioBerryPicking"])
+    assert UR["gText_UR_Exit"] == S["gText_Exit"] and UR["gText_UR_Info"] == S["gText_Info"]
+
+
+# --- plural montado em código (Pulo Pokémon) ----------------------------------------------------------------
+
+def test_e3_plural_do_premio_do_pulo_pokemon_em_portugues():
+    """PrintPrizeMessage trocava a última letra da fruta por "IES" ("Fruta CherIES"); agora o "s" entra
+    depois da 1ª palavra ("Frutas Cheri"), como o ScrCmd_bufferitemnameplural da E2."""
+    jump = (REPO_ROOT / "src" / "pokemon_jump.c").read_text(encoding="utf-8")
+    assert '_("IES")' not in jump and 'sPluralTxt[] = _("s");' in jump
+    body = jump[jump.index("static void PrintPrizeMessage(u16 itemId, u16 quantity)"):]
+    body = body[:body.index("\n}\n")]
+    assert "endi[sPokemonJumpGfx->itemName] = EOS;" not in body
+    assert "StringAppend(sPokemonJumpGfx->itemName, sPluralTxt);" in body
+    assert re.search(r"u8 itemName\[64\];", jump)
+
+
+# --- limpeza (Ruling 25) ---------------------------------------------------------------------------------------
+
+def test_e3_gstring_bill_e_someone_removidos():
+    for name in ("gString_Bill", "gString_Someone"):
+        assert name not in STRINGS_C and name not in STRINGS_H
+        for path in (REPO_ROOT / "src").rglob("*.c"):
+            assert name not in path.read_text(encoding="utf-8", errors="replace"), path
+
+
+# Glifo do nível: {LV} = 0x34 e {LV_2} = F9 05 (CHAR_EXTRA_SYMBOL, glifo 0x100 | 0x05, src/text.c) viram "Nv"
+# (decisão D5); a imagem da caixa de vida (healthbox) fica para a frente H
+LV_GLYPHS = (0x34, 0x105)
+LV_TABLES = {"normal": ("sFontNormalLatinGlyphWidths", "sFontNormalCopy1LatinGlyphWidths"),
+             "male": ("sFontMaleLatinGlyphWidths",), "female": ("sFontFemaleLatinGlyphWidths",),
+             "small": ("sFontSmallLatinGlyphWidths",)}
+_INK = (1, 2)
+
+
+def _base_cell(font: str, code: int) -> list[list[int]] | None:
+    import io
+    from PIL import Image
+    from esteira.font_render import GEOMETRY
+    if shutil.which("git") is None:
+        return None
+    out = subprocess.run(["git", "-C", str(REPO_ROOT), "show", f"{ct.TRANSLATION_BASE}:graphics/fonts/latin_{font}.png"],
+                         capture_output=True)
+    if out.returncode != 0:
+        return None
+    cell_w, cell_h, per_row, _ = GEOMETRY[font]
+    cx, cy = (code % per_row) * cell_w, (code // per_row) * cell_h
+    with Image.open(io.BytesIO(out.stdout)) as img:
+        return [[img.getpixel((cx + x, cy + y)) for x in range(cell_w)] for y in range(cell_h)]
+
+
+def _ink_columns(cell: list[list[int]], rows: range) -> list[int]:
+    return [x for x in range(len(cell[0])) if any(cell[y][x] == 1 for y in rows)]
+
+
+@pytest.mark.parametrize("font", sorted(LV_TABLES))
+def test_e3_glifo_do_nivel_e_nv_nas_quatro_fontes(font):
+    """Os dois glifos de nível têm o mesmo desenho novo em cada fonte: N (duas hastes ligadas pela diagonal,
+    linhas 4-10) e v (só da linha 6/7 para baixo), tudo dentro da largura da tabela e diferente do "Lv"."""
+    from esteira.font_render import glyph_cell, glyph_widths
+    cells = [glyph_cell(REPO_ROOT, font, code) for code in LV_GLYPHS]
+    assert cells[0] == cells[1]
+    cell = cells[0]
+    widths = {glyph_widths(REPO_ROOT, t)[code] for t in LV_TABLES[font] for code in LV_GLYPHS}
+    assert len(widths) == 1
+    width = widths.pop()
+    assert width <= len(cell[0])
+    inked = [x for x in range(len(cell[0])) if any(cell[y][x] in _INK for y in range(len(cell)))]
+    assert max(inked) < width
+    # N: haste esquerda e haste direita (coluna 3) cheias nas linhas 4-10; diagonal nas colunas 1-2
+    assert all(cell[y][0] == 1 and cell[y][3] == 1 for y in range(4, 11))
+    assert any(cell[y][1] == 1 for y in (5, 6)) and any(cell[y][2] == 1 for y in (7, 8))
+    # v: nada acima da linha 6 depois do N; dois braços que se juntam embaixo
+    assert _ink_columns(cell, range(0, 6)) == [0, 3] or _ink_columns(cell, range(0, 6)) == [0, 1, 3]
+    assert len(_ink_columns(cell, range(6, 8))) >= 4
+    base = _base_cell(font, 0x105)
+    if base is None:
+        pytest.skip("sem git ou sem o commit base da tradução")
+    assert cell != base
+
+
+def test_e3_largura_do_glifo_nv():
+    """Mesma largura do "Lv" (normal/male/female 10 px, pequena 8 px): nenhuma linha já medida muda."""
+    from esteira.font_render import glyph_widths
+    for font, tables in LV_TABLES.items():
+        for table in tables:
+            w = glyph_widths(REPO_ROOT, table)
+            assert w[0x34] == w[0x105] == (8 if font == "small" else 10), (font, table)
+
+
+def test_e3_nivel_cabe_na_caixa_de_vida():
+    """UpdateLvlInHealthbox (src/battle_interface.c): "{LV_2}" + nível em FONT_SMALL a partir de
+    x = 5 * (3 - algarismos), copiado em 3 tiles (TextIntoHealthboxObject(..., 3)) = 24 px."""
+    from esteira.font_render import glyph_widths
+    bi = (REPO_ROOT / "src" / "battle_interface.c").read_text(encoding="utf-8")
+    assert "xPos = 5 * (3 - (objVram - (text + 2)));" in bi and "TextIntoHealthboxObject(objVram, windowTileData, 3);" in bi
+    small = glyph_widths(REPO_ROOT, "sFontSmallLatinGlyphWidths")
+    from esteira.charmap import Charmap
+    cm = Charmap.load(str(REPO_ROOT))
+    for level in range(1, 101):
+        digits = str(level)
+        width = 5 * (3 - len(digits)) + small[0x105] + sum(small[cm.encode(d)[0]] for d in digits)
+        assert width <= 24, level

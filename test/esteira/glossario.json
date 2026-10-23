@@ -10263,6 +10263,105 @@
    "obs": "assistentes do Prof. Carvalho (data/text/pokedex_rating.inc, aide.inc)"
   },
   {
+   "en": "TRADING BOARD",
+   "pt": "Mural de Trocas",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "frente": "E",
+   "obs": "Sala União: quadro onde se registra um Pokémon para troca (src/union_room_message.c)"
+  },
+  {
+   "en": "EGG TRADE",
+   "pt": "Troca de Ovo",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "frente": "E",
+   "obs": "Sala União: oferta de troca de um Ovo no Mural de Trocas (gText_UR_EggTrade)"
+  },
+  {
+   "en": "GREETINGS (menu da Sala União)",
+   "pt": "Saudação",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "frente": "E",
+   "obs": "opção que mostra o Cartão de Treinador na Sala União (gText_UR_Greetings)"
+  },
+  {
+   "en": "POKé DUDE SHOW",
+   "pt": "Show do Cara Pokémon",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "frente": "E",
+   "obs": "programa da TV Educativa (src/data/text/teachy_tv.h); POKé DUDE = Cara Pokémon"
+  },
+  {
+   "en": "RIBBON",
+   "pt": "Fita",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "frente": "E",
+   "obs": "fita especial do Presente Misterioso (src/mystery_event_msg.c)"
+  },
+  {
+   "en": "ROCKET GAME CORNER",
+   "pt": "Cassino Rocket",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": false,
+   "frente": "E",
+   "obs": "Quest Log (gText_QuestLog_RocketGameCorner); GAME CORNER = Cassino"
+  },
+  {
+   "en": "NAME RATER'S HOUSE",
+   "pt": "Casa do Avaliador",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": false,
+   "frente": "E",
+   "obs": "forma curta de Casa do Avaliador de Apelidos (NAME RATER = Avaliador de Apelidos, frente A3): o Quest Log copia o lugar para gStringVar2 (19 letras) e a forma cheia tem 29"
+  },
+  {
+   "en": "POKéMON LEAGUE GATE",
+   "pt": "Portão Liga Pokémon",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": false,
+   "frente": "E",
+   "obs": "Quest Log: 'Portão da Liga Pokémon' (22) estoura gStringVar2 (19 letras)"
+  },
+  {
+   "en": "OAK RESEARCH LAB",
+   "pt": "Lab. do Carvalho",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": false,
+   "frente": "E",
+   "obs": "Quest Log: 'Laboratório do Carvalho' (23) estoura gStringVar2 (19 letras)"
+  },
+  {
+   "en": "PEWTER MUSEUM OF SCIENCE (Quest Log)",
+   "pt": "Museu de Ciências",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": false,
+   "frente": "E",
+   "obs": "Quest Log: a frase junta a cidade ('Museu de Ciências, Cidade de Pewter')"
+  },
+  {
+   "en": "VOLUNTEER HOUSE (Quest Log)",
+   "pt": "Casa de Voluntários",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": false,
+   "frente": "E",
+   "obs": "forma curta de Casa de Voluntários Pokémon para o gStringVar2 (19 letras)"
+  },
+  {
    "en": "FISHING GURU",
    "pt": "Mestre da Pesca",
    "fonte": "criado",

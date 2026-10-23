@@ -1058,8 +1058,6 @@ const u8 gText_End[] = _("おしまい");
 
 #include "data/text/teachy_tv.h"
 
-const u8 gString_Bill[] = _("Bill");
-const u8 gString_Someone[] = _("alguém");
 const u8 gString_Help[] = _("Ajuda");
 const u8 gString_HelpSystem_ClearTo8[] = _("{CLEAR_TO 8}");
 const u8 gText_SpacePoints2[] = _(" pontos");
