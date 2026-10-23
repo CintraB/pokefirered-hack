@@ -161,6 +161,15 @@ def test_placeholders_medidos_como_10_letras_largas(env):
 _COPY_TO_VAR = re.compile(r"(?:StringCopy|StringExpandPlaceholders|StringAppend)\(gStringVar([123])\w*,\s*(g\w+)\)")
 
 
+def _string_var_sizes() -> dict[str, int]:
+    """Tamanho de gStringVar1/2/3, lido de src/string_util.c."""
+    text = (REPO_ROOT / "src" / "string_util.c").read_text(encoding="utf-8")
+    return {n: int(size, 0) for n, size in re.findall(r"u8 gStringVar([123])\[(\w+)\]", text)}
+
+
+STRING_VAR_SIZES = _string_var_sizes()
+
+
 def _buffer_ctx():
     """Contexto da regra de buffer (esteira/buffers.py, Task T4) com a base inglesa; None sem a base."""
     from esteira import buffers as bf
