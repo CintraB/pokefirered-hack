@@ -391,6 +391,15 @@ def test_portuguese_is_not_english(repo):
     assert run(repo) == []
 
 
+def test_to_acronym_of_original_trainer_is_not_english(repo):
+    """"TO" (Treinador Original, CeladonCity_DepartmentStore_3F) não é o "to" inglês; "to" minúsculo continua sendo."""
+    inc(repo, 'Text_A::\n\t.string "Nº ID e o TO.\\pTO quer dizer Treinador Original.$"\n\n'
+              'Text_B::\n\t.string "Go to the shop$"\n')
+    counts = english_report(str(repo))
+    assert counts["data/text/pc.inc"].words == 3        # go, to, the (só o texto B)
+    assert counts["data/text/pc.inc"].texts == 1
+
+
 def test_english_allowlist(repo):
     put(repo, "src/data/text/species_names.h", 'const u8 gSpeciesNames[][11] = {\n'
         '    [SPECIES_X] = _("WHAT"),\n};\n')

@@ -118,19 +118,14 @@ def test_faixa_nao_tem_mais_ingles(rel):
 
 
 def test_excecao_do_to_continua_sendo_so_a_sigla():
-    """A única exceção do relatório de inglês é a sigla TO (Treinador Original), em maiúsculas."""
-    flagged = {}
-    for e in _entries():
-        if e.file != HELP_FILE:
-            continue
-        raw = ct._english_words(e, set(_allowed()))
-        if raw and not _english_left(e):
-            flagged[e.label] = raw
-    assert set(flagged) == TO_LABELS
+    """A única exceção do relatório de inglês é a sigla TO (Treinador Original), em maiúsculas. Desde a B3 é a
+    própria regra (`check_text._english_words`) que a ignora: nos 4 rótulos da ajuda a lista de palavras
+    inglesas do texto só tem "TO" e o relatório não acusa nada."""
     for label in TO_LABELS:
         entry = next(e for e in _entries() if e.file == HELP_FILE and e.label == label)
-        assert [w for w in ct._plain_words(entry.texts[0]) if w.lower() in ct.ENGLISH_WORDS] == \
-            ["TO"] * len(flagged[label])
+        in_list = [w for w in ct._plain_words(entry.texts[0]) if w.lower() in ct.ENGLISH_WORDS]
+        assert in_list and set(in_list) == {"TO"}, label
+        assert ct._english_words(entry, set(_allowed())) == [], label
 
 
 def test_ajuda_perguntas_e_titulos_em_uma_linha_de_200_px():

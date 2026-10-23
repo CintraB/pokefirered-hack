@@ -1269,6 +1269,8 @@ def _english_words(entry: _Entry, allowed: set[str]) -> list[str]:
     found: list[str] = []
     for text in entry.texts[:1]:
         for word in _plain_words(text):
+            if word == "TO":        # sigla de Treinador Original ("o TO"), não a preposição inglesa
+                continue
             low = word.lower()
             if low in ENGLISH_WORDS and low not in allowed:
                 found.append(low)

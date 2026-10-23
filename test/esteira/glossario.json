@@ -10630,6 +10630,60 @@
    "detectar": true,
    "frente": "B2c",
    "obs": "placa da Rota 12 (Route12_Text_SportfishingArea); decisão do Cintra em 21/10, no lugar de \"Área de Pesca Esportiva\""
+  },
+  {
+   "en": "NUGGET BRIDGE",
+   "pt": "Ponte da Pepita",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true,
+   "frente": "B3",
+   "obs": "Rota 24 (fala do Treinador Cale); a ponte não é seção do mapa; Pepita = NUGGET do glossário"
+  },
+  {
+   "en": "SEA COTTAGE",
+   "pt": "Chalé à Beira-Mar",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true,
+   "frente": "B3",
+   "obs": "casa do Bill na Rota 25 (placa Route25_Text_SeaCottageSign); 17 letras"
+  },
+  {
+   "en": "TELEPORTER",
+   "pt": "Teletransportador",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "frente": "B3",
+   "obs": "máquina do Bill (Route25_SeaCottage); o golpe TELEPORT segue \"Teleporte\" (Task 2)"
+  },
+  {
+   "en": "Cell Separation System",
+   "pt": "Sistema de Separação Celular",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "frente": "B3",
+   "obs": "programa do PC do Bill (Route25_SeaCottage_Text_RunCellSeparationOnPC)"
+  },
+  {
+   "en": "Cell Separator",
+   "pt": "Separador Celular",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "frente": "B3",
+   "obs": "peça do Teletransportador do Bill (Route25_SeaCottage_Text_InitiatedTeleportersCellSeparator)"
+  },
+  {
+   "en": "GLOBAL POLICE",
+   "pt": "Polícia Internacional",
+   "fonte": "criado",
+   "categoria": "personagem",
+   "detectar": true,
+   "frente": "B3",
+   "obs": "agente da SS Anne 1F; segue o nome do anime/japonês (International Police)"
   }
  ],
  "proibidos": [

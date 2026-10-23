@@ -50,11 +50,9 @@ GRUPOS = {
 }
 FILES = [f"data/maps/{m}/text.inc" for maps in GRUPOS.values() for m in maps]
 
-# Inglês que a checagem conta mas é legítimo: (arquivo, palavras, textos) -> motivo
-ENGLISH_EXCEPTIONS = {
-    # "TO" = Treinador Original (glossário: OT -> TO); "to" está na lista de palavras inglesas
-    "data/maps/CeladonCity_DepartmentStore_3F/text.inc": (2, 1),
-}
+# Inglês que a checagem conta mas é legítimo: (arquivo, palavras, textos) -> motivo.
+# Vazio desde a B3: "TO" (Treinador Original, glossário OT -> TO) deixou de contar na própria regra.
+ENGLISH_EXCEPTIONS = {}
 
 
 @pytest.fixture(scope="module")
