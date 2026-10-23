@@ -24,6 +24,9 @@ GLOSSARY = json.loads((REPO_ROOT / "test" / "esteira" / "glossario.json").read_t
 UNCHANGED = {"-$$$$$$", "-------", "???", "????????", "Escama Prisma"}
 # Classe TEAM ROCKET: glossário §2.9 (TEAM ROCKET GRUNT = classe "Recruta" + nome "Rocket")
 CLASS_OVERRIDES = {"TEAM ROCKET": "Recruta"}
+# Chaves acrescentadas por nós (não existem na base inglesa): arquivo -> {chave: nome}
+# D3 / decisão D4 do Cintra: os 2 ADMIN da Equipe Rocket viram a classe "Executivo"
+NEW_KEYS = {"src/data/text/trainer_class_names.h": {"TRAINER_CLASS_ROCKET_ADMIN": "Executivo"}}
 BERRY_NAME_LENGTH = 6          # include/global.berry.h
 POPUP_PX = 112                 # aviso de nome do mapa: maxWidth (src/map_name_popup.c:195)
 
@@ -107,7 +110,10 @@ def _pairs(rel: str):
     if base is None:
         pytest.skip("sem git ou sem o commit base da tradução")
     current = _current(rel)
-    assert set(current) == set(base), f"{rel}: chaves diferentes da base"
+    assert set(current) >= set(base), f"{rel}: faltam chaves da base"
+    # chaves que não existem na base inglesa (classe nova da D3): só as combinadas, com o nome esperado
+    assert {k: current[k] for k in set(current) - set(base)} == NEW_KEYS.get(rel, {}), \
+        f"{rel}: chaves diferentes da base"
     return [(key, base[key], current[key]) for key in sorted(base)]
 
 

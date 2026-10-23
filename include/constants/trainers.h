@@ -287,6 +287,7 @@
 #define TRAINER_CLASS_RUIN_MANIAC         104
 #define TRAINER_CLASS_LADY                105
 #define TRAINER_CLASS_PAINTER             106
+#define TRAINER_CLASS_ROCKET_ADMIN        107   // added: Team Rocket Admins ("Executivo"); keeps TEAM_ROCKET behaviour
 
 #define FACILITY_CLASS_AQUA_LEADER_ARCHIE     0
 #define FACILITY_CLASS_AQUA_GRUNT_M           1
