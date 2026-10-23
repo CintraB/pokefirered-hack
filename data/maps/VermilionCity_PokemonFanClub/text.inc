@@ -1,96 +1,99 @@
 VermilionCity_PokemonFanClub_Text_AdmirePikachusTail::
-    .string "Won't you admire my PIKACHU's\n"
-    .string "adorable tail?$"
+    .string "Não quer admirar a cauda adorável\n"
+    .string "do meu Pikachu?$"
 
 VermilionCity_PokemonFanClub_Text_PikachuTwiceAsCute::
-    .string "Humph!\p"
-    .string "My PIKACHU is twice as cute as\n"
-    .string "that one!$"
+    .string "Humpf!\p"
+    .string "O meu Pikachu é duas vezes mais fofo\n"
+    .string "que aquele!$"
 
 VermilionCity_PokemonFanClub_Text_AdoreMySeel::
-    .string "I just adore my SEEL!\n"
-    .string "It's so lovable!\p"
-    .string "It squeals, “Kyuuuh,” when I\n"
-    .string "hug it!$"
+    .string "Eu simplesmente adoro o meu Seel!\n"
+    .string "Ele é tão amável!\p"
+    .string "Ele faz “Kyuuuh” quando eu o\n"
+    .string "abraço!$"
 
 VermilionCity_PokemonFanClub_Text_SeelFarMoreAttractive::
-    .string "Oh, dear!\p"
-    .string "My SEEL is far more attractive.\n"
-    .string "By double, I would say.$"
+    .string "Ora, ora!\p"
+    .string "O meu Seel é muito mais atraente.\n"
+    .string "O dobro, eu diria.$"
 
 VermilionCity_PokemonFanClub_Text_Pikachu::
-    .string "PIKACHU: Chu! Pikachu!$"
+    .string "Pikachu: Chu! Pikachu!$"
 
 VermilionCity_PokemonFanClub_Text_Seel::
-    .string "SEEL: Kyuoo!$"
+    .string "Seel: Kyuoo!$"
 
 VermilionCity_PokemonFanClub_Text_DidYouComeToHearAboutMyMons::
-    .string "I chair the POKéMON Fan Club!\p"
-    .string "I raise more than a hundred\n"
-    .string "POKéMON!\p"
-    .string "I'm very fussy when it comes to\n"
-    .string "POKéMON! I surely am!\p"
-    .string "So…\p"
-    .string "Did you come visit to hear about\n"
-    .string "my POKéMON?$"
+    .string "Eu sou o presidente do\n"
+    .string "Fã-clube Pokémon!\p"
+    .string "Eu crio mais de cem Pokémon!\p"
+    .string "Sou muito exigente quando o assunto\n"
+    .string "é Pokémon! Isso eu sou!\p"
+    .string "Então…\p"
+    .string "Você veio me visitar para ouvir sobre\n"
+    .string "os meus Pokémon?$"
 
 VermilionCity_PokemonFanClub_Text_ChairmansStory::
-    .string "Good!\n"
-    .string "Then listen up!\p"
-    .string "My favorite RAPIDASH…\p"
-    .string "It's…cute…lovely…smart… \n"
-    .string "plus…amazing…you think so?…\l"
-    .string "oh yes…it's…stunning…\l"
-    .string "kindly…love it!\p"
-    .string "Hug it…when…sleeping…warm\n"
-    .string "and cuddly…spectacular…\l"
-    .string "ravishing…\l"
-    .string "…Oops! Look at the time!\l"
-    .string "I kept you too long!\p"
-    .string "Thanks for hearing me out!\n"
-    .string "I want you to have this!$"
+    .string "Ótimo!\n"
+    .string "Então ouça!\p"
+    .string "O meu Rapidash favorito…\p"
+    .string "É…fofo…lindo…inteligente… \n"
+    .string "além…incrível…você acha?…\l"
+    .string "ah sim…é…de tirar o fôlego…\l"
+    .string "com carinho…adoro!\p"
+    .string "Abraço…ao…dormir…quentinho\n"
+    .string "e fofinho…espetacular…\l"
+    .string "encantador…\l"
+    .string "…Opa! Olhe a hora!\l"
+    .string "Tomei o seu tempo demais!\p"
+    .string "Obrigado por me ouvir!\n"
+    .string "Quero que fique com isto!$"
 
 VermilionCity_PokemonFanClub_Text_ReceivedBikeVoucherFromChairman::
-    .string "{PLAYER} received a BIKE VOUCHER\n"
-    .string "from the CHAIRMAN.$"
+    .string "{PLAYER} recebeu um Vale Bicicleta\n"
+    .string "do Presidente.$"
 
 VermilionCity_PokemonFanClub_Text_ExplainBikeVoucher::
-    .string "Take that BIKE VOUCHER to the\n"
-    .string "BIKE SHOP in CERULEAN CITY.\p"
-    .string "Exchange that for a BICYCLE\n"
-    .string "free of charge!\p"
-    .string "Don't worry, my favorite FEAROW\n"
-    .string "will FLY me anywhere I need to go.\p"
-    .string "So, I have no need for a BICYCLE.\p"
-    .string "I hope you like cycling!$"
+    .string "Leve esse Vale Bicicleta à\n"
+    .string "Loja de Bicicletas na\l"
+    .string "Cidade de Cerulean.\p"
+    .string "Troque-o por uma Bicicleta, de\n"
+    .string "graça!\p"
+    .string "Não se preocupe, o meu Fearow\n"
+    .string "favorito me leva voando a qualquer\l"
+    .string "lugar.\p"
+    .string "Por isso, não preciso de Bicicleta.\p"
+    .string "Espero que goste de pedalar!$"
 
 VermilionCity_PokemonFanClub_Text_ComeBackToHearStory::
-    .string "Oh. Come back when you want to\n"
-    .string "hear my story!$"
+    .string "Ah. Volte quando quiser ouvir a minha\n"
+    .string "história!$"
 
 VermilionCity_PokemonFanClub_Text_DidntComeToSeeAboutMonsAgain::
-    .string "Hello, {PLAYER}!\p"
-    .string "Did you come see me about my\n"
-    .string "POKéMON again?\p"
-    .string "No?\n"
-    .string "Too bad!$"
+    .string "Olá, {PLAYER}!\p"
+    .string "Você veio me ver de novo por causa\n"
+    .string "dos meus Pokémon?\p"
+    .string "Não?\n"
+    .string "Que pena!$"
 
 VermilionCity_PokemonFanClub_Text_MakeRoomForThis::
-    .string "Make room for this!$"
+    .string "Abra espaço para isto!$"
 
 VermilionCity_PokemonFanClub_Text_ChairmanVeryVocalAboutPokemon::
-    .string "Our CHAIRMAN is very vocal about\n"
-    .string "POKéMON.$"
+    .string "O nosso Presidente é muito falante\n"
+    .string "quando o assunto é Pokémon.$"
 
 VermilionCity_PokemonFanClub_Text_ListenPolitelyToOtherTrainers::
-    .string "Let's all listen politely to other\n"
-    .string "TRAINERS!$"
+    .string "Vamos ouvir os outros\n"
+    .string "Treinadores com educação!$"
 
 VermilionCity_PokemonFanClub_Text_SomeoneBragsBragBack::
-    .string "If someone brags, brag right back!$"
+    .string "Se alguém se gabar, gabe-se de\n"
+    .string "volta!$"
 
 VermilionCity_PokemonFanClub_Text_ChairmanReallyAdoresHisMons::
-    .string "Our CHAIRMAN really does adore his\n"
-    .string "POKéMON.\p"
-    .string "But the person who is most liked by\n"
-    .string "POKéMON is DAISY, I think.$"
+    .string "O nosso Presidente realmente adora os\n"
+    .string "Pokémon dele.\p"
+    .string "Mas a pessoa de quem os Pokémon mais\n"
+    .string "gostam é a Daisy, eu acho.$"

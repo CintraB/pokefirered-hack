@@ -282,9 +282,9 @@ void ShowEasyChatScreen(void)
     DoEasyChatScreen(gSpecialVar_0x8004, words, CB2_ReturnToFieldContinueScript);
 }
 
-static const u16 sECPhrase_MysteryEventIsExciting[] = {
-    EC_WORD_MYSTERY,
+static const u16 sECPhrase_MysteryEventIsExciting[] = { // PT-BR: "evento misterioso é emocionante"
     EC_WORD_EVENT,
+    EC_WORD_MYSTERY,
     EC_WORD_IS,
     EC_WORD_EXCITING
 };
@@ -294,11 +294,11 @@ static void CompareProfileResponseWithPassphrase(void)
     gSpecialVar_0x8004 = IsPhraseDifferentThanPlayerInput(sECPhrase_MysteryEventIsExciting, NELEMS(sECPhrase_MysteryEventIsExciting));
 }
 
-static const u16 sECPhrase_LinkTogetherWithAll[] = {
+static const u16 sECPhrase_LinkTogetherWithAll[] = { // PT-BR: "conexão com todos juntos"
     EC_WORD_LINK,
-    EC_WORD_TOGETHER,
     EC_WORD_WITH,
-    EC_WORD_ALL
+    EC_WORD_ALL,
+    EC_WORD_TOGETHER
 };
 
 static void CompareQuestionnaireResponseWithPassphrase(void)
