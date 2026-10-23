@@ -108,7 +108,7 @@ Route12_Text_RouteSign::
     .string "Ao norte: Cidade de Lavender$"
 
 Route12_Text_SportfishingArea::
-    .string "Área de Pesca Esportiva$"
+    .string "Pesca Esportiva$"
 
 Route12_Text_JesIntro::
     .string "JES: Se eu ganhar, vou pedir a GIA\n"

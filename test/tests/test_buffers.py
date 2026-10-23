@@ -193,21 +193,20 @@ def test_repo_atual_sem_estouro_novo(ctx):
     assert _failures(ctx) == []
 
 
-def test_estouro_conhecido_vira_aviso_e_some_quando_corrigido(ctx):
-    """"Fruta Ocipêra" (13 letras) passa da linha de 27 bytes da bolsa de frutas (achado da T4 na
-    hack-switch): fica em KNOWN_OVERFLOWS, como aviso, até a frente dona encurtar o nome."""
+def test_nome_de_fruta_cabe_na_linha_da_bolsa_de_frutas(ctx):
+    """Cada linha da lista da bolsa de frutas tem 27 bytes (src/berry_pouch.c:645): 15 de enfeite
+    ({FONT_SMALL}{NO}{CLEAR 0x01}, 2 dígitos, espaço, {FONT_NORMAL}, EOS) + o nome, que vai até 12.
+    "Fruta Ocipêra" (13 letras, GO) dava 28 e foi cortada para "Fruta Ocipêr" (22/10): sem estouro
+    conhecido, e a medida continua reprovando o nome de 13 letras."""
     wepear = ("src/data/items.json", "ITEM_WEPEAR_BERRY.name")
-    found = _failures(ctx, "ITEM_WEPEAR_BERRY", known=[])
-    assert found and "sListMenuStrbuf[27]" in found[0] and "28 bytes" in found[0]
-    warnings = [r.detail for r in bf.check_buffers(REPO_ROOT, ctx=ctx) if r.status == "aviso"]
-    assert any("ITEM_WEPEAR_BERRY" in w and "conhecido" in w for w in warnings)
-    fixed = bf.with_texts(ctx, {wepear: "Fruta Wepear"})
-    results = bf.check_buffers(REPO_ROOT, ctx=fixed)
-    assert not [r for r in results if r.status == "falha"]
-    assert any("não ocorre mais" in r.detail and "ITEM_WEPEAR_BERRY" in r.detail for r in results)
-    # preso ao texto: outro nome de 13 letras, com o mesmo total, volta a reprovar
-    other = _failures(bf.with_texts(ctx, {wepear: "Fruta Ocipêro"}), "ITEM_WEPEAR_BERRY")
-    assert other and "28 bytes" in other[0]
+    assert bf.KNOWN_OVERFLOWS == []
+    assert _failures(ctx, "ITEM_WEPEAR_BERRY") == []
+    assert not [r for r in bf.check_buffers(REPO_ROOT, ctx=ctx) if "ITEM_WEPEAR_BERRY" in r.detail]
+    assert ctx.by_key[wepear].texts == ("Fruta Ocipêr",)
+    for name in ("Fruta Ocipêra", "Fruta Ocipêro"):
+        found = _failures(bf.with_texts(ctx, {wepear: name}), "ITEM_WEPEAR_BERRY")
+        assert found and "sListMenuStrbuf[27]" in found[0] and "28 bytes" in found[0], name
+    assert _failures(bf.with_texts(ctx, {wepear: "Fruta Wepear"}), "ITEM_WEPEAR_BERRY") == []
 
 
 def test_origem_com_indice_aninhado_entra_no_inventario(ctx):
