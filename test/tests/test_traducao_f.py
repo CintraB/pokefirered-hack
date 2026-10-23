@@ -290,10 +290,18 @@ def test_descricao_de_habilidade_cabe_numa_linha_de_230_px_e_51_letras():
     assert bad == []
 
 
+# Caixa alta do jogo inglês ("ATTACK", "POKéMON"): no texto achatado (quebra -> espaço) e sem códigos
+CAPS = re.compile(r"(?<![\w{])[A-Z]{3,}")
+
+
+def _caps(text: str) -> bool:
+    return bool(CAPS.search(re.sub(r"\{[^}]*\}", "", _flat(text))))
+
+
 def test_f3_sem_unidade_imperial_nem_caixa_alta_do_jogo_ingles():
     texts = {**_move_descriptions(), **_ability_descriptions()}
-    imperial = [k for k, t in texts.items() if IMPERIAL.search(t)]
-    caps = [k for k, t in texts.items() if re.search(r"(?<![\w{])[A-Z]{3,}(?![\w}])", t)]
+    imperial = [k for k, t in texts.items() if IMPERIAL.search(_flat(t))]
+    caps = [k for k, t in texts.items() if _caps(t)]
     assert (imperial, caps) == ([], [])
 
 
@@ -314,18 +322,78 @@ def test_f3_termos_compostos_nao_sao_partidos_na_quebra():
     assert split == []
 
 
+# Número por extenso + quebra + o que ele conta ("cinco\nvezes", "dois\nturnos"), como o NUMBER_BREAK_UNIT
+# da F2: a quebra só pode vir depois do conectivo de uma faixa ("de duas a\ncinco vezes"). "um/uma" fica de
+# fora (é artigo na maioria das descrições: "um\nalvo").
+NUMBER_WORD_BREAK = re.compile(r"\b(?:duas|dois|três|quatro|cinco|seis|sete|oito|nove|dez|\d+º?)"
+                               + re.escape(BS_N) + r"(?!(?:a|ou|e)\b)", re.I)
+
+
+def test_f3_numero_por_extenso_nao_fica_partido_do_que_conta():
+    found = [f"{k}: {t[max(0, m.start() - 10):m.end() + 8]!r}" for k, t in _move_descriptions().items()
+             for m in NUMBER_WORD_BREAK.finditer(t)]
+    assert found == []
+
+
+def test_f3_regex_de_numero_partido_reconhece_os_casos_da_revisao():
+    assert NUMBER_WORD_BREAK.search(r"de duas a cinco\nvezes.")
+    assert NUMBER_WORD_BREAK.search(r"por dois\nturnos")
+    assert NUMBER_WORD_BREAK.search(r"duas a cinco\nsementes")
+    assert not NUMBER_WORD_BREAK.search(r"de duas a\ncinco vezes.")
+    assert not NUMBER_WORD_BREAK.search(r"por dois a\ntrês turnos")
+    assert not NUMBER_WORD_BREAK.search(r"acerta um\nalvo")
+
+
+READER_F3 = re.compile(r"\b(?:você|vocês|te|lhe)\b", re.I)
+
+
+def _addresses_player(text: str) -> bool:
+    return "{PLAYER}" in text or bool(READER_F3.search(_flat(text)))
+
+
 def test_f3_nao_dirige_fala_ao_jogador():
     # descrições falam do usuário/alvo, nunca "você": sem gênero do jogador por construção
     texts = {**_move_descriptions(), **_ability_descriptions()}
-    assert [k for k, t in texts.items() if re.search(r"\b(?:você|vocês|te|lhe|{PLAYER})\b", t, re.I)] == []
+    assert [k for k, t in texts.items() if _addresses_player(t)] == []
+
+
+def test_f3_guardas_veem_depois_da_quebra():
+    # controles positivos: a regex roda no texto achatado, então `\n` literal não a cega
+    assert _addresses_player(r"serve para\nvocê usar")
+    assert _addresses_player(r"protege {PLAYER} do golpe")
+    assert not _addresses_player(r"o usuário\nusa o golpe")
+    assert _caps(r"reduz o\nATTACK do alvo")
+    assert _caps(r"um POKéMON selvagem")
+    assert not _caps(r"reduz o Atq. Esp.\ndo alvo em 20 PS")
 
 
 def test_f3_atributos_e_status_no_vocabulario_do_glossario():
     texts = {**_move_descriptions(), **_ability_descriptions()}
     old = re.compile(r"\b(?:alvo selvagem|HP|ATK|ATAQUE|DEFESA|VELOCIDADE|Ataque Esp\.|Defesa Esp\.|Atq Esp|Def Esp"
-                     r"|foe|inimigo)\b")
+                     r"|foe|inimig\w*)\b")
     found = [f"{k}: {m.group(0)}" for k, t in texts.items() for m in [old.search(_flat(t))] if m]
     assert found == []
+
+
+TM_CASE_PX = 18 * 8                 # estojo/loja de MT: janela de 18 tiles, x = 2, letterSpacing 1
+
+
+def test_f3_descricao_de_golpe_cabe_com_espacamento_1_do_estojo_de_mt():
+    # tm_case.c e shop.c imprimem com letterSpacing = 1, que a regra do check_text não conta:
+    # largura + 1 px por letra + x = 2 (vale para todos os golpes, não só os 58 de MT/MO)
+    wide = [k for k, t in _move_descriptions().items()
+            if max(line_widths(ln)[0] + len(ln) + 2 for ln in t.split(BS_N)) > TM_CASE_PX]
+    assert wide == []
+
+
+def test_f3_minors_da_revisao():
+    moves = {k[len("gMoveDescription_"):]: _flat(t) for k, t in _move_descriptions().items()}
+    assert "ficando com 1 PS" in moves["Endure"]
+    assert "do usuário" in moves["SilverWind"]
+    assert "para o usuário" in moves["LeechSeed"] and moves["LeechSeed"].count("alvo") == 1
+    assert "é feito rir" not in moves["Tickle"] and "Faz o alvo rir" in moves["Tickle"]
+    assert moves["Sandstorm"].startswith("Tempestade de areia")
+    assert "oponente" in moves["Spikes"]
 
 
 def test_golpes_citados_na_descricao_usam_o_nome_do_golpe():
