@@ -426,19 +426,19 @@ void HelpSystemRenderText(u8 fontId, u8 * dest, const u8 * src, u8 x, u8 y, u8 w
                 {
                     if (FlagGet(FLAG_SYS_NOT_SOMEONES_PC) == TRUE)
                     {
-                        if (gString_Bill[i] == EOS)
+                        if (gText_BillSPc[i] == EOS)
                         {
                             break;
                         }
-                        DecompressAndRenderGlyph(fontId, gString_Bill[i], &srcBlit, &destBlit, dest, x, y, width, height);
+                        DecompressAndRenderGlyph(fontId, gText_BillSPc[i], &srcBlit, &destBlit, dest, x, y, width, height);
                     }
                     else
                     {
-                        if (gString_Someone[i] == EOS)
+                        if (gText_SomeoneSPc[i] == EOS)
                         {
                             break;
                         }
-                        DecompressAndRenderGlyph(fontId, gString_Someone[i], &srcBlit, &destBlit, dest, x, y, width, height);
+                        DecompressAndRenderGlyph(fontId, gText_SomeoneSPc[i], &srcBlit, &destBlit, dest, x, y, width, height);
                     }
                     if (fontId == FONT_SMALL)
                     {

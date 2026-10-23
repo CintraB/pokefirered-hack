@@ -1,36 +1,37 @@
 @ Male and female text identical, differ (presumably) in JP
 Route12_NorthEntrance_2F_Text_TakeTMDontNeedAnymoreMale::
-    .string "My POKéMON's ashes are stored in\n"
-    .string "POKéMON TOWER.\p"
-    .string "You can have this TM.\n"
-    .string "I don't need it anymore…$"
+    .string "As cinzas do meu Pokémon estão\n"
+    .string "guardadas na Torre Pokémon.\p"
+    .string "Pode ficar com esta MT.\n"
+    .string "Eu não preciso mais dela…$"
 
 Route12_NorthEntrance_2F_Text_TakeTMDontNeedAnymoreFemale::
-    .string "My POKéMON's ashes are stored in\n"
-    .string "POKéMON TOWER.\p"
-    .string "You can have this TM.\n"
-    .string "I don't need it anymore…$"
+    .string "As cinzas do meu Pokémon estão\n"
+    .string "guardadas na Torre Pokémon.\p"
+    .string "Pode ficar com esta MT.\n"
+    .string "Eu não preciso mais dela…$"
 
 Route12_NorthEntrance_2F_Text_ReceivedTM27FromLittleGirl::
-    .string "{PLAYER} received TM27\n"
-    .string "from the little girl.$"
+    .string "{PLAYER} recebeu a MT27\n"
+    .string "da menininha.$"
 
 Route12_NorthEntrance_2F_Text_ExplainTM27::
-    .string "TM27 is a move called RETURN…\p"
-    .string "If you treat your POKéMON good,\n"
-    .string "it will return your love by working\l"
-    .string "its hardest in battle.$"
+    .string "A MT27 contém um golpe chamado\n"
+    .string "Retorno…\p"
+    .string "Se você trata bem o seu Pokémon, ele\n"
+    .string "retribui o seu carinho se esforçando\l"
+    .string "ao máximo na batalha.$"
 
 Route12_NorthEntrance_2F_Text_DontHaveRoomForThis::
-    .string "You don't have room for this.$"
+    .string "Você não tem espaço para isto.$"
 
 Route12_NorthEntrance_2F_Text_TheresManFishing::
-    .string "Let's see what the binoculars have\n"
-    .string "to show…\p"
-    .string "There's a man fishing!$"
+    .string "Vamos ver o que os binóculos têm a\n"
+    .string "mostrar…\p"
+    .string "Tem um homem pescando!$"
 
 Route12_NorthEntrance_2F_Text_ItsPokemonTower::
-    .string "Let's see what the binoculars have\n"
-    .string "to show…\p"
-    .string "It's POKéMON TOWER!$"
+    .string "Vamos ver o que os binóculos têm a\n"
+    .string "mostrar…\p"
+    .string "É a Torre Pokémon!$"
 
