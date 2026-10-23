@@ -68,8 +68,8 @@ ViridianCity_Text_ThatWasEducationalTakeThis::
 ViridianCity_Text_WatchThatToLearnBasics::
     .string "Se houver algo que você não\n"
     .string "entenda, assista a isso.\p"
-    .string "Ele ensina o básico para quem quer\n"
-    .string "treinar Pokémon.$"
+    .string "O programa ensina o básico para quem\n"
+    .string "quer treinar Pokémon.$"
 
 ViridianCity_Text_WeakenMonsFirstToCatch::
     .string "Bem, agora que tomei o meu café, é\n"

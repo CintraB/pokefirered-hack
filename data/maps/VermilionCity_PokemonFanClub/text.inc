@@ -85,7 +85,7 @@ VermilionCity_PokemonFanClub_Text_ChairmanVeryVocalAboutPokemon::
     .string "quando o assunto é Pokémon.$"
 
 VermilionCity_PokemonFanClub_Text_ListenPolitelyToOtherTrainers::
-    .string "Vamos todos ouvir os outros\n"
+    .string "Vamos ouvir os outros\n"
     .string "Treinadores com educação!$"
 
 VermilionCity_PokemonFanClub_Text_SomeoneBragsBragBack::

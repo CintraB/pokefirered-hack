@@ -26,7 +26,7 @@ Text_YouRejectIt::
 
 Text_LetMeConferUltimateMove::
     .string "Você permite?\p"
-    .string "Então deixe-me conferir o golpe\n"
+    .string "Então deixe-me conceder o golpe\n"
     .string "supremo {STR_VAR_2} ao seu\l"
     .string "{STR_VAR_1}.\p"
     .string "Ggggrah-awooo!$"

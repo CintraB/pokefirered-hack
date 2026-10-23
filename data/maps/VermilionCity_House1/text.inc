@@ -25,7 +25,7 @@ VermilionCity_House1_Text_OhThatsSoDisappointing::
 
 VermilionCity_House1_Text_HowAreTheFishBiting::
     .string "Olá, {PLAYER}!\p"
-    .string "Como estão os peixes mordendo?$"
+    .string "Os peixes estão beliscando a isca?$"
 
 VermilionCity_House1_Text_NoRoomForNiceGift::
     .string "Ah, não!\p"

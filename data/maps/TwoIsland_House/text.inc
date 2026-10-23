@@ -1,5 +1,5 @@
 TwoIsland_House_Text_TeachMonMoveForMushroom::
-    .string "Eu sou o Maníaco dos Golpes Pokémon.\p"
+    .string "Eu sou o Maníaco dos Golpes.\p"
     .string "Conheço todos os golpes que os\n"
     .string "Pokémon aprendem enquanto crescem.\p"
     .string "Também sou maníaco por cogumelos.\p"

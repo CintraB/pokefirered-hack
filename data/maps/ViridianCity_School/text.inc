@@ -37,10 +37,10 @@ ViridianCity_School_Text_NotebookThirdPage::
 
 ViridianCity_School_Text_NotebookFourthPage::
     .string "Quarta página…\p"
-    .string "O objetivo final de todo Treinador\n"
-    .string "Pokémon é simples.\p"
-    .string "É derrotar os oito principais Líderes\n"
-    .string "de Ginásio Pokémon.\p"
+    .string "O objetivo final de todo\n"
+    .string "Treinador Pokémon é simples.\p"
+    .string "É derrotar os oito principais\n"
+    .string "Líderes de Ginásio Pokémon.\p"
     .string "Faça isso para ganhar o direito de\n"
     .string "enfrentar…\p"
     .string "A Elite Quatro da Liga Pokémon!$"
@@ -53,9 +53,9 @@ ViridianCity_School_Text_HeyDontLookAtMyNotes::
     .string "Não olhe as minhas anotações!$"
 
 ViridianCity_School_Text_BlackboardListsStatusProblems::
-    .string "O quadro-negro lista os problemas de\n"
-    .string "status dos Pokémon durante as\l"
-    .string "batalhas.$"
+    .string "O quadro-negro lista os\n"
+    .string "problemas de status dos Pokémon\l"
+    .string "durante as batalhas.$"
 
 ViridianCity_School_Text_ReadWhichTopic::
     .string "Qual tópico você quer ler?$"

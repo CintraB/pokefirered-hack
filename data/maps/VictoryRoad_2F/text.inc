@@ -18,8 +18,8 @@ VictoryRoad_2F_Text_DaisukeDefeat::
     .string "Atchá!$"
 
 VictoryRoad_2F_Text_DaisukePostBattle::
-    .string "Se ficar travado, tente mover alguns\n"
-    .string "pedregulhos.$"
+    .string "Se não conseguir passar, tente mover\n"
+    .string "alguns pedregulhos.$"
 
 VictoryRoad_2F_Text_NelsonIntro::
     .string "Ah, então você deseja desafiar a\n"

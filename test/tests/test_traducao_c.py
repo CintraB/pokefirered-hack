@@ -221,13 +221,28 @@ def _texto_por_rotulo(rel: str) -> dict[str, str]:
     return {k: "".join(v) for k, v in textos.items()}
 
 
-@pytest.mark.parametrize("rel", ARQUIVOS)
-def test_nome_do_glossario_nao_e_partido_na_quebra(rel):
-    """Nome de várias palavras do glossário (lugar, personagem, golpe, item) ou "Equipe Rocket"
-    fica inteiro na mesma linha, nunca partido pela quebra."""
+def _plurais(palavra: str) -> set[str]:
+    """Plurais PT-BR de uma palavra (variantes): +s; -r/-z -> +es; -m -> -ns; -ão -> -ões/-ães (+ -ãos); -l -> -is."""
+    out = set() if palavra.endswith("s") else {palavra + "s"}
+    if palavra.endswith("ão"):
+        out |= {palavra[:-2] + "ões", palavra[:-2] + "ães"}
+    elif palavra.endswith(("r", "z")):
+        out.add(palavra + "es")
+    elif palavra.endswith("m"):
+        out.add(palavra[:-1] + "ns")
+    elif palavra.endswith("l"):
+        out.add(palavra[:-1] + "is")
+    return out
+
+
+def _nomes_inteiros() -> set[str]:
+    """Termos de várias palavras que não podem ser partidos pela quebra, com os plurais (uma palavra
+    no plural de cada vez: "Líderes de Ginásio", "Poké Bolas", "problemas de status")."""
     glossario = json.loads((REPO_ROOT / "test" / "esteira" / "glossario.json").read_text(encoding="utf-8"))
+    # categoria interface inclusive (as Insígnias, "problema de status"...); só ficam de fora os termos com
+    # placeholder e os que não são nome (rótulos de tela com 2 palavras comuns)
     nomes = {t["pt"] for t in glossario["termos"]
-             if " " in t["pt"] and len(t["pt"]) > 5 and "{" not in t["pt"] and t["categoria"] != "interface"}
+             if " " in t["pt"] and len(t["pt"]) > 5 and "{" not in t["pt"]}
     nomes |= {"Equipe Rocket", "Poké Bola", "Poké Bolas", "Dojo de Luta", "Mestre de Caratê",
               "Deslize de Pedras", "Dança das Espadas", "Repelente Máximo", "Ataque Especial",
               "Defesa Especial", "Dentes de Ouro",
@@ -244,22 +259,59 @@ def test_nome_do_glossario_nao_e_partido_na_quebra(rel):
               "Cidade de Cerulean", "Cidade de Saffron", "Cidade de Pallet", "Via Subterrânea", "Porto Vermilion",
               "Estrada da Vitória", "Túnel de Pedra", "Liga Pokémon", "Sala União", "balsa Seagallop",
               "Seagallop Hi-Speed", "Explorador VS", "Passe 7 Cores", "Passe Triplo", "Fã-clube Pokémon",
-              "TV Educativa", "Ginásio Pokémon", "Rocha Umbigo", "Ilha do Nascimento", "Prof. Carvalho"}
-    # plural simples ("Irmãos Rocket", "Motoqueiros ..."): "s" na última palavra de cada trecho
+              "TV Educativa", "Ginásio Pokémon", "Rocha Umbigo", "Ilha do Nascimento", "Prof. Carvalho",
+              "Treinador Pokémon", "Insígnia Trovão", "Insígnia Terra"}
+    # plural PT-BR ("Líderes de Ginásio", "Irmãos Rocket", "problemas de status"): uma palavra de cada vez
     for nome in list(nomes):
         palavras = nome.split(" ")
         for j, p in enumerate(palavras):
-            if p[-1:].isalpha() and not p.endswith("s"):
-                nomes.add(" ".join(palavras[:j] + [p + "s"] + palavras[j + 1:]))
+            if p[-1:].isalpha():
+                for plural in _plurais(p):
+                    nomes.add(" ".join(palavras[:j] + [plural] + palavras[j + 1:]))
+    return nomes
+
+
+def _termos_partidos(textos: dict[str, str], nomes: set[str] | None = None) -> list[str]:
+    """"rótulo: 'termo'" de cada termo inteiro que a quebra (\\n ou \\l, nunca \\p) parte em duas linhas."""
+    nomes = _nomes_inteiros() if nomes is None else nomes
     quebra = "(?: |" + chr(92) * 2 + "[nl])"
     partidos = []
-    for rotulo, texto in _texto_por_rotulo(rel).items():
+    for rotulo, texto in textos.items():
         for nome in nomes:
             padrao = quebra.join(re.escape(p) for p in nome.split(" "))
             for m in re.finditer(padrao, texto):
                 if chr(92) in m.group(0):
                     partidos.append(f"{rotulo}: {nome!r}")
-    assert partidos == []
+    return partidos
+
+
+@pytest.mark.parametrize("rel", ARQUIVOS)
+def test_nome_do_glossario_nao_e_partido_na_quebra(rel):
+    """Nome de várias palavras do glossário (lugar, personagem, golpe, item, insígnia, status) ou
+    "Equipe Rocket" fica inteiro na mesma linha, nunca partido pela quebra; vale também no plural."""
+    assert _termos_partidos(_texto_por_rotulo(rel)) == []
+
+
+@pytest.mark.parametrize("texto, termo", [
+    # os 3 casos que passaram pela C3 (b541c47ca): insígnia (categoria interface), plural com -es, status
+    (r"Está bem, então, pegue a Insígnia\nTrovão!", "Insígnia Trovão"),
+    (r"É derrotar os oito principais Líderes\nde Ginásio Pokémon.", "Líderes de Ginásio"),
+    (r"O quadro-negro lista os problemas de\nstatus dos Pokémon", "problemas de status"),
+    (r"pegue a Insígnia\lTerra!", "Insígnia Terra"),
+    (r"Os Treinadores\nPokémon", "Treinadores Pokémon"),
+])
+def test_termo_partido_e_detectado(texto, termo):
+    """Mutação: o teste de quebra pega termo de interface e plural em -es/-s, e não acusa o termo inteiro."""
+    assert _termos_partidos({"x": texto}) not in ([], None), termo
+    assert _termos_partidos({"x": texto.replace(chr(92) + "n", " ").replace(chr(92) + "l", " ")}) == []
+
+
+@pytest.mark.parametrize("palavra, plural", [
+    ("Líder", "Líderes"), ("Treinador", "Treinadores"), ("Ginásio", "Ginásios"), ("Pokémon", "Pokémons"),
+    ("Bom", "Bons"), ("Nacional", "Nacionais"), ("Estação", "Estações"), ("Luz", "Luzes"), ("Cartão", "Cartãos"),
+])
+def test_plural_pt_br_do_termo(palavra, plural):
+    assert plural in _plurais(palavra)
 
 
 # {STR_VAR_n}/{B_BUFF*}: a esteira mede esses placeholders como 0 px; aqui valem 10 letras largas
@@ -313,7 +365,7 @@ def test_jogador_sem_genero_marcado(rel):
     corpo = "".join(re.findall(r'\.string "(.*)"', (REPO_ROOT / rel).read_text(encoding="utf-8")))
     corpo = re.sub(r"\\[nlp]", " ", corpo)
     # "Rumo ao título de campeão!" (Gym Guy, C3) nomeia o título, não o jogador: o "campeão" avulso segue proibido
-    corpo = corpo.replace("título de campeão", "título")
+    corpo = corpo.replace("Rumo ao título de campeão!", "Rumo ao título!")
     assert [f for f in JOGADOR_COM_GENERO if f in corpo] == []
 
 
@@ -407,6 +459,15 @@ GENDERED_ADJ_R3 = re.compile(
     rf"(?!{_INTENS_R3}\b)(?!\w*ndo\b)(\w{{3,}}(?:o|ado|ido|oso|udo))\b")
 # "você é/está <palavra em -o>" que não marca o gênero do jogador (palavra -> motivo)
 GENDERED_ADJ_R3_OK: dict[str, str] = {}
+# Sujeito oculto ("Se ficar travado", "Quando estiver cansado", "Caso fique preso"): subordinada com
+# ficar/estar/ser/sentir-se + adjetivo/particípio masculino, sem "você" antes (o jogador é o sujeito)
+_VERBO_OCULTO_R3 = (r"(?:ficar|fique|ficou|estiver|estar|esteja|estava|for|seja|ser|sentir-se|se sentir|se sentiu|"
+                    r"parecer|pareça)")
+GENDERED_OCULTO_R3 = re.compile(
+    rf"(?<!\w)(?:[Ss]e|[Qq]uando|[Cc]aso|[Ee]nquanto|[Dd]epois que)\s+(?:não\s+)?{_VERBO_OCULTO_R3}\s+"
+    rf"(?:{_INTENS_R3}\s+)?(?!{_INTENS_R3}\b)(?!\w*ndo\b)(\w{{3,}}o)\b")
+# adjetivo em -o depois de "se for/estiver..." que não marca o gênero do jogador (palavra -> motivo)
+GENDERED_OCULTO_R3_OK: dict[str, str] = {"preciso": "impessoal: \"se for preciso\""}
 
 
 def _c3_corpo(rel: str) -> str:
@@ -424,7 +485,29 @@ def test_c3_nenhum_padrao_de_genero_do_jogador(rel):
     corpo = _c3_corpo(rel)
     achados = [m.group(0) for p in PLAYER_GENDERED_R3 for m in p.finditer(corpo)]
     achados += [m.group(0) for m in GENDERED_ADJ_R3.finditer(corpo) if m.group(1) not in GENDERED_ADJ_R3_OK]
+    achados += [m.group(0) for m in GENDERED_OCULTO_R3.finditer(corpo) if m.group(1) not in GENDERED_OCULTO_R3_OK]
     assert achados == []
+
+
+@pytest.mark.parametrize("bruto", [
+    "Se ficar travado, tente mover alguns pedregulhos.",         # o caso que passou pela C3 (b541c47ca)
+    r"Se ficar\npreso, chame.", "Quando estiver cansado, descanse.", "Caso fique ocupado, volte depois.",
+    "Se não estiver preparado, espere.", r"Se se sentir\lsozinho, fale.", "Se for tolo, desista.",
+])
+def test_c3_sujeito_oculto_com_adjetivo_masculino_e_detectado(bruto):
+    flat = re.sub(r"\\[nlp]", " ", bruto)
+    assert GENDERED_OCULTO_R3.search(flat), bruto
+
+
+@pytest.mark.parametrize("bruto", [
+    "Se não conseguir passar, tente mover alguns pedregulhos.", "Se for preciso, volte.",
+    "Se estiver na região da Rota 2, procure por ele.", "Quando for a hora, avise.", "Se for professor, venha.",
+    "Quando estiver ficando cansado", "Se ficar com medo, fuja.", "Se for o caso, diga.",
+])
+def test_c3_sujeito_oculto_nao_acusa_falso_positivo(bruto):
+    flat = re.sub(r"\\[nlp]", " ", bruto)
+    achados = [m.group(0) for m in GENDERED_OCULTO_R3.finditer(flat) if m.group(1) not in GENDERED_OCULTO_R3_OK]
+    assert achados == [], bruto
 
 
 @pytest.mark.parametrize("bruto", [

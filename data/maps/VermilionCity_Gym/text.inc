@@ -39,9 +39,9 @@ VermilionCity_Gym_Text_MakeRoomInYourBag::
 
 VermilionCity_Gym_Text_LtSurgeDefeat::
     .string "Isso é que é um choque!\p"
-    .string "Você é de verdade, recruta!\p"
-    .string "Está bem, então, pegue a Insígnia\n"
-    .string "Trovão!$"
+    .string "Você é fera mesmo, recruta!\p"
+    .string "Está bem, então, pegue a\n"
+    .string "Insígnia Trovão!$"
 
 VermilionCity_Gym_Text_TuckerIntro::
     .string "Quando eu estava no Exército, o\n"
