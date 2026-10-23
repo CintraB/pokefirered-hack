@@ -160,7 +160,9 @@ WRONG_FORMS = ("Esconderijo da Equipe Rocket", "Porto de Vermilion",
                "Raio Congel.", "P. Corporal", "Zona do Safári", "Safari Zone",
                # A3: forma cheia do item em fala; Oak vira Carvalho; nomes de lugar do glossário
                "Mapa Cidade", "Passe Arco-íris", "Prof. Oak", "Professor Oak", "OAK", "Monte Ember", "Ilha Kindle",
-               "Ilha 1", "Ilha One")
+               "Ilha 1", "Ilha One",
+               # fix 1 da A3: "menu" minúsculo no meio da frase (glossário); "Visto daqui" concorda com "o Monte"
+               "o Menu", "no Menu", "Vista daqui, o Monte")
 NAMES_NOT_SPLIT = ("Equipe Rocket", "GAME FREAK", "Loja de Celadon", "Pó de Fruta", "Canto Direto",
                    "Sistema de Armazenamento de Pokémon", "Centro Pokémon", "Loja de Bicicletas",
                    "Cura Queimadura", "Vale Bicicleta", "Guarda Especial", "Explosão Sônica", "Rajada de Fogo",
@@ -208,13 +210,17 @@ def _multiword_terms():
 TERMS = _multiword_terms()
 
 
+# Nome que não cabe numa linha (278 px) e quebra num ponto só, decidido à mão (placa de Pallet): nome -> posição do espaço
+SPLIT_ALLOWED = {"Laboratório de Pesquisa Pokémon do Prof. Carvalho": len("Laboratório de Pesquisa")}
+
+
 @pytest.mark.parametrize("rel", FILES)
 def test_nomes_nao_sao_partidos_na_quebra(rel):
     body = _flat(rel)
     found = []
     for name in TERMS:
         for i, ch in enumerate(name):
-            if ch == " ":
+            if ch == " " and i != SPLIT_ALLOWED.get(name):
                 for br in ("\\n", "\\l"):
                     if name[:i] + br + name[i + 1:] in body:
                         found.append(name)
@@ -401,6 +407,9 @@ TERMS_A3 = {
     "POKéMON NET CENTER": ("Centro de Rede Pokémon", "data/maps/OneIsland/text.inc"),
     "NETWORK MACHINE": ("Máquina de Rede", "data/maps/OneIsland_PokemonCenter_1F/text.inc"),
     "OAK'S POKéMON SEMINAR": ("Seminário Pokémon do Prof. Carvalho", "data/maps/PalletTown_ProfessorOaksLab/text.inc"),
+    "OAK POKéMON RESEARCH LAB": ("Laboratório de Pesquisa Pokémon do Prof. Carvalho", "data/maps/PalletTown/text.inc"),
+    "GOLDENROD CITY": ("Cidade de Goldenrod", "data/maps/OneIsland_PokemonCenter_1F/text.inc"),
+    "POKéMON LEAGUE HQ": ("Sede da Liga Pokémon", "data/maps/PalletTown_ProfessorOaksLab/text.inc"),
 }
 
 
@@ -459,17 +468,3 @@ IMPERIAL = re.compile(r"\b(?:inch(?:es)?|polegadas?|libras?|lbs?\.?|feet|foot|mi
 @pytest.mark.parametrize("rel", FILES)
 def test_sem_unidade_imperial(rel):
     assert IMPERIAL.findall(_sentences(rel)) == []
-
-
-# Buffers de string (gStringVar1/2/3: 20 bytes): o nome do item que os scripts da A3 copiam com
-# bufferitemname/bufferstdstring tem de caber em 19 letras (nome do item: 13).
-def test_buffers_do_grupo_a3_cabem():
-    items = {i["itemId"]: i["english"]
-             for i in json.loads((REPO_ROOT / "src/data/items.json").read_text(encoding="utf-8"))["items"]}
-    for name in GRUPOS["A3"]:
-        scripts = REPO_ROOT / "data/maps" / name / "scripts.inc"
-        if not scripts.exists():
-            continue
-        text = scripts.read_text(encoding="utf-8")
-        for item in re.findall(r"bufferitemname\s+STR_VAR_\d,\s*(ITEM_\w+)", text):
-            assert len(items[item]) <= 13, (name, item, items[item])

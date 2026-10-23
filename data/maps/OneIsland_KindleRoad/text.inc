@@ -20,7 +20,7 @@ OneIsland_KindleRoad_Text_AbigailPostBattle::
     .string "Talvez eu devesse usar um também…$"
 
 OneIsland_KindleRoad_Text_FinnIntro::
-    .string "Vista daqui, o Monte Brasa se ergue\n"
+    .string "Visto daqui, o Monte Brasa se ergue\n"
     .string "até o céu.$"
 
 OneIsland_KindleRoad_Text_FinnDefeat::
@@ -160,6 +160,6 @@ OneIsland_KindleRoad_Text_RouteSign::
     .string "Monte Brasa.$"
 
 OneIsland_KindleRoad_Text_EmberSpaSign::
-    .string "Acenda o Fogo do Seu Coração!\n"
+    .string "Acenda o fogo do seu coração!\n"
     .string "Spa da Brasa$"
 

@@ -191,8 +191,11 @@ def test_sete_lugares_encurtados_pela_regra_1():
         "CERULEAN CAVE": "Caverna Cerulean", "UNDERGROUND PATH": "Via Subterrânea",
         "THREE ISLE PATH": "Trilha Ilha Três", "BERRY FOREST": "Bosque das Frutas",
         "FIVE ISLE MEADOW": "Prado Ilha Cinco"}
+    # "POKéMON NET CENTER".isupper() é falso por causa do "é": troca antes de testar. Placas e nomes só citados em
+    # fala (obs com "placa" ou "não é nome de mapa") não passam pelo aviso de mapa e ficam de fora do limite.
     assert all(len(pt) <= 18 for t in GLOSSARY["termos"] if t["categoria"] == "lugar" for pt in [t["pt"]]
-               if t["en"].isupper())
+               if t["en"].replace("é", "E").isupper()
+               and "placa" not in t.get("obs", "") and "não é nome de mapa" not in t.get("obs", ""))
 
 
 def test_gary_e_a_primeira_sugestao_do_rival():

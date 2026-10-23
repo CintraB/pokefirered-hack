@@ -46,7 +46,7 @@ PalletTown_ProfessorOaksLab_Text_RivalGoToughenMyMon::
     .string "com o meu Pokémon pra ele ficar\l"
     .string "mais forte!\p"
     .string "{PLAYER}! Vovô!\n"
-    .string "Fui! Vê se não fica para trás!$"
+    .string "Fui! Vê se não fica pra trás!$"
 
 PalletTown_ProfessorOaksLab_Text_RivalGramps::
     .string "{RIVAL}: Vovô!$"
@@ -244,10 +244,10 @@ PalletTown_ProfessorOaksLab_Text_OaksLastMon::
     .string "Prof. Carvalho.$"
 
 PalletTown_ProfessorOaksLab_Text_PressStartToOpenMenu::
-    .string "Aperte START para abrir o Menu!$"
+    .string "Aperte START para abrir o menu!$"
 
 PalletTown_ProfessorOaksLab_Text_SaveOptionInMenu::
-    .string "A opção Salvar fica no Menu.\n"
+    .string "A opção Salvar fica no menu.\n"
     .string "Use-a com frequência.$"
 
 PalletTown_ProfessorOaksLab_Text_AllMonTypesHaveStrongAndWeakPoints::
