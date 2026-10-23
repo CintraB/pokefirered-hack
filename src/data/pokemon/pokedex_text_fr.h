@@ -1732,9 +1732,9 @@ const u8 gLugiaPokedexText[] = _(
 const u8 gLugiaPokedexTextUnused[] = _("");
 
 const u8 gHoOhPokedexText[] = _(
-    "Uma lenda diz que seu corpo brilha em sete\n"
-    "cores. Dizem que um arco-íris se forma\n"
-    "atrás dele quando voa.");
+    "Uma lenda diz que seu corpo brilha em\n"
+    "sete cores. Dizem que um arco-íris se\n"
+    "forma atrás dele quando voa.");
 
 const u8 gHoOhPokedexTextUnused[] = _("");
 
@@ -2237,9 +2237,9 @@ const u8 gNumelPokedexText[] = _(
 const u8 gNumelPokedexTextUnused[] = _("");
 
 const u8 gCameruptPokedexText[] = _(
-    "Se irritado, as corcovas das costas entram\n"
-    "em erupção, soltando uma chuva de lava\n"
-    "derretida. Vive nas crateras de vulcões.");
+    "Quando irritado, as corcovas das costas\n"
+    "entram em erupção, soltando uma chuva de\n"
+    "lava. Vive nas crateras de vulcões.");
 
 const u8 gCameruptPokedexTextUnused[] = _("");
 
@@ -2538,8 +2538,9 @@ const u8 gWalreinPokedexText[] = _(
 const u8 gWalreinPokedexTextUnused[] = _("");
 
 const u8 gClamperlPokedexText[] = _(
-    "É protegido por uma concha resistente. Uma\n"
-    "vez na vida, produz uma pérola magnífica.");
+    "É protegido por uma concha resistente.\n"
+    "Uma vez na vida, produz uma pérola\n"
+    "magnífica.");
 
 const u8 gClamperlPokedexTextUnused[] = _("");
 
@@ -2587,8 +2588,8 @@ const u8 gShelgonPokedexTextUnused[] = _("");
 
 const u8 gSalamencePokedexText[] = _(
     "Fica incontrolável quando enfurecido.\n"
-    "Destrói tudo com garras que despedaçam e\n"
-    "fogo.");
+    "Destrói tudo com garras despedaçadoras e\n"
+    "baforadas de fogo.");
 
 const u8 gSalamencePokedexTextUnused[] = _("");
 

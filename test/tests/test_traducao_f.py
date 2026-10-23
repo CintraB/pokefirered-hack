@@ -207,3 +207,148 @@ def test_regex_do_leitor_reconhece_o_caso_da_revisao():
     assert _gendered_reader_sentences("Se você sente que está sendo observado no escuro.")
     assert not _gendered_reader_sentences("Se você sentir olhos te vigiando no escuro, é o Haunter.")
     assert not _gendered_reader_sentences("Dizem que o Pokémon, ao ser perseguido, atrai o agressor.")
+
+
+# ---- Task F3: descrições de golpes e habilidades + minors da Pokédex -------------------------
+
+MOVES_C = "src/move_descriptions.c"
+ABILITIES_H = "src/data/text/abilities.h"
+MOVE_DESC_PX = 15 * 8 - 7          # janela mais estreita da descrição de golpe (resumo): 113 px
+MOVE_DESC_LINES = 4
+ABILITY_DESC_PX = 29 * 8 - 2       # janela da habilidade no resumo: 230 px
+ABILITY_DESC_CHARS = 51            # abilityDescStrBuf[52]
+
+
+def _read(rel: str) -> str:
+    return (REPO_ROOT / rel).read_text(encoding="utf-8")
+
+
+def _move_descriptions() -> dict[str, str]:
+    """rótulo -> texto cru (com as quebras `\n` literais) de cada gMoveDescription_*."""
+    out = {}
+    for m in re.finditer(r"const u8 (gMoveDescription_\w+)\[\] = _\((.*?)\);", _read(MOVES_C), re.S):
+        out[m.group(1)] = "".join(re.findall(r'"((?:[^"\\]|\\.)*)"', m.group(2)))
+    return out
+
+
+def _ability_descriptions() -> dict[str, str]:
+    return {m.group(1): m.group(2)
+            for m in re.finditer(r'static const u8 (s\w+Description)\[\] = _\("((?:[^"\\]|\\.)*)"\);', _read(ABILITIES_H))}
+
+
+def _flat(text: str) -> str:
+    return text.replace(BS_N, " ")
+
+
+def test_golpes_e_habilidades_cobertos_por_inteiro():
+    moves, abilities = _move_descriptions(), _ability_descriptions()
+    assert len(moves) == 354
+    assert len(abilities) == 78                       # 77 habilidades + "sem habilidade"
+    pointers = re.findall(r"\[MOVE_\w+\s*-\s*1\]\s*=\s*(gMoveDescription_\w+)", _read(MOVES_C))
+    assert sorted(pointers) == sorted(moves)          # nenhum golpe sem descrição
+
+
+@pytest.fixture(scope="module")
+def f3_entries():
+    return [e for e in ct._sources(REPO_ROOT)
+            if isinstance(e, ct._Entry) and e.file in (MOVES_C, ABILITIES_H)
+            and (e.label.startswith("gMoveDescription_") or e.label.endswith("Description"))]
+
+
+def test_f3_entradas_foram_extraidas(f3_entries):
+    assert len(f3_entries) == 354 + 78
+
+
+def test_f3_nenhum_ingles_sobrando(f3_entries):
+    assert ct.english_report(str(REPO_ROOT), f3_entries) == {}
+
+
+def test_f3_sem_achado_de_regra_nos_golpes_e_habilidades():
+    bad = []
+    for r in _results():
+        if r.status == "falha" and r.name.startswith("texto/") and (MOVES_C in r.detail or ABILITIES_H in r.detail):
+            if re.search(r"gMoveDescription_|Description", r.detail):
+                bad.append(f"{r.name}: {r.detail}")
+    assert bad == []
+
+
+def test_descricao_de_golpe_cabe_em_4_linhas_de_113_px():
+    wide, tall = [], []
+    for label, text in _move_descriptions().items():
+        if len(text.split(BS_N)) > MOVE_DESC_LINES:
+            tall.append(label)
+        if max(line_widths(text)) > MOVE_DESC_PX:
+            wide.append(label)
+    assert (wide, tall) == ([], [])
+
+
+def test_descricao_de_habilidade_cabe_numa_linha_de_230_px_e_51_letras():
+    bad = []
+    for label, text in _ability_descriptions().items():
+        if BS_N in text or max(line_widths(text)) > ABILITY_DESC_PX or len(text) > ABILITY_DESC_CHARS:
+            bad.append(label)
+    assert bad == []
+
+
+def test_f3_sem_unidade_imperial_nem_caixa_alta_do_jogo_ingles():
+    texts = {**_move_descriptions(), **_ability_descriptions()}
+    imperial = [k for k, t in texts.items() if IMPERIAL.search(t)]
+    caps = [k for k, t in texts.items() if re.search(r"(?<![\w{])[A-Z]{3,}(?![\w}])", t)]
+    assert (imperial, caps) == ([], [])
+
+
+# Termos que a quebra de linha não pode partir (atributos abreviados, valor + unidade, nomes de golpe citados)
+F3_PROTECTED = [r"(?:Atq\.|Def\.) Esp\.", r"\d+º? (?:PS|PP|turnos?|vezes)\b", r"Centro Pokémon", r"Tela de Luz",
+                r"tipos? (?:Normal|Lutador|Voador|Venenoso|Terrestre|Pedra|Inseto|Fantasma|Aço|Fogo|Água|Planta"
+                r"|Elétrico|Psíquico|Gelo|Dragão|Sombrio)\b"]
+
+
+def test_f3_termos_compostos_nao_sao_partidos_na_quebra():
+    split = []
+    for label, text in _move_descriptions().items():
+        flat_break = text.replace(BS_N, "\n")
+        for pattern in F3_PROTECTED:
+            for m in re.finditer(pattern.replace(" ", r"[ \n]"), flat_break):
+                if "\n" in m.group(0):
+                    split.append(f"{label}: {m.group(0)!r}")
+    assert split == []
+
+
+def test_f3_nao_dirige_fala_ao_jogador():
+    # descrições falam do usuário/alvo, nunca "você": sem gênero do jogador por construção
+    texts = {**_move_descriptions(), **_ability_descriptions()}
+    assert [k for k, t in texts.items() if re.search(r"\b(?:você|vocês|te|lhe|{PLAYER})\b", t, re.I)] == []
+
+
+def test_f3_atributos_e_status_no_vocabulario_do_glossario():
+    texts = {**_move_descriptions(), **_ability_descriptions()}
+    old = re.compile(r"\b(?:alvo selvagem|HP|ATK|ATAQUE|DEFESA|VELOCIDADE|Ataque Esp\.|Defesa Esp\.|Atq Esp|Def Esp"
+                     r"|foe|inimigo)\b")
+    found = [f"{k}: {m.group(0)}" for k, t in texts.items() for m in [old.search(_flat(t))] if m]
+    assert found == []
+
+
+def test_golpes_citados_na_descricao_usam_o_nome_do_golpe():
+    names = set(re.findall(r'_\("([^"]+)"\)', _read("src/data/text/move_names.h")))
+    moves = _move_descriptions()
+    cited = {"RapidSpin": ["Ligação", "Embrulho", "Sanguessuga", "Espinhos"], "BrickBreak": ["Tela de Luz", "Refletir"],
+             "SpitUp": ["Acumular"], "Swallow": ["Acumular"], "MagicCoat": ["Sanguessuga"]}
+    for key, wanted in cited.items():
+        text = _flat(moves[f"gMoveDescription_{key}"])
+        for name in wanted:
+            assert name in names, name
+            assert name in text, (key, name)
+
+
+def test_minors_da_pokedex_herdados_da_f2():
+    ho_oh = "".join(re.findall(r'"([^"]*)"', _body("gHoOhPokedexText")))
+    clamperl = "".join(re.findall(r'"([^"]*)"', _body("gClamperlPokedexText")))
+    camerupt = _flat("".join(re.findall(r'"([^"]*)"', _body("gCameruptPokedexText"))))
+    salamence = _flat("".join(re.findall(r'"([^"]*)"', _body("gSalamencePokedexText"))))
+    assert "sete" + BS_N + "cores" not in ho_oh and "sete cores" in _flat(ho_oh)
+    assert "Uma" + BS_N + "vez" not in clamperl and "Uma vez na vida" in _flat(clamperl)
+    assert "Se irritado" not in camerupt and "Quando irritado" in camerupt
+    assert "garras que despedaçam e fogo" not in salamence
+    for label in ("gHoOhPokedexText", "gClamperlPokedexText", "gCameruptPokedexText", "gSalamencePokedexText"):
+        text = "".join(re.findall(r'"([^"]*)"', _body(label)))
+        assert len(text.split(BS_N)) <= DEX_LINES and max(line_widths(text)) <= DEX_WIDTH_PX, label
