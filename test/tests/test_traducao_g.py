@@ -14,6 +14,7 @@ import re
 import shutil
 import subprocess
 import unicodedata
+import warnings
 from functools import lru_cache
 from pathlib import Path
 
@@ -920,14 +921,22 @@ def test_termos_novos_do_easy_chat_no_glossario():
             "KO direto!"} <= created
 
 
-# Caixa das palavras que são termos do glossário (fix 1 da G3). Regra: a palavra segue a caixa que o termo tem
-# no meio da frase nos textos já traduzidos ("Ovo" 22×0, "Bolsa" 25×4, "Líder" 16×2; "tipo" 0×80, "nome" 0×25).
-# Termo criado pela G3 sem ocorrência no texto usa a caixa do glossário ("Fita", "Base Secreta", "Loja Depart.");
-# "Torneio" é conferido à parte. Rótulos de menu (Sim, Não, Usar…) aparecem em minúscula no texto: ficam assim.
-# Itens e habilidades ficam fora: são nomes próprios ("Pegar" é habilidade; "reviver" é verbo, não o item Reviver).
-EC_TERM_CATEGORIES = ("interface", "batalha", "personagem", "lugar")
-# BALL (Passatempos) é a bola comum; "Bola" com maiúscula no texto é a Poké Bola abreviada
-EC_CASE_OTHER_MEANING = {"bola"}
+# Caixa das palavras que são termos de jogo (fix 1 e 2 da G3): o glossário prevalece. Cada palavra abaixo tem de
+# ser igual ao `pt` do termo `en` no glossario.json. A contagem no texto corrido mistura o substantivo comum
+# ("amante da natureza") com o termo de jogo ("a Natureza do Pokémon", help_system.inc, strings.c), por isso
+# fica só como alerta, sem reprovar.
+EC_GAME_TERMS = {
+    "EC_WORD_EGG": "EGG", "EC_WORD_BAG": "BAG", "EC_WORD_MAIL": "MAIL", "EC_WORD_CONTEST": "CONTEST",
+    "EC_WORD_LEADER": "LEADER", "EC_WORD_EVOLUTION": "EVOLUTION", "EC_WORD_NATURE": "nature",
+    "EC_WORD_SP_ABILITY": "ABILITY", "EC_WORD_TRAINER": "{PKMN} TRAINER", "EC_WORD_POKEMON": "POKéMON",
+    "EC_WORD_POKEDEX": "POKéDEX",
+    # termos criados pela G3 (bloco G3 do glossário)
+    "EC_WORD_BATTLE_TOWER": "BATTLE TOWER", "EC_WORD_BATTLE_ROOM": "BATTLE ROOM", "EC_WORD_SECRET_BASE": "SECRET BASE",
+    "EC_WORD_POKEBLOCK": "{POKEBLOCK}", "EC_WORD_PKRS": "{PK}RS", "EC_WORD_DEPT_STORE": "DEPT. STORE",
+    "EC_WORD_1_HIT_KO_EXCL": "1-HIT KO!", "EC_WORD_POKENAV": "POKéNAV", "EC_WORD_RIBBON": "RIBBON",
+}
+EC_TERM_CATEGORIES = ("interface", "batalha", "personagem", "lugar")   # só para o alerta do texto corrido
+EC_CASE_OTHER_MEANING = {"bola"}     # BALL (Passatempos) é a bola comum; "Bola" no texto é a Poké Bola
 
 
 def _running_text() -> str:
@@ -946,38 +955,57 @@ def test_capitalizacao_espelho_pula_reticencias_e_traco():
     assert capitalize_phrase("iiih !! desculpa") == "Iiih !! Desculpa"
 
 
+def _glossary() -> dict:
+    return json.loads((REPO_ROOT / "test" / "esteira" / "glossario.json").read_text(encoding="utf-8"))
+
+
+def _game_term_case_problems(text_of: dict[str, str], glossary: dict) -> list[str]:
+    by_en: dict[str, set[str]] = {}
+    for t in glossary["termos"]:
+        by_en.setdefault(t["en"], set()).add(t["pt"])
+    problems = []
+    for const, en in EC_GAME_TERMS.items():
+        word = text_of[const]
+        same = {pt for pt in by_en.get(en, ()) if pt.casefold() == word.casefold()}
+        if not same:
+            problems.append(f"{const} '{word}': termo '{en}' do glossário é {sorted(by_en.get(en, []))}")
+        elif word not in same:
+            problems.append(f"{const} '{word}': o glossário escreve {sorted(same)}")
+    return problems
+
+
 def test_palavra_que_e_termo_do_glossario_tem_a_caixa_do_termo():
-    g = json.loads((REPO_ROOT / "test" / "esteira" / "glossario.json").read_text(encoding="utf-8"))
-    terms: dict[str, set[str]] = {}
-    created = {t["pt"] for t in g["termos"] if t.get("frente") == "G3"}
-    for t in g["termos"]:
-        if t["categoria"] in EC_TERM_CATEGORIES and " " not in t["pt"].strip(". ") or t["pt"] in created:
-            terms.setdefault(t["pt"].casefold(), set()).add(t["pt"])
+    glossary = _glossary()
+    text_of = _ec_text_of()
+    assert _game_term_case_problems(text_of, glossary) == []
+    assert [text_of[c] for c in ("EC_WORD_EGG", "EC_WORD_BAG", "EC_WORD_MAIL", "EC_WORD_CONTEST", "EC_WORD_NATURE",
+                                 "EC_WORD_SP_ABILITY", "EC_WORD_LEADER", "EC_WORD_EVOLUTION")] == \
+        ["Ovo", "Bolsa", "Carta", "Torneio", "Natureza", "Habilidade", "Líder", "Evolução"]
+    # o teste reprova a caixa errada (o caso do fix 1)
+    wrong = dict(text_of, EC_WORD_NATURE="natureza", EC_WORD_SP_ABILITY="habilidade")
+    assert len(_game_term_case_problems(wrong, glossary)) == 2
+
+
+def test_alerta_caixa_do_texto_corrido_diferente_da_palavra():
+    """Só alerta (warnings): palavra igual a um termo do glossário, fora de EC_GAME_TERMS, com caixa diferente da
+    maioria do texto corrido. Não reprova: rótulos de menu e substantivos comuns caem aqui."""
+    terms = {t["pt"].casefold() for t in _glossary()["termos"]
+             if t["categoria"] in EC_TERM_CATEGORIES and " " not in t["pt"].strip(". ")}
+    game = {_ec_text_of()[c] for c in EC_GAME_TERMS}
     text = _running_text()
-    wrong, checked = [], 0
+    notes = []
     for grp in EC_WORD_GROUPS:
         if grp == "status":
-            continue                                   # tipos e habilidades: test_habilidades_e_tipos_...
+            continue
         for v, word, _, _ in _ec_now(grp):
-            glossary = terms.get(word.casefold())
-            if not glossary or word in EC_CASE_OTHER_MEANING:
+            if word.casefold() not in terms or word in game or word in EC_CASE_OTHER_MEANING:
                 continue
-            checked += 1
             up, lo = word[:1].upper() + word[1:], word[:1].lower() + word[1:]
             n_up, n_lo = _mid_sentence(text, up), _mid_sentence(text, lo)
-            if n_up + n_lo:
-                want = up if n_up > n_lo else lo
-            elif glossary & created:
-                want = sorted(glossary & created)[0]
-            else:
-                continue                               # sem uso no texto: qualquer caixa
-            if word != want:
-                wrong.append(f"{grp}/{v} '{word}': esperado '{want}' (meio da frase {n_up}×{n_lo}, glossário {glossary})")
-    assert checked > 20
-    assert wrong == [], wrong
-    text_of = _ec_text_of()
-    assert [text_of[c] for c in ("EC_WORD_EGG", "EC_WORD_BAG", "EC_WORD_MAIL", "EC_WORD_CONTEST")] == \
-        ["Ovo", "Bolsa", "Carta", "Torneio"]
+            if n_up + n_lo and word != (up if n_up > n_lo else lo):
+                notes.append(f"{grp}/{v} '{word}' (meio da frase {n_up}×{n_lo})")
+    if notes:
+        warnings.warn("caixa diferente do texto corrido: " + "; ".join(notes))
 
 
 def test_maiuscula_tambem_na_mensagem_do_treinador_do_ereader():
