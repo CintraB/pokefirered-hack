@@ -10729,6 +10729,69 @@
    "detectar": true,
    "frente": "A3",
    "obs": "assinatura do e-mail no laboratório do Carvalho; não é nome de mapa, então o limite do aviso não se aplica; no padrão de \"Sede da Silph Co.\""
+  },
+  {
+   "en": "POKéMON MOVE MANIAC",
+   "pt": "Maníaco dos Golpes",
+   "fonte": "criado",
+   "categoria": "personagem",
+   "detectar": true,
+   "frente": "C3",
+   "obs": "morador da casa da Ilha Dois (TwoIsland_House); no estilo de \"Mestre da Pesca\" e \"Apagador de Golpes\""
+  },
+  {
+   "en": "KARATE KING",
+   "pt": "Rei do Caratê",
+   "fonte": "criado",
+   "categoria": "personagem",
+   "detectar": true,
+   "frente": "C3",
+   "obs": "Takashi, Faixa-preta do Ginásio de Viridian (ViridianCity_Gym_Text_TakashiIntro); no estilo de \"Mestre de Caratê\""
+  },
+  {
+   "en": "Lightning American",
+   "pt": "Americano Relâmpago",
+   "fonte": "criado",
+   "categoria": "personagem",
+   "detectar": true,
+   "frente": "C3",
+   "obs": "apelido do Ten. Surge (placa do Ginásio e Gym Guy de Vermilion)"
+  },
+  {
+   "en": "Joyful GAME CORNER",
+   "pt": "Cassino da Alegria",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true,
+   "frente": "C3",
+   "obs": "placa da Ilha Dois (\"Skip & Chomp!\" virou \"Pula & Come!\"); \"Cassino\" é o GAME CORNER do glossário"
+  },
+  {
+   "en": "RAGE CANDYBAR",
+   "pt": "Barra Fúria",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": true,
+   "frente": "C3",
+   "obs": "doce de Mahogany (Rage Candybar), citado pelo Bruno na Ilha Dois (plural \"Barras Fúria\"); só em fala, sem limite de letras"
+  },
+  {
+   "en": "MYSTICTICKET (forma cheia)",
+   "pt": "Bilhete Místico",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": false,
+   "frente": "C3",
+   "obs": "forma cheia de Bilhete Míst., usada em fala"
+  },
+  {
+   "en": "AURORATICKET (forma cheia)",
+   "pt": "Bilhete Aurora",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": false,
+   "frente": "C3",
+   "obs": "forma cheia de Bilh. Aurora, usada em fala"
   }
  ],
  "proibidos": [
