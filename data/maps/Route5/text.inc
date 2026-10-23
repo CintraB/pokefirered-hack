@@ -1,4 +1,5 @@
 Route5_Text_UndergroundPathSign::
-    .string "UNDERGROUND PATH\n"
-    .string "CERULEAN CITY - VERMILION CITY$"
+    .string "Via Subterrânea\n"
+    .string "Cidade de Cerulean -\l"
+    .string "Cidade Vermilion$"
 
