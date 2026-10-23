@@ -1,15 +1,16 @@
 FiveIsland_LostCave_Room1_Text_LawsonIntro::
-    .string "Aiyeeeeeh!\p"
-    .string "I thought this was an ancient ruin.\n"
-    .string "But it's teeming with ghosts!$"
+    .string "Aaaaai!\p"
+    .string "Achei que isto fosse uma ruína\n"
+    .string "antiga. Mas está fervilhando de\l"
+    .string "fantasmas!$"
 
 FiveIsland_LostCave_Room1_Text_LawsonDefeat::
-    .string "Aiyeeeeeh!\n"
-    .string "Mercy!$"
+    .string "Aaaaai!\n"
+    .string "Piedade!$"
 
 FiveIsland_LostCave_Room1_Text_LawsonPostBattle::
-    .string "I'm trying to get out of here, but\n"
-    .string "I always end up at the same spot.\p"
-    .string "Maybe the number of boulders is\n"
-    .string "a hint…$"
+    .string "Estou tentando sair daqui, mas\n"
+    .string "sempre volto ao mesmo lugar.\p"
+    .string "Talvez o número de pedregulhos\n"
+    .string "seja uma dica…$"
 

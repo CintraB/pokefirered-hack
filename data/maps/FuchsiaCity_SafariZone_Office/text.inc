@@ -1,25 +1,25 @@
 FuchsiaCity_SafariZone_Office_Text_NicknamedWardenSlowpoke::
-    .string "We nicknamed the WARDEN\n"
-    .string "“SLOWPOKE.”\p"
-    .string "You know, he has that vacant look\n"
-    .string "like a SLOWPOKE.$"
+    .string "Apelidamos o Diretor de\n"
+    .string "“Slowpoke”.\p"
+    .string "Sabe, ele tem aquele olhar vazio\n"
+    .string "de Slowpoke.$"
 
 FuchsiaCity_SafariZone_Office_Text_WardenIsVeryKnowledgeable::
-    .string "WARDEN SLOWPOKE is very\n"
-    .string "knowledgeable about POKéMON.\p"
-    .string "He even has some fossils of rare,\n"
-    .string "extinct POKéMON.$"
+    .string "O Diretor Slowpoke entende muito\n"
+    .string "de Pokémon.\p"
+    .string "Ele até tem fósseis de Pokémon\n"
+    .string "raros e extintos.$"
 
 FuchsiaCity_SafariZone_Office_Text_CouldntUnderstandWarden::
-    .string "WARDEN SLOWPOKE came in, but\n"
-    .string "I couldn't understand him.\p"
-    .string "I think he's got a speech problem!$"
+    .string "O Diretor Slowpoke veio aqui, mas\n"
+    .string "eu não consegui entendê-lo.\p"
+    .string "Acho que ele tem problema de fala!$"
 
 FuchsiaCity_SafariZone_Office_Text_PrizeInSafariZone::
-    .string "WARDEN SLOWPOKE is running a\n"
-    .string "promotion campaign right now.\p"
-    .string "Try to get to the farthest corner\n"
-    .string "of the SAFARI ZONE.\p"
-    .string "If you can make it, you'll win a\n"
-    .string "very convenient prize.$"
+    .string "O Diretor Slowpoke está fazendo uma\n"
+    .string "campanha promocional agora.\p"
+    .string "Tente chegar ao canto mais distante\n"
+    .string "da Zona de Safári.\p"
+    .string "Se conseguir, vai ganhar um prêmio\n"
+    .string "muito conveniente.$"
 
