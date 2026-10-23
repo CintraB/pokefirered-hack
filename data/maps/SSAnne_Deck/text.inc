@@ -22,7 +22,7 @@ SSAnne_Deck_Text_EdmondPostBattle::
     .string "acha que existem neste mundão?$"
 
 SSAnne_Deck_Text_TrevorIntro::
-    .string "Ei, aí!\n"
+    .string "Ô de bordo!\n"
     .string "Está com enjoo?$"
 
 SSAnne_Deck_Text_TrevorDefeat::

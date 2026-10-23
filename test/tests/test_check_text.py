@@ -400,6 +400,17 @@ def test_to_acronym_of_original_trainer_is_not_english(repo):
     assert counts["data/text/pc.inc"].texts == 1
 
 
+def test_to_in_all_caps_english_still_counts(repo):
+    """A exceção do TO vale só em frase com letra minúscula (PT-BR) e no título Help_Text_OT: o inglês todo em
+    maiúsculas ("BELONGS TO", "A WINDOW TO", "TO ME", "TO") continua sendo inglês."""
+    inc(repo, 'Text_A::\n\t.string "BELONGS TO$"\n\nText_B::\n\t.string "A WINDOW TO$"\n\n'
+              'Text_C::\n\t.string "TO ME$"\n\nText_D::\n\t.string "TO$"\n\n'
+              'Text_E::\n\t.string "Nº ID e o TO.$"\n\nHelp_Text_OT::\n\t.string "TO$"\n')
+    counts = english_report(str(repo))
+    assert counts["data/text/pc.inc"].words == 4        # um "to" em cada A, B, C e D
+    assert counts["data/text/pc.inc"].texts == 4        # E (frase PT) e Help_Text_OT (título) ficam de fora
+
+
 def test_english_allowlist(repo):
     put(repo, "src/data/text/species_names.h", 'const u8 gSpeciesNames[][11] = {\n'
         '    [SPECIES_X] = _("WHAT"),\n};\n')

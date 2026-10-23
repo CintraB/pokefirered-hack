@@ -44,7 +44,7 @@ Route22_Text_LateRivalDefeat::
 	.string "Foi só um descuido meu, viu?$"
 
 Route22_Text_LateRivalPostBattle::
-	.string "Isso me soltou.\n"
+	.string "Foi um bom aquecimento.\n"
 	.string "Estou pronto para a Liga Pokémon!\p"
 	.string "{PLAYER}, você precisa treinar mais.\p"
 	.string "Mas ei, você já sabe disso!\n"

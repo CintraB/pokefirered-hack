@@ -28,8 +28,7 @@ Route25_SeaCottage_Text_RunCellSeparationOnPC::
     .string "Espere eu entrar no\n"
     .string "Teletransportador.\p"
     .string "Quando eu entrar, vá ao meu PC e\n"
-    .string "execute o\l"
-    .string "Sistema de Separação Celular.$"
+    .string "rode o Sistema de Separação Celular.$"
 
 Route25_SeaCottage_Text_NoPleaseChief::
     .string "Não?!\n"

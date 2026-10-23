@@ -345,7 +345,10 @@ PLAYER_ADJECTIVE = re.compile(
     r"convidada|enjoado|enjoada|cansado|cansada|pronto|pronta|bravo|brava|corajoso|corajosa|tolo|tola|bobo|boba|"
     r"malvado|malvada|mau|má|obrigado|obrigada|atrevido|atrevida|bem-vindo|bem-vinda|Treinador|Treinadora|"
     r"campeão|campeã|herói|heroína|rapaz|garoto|garota|vencedor|vencedora)\b")
-PLAYER_NOUN = re.compile(r"personagem principal|protagonista|vocês todos")
+# "você se tornaria um grande líder": papel no masculino/feminino dirigido ao jogador (Route24, achado da revisão)
+PLAYER_ROLE = r"(?:tornaria|viraria|seria|será|tornará|vai ser|vai virar) (?:um|uma|o|a) (?:(?:grande|ótimo|bom|novo) )*" \
+              r"(?:líder|chefe|campeão|campeã|mestre|mestra|rei|rainha|herói|heroína|vencedor|vencedora|Treinador|Treinadora)"
+PLAYER_NOUN = re.compile(r"personagem principal|protagonista|vocês todos|" + PLAYER_ROLE)
 WRONG_FORMS_B3 = ("Floresta de Viridian", "Caminho Subterrâneo", "Zona do Safári", "SS Anne", "S.S. ANNE", "Bilhete SS",
                   "Vermilion City", "Cidade de Vermilion", "Teleportador", "Pokemon", "POKéMON", "Pokédex Nacional",
                   "Mt. Moon", "Mt Moon", "Sea Cottage", "Time Rocket", "Team Rocket", "Prof. Oak", "Professor Oak")
@@ -360,11 +363,12 @@ def _b3_entries(rel):
 
 def test_b3_padroes_de_genero_pegam_os_casos_conhecidos():
     for bad in ("Olá, rapazinho!", "Ora, cara!", "Valeu, amigão!", "Você é bom mesmo!", "{PLAYER} está cansado.",
-                "Você foi convidado?", "Você é um Treinador.", "O personagem principal chegou."):
+                "Você foi convidado?", "Você é um Treinador.", "O personagem principal chegou.",
+                "Com a sua habilidade, você se tornaria um grande líder da Equipe Rocket.", "Você seria uma campeã."):
         assert (PLAYER_VOCATIVE.search(bad) or PLAYER_ADJECTIVE.search(bad) or PLAYER_NOUN.search(bad)), bad
     for ok in ("Sou um cara legal.", "A gente deve estar com cara de boba.", "Ei, camarada!", "Você é demais!",
                "Você manda bem!", "Você não é ruim.", "Que criança mal-educada!", "Ei, criança!", "Você é forte demais!",
-               "O Brock é demais.", "Tenho namorada!"):
+               "O Brock é demais.", "Tenho namorada!", "Você chegaria ao topo da Equipe Rocket."):
         assert not (PLAYER_VOCATIVE.search(ok) or PLAYER_ADJECTIVE.search(ok) or PLAYER_NOUN.search(ok)), ok
 
 
@@ -389,16 +393,23 @@ def test_b3_falas_por_genero_concordam_com_a_versao():
     for rel in B3_FILES:
         texts.update(dict(_b3_entries(rel)))
     assert GENERO_DO_JOGO <= set(texts)
-    for male, female in (("ImBillHelpMeOutPal", "ImBillHelpMeOutLady"), ("ThanksBudTakeThis", "ThanksLadyTakeThis"),
-                         ("NoPleaseChief", "NoPleaseBeautiful")):
-        assert texts[f"Route25_SeaCottage_Text_{male}"] != texts[f"Route25_SeaCottage_Text_{female}"]
-    assert "amigão" in texts["Route25_SeaCottage_Text_ImBillHelpMeOutPal"] and "moça" in texts[
-        "Route25_SeaCottage_Text_ImBillHelpMeOutLady"]
-    assert "rapazinho" in texts["Route4_PokemonCenter_1F_Text_LaddieBuyMagikarpForJust500"]
-    assert "Garçom" in texts["SSAnne_1F_Room4_Text_WaiterCherryPiePlease"]
-    assert "Garçonete" in texts["SSAnne_1F_Room4_Text_WaitressCherryPiePlease"]
-    assert "irmãozinho" in texts["SSAnne_1F_Room6_Text_SorryYouLookLikeMyBrother"]
-    assert "irmãzinha" in texts["SSAnne_1F_Room6_Text_SorryYouLookLikeMySister"]
+    sea = "Route25_SeaCottage_Text_"
+    pairs = (  # (rótulo da versão menino, marca dele, rótulo da versão menina, marca dela)
+        (sea + "ImBillHelpMeOutPal", "amigão", sea + "ImBillHelpMeOutLady", "moça"),
+        (sea + "NoPleaseChief", "chefe", sea + "NoPleaseBeautiful", "linda"),
+        (sea + "ThanksBudTakeThis", "amigão", sea + "ThanksLadyTakeThis", "moça"),
+        ("Route4_PokemonCenter_1F_Text_LaddieBuyMagikarpForJust500", "rapazinho",
+         "Route4_PokemonCenter_1F_Text_SweetieBuyMagikarpForJust500", "docinho"),
+        ("SSAnne_1F_Room4_Text_WaiterCherryPiePlease", "Garçom",
+         "SSAnne_1F_Room4_Text_WaitressCherryPiePlease", "Garçonete"),
+        ("SSAnne_1F_Room6_Text_SorryYouLookLikeMyBrother", "irmãozinho",
+         "SSAnne_1F_Room6_Text_SorryYouLookLikeMySister", "irmãzinha"),
+    )
+    assert {x for p in pairs for x in (p[0], p[2])} == set(GENERO_DO_JOGO)
+    for male, male_mark, female, female_mark in pairs:
+        assert male_mark in texts[male] and female_mark in texts[female], (male, female)
+        assert female_mark not in texts[male] and male_mark not in texts[female], (male, female)   # sem a marca oposta
+        assert texts[male] != texts[female]
 
 
 @pytest.mark.parametrize("rel", B3_FILES)
@@ -480,3 +491,17 @@ def test_b3_assistente_do_carvalho_fala_como_nas_rotas_10_11_15_16():
 def test_b3_sigla_to_nao_e_ingles():
     """CeladonCity_DepartmentStore_3F usa "TO" (Treinador Original): falso positivo da regra `ingles`."""
     assert "data/maps/CeladonCity_DepartmentStore_3F/text.inc" not in _english()
+
+
+def test_b3_nomes_de_personagem_em_caixa_mista_e_bicicleta():
+    """Fix round 1: Eli/Anne, Sara/Erik e Kiri/Jan (Route14, B2) não ficam em maiúsculas; 'bike' vira 'bicicleta'."""
+    for rel, names in (("data/maps/Route8/text.inc", ("Eli:", "Anne:")),
+                       ("data/maps/SafariZone_Center_RestHouse/text.inc", ("Sara:", "Erik")),
+                       ("data/maps/Route14/text.inc", ("Kiri:", "Jan:"))):
+        body = _flat(rel)
+        for name in names:
+            assert name in body, (rel, name)
+        for shout in ("ELI", "ANNE", "SARA", "ERIK", "KIRI", "JAN"):
+            assert not re.search(rf"\b{shout}\b", body), (rel, shout)
+    route8 = re.sub(r"\\[nlp]", " ", _flat("data/maps/Route8/text.inc"))
+    assert "bicicleta está dando problema" in route8 and "bike" not in route8

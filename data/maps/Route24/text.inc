@@ -31,9 +31,8 @@ Route24_Text_RocketDefeat::
     .string "Você manda bem!$"
 
 Route24_Text_YoudBecomeTopRocketLeader::
-    .string "Com a sua habilidade, você se\n"
-    .string "tornaria um grande líder da\l"
-    .string "Equipe Rocket.\p"
+    .string "Com a sua habilidade, você chegaria\n"
+    .string "ao topo da Equipe Rocket.\p"
     .string "Vamos, pense na oportunidade!\n"
     .string "Não desperdice essa chance.$"
 
@@ -95,7 +94,7 @@ Route24_Text_AliPostBattle::
 
 Route24_Text_CaleIntro::
     .string "Chamam isto de Ponte da Pepita!\p"
-    .string "Vença nós, cinco Treinadores, e ganhe\n"
+    .string "Vença os cinco Treinadores e ganhe\n"
     .string "um prêmio fabuloso!\p"
     .string "Acha que tem o que é preciso?$"
 

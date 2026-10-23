@@ -40,8 +40,7 @@ SSAnne_Kitchen_Text_SalmonDuSalad::
 
 SSAnne_Kitchen_Text_EelsAuBarbecue::
     .string "Enguias au Churrasco!\p"
-    .string "Les hóspedes vão se amotinar, eu\n"
-    .string "temo.$"
+    .string "Les hóspedes vão se amotinar, receio.$"
 
 SSAnne_Kitchen_Text_PrimeBeefsteak::
     .string "Bife de Primeira!\p"

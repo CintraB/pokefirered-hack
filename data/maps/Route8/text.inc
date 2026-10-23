@@ -113,38 +113,39 @@ Route8_Text_UndergroundPathSign::
     .string "Cidade de Lavender$"
 
 Route8_Text_EliIntro::
-    .string "ELI: O poder das gêmeas é\n"
-    .string "fantástico. Sabia disso?$"
+    .string "Eli: O poder das gêmeas é fantástico.\n"
+    .string "Sabia disso?$"
 
 Route8_Text_EliDefeat::
-    .string "ELI: Mas…\n"
+    .string "Eli: Mas…\n"
     .string "A gente usou o nosso poder gêmeo…$"
 
 Route8_Text_EliPostBattle::
-    .string "ELI: Eu capturei os meus Pokémon\n"
-    .string "junto com a ANNE!$"
+    .string "Eli: Eu capturei os meus Pokémon\n"
+    .string "junto com a Anne!$"
 
 Route8_Text_EliNotEnoughMons::
-    .string "ELI: Não dá para lutar se você não\n"
+    .string "Eli: Não dá para lutar se você não\n"
     .string "tiver dois Pokémon.$"
 
 Route8_Text_AnneIntro::
-    .string "ANNE: Vamos chocar você com o nosso\n"
+    .string "Anne: Vamos chocar você com o nosso\n"
     .string "poder gêmeo!$"
 
 Route8_Text_AnneDefeat::
-    .string "ANNE: O nosso poder gêmeo…$"
+    .string "Anne: O nosso poder gêmeo…$"
 
 Route8_Text_AnnePostBattle::
-    .string "ANNE: Estou criando Pokémon junto\n"
-    .string "com a ELI.$"
+    .string "Anne: Estou criando Pokémon junto\n"
+    .string "com a Eli.$"
 
 Route8_Text_AnneNotEnoughMons::
-    .string "ANNE: Oi, oi! Vamos lutar!\n"
+    .string "Anne: Oi, oi! Vamos lutar!\n"
     .string "Mas traga dois Pokémon.$"
 
 Route8_Text_RicardoIntro::
-    .string "A minha bike está dando problema.$"
+    .string "A minha bicicleta está dando\n"
+    .string "problema.$"
 
 Route8_Text_RicardoDefeat::
     .string "Ah, que saco.\n"
