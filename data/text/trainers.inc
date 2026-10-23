@@ -259,8 +259,8 @@ Route12_Text_LucaRematchIntro::
 	.string "marinhos.$"
 
 Route12_Text_HankRematchIntro::
-	.string "O Louco da Pesca contra a Criança\n"
-	.string "Pokémon!\l"
+	.string "O Louco da Pesca contra a\n"
+	.string "Criança Pokémon!\l"
 	.string "Outra rodada, vamos lá!$"
 
 Route12_Text_ElliotRematchIntro::
@@ -610,7 +610,7 @@ Route20_Text_MelissaRematchIntro::
 
 Route21_North_Text_RonaldRematchIntro::
 	.string "Quer saber se os peixes estão\n"
-	.string "mordendo?$"
+	.string "beliscando a isca?$"
 
 Route21_North_Text_WadeRematchIntro::
 	.string "Fiz uma pescaria e tanto de novo!\n"
@@ -658,8 +658,9 @@ Route25_Text_JoeyRematchIntro::
 	.string "aqui!$"
 
 Route25_Text_DanRematchIntro::
-	.string "O papai me levou a uma festa no\n"
-	.string "S.S. Anne, na Cidade Vermilion.$"
+	.string "O papai me levou a uma festa\n"
+	.string "incrível no S.S. Anne,\l"
+	.string "na Cidade Vermilion.$"
 
 Route25_Text_FlintRematchIntro::
 	.string "Eu sou um cara legal.\n"

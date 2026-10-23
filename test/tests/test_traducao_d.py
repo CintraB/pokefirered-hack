@@ -523,8 +523,17 @@ def _d3_terms() -> list[str]:
              "Casa Pokémon", "Cidade de Lavender", "Cidade Vermilion", "Cidade de Pallet", "Zona de Safári",
              "Floresta Viridian", "Monte Lua", "Túnel de Pedra", "Pedra Lunar", "Explorador VS", "Louco da Pesca",
              "Mestre de Caratê", "Líder de Ginásio", "Ginásio Pokémon", "Loja de Celadon", "Ilha Quatro",
-             "Caverna Gélida", "Porto da Ilha Seis", "Irmãos Pássaro", "Mestre Ninja Venenoso"}
+             "Caverna Gélida", "Porto da Ilha Seis", "Irmãos Pássaro", "Mestre Ninja Venenoso", "Criança Pokémon",
+             "Cidade de Goldenrod", "Barras Fúria", "Laboratório de Pesquisa Pokémon do Prof. Carvalho",
+             "Seminário Pokémon do Prof. Carvalho", "Revista Fã de Pokémon",
+             *[f"Ginásio de {city}" for city in ("Pewter", "Cerulean", "Vermilion", "Celadon", "Fuchsia", "Saffron",
+                                                  "Cinnabar", "Viridian")]}
     return sorted(set(_multiword_terms()) | extra)
+
+
+# Quebras permitidas (mesma exceção da A3): a placa do laboratório não cabe numa linha (278 px) e quebra
+# depois de "Pesquisa"; qualquer outra quebra no meio do termo continua proibida
+SPLIT_ALLOWED = {("Laboratório de Pesquisa Pokémon do Prof. Carvalho", "Laboratório de Pesquisa")}
 
 
 @pytest.mark.parametrize("rel", D3_FILES)
@@ -533,7 +542,7 @@ def test_d3_nomes_nao_sao_partidos_na_quebra(rel):
     found = []
     for name in _d3_terms():
         for i, ch in enumerate(name):
-            if ch != " ":
+            if ch != " " or (name, name[:i]) in SPLIT_ALLOWED:
                 continue
             for br in ("\\n", "\\l"):
                 if name[:i] + br + name[i + 1:] in body:
@@ -636,12 +645,15 @@ def test_d3_nomes_das_pessoas_do_arquivo_fama_cabem_na_lista_de_56_px():
     wide = {i: ct.measure(trainers[i][1], env, "normal").widest for i in ids
             if ct.measure(trainers[i][1], env, "normal").widest > 8 * 8 - 8}
     assert wide == {}
-    assert trainers["TRAINER_LEADER_LT_SURGE"][1] == "SURGE"       # "Ten. Surge" mede 57 px, 1 px a mais
+    assert trainers["TRAINER_LEADER_LT_SURGE"][1] == "LT. SURGE"   # nome próprio fica (53 px); "Ten. Surge" mede 57
 
 
-# ---- a classe "Executivo" (decisão D4 do Cintra) ------------------------------------------------------
+# ---- as classes "Executivo" e "Executiva" (decisão D4 do Cintra; a Admin de pic feminina é "Executiva") --
 
-ADMINS = {"TRAINER_TEAM_ROCKET_ADMIN", "TRAINER_TEAM_ROCKET_ADMIN_2"}
+ADMIN_M = "TRAINER_TEAM_ROCKET_ADMIN_2"      # pic ROCKET_GRUNT_M
+ADMIN_F = "TRAINER_TEAM_ROCKET_ADMIN"        # pic ROCKET_GRUNT_F
+ADMINS = {ADMIN_M, ADMIN_F}
+ADMIN_CLASSES = ("TRAINER_CLASS_ROCKET_ADMIN", "TRAINER_CLASS_ROCKET_ADMIN_F")
 
 
 def _class_values() -> dict[str, int]:
@@ -649,20 +661,37 @@ def _class_values() -> dict[str, int]:
     return {n: int(v) for n, v in re.findall(r"#define (TRAINER_CLASS_\w+)\s+(\d+)", header)}
 
 
-def test_executivo_e_uma_classe_nova_com_id_proprio():
+def _trainer_pics() -> dict[str, str]:
+    source = (REPO_ROOT / "src/data/trainers.h").read_text(encoding="utf-8")
+    return {m.group(1): re.search(r"\.trainerPic = (\w+)", m.group(2)).group(1)
+            for m in re.finditer(r"\[(TRAINER_\w+)\] = \{(.*?)\n    \},", source, re.S)
+            if re.search(r"\.trainerPic = ", m.group(2))}
+
+
+def test_executivo_e_executiva_sao_classes_novas_com_id_proprio():
     values = _class_values()
-    assert values["TRAINER_CLASS_ROCKET_ADMIN"] == max(values.values()) == 107
-    assert list(values.values()).count(107) == 1                    # u8 trainerClass: cabe em 0xFF
+    assert values["TRAINER_CLASS_ROCKET_ADMIN"] == 107 and values["TRAINER_CLASS_ROCKET_ADMIN_F"] == 108
+    assert max(values.values()) == 108
+    assert list(values.values()).count(107) == list(values.values()).count(108) == 1   # u8 trainerClass: cabe em 0xFF
 
 
-def test_executivo_so_nos_2_admins_e_recrutas_intactos():
+def test_a_classe_de_cada_admin_bate_com_o_sexo_da_pic():
+    trainers, pics = _trainers_h(), _trainer_pics()
+    assert pics[ADMIN_F].endswith("_F") and pics[ADMIN_M].endswith("_M")
+    assert trainers[ADMIN_F][0] == "TRAINER_CLASS_ROCKET_ADMIN_F"          # "Executiva"
+    assert trainers[ADMIN_M][0] == "TRAINER_CLASS_ROCKET_ADMIN"            # "Executivo"
+    for admin in ADMINS:
+        assert trainers[admin][0].endswith("_F") == pics[admin].endswith("_F"), admin
+    assert {k for k, (cls, _n) in trainers.items() if cls in ADMIN_CLASSES} == ADMINS
+
+
+def test_executivos_so_nos_2_admins_e_recrutas_intactos():
     trainers = _trainers_h()
-    assert {k for k, (cls, _n) in trainers.items() if cls == "TRAINER_CLASS_ROCKET_ADMIN"} == ADMINS
     assert all(trainers[a][1] == "Rocket" for a in ADMINS)
     recrutas = {k for k, (cls, _n) in trainers.items() if cls == "TRAINER_CLASS_TEAM_ROCKET"}
     assert len(recrutas) == 51 and all(trainers[k][1] == "Rocket" for k in recrutas)
-    # nenhum nome em inglês sobra no trainerName
-    assert not {n for _c, n in trainers.values()} & {"GRUNT", "ADMIN", "LT. SURGE"}
+    # nenhum nome em inglês sobra no trainerName ("LT. SURGE" fica: nome próprio, 53 px)
+    assert not {n for _c, n in trainers.values()} & {"GRUNT", "ADMIN"}
     base = _base_source("src/data/trainers.h")
     if base is not None:
         # na base os 53 eram classe TEAM_ROCKET: 51 "GRUNT" + 2 "ADMIN"; o total de Treinadores não mudou
@@ -670,28 +699,36 @@ def test_executivo_so_nos_2_admins_e_recrutas_intactos():
         now = (REPO_ROOT / "src/data/trainers.h").read_text(encoding="utf-8")
         assert re.findall(r"\.trainerClass = (\w+)", base).count("TRAINER_CLASS_TEAM_ROCKET") == 53
         assert len(re.findall(r"\.trainerClass = ", now)) == len(re.findall(r"\.trainerClass = ", base))
+        assert re.findall(r'\.trainerName = _\("([^"]*)"\)', base).count("LT. SURGE") == \
+            re.findall(r'\.trainerName = _\("([^"]*)"\)', now).count("LT. SURGE") == 1
 
 
-def test_executivo_tem_nome_e_cabe_na_classe_de_12_letras():
+def test_executivo_e_executiva_tem_nome_e_cabem_na_classe_de_12_letras():
     table = (REPO_ROOT / "src/data/text/trainer_class_names.h").read_text(encoding="utf-8")
     names = dict(re.findall(r'\[(TRAINER_CLASS_\w+)\]\s*=\s*_\("([^"]*)"\)', table))
-    assert names["TRAINER_CLASS_ROCKET_ADMIN"] == "Executivo" and len("Executivo") <= 12
+    assert names["TRAINER_CLASS_ROCKET_ADMIN"] == "Executivo"
+    assert names["TRAINER_CLASS_ROCKET_ADMIN_F"] == "Executiva"
+    assert len("Executivo") <= 12 and len("Executiva") <= 12
     assert names["TRAINER_CLASS_TEAM_ROCKET"] == "Recruta"          # os recrutas não mudam
 
 
-def test_executivo_ganha_o_mesmo_premio_e_a_mesma_musica_que_o_recruta():
+def test_executivos_ganham_o_mesmo_premio_e_a_mesma_musica_que_o_recruta():
     battle = (REPO_ROOT / "src/battle_main.c").read_text(encoding="utf-8")
     money = dict(re.findall(r"\{(TRAINER_CLASS_\w+), (\d+)\}", battle[battle.index("gTrainerMoneyTable[]"):]))
-    assert money["TRAINER_CLASS_ROCKET_ADMIN"] == money["TRAINER_CLASS_TEAM_ROCKET"] == "8"
-    # toda lista (prêmio, fanfarra da vitória, música de batalha) que cita o recruta cita o Executivo
+    assert money["TRAINER_CLASS_ROCKET_ADMIN"] == money["TRAINER_CLASS_ROCKET_ADMIN_F"] \
+        == money["TRAINER_CLASS_TEAM_ROCKET"] == "8"
+    # toda lista (prêmio, fanfarra da vitória, música de batalha) que cita o recruta cita as duas classes novas
     for rel, n in (("src/battle_main.c", 2), ("src/pokemon.c", 1)):
         text = (REPO_ROOT / rel).read_text(encoding="utf-8")
-        assert text.count("TRAINER_CLASS_TEAM_ROCKET") == text.count("TRAINER_CLASS_ROCKET_ADMIN") == n, rel
-        assert "case TRAINER_CLASS_TEAM_ROCKET:\n        case TRAINER_CLASS_ROCKET_ADMIN:" in text, rel
+        assert text.count("TRAINER_CLASS_TEAM_ROCKET") == n, rel
+        for cls in ADMIN_CLASSES:
+            assert len(re.findall(rf"\b{cls}\b", text)) == n, (rel, cls)
+        assert ("case TRAINER_CLASS_TEAM_ROCKET:\n        case TRAINER_CLASS_ROCKET_ADMIN:\n"
+                "        case TRAINER_CLASS_ROCKET_ADMIN_F:") in text, rel
 
 
-def test_executivo_nao_e_citado_fora_dos_lugares_esperados():
-    """Quem indexa por classe: nomes, prêmio, músicas (acima) e trainers.h; nada mais usa a classe nova."""
+def test_executivos_nao_sao_citados_fora_dos_lugares_esperados():
+    """Quem indexa por classe: nomes, prêmio, músicas (acima) e trainers.h; nada mais usa as classes novas."""
     users = set()
     for path in list((REPO_ROOT / "src").rglob("*.[ch]")) + list((REPO_ROOT / "include").rglob("*.h")):
         if "TRAINER_CLASS_ROCKET_ADMIN" in path.read_text(encoding="utf-8", errors="replace"):
@@ -703,9 +740,41 @@ def test_executivo_nao_e_citado_fora_dos_lugares_esperados():
 def test_d3_termos_criados_estao_no_glossario():
     data = json.loads((REPO_ROOT / "test" / "esteira" / "glossario.json").read_text(encoding="utf-8"))
     d3 = {t["en"]: t["pt"] for t in data["termos"] if t.get("frente") == "D3"}
-    assert d3["CERULEAN CAPE"] == "Cabo Cerulean" and d3["NUGGET BRIDGE"] == "Ponte da Pepita"
-    assert d3["RAGE CANDYBAR"] == "Barra de Raiva"
+    assert d3["CERULEAN CAPE"] == "Cabo Cerulean"
+    # Barra Fúria é da C3 (Ruling 29) e "Ponte da Pepita" é da B3: a D3 só registra enquanto a B3 não está na base
+    assert "RAGE CANDYBAR" not in d3
+    rage = [t for t in data["termos"] if t["en"] == "RAGE CANDYBAR"]
+    assert [(t["pt"], t["categoria"]) for t in rage] == [("Barra Fúria", "item")]
     admin = next(t for t in data["termos"] if t["en"] == "ADMIN")
     assert admin["pt"] == "Executivo"
     # as etiquetas de 84 px que fogem do glossário estão registradas
     assert d3["ROCKET HIDEOUT (etiqueta do Arquivo Fama)"] == "Base Rocket"
+    assert "PROF. OAK (nome na caixa do Arquivo Fama)" not in d3          # a caixa tem 208 px: "Prof. Carvalho"
+
+
+def test_d3_nomes_das_pessoas_do_arquivo_fama_saem_na_caixa_de_208_px():
+    """gFameCheckerPersonName_* só é impresso na MSGBOX (fame_checker.c:965-966): nome completo."""
+    blocks = _blocks(FAME_FILE)
+    assert _plain(blocks["gFameCheckerPersonName_ProfOak"]) == "Prof. Carvalho"
+    assert _plain(blocks["gFameCheckerPersonName_LtSurge"]) == "Ten. Surge"
+    assert _plain(blocks["gFameCheckerPersonName_MrFuji"]) == "Sr. Fuji"
+    assert "\\n" not in blocks["gFameCheckerPersonName_ProfOak"]
+
+
+def test_d3_etiquetas_de_objeto_cabem_no_buffer_de_19_bytes():
+    """A etiqueta do objeto passa por StringExpandPlaceholders(gStringVar1, ...) (fame_checker.c:1407): 20 bytes."""
+    env = ct._load_env(REPO_ROOT)
+    over = {}
+    for label, text in _blocks(FAME_FILE).items():
+        if label.startswith("gFameCheckerFlavorTextOriginObjectName_"):
+            nbytes = ct.measure(text, env, "small").nbytes
+            if nbytes > 19:
+                over[label] = nbytes
+    assert over == {}
+
+
+def test_d3_etiquetas_de_cidade_e_ginasio_sao_uniformes():
+    """Na mesma tela: toda cidade é "Cidade X" e todo Ginásio é "Ginásio X" (sem "de", regra 1 do glossário)."""
+    texts = {_plain(t) for k, t in _blocks(FAME_FILE).items() if k.startswith("gFameCheckerFlavorTextOriginLocation_")}
+    assert not [t for t in texts if t.startswith(("Cidade de ", "Ginásio de "))]
+    assert {"Cidade Pallet", "Cidade Pewter", "Cidade Celadon", "Ginásio Pewter", "Ginásio Viridian"} <= texts

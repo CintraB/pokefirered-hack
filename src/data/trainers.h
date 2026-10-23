@@ -4156,7 +4156,7 @@ const struct Trainer gTrainers[] = {
         .trainerClass = TRAINER_CLASS_LEADER,
         .encounterMusic_gender = TRAINER_ENCOUNTER_MUSIC_MALE,
         .trainerPic = TRAINER_PIC_LEADER_LT_SURGE,
-        .trainerName = _("SURGE"),
+        .trainerName = _("LT. SURGE"),
         .items = {ITEM_SUPER_POTION, ITEM_FULL_HEAL},
         .doubleBattle = FALSE,
         .aiFlags = AI_SCRIPT_CHECK_BAD_MOVE | AI_SCRIPT_TRY_TO_FAINT | AI_SCRIPT_CHECK_VIABILITY,
@@ -5423,7 +5423,7 @@ const struct Trainer gTrainers[] = {
         .party = NO_ITEM_DEFAULT_MOVES(sParty_TeamRocketGrunt48),
     },
     [TRAINER_TEAM_ROCKET_ADMIN] = {
-        .trainerClass = TRAINER_CLASS_ROCKET_ADMIN,
+        .trainerClass = TRAINER_CLASS_ROCKET_ADMIN_F,
         .encounterMusic_gender = TRAINER_ENCOUNTER_MUSIC_AQUA,
         .trainerPic = TRAINER_PIC_ROCKET_GRUNT_F,
         .trainerName = _("Rocket"),
