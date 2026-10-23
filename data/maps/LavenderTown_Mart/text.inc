@@ -1,22 +1,24 @@
 LavenderTown_Mart_Text_SearchingForStatRaiseItems::
-    .string "I'm searching for items that raise\n"
-    .string "the stats of POKéMON.\p"
-    .string "They're effective over the course\n"
-    .string "of a single battle.\p"
-    .string "X ATTACK, X DEFEND, X SPEED, \n"
-    .string "and X SPECIAL are what I'm after.\p"
-    .string "Do you know where I can get them?$"
+    .string "Estou atrás de itens que aumentam os\n"
+    .string "atributos dos Pokémon.\p"
+    .string "Eles fazem efeito durante uma única\n"
+    .string "batalha.\p"
+    .string "Ataque X, Defesa X, Velocidade X e\n"
+    .string "Especial X são o que eu procuro.\p"
+    .string "Você sabe onde posso encontrá-los?$"
 
 LavenderTown_Mart_Text_DidYouBuyRevives::
-    .string "Did you buy some REVIVES?\n"
-    .string "They revive any fainted POKéMON!$"
+    .string "Você comprou algum Reviver?\n"
+    .string "Ele reanima qualquer Pokémon\l"
+    .string "desmaiado!$"
 
 LavenderTown_Mart_Text_TrainerDuosCanChallengeYou::
-    .string "Sometimes, a TRAINER duo will\n"
-    .string "challenge you with two POKéMON\l"
-    .string "at the same time.\p"
-    .string "If that happens, you have to send\n"
-    .string "out two POKéMON to battle, too.$"
+    .string "Às vezes, uma dupla de Treinadores\n"
+    .string "desafia você com dois Pokémon ao\l"
+    .string "mesmo tempo.\p"
+    .string "Quando isso acontece, você também\n"
+    .string "precisa enviar dois Pokémon para\l"
+    .string "batalhar.$"
 
 LavenderTown_Mart_Text_SoldNuggetFromMountainsFor5000::
     .string "この　あいだ　やまおくで\n"

@@ -90,6 +90,34 @@ GRUPOS = {
         "data/maps/ThreeIsland_Port/text.inc",
         "data/maps/TrainerTower_Lobby/text.inc",
     ],
+    "C3": [
+        "data/maps/TwoIsland/text.inc",
+        "data/maps/TwoIsland_CapeBrink_House/text.inc",
+        "data/maps/TwoIsland_House/text.inc",
+        "data/maps/TwoIsland_JoyfulGameCorner/text.inc",
+        "data/maps/TwoIsland_PokemonCenter_1F/text.inc",
+        "data/maps/UndergroundPath_EastEntrance/text.inc",
+        "data/maps/UndergroundPath_SouthEntrance/text.inc",
+        "data/maps/UndergroundPath_WestEntrance/text.inc",
+        "data/maps/VermilionCity/text.inc",
+        "data/maps/VermilionCity_Gym/text.inc",
+        "data/maps/VermilionCity_House1/text.inc",
+        "data/maps/VermilionCity_House2/text.inc",
+        "data/maps/VermilionCity_House3/text.inc",
+        "data/maps/VermilionCity_Mart/text.inc",
+        "data/maps/VermilionCity_PokemonCenter_1F/text.inc",
+        "data/maps/VermilionCity_PokemonFanClub/text.inc",
+        "data/maps/VictoryRoad_1F/text.inc",
+        "data/maps/VictoryRoad_2F/text.inc",
+        "data/maps/VictoryRoad_3F/text.inc",
+        "data/maps/ViridianCity/text.inc",
+        "data/maps/ViridianCity_Gym/text.inc",
+        "data/maps/ViridianCity_House/text.inc",
+        "data/maps/ViridianCity_Mart/text.inc",
+        "data/maps/ViridianCity_PokemonCenter_1F/text.inc",
+        "data/maps/ViridianCity_School/text.inc",
+        "data/maps/ViridianForest/text.inc",
+    ],
 }
 
 ARQUIVOS = sorted({f for files in GRUPOS.values() for f in files})
@@ -193,13 +221,28 @@ def _texto_por_rotulo(rel: str) -> dict[str, str]:
     return {k: "".join(v) for k, v in textos.items()}
 
 
-@pytest.mark.parametrize("rel", ARQUIVOS)
-def test_nome_do_glossario_nao_e_partido_na_quebra(rel):
-    """Nome de várias palavras do glossário (lugar, personagem, golpe, item) ou "Equipe Rocket"
-    fica inteiro na mesma linha, nunca partido pela quebra."""
+def _plurais(palavra: str) -> set[str]:
+    """Plurais PT-BR de uma palavra (variantes): +s; -r/-z -> +es; -m -> -ns; -ão -> -ões/-ães (+ -ãos); -l -> -is."""
+    out = set() if palavra.endswith("s") else {palavra + "s"}
+    if palavra.endswith("ão"):
+        out |= {palavra[:-2] + "ões", palavra[:-2] + "ães"}
+    elif palavra.endswith(("r", "z")):
+        out.add(palavra + "es")
+    elif palavra.endswith("m"):
+        out.add(palavra[:-1] + "ns")
+    elif palavra.endswith("l"):
+        out.add(palavra[:-1] + "is")
+    return out
+
+
+def _nomes_inteiros() -> set[str]:
+    """Termos de várias palavras que não podem ser partidos pela quebra, com os plurais (uma palavra
+    no plural de cada vez: "Líderes de Ginásio", "Poké Bolas", "problemas de status")."""
     glossario = json.loads((REPO_ROOT / "test" / "esteira" / "glossario.json").read_text(encoding="utf-8"))
+    # categoria interface inclusive (as Insígnias, "problema de status"...); só ficam de fora os termos com
+    # placeholder e os que não são nome (rótulos de tela com 2 palavras comuns)
     nomes = {t["pt"] for t in glossario["termos"]
-             if " " in t["pt"] and len(t["pt"]) > 5 and "{" not in t["pt"] and t["categoria"] != "interface"}
+             if " " in t["pt"] and len(t["pt"]) > 5 and "{" not in t["pt"]}
     nomes |= {"Equipe Rocket", "Poké Bola", "Poké Bolas", "Dojo de Luta", "Mestre de Caratê",
               "Deslize de Pedras", "Dança das Espadas", "Repelente Máximo", "Ataque Especial",
               "Defesa Especial", "Dentes de Ouro",
@@ -207,22 +250,68 @@ def test_nome_do_glossario_nao_e_partido_na_quebra(rel):
               "Irmãos Rocket", "Relatório Pokémon", "Quadro de Tempos", "Pontos de Exp.", "Centro Pokémon",
               "Federação Motoqueira de Kanto", "Filial de Tiksi", "Porto da Ilha Seis",
               "Bosque das Frutas", "Ponte da União", "Torre do Treinador", "Cartão-chave", "Bola Mestra",
-              "Restaura Tudo", "Onda Trovão", "Líder de Ginásio", "Elite Quatro", "Ilhas Sevii"}
-    # plural simples ("Irmãos Rocket", "Motoqueiros ..."): "s" na última palavra de cada trecho
+              "Restaura Tudo", "Onda Trovão", "Líder de Ginásio", "Elite Quatro", "Ilhas Sevii",
+              # C3: nomes de fala que o glossário só tem abreviados ou em outra forma
+              "Faca de Dois Gumes", "Onda de Choque", "Ferrão Venenoso", "Cura Queimadura", "Bilhete Místico",
+              "Bilhete Aurora", "Loja de Bicicletas", "Mestre da Pesca", "Maníaco dos Golpes", "Rei do Caratê",
+              "Americano Relâmpago", "Cassino da Alegria", "Barras Fúria", "Dicas de Treinador", "Floresta Viridian",
+              "Cidade de Viridian", "Cidade Vermilion", "Cidade de Pewter", "Cidade de Lavender", "Cidade de Celadon",
+              "Cidade de Cerulean", "Cidade de Saffron", "Cidade de Pallet", "Via Subterrânea", "Porto Vermilion",
+              "Estrada da Vitória", "Túnel de Pedra", "Liga Pokémon", "Sala União", "balsa Seagallop",
+              "Seagallop Hi-Speed", "Explorador VS", "Passe 7 Cores", "Passe Triplo", "Fã-clube Pokémon",
+              "TV Educativa", "Ginásio Pokémon", "Rocha Umbigo", "Ilha do Nascimento", "Prof. Carvalho",
+              "Treinador Pokémon", "Insígnia Trovão", "Insígnia Terra"}
+    # plural PT-BR ("Líderes de Ginásio", "Irmãos Rocket", "problemas de status"): uma palavra de cada vez
     for nome in list(nomes):
         palavras = nome.split(" ")
         for j, p in enumerate(palavras):
-            if p[-1:].isalpha() and not p.endswith("s"):
-                nomes.add(" ".join(palavras[:j] + [p + "s"] + palavras[j + 1:]))
+            if p[-1:].isalpha():
+                for plural in _plurais(p):
+                    nomes.add(" ".join(palavras[:j] + [plural] + palavras[j + 1:]))
+    return nomes
+
+
+def _termos_partidos(textos: dict[str, str], nomes: set[str] | None = None) -> list[str]:
+    """"rótulo: 'termo'" de cada termo inteiro que a quebra (\\n ou \\l, nunca \\p) parte em duas linhas."""
+    nomes = _nomes_inteiros() if nomes is None else nomes
     quebra = "(?: |" + chr(92) * 2 + "[nl])"
     partidos = []
-    for rotulo, texto in _texto_por_rotulo(rel).items():
+    for rotulo, texto in textos.items():
         for nome in nomes:
             padrao = quebra.join(re.escape(p) for p in nome.split(" "))
             for m in re.finditer(padrao, texto):
                 if chr(92) in m.group(0):
                     partidos.append(f"{rotulo}: {nome!r}")
-    assert partidos == []
+    return partidos
+
+
+@pytest.mark.parametrize("rel", ARQUIVOS)
+def test_nome_do_glossario_nao_e_partido_na_quebra(rel):
+    """Nome de várias palavras do glossário (lugar, personagem, golpe, item, insígnia, status) ou
+    "Equipe Rocket" fica inteiro na mesma linha, nunca partido pela quebra; vale também no plural."""
+    assert _termos_partidos(_texto_por_rotulo(rel)) == []
+
+
+@pytest.mark.parametrize("texto, termo", [
+    # os 3 casos que passaram pela C3 (b541c47ca): insígnia (categoria interface), plural com -es, status
+    (r"Está bem, então, pegue a Insígnia\nTrovão!", "Insígnia Trovão"),
+    (r"É derrotar os oito principais Líderes\nde Ginásio Pokémon.", "Líderes de Ginásio"),
+    (r"O quadro-negro lista os problemas de\nstatus dos Pokémon", "problemas de status"),
+    (r"pegue a Insígnia\lTerra!", "Insígnia Terra"),
+    (r"Os Treinadores\nPokémon", "Treinadores Pokémon"),
+])
+def test_termo_partido_e_detectado(texto, termo):
+    """Mutação: o teste de quebra pega termo de interface e plural em -es/-s, e não acusa o termo inteiro."""
+    assert _termos_partidos({"x": texto}) not in ([], None), termo
+    assert _termos_partidos({"x": texto.replace(chr(92) + "n", " ").replace(chr(92) + "l", " ")}) == []
+
+
+@pytest.mark.parametrize("palavra, plural", [
+    ("Líder", "Líderes"), ("Treinador", "Treinadores"), ("Ginásio", "Ginásios"), ("Pokémon", "Pokémons"),
+    ("Bom", "Bons"), ("Nacional", "Nacionais"), ("Estação", "Estações"), ("Luz", "Luzes"), ("Cartão", "Cartãos"),
+])
+def test_plural_pt_br_do_termo(palavra, plural):
+    assert plural in _plurais(palavra)
 
 
 # {STR_VAR_n}/{B_BUFF*}: a esteira mede esses placeholders como 0 px; aqui valem 10 letras largas
@@ -275,6 +364,8 @@ JOGADOR_COM_GENERO = ("você é bom!", "ser ganancioso", "campeão em formação
 def test_jogador_sem_genero_marcado(rel):
     corpo = "".join(re.findall(r'\.string "(.*)"', (REPO_ROOT / rel).read_text(encoding="utf-8")))
     corpo = re.sub(r"\\[nlp]", " ", corpo)
+    # "Rumo ao título de campeão!" (Gym Guy, C3) nomeia o título, não o jogador: o "campeão" avulso segue proibido
+    corpo = corpo.replace("Rumo ao título de campeão!", "Rumo ao título!")
     assert [f for f in JOGADOR_COM_GENERO if f in corpo] == []
 
 
@@ -342,3 +433,170 @@ def test_ha_texto_com_placeholder_variavel_nos_dois_grupos():
     for grupo, arquivos in GRUPOS.items():
         n = sum(bool(PLACEHOLDER.search((REPO_ROOT / rel).read_text(encoding="utf-8"))) for rel in arquivos)
         assert n >= 1, grupo
+
+
+# ---------------------------------------------------------------------------------------------
+# Rodada 3 (C3: TwoIsland, Underground Path, Vermilion, Victory Road, Viridian)
+# ---------------------------------------------------------------------------------------------
+
+# Gênero do jogador, regras de 20/10 e 21/10 (A1, B2, C2, D2): palavras soltas, insulto "Seu X!"/"Ora, seu!",
+# vocativo "amigo"/"cara" (o "Cara Pokémon" não conta), "o protagonista"/"o personagem principal" e o plural
+# masculino que inclui o jogador ("vocês todos"). As regex rodam sobre o texto com as quebras viradas em espaço.
+PLAYER_GENDERED_R3 = tuple(re.compile(p) for p in (
+    r"\bavisad[oa]\b", r"\bladrão\b", r"\bderrotado\b", r"\bsozinho\b", r"\bpreparado\b", r"\b[Bb]em-vindo\b",
+    r"\bocupado\b", r"\bpronto\b", r"\bcansado\b", r"\bperdedor\b", r"\bbruto\b", r"\bganancioso\b",
+    r"(?:^|[!?.…] )Seu \w+!", r", seu \w+!", r"\b[Oo]ra, seu\b",
+    r"\b[Aa]migo\b", r"\b[Cc]ara\b(?! Pokémon)", r"\b[Rr]apaz\b", r"\b[Gg]aroto\b", r"\b[Nn]ovato\b",
+    r"\bprotagonista\b", r"\bpersonagem principal\b", r"\bcampeão em formação\b",
+    r"(?i)\bvocês tod[oa]s\b", r"(?i)\btodos vocês\b",
+))
+
+# Adjetivo/particípio masculino logo depois de "você" + verbo de ligação (ou {PLAYER} em 3ª pessoa)
+_COPULA_R3 = r"(?:é|está|estava|era|foi|ser|estar|ficar|fica|ficou|parece|estiver|for|seja)"
+_INTENS_R3 = r"(?:muito|bem|tão|mais|menos|meio|bastante|realmente|sempre)"
+GENDERED_ADJ_R3 = re.compile(
+    rf"(?<!\w)(?:[Vv]ocê|{{PLAYER}})\s+(?:não\s+)?{_COPULA_R3}\s+(?:{_INTENS_R3}\s+)?"
+    rf"(?!{_INTENS_R3}\b)(?!\w*ndo\b)(\w{{3,}}(?:o|ado|ido|oso|udo))\b")
+# "você é/está <palavra em -o>" que não marca o gênero do jogador (palavra -> motivo)
+GENDERED_ADJ_R3_OK: dict[str, str] = {}
+# Sujeito oculto ("Se ficar travado", "Quando estiver cansado", "Caso fique preso"): subordinada com
+# ficar/estar/ser/sentir-se + adjetivo/particípio masculino, sem "você" antes (o jogador é o sujeito)
+_VERBO_OCULTO_R3 = (r"(?:ficar|fique|ficou|estiver|estar|esteja|estava|for|seja|ser|sentir-se|se sentir|se sentiu|"
+                    r"parecer|pareça)")
+GENDERED_OCULTO_R3 = re.compile(
+    rf"(?<!\w)(?:[Ss]e|[Qq]uando|[Cc]aso|[Ee]nquanto|[Dd]epois que)\s+(?:não\s+)?{_VERBO_OCULTO_R3}\s+"
+    rf"(?:{_INTENS_R3}\s+)?(?!{_INTENS_R3}\b)(?!\w*ndo\b)(\w{{3,}}o)\b")
+# adjetivo em -o depois de "se for/estiver..." que não marca o gênero do jogador (palavra -> motivo)
+GENDERED_OCULTO_R3_OK: dict[str, str] = {"preciso": "impessoal: \"se for preciso\""}
+
+
+def _c3_corpo(rel: str) -> str:
+    """Todo o texto do arquivo numa linha só: quebras literais viram espaço, só {PLAYER} sobra entre chaves."""
+    corpo = " ".join(_texto_por_rotulo(rel).values())
+    corpo = re.sub(r"\{[^}]*\}", lambda m: "{PLAYER}" if m.group(0) == "{PLAYER}" else " ", corpo)
+    return re.sub(r"\\[nlp]", " ", corpo)
+
+
+GRUPO_C3 = GRUPOS["C3"]
+
+
+@pytest.mark.parametrize("rel", GRUPO_C3)
+def test_c3_nenhum_padrao_de_genero_do_jogador(rel):
+    corpo = _c3_corpo(rel)
+    achados = [m.group(0) for p in PLAYER_GENDERED_R3 for m in p.finditer(corpo)]
+    achados += [m.group(0) for m in GENDERED_ADJ_R3.finditer(corpo) if m.group(1) not in GENDERED_ADJ_R3_OK]
+    achados += [m.group(0) for m in GENDERED_OCULTO_R3.finditer(corpo) if m.group(1) not in GENDERED_OCULTO_R3_OK]
+    assert achados == []
+
+
+@pytest.mark.parametrize("bruto", [
+    "Se ficar travado, tente mover alguns pedregulhos.",         # o caso que passou pela C3 (b541c47ca)
+    r"Se ficar\npreso, chame.", "Quando estiver cansado, descanse.", "Caso fique ocupado, volte depois.",
+    "Se não estiver preparado, espere.", r"Se se sentir\lsozinho, fale.", "Se for tolo, desista.",
+])
+def test_c3_sujeito_oculto_com_adjetivo_masculino_e_detectado(bruto):
+    flat = re.sub(r"\\[nlp]", " ", bruto)
+    assert GENDERED_OCULTO_R3.search(flat), bruto
+
+
+@pytest.mark.parametrize("bruto", [
+    "Se não conseguir passar, tente mover alguns pedregulhos.", "Se for preciso, volte.",
+    "Se estiver na região da Rota 2, procure por ele.", "Quando for a hora, avise.", "Se for professor, venha.",
+    "Quando estiver ficando cansado", "Se ficar com medo, fuja.", "Se for o caso, diga.",
+])
+def test_c3_sujeito_oculto_nao_acusa_falso_positivo(bruto):
+    flat = re.sub(r"\\[nlp]", " ", bruto)
+    achados = [m.group(0) for m in GENDERED_OCULTO_R3.finditer(flat) if m.group(1) not in GENDERED_OCULTO_R3_OK]
+    assert achados == [], bruto
+
+
+@pytest.mark.parametrize("bruto", [
+    "Valeu, amigo!", "Ei, cara, espere!", "Ora, seu!", "Seu fracote!", "Droga, seu fracote!",
+    r"Ei,\ncara!", r"Ora,\nseu!", r"Tchau,\lamigo!", r"Ganhei!\pSeu fracote!",
+    "Você é o protagonista.", r"Você é o\nprotagonista.", "Vocês todos são pomposos!", r"Vocês\ntodos!",
+    "Você foi avisado.", r"Foi\navisado.", "Você ficou sozinho no mapa.", "Bem-vindo!",
+])
+def test_c3_padroes_de_genero_pegam_os_casos_conhecidos(bruto):
+    flat = re.sub(r"\\[nlp]", " ", bruto)
+    assert [m.group(0) for p in PLAYER_GENDERED_R3 for m in p.finditer(flat)], bruto
+
+
+@pytest.mark.parametrize("bruto", [
+    "Você está pronto?", r"Você ser\nrápido", r"Você está\pmuito cansado", "{PLAYER} está pronto",
+    "Sim, {PLAYER} foi esperto", "Você não é preguiçoso",
+])
+def test_c3_padrao_de_adjetivo_masculino_pega_os_casos_conhecidos(bruto):
+    flat = re.sub(r"\\[nlp]", " ", bruto)
+    assert GENDERED_ADJ_R3.search(flat), bruto
+
+
+@pytest.mark.parametrize("bruto", [
+    "Parabéns! Seu {STR_VAR_1} evoluiu!", "O Cara Pokémon usou o item!", "Os seus Pokémon.", "Você manda bem!",
+    "Você está sem tempo?", "Você é legal!", "Acho que podemos ser amigos.", "Os fãs são bem-vindos!",
+    "Você é melhor do que eu!", "Você está à minha altura?", "Quem é Treinador Pokémon não passa!",
+])
+def test_c3_padroes_de_genero_nao_acusam_falso_positivo(bruto):
+    flat = re.sub(r"\\[nlp]", " ", bruto)
+    flat = re.sub(r"\{[^}]*\}", lambda m: "{PLAYER}" if m.group(0) == "{PLAYER}" else " ", flat)
+    assert [m.group(0) for p in PLAYER_GENDERED_R3 for m in p.finditer(flat)] == [], bruto
+    assert not GENDERED_ADJ_R3.search(flat), bruto
+
+
+# Termos que a C3 criou (glossário "criado") ou que outras frentes criaram e a C3 usa: registrados e nas falas
+TERMOS_C3 = {
+    "POKéMON MOVE MANIAC": ("Maníaco dos Golpes", "data/maps/TwoIsland_House/text.inc"),
+    "KARATE KING": ("Rei do Caratê", "data/maps/ViridianCity_Gym/text.inc"),
+    "Lightning American": ("Americano Relâmpago", "data/maps/VermilionCity_Gym/text.inc"),
+    "Joyful GAME CORNER": ("Cassino da Alegria", "data/maps/TwoIsland/text.inc"),
+    "RAGE CANDYBAR": ("Barra Fúria", "data/maps/TwoIsland/text.inc"),
+    "MYSTICTICKET (forma cheia)": ("Bilhete Místico", "data/maps/VermilionCity/text.inc"),
+    "AURORATICKET (forma cheia)": ("Bilhete Aurora", "data/maps/VermilionCity/text.inc"),
+    # criados por outras frentes (pendência da rodada 3): "Mestre da Pesca" na casa de Vermilion
+    "FISHING GURU": ("Mestre da Pesca", "data/maps/VermilionCity_House1/text.inc"),
+}
+
+
+@pytest.mark.parametrize("en", sorted(TERMOS_C3))
+def test_c3_termo_esta_no_glossario_e_na_fala(en):
+    glossario = json.loads((REPO_ROOT / "test" / "esteira" / "glossario.json").read_text(encoding="utf-8"))
+    entradas = [t for t in glossario["termos"] if t["en"] == en]
+    pt, arquivo = TERMOS_C3[en]
+    assert len(entradas) == 1 and entradas[0]["fonte"] == "criado"
+    # "Barra Fúria" aparece no plural ("Barras Fúria") na fala
+    assert entradas[0]["pt"] == pt
+    corpo = _c3_corpo(arquivo)
+    assert pt in corpo or (pt.startswith("Barra ") and "Barras " + pt[6:] in corpo)
+
+
+def test_c3_pendencia_mestre_da_pesca_na_casa_de_vermilion():
+    corpo = _c3_corpo("data/maps/VermilionCity_House1/text.inc")
+    assert corpo.count("Mestre da Pesca") >= 2
+    assert not re.search(r"(?i)guru|pescador", corpo)
+
+
+def test_c3_formas_cheias_de_item_e_golpe_em_fala():
+    """Decisão de 20/10: nome de item/golpe em fala usa a forma cheia quando cabe."""
+    corpo = " ".join(_c3_corpo(f) for f in GRUPO_C3)
+    for cheio in ("Faca de Dois Gumes", "Onda de Choque", "Ferrão Venenoso", "Cura Queimadura", "Vale Bicicleta",
+                  "Bilhete Místico", "Bilhete Aurora", "Explorador VS", "Antiparalisia", "Descongelar", "Despertar"):
+        assert cheio in corpo, cheio
+    for curto in ("Faca 2 Gumes", "Onda Choque", "F. Venenoso", "Cura Queimad.", "Vale Bicicl.", "Bilhete Míst.",
+                  "Bilh. Aurora"):
+        assert curto not in corpo, curto
+
+
+def test_c3_fala_de_vermilion_e_viridian_sem_o_nome_em_ingles():
+    corpo = " ".join(_c3_corpo(f) for f in GRUPO_C3)
+    for ingles in ("VERMILION", "VIRIDIAN", "S.S. ANNE", "SEAGALLOP", "THUNDERBADGE", "EARTHBADGE", "Lt. Surge",
+                   "LT. SURGE", "TM34", "TM26"):
+        assert ingles not in corpo, ingles
+    # MT34/MT26 (TM -> MT) e as insígnias do glossário
+    assert "MT34" in corpo and "MT26" in corpo
+    assert "Insígnia Trovão" in corpo and "Insígnia Terra" in corpo
+
+
+def test_c3_gym_do_surge_chama_o_jogador_de_recruta():
+    """O 'kid' do Ten. Surge virou 'recruta' (neutro e militar): nada de 'garoto'/'rapaz'/'moleque'."""
+    corpo = _c3_corpo("data/maps/VermilionCity_Gym/text.inc")
+    assert corpo.count("recruta") >= 6
+    assert not re.search(r"\b(?:garoto|garota|rapaz|moleque|criança)\b(?!s)", corpo.replace("para crianças", ""))

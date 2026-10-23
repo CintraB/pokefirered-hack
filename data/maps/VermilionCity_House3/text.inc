@@ -1,20 +1,20 @@
 VermilionCity_House3_Text_PidgeyFlyLetterToSaffron::
-    .string "I'm getting my PIDGEY to fly a\n"
-    .string "letter to SAFFRON in the north.$"
+    .string "Estou fazendo o meu Pidgey levar uma\n"
+    .string "carta voando até Saffron, no norte.$"
 
 VermilionCity_House3_Text_Pidgey::
-    .string "PIDGEY: Kurukkoo!$"
+    .string "Pidgey: Kurukkoo!$"
 
 VermilionCity_House3_Text_DearPippiLetter::
-    .string "Dear PIPPI,\n"
-    .string "I hope to see you soon.\p"
-    .string "I heard SAFFRON has problems with\n"
-    .string "TEAM ROCKET.\p"
-    .string "VERMILION appears to be safe.$"
+    .string "Querida Pippi,\n"
+    .string "Espero ver você em breve.\p"
+    .string "Ouvi dizer que Saffron está com\n"
+    .string "problemas com a Equipe Rocket.\p"
+    .string "Vermilion parece estar segura.$"
 
 VermilionCity_House3_Text_SendMyPidgeyToUnionRoom::
-    .string "I want to exchange MAIL with all\n"
-    .string "sorts of people.\p"
-    .string "I send my PIDGEY to a UNION ROOM\n"
-    .string "to exchange MAIL for me.$"
+    .string "Quero trocar Cartas com todo tipo de\n"
+    .string "gente.\p"
+    .string "Mando o meu Pidgey a uma Sala União\n"
+    .string "para trocar Cartas por mim.$"
 

@@ -1,84 +1,85 @@
 MtMoon_B2F_Text_MiguelIntro::
-    .string "Hey, stop!\p"
-    .string "I found these fossils!\n"
-    .string "They're both mine!$"
+    .string "Ei, pare!\p"
+    .string "Fui eu que achei estes fósseis!\n"
+    .string "Os dois são meus!$"
 
 MtMoon_B2F_Text_MiguelDefeat::
-    .string "Okay!\n"
-    .string "I'll share!$"
+    .string "Tá bom!\n"
+    .string "Vou dividir!$"
 
 MtMoon_B2F_Text_WellEachTakeAFossil::
-    .string "We'll each take a fossil!\n"
-    .string "No being greedy!$"
+    .string "Cada um leva um fóssil!\n"
+    .string "Sem ganância!$"
 
 MtMoon_B2F_Text_ThenThisFossilIsMine::
-    .string "All right.\n"
-    .string "Then this fossil is mine!$"
+    .string "Certo.\n"
+    .string "Então este fóssil é meu!$"
 
 MtMoon_B2F_Text_LabOnCinnabarRegeneratesFossils::
-    .string "Far away, on CINNABAR ISLAND,\n"
-    .string "there's a POKéMON LAB.\p"
-    .string "They do research on regenerating\n"
-    .string "fossils.$"
+    .string "Bem longe daqui, na Ilha Cinnabar,\n"
+    .string "há um Laboratório Pokémon.\p"
+    .string "Lá eles pesquisam como regenerar\n"
+    .string "fósseis.$"
 
 MtMoon_B2F_Text_Grunt1Intro::
-    .string "We, TEAM ROCKET, shall find the\n"
-    .string "fossils!\p"
-    .string "Reviving POKéMON from them will\n"
-    .string "earn us huge riches!$"
+    .string "Nós, da Equipe Rocket, vamos achar\n"
+    .string "os fósseis!\p"
+    .string "Reviver Pokémon a partir deles vai\n"
+    .string "nos deixar podres de ricos!$"
 
 MtMoon_B2F_Text_Grunt1Defeat::
-    .string "Urgh!\n"
-    .string "Now I'm mad!$"
+    .string "Argh!\n"
+    .string "Agora fiquei bravo!$"
 
 MtMoon_B2F_Text_Grunt1PostBattle::
-    .string "You made me mad!\n"
-    .string "TEAM ROCKET will blacklist you!$"
+    .string "Você me deixou furioso!\n"
+    .string "A Equipe Rocket vai ficar de olho em\l"
+    .string "você!$"
 
 MtMoon_B2F_Text_Grunt2Intro::
-    .string "We, TEAM ROCKET, are POKéMON\n"
-    .string "gangsters!\l"
-    .string "We strike fear with our strength!$"
+    .string "Nós, da Equipe Rocket, somos os\n"
+    .string "gângsteres dos Pokémon!\l"
+    .string "Semeamos o terror com a nossa força!$"
 
 MtMoon_B2F_Text_Grunt2Defeat::
-    .string "I blew it!$"
+    .string "Estraguei tudo!$"
 
 MtMoon_B2F_Text_Grunt2PostBattle::
-    .string "Darn it all!\n"
-    .string "My associates won't stand for this!$"
+    .string "Droga!\n"
+    .string "Meus comparsas não vão aceitar isso!$"
 
 MtMoon_B2F_Text_Grunt3Intro::
-    .string "We're pulling a big job here!\n"
-    .string "Get lost, kid!$"
+    .string "Estamos num grande serviço aqui!\n"
+    .string "Cai fora, criança!$"
 
 MtMoon_B2F_Text_Grunt3Defeat::
-    .string "So, you are good…$"
+    .string "Então você sabe batalhar…$"
 
 MtMoon_B2F_Text_Grunt3PostBattle::
-    .string "If you find a fossil, give it to me\n"
-    .string "and scram!$"
+    .string "Se você achar um fóssil, entregue\n"
+    .string "para mim e suma daqui!$"
 
 MtMoon_B2F_Text_Grunt4Intro::
-    .string "Little kids shouldn't be messing\n"
-    .string "around with grown-ups!\p"
-    .string "It could be bad news!$"
+    .string "Criancinhas não deveriam se meter com\n"
+    .string "adultos!\p"
+    .string "Isso pode acabar mal!$"
 
 MtMoon_B2F_Text_Grunt4Defeat::
-    .string "I'm steamed!$"
+    .string "Estou fervendo de raiva!$"
 
 MtMoon_B2F_Text_Grunt4PostBattle::
-    .string "POKéMON lived here long before\n"
-    .string "people came.$"
+    .string "Os Pokémon viviam aqui muito antes de\n"
+    .string "as pessoas chegarem.$"
 
 MtMoon_B2F_Text_YouWantDomeFossil::
-    .string "Do you want the DOME FOSSIL?$"
+    .string "Quer o Fóssil Domo?$"
 
 MtMoon_B2F_Text_YouWantHelixFossil::
-    .string "Do you want the HELIX FOSSIL?$"
+    .string "Quer o Fóssil Hélice?$"
 
 MtMoon_B2F_Text_ObtainedHelixFossil::
-    .string "Obtained the HELIX FOSSIL!$"
+    .string "Você obteve o Fóssil Hélice!$"
 
 MtMoon_B2F_Text_ObtainedDomeFossil::
-    .string "Obtained the DOME FOSSIL!$"
+    .string "Você obteve o Fóssil Domo!$"
 

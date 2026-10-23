@@ -1,5 +1,5 @@
 OneIsland_House2_Text_IWantToStayHereForever::
-    .string "Young people all want to go off to\n"
-    .string "big cities.\p"
-    .string "But I want to stay here forever!$"
+    .string "Os jovens só querem ir embora para\n"
+    .string "as cidades grandes.\p"
+    .string "Mas eu quero ficar aqui para sempre!$"
 

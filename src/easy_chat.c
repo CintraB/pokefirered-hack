@@ -63,18 +63,18 @@ static const u8 *const sEasyChatGroupNamePointers[] = {
     [EC_GROUP_POKEMON_2] = gEasyChatGroupName_Pokemon2,
 };
 
-static const u16 sDefaultProfileWords[] = {
-    EC_WORD_I_AM,
-    EC_WORD_A,
+static const u16 sDefaultProfileWords[] = { // PT-BR: "Eu adoro Pokémon !" (no article/gender to agree)
+    EC_WORD_I,
+    EC_WORD_ADORE,
     EC_WORD_POKEMON,
-    EC_WORD_FRIEND,
+    EC_WORD_EXCL,
 };
 
-static const u16 sDefaultBattleStartWords[] = {
-    EC_WORD_ARE,
-    EC_WORD_YOU,
-    EC_WORD_READY,
-    EC_WORD_QUES,
+static const u16 sDefaultBattleStartWords[] = { // PT-BR: "Ei vamos lutar ! Aí vou eu !" (no gendered "pronto")
+    EC_WORD_HEY,
+    EC_WORD_LET_S,
+    EC_WORD_FIGHT,
+    EC_WORD_EXCL,
     EC_WORD_HERE_I_COME,
     EC_WORD_EXCL,
 };
@@ -312,7 +312,7 @@ void ShowEasyChatMessage(void)
     }
 
     ConvertEasyChatWordsToString(gStringVar4, easyChatWords, columns, rows);
-    ShowFieldAutoScrollMessage(gStringVar4);
+    ShowFieldAutoScrollMessage(CapitalizeEasyChatPhrase(gStringVar4));
 }
 
 void BufferRandomHobbyOrLifestyleString(void)
@@ -727,4 +727,57 @@ static bool8 IsWordUnlocked(u16 easyChatWord)
         return FALSE;
     else
         return UnlockedECMonOrMove(index, groupId);
+}
+
+// PT-BR: Easy Chat words are lowercase (mixed case, like the rest of the translation), so a phrase shown
+// as a message gets an uppercase letter at its start and after "!" or "?" (a leading "…" or "-" is skipped).
+// Returns str.
+static const u8 sLowerToUpperAccented[][2] = {
+    {CHAR_a_GRAVE, CHAR_A_GRAVE},
+    {CHAR_a_ACUTE, CHAR_A_ACUTE},
+    {CHAR_a_CIRCUMFLEX, CHAR_A_CIRCUMFLEX},
+    {0x40, 0x42}, // ã -> Ã (Hack 7 glyphs, no CHAR_ name in characters.h)
+    {CHAR_c_CEDILLA, CHAR_C_CEDILLA},
+    {CHAR_e_ACUTE, CHAR_E_ACUTE},
+    {CHAR_e_CIRCUMFLEX, CHAR_E_CIRCUMFLEX},
+    {CHAR_i_ACUTE, CHAR_I_ACUTE},
+    {CHAR_o_ACUTE, CHAR_O_ACUTE},
+    {CHAR_o_CIRCUMFLEX, CHAR_O_CIRCUMFLEX},
+    {0x41, 0x43}, // õ -> Õ (Hack 7 glyphs)
+    {CHAR_u_ACUTE, CHAR_U_ACUTE},
+};
+
+static u8 EC_ToUpper(u8 c)
+{
+    u32 i;
+
+    if (c >= CHAR_a && c <= CHAR_z)
+        return c - CHAR_a + CHAR_A;
+    for (i = 0; i < NELEMS(sLowerToUpperAccented); i++)
+    {
+        if (sLowerToUpperAccented[i][0] == c)
+            return sLowerToUpperAccented[i][1];
+    }
+    return c;
+}
+
+u8 *CapitalizeEasyChatPhrase(u8 *str)
+{
+    u8 *c;
+    bool32 sentenceStart = TRUE;
+
+    for (c = str; *c != EOS; c++)
+    {
+        if (*c == CHAR_EXCL_MARK || *c == CHAR_QUESTION_MARK)
+        {
+            sentenceStart = TRUE;
+        }
+        else if (*c != CHAR_SPACE && *c != CHAR_NEWLINE && *c != CHAR_PROMPT_SCROLL
+              && *c != CHAR_ELLIPSIS && *c != CHAR_HYPHEN && sentenceStart)
+        {
+            *c = EC_ToUpper(*c);
+            sentenceStart = FALSE;
+        }
+    }
+    return str;
 }

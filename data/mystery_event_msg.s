@@ -141,8 +141,8 @@ sText_MysteryGiftVisitingTrainer:
 	.string "Treinadores para as Ilhas Sevii.\p"
 	.string "…Vou lhe dar uma senha secreta\n"
 	.string "para a pesquisa:\p"
-	.string "“ME DÁ\n"
-	.string "TREINADOR INCRÍVEL”\p"
+	.string "“Me dá\n"
+	.string "Treinador incrível”\p"
 	.string "Escreva isso na pesquisa e envie\n"
 	.string "pela Comunicação Sem Fio.$"
 
