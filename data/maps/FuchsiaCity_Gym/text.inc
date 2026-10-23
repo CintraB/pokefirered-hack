@@ -1,156 +1,159 @@
 FuchsiaCity_Gym_Text_KogaIntro::
-    .string "KOGA: Fwahahaha!\p"
-    .string "A mere child like you dares to\n"
-    .string "challenge me?\p"
-    .string "The very idea makes me shiver\n"
-    .string "with mirth!\p"
-    .string "Very well, I shall show you true\n"
-    .string "terror as a ninja master.\p"
-    .string "Poison brings steady doom.\n"
-    .string "Sleep renders foes helpless.\p"
-    .string "Despair to the creeping horror of\n"
-    .string "POISON-type POKéMON!{PLAY_BGM}{MUS_ENCOUNTER_GYM_LEADER}$"
+    .string "Koga: Fwahahaha!\p"
+    .string "Uma mera criança ousa me\n"
+    .string "desafiar?\p"
+    .string "A ideia me faz tremer de\n"
+    .string "tanta graça!\p"
+    .string "Muito bem, vou lhe mostrar o\n"
+    .string "verdadeiro terror de um mestre ninja.\p"
+    .string "O veneno traz a ruína constante.\n"
+    .string "O sono deixa o inimigo indefeso.\p"
+    .string "Desespere-se diante do horror\n"
+    .string "rastejante dos Pokémon do tipo\l"
+    .string "Venenoso!{PLAY_BGM}{MUS_ENCOUNTER_GYM_LEADER}$"
 
 FuchsiaCity_Gym_Text_KogaDefeat::
-    .string "Humph!\n"
-    .string "You have proven your worth!\p"
-    .string "Here!\n"
-    .string "Take the SOULBADGE!$"
+    .string "Humpf!\n"
+    .string "Você provou o seu valor!\p"
+    .string "Aqui!\n"
+    .string "Leve a Insígnia Alma!$"
 
 FuchsiaCity_Gym_Text_KogaPostBattle::
-    .string "When afflicted by TOXIC, a POKéMON\n"
-    .string "suffers more and more.\p"
-    .string "It suffers worsening damage as the\n"
-    .string "battle wears on!\p"
-    .string "It will surely terrorize foes!$"
+    .string "Quando está sob o efeito de Tóxico,\n"
+    .string "o Pokémon sofre cada vez mais.\p"
+    .string "O dano só piora conforme a\n"
+    .string "batalha se arrasta!\p"
+    .string "Com certeza vai aterrorizar os\n"
+    .string "inimigos!$"
 
 FuchsiaCity_Gym_Text_KogaExplainSoulBadge::
-    .string "Now that you have the SOULBADGE,\n"
-    .string "the DEFENSE of your POKéMON rises.\p"
-    .string "It also lets you SURF outside of\n"
-    .string "battle.\p"
+    .string "Agora que você tem a Insígnia Alma,\n"
+    .string "a Defesa dos seus Pokémon aumenta.\p"
+    .string "Ela também permite usar Surfar\n"
+    .string "fora de batalha.\p"
     .string "Ah!\n"
-    .string "Take this, too!$"
+    .string "Leve isto também!$"
 
 FuchsiaCity_Gym_Text_ReceivedTM06FromKoga::
-    .string "{PLAYER} received TM06\n"
-    .string "from KOGA.$"
+    .string "{PLAYER} recebeu a MT06\n"
+    .string "do Koga.$"
 
 FuchsiaCity_Gym_Text_KogaExplainTM06::
-    .string "Sealed within that TM06 lies\n"
-    .string "TOXIC!\p"
-    .string "It is a secret technique dating\n"
-    .string "back some four hundred years.$"
+    .string "Selado dentro daquela MT06 está\n"
+    .string "Tóxico!\p"
+    .string "É uma técnica secreta que remonta\n"
+    .string "a cerca de quatrocentos anos.$"
 
 FuchsiaCity_Gym_Text_MakeSpaceForThis::
-    .string "Make space for this, child!$"
+    .string "Abra espaço para isto, criança!$"
 
 FuchsiaCity_Gym_Text_KaydenIntro::
-    .string "Strength isn't the key for POKéMON.\n"
-    .string "Do you understand this?\p"
-    .string "POKéMON is about strategy!\p"
-    .string "I'll show you how strategy can\n"
-    .string "beat brute strength.$"
+    .string "A força não é a chave para os\n"
+    .string "Pokémon. Você entende isso?\p"
+    .string "Pokémon é questão de estratégia!\p"
+    .string "Vou lhe mostrar como a estratégia\n"
+    .string "pode vencer a força bruta.$"
 
 FuchsiaCity_Gym_Text_KaydenDefeat::
-    .string "What?\n"
-    .string "Extraordinary!$"
+    .string "O quê?\n"
+    .string "Extraordinário!$"
 
 FuchsiaCity_Gym_Text_KaydenPostBattle::
-    .string "So, you mix brawn with brains?\n"
-    .string "Good strategy!\p"
-    .string "That's remarkable for a child\n"
-    .string "TRAINER.$"
+    .string "Então você une músculos e cérebro?\n"
+    .string "Boa estratégia!\p"
+    .string "Isso é notável para alguém tão\n"
+    .string "jovem.$"
 
 FuchsiaCity_Gym_Text_KirkIntro::
-    .string "I was a magician once upon a time.\p"
-    .string "But I dreamt of becoming a ninja,\n"
-    .string "so I joined this GYM.$"
+    .string "Eu já fui mágico, há muito tempo.\p"
+    .string "Mas sonhei em ser ninja,\n"
+    .string "então entrei para este Ginásio.$"
 
 FuchsiaCity_Gym_Text_KirkDefeat::
-    .string "I'm done for!$"
+    .string "Estou acabado!$"
 
 FuchsiaCity_Gym_Text_KirkPostBattle::
-    .string "Even though I've lost, I will keep\n"
-    .string "training according to the teachings\l"
-    .string "of KOGA, my ninja master.$"
+    .string "Mesmo tendo perdido, vou continuar\n"
+    .string "treinando segundo os ensinamentos\l"
+    .string "do Koga, meu mestre ninja.$"
 
 FuchsiaCity_Gym_Text_NateIntro::
-    .string "Let's see you beat my special\n"
-    .string "techniques!$"
+    .string "Vamos ver se você vence as minhas\n"
+    .string "técnicas especiais!$"
 
 FuchsiaCity_Gym_Text_NateDefeat::
-    .string "You had me fooled!$"
+    .string "Você me enganou!$"
 
 FuchsiaCity_Gym_Text_NatePostBattle::
-    .string "I like poison and sleep techniques,\n"
-    .string "as they linger after battle!$"
+    .string "Gosto das técnicas de veneno e sono,\n"
+    .string "pois elas duram depois da batalha!$"
 
 FuchsiaCity_Gym_Text_PhilIntro::
-    .string "Stop right there!\p"
-    .string "The famed invisible walls of\n"
-    .string "FUCHSIA GYM have you frustrated?$"
+    .string "Pare aí mesmo!\p"
+    .string "As famosas paredes invisíveis do\n"
+    .string "Ginásio de Fuchsia estão\l"
+    .string "frustrando você?$"
 
 FuchsiaCity_Gym_Text_PhilDefeat::
-    .string "Whoa!\n"
-    .string "You've got it!$"
+    .string "Uau!\n"
+    .string "Você pegou o jeito!$"
 
 FuchsiaCity_Gym_Text_PhilPostBattle::
-    .string "You impressed me!\n"
-    .string "Here's a hint!\p"
-    .string "Look very closely for gaps in the\n"
-    .string "invisible walls!$"
+    .string "Você me impressionou!\n"
+    .string "Aqui vai uma dica!\p"
+    .string "Procure com muita atenção as\n"
+    .string "brechas nas paredes invisíveis!$"
 
 FuchsiaCity_Gym_Text_EdgarIntro::
-    .string "I also study the way of the ninja\n"
-    .string "with Master KOGA!\p"
-    .string "Ninja have a long history of using\n"
-    .string "animals!$"
+    .string "Eu também estudo o caminho ninja\n"
+    .string "com o Mestre Koga!\p"
+    .string "Os ninjas têm uma longa história\n"
+    .string "de uso de animais!$"
 
 FuchsiaCity_Gym_Text_EdgarDefeat::
-    .string "Awoo!$"
+    .string "Auuu!$"
 
 FuchsiaCity_Gym_Text_EdgarPostBattle::
-    .string "I still have much to learn.$"
+    .string "Ainda tenho muito a aprender.$"
 
 FuchsiaCity_Gym_Text_ShawnIntro::
-    .string "Master KOGA comes from a long line\n"
-    .string "of ninjas.\p"
-    .string "What did you descend from?$"
+    .string "O Mestre Koga vem de uma longa\n"
+    .string "linhagem de ninjas.\p"
+    .string "E você, descende de quê?$"
 
 FuchsiaCity_Gym_Text_ShawnDefeat::
-    .string "You're more skilled than I'd\n"
-    .string "thought!$"
+    .string "Você tem mais habilidade do que\n"
+    .string "eu pensava!$"
 
 FuchsiaCity_Gym_Text_ShawnPostBattle::
-    .string "Where there is light, there is\n"
-    .string "shadow!\p"
-    .string "Light and shadow!\n"
-    .string "Which do you choose?$"
+    .string "Onde há luz, há sombra!\p"
+    .string "Luz e sombra!\n"
+    .string "Qual você escolhe?$"
 
 FuchsiaCity_Gym_Text_GymGuyAdvice::
-    .string "Yo!\n"
-    .string "Champ in the making!\p"
-    .string "FUCHSIA GYM is a tricked-up place.\n"
-    .string "It's riddled with invisible walls!\p"
-    .string "KOGA might appear close, but he's\n"
-    .string "blocked off.\p"
-    .string "You have to find gaps in the walls\n"
-    .string "to reach him.$"
+    .string "E aí!\n"
+    .string "Rumo ao título de campeão!\p"
+    .string "O Ginásio de Fuchsia é um lugar\n"
+    .string "cheio de truques. Está repleto de\l"
+    .string "paredes invisíveis!\p"
+    .string "O Koga pode parecer perto, mas está\n"
+    .string "bloqueado.\p"
+    .string "Você precisa achar as brechas nas\n"
+    .string "paredes para chegar até ele.$"
 
 FuchsiaCity_Gym_Text_GymGuyPostVictory::
-    .string "It's amazing how ninja can terrify,\n"
-    .string "even now!$"
+    .string "É incrível como os ninjas ainda\n"
+    .string "conseguem aterrorizar, até hoje!$"
 
 FuchsiaCity_Gym_Text_GymStatue::
-    .string "FUCHSIA POKéMON GYM\n"
-    .string "LEADER: KOGA\p"
-    .string "WINNING TRAINERS:\n"
+    .string "Ginásio Pokémon de Fuchsia\n"
+    .string "Líder: Koga\p"
+    .string "Treinadores vencedores:\n"
     .string "{RIVAL}$"
 
 FuchsiaCity_Gym_Text_GymStatuePlayerWon::
-    .string "FUCHSIA POKéMON GYM\n"
-    .string "LEADER: KOGA\p"
-    .string "WINNING TRAINERS:\n"
+    .string "Ginásio Pokémon de Fuchsia\n"
+    .string "Líder: Koga\p"
+    .string "Treinadores vencedores:\n"
     .string "{RIVAL}, {PLAYER}$"
 

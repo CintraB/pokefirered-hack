@@ -11,9 +11,8 @@ CeruleanCity_House1_Text_HaveJustTheThing::
     .string "tenho a coisa certa.$"
 
 CeruleanCity_House1_Text_GoCrushBerriesAtDirectCorner::
-    .string "Há uma novidade no segundo andar\n"
-    .string "dos Centros Pokémon, no\n"
-    .string "Canto Direto.\p"
+    .string "Há uma novidade no Canto Direto,\n"
+    .string "no 2º andar dos Centros Pokémon.\p"
     .string "Instalaram uma máquina com\n"
     .string "Adaptador Sem Fio para amassar\l"
     .string "Frutas.\p"

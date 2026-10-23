@@ -1,10 +1,11 @@
 FuchsiaCity_Mart_Text_DontTheyHaveSafariZonePennants::
-    .string "Don't they have any pennants\n"
-    .string "promoting the SAFARI ZONE?\p"
-    .string "How about some paper lanterns?\n"
-    .string "Aren't there even any calendars?$"
+    .string "Não tem nenhum estandarte\n"
+    .string "divulgando a Zona de Safári?\p"
+    .string "Que tal umas lanternas de papel?\n"
+    .string "Não tem nem calendários?$"
 
 FuchsiaCity_Mart_Text_DidYouTryXSpeed::
-    .string "Did you try X SPEED?\n"
-    .string "It speeds up a POKéMON in battle.$"
+    .string "Já experimentou Velocidade X?\n"
+    .string "Ela deixa o Pokémon mais rápido\l"
+    .string "na batalha.$"
 
