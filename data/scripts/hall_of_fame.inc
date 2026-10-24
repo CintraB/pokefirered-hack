@@ -17,6 +17,7 @@ EventScript_ResetLegendaries::
 	clearflag FLAG_DEOXYS_FLEW_AWAY
 	clearflag FLAG_MEWTWO_FLEW_AWAY
 	clearflag FLAG_CELEBI_FLEW_AWAY
+	clearflag FLAG_MEW_FLEW_AWAY
 	return
 
 EventScript_ResetEliteFourEnd::

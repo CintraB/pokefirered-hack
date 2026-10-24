@@ -368,6 +368,7 @@ void StartLegendaryBattle(void)
     case SPECIES_HO_OH:
     case SPECIES_LUGIA:
     case SPECIES_CELEBI:
+    case SPECIES_MEW:
         CreateBattleStartTask(B_TRANSITION_BLUR, MUS_VS_LEGEND);
         break;
     default:
