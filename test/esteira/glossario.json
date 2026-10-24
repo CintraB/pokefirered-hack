@@ -2181,7 +2181,8 @@
    "fonte": "GO+TCG",
    "categoria": "golpe",
    "detectar": true,
-   "obs": "✂ de: Esmagamento de Pedras; MO06"
+   "obs": "✂ de: Esmagamento de Pedras; MO06",
+   "completo": "Esmagamento de Pedras"
   },
   {
    "en": "ROCK THROW",
@@ -4187,7 +4188,7 @@
    "categoria": "lugar",
    "detectar": true,
    "completo": "Cidade de Vermilion",
-   "obs": "✂ de: Cidade de Vermilion (regra 1, sem a preposição); decisão 5 do controlador (Task 2)"
+   "obs": "✂ de: Cidade de Vermilion (regra 1, sem a preposição); decisão 5 do controlador (Task 2); em fala e placa vale a forma cheia (decisão do Cintra em 24/10); a curta fica só no nome de mapa/região e nos campos com limite de letras"
   },
   {
    "en": "LAVENDER TOWN",
@@ -4420,7 +4421,7 @@
    "categoria": "lugar",
    "detectar": true,
    "completo": "Floresta de Viridian",
-   "obs": "✂ de: Floresta de Viridian (regra 1, sem a preposição); decisão 5 do controlador (Task 2)"
+   "obs": "✂ de: Floresta de Viridian (regra 1, sem a preposição); decisão 5 do controlador (Task 2); em fala e placa vale a forma cheia (decisão do Cintra em 24/10); a curta fica só no nome de mapa/região e nos campos com limite de letras"
   },
   {
    "en": "MT. MOON",
@@ -4436,7 +4437,7 @@
    "categoria": "lugar",
    "detectar": true,
    "completo": "Caverna de Cerulean",
-   "obs": "✂ de: Caverna de Cerulean (regra 1, sem a preposição; já era o nome curto dos andares); decisão 5 do controlador (Task 2)"
+   "obs": "✂ de: Caverna de Cerulean (regra 1, sem a preposição; já era o nome curto dos andares); decisão 5 do controlador (Task 2); em fala e placa vale a forma cheia (decisão do Cintra em 24/10); a curta fica só no nome de mapa/região e nos campos com limite de letras"
   },
   {
    "en": "DIGLETT'S CAVE",
@@ -5011,7 +5012,8 @@
    "pt": "Poké Mart",
    "fonte": "criado",
    "categoria": "lugar",
-   "detectar": true
+   "detectar": true,
+   "obs": "masculino em todo o jogo: o Poké Mart, um Poké Mart, no/nos Poké Marts (decisão do Cintra em 24/10)"
   },
   {
    "en": "Day Care",
@@ -6722,7 +6724,8 @@
    "categoria": "golpe",
    "detectar": true,
    "frente": "Task 2",
-   "obs": "✂ de: Soco de Cometa"
+   "obs": "✂ de: Soco de Cometa",
+   "completo": "Soco de Cometa"
   },
   {
    "en": "PAY DAY",
@@ -8082,7 +8085,8 @@
    "categoria": "golpe",
    "detectar": true,
    "frente": "Task 2",
-   "obs": "✂ de: Fosso de Areia"
+   "obs": "✂ de: Fosso de Areia",
+   "completo": "Fosso de Areia"
   },
   {
    "en": "SHEER COLD",
@@ -9487,7 +9491,7 @@
    "categoria": "interface",
    "detectar": false,
    "frente": "H",
-   "obs": "imagem the_end.png (tela final dos créditos); proposta, pendente de aprovação do Cintra",
+   "obs": "imagem the_end.png (tela final dos créditos); aprovado pelo Cintra em 24/10",
    "tela": "Créditos"
   },
   {
@@ -9629,12 +9633,12 @@
   },
   {
    "en": "VERMILION PORT",
-   "pt": "Porto Vermilion",
+   "pt": "Porto de Vermilion",
    "fonte": "criado",
    "categoria": "lugar",
    "detectar": true,
    "frente": "A1",
-   "obs": "sem 'de', como 'Cidade Vermilion' (D1)"
+   "obs": "forma cheia com 'de', como 'Cidade de Vermilion' em fala e placa (decisão do Cintra em 24/10); não é nome de mapa, então não tem forma curta"
   },
   {
    "en": "PRIZE EXCHANGE",
