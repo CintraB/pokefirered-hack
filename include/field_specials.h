@@ -36,4 +36,7 @@ u16 GetDayNightPeriodForScript(void);
 bool16 IsSkyClear(void);
 bool16 IsSpeciesCaught(void);
 
+// Hack 8 — Caverna Mutante
+u16 GetAlteringCaveSetForScript(void);
+
 #endif // GUARD_FIELD_SPECIALS_H
