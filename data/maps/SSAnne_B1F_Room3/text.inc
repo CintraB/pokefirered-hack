@@ -1,11 +1,13 @@
 SSAnne_B1F_Room3_Text_DylanIntro::
-    .string "I like feisty kids like you!$"
+    .string "Eu gosto de criança valente como\n"
+    .string "você!$"
 
 SSAnne_B1F_Room3_Text_DylanDefeat::
     .string "Argh!\n"
-    .string "Lost it!$"
+    .string "Perdi!$"
 
 SSAnne_B1F_Room3_Text_DylanPostBattle::
-    .string "Sea POKéMON live in deep water.\n"
-    .string "You'll need a ROD to fish them up!$"
+    .string "Pokémon marinhos vivem em águas\n"
+    .string "profundas. Você vai precisar de uma\l"
+    .string "vara de pescar!$"
 

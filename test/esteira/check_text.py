@@ -173,15 +173,14 @@ WIDTH_RULES: list[Rule] = [
     *[Rule("data/text/help_system.inc", label + "$", 26 * 8 - 8, _HELP_LIST, lines=1, space=4)
       for label in _HELP_LIST_LABELS],
     Rule("data/text/help_system.inc", None, 26 * 8, _HELP, lines=7, space=4),
-    Rule("data/text/fame_checker.inc", "gFameCheckerPersonName_", 8 * 8 - 8,
-         "lista do Fame Checker: FCWINDOWID_LIST .width = 8 tiles (src/fame_checker.c:476-480), nome em "
-         "x = 8 (src/fame_checker.c:1534)"),
     Rule("data/text/fame_checker.inc", "gFameCheckerFlavorTextOrigin", 0x54,
          "quadro do ícone do Fame Checker: FCWINDOWID_ICONDESC .width = 11 tiles (src/fame_checker.c:503-507), "
          "FONT_SMALL centralizado em 0x54 px (src/fame_checker.c:1404-1409)", font="small"),
     Rule("data/text/fame_checker.inc", None, DIALOG_WIDTH_PX,
          "caixa do Fame Checker: FCWINDOWID_MSGBOX .width = 26 tiles (src/fame_checker.c:494-498), texto em "
-         "x = 0 (src/fame_checker.c:966, src/fame_checker.c:977); PokemonJournal_Text_* vão por msgbox"),
+         "x = 0 (src/fame_checker.c:966, src/fame_checker.c:977); PokemonJournal_Text_* vão por msgbox; "
+         "gFameCheckerPersonName_* e PersonQuote_* também saem aí (sFameCheckerNameAndQuotesPointers, "
+         "src/fame_checker.c:965-966); a janela tem 4 tiles de altura = 2 linhas", box_lines=DIALOG_BOX_LINES),
     Rule("data/text/pokedude.inc", None, DIALOG_WIDTH_PX, _OAK_OLD_MAN + "; GetPokedudeText "
          "(src/battle_controller_pokedude.c:2558-2559)"),
     Rule("data/text/new_game_intro.inc", "gNameChoice_", 12 * 8 - 8,
@@ -1237,6 +1236,8 @@ _WORD = re.compile(r"[A-Za-zÀ-ÿ]+(?:'[A-Za-z]+)?")
 # Lista de permissões: arquivos e rótulos que ficam em inglês/japonês de propósito
 _ENGLISH_SKIP_FILES = ("src/keyboard_text.c", "src/data/text/species_names.h")
 _ENGLISH_SKIP_LABELS = ("gCreditsString_*", "gJPText_*", "*.trainerName")
+# Título da ajuda que é só a sigla "TO" (Treinador Original), sem letra minúscula
+_TO_TITLE_LABELS = frozenset({"Help_Text_OT"})
 
 
 @dataclass
@@ -1268,7 +1269,13 @@ def _english_words(entry: _Entry, allowed: set[str]) -> list[str]:
         return []
     found: list[str] = []
     for text in entry.texts[:1]:
+        # "TO" = Treinador Original: só vale em frase em PT-BR (tem letra minúscula) ou no título da ajuda;
+        # em texto todo em maiúsculas ("BELONGS TO", "A WINDOW TO", "TO ME") é o inglês que ainda falta traduzir
+        plain = " ".join(_plain_words(text))
+        to_is_acronym = entry.label in _TO_TITLE_LABELS or any(c.islower() for c in plain)
         for word in _plain_words(text):
+            if word == "TO" and to_is_acronym:
+                continue
             low = word.lower()
             if low in ENGLISH_WORDS and low not in allowed:
                 found.append(low)

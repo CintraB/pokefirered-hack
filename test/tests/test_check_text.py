@@ -391,6 +391,26 @@ def test_portuguese_is_not_english(repo):
     assert run(repo) == []
 
 
+def test_to_acronym_of_original_trainer_is_not_english(repo):
+    """"TO" (Treinador Original, CeladonCity_DepartmentStore_3F) não é o "to" inglês; "to" minúsculo continua sendo."""
+    inc(repo, 'Text_A::\n\t.string "Nº ID e o TO.\\pTO quer dizer Treinador Original.$"\n\n'
+              'Text_B::\n\t.string "Go to the shop$"\n')
+    counts = english_report(str(repo))
+    assert counts["data/text/pc.inc"].words == 3        # go, to, the (só o texto B)
+    assert counts["data/text/pc.inc"].texts == 1
+
+
+def test_to_in_all_caps_english_still_counts(repo):
+    """A exceção do TO vale só em frase com letra minúscula (PT-BR) e no título Help_Text_OT: o inglês todo em
+    maiúsculas ("BELONGS TO", "A WINDOW TO", "TO ME", "TO") continua sendo inglês."""
+    inc(repo, 'Text_A::\n\t.string "BELONGS TO$"\n\nText_B::\n\t.string "A WINDOW TO$"\n\n'
+              'Text_C::\n\t.string "TO ME$"\n\nText_D::\n\t.string "TO$"\n\n'
+              'Text_E::\n\t.string "Nº ID e o TO.$"\n\nHelp_Text_OT::\n\t.string "TO$"\n')
+    counts = english_report(str(repo))
+    assert counts["data/text/pc.inc"].words == 4        # um "to" em cada A, B, C e D
+    assert counts["data/text/pc.inc"].texts == 4        # E (frase PT) e Help_Text_OT (título) ficam de fora
+
+
 def test_english_allowlist(repo):
     put(repo, "src/data/text/species_names.h", 'const u8 gSpeciesNames[][11] = {\n'
         '    [SPECIES_X] = _("WHAT"),\n};\n')
@@ -604,8 +624,8 @@ def test_action_prompt_names_the_players_mon_without_prefix(repo):
 
 
 def test_fame_checker_windows(repo):
-    inc(repo, 'gFameCheckerPersonName_A::\n\t.string "' + "A" * 9 + '$"\n\n'        # 54 <= 56
-              'gFameCheckerPersonName_B::\n\t.string "' + "A" * 10 + '$"\n\n'       # 60 > 56
+    inc(repo, 'gFameCheckerPersonName_A::\n\t.string "' + "A" * 34 + 'i$"\n\n'      # 208: sai na caixa de 208 px
+              'gFameCheckerPersonName_B::\n\t.string "' + "A" * 35 + '$"\n\n'        # 210 > 208
               'gFameCheckerFlavorTextOriginLocation_A::\n\t.string "' + "A" * 16 + 'i$"\n\n'   # small: 80+4
               'gFameCheckerFlavorTextOriginObjectName_A::\n\t.string "' + "A" * 17 + '$"\n\n'  # 85 > 84
               'gFameCheckerFlavorText_A::\n\t.string "' + "A" * 34 + 'i$"\n',                # 208

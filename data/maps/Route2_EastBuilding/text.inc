@@ -1,32 +1,33 @@
 Route2_EastBuilding_Text_GiveHM05IfSeen10Mons::
-    .string "Hi! Remember me?\n"
-    .string "I'm one of PROF. OAK's AIDES.\p"
-    .string "If your POKéDEX has complete data\n"
-    .string "on ten species, I'm supposed to\l"
-    .string "give you a reward.\p"
-    .string "PROF. OAK entrusted me with\n"
-    .string "HM05 for you.\p"
-    .string "So, {PLAYER}, let me ask you.\p"
-    .string "Have you gathered data on at least\n"
-    .string "ten kinds of POKéMON?$"
+    .string "Oi! Lembra de mim?\n"
+    .string "Sou um dos assistentes do\l"
+    .string "Prof. Carvalho.\p"
+    .string "Se a sua Pokédex tiver dados\n"
+    .string "completos de dez espécies, devo lhe\l"
+    .string "dar uma recompensa.\p"
+    .string "O Prof. Carvalho me confiou a MO05\n"
+    .string "para você.\p"
+    .string "Então, {PLAYER}, me diga uma coisa.\p"
+    .string "Você reuniu dados de pelo menos dez\n"
+    .string "espécies de Pokémon?$"
 
 Route2_EastBuilding_Text_GreatHereYouGo::
-    .string "Great! You have caught or owned\n"
-    .string "{STR_VAR_3} kinds of POKéMON!\p"
-    .string "Congratulations!\n"
-    .string "Here you go!$"
+    .string "Ótimo! Você capturou ou obteve\n"
+    .string "{STR_VAR_3} espécies de Pokémon!\p"
+    .string "Parabéns!\n"
+    .string "Aqui está!$"
 
 Route2_EastBuilding_Text_ReceivedHM05FromAide::
-    .string "{PLAYER} received HM05\n"
-    .string "from the AIDE.$"
+    .string "{PLAYER} recebeu a MO05\n"
+    .string "do assistente.$"
 
 Route2_EastBuilding_Text_ExplainHM05::
-    .string "HM05 contains the hidden move\n"
-    .string "FLASH.\p"
-    .string "FLASH lights up even the darkest\n"
-    .string "of caves and dungeons.$"
+    .string "A MO05 contém o golpe oculto Clarão.\p"
+    .string "Clarão ilumina até as cavernas e\n"
+    .string "masmorras mais escuras.$"
 
 Route2_EastBuilding_Text_CanGetThroughRockTunnel::
-    .string "Once a POKéMON learns FLASH, you\n"
-    .string "can get through ROCK TUNNEL.$"
+    .string "Quando um Pokémon aprende Clarão,\n"
+    .string "você pode atravessar o\l"
+    .string "Túnel de Pedra.$"
 

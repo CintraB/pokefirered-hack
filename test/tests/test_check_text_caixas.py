@@ -77,6 +77,15 @@ def test_dialog_rules_have_two_lines_per_box():
         assert rule_for(file, label).box_lines == 2, file
 
 
+def test_fame_checker_box_has_two_lines_and_names_use_it():
+    """O Arquivo Fama: a caixa tem 2 linhas e os nomes das pessoas saem nela (208 px), não na lista de 56 px."""
+    for label in ("gFameCheckerFlavorText_X", "gFameCheckerPersonQuote_X", "PokemonJournal_Text_SpecialFeatureX",
+                  "gFameCheckerPersonName_X"):
+        rule = rule_for("data/text/fame_checker.inc", label)
+        assert rule.px == 208 and rule.box_lines == 2, label
+    assert rule_for("data/text/fame_checker.inc", "gFameCheckerFlavorTextOriginLocation_X").px == 0x54
+
+
 def test_english_untouched_passes(repo):
     assert box_failures(run(repo)) == []
 
