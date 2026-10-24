@@ -219,7 +219,7 @@ def test_celebi_batalha_e_fuga():
     for caso in (derrotado, fuga):
         assert "setflag FLAG_CELEBI_FLEW_AWAY" in caso and "EventScript_MonFlewAway" in caso
         assert "setvar VAR_0x8004, SPECIES_CELEBI" in caso
-    assert "FLAG_CELEBI_FLEW_AWAY" not in celebi
+    assert "setflag FLAG_CELEBI_FLEW_AWAY" not in celebi
     # capturado: ao voltar da batalha o objeto some na hora
     scripts = _read(f"{BERRY_MAP_T4}/scripts.inc")
     assert "MAP_SCRIPT_ON_RESUME, ThreeIsland_BerryForest_OnResume" in scripts
@@ -286,6 +286,9 @@ def test_celebi_pista():
     cru = "".join(re.findall(r'\.string "(.*)"', m.group(1)))
     assert cru.endswith("$")
     assert ct.box_lines(cru) <= 2
+    # Task 6: a 1ª frase fica sozinha numa caixa e espera botão antes de "Dizem que..."
+    primeira = cru.split(r"\p")[0]
+    assert "penumbra" in primeira and r"\l" not in primeira
     plano = re.sub(r"\\[nlp]", " ", cru)
     assert not re.search(r"\{PLAYER\}|\{RIVAL\}", plano)
     assert not re.search(r"\b(o|a)\s+(jogador|treinador)", plano, re.I)
@@ -403,7 +406,7 @@ def test_mew_batalha_e_fuga():
     for caso in (derrotado, fuga):
         assert "setflag FLAG_MEW_FLEW_AWAY" in caso and "EventScript_MonFlewAway" in caso
         assert "setvar VAR_0x8004, SPECIES_MEW" in caso
-    assert "FLAG_MEW_FLEW_AWAY" not in mew
+    assert "setflag FLAG_MEW_FLEW_AWAY" not in mew
     # capturado: ao voltar da batalha o objeto some na hora
     assert "MAP_SCRIPT_ON_RESUME, PokemonMansion_B1F_OnResume" in _read(f"{MANSION_MAP_T3}/scripts.inc")
     remover = _reachable_t3("PokemonMansion_B1F_OnResume")
@@ -596,7 +599,7 @@ def test_jirachi_batalha_t5():
     assert "special StartLegendaryBattle" in body
     for saida in ("B_OUTCOME_WON", "B_OUTCOME_RAN", "B_OUTCOME_PLAYER_TELEPORTED"):
         assert re.search(rf"goto_if_eq VAR_RESULT, {saida},\s*{TANOBY_PFX}_EventScript_JirachiFlewAway\b", body)
-    assert "FLEW_AWAY" not in body, "o caminho do capturado não pode ligar FLEW_AWAY"
+    assert "setflag FLAG_JIRACHI_FLEW_AWAY" not in body, "o caminho do capturado não pode ligar FLEW_AWAY"
     corpo = _label_body_t5(scripts, f"{TANOBY_PFX}_EventScript_JirachiFlewAway")
     assert "setflag FLAG_JIRACHI_FLEW_AWAY" in corpo
     assert "setvar VAR_0x8004, SPECIES_JIRACHI" in corpo
@@ -687,3 +690,59 @@ def test_jirachi_pista_t5():
 
 
 # fim da Task 5 ------------------------------------------------------------------------------
+
+
+# Task 6 — reconferência das condições na conversa (save antigo gravado dentro do mapa) -----------
+# Um save da ROM anterior ao Hack 8 gravado dentro do mapa traz um template velho no índice do
+# mítico; o CONTINUAR põe nele o script do mítico ("fantasma"). O script reconfere, ao ser falado,
+# as condições que não dependem de horário/clima e encerra calado se alguma falhar.
+
+GUARDAS_T6 = {
+    "mew": (f"{MANSION_MAP_T3}/scripts.inc", "PokemonMansion_B1F_EventScript_Mew",
+            "FLAG_MEW_FLEW_AWAY", ("setvar VAR_0x8004, SPECIES_MEWTWO\n", "FALSE"), "SPECIES_MEW\n"),
+    "celebi": (f"{BERRY_MAP_T4}/scripts.inc", "ThreeIsland_BerryForest_EventScript_Celebi",
+               "FLAG_CELEBI_FLEW_AWAY", ("goto_if_unset FLAG_SYS_CAN_LINK_WITH_RS, EventScript_ReleaseEnd", None),
+               "SPECIES_CELEBI\n"),
+    "jirachi": (f"{TANOBY}/scripts.inc", f"{TANOBY_PFX}_EventScript_Jirachi",
+                "FLAG_JIRACHI_FLEW_AWAY", ("setvar VAR_0x8004, SPECIES_DEOXYS\n", "FALSE"), "SPECIES_JIRACHI\n"),
+}
+
+
+def _guarda_t6(nome: str) -> tuple[str, str]:
+    arq, rotulo, *_ = GUARDAS_T6[nome]
+    body = _label_body_t5(_read(arq), rotulo)
+    # a guarda vem antes de qualquer reação visível (virar, grito, texto) e da batalha
+    fim = min(body.index(k) for k in ("faceplayer", "playmoncry", "msgbox", "message ") if k in body)
+    return body, body[:fim]
+
+
+def test_miticos_reconferem_condicoes_na_conversa_t6():
+    for nome, (_arq, _rot, flew, desbloqueio, proprio) in GUARDAS_T6.items():
+        body, guarda = _guarda_t6(nome)
+        i_flew = guarda.index(f"goto_if_set {flew}, EventScript_ReleaseEnd")
+        assert guarda.index("goto_if_questlog EventScript_ReleaseEnd") < i_flew, nome
+        marcador, falso = desbloqueio
+        i_desb = guarda.index(marcador)
+        if falso:
+            depois = guarda[i_desb:]
+            assert re.match(r"setvar VAR_0x8004, SPECIES_\w+\n\s*specialvar VAR_RESULT, IsSpeciesCaught\n"
+                            r"\s*goto_if_eq VAR_RESULT, FALSE, EventScript_ReleaseEnd", depois), nome
+        i_prop = guarda.index(f"setvar VAR_0x8004, {proprio}")
+        assert re.match(r"setvar VAR_0x8004, SPECIES_\w+\n\s*specialvar VAR_RESULT, IsSpeciesCaught\n"
+                        r"\s*goto_if_eq VAR_RESULT, TRUE, EventScript_ReleaseEnd", guarda[i_prop:]), nome
+        assert i_flew < i_desb < i_prop, f"{nome}: ordem FLEW_AWAY → desbloqueio → já capturado"
+
+
+def test_miticos_nao_reconferem_hora_nem_clima_na_conversa_t6():
+    # Review Focus 1/2: o mítico que já está no mapa ainda batalha depois da janela
+    for nome in GUARDAS_T6:
+        body, _guarda = _guarda_t6(nome)
+        assert "GetDayNightPeriodForScript" not in body and "IsSkyClear" not in body, nome
+
+
+def test_miticos_saem_calados_t6():
+    # as saídas da guarda vão direto para release/end (sem texto, sem grito)
+    for nome in GUARDAS_T6:
+        _body, guarda = _guarda_t6(nome)
+        alvos = re.findall(r"goto_if_\w+ [^\n]*?(\w+)\n", guarda)
+        assert alvos and set(alvos) == {"EventScript_ReleaseEnd"}, (nome, alvos)
