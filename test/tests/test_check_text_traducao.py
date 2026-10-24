@@ -339,6 +339,6 @@ def test_worst_case_finding_can_be_frozen_like_any_width_finding(repo):
     from esteira.check_text import compute_baseline
     sha = with_base(repo, "{STR_VAR_1} AAAA.$")
     put(repo, "data/text/route23.inc", 'Text_Var::\n\t.string "{STR_VAR_1} ' + "A" * 30 + '$"\n')
-    (exc,) = compute_baseline(str(repo), base=sha)
+    (exc,) = compute_baseline(str(repo), base=sha, english="desligado")    # como run_base
     assert exc["rule"] == "largura" and exc["valor"] == 246
     assert failures(run_base(repo, sha, {"text": [exc]})) == []

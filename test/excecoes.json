@@ -1,5 +1,20 @@
 {
-  "_formato": "text[]: file/label/rule identificam o achado congelado (rule: charmap, terminador, largura, linhas, letras, controle, glossario, ingles); fingerprint = sha1 (16 hex) do texto cru do rotulo; valor = a medida congelada (px da linha mais larga, linhas ou letras) nas regras que medem. A excecao so vale enquanto o texto for o mesmo; depois vira aviso 'excecao obsoleta'. Regenere ou encolha com esteira.check_text.compute_baseline. Detalhes no topo de test/esteira/check_text.py.",
+  "_formato": "text[]: file/label/rule identificam o achado congelado (rule: charmap, terminador, largura, linhas, letras, controle, glossario, ingles); fingerprint = sha1 (16 hex) do texto cru do rotulo; valor = a medida congelada (px da linha mais larga, linhas ou letras) nas regras que medem; obs (opcional) = por que o achado fica. A excecao so vale enquanto o texto for o mesmo; depois vira aviso 'excecao obsoleta'. Regenere ou encolha com esteira.check_text.compute_baseline. Detalhes no topo de test/esteira/check_text.py.",
   "build_warnings": [],
-  "text": []
+  "text": [
+    {
+      "file": "src/battle_anim_status_effects.c",
+      "label": "sText_TaskOver",
+      "rule": "ingles",
+      "fingerprint": "efb9c429856f68e9",
+      "obs": "mensagem de depuração que o jogador não vê num jogo normal: fica em inglês (decisão da E3, test_traducao_e.E3_DEBUG_ENGLISH)"
+    },
+    {
+      "file": "src/sprite.c",
+      "label": "sDmaOverErrorMsg",
+      "rule": "ingles",
+      "fingerprint": "4f28f3f6ed361891",
+      "obs": "mensagem de depuração que o jogador não vê num jogo normal: fica em inglês (decisão da E3, test_traducao_e.E3_DEBUG_ENGLISH)"
+    }
+  ]
 }
