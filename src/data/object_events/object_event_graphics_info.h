@@ -2923,3 +2923,23 @@ const struct ObjectEventGraphicsInfo gObjectEventGraphicsInfo_SSAnne = {
     .images = sPicTable_SSAnne,
     .affineAnims = gDummySpriteAffineAnimTable,
 };
+
+// Hack 8: glint where Jirachi appears (Tanoby Ruins); twinkles on its own as an inanimate object
+const struct ObjectEventGraphicsInfo gObjectEventGraphicsInfo_JirachiStar = {
+    .tileTag = TAG_NONE,
+    .paletteTag = OBJ_EVENT_PAL_TAG_SMALL_SPARKLE,
+    .reflectionPaletteTag = OBJ_EVENT_PAL_TAG_NONE,
+    .size = 128,
+    .width = 16,
+    .height = 16,
+    .paletteSlot = PALSLOT_NPC_SPECIAL,
+    .shadowSize = SHADOW_SIZE_S,
+    .inanimate = TRUE,
+    .disableReflectionPaletteLoad = FALSE,
+    .tracks = TRACKS_NONE,
+    .oam = &gObjectEventBaseOam_16x16,
+    .subspriteTables = gObjectEventSpriteOamTables_16x16,
+    .anims = sAnimTable_JirachiStar,
+    .images = sPicTable_JirachiStar,
+    .affineAnims = gDummySpriteAffineAnimTable,
+};

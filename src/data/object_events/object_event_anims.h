@@ -995,6 +995,19 @@ static const union AnimCmd *const sAnimTable_Inanimate[] = {
     [ANIM_STAY_STILL] = sAnim_StayStill
 };
 
+// Hack 8: Jirachi's star glint, a small star that flares up now and then
+static const union AnimCmd sAnim_JirachiStar[] = {
+    ANIMCMD_FRAME(1, 24),
+    ANIMCMD_FRAME(0, 8),
+    ANIMCMD_FRAME(1, 8),
+    ANIMCMD_FRAME(0, 8),
+    ANIMCMD_JUMP(0),
+};
+
+static const union AnimCmd *const sAnimTable_JirachiStar[] = {
+    [ANIM_STAY_STILL] = sAnim_JirachiStar
+};
+
 // Leftover from Ruby/Sapphire
 static const union AnimCmd *const sAnimTable_QuintyPlump[] = {
     [ANIM_STD_FACE_SOUTH] = sAnim_QuintyPlumpFaceSouth,

@@ -121,6 +121,9 @@ GRUPOS = {
 }
 
 ARQUIVOS = sorted({f for files in GRUPOS.values() for f in files})
+# rótulos que os hacks acrescentaram depois da base da tradução (não são rótulos renomeados)
+ROTULOS_DOS_HACKS = {"SevenIsland_TanobyRuins_Text_StarGlintWakes",      # Hack 8: brilho do Jirachi
+                     "SevenIsland_TanobyRuins_Text_Inscription"}      # Hack 8: pista do Jirachi
 
 
 @pytest.fixture(scope="module")
@@ -167,7 +170,7 @@ def test_nenhum_achado_das_regras(rel, achados):
 
 
 def _labels(text: str) -> list[str]:
-    return re.findall(r"^(\w+)::", text, re.M)
+    return [lbl for lbl in re.findall(r"^(\w+)::", text, re.M) if lbl not in ROTULOS_DOS_HACKS]
 
 
 @pytest.mark.parametrize("rel", ARQUIVOS)

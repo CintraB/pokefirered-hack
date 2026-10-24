@@ -2572,10 +2572,12 @@ u16 GetDayNightPeriodForScript(void)
     return DayNight_GetPeriod();
 }
 
-// TRUE unless the current map weather is rain, storm, fog, snow, sand or ash
+// TRUE unless the current map weather is rain, storm, fog, snow, sand or ash. Reads the saved weather
+// (what the map rolled or the header gives), not gWeatherPtr->currWeather: on-transition map scripts
+// run before DoCurrentWeather, when currWeather still holds the previous map's weather
 bool16 IsSkyClear(void)
 {
-    switch (GetCurrentWeather())
+    switch (GetSav1Weather())
     {
     case WEATHER_RAIN:
     case WEATHER_RAIN_THUNDERSTORM:
