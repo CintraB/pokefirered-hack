@@ -9481,6 +9481,16 @@
    "tela": "Título"
   },
   {
+   "en": "THE END",
+   "pt": "Fim",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "frente": "H",
+   "obs": "imagem the_end.png (tela final dos créditos); proposta, pendente de aprovação do Cintra",
+   "tela": "Créditos"
+  },
+  {
    "en": "TEACHY (logo)",
    "pt": "Educativa",
    "fonte": "criado",
