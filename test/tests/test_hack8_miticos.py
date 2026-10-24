@@ -286,6 +286,9 @@ def test_celebi_pista():
     cru = "".join(re.findall(r'\.string "(.*)"', m.group(1)))
     assert cru.endswith("$")
     assert ct.box_lines(cru) <= 2
+    # Task 6: a 1ª frase fica sozinha numa caixa e espera botão antes de "Dizem que..."
+    primeira = cru.split(r"\p")[0]
+    assert "penumbra" in primeira and r"\l" not in primeira
     plano = re.sub(r"\\[nlp]", " ", cru)
     assert not re.search(r"\{PLAYER\}|\{RIVAL\}", plano)
     assert not re.search(r"\b(o|a)\s+(jogador|treinador)", plano, re.I)
