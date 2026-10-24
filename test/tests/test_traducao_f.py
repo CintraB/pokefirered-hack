@@ -533,3 +533,69 @@ def test_f4_tela_usa_metro_e_quilo_sem_conversao_imperial():
     assert "x += 30;" in body
     for unit in ("m", "kg"):
         assert 30 + 6 * 5 + line_widths(unit, "small")[0] <= FOOTPRINT_X
+
+
+def test_f4_formato_do_c_e_o_do_porte():
+    # amarra `_dex_measure` ao C: se o laço ou as casas mudarem lá, este teste reprova
+    src = _read(SCREEN_C)
+    body = src[src.index("#define DEX_MEASURE_INT_DIGITS"):src.index("void DexScreen_PrintMonFlavorText")]
+    assert re.search(r"#define DEX_MEASURE_INT_DIGITS 3\b", body)
+    assert "if (tenths > 9999)" in body and "tenths = 9999;" in body
+    assert "for (divisor = 1000; divisor >= 10; divisor /= 10)" in body
+    assert "if (digit == 0 && !output && divisor != 10)" in body
+    assert "buffer[i++] = CHAR_COMMA;" in body and "buffer[i++] = (tenths % 10) + CHAR_0;" in body
+    assert "buffer[i++] = 5;" in body and "buffer[i++] = 0;" in body          # espaçamento mínimo 5, depois 0
+    # não capturado: DEX_MEASURE_INT_DIGITS casas, as `unknownDigits` da direita com "?" (" ??,?" / "???,?")
+    assert "for (j = 0; j < DEX_MEASURE_INT_DIGITS; j++)" in body
+    assert "(j < DEX_MEASURE_INT_DIGITS - unknownDigits) ? CHAR_SPACE : CHAR_QUESTION_MARK" in body
+    assert re.search(r"gText_HT, gText_Meters, gPokedexEntries\[species\]\.height, 2,", body)
+    assert re.search(r"gText_WT, gText_Kg, gPokedexEntries\[species\]\.weight, 3,", body)
+    assert len(_dex_measure(0, "m")) == len(" ??,? m") and len(_dex_measure(0, "kg")) == len("???,? kg")
+
+
+def _english_categories() -> dict[str, str]:
+    """NATIONAL_DEX_X -> categoria inglesa, do commit base da tradução."""
+    out = subprocess.run(["git", "-C", str(REPO_ROOT), "show", f"{ct.TRANSLATION_BASE}:{ENTRIES_H}"],
+                         capture_output=True, text=True, encoding="utf-8")
+    if out.returncode != 0:
+        pytest.fail("sem o commit base da tradução: não dá para conferir as categorias no glossário")
+    return {m.group(1): re.search(r'\.categoryName = _\("([^"]*)"\)', m.group(2)).group(1)
+            for m in re.finditer(r"\[(NATIONAL_DEX_\w+)\]\s*=\s*\{(.*?)\n    \}", out.stdout, re.S)}
+
+
+def test_f4_toda_categoria_esta_no_glossario():
+    # cada par (inglês da base, PT-BR da tela) está no glossário como termo de interface;
+    # EGG/EVOLUTION já existiam (Ovo/Evolução) e não são duplicados (test_glossario.py)
+    terms = json.loads((REPO_ROOT / "test" / "esteira" / "glossario.json").read_text(encoding="utf-8"))["termos"]
+    interface = {(t["en"], t["pt"]) for t in terms if t["categoria"] == "interface"}
+    english, pt = _english_categories(), _dex_entries()
+    assert set(english) == set(pt)
+    pairs = {(english[k], pt[k]["category"]) for k in pt}
+    assert sorted(pairs - interface) == []
+    added = [t for t in terms if t.get("obs") == "categoria da Pokédex"]
+    assert {(t["en"], t["pt"]) for t in added} <= pairs                    # nada sobrando no bloco
+    assert len(added) == len(pairs) - len({("EGG", "Ovo"), ("EVOLUTION", "Evolução")} & pairs)
+    assert all(t["detectar"] is False and t["frente"] == "F" and t["fonte"] in ("GO", "criado") for t in added)
+    fonte = {t["en"]: t["fonte"] for t in added}
+    assert fonte["SEED"] == fonte["PSI"] == fonte["YOUNG FOWL"] == "GO"
+    assert fonte["FIRE MOUSE"] == fonte["FIRE HORSE"] == fonte["TIME TRAVEL"] == "criado"
+
+
+def test_f4_categorias_decididas_na_revisao():
+    e = _dex_entries()
+    assert e["NATIONAL_DEX_COMBUSKEN"]["category"] == "Ave Jovem"
+    assert e["NATIONAL_DEX_ABRA"]["category"] == e["NATIONAL_DEX_ALAKAZAM"]["category"] == "Psi"
+    assert e["NATIONAL_DEX_CYNDAQUIL"]["category"] == "Rato Fogo"         # mesmo molde de "Cavalo Fogo"
+    assert e["NATIONAL_DEX_PONYTA"]["category"] == "Cavalo Fogo"
+    assert e["NATIONAL_DEX_CELEBI"]["category"] == "Crononauta"
+    assert e["NATIONAL_DEX_LILEEP"]["category"] == "Lírio-Mar"
+    assert e["NATIONAL_DEX_SHEDINJA"]["category"] == "Casca"
+    assert e["NATIONAL_DEX_NUMEL"]["category"] == "Entorpecido"
+    cats = {v["category"] for v in e.values()}
+    assert not cats & {"Frango", "Psíquico", "Rato Ígneo", "Atemporal", "Anêmona", "Muda", "Lerdo"}
+
+
+def test_f4_textos_mortos_apagados():
+    for rel in ("src/strings.c", "include/strings.h"):
+        text = _read(rel)
+        assert "gText_Lbs" not in text and not re.search(r"gText_PokedexPokemon\[\]", text), rel

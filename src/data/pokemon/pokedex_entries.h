@@ -821,7 +821,7 @@ const struct PokedexEntry gPokedexEntries[] =
 
     [NATIONAL_DEX_ABRA] =
     {
-        .categoryName = _("Psíquico"),
+        .categoryName = _("Psi"),
         .height = 9,
         .weight = 195,
         .description = gAbraPokedexText,
@@ -834,7 +834,7 @@ const struct PokedexEntry gPokedexEntries[] =
 
     [NATIONAL_DEX_KADABRA] =
     {
-        .categoryName = _("Psíquico"),
+        .categoryName = _("Psi"),
         .height = 13,
         .weight = 565,
         .description = gKadabraPokedexText,
@@ -847,7 +847,7 @@ const struct PokedexEntry gPokedexEntries[] =
 
     [NATIONAL_DEX_ALAKAZAM] =
     {
-        .categoryName = _("Psíquico"),
+        .categoryName = _("Psi"),
         .height = 15,
         .weight = 480,
         .description = gAlakazamPokedexText,
@@ -2017,7 +2017,7 @@ const struct PokedexEntry gPokedexEntries[] =
 
     [NATIONAL_DEX_CYNDAQUIL] =
     {
-        .categoryName = _("Rato Ígneo"),
+        .categoryName = _("Rato Fogo"),
         .height = 5,
         .weight = 79,
         .description = gCyndaquilPokedexText,
@@ -3265,7 +3265,7 @@ const struct PokedexEntry gPokedexEntries[] =
 
     [NATIONAL_DEX_CELEBI] =
     {
-        .categoryName = _("Atemporal"),
+        .categoryName = _("Crononauta"),
         .height = 6,
         .weight = 50,
         .description = gCelebiPokedexText,
@@ -3330,7 +3330,7 @@ const struct PokedexEntry gPokedexEntries[] =
 
     [NATIONAL_DEX_COMBUSKEN] =
     {
-        .categoryName = _("Frango"),
+        .categoryName = _("Ave Jovem"),
         .height = 9,
         .weight = 195,
         .description = gCombuskenPokedexText,
@@ -3798,7 +3798,7 @@ const struct PokedexEntry gPokedexEntries[] =
 
     [NATIONAL_DEX_SHEDINJA] =
     {
-        .categoryName = _("Muda"),
+        .categoryName = _("Casca"),
         .height = 8,
         .weight = 12,
         .description = gShedinjaPokedexText,
@@ -4188,7 +4188,7 @@ const struct PokedexEntry gPokedexEntries[] =
 
     [NATIONAL_DEX_NUMEL] =
     {
-        .categoryName = _("Lerdo"),
+        .categoryName = _("Entorpecido"),
         .height = 7,
         .weight = 240,
         .description = gNumelPokedexText,
@@ -4487,7 +4487,7 @@ const struct PokedexEntry gPokedexEntries[] =
 
     [NATIONAL_DEX_LILEEP] =
     {
-        .categoryName = _("Anêmona"),
+        .categoryName = _("Lírio-Mar"),
         .height = 10,
         .weight = 238,
         .description = gLileepPokedexText,

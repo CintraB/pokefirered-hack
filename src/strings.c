@@ -85,13 +85,11 @@ const u8 gText_SearchNoColor[] = _("Busca");
 const u8 gText_PickOKExit[] = _("{DPAD_UPDOWN}Escolher {A_BUTTON}OK {B_BUTTON}Cancelar");
 const u8 gText_5Dashes[] = _("-----");
 const u8 gText_PickFlipPageCheckCancel[] = _("{DPAD_LEFTRIGHT}Escolher{PLUS}Página {A_BUTTON}Ver {B_BUTTON}Cancelar");
-const u8 gText_PokedexPokemon[] = _(" Pokémon");
 const u8 gText_HT[] = _("Alt.");
 const u8 gText_WT[] = _("Peso");
 const u8 gText_PokedexQuotationMark[] = _("”"); // Unused
-const u8 gText_Lbs[] = _("lbs.");
-// PT-BR: metric units of the Pokédex entry (frente F switches DexScreen_PrintMonHeight/Weight
-// to them, with a decimal comma) and the category order "Pokémon <categoria>"
+// PT-BR: metric units of the Pokédex entry (DexScreen_PrintMonMeasure, with a decimal comma)
+// and the category order "Pokémon <categoria>" (DexScreen_PrintMonCategory)
 const u8 gText_Meters[] = _("m");
 const u8 gText_Kg[] = _("kg");
 const u8 gText_PokedexPokemonPrefix[] = _("Pokémon ");

@@ -359,7 +359,7 @@ USAGE_RULES: list[UsageRule] = [
         ":2752-2764), depois de \"999,9 \" (6 casas com espaçamento 5), antes da pegada em x = 88 (src/pokedex_screen.c:2876)",
         font="small", label=lb) for lb in ("gText_Meters", "gText_Kg")),
     U("src/pokedex_screen.c", "*", 200,
-      "\"PÁG. 1/ 2\": alinhado à direita em 232 (src/pokedex_screen.c:2357-2364, :3376) na janela 0 de 30 tiles "
+      "\"PÁG. 1/ 2\": alinhado à direita em 232 (src/pokedex_screen.c:2357-2364, :3375) na janela 0 de 30 tiles "
       "(src/pokedex_screen.c:246-250), menos \" 99/99\"", label="gText_Page"),
     U("src/pokedex_screen.c", "*", 23 * 8 - 56,
       "item vazio da lista numérica: sListMenuTemplate_OrderedListMenu item_X = 56 (src/pokedex_screen.c:517) "

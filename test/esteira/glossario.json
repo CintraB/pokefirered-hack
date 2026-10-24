@@ -10873,6 +10873,2445 @@
    "detectar": false,
    "frente": "G3",
    "obs": "palavra do Easy Chat (≤ 12 bytes, src/trainer_card.c easyChatProfile[..][13])"
+  },
+  {
+   "en": "SEED",
+   "pt": "Semente",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "LIZARD",
+   "pt": "Lagarto",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "FLAME",
+   "pt": "Chama",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "TINY TURTLE",
+   "pt": "Tartaruga",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "TURTLE",
+   "pt": "Tartarugão",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "SHELLFISH",
+   "pt": "Marisco",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "WORM",
+   "pt": "Minhoca",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "COCOON",
+   "pt": "Casulo",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "BUTTERFLY",
+   "pt": "Borboleta",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "HAIRY BUG",
+   "pt": "Lagarta",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "POISON BEE",
+   "pt": "Abelha",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "TINY BIRD",
+   "pt": "Passarinho",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "BIRD",
+   "pt": "Pássaro",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "MOUSE",
+   "pt": "Rato",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "BEAK",
+   "pt": "Bico",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "SNAKE",
+   "pt": "Cobra",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "COBRA",
+   "pt": "Naja",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "POISON PIN",
+   "pt": "Ferrão",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "DRILL",
+   "pt": "Broca",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "FAIRY",
+   "pt": "Fada",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "FOX",
+   "pt": "Raposa",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "BALLOON",
+   "pt": "Balão",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "BAT",
+   "pt": "Morcego",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "WEED",
+   "pt": "Daninha",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "FLOWER",
+   "pt": "Flor",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "MUSHROOM",
+   "pt": "Cogumelo",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "INSECT",
+   "pt": "Inseto",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "POISON MOTH",
+   "pt": "Mariposa",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "MOLE",
+   "pt": "Toupeira",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "SCRATCH CAT",
+   "pt": "Gato Arisco",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "CLASSY CAT",
+   "pt": "Gato Chique",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "DUCK",
+   "pt": "Pato",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "PIG MONKEY",
+   "pt": "Macaco",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "PUPPY",
+   "pt": "Cachorrinho",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "LEGENDARY",
+   "pt": "Lendário",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "TADPOLE",
+   "pt": "Girino",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "PSI",
+   "pt": "Psi",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "SUPERPOWER",
+   "pt": "Superpoder",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "FLYCATCHER",
+   "pt": "Papa-Moscas",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "JELLYFISH",
+   "pt": "Água-Viva",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "ROCK",
+   "pt": "Rocha",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "MEGATON",
+   "pt": "Megaton",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "FIRE HORSE",
+   "pt": "Cavalo Fogo",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "DOPEY",
+   "pt": "Pateta",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "HERMIT CRAB",
+   "pt": "Ermitão",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "MAGNET",
+   "pt": "Ímã",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "WILD DUCK",
+   "pt": "Pato Bravo",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "TWIN BIRD",
+   "pt": "Ave Gêmea",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "TRIPLE BIRD",
+   "pt": "Ave Tripla",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "SEA LION",
+   "pt": "Foca",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "SLUDGE",
+   "pt": "Lodo",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "BIVALVE",
+   "pt": "Bivalve",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "GAS",
+   "pt": "Gás",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "SHADOW",
+   "pt": "Sombra",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "ROCK SNAKE",
+   "pt": "Cobra Rocha",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "HYPNOSIS",
+   "pt": "Hipnose",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "RIVER CRAB",
+   "pt": "Caranguejo",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "PINCER",
+   "pt": "Pinça",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "BALL",
+   "pt": "Bola",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "COCONUT",
+   "pt": "Coco",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "LONELY",
+   "pt": "Solitário",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "BONE KEEPER",
+   "pt": "Guarda-Osso",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "KICKING",
+   "pt": "Chutador",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "PUNCHING",
+   "pt": "Socador",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "LICKING",
+   "pt": "Lambedor",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "POISON GAS",
+   "pt": "Gás Tóxico",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "SPIKES",
+   "pt": "Espinhos",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "VINE",
+   "pt": "Vinha",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "PARENT",
+   "pt": "Progenitor",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "DRAGON",
+   "pt": "Dragão",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "GOLDFISH",
+   "pt": "Kinguio",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "STAR SHAPE",
+   "pt": "Estrela",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "MYSTERIOUS",
+   "pt": "Misterioso",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "BARRIER",
+   "pt": "Barreira",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "MANTIS",
+   "pt": "Louva-Deus",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "HUMAN SHAPE",
+   "pt": "Humanoide",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "ELECTRIC",
+   "pt": "Elétrico",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "SPITFIRE",
+   "pt": "Cospe-Fogo",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "STAG BEETLE",
+   "pt": "Besouro",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "WILD BULL",
+   "pt": "Touro Bravo",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "FISH",
+   "pt": "Peixe",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "ATROCIOUS",
+   "pt": "Atroz",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "TRANSPORT",
+   "pt": "Transporte",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "TRANSFORM",
+   "pt": "Metamorfo",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "BUBBLE JET",
+   "pt": "Jato Bolhas",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "LIGHTNING",
+   "pt": "Relâmpago",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "VIRTUAL",
+   "pt": "Virtual",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "SPIRAL",
+   "pt": "Espiral",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "FOSSIL",
+   "pt": "Fóssil",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "SLEEPING",
+   "pt": "Dorminhoco",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "FREEZE",
+   "pt": "Congelante",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "GENETIC",
+   "pt": "Genético",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "NEW SPECIES",
+   "pt": "Inédito",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "LEAF",
+   "pt": "Folha",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "HERB",
+   "pt": "Erva",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "FIRE MOUSE",
+   "pt": "Rato Fogo",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "VOLCANO",
+   "pt": "Vulcão",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "BIG JAW",
+   "pt": "Bocarra",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "SCOUT",
+   "pt": "Sentinela",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "LONG BODY",
+   "pt": "Corpo Longo",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "OWL",
+   "pt": "Coruja",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "FIVE STAR",
+   "pt": "5 Estrelas",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "STRING SPIT",
+   "pt": "Cospe-Fio",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "LONG LEG",
+   "pt": "Perna Longa",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "ANGLER",
+   "pt": "Pescador",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "LIGHT",
+   "pt": "Luz",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "TINY MOUSE",
+   "pt": "Ratinho",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "SPIKE BALL",
+   "pt": "Bola Cravos",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "HAPPINESS",
+   "pt": "Felicidade",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "MYSTIC",
+   "pt": "Místico",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "WOOL",
+   "pt": "Lã",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "AQUA MOUSE",
+   "pt": "Rato d'Água",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "AQUA RABBIT",
+   "pt": "Coelho",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "IMITATION",
+   "pt": "Imitação",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "FROG",
+   "pt": "Sapo",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "COTTONWEED",
+   "pt": "Algodão",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "LONG TAIL",
+   "pt": "Cauda Longa",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "SUN",
+   "pt": "Sol",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "CLEAR WING",
+   "pt": "Asa Límpida",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "WATER FISH",
+   "pt": "Aquático",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "MOONLIGHT",
+   "pt": "Luar",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "DARKNESS",
+   "pt": "Escuridão",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "ROYAL",
+   "pt": "Majestade",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "SCREECH",
+   "pt": "Guincho",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "SYMBOL",
+   "pt": "Símbolo",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "PATIENT",
+   "pt": "Paciente",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "LONG NECK",
+   "pt": "Pescoçudo",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "BAGWORM",
+   "pt": "Bicho-Cesto",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "LAND SNAKE",
+   "pt": "Cobra Terra",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "FLYSCORPION",
+   "pt": "Escorpião",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "IRON SNAKE",
+   "pt": "Cobra Ferro",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "MOLD",
+   "pt": "Mofo",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "SINGLE HORN",
+   "pt": "Unicórnio",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "SHARP CLAW",
+   "pt": "Garra Aguda",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "LITTLE BEAR",
+   "pt": "Ursinho",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "HIBERNATOR",
+   "pt": "Hibernador",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "LAVA",
+   "pt": "Lava",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "PIG",
+   "pt": "Porco",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "SWINE",
+   "pt": "Suíno",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "CORAL",
+   "pt": "Coral",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "JET",
+   "pt": "Jato",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "DELIVERY",
+   "pt": "Entrega",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "KITE",
+   "pt": "Pipa",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "ARMOR BIRD",
+   "pt": "Ave Armada",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "DARK",
+   "pt": "Sombrio",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "LONG NOSE",
+   "pt": "Narigudo",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "ARMOR",
+   "pt": "Armadura",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "BIG HORN",
+   "pt": "Chifrão",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "PAINTER",
+   "pt": "Pintor",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "SCUFFLE",
+   "pt": "Brigão",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "HANDSTAND",
+   "pt": "Acrobata",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "KISS",
+   "pt": "Beijo",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "LIVE COAL",
+   "pt": "Brasa Viva",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "MILK COW",
+   "pt": "Leiteira",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "THUNDER",
+   "pt": "Trovão",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "AURORA",
+   "pt": "Aurora",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "ROCK SKIN",
+   "pt": "Pele Pétrea",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "HARD SHELL",
+   "pt": "Casca Dura",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "DIVING",
+   "pt": "Mergulho",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "RAINBOW",
+   "pt": "Arco-Íris",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "TIME TRAVEL",
+   "pt": "Crononauta",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "WOOD GECKO",
+   "pt": "Lagartixa",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "FOREST",
+   "pt": "Floresta",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "CHICK",
+   "pt": "Pintinho",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "YOUNG FOWL",
+   "pt": "Ave Jovem",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "BLAZE",
+   "pt": "Labareda",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "MUD FISH",
+   "pt": "Peixe Lama",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "BITE",
+   "pt": "Mordida",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "TINYRACCOON",
+   "pt": "Guaxininho",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "RUSHING",
+   "pt": "Disparada",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "WATER WEED",
+   "pt": "Erva d'Água",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "JOLLY",
+   "pt": "Alegre",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "CAREFREE",
+   "pt": "Tranquilo",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "ACORN",
+   "pt": "Bolota",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "WILY",
+   "pt": "Astuto",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "WICKED",
+   "pt": "Malvado",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "TINYSWALLOW",
+   "pt": "Andorinha",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "SWALLOW",
+   "pt": "Andorinhão",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "SEAGULL",
+   "pt": "Gaivota",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "WATER BIRD",
+   "pt": "Ave Marinha",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "FEELING",
+   "pt": "Sentimento",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "EMOTION",
+   "pt": "Emoção",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "EMBRACE",
+   "pt": "Abraço",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "POND SKATER",
+   "pt": "Patinador",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "EYEBALL",
+   "pt": "Olhudo",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "SLACKER",
+   "pt": "Preguiça",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "WILD MONKEY",
+   "pt": "Símio Bravo",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "LAZY",
+   "pt": "Preguiçoso",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "TRAINEE",
+   "pt": "Aprendiz",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "NINJA",
+   "pt": "Ninja",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "SHED",
+   "pt": "Casca",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "WHISPER",
+   "pt": "Sussurro",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "BIG VOICE",
+   "pt": "Vozeirão",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "LOUD NOISE",
+   "pt": "Barulhento",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "GUTS",
+   "pt": "Coragem",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "ARM THRUST",
+   "pt": "Empurrão",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "POLKA DOT",
+   "pt": "Bolinhas",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "COMPASS",
+   "pt": "Bússola",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "KITTEN",
+   "pt": "Gatinho",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "PRIM",
+   "pt": "Requintado",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "DECEIVER",
+   "pt": "Enganador",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "IRON ARMOR",
+   "pt": "Couraça",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "MEDITATE",
+   "pt": "Meditação",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "DISCHARGE",
+   "pt": "Descarga",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "CHEERING",
+   "pt": "Torcedor",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "FIREFLY",
+   "pt": "Vaga-Lume",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "THORN",
+   "pt": "Espinho",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "STOMACH",
+   "pt": "Estômago",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "POISON BAG",
+   "pt": "Saco Tóxico",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "SAVAGE",
+   "pt": "Feroz",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "BRUTAL",
+   "pt": "Brutal",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "BALL WHALE",
+   "pt": "Baleia Bola",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "FLOAT WHALE",
+   "pt": "Baleia Boia",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "NUMB",
+   "pt": "Entorpecido",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "ERUPTION",
+   "pt": "Erupção",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "COAL",
+   "pt": "Carvão",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "BOUNCE",
+   "pt": "Saltitante",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "MANIPULATE",
+   "pt": "Manipulador",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "SPOT PANDA",
+   "pt": "Panda",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "ANT PIT",
+   "pt": "Formigueiro",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "VIBRATION",
+   "pt": "Vibração",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "CACTUS",
+   "pt": "Cacto",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "SCARECROW",
+   "pt": "Espantalho",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "COTTON BIRD",
+   "pt": "Ave Algodão",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "HUMMING",
+   "pt": "Melodia",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "CAT FERRET",
+   "pt": "Gato-Furão",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "FANG SNAKE",
+   "pt": "Cobra Presa",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "METEORITE",
+   "pt": "Meteorito",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "WHISKERS",
+   "pt": "Bigodes",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "RUFFIAN",
+   "pt": "Arruaceiro",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "ROGUE",
+   "pt": "Malandro",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "CLAY DOLL",
+   "pt": "Estatueta",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "SEA LILY",
+   "pt": "Lírio-Mar",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "BARNACLE",
+   "pt": "Craca",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "OLD SHRIMP",
+   "pt": "Camarão",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "PLATE",
+   "pt": "Placa",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "TENDER",
+   "pt": "Gentil",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "WEATHER",
+   "pt": "Clima",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "COLOR SWAP",
+   "pt": "Troca-Cor",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "PUPPET",
+   "pt": "Fantoche",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "MARIONETTE",
+   "pt": "Marionete",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "REQUIEM",
+   "pt": "Réquiem",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "BECKON",
+   "pt": "Aceno",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "FRUIT",
+   "pt": "Fruta",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "WIND CHIME",
+   "pt": "Sininho",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "DISASTER",
+   "pt": "Desastre",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "BRIGHT",
+   "pt": "Radiante",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "SNOW HAT",
+   "pt": "Gorro Neve",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "FACE",
+   "pt": "Rosto",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "CLAP",
+   "pt": "Palmas",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "BALL ROLL",
+   "pt": "Rola-Bola",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "ICE BREAK",
+   "pt": "Quebra-Gelo",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "DEEP SEA",
+   "pt": "Abissal",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "SOUTH SEA",
+   "pt": "Mar do Sul",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "LONGEVITY",
+   "pt": "Longevidade",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "RENDEZVOUS",
+   "pt": "Encontro",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "ROCK HEAD",
+   "pt": "Cabeça Dura",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "ENDURANCE",
+   "pt": "Resistência",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "IRON BALL",
+   "pt": "Bola Ferro",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "IRON CLAW",
+   "pt": "Garra Ferro",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "IRON LEG",
+   "pt": "Perna Ferro",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "ROCK PEAK",
+   "pt": "Pico Rocha",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "ICEBERG",
+   "pt": "Iceberg",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "IRON",
+   "pt": "Ferro",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "EON",
+   "pt": "Eon",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "SEA BASIN",
+   "pt": "Oceano",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "CONTINENT",
+   "pt": "Continente",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "SKY HIGH",
+   "pt": "Firmamento",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "WISH",
+   "pt": "Desejo",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "DNA",
+   "pt": "DNA",
+   "fonte": "GO",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
+  },
+  {
+   "en": "UNKNOWN",
+   "pt": "Indefinido",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "obs": "categoria da Pokédex",
+   "frente": "F"
   }
  ],
  "proibidos": [
