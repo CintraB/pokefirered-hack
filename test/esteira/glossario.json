@@ -13699,6 +13699,69 @@
    "detectar": false,
    "obs": "categoria da Pokédex",
    "frente": "F"
+  },
+  {
+   "en": "PKMN DATA",
+   "pt": "Dados PKMN",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "frente": "H",
+   "obs": "imagem pokemon_storage/menu.png (cabeçalho do painel de dados do PC); PKMN estilizado mantido"
+  },
+  {
+   "en": "PARTY POKéMON",
+   "pt": "Equipe",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "frente": "H",
+   "obs": "imagem pokemon_storage/menu.png (título do painel da equipe no PC); \"Equipe Pokémon\" não cabe nos 62 px"
+  },
+  {
+   "en": "CANCEL (botão da equipe, PC)",
+   "pt": "Voltar",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "frente": "H",
+   "obs": "imagem pokemon_storage/menu.png; \"Cancelar\" tem 8 letras e o botão comporta 6"
+  },
+  {
+   "en": "CLOSE BOX",
+   "pt": "Fechar Caixa",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "frente": "H",
+   "obs": "imagem pokemon_storage/menu.png (botão do PC)"
+  },
+  {
+   "en": "TRAINER CARD (título da imagem)",
+   "pt": "Treinador",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "frente": "H",
+   "obs": "imagens trainer_card/tiles.png e rse/tiles.png; \"Cartão de Treinador\" (19 letras) não cabe nos 12 tiles do título"
+  },
+  {
+   "en": "TRAINER: (verso do cartão)",
+   "pt": "Nome:",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "frente": "H",
+   "obs": "imagem trainer_card/tiles.png; \"Treinador:\" passaria do limite de 56 px (o tile final é compartilhado)"
+  },
+  {
+   "en": "START (contagem 3 2 1)",
+   "pt": "Já!",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "frente": "H",
+   "obs": "imagens misc/minigame_countdown.png e link/321start.png"
   }
  ],
  "proibidos": [
