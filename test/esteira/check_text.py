@@ -301,10 +301,12 @@ WIDTH_RULES: list[Rule] = [
          "de y = 42 no resumo, 8 tiles no tutor); também é a descrição da MT/MO (src/data/items.json.txt:17-18) "
          "no estojo e na loja de MT: WIN_DESCRIPTION de 18 tiles (src/tm_case.c:254-261) com x = 2 "
          "(src/tm_case.c:743), 142 px e 4 linhas, mais folgada", lines=4),
-    Rule("src/data/pokemon/pokedex_text_fr.h", None, 30 * 8,
+    Rule("src/data/pokemon/pokedex_text_fr.h", None, 232,
          "entrada da Pokédex: sWindowTemplate_DexEntry_FlavorText .width = 30 tiles "
          "(src/pokedex_screen.c:618-623), centralizada em 240 px pela linha mais larga "
-         "(src/pokedex_screen.c:2803-2811); 7 tiles de altura com o texto em y = 8 (src/pokedex_screen.c:2882): 3 linhas",
+         "(src/pokedex_screen.c:2803-2811), mas a moldura do fundo cobre as colunas 1-2 e 237-238: "
+         "232 px deixam 1 px livre de cada lado, sombra inclusive; 7 tiles de altura com o texto em y = 8 "
+         "(src/pokedex_screen.c:2882): 3 linhas",
          lines=3),
     Rule("src/data/pokemon/pokedex_entries.h", "*.categoryName", None,
          "categoria da Pokédex: categoryName[12] (include/pokedex.h:104)", chars=11),
@@ -1228,7 +1230,7 @@ what are were was is isn't aren't wasn't weren't there their they they're them f
 would wouldn't can can't cannot could couldn't should shouldn't not don't doesn't didn't does did
 it it's its i'm i've i'll i'd we we're we've our ours us he he's she she's his her him hers who
 whom whose which why how when where here now then than been being be because about after before
-again just only also too very really any every each other another all but if or so get gets
+again just only also too very really any every each other others another all but if or so get gets
 got getting give gives gave given take takes took make makes made let let's look looks see sees
 saw seen know knows knew think thought want wants wanted need needs tell told say said says go
 goes going went gone back still yet way thing things something anything nothing everything
@@ -1238,7 +1240,7 @@ of to in on at an by my up out off with your yourself myself
 """.split())
 _WORD = re.compile(r"[A-Za-zÀ-ÿ]+(?:'[A-Za-z]+)?")
 # Lista de permissões: arquivos e rótulos que ficam em inglês/japonês de propósito
-_ENGLISH_SKIP_FILES = ("src/keyboard_text.c", "src/data/text/species_names.h")
+_ENGLISH_SKIP_FILES = ("src/data/text/species_names.h",)
 _ENGLISH_SKIP_LABELS = ("gCreditsString_*", "gJPText_*", "*.trainerName")
 # Título da ajuda que é só a sigla "TO" (Treinador Original), sem letra minúscula
 _TO_TITLE_LABELS = frozenset({"Help_Text_OT"})

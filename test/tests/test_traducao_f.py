@@ -28,7 +28,12 @@ DEX_RANGES = [
 ]
 
 BS_N = chr(92) + "n"                                  # a quebra `\n` como aparece no fonte
-DEX_WIDTH_PX = 30 * 8
+# A janela tem 240 px, mas a moldura do fundo ocupa as colunas 1-2 e 237-238 (captura I2 do Wailord) e o
+# texto é centralizado pela linha mais larga: x = (240 - W) / 2, tinta de x até x + W - 2 e a sombra em
+# x + W - 1. Com 1 px livre de cada lado (x >= 4, sombra <= 235), W <= 232.
+DEX_WINDOW_PX = 30 * 8
+DEX_FRAME_LEFT, DEX_FRAME_RIGHT = 2, 237              # última coluna da moldura à esquerda / primeira à direita
+DEX_WIDTH_PX = 232
 DEX_LINES = 3
 IMPERIAL = re.compile(r"\b(?:\d[\d.,]*\s*(?:p[ée]s|polegadas?|libras?|onças?|milhas?|jardas?|n[óo]s|knots?|yd|ft|lbs?|mph)|fahrenheit)\b", re.I)
 # Entrada com #if/#else que a extração da checagem não lê: medida aqui (variantes inclusive)
@@ -179,9 +184,53 @@ def test_tyranitar_cabe_nas_duas_revisoes():
         assert not re.search(r"\b(?:the|and|its|it)\b", text)
 
 
-def test_regra_da_pokedex_continua_240px_3_linhas():
+def test_regra_da_pokedex_tem_a_margem_da_moldura_e_3_linhas():
     rule = ct.rule_for(DEX, "gBulbasaurPokedexText")
     assert (rule.px, rule.lines) == (DEX_WIDTH_PX, DEX_LINES)
+
+
+def _variants(label: str) -> list[str]:
+    """Texto de cada ramo de #if REVISION (ou o único texto), com as quebras `\\n` literais."""
+    out = []
+    for rev0 in (True, False):
+        keep, parts = [True], []
+        for line in _body(label).splitlines():
+            s = line.strip()
+            if s.startswith("#if"):
+                keep.append(rev0 if "REVISION == 0" in s else True)
+            elif s.startswith("#else"):
+                keep[-1] = not keep[-1]
+            elif s.startswith("#endif"):
+                keep.pop()
+            elif all(keep):
+                parts += re.findall(r'"([^"]*)"', line)
+        out.append("".join(parts))
+    return list(dict.fromkeys(out))
+
+
+def _dex_x_and_shadow(width: int) -> tuple[int, int]:
+    """DexScreen_PrintMonFlavorText: x = (240 - largura) / 2 (divisão do C), sombra na última coluna."""
+    x = max(int((DEX_WINDOW_PX - width) / 2), 0)
+    return x, x + width - 1
+
+
+def test_conta_da_margem_reproduz_as_capturas_da_i2():
+    assert _dex_x_and_shadow(236) == (2, 237)      # Wailord: sombra do "a" some na moldura, começo colado
+    assert _dex_x_and_shadow(234) == (3, 236)      # Snorlax: no limite
+    assert _dex_x_and_shadow(214) == (13, 226)     # Pikachu: folgado
+    assert _dex_x_and_shadow(DEX_WIDTH_PX) == (DEX_FRAME_LEFT + 2, DEX_FRAME_RIGHT - 2)
+
+
+def test_descricao_tem_1_px_livre_da_moldura_dos_dois_lados():
+    """Achado da I2 (Wailord encostado na moldura): medido em toda entrada, ramos de #if inclusive."""
+    bad = []
+    for label in re.findall(r"^const u8 (g\w+PokedexText)\[\]", _source(), re.M):
+        for text in _variants(label):
+            width = max(line_widths(text)) if text else 0
+            x, shadow = _dex_x_and_shadow(width)
+            if text and (x <= DEX_FRAME_LEFT + 1 or shadow >= DEX_FRAME_RIGHT - 1):
+                bad.append(f"{label}: {width} px")
+    assert bad == []
 
 
 # Fala dirigida ao leitor (o jogador pode ser menino ou menina): frase com "você"/"te"/"lhe" sem

@@ -411,6 +411,21 @@ def test_to_in_all_caps_english_still_counts(repo):
     assert counts["data/text/pc.inc"].texts == 4        # E (frase PT) e Help_Text_OT (título) ficam de fora
 
 
+def test_english_word_glued_to_control_codes_counts(repo):
+    """Qualquer código de controle separa palavras: "{CLEAR 26}the{CLEAR 6}you{PLAYER}with" são três."""
+    inc(repo, 'Text_A::\n\t.string "{CLEAR 26}the{CLEAR 6}you{PLAYER}with{COLOR RED}$"\n')
+    assert english_report(str(repo))["data/text/pc.inc"].words == 3
+
+
+def test_english_label_of_the_easy_chat_keyboard_counts(repo):
+    """Achado da I2: "others" do teclado A-Z do Easy Chat (keyboard_text.c) escapava da checagem."""
+    put(repo, "src/keyboard_text.c", 'const u8 gText_EasyChatKeyboard_ABCDEFothers[] = '
+        '_("{CLEAR 11}A{CLEAR 6}B{CLEAR 6}C{CLEAR 26}D{CLEAR 6}E{CLEAR 6}F{CLEAR 26}others");\n'
+        'const u8 gText_UnionRoomChatKeyboard_ABCDE[] = _("ABCDE");\n')
+    counts = english_report(str(repo))
+    assert (counts["src/keyboard_text.c"].words, counts["src/keyboard_text.c"].texts) == (1, 1)
+
+
 def test_english_allowlist(repo):
     put(repo, "src/data/text/species_names.h", 'const u8 gSpeciesNames[][11] = {\n'
         '    [SPECIES_X] = _("WHAT"),\n};\n')
@@ -418,7 +433,6 @@ def test_english_allowlist(repo):
         '    [TRAINER_A] = {\n        .trainerName = _("WILL"),\n    },\n};\n')
     put(repo, "src/strings.c", 'const u8 gCreditsString_Director[] = _("The director and the team");\n'
         'const u8 gJPText_X[] = _("あいう");\n')
-    put(repo, "src/keyboard_text.c", 'const u8 gText_Keys[] = _("what the you");\n')
     inc(repo, 'Text_A::\n\t.string "WILL é o mais forte. WHAT apareceu!$"\n')
     assert english(run(repo)) == []
 
@@ -718,10 +732,11 @@ def test_move_description_is_113_px_and_four_lines(repo):
     assert any("5 linhas, limite 4" in r.detail for r in failed)
 
 
-def test_pokedex_entry_is_240_px_and_three_lines(repo):
+def test_pokedex_entry_is_232_px_and_three_lines(repo):
+    """240 px da janela menos a moldura do fundo (colunas 1-2 e 237-238) e 1 px livre de cada lado."""
     put(repo, "src/data/pokemon/pokedex_text_fr.h",
-        'const u8 gAPokedexText[] = _("' + "A" * 40 + '\\n2\\n3");\n'                      # 240, 3 linhas
-        'const u8 gBPokedexText[] = _("' + "A" * 40 + 'i");\n'
+        'const u8 gAPokedexText[] = _("' + "A" * 38 + 'i\\n2\\n3");\n'                 # 232, 3 linhas
+        'const u8 gBPokedexText[] = _("' + "A" * 38 + 'ii");\n'                          # 236
         'const u8 gCPokedexText[] = _("1\\n2\\n3\\n4");\n')
     labels = sorted(r.detail.split(": ")[1] for r in failures(run(repo)))
     assert labels == ["gBPokedexText", "gCPokedexText"]
@@ -905,7 +920,7 @@ def test_window_citations_point_at_the_templates():
     oak = rule_for("src/battle_message.c", "gText_ForPetesSake")
     assert oak.px == 208 and ".width = 26" in cited_text(oak)
     dex = rule_for("src/data/pokemon/pokedex_text_fr.h", "gBulbasaurPokedexText")
-    assert dex.px == 240 and dex.lines == 3 and ".width = 30" in cited_text(dex)
+    assert dex.px == 232 and dex.lines == 3 and ".width = 30" in cited_text(dex)
     popup = rule_for("src/data/region_map/region_map_sections.json", "MAPSEC_PALLET_TOWN")
     assert popup.px == 108 and popup.chars == 18
     assert "u8 mapName[19];" in cited_text(popup) and ".width = 15" in cited_text(popup)

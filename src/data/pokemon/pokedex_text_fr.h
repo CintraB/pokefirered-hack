@@ -1,7 +1,7 @@
 const u8 gDummyPokedexText[] = _(
-    "Este é um Pokémon recém-descoberto. Ainda\n"
-    "está sob investigação. No momento, não há\n"
-    "informações detalhadas.");
+    "Este é um Pokémon recém-descoberto.\n"
+    "Ainda está sob investigação. No momento,\n"
+    "não há informações detalhadas.");
 
 const u8 gDummyPokedexTextUnused[] = _("");
 
@@ -21,8 +21,8 @@ const u8 gIvysaurPokedexTextUnused[] = _("");
 
 const u8 gVenusaurPokedexText[] = _(
     "Um aroma encantador emana de sua flor. A\n"
-    "fragrância acalma quem está no meio de uma\n"
-    "batalha.");
+    "fragrância acalma quem está no meio de\n"
+    "uma batalha.");
 
 const u8 gVenusaurPokedexTextUnused[] = _("");
 
@@ -35,15 +35,15 @@ const u8 gCharmanderPokedexTextUnused[] = _("");
 
 const u8 gCharmeleonPokedexText[] = _(
     "Chicoteia com a cauda para derrubar o\n"
-    "inimigo. Depois, dilacera o oponente caído\n"
-    "com garras afiadas.");
+    "inimigo. Depois, dilacera o oponente\n"
+    "caído com garras afiadas.");
 
 const u8 gCharmeleonPokedexTextUnused[] = _("");
 
 const u8 gCharizardPokedexText[] = _(
-    "Suas asas o levam a uma altitude de cerca\n"
-    "de 1.400 m. Ele solta fogo a temperaturas\n"
-    "altíssimas.");
+    "Suas asas o levam a uma altitude de\n"
+    "cerca de 1.400 m. Ele solta fogo a\n"
+    "temperaturas altíssimas.");
 
 const u8 gCharizardPokedexTextUnused[] = _("");
 
@@ -55,23 +55,23 @@ const u8 gSquirtlePokedexText[] = _(
 const u8 gSquirtlePokedexTextUnused[] = _("");
 
 const u8 gWartortlePokedexText[] = _(
-    "Este Pokémon é muito popular como bichinho\n"
-    "de estimação. Sua cauda peluda é símbolo\n"
-    "de longevidade.");
+    "Este Pokémon é muito popular como\n"
+    "bichinho de estimação. Sua cauda peluda\n"
+    "é símbolo de longevidade.");
 
 const u8 gWartortlePokedexTextUnused[] = _("");
 
 const u8 gBlastoisePokedexText[] = _(
     "Esmaga o inimigo com o corpo pesado até\n"
-    "ele desmaiar. Em apuros, recolhe-se dentro\n"
-    "do casco.");
+    "ele desmaiar. Em apuros, recolhe-se\n"
+    "dentro do casco.");
 
 const u8 gBlastoisePokedexTextUnused[] = _("");
 
 const u8 gCaterpiePokedexText[] = _(
-    "É coberto por uma pele verde. Ao crescer,\n"
-    "troca de pele, envolve-se em seda e vira\n"
-    "um casulo.");
+    "É coberto por uma pele verde. Ao\n"
+    "crescer, troca de pele, envolve-se em\n"
+    "seda e vira um casulo.");
 
 const u8 gCaterpiePokedexTextUnused[] = _("");
 
@@ -84,8 +84,8 @@ const u8 gMetapodPokedexTextUnused[] = _("");
 
 const u8 gButterfreePokedexText[] = _(
     "As asas são protegidas por um pó que\n"
-    "repele a chuva. Por isso, este Pokémon voa\n"
-    "até na chuva.");
+    "repele a chuva. Por isso, este Pokémon\n"
+    "voa até na chuva.");
 
 const u8 gButterfreePokedexTextUnused[] = _("");
 
@@ -147,14 +147,14 @@ const u8 gRaticatePokedexTextUnused[] = _("");
 
 const u8 gSpearowPokedexText[] = _(
     "Vive voando de um lado para o outro.\n"
-    "Mesmo frágil, pode ser um oponente difícil,\n"
-    "que usa Ataque Espelhado.");
+    "Mesmo frágil, pode ser um oponente\n"
+    "difícil, que usa Ataque Espelhado.");
 
 const u8 gSpearowPokedexTextUnused[] = _("");
 
 const u8 gFearowPokedexText[] = _(
-    "Suas asas enormes e magníficas o mantêm no\n"
-    "ar. Consegue voar um dia inteiro sem\n"
+    "Suas asas enormes e magníficas o mantêm\n"
+    "no ar. Consegue voar um dia inteiro sem\n"
     "pousar.");
 
 const u8 gFearowPokedexTextUnused[] = _("");
@@ -168,8 +168,8 @@ const u8 gEkansPokedexTextUnused[] = _("");
 
 const u8 gArbokPokedexText[] = _(
     "O desenho na barriga parece um rosto\n"
-    "assustador. Inimigos fracos fogem só de ver\n"
-    "o desenho.");
+    "assustador. Inimigos fracos fogem só de\n"
+    "ver o desenho.");
 
 const u8 gArbokPokedexTextUnused[] = _("");
 
@@ -181,23 +181,23 @@ const u8 gPikachuPokedexText[] = _(
 const u8 gPikachuPokedexTextUnused[] = _("");
 
 const u8 gRaichuPokedexText[] = _(
-    "Suas descargas chegam a 100.000 volts. Um\n"
-    "contato descuidado pode fazer até um\n"
+    "Suas descargas chegam a 100.000 volts.\n"
+    "Um contato descuidado pode fazer até um\n"
     "elefante indiano desmaiar.");
 
 const u8 gRaichuPokedexTextUnused[] = _("");
 
 const u8 gSandshrewPokedexText[] = _(
-    "Cava tocas e vive debaixo da terra. Se for\n"
-    "ameaçado, enrola-se feito uma bola para se\n"
-    "proteger.");
+    "Cava tocas e vive debaixo da terra. Se\n"
+    "for ameaçado, enrola-se feito uma bola\n"
+    "para se proteger.");
 
 const u8 gSandshrewPokedexTextUnused[] = _("");
 
 const u8 gSandslashPokedexText[] = _(
     "É craque em atacar com os espinhos das\n"
-    "costas e as garras afiadas, enquanto corre\n"
-    "rapidamente.");
+    "costas e as garras afiadas, enquanto\n"
+    "corre rapidamente.");
 
 const u8 gSandslashPokedexTextUnused[] = _("");
 
@@ -216,9 +216,9 @@ const u8 gNidorinaPokedexText[] = _(
 const u8 gNidorinaPokedexTextUnused[] = _("");
 
 const u8 gNidoqueenPokedexText[] = _(
-    "O corpo é coberto por escamas duras, como\n"
-    "agulhas. Se ela se agita, as agulhas se\n"
-    "eriçam para fora.");
+    "O corpo é coberto por escamas duras,\n"
+    "como agulhas. Se ela se agita, as\n"
+    "agulhas se eriçam para fora.");
 
 const u8 gNidoqueenPokedexTextUnused[] = _("");
 
@@ -237,8 +237,8 @@ const u8 gNidorinoPokedexText[] = _(
 const u8 gNidorinoPokedexTextUnused[] = _("");
 
 const u8 gNidokingPokedexText[] = _(
-    "Reconhece-se pela pele dura como pedra e\n"
-    "pelo chifre comprido. Cuidado com o\n"
+    "Reconhece-se pela pele dura como pedra\n"
+    "e pelo chifre comprido. Cuidado com o\n"
     "chifre: contém veneno.");
 
 const u8 gNidokingPokedexTextUnused[] = _("");
@@ -251,21 +251,23 @@ const u8 gClefairyPokedexText[] = _(
 const u8 gClefairyPokedexTextUnused[] = _("");
 
 const u8 gClefablePokedexText[] = _(
-    "Tem audição apuradíssima. A cerca de 1 km\n"
-    "de distância, ouve com facilidade um\n"
-    "alfinete cair.");
+    "Tem audição apuradíssima. A cerca de\n"
+    "1 km de distância, ouve com facilidade\n"
+    "um alfinete cair.");
 
 const u8 gClefablePokedexTextUnused[] = _("");
 
 const u8 gVulpixPokedexText[] = _(
     "Quando jovem, tem seis caudas lindas. Ao\n"
-    "crescer, vão brotando várias caudas novas.");
+    "crescer, vão brotando várias caudas\n"
+    "novas.");
 
 const u8 gVulpixPokedexTextUnused[] = _("");
 
 const u8 gNinetalesPokedexText[] = _(
-    "Tem nove caudas longas e um pelo dourado\n"
-    "e brilhante. Diz-se que vive 1.000 anos.");
+    "Tem nove caudas longas e um pelo\n"
+    "dourado e brilhante. Diz-se que vive\n"
+    "1.000 anos.");
 
 const u8 gNinetalesPokedexTextUnused[] = _("");
 
@@ -285,8 +287,8 @@ const u8 gWigglytuffPokedexTextUnused[] = _("");
 
 const u8 gZubatPokedexText[] = _(
     "Não tem olhos. Em vez disso, usa gritos\n"
-    "ultrassônicos para a ecolocalização e voar\n"
-    "no escuro.");
+    "ultrassônicos para a ecolocalização e\n"
+    "voar no escuro.");
 
 const u8 gZubatPokedexTextUnused[] = _("");
 
@@ -306,15 +308,15 @@ const u8 gOddishPokedexTextUnused[] = _("");
 
 const u8 gGloomPokedexText[] = _(
     "Seus pistilos exalam um fedor incrível. O\n"
-    "cheiro horrível pode causar desmaio a 2 km\n"
-    "de distância.");
+    "cheiro horrível pode causar desmaio a\n"
+    "2 km de distância.");
 
 const u8 gGloomPokedexTextUnused[] = _("");
 
 const u8 gVileplumePokedexText[] = _(
-    "Suas pétalas são as maiores do mundo. Com\n"
-    "maldade, espalha pólen que causa alergia\n"
-    "a partir das pétalas.");
+    "Suas pétalas são as maiores do mundo.\n"
+    "Com maldade, espalha pólen que causa\n"
+    "alergia a partir das pétalas.");
 
 const u8 gVileplumePokedexTextUnused[] = _("");
 
@@ -327,8 +329,8 @@ const u8 gParasPokedexTextUnused[] = _("");
 
 const u8 gParasectPokedexText[] = _(
     "Espalha esporos tóxicos pelo chapéu do\n"
-    "cogumelo. Na China, os esporos são usados\n"
-    "como remédio de ervas.");
+    "cogumelo. Na China, os esporos são\n"
+    "usados como remédio de ervas.");
 
 const u8 gParasectPokedexTextUnused[] = _("");
 
@@ -347,15 +349,16 @@ const u8 gVenomothPokedexText[] = _(
 const u8 gVenomothPokedexTextUnused[] = _("");
 
 const u8 gDiglettPokedexText[] = _(
-    "Cava o solo a pouca profundidade. Deixa a\n"
-    "terra levantada por onde passa, o que\n"
+    "Cava o solo a pouca profundidade. Deixa\n"
+    "a terra levantada por onde passa, o que\n"
     "facilita encontrá-lo.");
 
 const u8 gDiglettPokedexTextUnused[] = _("");
 
 const u8 gDugtrioPokedexText[] = _(
-    "Na batalha, cava o chão e ataca o inimigo\n"
-    "desprevenido por uma direção inesperada.");
+    "Na batalha, cava o chão e ataca o\n"
+    "inimigo desprevenido por uma direção\n"
+    "inesperada.");
 
 const u8 gDugtrioPokedexTextUnused[] = _("");
 
@@ -367,35 +370,36 @@ const u8 gMeowthPokedexTextUnused[] = _("");
 
 const u8 gPersianPokedexText[] = _(
     "Tem temperamento cruel. Cuidado se\n"
-    "levantar a cauda bem reta: é sinal de que\n"
-    "vai atacar e morder.");
+    "levantar a cauda bem reta: é sinal de\n"
+    "que vai atacar e morder.");
 
 const u8 gPersianPokedexTextUnused[] = _("");
 
 const u8 gPsyduckPokedexText[] = _(
-    "Sofre sem parar com dor de cabeça. Quando\n"
-    "a dor fica intensa, começa a usar poderes\n"
-    "misteriosos.");
+    "Sofre sem parar com dor de cabeça.\n"
+    "Quando a dor fica intensa, começa a usar\n"
+    "poderes misteriosos.");
 
 const u8 gPsyduckPokedexTextUnused[] = _("");
 
 const u8 gGolduckPokedexText[] = _(
-    "As patas dianteiras têm membranas, o que o\n"
-    "torna um ótimo nadador. Nada com elegância\n"
-    "em lagos e afins.");
+    "As patas dianteiras têm membranas, o que\n"
+    "o torna um ótimo nadador. Nada com\n"
+    "elegância em lagos e afins.");
 
 const u8 gGolduckPokedexTextUnused[] = _("");
 
 const u8 gMankeyPokedexText[] = _(
-    "Leve e ágil, de temperamento feroz. Quando\n"
-    "se irrita, entra num frenesi incontrolável.");
+    "Leve e ágil, de temperamento feroz.\n"
+    "Quando se irrita, entra num frenesi\n"
+    "incontrolável.");
 
 const u8 gMankeyPokedexTextUnused[] = _("");
 
 const u8 gPrimeapePokedexText[] = _(
     "Vive absurdamente furioso. Se começar a\n"
-    "perseguir um alvo, rastreia-o com teimosia,\n"
-    "por mais longe que vá.");
+    "perseguir um alvo, rastreia-o com\n"
+    "teimosia, por mais longe que vá.");
 
 const u8 gPrimeapePokedexTextUnused[] = _("");
 
@@ -434,8 +438,9 @@ const u8 gPoliwrathPokedexText[] = _(
 const u8 gPoliwrathPokedexTextUnused[] = _("");
 
 const u8 gAbraPokedexText[] = _(
-    "Dorme 18 horas por dia. Usa vários poderes\n"
-    "extrassensoriais até enquanto dorme.");
+    "Dorme 18 horas por dia. Usa vários\n"
+    "poderes extrassensoriais até enquanto\n"
+    "dorme.");
 
 const u8 gAbraPokedexTextUnused[] = _("");
 
@@ -447,30 +452,30 @@ const u8 gKadabraPokedexText[] = _(
 const u8 gKadabraPokedexTextUnused[] = _("");
 
 const u8 gAlakazamPokedexText[] = _(
-    "Não gosta muito de ataques físicos. Em vez\n"
-    "disso, usa à vontade seus poderes\n"
+    "Não gosta muito de ataques físicos. Em\n"
+    "vez disso, usa à vontade seus poderes\n"
     "extrassensoriais para vencer.");
 
 const u8 gAlakazamPokedexTextUnused[] = _("");
 
 const u8 gMachopPokedexText[] = _(
-    "Seu corpo todo é feito de músculos. Mesmo\n"
-    "do tamanho de uma criança, arremessa 100\n"
-    "adultos.");
+    "Seu corpo todo é feito de músculos.\n"
+    "Mesmo do tamanho de uma criança,\n"
+    "arremessa 100 adultos.");
 
 const u8 gMachopPokedexTextUnused[] = _("");
 
 const u8 gMachokePokedexText[] = _(
-    "Seu corpo imponente nunca se cansa. Ajuda\n"
-    "as pessoas em tarefas como carregar cargas\n"
-    "pesadas.");
+    "Seu corpo imponente nunca se cansa.\n"
+    "Ajuda as pessoas em tarefas como\n"
+    "carregar cargas pesadas.");
 
 const u8 gMachokePokedexTextUnused[] = _("");
 
 const u8 gMachampPokedexText[] = _(
-    "Seus quatro braços robustos podem desferir\n"
-    "uma saraivada de 1.000 socos em apenas\n"
-    "dois segundos.");
+    "Seus quatro braços robustos podem\n"
+    "desferir uma saraivada de 1.000 socos em\n"
+    "apenas dois segundos.");
 
 const u8 gMachampPokedexTextUnused[] = _("");
 
@@ -490,42 +495,43 @@ const u8 gWeepinbellPokedexTextUnused[] = _("");
 
 const u8 gVictreebelPokedexText[] = _(
     "Atrai presas à boca com um aroma doce\n"
-    "como mel. A presa indefesa é derretida por\n"
-    "um fluido dissolvente.");
+    "como mel. A presa indefesa é derretida\n"
+    "por um fluido dissolvente.");
 
 const u8 gVictreebelPokedexTextUnused[] = _("");
 
 const u8 gTentacoolPokedexText[] = _(
-    "Seus olhos são transparentes como cristais.\n"
-    "Deles, dispara misteriosos raios de luz.");
+    "Seus olhos são transparentes como\n"
+    "cristais. Deles, dispara misteriosos raios\n"
+    "de luz.");
 
 const u8 gTentacoolPokedexTextUnused[] = _("");
 
 const u8 gTentacruelPokedexText[] = _(
-    "Tem 80 tentáculos que se movem à vontade.\n"
-    "Podem picar, causando envenenamento e uma\n"
-    "dor aguda e lancinante.");
+    "Tem 80 tentáculos que se movem à\n"
+    "vontade. Suas picadas envenenam e causam\n"
+    "uma dor aguda e lancinante.");
 
 const u8 gTentacruelPokedexTextUnused[] = _("");
 
 const u8 gGeodudePokedexText[] = _(
-    "Sua forma redonda facilita pegá-lo. Alguns\n"
-    "os atiram uns nos outros numa guerra de\n"
-    "bolas de neve.");
+    "Sua forma redonda facilita pegá-lo.\n"
+    "Alguns os atiram uns nos outros numa\n"
+    "guerra de bolas de neve.");
 
 const u8 gGeodudePokedexTextUnused[] = _("");
 
 const u8 gGravelerPokedexText[] = _(
     "Cuidado ao fazer trilhas nas montanhas.\n"
-    "Graveler pode descer rolando pelo caminho\n"
-    "sem diminuir a velocidade.");
+    "Graveler pode descer rolando pelo\n"
+    "caminho sem diminuir a velocidade.");
 
 const u8 gGravelerPokedexTextUnused[] = _("");
 
 const u8 gGolemPokedexText[] = _(
-    "É envolto por um casco duro como lajes de\n"
-    "pedra. Troca de pele uma vez por ano para\n"
-    "crescer.");
+    "É envolto por um casco duro como lajes\n"
+    "de pedra. Troca de pele uma vez por ano\n"
+    "para crescer.");
 
 const u8 gGolemPokedexTextUnused[] = _("");
 
@@ -544,8 +550,8 @@ const u8 gRapidashPokedexTextUnused[] = _("");
 
 const u8 gSlowpokePokedexText[] = _(
     "Está sempre perdido em pensamentos vagos,\n"
-    "mas ninguém sabe no que pensa. Pesca muito\n"
-    "bem com a cauda.");
+    "mas ninguém sabe no que pensa. Pesca\n"
+    "muito bem com a cauda.");
 
 const u8 gSlowpokePokedexTextUnused[] = _("");
 
@@ -558,8 +564,8 @@ const u8 gSlowbroPokedexTextUnused[] = _("");
 
 const u8 gMagnemitePokedexText[] = _(
     "Move-se sempre flutuando. Descarrega\n"
-    "golpes como Onda de Trovão pelas unidades\n"
-    "das laterais.");
+    "golpes como Onda de Trovão pelas\n"
+    "unidades das laterais.");
 
 const u8 gMagnemitePokedexTextUnused[] = _("");
 
@@ -585,9 +591,9 @@ const u8 gDoduoPokedexText[] = _(
 const u8 gDoduoPokedexTextUnused[] = _("");
 
 const u8 gDodrioPokedexText[] = _(
-    "Espécie estranha e raramente vista. As três\n"
-    "cabeças representam alegria, tristeza e\n"
-    "raiva.");
+    "Espécie estranha e raramente vista. As\n"
+    "três cabeças representam alegria, tristeza\n"
+    "e raiva.");
 
 const u8 gDodrioPokedexTextUnused[] = _("");
 
@@ -600,8 +606,8 @@ const u8 gSeelPokedexTextUnused[] = _("");
 
 const u8 gDewgongPokedexText[] = _(
     "Seu corpo é coberto por um pelo\n"
-    "branco-puro. Quanto mais frio o clima, mais\n"
-    "ativo ele fica.");
+    "branco-puro. Quanto mais frio o clima,\n"
+    "mais ativo ele fica.");
 
 const u8 gDewgongPokedexTextUnused[] = _("");
 
@@ -628,8 +634,8 @@ const u8 gShellderPokedexTextUnused[] = _("");
 
 const u8 gCloysterPokedexText[] = _(
     "Sua concha é duríssima. Não quebra nem\n"
-    "com uma bomba. A concha só se abre quando\n"
-    "ele ataca.");
+    "com uma bomba. A concha só se abre\n"
+    "quando ele ataca.");
 
 const u8 gCloysterPokedexTextUnused[] = _("");
 
@@ -641,9 +647,9 @@ const u8 gGastlyPokedexText[] = _(
 const u8 gGastlyPokedexTextUnused[] = _("");
 
 const u8 gHaunterPokedexText[] = _(
-    "Se você sentir olhos te vigiando no escuro,\n"
-    "sem ninguém por perto, é porque Haunter\n"
-    "está lá.");
+    "Se você sentir olhos te vigiando no\n"
+    "escuro, sem ninguém por perto, é porque\n"
+    "Haunter está lá.");
 
 const u8 gHaunterPokedexTextUnused[] = _("");
 
@@ -673,9 +679,9 @@ const u8 gHypnoPokedexText[] = _(
 const u8 gHypnoPokedexTextUnused[] = _("");
 
 const u8 gKrabbyPokedexText[] = _(
-    "Encontrado perto do mar. As grandes pinças\n"
-    "voltam a crescer se forem arrancadas das\n"
-    "juntas.");
+    "Encontrado perto do mar. As grandes\n"
+    "pinças voltam a crescer se forem\n"
+    "arrancadas das juntas.");
 
 const u8 gKrabbyPokedexTextUnused[] = _("");
 
@@ -701,15 +707,15 @@ const u8 gElectrodePokedexTextUnused[] = _("");
 
 const u8 gExeggcutePokedexText[] = _(
     "Embora pareça um conjunto de ovos,\n"
-    "descobriu-se que é uma forma de vida mais\n"
-    "parecida com sementes de planta.");
+    "descobriu-se que é uma forma de vida\n"
+    "mais parecida com sementes de planta.");
 
 const u8 gExeggcutePokedexTextUnused[] = _("");
 
 const u8 gExeggutorPokedexText[] = _(
     "“Floresta Tropical Ambulante” é como o\n"
-    "chamam. Cada uma das nozes tem um rosto e\n"
-    "vontade própria.");
+    "chamam. Cada uma das nozes tem um rosto\n"
+    "e vontade própria.");
 
 const u8 gExeggutorPokedexTextUnused[] = _("");
 
@@ -721,9 +727,9 @@ const u8 gCubonePokedexText[] = _(
 const u8 gCubonePokedexTextUnused[] = _("");
 
 const u8 gMarowakPokedexText[] = _(
-    "É pequeno e, no início, era bem fraco. Seu\n"
-    "temperamento ficou feroz quando passou a\n"
-    "usar ossos.");
+    "É pequeno e, no início, era bem fraco.\n"
+    "Seu temperamento ficou feroz quando\n"
+    "passou a usar ossos.");
 
 const u8 gMarowakPokedexTextUnused[] = _("");
 
@@ -743,8 +749,8 @@ const u8 gHitmonchanPokedexTextUnused[] = _("");
 
 const u8 gLickitungPokedexText[] = _(
     "A língua tem o dobro do comprimento do\n"
-    "corpo. Mexe-se como um braço para agarrar\n"
-    "comida e atacar.");
+    "corpo. Mexe-se como um braço para\n"
+    "agarrar comida e atacar.");
 
 const u8 gLickitungPokedexTextUnused[] = _("");
 
@@ -757,15 +763,15 @@ const u8 gKoffingPokedexTextUnused[] = _("");
 
 const u8 gWeezingPokedexText[] = _(
     "Muito raramente, uma mutação repentina\n"
-    "pode fazer dois Koffing gêmeos se unirem e\n"
-    "virarem um Weezing.");
+    "pode fazer dois Koffing gêmeos se unirem\n"
+    "e virarem um Weezing.");
 
 const u8 gWeezingPokedexTextUnused[] = _("");
 
 const u8 gRhyhornPokedexText[] = _(
-    "Forte, mas não muito esperto, este Pokémon\n"
-    "pode destruir até um arranha-céu com suas\n"
-    "Investidas.");
+    "Forte, mas não muito esperto, este\n"
+    "Pokémon pode destruir até um arranha-céu\n"
+    "com suas Investidas.");
 
 const u8 gRhyhornPokedexTextUnused[] = _("");
 
@@ -777,30 +783,30 @@ const u8 gRhydonPokedexText[] = _(
 const u8 gRhydonPokedexTextUnused[] = _("");
 
 const u8 gChanseyPokedexText[] = _(
-    "Põe vários ovos por dia. Dizem que os ovos\n"
-    "são ricos em nutrientes e extremamente\n"
-    "deliciosos.");
+    "Põe vários ovos por dia. Dizem que os\n"
+    "ovos são ricos em nutrientes e\n"
+    "extremamente deliciosos.");
 
 const u8 gChanseyPokedexTextUnused[] = _("");
 
 const u8 gTangelaPokedexText[] = _(
-    "Trepadeiras azuis escondem a identidade do\n"
-    "Pokémon num emaranhado. Enrosca tudo o\n"
-    "que chega perto.");
+    "Trepadeiras azuis escondem a identidade\n"
+    "do Pokémon num emaranhado. Enrosca tudo\n"
+    "o que chega perto.");
 
 const u8 gTangelaPokedexTextUnused[] = _("");
 
 const u8 gKangaskhanPokedexText[] = _(
     "A fêmea cria o filhote na bolsa da\n"
-    "barriga. Com Soco de Cometa, ela é craque\n"
-    "em atacar.");
+    "barriga. Com Soco de Cometa, ela é\n"
+    "craque em atacar.");
 
 const u8 gKangaskhanPokedexTextUnused[] = _("");
 
 const u8 gHorseaPokedexText[] = _(
-    "Mantém o equilíbrio com a cauda, enrolada\n"
-    "como uma mola. Pode soltar tinta pela\n"
-    "boca.");
+    "Mantém o equilíbrio com a cauda,\n"
+    "enrolada como uma mola. Pode soltar tinta\n"
+    "pela boca.");
 
 const u8 gHorseaPokedexTextUnused[] = _("");
 
@@ -812,22 +818,23 @@ const u8 gSeadraPokedexText[] = _(
 const u8 gSeadraPokedexTextUnused[] = _("");
 
 const u8 gGoldeenPokedexText[] = _(
-    "As nadadeiras dorsal e peitorais são fortes\n"
-    "como músculos. Nada a cerca de 9 km/h.");
+    "As nadadeiras dorsal e peitorais são\n"
+    "fortes como músculos. Nada a cerca\n"
+    "de 9 km/h.");
 
 const u8 gGoldeenPokedexTextUnused[] = _("");
 
 const u8 gSeakingPokedexText[] = _(
     "O chifre da cabeça é afiado como uma\n"
-    "broca. Fura uma pedra grande para fazer o\n"
-    "ninho.");
+    "broca. Fura uma pedra grande para fazer\n"
+    "o ninho.");
 
 const u8 gSeakingPokedexTextUnused[] = _("");
 
 const u8 gStaryuPokedexText[] = _(
-    "Aparece em grande número perto das praias.\n"
-    "À noite, seu núcleo central pisca com uma\n"
-    "luz vermelha.");
+    "Aparece em grande número perto das\n"
+    "praias. À noite, seu núcleo central pisca\n"
+    "com uma luz vermelha.");
 
 const u8 gStaryuPokedexTextUnused[] = _("");
 
@@ -839,9 +846,9 @@ const u8 gStarmiePokedexText[] = _(
 const u8 gStarmiePokedexTextUnused[] = _("");
 
 const u8 gMrmimePokedexText[] = _(
-    "É craque em enganar as pessoas. Dizem que\n"
-    "consegue criar paredes do nada, com sua\n"
-    "mímica.");
+    "É craque em enganar as pessoas. Dizem\n"
+    "que consegue criar paredes do nada, com\n"
+    "sua mímica.");
 
 const u8 gMrmimePokedexTextUnused[] = _("");
 
@@ -875,15 +882,15 @@ const u8 gMagmarPokedexTextUnused[] = _("");
 
 const u8 gPinsirPokedexText[] = _(
     "Seus dois longos chifres em pinça são\n"
-    "poderosos. Quando agarram um inimigo, só o\n"
-    "soltam depois de rasgá-lo.");
+    "poderosos. Quando agarram um inimigo, só\n"
+    "o soltam depois de rasgá-lo.");
 
 const u8 gPinsirPokedexTextUnused[] = _("");
 
 const u8 gTaurosPokedexText[] = _(
     "Quando está prestes a usar Investida,\n"
-    "chicoteia o corpo várias vezes com as três\n"
-    "caudas longas.");
+    "chicoteia o corpo várias vezes com as\n"
+    "três caudas longas.");
 
 const u8 gTaurosPokedexTextUnused[] = _("");
 
@@ -986,9 +993,9 @@ const u8 gAerodactylPokedexText[] = _(
 const u8 gAerodactylPokedexTextUnused[] = _("");
 
 const u8 gSnorlaxPokedexText[] = _(
-    "Só fica satisfeito se comer mais de 400 kg\n"
-    "de comida por dia. Quando termina de\n"
-    "comer, vai logo dormir.");
+    "Só fica satisfeito se comer mais de\n"
+    "400 kg de comida por dia. Quando termina\n"
+    "de comer, vai logo dormir.");
 
 const u8 gSnorlaxPokedexTextUnused[] = _("");
 
@@ -1014,8 +1021,8 @@ const u8 gMoltresPokedexTextUnused[] = _("");
 
 const u8 gDratiniPokedexText[] = _(
     "Até os jovens passam de 2 m de\n"
-    "comprimento. Cresce mais ao trocar de pele\n"
-    "repetidas vezes.");
+    "comprimento. Cresce mais ao trocar de\n"
+    "pele repetidas vezes.");
 
 const u8 gDratiniPokedexTextUnused[] = _("");
 
@@ -1060,8 +1067,8 @@ const u8 gChikoritaPokedexTextUnused[] = _("");
 
 const u8 gBayleefPokedexText[] = _(
     "Um aroma picante emana do pescoço. O\n"
-    "aroma age como um estimulante que restaura\n"
-    "a saúde.");
+    "aroma age como um estimulante que\n"
+    "restaura a saúde.");
 
 const u8 gBayleefPokedexTextUnused[] = _("");
 
@@ -1073,14 +1080,15 @@ const u8 gMeganiumPokedexText[] = _(
 const u8 gMeganiumPokedexTextUnused[] = _("");
 
 const u8 gCyndaquilPokedexText[] = _(
-    "Costuma ficar encolhido. Se ficar com raiva\n"
-    "ou se assustar, solta chamas pelas costas.");
+    "Costuma ficar encolhido. Se ficar com\n"
+    "raiva ou se assustar, solta chamas pelas\n"
+    "costas.");
 
 const u8 gCyndaquilPokedexTextUnused[] = _("");
 
 const u8 gQuilavaPokedexText[] = _(
-    "Este Pokémon é todo coberto por pelos não\n"
-    "inflamáveis. Aguenta qualquer tipo de\n"
+    "Este Pokémon é todo coberto por pelos\n"
+    "não inflamáveis. Aguenta qualquer tipo de\n"
     "ataque de fogo.");
 
 const u8 gQuilavaPokedexTextUnused[] = _("");
@@ -1093,23 +1101,23 @@ const u8 gTyphlosionPokedexText[] = _(
 const u8 gTyphlosionPokedexTextUnused[] = _("");
 
 const u8 gTotodilePokedexText[] = _(
-    "É pequeno, mas durão e valente. Não hesita\n"
-    "em dar uma mordida em qualquer coisa que\n"
-    "se mexa.");
+    "É pequeno, mas durão e valente. Não\n"
+    "hesita em dar uma mordida em qualquer\n"
+    "coisa que se mexa.");
 
 const u8 gTotodilePokedexTextUnused[] = _("");
 
 const u8 gCroconawPokedexText[] = _(
-    "Abre bem as mandíbulas enormes ao atacar.\n"
-    "Se perder presas ao morder, elas voltam a\n"
-    "crescer.");
+    "Abre bem as mandíbulas enormes ao\n"
+    "atacar. Se perder presas ao morder, elas\n"
+    "voltam a crescer.");
 
 const u8 gCroconawPokedexTextUnused[] = _("");
 
 const u8 gFeraligatrPokedexText[] = _(
-    "Fora d'água, tem dificuldade para sustentar\n"
-    "o próprio peso e se apoia nas quatro\n"
-    "patas. Mas é rápido.");
+    "Fora d'água, tem dificuldade para\n"
+    "sustentar o próprio peso e se apoia nas\n"
+    "quatro patas. Mas é rápido.");
 
 const u8 gFeraligatrPokedexTextUnused[] = _("");
 
@@ -1121,22 +1129,23 @@ const u8 gSentretPokedexText[] = _(
 const u8 gSentretPokedexTextUnused[] = _("");
 
 const u8 gFurretPokedexText[] = _(
-    "Não dá para saber onde sua cauda começa.\n"
-    "Apesar das pernas curtas, caça Rattata com\n"
-    "rapidez.");
+    "Não dá para saber onde sua cauda\n"
+    "começa. Apesar das pernas curtas, caça\n"
+    "Rattata com rapidez.");
 
 const u8 gFurretPokedexTextUnused[] = _("");
 
 const u8 gHoothootPokedexText[] = _(
-    "Tem uma noção perfeita de tempo. Aconteça\n"
-    "o que acontecer, mantém o ritmo inclinando\n"
-    "a cabeça na hora certa.");
+    "Tem uma noção perfeita de tempo.\n"
+    "Aconteça o que acontecer, mantém o ritmo\n"
+    "inclinando a cabeça na hora certa.");
 
 const u8 gHoothootPokedexTextUnused[] = _("");
 
 const u8 gNoctowlPokedexText[] = _(
     "Quando precisa pensar, gira a cabeça em\n"
-    "180 graus para aguçar o poder intelectual.");
+    "180 graus para aguçar o poder\n"
+    "intelectual.");
 
 const u8 gNoctowlPokedexTextUnused[] = _("");
 
@@ -1148,44 +1157,44 @@ const u8 gLedybaPokedexText[] = _(
 const u8 gLedybaPokedexTextUnused[] = _("");
 
 const u8 gLedianPokedexText[] = _(
-    "Os desenhos de estrela nas costas aumentam\n"
-    "ou diminuem conforme o número de estrelas\n"
-    "no céu noturno.");
+    "Os desenhos de estrela nas costas\n"
+    "aumentam ou diminuem conforme o número\n"
+    "de estrelas no céu noturno.");
 
 const u8 gLedianPokedexTextUnused[] = _("");
 
 const u8 gSpinarakPokedexText[] = _(
-    "Tece uma teia com fio fino, mas resistente.\n"
-    "Depois espera pacientemente a presa se\n"
-    "prender.");
+    "Tece uma teia com fio fino, mas\n"
+    "resistente. Depois espera pacientemente a\n"
+    "presa se prender.");
 
 const u8 gSpinarakPokedexTextUnused[] = _("");
 
 const u8 gAriadosPokedexText[] = _(
     "Um único fio de uma seda especial sai sem\n"
-    "parar do seu traseiro. O fio leva de volta\n"
-    "ao ninho.");
+    "parar do seu traseiro. O fio leva de\n"
+    "volta ao ninho.");
 
 const u8 gAriadosPokedexTextUnused[] = _("");
 
 const u8 gCrobatPokedexText[] = _(
-    "As asas que se desenvolveram nas pernas o\n"
-    "fazem voar rápido, mas também dificultam\n"
-    "parar e descansar.");
+    "As asas que se desenvolveram nas pernas\n"
+    "o fazem voar rápido, mas também\n"
+    "dificultam parar e descansar.");
 
 const u8 gCrobatPokedexTextUnused[] = _("");
 
 const u8 gChinchouPokedexText[] = _(
-    "No fundo escuro do oceano, seu único meio\n"
-    "de comunicação são as luzes que piscam\n"
-    "sem parar.");
+    "No fundo escuro do oceano, seu único\n"
+    "meio de comunicação são as luzes que\n"
+    "piscam sem parar.");
 
 const u8 gChinchouPokedexTextUnused[] = _("");
 
 const u8 gLanturnPokedexText[] = _(
     "Ofusca a presa com uma forte explosão de\n"
-    "luz e depois engole a presa imobilizada de\n"
-    "uma só vez.");
+    "luz e depois engole a presa imobilizada\n"
+    "de uma só vez.");
 
 const u8 gLanturnPokedexTextUnused[] = _("");
 
@@ -1204,9 +1213,9 @@ const u8 gCleffaPokedexText[] = _(
 const u8 gCleffaPokedexTextUnused[] = _("");
 
 const u8 gIgglybuffPokedexText[] = _(
-    "Seu corpo extremamente flexível e elástico\n"
-    "o faz quicar sem parar, a qualquer hora,\n"
-    "em qualquer lugar.");
+    "Seu corpo extremamente flexível e\n"
+    "elástico o faz quicar sem parar, a\n"
+    "qualquer hora, em qualquer lugar.");
 
 const u8 gIgglybuffPokedexTextUnused[] = _("");
 
@@ -1218,15 +1227,16 @@ const u8 gTogepiPokedexText[] = _(
 const u8 gTogepiPokedexTextUnused[] = _("");
 
 const u8 gTogeticPokedexText[] = _(
-    "Fica desanimado se não está com gente boa.\n"
-    "Consegue flutuar no ar sem mexer as asas.");
+    "Fica desanimado se não está com gente\n"
+    "boa. Consegue flutuar no ar sem mexer as\n"
+    "asas.");
 
 const u8 gTogeticPokedexTextUnused[] = _("");
 
 const u8 gNatuPokedexText[] = _(
     "Costuma procurar comida no chão, mas, em\n"
-    "raras ocasiões, pula nos galhos para bicar\n"
-    "brotos.");
+    "raras ocasiões, pula nos galhos para\n"
+    "bicar brotos.");
 
 const u8 gNatuPokedexTextUnused[] = _("");
 
@@ -1246,8 +1256,8 @@ const u8 gMareepPokedexTextUnused[] = _("");
 
 const u8 gFlaaffyPokedexText[] = _(
     "Sua lã fofa armazena eletricidade com\n"
-    "facilidade. A pele emborrachada o protege\n"
-    "de levar choque.");
+    "facilidade. A pele emborrachada o\n"
+    "protege de levar choque.");
 
 const u8 gFlaaffyPokedexTextUnused[] = _("");
 
@@ -1280,35 +1290,37 @@ const u8 gAzumarillPokedexText[] = _(
 const u8 gAzumarillPokedexTextUnused[] = _("");
 
 const u8 gSudowoodoPokedexText[] = _(
-    "Disfarça-se de árvore para evitar ataques.\n"
-    "Odeia água e some se começa a chover.");
+    "Disfarça-se de árvore para evitar\n"
+    "ataques. Odeia água e some se começa a\n"
+    "chover.");
 
 const u8 gSudowoodoPokedexTextUnused[] = _("");
 
 const u8 gPolitoedPokedexText[] = _(
-    "Sempre que três ou mais se juntam, cantam\n"
-    "em voz alta, num som parecido com berros.");
+    "Sempre que três ou mais se juntam,\n"
+    "cantam em voz alta, num som parecido com\n"
+    "berros.");
 
 const u8 gPolitoedPokedexTextUnused[] = _("");
 
 const u8 gHoppipPokedexText[] = _(
     "Seu corpo é tão leve que precisa se\n"
-    "agarrar firme ao chão com os pés para não\n"
-    "ser levado pelo vento.");
+    "agarrar firme ao chão com os pés para\n"
+    "não ser levado pelo vento.");
 
 const u8 gHoppipPokedexTextUnused[] = _("");
 
 const u8 gSkiploomPokedexText[] = _(
     "Abre as pétalas para absorver a luz do\n"
-    "sol. Também flutua no ar para chegar mais\n"
-    "perto do sol.");
+    "sol. Também flutua no ar para chegar\n"
+    "mais perto do sol.");
 
 const u8 gSkiploomPokedexTextUnused[] = _("");
 
 const u8 gJumpluffPokedexText[] = _(
     "Viaja nos ventos de cada estação e\n"
-    "espalha pelo mundo seus esporos parecidos\n"
-    "com algodão para ter mais filhotes.");
+    "espalha pelo mundo seus esporos de\n"
+    "algodão para ter mais filhotes.");
 
 const u8 gJumpluffPokedexTextUnused[] = _("");
 
@@ -1333,22 +1345,22 @@ const u8 gSunfloraPokedexText[] = _(
 const u8 gSunfloraPokedexTextUnused[] = _("");
 
 const u8 gYanmaPokedexText[] = _(
-    "Seus olhos grandes enxergam 360 graus. Ele\n"
-    "olha em todas as direções para encontrar\n"
-    "insetos, suas presas.");
+    "Seus olhos grandes enxergam 360 graus.\n"
+    "Ele olha em todas as direções para\n"
+    "encontrar insetos, suas presas.");
 
 const u8 gYanmaPokedexTextUnused[] = _("");
 
 const u8 gWooperPokedexText[] = _(
-    "Quando anda pelo chão, cobre o corpo com\n"
-    "uma película viscosa e venenosa.");
+    "Quando anda pelo chão, cobre o corpo\n"
+    "com uma película viscosa e venenosa.");
 
 const u8 gWooperPokedexTextUnused[] = _("");
 
 const u8 gQuagsirePokedexText[] = _(
     "Por ter um jeito calmo e despreocupado,\n"
-    "costuma bater a cabeça em pedras e cascos\n"
-    "de barcos enquanto nada.");
+    "costuma bater a cabeça em pedras e\n"
+    "cascos de barcos enquanto nada.");
 
 const u8 gQuagsirePokedexTextUnused[] = _("");
 
@@ -1361,8 +1373,8 @@ const u8 gEspeonPokedexTextUnused[] = _("");
 
 const u8 gUmbreonPokedexText[] = _(
     "Quando escurece, os anéis de seu corpo\n"
-    "começam a brilhar, assustando quem estiver\n"
-    "por perto.");
+    "começam a brilhar, assustando quem\n"
+    "estiver por perto.");
 
 const u8 gUmbreonPokedexTextUnused[] = _("");
 
@@ -1381,9 +1393,9 @@ const u8 gSlowkingPokedexText[] = _(
 const u8 gSlowkingPokedexTextUnused[] = _("");
 
 const u8 gMisdreavusPokedexText[] = _(
-    "Adora morder e puxar o cabelo das pessoas\n"
-    "por trás, sem aviso, só para ver a reação\n"
-    "de susto.");
+    "Adora morder e puxar o cabelo das\n"
+    "pessoas por trás, sem aviso, só para ver\n"
+    "a reação de susto.");
 
 const u8 gMisdreavusPokedexTextUnused[] = _("");
 
@@ -1403,8 +1415,8 @@ const u8 gWobbuffetPokedexTextUnused[] = _("");
 
 const u8 gGirafarigPokedexText[] = _(
     "A cauda, que também tem um cérebro\n"
-    "pequeno, pode morder por conta própria se\n"
-    "sentir um cheiro tentador.");
+    "pequeno, pode morder por conta própria\n"
+    "se sentir um cheiro tentador.");
 
 const u8 gGirafarigPokedexTextUnused[] = _("");
 
@@ -1417,20 +1429,22 @@ const u8 gPinecoPokedexTextUnused[] = _("");
 
 const u8 gForretressPokedexText[] = _(
     "Fica firmemente preso à árvore, sem se\n"
-    "mover. Espalha pedaços da casca dura para\n"
-    "afastar os inimigos.");
+    "mover. Espalha pedaços da casca dura\n"
+    "para afastar os inimigos.");
 
 const u8 gForretressPokedexTextUnused[] = _("");
 
 const u8 gDunsparcePokedexText[] = _(
     "Se for visto, foge cavando com a cauda.\n"
-    "Consegue pairar um pouquinho com as asas.");
+    "Consegue pairar um pouquinho com as\n"
+    "asas.");
 
 const u8 gDunsparcePokedexTextUnused[] = _("");
 
 const u8 gGligarPokedexText[] = _(
-    "Costuma se agarrar a penhascos. Ao avistar\n"
-    "a presa, abre as asas e plana para atacar.");
+    "Costuma se agarrar a penhascos. Ao\n"
+    "avistar a presa, abre as asas e plana\n"
+    "para atacar.");
 
 const u8 gGligarPokedexTextUnused[] = _("");
 
@@ -1443,43 +1457,43 @@ const u8 gSteelixPokedexTextUnused[] = _("");
 
 const u8 gSnubbullPokedexText[] = _(
     "Tem um jeito ativo e brincalhão. Muitas\n"
-    "mulheres gostam de brincar com ele por ser\n"
-    "tão carinhoso.");
+    "mulheres gostam de brincar com ele por\n"
+    "ser tão carinhoso.");
 
 const u8 gSnubbullPokedexTextUnused[] = _("");
 
 const u8 gGranbullPokedexText[] = _(
-    "Como as presas são pesadas demais, mantém\n"
-    "sempre a cabeça inclinada para baixo.\n"
-    "Mesmo assim, sua Mordida é poderosa.");
+    "Como as presas são pesadas demais, anda\n"
+    "sempre de cabeça baixa. Mesmo assim, sua\n"
+    "Mordida é poderosa.");
 
 const u8 gGranbullPokedexTextUnused[] = _("");
 
 const u8 gQwilfishPokedexText[] = _(
     "Os pequenos espinhos que cobrem o corpo\n"
-    "vieram das escamas. Injetam uma toxina que\n"
-    "causa desmaio.");
+    "vieram das escamas. Injetam uma toxina\n"
+    "que causa desmaio.");
 
 const u8 gQwilfishPokedexTextUnused[] = _("");
 
 const u8 gScizorPokedexText[] = _(
     "As asas não servem para voar. Batem em\n"
-    "alta velocidade para ajustar a temperatura\n"
-    "do corpo.");
+    "alta velocidade para ajustar a\n"
+    "temperatura do corpo.");
 
 const u8 gScizorPokedexTextUnused[] = _("");
 
 const u8 gShucklePokedexText[] = _(
-    "Guarda frutas dentro do casco. Para evitar\n"
-    "ataques, esconde-se sob rochas e fica\n"
-    "totalmente imóvel.");
+    "Guarda frutas dentro do casco. Para\n"
+    "evitar ataques, esconde-se sob rochas e\n"
+    "fica totalmente imóvel.");
 
 const u8 gShucklePokedexTextUnused[] = _("");
 
 const u8 gHeracrossPokedexText[] = _(
     "Geralmente dócil, mas, se perturbado\n"
-    "enquanto toma mel, expulsa o intruso com o\n"
-    "chifre.");
+    "enquanto toma mel, expulsa o intruso com\n"
+    "o chifre.");
 
 const u8 gHeracrossPokedexTextUnused[] = _("");
 
@@ -1527,8 +1541,8 @@ const u8 gSwinubPokedexTextUnused[] = _("");
 
 const u8 gPiloswinePokedexText[] = _(
     "Quando investe contra um inimigo, os pelos\n"
-    "das costas ficam eriçados. É muito sensível\n"
-    "a sons.");
+    "das costas ficam eriçados. É muito\n"
+    "sensível a sons.");
 
 const u8 gPiloswinePokedexTextUnused[] = _("");
 
@@ -1541,15 +1555,15 @@ const u8 gCorsolaPokedexTextUnused[] = _("");
 
 const u8 gRemoraidPokedexText[] = _(
     "Usa a nadadeira dorsal como ventosa para\n"
-    "se prender à barriga de um Mantine e comer\n"
-    "as sobras.");
+    "se prender à barriga de um Mantine e\n"
+    "comer as sobras.");
 
 const u8 gRemoraidPokedexTextUnused[] = _("");
 
 const u8 gOctilleryPokedexText[] = _(
     "Enfia-se por instinto em buracos nas\n"
-    "rochas. Se está com sono, rouba o ninho de\n"
-    "outro Octillery.");
+    "rochas. Se está com sono, rouba o ninho\n"
+    "de outro Octillery.");
 
 const u8 gOctilleryPokedexTextUnused[] = _("");
 
@@ -1575,9 +1589,9 @@ const u8 gSkarmoryPokedexText[] = _(
 const u8 gSkarmoryPokedexTextUnused[] = _("");
 
 const u8 gHoundourPokedexText[] = _(
-    "Para encurralar a presa, eles se localizam\n"
-    "uns aos outros com latidos que só eles\n"
-    "entendem.");
+    "Para encurralar a presa, eles se\n"
+    "localizam uns aos outros com latidos que\n"
+    "só eles entendem.");
 
 const u8 gHoundourPokedexTextUnused[] = _("");
 
@@ -1611,8 +1625,8 @@ const u8 gDonphanPokedexTextUnused[] = _("");
 
 const u8 gPorygon2PokedexText[] = _(
     "Pesquisas aprimoraram suas habilidades. Às\n"
-    "vezes, pode fazer movimentos que não foram\n"
-    "programados.");
+    "vezes, pode fazer movimentos que não\n"
+    "foram programados.");
 
 const u8 gPorygon2PokedexTextUnused[] = _("");
 
@@ -1631,8 +1645,8 @@ const u8 gSmearglePokedexText[] = _(
 const u8 gSmearglePokedexTextUnused[] = _("");
 
 const u8 gTyroguePokedexText[] = _(
-    "Mesmo pequeno, não dá para ignorá-lo, pois\n"
-    "acerta um soco em qualquer alvo ao\n"
+    "Mesmo pequeno, não dá para ignorá-lo,\n"
+    "pois acerta um soco em qualquer alvo ao\n"
     "alcance, sem aviso.");
 
 const u8 gTyroguePokedexTextUnused[] = _("");
@@ -1646,7 +1660,8 @@ const u8 gHitmontopPokedexTextUnused[] = _("");
 
 const u8 gSmoochumPokedexText[] = _(
     "Balança a cabeça devagar para a frente e\n"
-    "para trás, como se tentasse beijar alguém.");
+    "para trás, como se tentasse beijar\n"
+    "alguém.");
 
 const u8 gSmoochumPokedexTextUnused[] = _("");
 
@@ -1747,8 +1762,8 @@ const u8 gCelebiPokedexTextUnused[] = _("");
 
 const u8 gTreeckoPokedexText[] = _(
     "Escala rapidamente até paredes verticais.\n"
-    "Sente a umidade com a cauda para prever o\n"
-    "tempo do dia seguinte.");
+    "Sente a umidade com a cauda para prever\n"
+    "o tempo do dia seguinte.");
 
 const u8 gTreeckoPokedexTextUnused[] = _("");
 
@@ -1760,8 +1775,8 @@ const u8 gGrovylePokedexTextUnused[] = _("");
 
 const u8 gSceptilePokedexText[] = _(
     "As folhas das patas dianteiras são afiadas\n"
-    "como espadas. Salta com agilidade entre os\n"
-    "galhos das árvores para atacar.");
+    "como espadas. Salta com agilidade entre\n"
+    "os galhos das árvores para atacar.");
 
 const u8 gSceptilePokedexTextUnused[] = _("");
 
@@ -1835,16 +1850,16 @@ const u8 gLinoonePokedexText[] = _(
 const u8 gLinoonePokedexTextUnused[] = _("");
 
 const u8 gWurmplePokedexText[] = _(
-    "Vive no capim alto e nas florestas. Quando\n"
-    "atacado, resiste apontando os espinhos\n"
-    "venenosos para o inimigo.");
+    "Vive no capim alto e nas florestas.\n"
+    "Quando atacado, resiste apontando os\n"
+    "espinhos venenosos para o inimigo.");
 
 const u8 gWurmplePokedexTextUnused[] = _("");
 
 const u8 gSilcoonPokedexText[] = _(
     "Poupa energia movendo-se o mínimo\n"
-    "possível. Espera a evolução bebendo só um\n"
-    "pouco de água da chuva.");
+    "possível. Espera a evolução bebendo só\n"
+    "um pouco de água da chuva.");
 
 const u8 gSilcoonPokedexTextUnused[] = _("");
 
@@ -1856,9 +1871,9 @@ const u8 gBeautiflyPokedexText[] = _(
 const u8 gBeautiflyPokedexTextUnused[] = _("");
 
 const u8 gCascoonPokedexText[] = _(
-    "O corpo, feito de seda macia, endurece com\n"
-    "o tempo. Quando aparecem rachaduras, a\n"
-    "evolução está perto.");
+    "O corpo, feito de seda macia, endurece\n"
+    "com o tempo. Quando aparecem rachaduras,\n"
+    "a evolução está perto.");
 
 const u8 gCascoonPokedexTextUnused[] = _("");
 
@@ -1877,9 +1892,9 @@ const u8 gLotadPokedexText[] = _(
 const u8 gLotadPokedexTextUnused[] = _("");
 
 const u8 gLombrePokedexText[] = _(
-    "Vive à beira da água, onde há sol. De dia,\n"
-    "dorme numa cama de plantas aquáticas e\n"
-    "fica ativo à noite.");
+    "Vive à beira da água, onde há sol. De\n"
+    "dia, dorme numa cama de plantas\n"
+    "aquáticas e fica ativo à noite.");
 
 const u8 gLombrePokedexTextUnused[] = _("");
 
@@ -1919,23 +1934,23 @@ const u8 gTaillowPokedexText[] = _(
 const u8 gTaillowPokedexTextUnused[] = _("");
 
 const u8 gSwellowPokedexText[] = _(
-    "Se as duas penas da cauda estão eretas, é\n"
-    "prova de boa saúde. Plana com elegância\n"
-    "pelo céu.");
+    "Se as duas penas da cauda estão eretas,\n"
+    "é prova de boa saúde. Plana com\n"
+    "elegância pelo céu.");
 
 const u8 gSwellowPokedexTextUnused[] = _("");
 
 const u8 gWingullPokedexText[] = _(
-    "Cavalga os ventos do oceano como se fosse\n"
-    "um planador. No inverno, esconde comida ao\n"
-    "redor do ninho.");
+    "Cavalga os ventos do oceano como se\n"
+    "fosse um planador. No inverno, esconde\n"
+    "comida ao redor do ninho.");
 
 const u8 gWingullPokedexTextUnused[] = _("");
 
 const u8 gPelipperPokedexText[] = _(
     "É um transportador voador que leva\n"
-    "Pokémon pequenos no bico. Balança sobre as\n"
-    "ondas para descansar as asas.");
+    "Pokémon pequenos no bico. Balança sobre\n"
+    "as ondas para descansar as asas.");
 
 const u8 gPelipperPokedexTextUnused[] = _("");
 
@@ -1947,22 +1962,22 @@ const u8 gRaltsPokedexTextUnused[] = _("");
 
 const u8 gKirliaPokedexText[] = _(
     "O ânimo alegre do seu Treinador lhe dá\n"
-    "energia para o poder psicocinético. Gira e\n"
-    "dança quando está feliz.");
+    "energia para o poder psicocinético. Gira\n"
+    "e dança quando está feliz.");
 
 const u8 gKirliaPokedexTextUnused[] = _("");
 
 const u8 gGardevoirPokedexText[] = _(
-    "Tem o poder de prever o futuro. Seu poder\n"
-    "chega ao auge quando protege seu\n"
+    "Tem o poder de prever o futuro. Seu\n"
+    "poder chega ao auge quando protege seu\n"
     "Treinador.");
 
 const u8 gGardevoirPokedexTextUnused[] = _("");
 
 const u8 gSurskitPokedexText[] = _(
-    "Geralmente vivem em lagoas, mas, depois de\n"
-    "uma chuva no fim da tarde, podem aparecer\n"
-    "em poças nas cidades.");
+    "Geralmente vivem em lagoas, mas, depois\n"
+    "de uma chuva no fim da tarde, podem\n"
+    "aparecer em poças nas cidades.");
 
 const u8 gSurskitPokedexTextUnused[] = _("");
 
@@ -1974,16 +1989,16 @@ const u8 gMasquerainPokedexText[] = _(
 const u8 gMasquerainPokedexTextUnused[] = _("");
 
 const u8 gShroomishPokedexText[] = _(
-    "Prefere lugares úmidos. De dia, fica imóvel\n"
-    "à sombra da floresta. Libera pó tóxico\n"
-    "pela cabeça.");
+    "Prefere lugares úmidos. De dia, fica\n"
+    "imóvel à sombra da floresta. Libera pó\n"
+    "tóxico pela cabeça.");
 
 const u8 gShroomishPokedexTextUnused[] = _("");
 
 const u8 gBreloomPokedexText[] = _(
-    "As sementes da cauda são feitas de esporos\n"
-    "tóxicos. Nocauteia inimigos com socos\n"
-    "rápidos, quase invisíveis.");
+    "As sementes da cauda são feitas de\n"
+    "esporos tóxicos. Nocauteia inimigos com\n"
+    "socos rápidos, quase invisíveis.");
 
 const u8 gBreloomPokedexTextUnused[] = _("");
 
@@ -2001,9 +2016,9 @@ const u8 gVigorothPokedexText[] = _(
 const u8 gVigorothPokedexTextUnused[] = _("");
 
 const u8 gSlakingPokedexText[] = _(
-    "É o Pokémon mais preguiçoso do mundo. Mas\n"
-    "pode soltar um poder assustador ao liberar\n"
-    "de uma vez a energia acumulada.");
+    "É o Pokémon mais preguiçoso do mundo.\n"
+    "Mas pode soltar um poder assustador ao\n"
+    "liberar de uma vez a energia acumulada.");
 
 const u8 gSlakingPokedexTextUnused[] = _("");
 
@@ -2016,8 +2031,8 @@ const u8 gNincadaPokedexTextUnused[] = _("");
 
 const u8 gNinjaskPokedexText[] = _(
     "Este Pokémon é tão rápido que, dizem,\n"
-    "consegue evitar qualquer ataque. Adora se\n"
-    "alimentar da seiva das árvores.");
+    "consegue evitar qualquer ataque. Adora\n"
+    "se alimentar da seiva das árvores.");
 
 const u8 gNinjaskPokedexTextUnused[] = _("");
 
@@ -2043,9 +2058,9 @@ const u8 gLoudredPokedexText[] = _(
 const u8 gLoudredPokedexTextUnused[] = _("");
 
 const u8 gExploudPokedexText[] = _(
-    "Emite vários sons pelos buracos espalhados\n"
-    "pelo corpo. Seus gritos fortes são ouvidos\n"
-    "a cerca de 10 km.");
+    "Emite vários sons pelos buracos\n"
+    "espalhados pelo corpo. Seus gritos fortes\n"
+    "são ouvidos a cerca de 10 km.");
 
 const u8 gExploudPokedexTextUnused[] = _("");
 
@@ -2058,8 +2073,8 @@ const u8 gMakuhitaPokedexTextUnused[] = _("");
 
 const u8 gHariyamaPokedexText[] = _(
     "Pisa no chão para acumular força. Com um\n"
-    "soco de braço esticado, manda um caminhão\n"
-    "de 10 toneladas pelos ares.");
+    "soco de braço esticado, manda um\n"
+    "caminhão de 10 toneladas pelos ares.");
 
 const u8 gHariyamaPokedexTextUnused[] = _("");
 
@@ -2071,8 +2086,8 @@ const u8 gAzurillPokedexTextUnused[] = _("");
 
 const u8 gNosepassPokedexText[] = _(
     "O nariz magnético sempre aponta para o\n"
-    "norte. Viajantes consultam o Nosepass para\n"
-    "se orientar.");
+    "norte. Viajantes consultam o Nosepass\n"
+    "para se orientar.");
 
 const u8 gNosepassPokedexTextUnused[] = _("");
 
@@ -2085,8 +2100,8 @@ const u8 gSkittyPokedexTextUnused[] = _("");
 
 const u8 gDelcattyPokedexText[] = _(
     "Queridinho das Treinadoras antenadas na\n"
-    "moda, é usado em competições pelo estilo e\n"
-    "pela pelagem.");
+    "moda, é usado em competições pelo estilo\n"
+    "e pela pelagem.");
 
 const u8 gDelcattyPokedexTextUnused[] = _("");
 
@@ -2098,9 +2113,9 @@ const u8 gSableyePokedexText[] = _(
 const u8 gSableyePokedexTextUnused[] = _("");
 
 const u8 gMawilePokedexText[] = _(
-    "Usa o rosto de aparência dócil para fazer\n"
-    "o inimigo baixar a guarda e depois o morde\n"
-    "com as enormes e implacáveis mandíbulas.");
+    "Usa o rosto dócil para fazer o inimigo\n"
+    "baixar a guarda e depois o morde com as\n"
+    "enormes e implacáveis mandíbulas.");
 
 const u8 gMawilePokedexTextUnused[] = _("");
 
@@ -2168,8 +2183,8 @@ const u8 gMinunPokedexTextUnused[] = _("");
 
 const u8 gVolbeatPokedexText[] = _(
     "Vive perto de lagoas limpas. À noite, a\n"
-    "traseira se acende. Conversa com os outros\n"
-    "piscando sua luz.");
+    "traseira se acende. Conversa com os\n"
+    "outros piscando sua luz.");
 
 const u8 gVolbeatPokedexTextUnused[] = _("");
 
@@ -2182,8 +2197,8 @@ const u8 gIllumisePokedexTextUnused[] = _("");
 
 const u8 gRoseliaPokedexText[] = _(
     "Suas flores exalam uma fragrância\n"
-    "relaxante. Quanto mais forte o aroma, mais\n"
-    "saudável é o Roselia.");
+    "relaxante. Quanto mais forte o aroma,\n"
+    "mais saudável é o Roselia.");
 
 const u8 gRoseliaPokedexTextUnused[] = _("");
 
@@ -2195,9 +2210,9 @@ const u8 gGulpinPokedexText[] = _(
 const u8 gGulpinPokedexTextUnused[] = _("");
 
 const u8 gSwalotPokedexText[] = _(
-    "Consegue engolir um pneu inteiro de uma só\n"
-    "vez. Secreta um fluido terrivelmente tóxico\n"
-    "pelos poros do corpo.");
+    "Consegue engolir um pneu inteiro de uma\n"
+    "só vez. Secreta um fluido terrivelmente\n"
+    "tóxico pelos poros do corpo.");
 
 const u8 gSwalotPokedexTextUnused[] = _("");
 
@@ -2216,16 +2231,16 @@ const u8 gSharpedoPokedexText[] = _(
 const u8 gSharpedoPokedexTextUnused[] = _("");
 
 const u8 gWailmerPokedexText[] = _(
-    "Quando engole um grande volume de água do\n"
-    "mar, vira uma bola grande e saltitante.\n"
-    "Come uma tonelada de comida por dia.");
+    "Quando engole muita água do mar, vira\n"
+    "uma bola grande e saltitante. Come uma\n"
+    "tonelada de comida por dia.");
 
 const u8 gWailmerPokedexTextUnused[] = _("");
 
 const u8 gWailordPokedexText[] = _(
     "É um dos maiores Pokémon que existem.\n"
-    "Reúne as presas em bando e engole a massa\n"
-    "de presas de uma só vez.");
+    "Reúne as presas em bando e engole a\n"
+    "massa de presas de uma só vez.");
 
 const u8 gWailordPokedexTextUnused[] = _("");
 
@@ -2265,16 +2280,16 @@ const u8 gGrumpigPokedexText[] = _(
 const u8 gGrumpigPokedexTextUnused[] = _("");
 
 const u8 gSpindaPokedexText[] = _(
-    "Dizem que nenhum Spinda tem manchas iguais\n"
-    "às de outro. Confunde os inimigos com seus\n"
-    "movimentos cambaleantes.");
+    "Dizem que nenhum Spinda tem manchas\n"
+    "iguais às de outro. Confunde os inimigos\n"
+    "com seus movimentos cambaleantes.");
 
 const u8 gSpindaPokedexTextUnused[] = _("");
 
 const u8 gTrapinchPokedexText[] = _(
     "Vive em desertos áridos. Faz na areia um\n"
-    "fosso inclinado, que serve de armadilha, e\n"
-    "espera a presa com paciência.");
+    "fosso inclinado, que serve de armadilha,\n"
+    "e espera a presa com paciência.");
 
 const u8 gTrapinchPokedexTextUnused[] = _("");
 
@@ -2286,9 +2301,9 @@ const u8 gVibravaPokedexText[] = _(
 const u8 gVibravaPokedexTextUnused[] = _("");
 
 const u8 gFlygonPokedexText[] = _(
-    "Esconde-se levantando areia do deserto com\n"
-    "as asas. Coberturas vermelhas protegem\n"
-    "seus olhos da areia.");
+    "Esconde-se levantando areia do deserto\n"
+    "com as asas. Coberturas vermelhas\n"
+    "protegem seus olhos da areia.");
 
 const u8 gFlygonPokedexTextUnused[] = _("");
 
@@ -2301,43 +2316,43 @@ const u8 gCacneaPokedexTextUnused[] = _("");
 
 const u8 gCacturnePokedexText[] = _(
     "Vive em desertos. Fica ativo à noite,\n"
-    "quando caça presas exaustas pelo calor do\n"
-    "deserto.");
+    "quando caça presas exaustas pelo calor\n"
+    "do deserto.");
 
 const u8 gCacturnePokedexTextUnused[] = _("");
 
 const u8 gSwabluPokedexText[] = _(
     "Cuida sem parar das asas que parecem\n"
-    "algodão. Toma banho para se limpar se fica\n"
-    "sujo.");
+    "algodão. Toma banho para se limpar se\n"
+    "fica sujo.");
 
 const u8 gSwabluPokedexTextUnused[] = _("");
 
 const u8 gAltariaPokedexText[] = _(
-    "Se você ouvir uma bela melodia trinando no\n"
-    "fundo de montanhas longe das pessoas, é o\n"
-    "canto do Altaria.");
+    "Se você ouvir uma bela melodia trinando\n"
+    "no fundo de montanhas longe das pessoas,\n"
+    "é o canto do Altaria.");
 
 const u8 gAltariaPokedexTextUnused[] = _("");
 
 const u8 gZangoosePokedexText[] = _(
-    "Se encontra um Seviper, o pelo se eriça e\n"
-    "ele assume a pose de batalha. As garras\n"
-    "afiadas são sua melhor arma.");
+    "Se encontra um Seviper, o pelo se eriça\n"
+    "e ele assume a pose de batalha. As\n"
+    "garras afiadas são sua melhor arma.");
 
 const u8 gZangoosePokedexTextUnused[] = _("");
 
 const u8 gSeviperPokedexText[] = _(
-    "Afia a cauda em forma de espada em rochas\n"
-    "duras. Escondido no capim alto, ataca\n"
+    "Afia em rochas duras a cauda em forma de\n"
+    "espada. Escondido no capim alto, ataca\n"
     "vítimas distraídas com presas venenosas.");
 
 const u8 gSeviperPokedexTextUnused[] = _("");
 
 const u8 gLunatonePokedexText[] = _(
     "Sua saúde sobe e desce com o ciclo da\n"
-    "lua. Fica cheio de poder sob a luz da lua\n"
-    "cheia.");
+    "lua. Fica cheio de poder sob a luz da\n"
+    "lua cheia.");
 
 const u8 gLunatonePokedexTextUnused[] = _("");
 
@@ -2398,9 +2413,9 @@ const u8 gLileepPokedexText[] = _(
 const u8 gLileepPokedexTextUnused[] = _("");
 
 const u8 gCradilyPokedexText[] = _(
-    "Prende as presas com seus oito tentáculos.\n"
-    "Depois, derrete a presa com um ácido forte\n"
-    "antes de se alimentar.");
+    "Prende as presas com seus\n"
+    "oito tentáculos. Depois, derrete a presa\n"
+    "com um ácido forte antes de se alimentar.");
 
 const u8 gCradilyPokedexTextUnused[] = _("");
 
@@ -2412,15 +2427,15 @@ const u8 gAnorithPokedexText[] = _(
 const u8 gAnorithPokedexTextUnused[] = _("");
 
 const u8 gArmaldoPokedexText[] = _(
-    "Protegido por uma casca dura, tem o corpo\n"
-    "muito resistente. Espeta a presa com as\n"
-    "garras para se alimentar.");
+    "Protegido por uma casca dura, tem o\n"
+    "corpo muito resistente. Espeta a presa\n"
+    "com as garras para se alimentar.");
 
 const u8 gArmaldoPokedexTextUnused[] = _("");
 
 const u8 gFeebasPokedexText[] = _(
-    "Ridicularizado pela aparência desleixada, é\n"
-    "ignorado pelos pesquisadores. Vive em\n"
+    "Ridicularizado pela aparência desleixada,\n"
+    "é ignorado pelos pesquisadores. Vive em\n"
     "lagoas entupidas de ervas daninhas.");
 
 const u8 gFeebasPokedexTextUnused[] = _("");
@@ -2441,8 +2456,8 @@ const u8 gCastformPokedexTextUnused[] = _("");
 
 const u8 gKecleonPokedexText[] = _(
     "Muda a cor do corpo para se misturar ao\n"
-    "ambiente. Também muda de cor se está feliz\n"
-    "ou triste.");
+    "ambiente. Também muda de cor se está\n"
+    "feliz ou triste.");
 
 const u8 gKecleonPokedexTextUnused[] = _("");
 
@@ -2455,8 +2470,8 @@ const u8 gShuppetPokedexTextUnused[] = _("");
 
 const u8 gBanettePokedexText[] = _(
     "Sentimentos intensos de ódio transformaram\n"
-    "um boneco em Pokémon. Se abre a boca, sua\n"
-    "energia amaldiçoada escapa.");
+    "um boneco em Pokémon. Se abre a boca,\n"
+    "sua energia amaldiçoada escapa.");
 
 const u8 gBanettePokedexTextUnused[] = _("");
 
@@ -2476,8 +2491,8 @@ const u8 gDusclopsPokedexTextUnused[] = _("");
 
 const u8 gTropiusPokedexText[] = _(
     "Vive em selvas tropicais. O cacho de\n"
-    "frutas ao redor do pescoço é delicioso. As\n"
-    "frutas crescem duas vezes por ano.");
+    "frutas ao redor do pescoço é delicioso.\n"
+    "As frutas crescem duas vezes por ano.");
 
 const u8 gTropiusPokedexTextUnused[] = _("");
 
@@ -2496,9 +2511,9 @@ const u8 gAbsolPokedexText[] = _(
 const u8 gAbsolPokedexTextUnused[] = _("");
 
 const u8 gWynautPokedexText[] = _(
-    "Costuma andar em bando com outros. Eles se\n"
-    "juntam num grupo apertado para dormir numa\n"
-    "caverna.");
+    "Costuma andar em bando com outros. Eles\n"
+    "se juntam num grupo apertado para dormir\n"
+    "numa caverna.");
 
 const u8 gWynautPokedexTextUnused[] = _("");
 
@@ -2510,8 +2525,8 @@ const u8 gSnoruntPokedexText[] = _(
 const u8 gSnoruntPokedexTextUnused[] = _("");
 
 const u8 gGlaliePokedexText[] = _(
-    "Tem um corpo de gelo que não derrete, nem\n"
-    "com fogo. Congela instantaneamente a\n"
+    "Tem um corpo de gelo que não derrete,\n"
+    "nem com fogo. Congela instantaneamente a\n"
     "umidade da atmosfera.");
 
 const u8 gGlaliePokedexTextUnused[] = _("");
@@ -2531,9 +2546,9 @@ const u8 gSealeoPokedexText[] = _(
 const u8 gSealeoPokedexTextUnused[] = _("");
 
 const u8 gWalreinPokedexText[] = _(
-    "Nada em mares gelados quebrando blocos de\n"
-    "gelo com as grandes presas. Uma grossa\n"
-    "camada de gordura o protege.");
+    "Nada em mares gelados quebrando blocos\n"
+    "de gelo com as grandes presas. Uma\n"
+    "grossa camada de gordura o protege.");
 
 const u8 gWalreinPokedexTextUnused[] = _("");
 
@@ -2553,8 +2568,8 @@ const u8 gHuntailPokedexTextUnused[] = _("");
 
 const u8 gGorebyssPokedexText[] = _(
     "Seu nado é de uma elegância requintada.\n"
-    "Com a boca fina, se alimenta de algas que\n"
-    "crescem entre as rochas.");
+    "Com a boca fina, se alimenta de algas\n"
+    "que crescem entre as rochas.");
 
 const u8 gGorebyssPokedexTextUnused[] = _("");
 
@@ -2566,23 +2581,23 @@ const u8 gRelicanthPokedexText[] = _(
 const u8 gRelicanthPokedexTextUnused[] = _("");
 
 const u8 gLuvdiscPokedexText[] = _(
-    "Na época da desova, incontáveis Luvdisc se\n"
-    "reúnem em recifes de coral, deixando as\n"
-    "águas rosadas.");
+    "Na época da desova, incontáveis Luvdisc\n"
+    "se reúnem em recifes de coral, deixando\n"
+    "as águas rosadas.");
 
 const u8 gLuvdiscPokedexTextUnused[] = _("");
 
 const u8 gBagonPokedexText[] = _(
     "A cabeça, dura como aço, quebra pedras.\n"
-    "Deseja ardentemente que cresçam asas para\n"
-    "poder voar.");
+    "Deseja ardentemente que cresçam asas\n"
+    "para poder voar.");
 
 const u8 gBagonPokedexTextUnused[] = _("");
 
 const u8 gShelgonPokedexText[] = _(
     "O corpo blindado faz todo ataque\n"
-    "ricochetear. Porém, a armadura é tão dura\n"
-    "que o deixa pesado e meio lento.");
+    "ricochetear. Porém, a armadura é tão\n"
+    "dura que o deixa pesado e meio lento.");
 
 const u8 gShelgonPokedexTextUnused[] = _("");
 
@@ -2594,9 +2609,9 @@ const u8 gSalamencePokedexText[] = _(
 const u8 gSalamencePokedexTextUnused[] = _("");
 
 const u8 gBeldumPokedexText[] = _(
-    "Usa ondas magnéticas para conversar com os\n"
-    "da sua espécie. Todas as células do corpo\n"
-    "são magnéticas.");
+    "Usa ondas magnéticas para conversar com\n"
+    "os da sua espécie. Todas as células do\n"
+    "corpo são magnéticas.");
 
 const u8 gBeldumPokedexTextUnused[] = _("");
 
@@ -2608,22 +2623,23 @@ const u8 gMetangPokedexText[] = _(
 const u8 gMetangPokedexTextUnused[] = _("");
 
 const u8 gMetagrossPokedexText[] = _(
-    "É formado pela fusão de dois Metang. Dizem\n"
-    "que seus quatro cérebros superam um\n"
-    "supercomputador.");
+    "É formado pela fusão de dois Metang.\n"
+    "Dizem que seus quatro cérebros superam\n"
+    "um supercomputador.");
 
 const u8 gMetagrossPokedexTextUnused[] = _("");
 
 const u8 gRegirockPokedexText[] = _(
     "É composto inteiramente de rochas, sem\n"
-    "sinal de cérebro ou coração. É um mistério\n"
-    "até para os cientistas modernos.");
+    "sinal de cérebro ou coração. É um\n"
+    "mistério até para os cientistas modernos.");
 
 const u8 gRegirockPokedexTextUnused[] = _("");
 
 const u8 gRegicePokedexText[] = _(
-    "Pesquisas revelaram que o corpo é feito do\n"
-    "mesmo tipo de gelo encontrado no Polo Sul.");
+    "Pesquisas revelaram que o corpo é feito\n"
+    "do mesmo tipo de gelo encontrado no Polo\n"
+    "Sul.");
 
 const u8 gRegicePokedexTextUnused[] = _("");
 
@@ -2643,15 +2659,15 @@ const u8 gLatiasPokedexTextUnused[] = _("");
 
 const u8 gLatiosPokedexText[] = _(
     "Tem temperamento dócil e não gosta de\n"
-    "brigar. Recolhendo as patas dianteiras, voa\n"
-    "mais rápido que um avião a jato.");
+    "brigar. Recolhendo as patas dianteiras,\n"
+    "voa mais rápido que um avião a jato.");
 
 const u8 gLatiosPokedexTextUnused[] = _("");
 
 const u8 gKyogrePokedexText[] = _(
-    "Diz-se que este Pokémon expandiu o mar ao\n"
-    "trazer chuvas torrenciais. Tem o poder de\n"
-    "controlar a água.");
+    "Diz-se que este Pokémon expandiu o mar\n"
+    "ao trazer chuvas torrenciais. Tem o poder\n"
+    "de controlar a água.");
 
 const u8 gKyogrePokedexTextUnused[] = _("");
 
@@ -2671,7 +2687,8 @@ const u8 gRayquazaPokedexTextUnused[] = _("");
 
 const u8 gJirachiPokedexText[] = _(
     "Dizem que realiza qualquer desejo. Fica\n"
-    "acordado apenas sete dias a cada mil anos.");
+    "acordado apenas sete dias a cada\n"
+    "mil anos.");
 
 const u8 gJirachiPokedexTextUnused[] = _("");
 
