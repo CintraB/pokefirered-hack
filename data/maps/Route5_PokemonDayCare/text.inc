@@ -1,63 +1,62 @@
 Route5_PokemonDayCare_Text_WantMeToRaiseMon::
-	.string "I run the DAY-CARE service.\p"
-	.string "Would you like me to raise one of\n"
-	.string "your POKéMON?$"
+	.string "Eu cuido da Creche Pokémon.\p"
+	.string "Quer que eu crie um dos seus\n"
+	.string "Pokémon?$"
 
 Route5_PokemonDayCare_Text_ComeAgain::
-	.string "Come again.$"
+	.string "Volte sempre.$"
 
 Route5_PokemonDayCare_Text_WhichMonShouldIRaise::
-	.string "Which POKéMON should I raise?$"
+	.string "Qual Pokémon devo criar?$"
 
 Route5_PokemonDayCare_Text_ComeAnytimeYouLike::
-	.string "Fine.\n"
-	.string "Come anytime you like.$"
+	.string "Tudo bem.\n"
+	.string "Volte quando quiser.$"
 
 Route5_PokemonDayCare_Text_LookAfterMonForAWhile::
-	.string "Fine, I'll look after your\n"
-	.string "{STR_VAR_1} for a while.$"
+	.string "Certo, vou cuidar do seu {STR_VAR_1}\n"
+	.string "por um tempo.$"
 
 Route5_PokemonDayCare_Text_ComeSeeMeInAWhile::
-	.string "Come see me in a while.$"
+	.string "Venha me ver daqui a pouco.$"
 
 Route5_PokemonDayCare_Text_MonNeedsToSpendMoreTime::
-	.string "You're back already?\p"
-	.string "Your {STR_VAR_1} needs to spend\n"
-	.string "some more time with me.$"
+	.string "Já voltou?\p"
+	.string "O seu {STR_VAR_1} precisa passar mais\n"
+	.string "tempo comigo.$"
 
 Route5_PokemonDayCare_Text_OweMeXForMonsReturn::
-	.string "You owe me ¥{STR_VAR_2} for the return\n"
-	.string "of this POKéMON.$"
+	.string "Você me deve ¥{STR_VAR_2} pela\n"
+	.string "devolução deste Pokémon.$"
 
 Route5_PokemonDayCare_Text_ThankYouHeresMon::
-	.string "Thank you!\n"
-	.string "Here's your POKéMON.$"
+	.string "Obrigado!\n"
+	.string "Aqui está o seu Pokémon.$"
 
 Route5_PokemonDayCare_Text_PlayerGotMonBack::
-	.string "{PLAYER} got {STR_VAR_1} back\n"
-	.string "from the DAY-CARE MAN.$"
+	.string "{PLAYER} pegou {STR_VAR_1} de volta\n"
+	.string "com o Dono da Creche.$"
 
 Route5_PokemonDayCare_Text_OnlyHaveOneMonWithYou::
-	.string "Oh? You only have one POKéMON\n"
-	.string "with you.$"
+	.string "Ué? Você só tem um Pokémon aí.$"
 
 Route5_PokemonDayCare_Text_WhatWillYouBattleWith::
-	.string "If you leave me that POKéMON,\n"
-	.string "what will you battle with?$"
+	.string "Se você deixar esse Pokémon comigo,\n"
+	.string "com o que vai lutar?$"
 
 Route5_PokemonDayCare_Text_MonHasGrownByXLevels::
-	.string "Your {STR_VAR_1} has grown a lot.\n"
-	.string "Yes, quite a lot, I'd say.\p"
-	.string "Let me see…\n"
-	.string "By level, it's grown by {STR_VAR_2}.\p"
-	.string "Aren't I great?$"
+	.string "O seu {STR_VAR_1} cresceu bastante.\n"
+	.string "Sim, bastante, eu diria.\p"
+	.string "Deixe-me ver…\n"
+	.string "Em níveis, ele cresceu {STR_VAR_2}.\p"
+	.string "Não sou demais?$"
 
 Route5_PokemonDayCare_Text_YouveGotNoRoomForIt::
-	.string "You can't take this POKéMON back\n"
-	.string "if you've got no room for it.$"
+	.string "Você não pode levar este Pokémon de\n"
+	.string "volta se não tiver espaço para ele.$"
 
 Route5_PokemonDayCare_Text_DontHaveEnoughMoney::
-	.string "You don't have enough money.$"
+	.string "Você não tem dinheiro suficiente.$"
 
 Route5_PokemonDayCare_Text_WantMeToTakeALookAtYours::
     .string "きみの\n"

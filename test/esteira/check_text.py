@@ -1236,6 +1236,8 @@ _WORD = re.compile(r"[A-Za-zÀ-ÿ]+(?:'[A-Za-z]+)?")
 # Lista de permissões: arquivos e rótulos que ficam em inglês/japonês de propósito
 _ENGLISH_SKIP_FILES = ("src/keyboard_text.c", "src/data/text/species_names.h")
 _ENGLISH_SKIP_LABELS = ("gCreditsString_*", "gJPText_*", "*.trainerName")
+# Título da ajuda que é só a sigla "TO" (Treinador Original), sem letra minúscula
+_TO_TITLE_LABELS = frozenset({"Help_Text_OT"})
 
 
 @dataclass
@@ -1267,7 +1269,13 @@ def _english_words(entry: _Entry, allowed: set[str]) -> list[str]:
         return []
     found: list[str] = []
     for text in entry.texts[:1]:
+        # "TO" = Treinador Original: só vale em frase em PT-BR (tem letra minúscula) ou no título da ajuda;
+        # em texto todo em maiúsculas ("BELONGS TO", "A WINDOW TO", "TO ME") é o inglês que ainda falta traduzir
+        plain = " ".join(_plain_words(text))
+        to_is_acronym = entry.label in _TO_TITLE_LABELS or any(c.islower() for c in plain)
         for word in _plain_words(text):
+            if word == "TO" and to_is_acronym:
+                continue
             low = word.lower()
             if low in ENGLISH_WORDS and low not in allowed:
                 found.append(low)

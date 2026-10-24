@@ -36,6 +36,17 @@ GROUPS = {
         "Route15", "Route15_WestEntrance_1F", "Route15_WestEntrance_2F", "Route16", "Route16_House",
         "Route16_NorthEntrance_1F", "Route16_NorthEntrance_2F", "Route17", "Route18", "Route18_EastEntrance_1F",
         "Route18_EastEntrance_2F", "Route19", "Route2", "Route20", "Route21_North", "Route21_South")],
+    "B3": [f"data/maps/{m}/text.inc" for m in (
+        "Route22", "Route23", "Route24", "Route25", "Route25_SeaCottage", "Route2_EastBuilding", "Route2_House",
+        "Route2_ViridianForest_NorthEntrance", "Route2_ViridianForest_SouthEntrance", "Route3", "Route4",
+        "Route4_PokemonCenter_1F", "Route5", "Route5_PokemonDayCare", "Route5_SouthEntrance", "Route6",
+        "Route6_NorthEntrance", "Route7", "Route7_EastEntrance", "Route8", "Route8_WestEntrance", "Route9",
+        "SSAnne_1F_Corridor", "SSAnne_1F_Room1", "SSAnne_1F_Room2", "SSAnne_1F_Room3", "SSAnne_1F_Room4",
+        "SSAnne_1F_Room5", "SSAnne_1F_Room6", "SSAnne_1F_Room7", "SSAnne_2F_Corridor", "SSAnne_2F_Room1",
+        "SSAnne_2F_Room2", "SSAnne_2F_Room3", "SSAnne_2F_Room4", "SSAnne_2F_Room5", "SSAnne_2F_Room6",
+        "SSAnne_3F_Corridor", "SSAnne_B1F_Room1", "SSAnne_B1F_Room2", "SSAnne_B1F_Room3", "SSAnne_B1F_Room4",
+        "SSAnne_B1F_Room5", "SSAnne_CaptainsOffice", "SSAnne_Deck", "SSAnne_Kitchen", "SafariZone_Center",
+        "SafariZone_Center_RestHouse", "SafariZone_East", "SafariZone_East_RestHouse")],
 }
 FILES = sorted(f for files in GROUPS.values() for f in files)
 RULES = ("controle", "glossario", "largura", "linhas", "letras")
@@ -308,3 +319,189 @@ def test_b2c_pesca_esportiva_e_fruta_ocipera_no_glossario():
     pouch = (REPO_ROOT / "src" / "berry_pouch.c").read_text(encoding="utf-8")
     header = (REPO_ROOT / "include" / "berry_pouch.h").read_text(encoding="utf-8")
     assert "#define BERRY_POUCH_LIST_STRBUF_SIZE 28" in header and "* 27" not in pouch
+
+
+# ---- B3 (22/10): Rotas 2 a 9 e 22 a 25, S.S. Anne, Zona de Safári ------------------------------
+B3_FILES = GROUPS["B3"]
+
+# Falas que o jogo escolhe pelo gênero do jogador (checkplayergender): cada versão concorda com o seu.
+GENERO_DO_JOGO = frozenset((
+    "Route25_SeaCottage_Text_ImBillHelpMeOutPal", "Route25_SeaCottage_Text_ImBillHelpMeOutLady",
+    "Route25_SeaCottage_Text_NoPleaseChief", "Route25_SeaCottage_Text_NoPleaseBeautiful",
+    "Route25_SeaCottage_Text_ThanksBudTakeThis", "Route25_SeaCottage_Text_ThanksLadyTakeThis",
+    "Route4_PokemonCenter_1F_Text_LaddieBuyMagikarpForJust500",
+    "Route4_PokemonCenter_1F_Text_SweetieBuyMagikarpForJust500",
+    "SSAnne_1F_Room4_Text_WaiterCherryPiePlease", "SSAnne_1F_Room4_Text_WaitressCherryPiePlease",
+    "SSAnne_1F_Room6_Text_SorryYouLookLikeMyBrother", "SSAnne_1F_Room6_Text_SorryYouLookLikeMySister",
+))
+
+# Ruling 24: vocativo ao jogador também marca gênero ("cara", "amigo"...); "camarada" e "criança" são neutros
+PLAYER_VOCATIVE = re.compile(
+    r"(?:^|[ ,.!?…])(?:cara|amigão|amigo|amiga|garoto|garota|rapaz|moço|moça|mocinha|rapazinho|parceiro|parceira|"
+    r"campeão|campeã|querido|querida|linda|lindo|docinho|chefe|senhor|senhora)(?=[ ]?[!?,.…]|$)")
+PLAYER_ADJECTIVE = re.compile(
+    r"(?:[Vv]ocê|\{PLAYER\}) (?:é|está|ficou|parece|foi|estava|era|ficará|ficaria|seria|vai ficar) "
+    r"(?:(?:muito|bem|tão|meio|mesmo|um|o) )*(?:bom|boa|ótimo|ótima|esperto|esperta|sozinho|sozinha|convidado|"
+    r"convidada|enjoado|enjoada|cansado|cansada|pronto|pronta|bravo|brava|corajoso|corajosa|tolo|tola|bobo|boba|"
+    r"malvado|malvada|mau|má|obrigado|obrigada|atrevido|atrevida|bem-vindo|bem-vinda|Treinador|Treinadora|"
+    r"campeão|campeã|herói|heroína|rapaz|garoto|garota|vencedor|vencedora)\b")
+# "você se tornaria um grande líder": papel no masculino/feminino dirigido ao jogador (Route24, achado da revisão)
+PLAYER_ROLE = r"(?:tornaria|viraria|seria|será|tornará|vai ser|vai virar) (?:um|uma|o|a) (?:(?:grande|ótimo|bom|novo) )*" \
+              r"(?:líder|chefe|campeão|campeã|mestre|mestra|rei|rainha|herói|heroína|vencedor|vencedora|Treinador|Treinadora)"
+PLAYER_NOUN = re.compile(r"personagem principal|protagonista|vocês todos|" + PLAYER_ROLE)
+WRONG_FORMS_B3 = ("Floresta de Viridian", "Caminho Subterrâneo", "Zona do Safári", "SS Anne", "S.S. ANNE", "Bilhete SS",
+                  "Vermilion City", "Cidade de Vermilion", "Teleportador", "Pokemon", "POKéMON", "Pokédex Nacional",
+                  "Mt. Moon", "Mt Moon", "Sea Cottage", "Time Rocket", "Team Rocket", "Prof. Oak", "Professor Oak")
+ONLY_AFTER = re.compile(r"(?<!Equipe )Rocket")
+
+
+def _b3_entries(rel):
+    for e in ct._extract_inc_text(rel, (REPO_ROOT / rel).read_text(encoding="utf-8")):
+        if isinstance(e, ct._Entry):
+            yield e.label, re.sub(r"\s+", " ", re.sub(r"\\[nlp]", " ", e.texts[0]))
+
+
+def test_b3_padroes_de_genero_pegam_os_casos_conhecidos():
+    for bad in ("Olá, rapazinho!", "Ora, cara!", "Valeu, amigão!", "Você é bom mesmo!", "{PLAYER} está cansado.",
+                "Você foi convidado?", "Você é um Treinador.", "O personagem principal chegou.",
+                "Com a sua habilidade, você se tornaria um grande líder da Equipe Rocket.", "Você seria uma campeã."):
+        assert (PLAYER_VOCATIVE.search(bad) or PLAYER_ADJECTIVE.search(bad) or PLAYER_NOUN.search(bad)), bad
+    for ok in ("Sou um cara legal.", "A gente deve estar com cara de boba.", "Ei, camarada!", "Você é demais!",
+               "Você manda bem!", "Você não é ruim.", "Que criança mal-educada!", "Ei, criança!", "Você é forte demais!",
+               "O Brock é demais.", "Tenho namorada!", "Você chegaria ao topo da Equipe Rocket."):
+        assert not (PLAYER_VOCATIVE.search(ok) or PLAYER_ADJECTIVE.search(ok) or PLAYER_NOUN.search(ok)), ok
+
+
+@pytest.mark.parametrize("rel", B3_FILES)
+def test_b3_jogador_sem_genero(rel):
+    found = []
+    for label, text in _b3_entries(rel):
+        if label in GENERO_DO_JOGO:
+            continue
+        for pattern in (PLAYER_VOCATIVE, PLAYER_ADJECTIVE, PLAYER_NOUN, PLAYER_INSULT):
+            if pattern.search(text):
+                found.append((label, pattern.search(text).group(0)))
+        for bad in PLAYER_GENDERED:
+            if bad in text:
+                found.append((label, bad))
+    assert found == []
+
+
+def test_b3_falas_por_genero_concordam_com_a_versao():
+    """As 6 duplas que o jogo escolhe por checkplayergender existem nos arquivos e cada versão fala a sua."""
+    texts = {}
+    for rel in B3_FILES:
+        texts.update(dict(_b3_entries(rel)))
+    assert GENERO_DO_JOGO <= set(texts)
+    sea = "Route25_SeaCottage_Text_"
+    pairs = (  # (rótulo da versão menino, marca dele, rótulo da versão menina, marca dela)
+        (sea + "ImBillHelpMeOutPal", "amigão", sea + "ImBillHelpMeOutLady", "moça"),
+        (sea + "NoPleaseChief", "chefe", sea + "NoPleaseBeautiful", "linda"),
+        (sea + "ThanksBudTakeThis", "amigão", sea + "ThanksLadyTakeThis", "moça"),
+        ("Route4_PokemonCenter_1F_Text_LaddieBuyMagikarpForJust500", "rapazinho",
+         "Route4_PokemonCenter_1F_Text_SweetieBuyMagikarpForJust500", "docinho"),
+        ("SSAnne_1F_Room4_Text_WaiterCherryPiePlease", "Garçom",
+         "SSAnne_1F_Room4_Text_WaitressCherryPiePlease", "Garçonete"),
+        ("SSAnne_1F_Room6_Text_SorryYouLookLikeMyBrother", "irmãozinho",
+         "SSAnne_1F_Room6_Text_SorryYouLookLikeMySister", "irmãzinha"),
+    )
+    assert {x for p in pairs for x in (p[0], p[2])} == set(GENERO_DO_JOGO)
+    for male, male_mark, female, female_mark in pairs:
+        assert male_mark in texts[male] and female_mark in texts[female], (male, female)
+        assert female_mark not in texts[male] and male_mark not in texts[female], (male, female)   # sem a marca oposta
+        assert texts[male] != texts[female]
+
+
+@pytest.mark.parametrize("rel", B3_FILES)
+def test_b3_formas_erradas_e_rocket_por_extenso(rel):
+    body = _flat(rel)
+    for bad in WRONG_FORMS_B3:
+        assert bad not in body, (rel, bad)
+    assert not ONLY_AFTER.search(body), (rel, ONLY_AFTER.search(body))
+
+
+def test_b3_japones_do_original_continua_igual():
+    """Os 5 textos em japonês (não usados; o comentário traz o inglês do RB) não são traduzidos."""
+    unused = {
+        "data/maps/Route22/text.inc": ("Route22_Text_RivalShouldCatchSomeMons", "Route22_Text_LateRivalVictory"),
+        "data/maps/Route5_PokemonDayCare/text.inc": ("Route5_PokemonDayCare_Text_WantMeToTakeALookAtYours",
+                                                     "Route5_PokemonDayCare_Text_CantAcceptMonWithHM"),
+        "data/maps/SSAnne_2F_Corridor/text.inc": ("SSAnne_2F_Corridor_Text_RivalVictory",),
+    }
+    for rel, labels in unused.items():
+        out = subprocess.run(["git", "-C", str(REPO_ROOT), "show", f"{ct.TRANSLATION_BASE}:{rel}"],
+                             capture_output=True)
+        if out.returncode != 0:
+            pytest.skip("sem o commit base da tradução")
+        base = {e.label: e.texts for e in ct._extract_inc_text(rel, out.stdout.decode("utf-8"))
+                if isinstance(e, ct._Entry)}
+        for label in labels:
+            assert _inc_label_text(rel, label) == base[label][0], label
+
+
+def test_b3_termos_criados_no_glossario():
+    by_en = {t["en"]: t for t in json.loads(
+        (REPO_ROOT / "test" / "esteira" / "glossario.json").read_text(encoding="utf-8"))["termos"]}
+    created = {"NUGGET BRIDGE": ("Ponte da Pepita", "lugar"), "SEA COTTAGE": ("Chalé à Beira-Mar", "lugar"),
+               "TELEPORTER": ("Teletransportador", "interface"),
+               "Cell Separation System": ("Sistema de Separação Celular", "interface"),
+               "Cell Separator": ("Separador Celular", "interface"),
+               "GLOBAL POLICE": ("Polícia Internacional", "personagem")}
+    for en, (pt, categoria) in created.items():
+        assert by_en[en]["pt"] == pt and by_en[en]["categoria"] == categoria, en
+        assert by_en[en]["fonte"] == "criado" and by_en[en]["frente"] == "B3", en
+    assert len(by_en["SEA COTTAGE"]["pt"]) <= 18 and len(by_en["NUGGET BRIDGE"]["pt"]) <= 18   # limite de lugar
+    for pt, rel in (("Ponte da Pepita", "data/maps/Route24/text.inc"), ("Chalé à Beira-Mar", "data/maps/Route25/text.inc"),
+                    ("Teletransportador", "data/maps/Route25_SeaCottage/text.inc"),
+                    ("Sistema de Separação Celular", "data/maps/Route25_SeaCottage/text.inc"),
+                    ("Separador Celular", "data/maps/Route25_SeaCottage/text.inc"),
+                    ("Polícia Internacional", "data/maps/SSAnne_1F_Room1/text.inc")):
+        assert pt in re.sub(r"\\[nlp]", " ", _flat(rel)), (pt, rel)
+
+
+def test_b3_termos_ja_criados_usados_exatamente():
+    """Termos de outras frentes e da brief da rodada 3, exatamente como estão no glossário."""
+    def body(rel):
+        return re.sub(r"\\[nlp]", " ", _flat(rel))
+    assert "Jornal Pokémon" in body("data/maps/Route8/text.inc")                       # pendência: criado na A2
+    assert "Mestre da Pesca" in body("data/maps/SSAnne_B1F_Room4/text.inc")            # criado na B2
+    for rel in ("data/maps/Route5/text.inc", "data/maps/Route6/text.inc", "data/maps/Route7/text.inc",
+                "data/maps/Route8/text.inc"):
+        assert "Via Subterrânea" in body(rel), rel
+    for rel in ("data/maps/SafariZone_Center/text.inc", "data/maps/SafariZone_East/text.inc"):
+        assert "Casa de Descanso" in body(rel) and "Dicas de Treinador" in body(rel), rel
+    assert "Dono da Creche" in body("data/maps/Route5_PokemonDayCare/text.inc")
+    assert "Creche Pokémon" in body("data/maps/Route5_PokemonDayCare/text.inc")
+    assert "Bilhete S.S." in body("data/maps/Route25_SeaCottage/text.inc")
+    assert "MO05" in body("data/maps/Route2_EastBuilding/text.inc")
+    assert "Clarão" in body("data/maps/Route2_EastBuilding/text.inc")
+    cap = body("data/maps/SSAnne_CaptainsOffice/text.inc")
+    assert "MO01" in cap and "Cortar" in cap and "Capitão" in cap
+    punch = body("data/maps/Route4/text.inc")
+    assert "Megassoco" in punch and "Megachute" in punch and "Insígnia Rocha" in punch
+    assert "Pedra Lunar" in body("data/maps/Route8/text.inc") and "Túnel de Pedra" in body("data/maps/Route9/text.inc")
+
+
+def test_b3_assistente_do_carvalho_fala_como_nas_rotas_10_11_15_16():
+    body = re.sub(r"\\[nlp]", " ", _flat("data/maps/Route2_EastBuilding/text.inc"))
+    assert "Sou um dos assistentes do Prof. Carvalho" in body and "me diga uma coisa" in body
+    assert "Aqui está!" in body and "do assistente." in body
+
+
+def test_b3_sigla_to_nao_e_ingles():
+    """CeladonCity_DepartmentStore_3F usa "TO" (Treinador Original): falso positivo da regra `ingles`."""
+    assert "data/maps/CeladonCity_DepartmentStore_3F/text.inc" not in _english()
+
+
+def test_b3_nomes_de_personagem_em_caixa_mista_e_bicicleta():
+    """Fix round 1: Eli/Anne, Sara/Erik e Kiri/Jan (Route14, B2) não ficam em maiúsculas; 'bike' vira 'bicicleta'."""
+    for rel, names in (("data/maps/Route8/text.inc", ("Eli:", "Anne:")),
+                       ("data/maps/SafariZone_Center_RestHouse/text.inc", ("Sara:", "Erik")),
+                       ("data/maps/Route14/text.inc", ("Kiri:", "Jan:"))):
+        body = _flat(rel)
+        for name in names:
+            assert name in body, (rel, name)
+        for shout in ("ELI", "ANNE", "SARA", "ERIK", "KIRI", "JAN"):
+            assert not re.search(rf"\b{shout}\b", body), (rel, shout)
+    route8 = re.sub(r"\\[nlp]", " ", _flat("data/maps/Route8/text.inc"))
+    assert "bicicleta está dando problema" in route8 and "bike" not in route8

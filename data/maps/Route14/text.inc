@@ -126,33 +126,33 @@ Route14_Text_RouteSign::
     .string "A oeste: Cidade de Fuchsia$"
 
 Route14_Text_KiriIntro::
-    .string "KIRI: JAN, vamos nos esforçar muito,\n"
+    .string "Kiri: Jan, vamos nos esforçar muito,\n"
     .string "muito, juntas.$"
 
 Route14_Text_KiriDefeat::
-    .string "KIRI: Snif…\n"
+    .string "Kiri: Snif…\n"
     .string "A gente perdeu, né?$"
 
 Route14_Text_KiriPostBattle::
-    .string "KIRI: Perdemos por minha causa?$"
+    .string "Kiri: Perdemos por minha causa?$"
 
 Route14_Text_KiriNotEnoughMons::
-    .string "KIRI: A gente batalha se você tiver\n"
+    .string "Kiri: A gente batalha se você tiver\n"
     .string "dois Pokémon.$"
 
 Route14_Text_JanIntro::
-    .string "JAN: KIRI, lá vamos nós!\n"
+    .string "Jan: Kiri, lá vamos nós!\n"
     .string "Temos que nos esforçar!$"
 
 Route14_Text_JanDefeat::
-    .string "JAN: Eeeeh!\n"
+    .string "Jan: Eeeeh!\n"
     .string "Não vale!$"
 
 Route14_Text_JanPostBattle::
-    .string "JAN: KIRI, não chore!\n"
+    .string "Jan: Kiri, não chore!\n"
     .string "Da próxima vez a gente se esforça\l"
     .string "mais.$"
 
 Route14_Text_JanNotEnoughMons::
-    .string "JAN: Você quer batalhar?\n"
+    .string "Jan: Você quer batalhar?\n"
     .string "Mas não tem Pokémon suficientes.$"

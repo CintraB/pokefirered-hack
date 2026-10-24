@@ -120,5 +120,5 @@ Route20_Text_SeafoamIslands::
 Route20_Text_MistyTrainsHere::
     .string "Treinadores fortes e Pokémon de Água\n"
     .string "são comuns por aqui.\p"
-    .string "Dizem que a Misty, do Ginásio de\n"
-    .string "Cerulean, treina aqui.$"
+    .string "Dizem que a Misty, do\n"
+    .string "Ginásio de Cerulean, treina aqui.$"

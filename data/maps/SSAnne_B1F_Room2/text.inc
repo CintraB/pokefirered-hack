@@ -1,10 +1,10 @@
 SSAnne_B1F_Room2_Text_HueyIntro::
-    .string "Even us sailors have POKéMON, too!$"
+    .string "Até nós, marinheiros, temos Pokémon!$"
 
 SSAnne_B1F_Room2_Text_HueyDefeat::
-    .string "Okay, you're not bad.$"
+    .string "Certo, você até que luta bem.$"
 
 SSAnne_B1F_Room2_Text_HueyPostBattle::
-    .string "We caught all our POKéMON while\n"
-    .string "we were out at sea.$"
+    .string "Capturamos todos os nossos Pokémon\n"
+    .string "quando estávamos no mar.$"
 
