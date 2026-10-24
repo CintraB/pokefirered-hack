@@ -26,3 +26,12 @@ PokemonMansion_B1F_Text_MewtwoIsFarTooPowerful::
     .string "Não conseguimos conter as suas\n"
     .string "tendências violentas…$"
 
+PokemonMansion_B1F_Text_DiaryMewHint::
+    .string "Diário: 14 de setembro\n"
+    .string "Há um corredor selado no porão.\p"
+    .string "Dizem que a mãe do Mewtwo só\n"
+    .string "reaparece quando ele sossegar.$"
+
+PokemonMansion_B1F_Text_Mew::
+    .string "Mew!$"
+

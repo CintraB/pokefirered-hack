@@ -53,7 +53,9 @@ RULES = ("controle", "glossario", "largura", "linhas", "letras")
 
 _LABEL = re.compile(r"^([A-Za-z_][A-Za-z0-9_]*)::", re.M)
 # rótulos que os hacks acrescentaram depois da base da tradução (não são rótulos renomeados)
-ROTULOS_DOS_HACKS = {"PokemonLeague_HallOfFame_Text_OakTickets"}     # Hack 8: Carvalho entrega os bilhetes
+ROTULOS_DOS_HACKS = {"PokemonLeague_HallOfFame_Text_OakTickets",     # Hack 8: Carvalho entrega os bilhetes
+                     "PokemonMansion_B1F_Text_DiaryMewHint",          # Hack 8: pista do Mew
+                     "PokemonMansion_B1F_Text_Mew"}                   # Hack 8: grito do Mew
 
 
 @lru_cache(maxsize=None)
