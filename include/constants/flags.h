@@ -797,8 +797,8 @@
 #define FLAG_MEWTWO_FLEW_AWAY    0x300
 #define FLAG_0x301               0x301
 #define FLAG_0x302               0x302
-#define FLAG_0x303               0x303
-#define FLAG_0x304               0x304
+#define FLAG_HIDE_CELEBI         0x303
+#define FLAG_CELEBI_FLEW_AWAY    0x304
 #define FLAG_0x305               0x305
 #define FLAG_0x306               0x306
 #define FLAG_0x307               0x307
