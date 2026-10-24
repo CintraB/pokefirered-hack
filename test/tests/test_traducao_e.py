@@ -1235,3 +1235,13 @@ def test_e4_sala_da_safira_frase_completa():
                                                 _script("SixIsland_DottedHole_SapphireRoom"))]
     assert " ".join(room) == ("QUE AS DUAS PEDRAS BRILHANTES, A VERMELHA E A AZUL, LIGUEM O PASSADO. DOIS AMIGOS "
                               "DIVIDINDO O PODER ABREM UMA JANELA A UM NOVO MUNDO. O PROXIMO MUNDO TE ESPERA.")
+
+
+def test_verso_do_cartao_diz_batalhas_por_link_em_kanto_e_em_hoenn():
+    """Decisão do Cintra (24/10, achado da I2): os dois versos do Cartão de Treinador (LINK BATTLES no de
+    Kanto, LINK CABLE BATTLES no de Hoenn, sLinkTrainerCardRecordStrings) dizem "Batalhas por link"."""
+    card = (REPO_ROOT / "src" / "trainer_card.c").read_text(encoding="utf-8")
+    labels = re.search(r"sLinkTrainerCardRecordStrings\[\] = \{(\w+), (\w+)\};", card).groups()
+    assert labels == ("gText_LinkBattles", "gText_LinkCableBattles")
+    texts = [re.search(rf'const u8 {lab}\[\] = _\("([^"]*)"\);', STRINGS_C).group(1) for lab in labels]
+    assert texts == ["Batalhas por link", "Batalhas por link"]
