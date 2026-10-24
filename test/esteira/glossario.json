@@ -13802,6 +13802,166 @@
    "detectar": false,
    "frente": "H",
    "obs": "imagens misc/minigame_countdown.png e link/321start.png"
+  },
+  {
+   "en": "BACK",
+   "pt": "Voltar",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "frente": "H",
+   "obs": "imagens naming_screen/back_button.png e union_room_chat/bg.png (VOLTAR); mesmo termo do texto \"Voltar\"",
+   "tela": "Tela de nome"
+  },
+  {
+   "en": "BUTTON",
+   "pt": "Botão",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "frente": "H",
+   "obs": "imagens easy_chat/button_window.png e naming_screen/back_button.png (BOTÃO)",
+   "tela": "Tela de nome / Easy Chat"
+  },
+  {
+   "en": "SEND",
+   "pt": "Enviar",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "frente": "H",
+   "obs": "imagem union_room_chat/bg.png (ENVIAR)",
+   "tela": "Sala União"
+  },
+  {
+   "en": "DELETE",
+   "pt": "Apagar",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "frente": "H",
+   "obs": "imagem easy_chat/button_window.png (APAGAR); mesmo termo de gText_Toss",
+   "tela": "Easy Chat"
+  },
+  {
+   "en": "MODE",
+   "pt": "Modo",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "frente": "H",
+   "obs": "imagens easy_chat/button_window.png e easy_chat/mode.png (MODO)",
+   "tela": "Easy Chat"
+  },
+  {
+   "en": "GROUP",
+   "pt": "Grupo",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "frente": "H",
+   "obs": "imagem easy_chat/mode.png (GRUPO MODO)",
+   "tela": "Easy Chat"
+  },
+  {
+   "en": "CREDIT",
+   "pt": "Moedas",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "frente": "H",
+   "obs": "imagem slot_machine/firered/bg.png (MOEDAS); mesmo termo de COINS (\"moedas\"); alternativa FICHAS gerada em h4/out, não aplicada",
+   "tela": "Caça-níquel"
+  },
+  {
+   "en": "PAYOUT",
+   "pt": "Ganhos",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "frente": "H",
+   "obs": "imagem slot_machine/firered/bg.png (GANHOS)",
+   "tela": "Caça-níquel"
+  },
+  {
+   "en": "NICE",
+   "pt": "Boa",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "frente": "H",
+   "obs": "imagem pokemon_jump/bonuses.png (BOA +50)",
+   "tela": "Pulo Pokémon"
+  },
+  {
+   "en": "GOOD",
+   "pt": "Legal",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "frente": "H",
+   "obs": "imagem pokemon_jump/bonuses.png (LEGAL +100)",
+   "tela": "Pulo Pokémon"
+  },
+  {
+   "en": "GREAT",
+   "pt": "Genial",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "frente": "H",
+   "obs": "imagem pokemon_jump/bonuses.png (GENIAL +200)",
+   "tela": "Pulo Pokémon"
+  },
+  {
+   "en": "EXCELLENT",
+   "pt": "Excelente",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "frente": "H",
+   "obs": "imagem pokemon_jump/bonuses.png (EXCELENTE +500)",
+   "tela": "Pulo Pokémon"
+  },
+  {
+   "en": "UPPER",
+   "pt": "ABC",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "frente": "H",
+   "obs": "imagem naming_screen/page_swap_upper.png: rótulo da página de maiúsculas (24 px)",
+   "tela": "Tela de nome"
+  },
+  {
+   "en": "lower",
+   "pt": "abc",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "frente": "H",
+   "obs": "imagem naming_screen/page_swap_lower.png: rótulo da página de minúsculas (24 px)",
+   "tela": "Tela de nome"
+  },
+  {
+   "en": "others",
+   "pt": "123",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "frente": "H",
+   "obs": "imagem naming_screen/page_swap_others.png: rótulo da página de números e símbolos (24 px)",
+   "tela": "Tela de nome"
+  },
+  {
+   "en": "REGISTER (abrev.)",
+   "pt": "Registr.",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "frente": "H",
+   "obs": "imagem union_room_chat/icons.png: \"Registrar\" não cabe em 32 px; no texto fica \"Registrar\"",
+   "tela": "Sala União"
   }
  ],
  "proibidos": [
