@@ -736,12 +736,11 @@ def test_listas_por_letra_tem_cada_palavra_uma_vez_na_letra_certa_e_em_ordem():
     lists = _letter_lists()
     assert list(lists) == ["Others"] + [chr(c) for c in range(ord("A"), ord("Z") + 1)]
     text_of = _ec_text_of()
-    mons1 = _value_list(f"{EC_DIR}/easy_chat_group_pokemon.h", "SPECIES")
-    mons2 = _value_list(f"{EC_DIR}/easy_chat_group_pokemon2.h", "SPECIES")
+    accepted = _ec_macro_ids()
+    mons1, mons2 = accepted["EC_POKEMON"], accepted["EC_POKEMON2"]
     expected = set(_ec_constants())
-    expected |= {f"EC_MOVE({m})" for m in _value_list(f"{EC_DIR}/easy_chat_group_move_1.h", "MOVE")}
-    expected |= {f"EC_MOVE2({m})" for m in _value_list(f"{EC_DIR}/easy_chat_group_move_2.h", "MOVE")}
-    expected |= {f"EC_POKEMON({s})" for s in mons1} | {f"EC_POKEMON2({s})" for s in mons2}
+    for macro, ids in accepted.items():
+        expected |= {f"{macro}({i})" for i in ids}
     flat = [c for entries in lists.values() for e in entries for c in e]
     assert len(flat) == len(set(flat)), "palavra duplicada nas listas por letra"
     assert set(flat) == expected, (sorted(expected - set(flat))[:10], sorted(set(flat) - expected)[:10])
@@ -765,6 +764,52 @@ def test_nenhuma_letra_passa_do_limite_da_tela():
     limit = int(re.search(r"alphabeticalWordsByGroup\[27\]\[(\d+)\]", src).group(1))
     assert int(re.search(r"u16 allWords\[(\d+)\]", src).group(1)) == limit
     assert {k: len(v) for k, v in _letter_lists().items() if len(v) > limit} == {}
+
+
+def _ec_macro_ids() -> dict[str, set[str]]:
+    """EC_POKEMON/EC_POKEMON2/EC_MOVE/EC_MOVE2 -> ids que o grupo do macro aceita, lido do C.
+
+    O nome do vetor engana: EC_POKEMON2 usa o grupo 0 (sEasyChatGroup_Pokemon, 202 espécies) e EC_POKEMON o
+    grupo 0x15 (sEasyChatGroup_Pokemon2, 251). Uma espécie fora do grupo é reprovada por IsECWordInvalid ("???").
+    """
+    consts = _read("include/constants/easy_chat.h")
+    group_num = {g: int(v, 16) for g, v in re.findall(r"#define EC_GROUP_(\w+)\s+(0x[0-9a-fA-F]+)", consts)}
+    value_lists = re.findall(r"\.valueList = (sEasyChatGroup_\w+)", _read(f"{EC_DIR}/easy_chat_groups.h"))
+    groups = re.findall(r"\.wordData = \{\.\w+ = (sEasyChatGroup_\w+)\}", _read(f"{EC_DIR}/easy_chat_groups.h"))
+    files = {}
+    for path in (REPO_ROOT / EC_DIR).glob("easy_chat_group_*.h"):
+        for name in re.findall(r"static const u16 (sEasyChatGroup_\w+)\[\]", path.read_text(encoding="utf-8")):
+            files[name] = path.relative_to(REPO_ROOT).as_posix()
+    out = {}
+    for macro, grp, prefix in re.findall(
+            r"#define (EC_\w+)\(\w+\) \(\(EC_GROUP_(\w+) << 9\) \| (SPECIES|MOVE)_##\w+\)", consts):
+        vector = groups[group_num[grp]]
+        assert vector in value_lists, (macro, vector)
+        out[macro] = set(_value_list(files[vector], prefix))
+    assert set(out) == {"EC_POKEMON", "EC_POKEMON2", "EC_MOVE", "EC_MOVE2"}
+    return out
+
+
+def _letter_tokens(source: str) -> list[str]:
+    body = "".join(re.findall(r"sEasyChatWordsByLetter_\w+\[\] = \{(.*?)\};", source, re.S))
+    return [t.strip() for t in re.sub(r"//[^\n]*", "", body).split(",")
+            if t.strip() and not re.fullmatch(r"-?\d+", t.strip())]
+
+
+def test_listas_por_letra_usam_o_grupo_que_tem_a_especie_ou_o_golpe():
+    """Achado da I2: G3 trocou EC_POKEMON <-> EC_POKEMON2 e o A-Z mostrava "???" no lugar dos nomes."""
+    accepted = _ec_macro_ids()
+    bad = [t for t in _letter_tokens(_read(f"{EC_DIR}/easy_chat_words_by_letter.h"))
+           if (m := re.fullmatch(r"(EC_\w+)\((\w+)\)", t)) and m.group(2) not in accepted[m.group(1)]]
+    assert bad == []
+
+
+def test_listas_por_letra_tem_as_mesmas_palavras_do_original():
+    """Só a ordem e a letra mudam na tradução: cada (macro, id) do original continua lá, uma vez."""
+    from collections import Counter
+    rel = f"{EC_DIR}/easy_chat_words_by_letter.h"
+    now, before = Counter(_letter_tokens(_read(rel))), Counter(_letter_tokens(_need_base(rel)))
+    assert (now - before, before - now) == (Counter(), Counter())
 
 
 def test_habilidades_e_tipos_do_easy_chat_usam_os_nomes_do_jogo():
