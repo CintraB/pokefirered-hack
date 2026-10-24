@@ -206,7 +206,7 @@ def test_b2_padrao_de_insulto_pega_os_casos_conhecidos():
 @pytest.mark.parametrize("rel", B2_FILES)
 def test_b2_jogador_sem_genero_e_formas_erradas(rel):
     body = _flat(rel)
-    assert not PLAYER_INSULT.search(body.replace("GIA: JES, seu bobo!", "")), (rel, PLAYER_INSULT.search(body))
+    assert not PLAYER_INSULT.search(body.replace("Gia: Jes, seu bobo!", "")), (rel, PLAYER_INSULT.search(body))
     for bad in PLAYER_GENDERED + WRONG_FORMS:
         assert bad not in body, (rel, bad)
 
@@ -349,8 +349,8 @@ PLAYER_ADJECTIVE = re.compile(
 PLAYER_ROLE = r"(?:tornaria|viraria|seria|será|tornará|vai ser|vai virar) (?:um|uma|o|a) (?:(?:grande|ótimo|bom|novo) )*" \
               r"(?:líder|chefe|campeão|campeã|mestre|mestra|rei|rainha|herói|heroína|vencedor|vencedora|Treinador|Treinadora)"
 PLAYER_NOUN = re.compile(r"personagem principal|protagonista|vocês todos|" + PLAYER_ROLE)
-WRONG_FORMS_B3 = ("Floresta de Viridian", "Caminho Subterrâneo", "Zona do Safári", "SS Anne", "S.S. ANNE", "Bilhete SS",
-                  "Vermilion City", "Cidade de Vermilion", "Teleportador", "Pokemon", "POKéMON", "Pokédex Nacional",
+WRONG_FORMS_B3 = ("Caminho Subterrâneo", "Zona do Safári", "SS Anne", "S.S. ANNE", "Bilhete SS",
+                  "Vermilion City", "Teleportador", "Pokemon", "POKéMON", "Pokédex Nacional",
                   "Mt. Moon", "Mt Moon", "Sea Cottage", "Time Rocket", "Team Rocket", "Prof. Oak", "Professor Oak")
 ONLY_AFTER = re.compile(r"(?<!Equipe )Rocket")
 

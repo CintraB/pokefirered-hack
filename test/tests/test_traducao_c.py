@@ -256,7 +256,7 @@ def _nomes_inteiros() -> set[str]:
               "Bilhete Aurora", "Loja de Bicicletas", "Mestre da Pesca", "Maníaco dos Golpes", "Rei do Caratê",
               "Americano Relâmpago", "Cassino da Alegria", "Barras Fúria", "Dicas de Treinador", "Floresta Viridian",
               "Cidade de Viridian", "Cidade Vermilion", "Cidade de Pewter", "Cidade de Lavender", "Cidade de Celadon",
-              "Cidade de Cerulean", "Cidade de Saffron", "Cidade de Pallet", "Via Subterrânea", "Porto Vermilion",
+              "Cidade de Cerulean", "Cidade de Saffron", "Cidade de Pallet", "Via Subterrânea", "Porto de Vermilion",
               "Estrada da Vitória", "Túnel de Pedra", "Liga Pokémon", "Sala União", "balsa Seagallop",
               "Seagallop Hi-Speed", "Explorador VS", "Passe 7 Cores", "Passe Triplo", "Fã-clube Pokémon",
               "TV Educativa", "Ginásio Pokémon", "Rocha Umbigo", "Ilha do Nascimento", "Prof. Carvalho",

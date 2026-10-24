@@ -110,7 +110,7 @@ def test_fala_extra_depois_da_explicacao():
 
 def test_textos_do_brief():
     t = _read(f"{OAK}/text.inc")
-    for frag in ("CARVALHO: Vocês dois ajudaram", "É um Ovo de Pokémon muito raro!",
+    for frag in ("Carvalho: Vocês dois ajudaram", "É um Ovo de Pokémon muito raro!",
                  "{PLAYER} recebeu o Ovo!", "O Ovo foi enviado para o PC.",
                  "Venha falar comigo quando tiver", "E isto é para as suas viagens!",
                  "Amuleto Brilhante"):
@@ -133,7 +133,7 @@ def test_oak_nao_pede_mais_as_pokedex():
     body = _text_body("PalletTown_ProfessorOaksLab_Text_OakNeedYourHelpToo")
     # traduzida na A3 (as quebras de linha são do reflow, por isso se compara o texto achatado)
     flat = re.sub(r"\\[nlp]", " ", body)
-    assert flat == "CARVALHO: Eu sei, eu sei. É claro que também preciso da sua ajuda.$", body
+    assert flat == "Carvalho: Eu sei, eu sei. É claro que também preciso da sua ajuda.$", body
     scene = _scene()
     assert scene.index("Text_OakNeedYourHelpToo") < scene.index("Text_OakThanksRareEgg")
 
