@@ -239,11 +239,12 @@ static s32 GetRoamerPokedexAreaMarkers(u16 species, struct Subsprite * subsprite
     u16 dexArea;
     s32 tableIndex;
 
-    // Make sure that this is a roamer species, and that it corresponds to the player's starter.
+    // Make sure that this is a roamer species, and that it is the dog roaming now (Hack 8: the
+    // three dogs roam in sequence, so it is no longer always the starter's dog).
     roamerIdx = GetRoamerIndex(species);
     if (roamerIdx < 0)
         return 0;
-    if (sRoamerPairs[roamerIdx].starter != GetStarterSpecies())
+    if (gSaveBlock1Ptr->roamer.species != species)
         return 0;
 
     mapSecId = GetRoamerLocationMapSectionId();
