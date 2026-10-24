@@ -610,7 +610,7 @@ Route20_Text_MelissaRematchIntro::
 
 Route21_North_Text_RonaldRematchIntro::
 	.string "Quer saber se os peixes estão\n"
-	.string "beliscando a isca?$"
+	.string "mordendo?$"
 
 Route21_North_Text_WadeRematchIntro::
 	.string "Fiz uma pescaria e tanto de novo!\n"
@@ -658,9 +658,9 @@ Route25_Text_JoeyRematchIntro::
 	.string "aqui!$"
 
 Route25_Text_DanRematchIntro::
-	.string "O papai me levou a uma festa\n"
-	.string "incrível no S.S. Anne,\l"
-	.string "na Cidade Vermilion.$"
+	.string "Meu pai me levou a uma festa\n"
+	.string "incrível no S.S. Anne, na\l"
+	.string "Cidade de Vermilion.$"
 
 Route25_Text_FlintRematchIntro::
 	.string "Eu sou um cara legal.\n"
@@ -678,8 +678,8 @@ Route25_Text_ChadRematchIntro::
 	.string "Sabia que ia te enfrentar de novo!$"
 
 Route25_Text_HaleyRematchIntro::
-	.string "Minha amiga tem muitos Pokémon fofos.\n"
-	.string "Que inveja!$"
+	.string "A minha amiga tem muitos Pokémon\n"
+	.string "fofos. Que inveja!$"
 
 Route25_Text_FranklinRematchIntro::
 	.string "Acabei de treinar no Monte Lua,\n"
@@ -694,7 +694,7 @@ Route25_Text_WayneRematchIntro::
 	.string "Primeiro, a gente batalha!$"
 
 Route24_Text_ShaneRematchIntro::
-	.string "Vi o seu feito lá do meio da grama!$"
+	.string "Vi a sua façanha lá do meio do mato!$"
 
 Route24_Text_EthanRematchIntro::
 	.string "Beleza!\n"
@@ -764,8 +764,9 @@ OneIsland_KindleRoad_Text_HughRematchIntro::
 	.string "Tire essa roupa fútil, já disse!$"
 
 OneIsland_KindleRoad_Text_BryceRematchIntro::
-	.string "Sabe, tudo fica gostoso quando a\n"
-	.string "gente está na natureza.$"
+	.string "Sabe, tudo fica com um gosto ótimo\n"
+	.string "quando a gente está em plena\l"
+	.string "natureza.$"
 
 OneIsland_KindleRoad_Text_ClaireRematchIntro::
 	.string "Comi demais de novo. Quer batalhar\n"
