@@ -102,7 +102,7 @@ TrainerTower_Lobby_Text_ExplainTrainerTower::
     .string "Tente competir com os amigos para\n"
     .string "ver quem consegue o menor tempo.\p"
     .string "Aqui, vencer Treinadores não rende\n"
-    .string "Pontos de Exp. nem dinheiro.$"
+    .string "PE nem dinheiro.$"
 
 TrainerTower_Lobby_Text_ThanksForCompeting::
     .string "Agradecemos por competir!$"
