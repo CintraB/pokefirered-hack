@@ -2,6 +2,8 @@
 #include "random.h"
 #include "overworld.h"
 #include "field_specials.h"
+#include "pokedex.h"
+#include "pokemon.h"
 #include "constants/maps.h"
 #include "constants/region_map_sections.h"
 
@@ -79,42 +81,99 @@ void ClearRoamerData(void)
     }
 }
 
-#define GetRoamerSpecies() ({\
-    u16 a;\
-    switch (GetStarterSpecies())\
-    {\
-    default:\
-        a = SPECIES_RAIKOU;\
-        break;\
-    case SPECIES_BULBASAUR:\
-        a = SPECIES_ENTEI;\
-        break;\
-    case SPECIES_CHARMANDER:\
-        a = SPECIES_SUICUNE;\
-        break;\
-    }\
-    a;\
-})
+// Hack 8: the 3 legendary dogs in sequence. The starter's dog roams first (as in vanilla).
+// When the roaming dog stops (caught, defeated or draw), the next dog not caught in the Pokédex
+// after it in this fixed cycle starts roaming, with the stopped dog itself last: a defeated dog
+// only comes back when it is the only one left. No new save field: it all comes from the Pokédex.
+static const u16 sRoamerCycle[] = { SPECIES_ENTEI, SPECIES_RAIKOU, SPECIES_SUICUNE };
 
-void CreateInitialRoamerMon(void)
+static u32 GetStarterRoamerIndex(void)
 {
-    struct Pokemon * mon = &gEnemyParty[0];
-    u16 species = GetRoamerSpecies();
-    CreateMon(mon, species, 50, USE_RANDOM_IVS, FALSE, 0, OT_ID_PLAYER_ID, 0);
+    switch (GetStarterSpecies())
+    {
+    case SPECIES_BULBASAUR:
+        return 0;
+    case SPECIES_CHARMANDER:
+        return 2;
+    default:
+        return 1;
+    }
+}
+
+static bool32 IsRoamerSpeciesCaught(u16 species)
+{
+    return GetSetPokedexFlag(SpeciesToNationalPokedexNum(species), FLAG_GET_CAUGHT);
+}
+
+// Index of `species` in sRoamerCycle, or ARRAY_COUNT(sRoamerCycle) if it is not a dog.
+static u32 GetRoamerCycleIndex(u16 species)
+{
+    u32 i;
+    for (i = 0; i < ARRAY_COUNT(sRoamerCycle); i++)
+    {
+        if (sRoamerCycle[i] == species)
+            break;
+    }
+    return i;
+}
+
+static bool32 IsRoamerDog(u16 species)
+{
+    return GetRoamerCycleIndex(species) < ARRAY_COUNT(sRoamerCycle);
+}
+
+// First dog not caught in the Pokédex after `current` in the cycle (wrapping around, `current`
+// itself last); SPECIES_NONE if all are caught.
+u16 GetNextRoamerSpecies(u16 current)
+{
+    u32 i, start = GetRoamerCycleIndex(current) + 1;
+    for (i = 0; i < ARRAY_COUNT(sRoamerCycle); i++)
+    {
+        u16 species = sRoamerCycle[(start + i) % ARRAY_COUNT(sRoamerCycle)];
+        if (!IsRoamerSpeciesCaught(species))
+            return species;
+    }
+    return SPECIES_NONE;
+}
+
+static void CreateRoamerMonOfSpecies(u16 species)
+{
+    struct Pokemon mon;
+    CreateMon(&mon, species, 50, USE_RANDOM_IVS, FALSE, 0, OT_ID_PLAYER_ID, 0);
     ROAMER->species = species;
     ROAMER->level = 50;
     ROAMER->status = 0;
     ROAMER->active = TRUE;
-    ROAMER->ivs = GetMonData(mon, MON_DATA_IVS);
-    ROAMER->personality = GetMonData(mon, MON_DATA_PERSONALITY);
-    ROAMER->hp = GetMonData(mon, MON_DATA_MAX_HP);
-    ROAMER->cool = GetMonData(mon, MON_DATA_COOL);
-    ROAMER->beauty = GetMonData(mon, MON_DATA_BEAUTY);
-    ROAMER->cute = GetMonData(mon, MON_DATA_CUTE);
-    ROAMER->smart = GetMonData(mon, MON_DATA_SMART);
-    ROAMER->tough = GetMonData(mon, MON_DATA_TOUGH);
+    ROAMER->ivs = GetMonData(&mon, MON_DATA_IVS);
+    ROAMER->personality = GetMonData(&mon, MON_DATA_PERSONALITY);
+    ROAMER->hp = GetMonData(&mon, MON_DATA_MAX_HP);
+    ROAMER->cool = GetMonData(&mon, MON_DATA_COOL);
+    ROAMER->beauty = GetMonData(&mon, MON_DATA_BEAUTY);
+    ROAMER->cute = GetMonData(&mon, MON_DATA_CUTE);
+    ROAMER->smart = GetMonData(&mon, MON_DATA_SMART);
+    ROAMER->tough = GetMonData(&mon, MON_DATA_TOUGH);
     sRoamerLocation[MAP_GRP] = ROAMER_MAP_GROUP;
     sRoamerLocation[MAP_NUM] = sRoamerLocations[Random() % NUM_LOCATION_SETS][0];
+}
+
+void CreateInitialRoamerMon(void)
+{
+    CreateRoamerMonOfSpecies(sRoamerCycle[GetStarterRoamerIndex()]);
+}
+
+// Called after a roamer battle and when continuing a saved game (old saves where the dog was
+// caught or defeated before this version). Only acts when the roamer is stopped and was a dog.
+void TryStartNextRoamer(void)
+{
+    u16 next;
+
+    if (ROAMER->active || !IsRoamerDog(ROAMER->species))
+        return;
+    next = GetNextRoamerSpecies(ROAMER->species);
+    if (next == SPECIES_NONE)
+        return;
+    ClearRoamerData();
+    CreateRoamerMonOfSpecies(next);
 }
 
 void InitRoamer(void)

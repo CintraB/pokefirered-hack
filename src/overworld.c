@@ -348,6 +348,7 @@ static void Overworld_ResetStateOnContinue(void)
     FlagClear(FLAG_SYS_SAFARI_MODE);
     VarSet(VAR_MAP_SCENE_FUCHSIA_CITY_SAFARI_ZONE_ENTRANCE, 0);
     ChooseAmbientCrySpecies();
+    TryStartNextRoamer(); // Hack 8: old saves where the dog was caught or defeated before the 3-dog sequence
     UpdateLocationHistoryForRoamer();
     RoamerMoveToOtherLocationSet();
 }
