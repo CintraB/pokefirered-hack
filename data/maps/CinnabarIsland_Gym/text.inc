@@ -39,7 +39,7 @@ CinnabarIsland_Gym_Text_BlainePostBattle::
     .string "para esse golpe.$"
 
 CinnabarIsland_Gym_Text_MakeSpaceForThis::
-    .string "Abra espaço para isto, jovem!$"
+    .string "Abra espaço para isto, criança!$"
 
 CinnabarIsland_Gym_Text_ErikIntro::
     .string "Você sabe como o sopro de fogo de\n"
