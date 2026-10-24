@@ -162,3 +162,12 @@ def test_telas_da_cena_na_pagina_do_trecho():
         antes = body[:body.index(needle)]
         esperas = antes.count(r"\p") + antes.count(r"\l")
         assert SHOTS[needle][1] == esperas, (needle, SHOTS[needle], esperas)
+
+
+def test_tecla_solta_lida_em_heldKeysRaw():
+    """`_shot_page` só aperta A depois de o jogo ler o A solto (gMain.heldKeysRaw): o impressor
+    instantâneo pode passar de um quadro num giro só e engolir a soltura do aperto anterior."""
+    from esteira.game import MAIN_HELD_KEYS_RAW
+    main_h = _read("include/main.h")
+    m = re.search(r"/\*0x([0-9A-Fa-f]+)\*/\s*u16 heldKeysRaw;", main_h)
+    assert m and int(m.group(1), 16) == MAIN_HELD_KEYS_RAW, m and m.group(0)

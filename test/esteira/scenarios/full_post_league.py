@@ -151,12 +151,20 @@ class PostLeagueScenario(CatchSaveScenario):
         return (not self.game.text_printer_active()
                 or self.game.text_printer_state(0) in BUTTON_WAIT_STATES)
 
+    def _a_released(self) -> bool:
+        """O último ReadKeys() do jogo viu o A solto: o próximo aperto vira JOY_NEW."""
+        return not self.game.held_keys() & KEY_A
+
     def _shot_page(self, needle: str, name: str, page: int) -> None:
         """Avança as esperas da caixa atual (\\p e \\l) até a `page` esperar um botão e tira a tela."""
         for current in range(page + 1):
             self.ctl.wait_until(self._waiting, 300, f"texto '{needle}' (página {current + 1})")
             if current == page:
                 break
+            # o impressor instantâneo desenha a página num giro só do laço principal, que pode
+            # durar mais de um quadro: o estado de espera aparece no meio do giro, antes de o jogo
+            # ler o A do aperto anterior solto, e um A novo agora seria lido como "segurado"
+            self.ctl.wait_until(self._a_released, 60, f"A solto antes da página {current + 2}")
             self.emu.press(KEY_A, hold=2, release=0)
             for _ in range(120):   # quadro a quadro: a página nova pode imprimir em poucos
                 if not self._waiting():

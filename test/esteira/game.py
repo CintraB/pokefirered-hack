@@ -65,6 +65,7 @@ SB1_BAG_POCKETS = [
 
 # --- struct Main (include/main.h) --------------------------------------------------
 MAIN_CALLBACK2 = 0x004
+MAIN_HELD_KEYS_RAW = 0x028    # u16 heldKeysRaw: teclas que o último ReadKeys() viu seguradas
 MAIN_IN_BATTLE = 0x439        # bit 1 do byte (oamLoadDisabled:1, inBattle:1, ...)
 
 # --- struct TextPrinter (include/text.h) -------------------------------------------
@@ -237,6 +238,12 @@ class Game:
 
     def in_battle(self) -> bool:
         return bool(self.emu.read_u8(self.syms.addr("gMain") + MAIN_IN_BATTLE) & 0x02)
+
+    def held_keys(self) -> int:
+        """gMain.heldKeysRaw: máscara KEY_* que o jogo leu no último ReadKeys(). Um aperto só vira
+        JOY_NEW se o jogo já leu a tecla solta, o que demora mais de um quadro quando um giro do
+        laço principal atrasa (ex.: o impressor instantâneo desenhando uma página inteira)."""
+        return self.emu.read_u16(self.syms.addr("gMain") + MAIN_HELD_KEYS_RAW)
 
     def callback2(self) -> str:
         """Nome do símbolo apontado por gMain.callback2 (0x... se desconhecido, '' se nulo)."""
