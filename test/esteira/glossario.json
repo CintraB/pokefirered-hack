@@ -10290,15 +10290,6 @@
    "obs": "programa da TV Educativa (src/data/text/teachy_tv.h); POKé DUDE = Cara Pokémon"
   },
   {
-   "en": "RIBBON",
-   "pt": "Fita",
-   "fonte": "criado",
-   "categoria": "interface",
-   "detectar": false,
-   "frente": "E",
-   "obs": "fita especial do Presente Misterioso (src/mystery_event_msg.c)"
-  },
-  {
    "en": "ROCKET GAME CORNER",
    "pt": "Cassino Rocket",
    "fonte": "criado",
@@ -10314,11 +10305,11 @@
    "categoria": "lugar",
    "detectar": false,
    "frente": "E",
-   "obs": "forma curta de Casa do Avaliador de Apelidos (NAME RATER = Avaliador de Apelidos, frente A3): o Quest Log copia o lugar para gStringVar2 (19 letras) e a forma cheia tem 29"
+   "obs": "forma curta de 'Casa do Avaliador de Apelidos' (NAME RATER = Avaliador de Apelidos, A3): o Quest Log copia o lugar para gStringVar2 (19 letras)"
   },
   {
    "en": "POKéMON LEAGUE GATE",
-   "pt": "Portão Liga Pokémon",
+   "pt": "Portão da Liga",
    "fonte": "criado",
    "categoria": "lugar",
    "detectar": false,
@@ -10351,6 +10342,24 @@
    "detectar": false,
    "frente": "E",
    "obs": "forma curta de Casa de Voluntários Pokémon para o gStringVar2 (19 letras)"
+  },
+  {
+   "en": "BILL'S HOUSE",
+   "pt": "Casa do Bill",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": false,
+   "frente": "E",
+   "obs": "Quest Log (gText_QuestLog_BillsHouse)"
+  },
+  {
+   "en": "POKéMON FAN CLUB",
+   "pt": "Fã-clube Pokémon",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": false,
+   "frente": "E",
+   "obs": "Quest Log e placa de Vermilion; FAN CLUB = Fã-clube"
   },
   {
    "en": "FISHING GURU",
@@ -10962,7 +10971,7 @@
    "categoria": "interface",
    "detectar": false,
    "frente": "G3",
-   "obs": "palavra do Easy Chat (≤ 12 bytes, src/trainer_card.c easyChatProfile[..][13])"
+   "obs": "palavra do Easy Chat (≤ 12 bytes, src/trainer_card.c easyChatProfile[..][13]); também a Fita especial do Presente Misterioso (src/mystery_event_msg.c)"
   },
   {
    "en": "ADMIN",

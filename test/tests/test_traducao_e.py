@@ -550,7 +550,8 @@ def test_e2_nome_de_item_com_plural_cabe_em_gstringvar():
     body = scrcmd[scrcmd.index("bool8 ScrCmd_bufferitemnameplural"):]
     body = body[:body.index("\n}\n")]
     assert 'sText_S[] = _("s")' in scrcmd and '_("IES")' not in scrcmd     # plural em português, não "S"/"IES"
-    assert "StringAppend(name, sText_S);" in body and "StringAppend(name, tail);" in body
+    assert "StringAppend(sScriptStringVars[stringVarIndex], sText_S);" in body       # Poké Bolas
+    assert "BufferBerryNamePlural(sScriptStringVars[stringVarIndex]);" in body       # Frutas X (src/item.c)
     names = _e2_item_names()
     assert len(names) > 300
     plural = []
@@ -786,14 +787,18 @@ def test_e3_termos_novos_registrados_no_glossario():
     created = {t["en"]: t["pt"] for t in data["termos"] if t.get("frente") == "E" and t["fonte"] == "criado"}
     expected = {"TRADING BOARD": ("Mural de Trocas", UR), "EGG TRADE": ("Troca de Ovo", UR),
                 "GREETINGS (menu da Sala União)": ("Saudação", UR), "POKé DUDE SHOW": ("Show do Cara Pokémon", TV),
-                "RIBBON": ("Fita", _c_entries("src/mystery_event_msg.c")),
                 "ROCKET GAME CORNER": ("Cassino Rocket", QL), "NAME RATER'S HOUSE": ("Casa do Avaliador", QL),
-                "POKéMON LEAGUE GATE": ("Portão Liga Pokémon", QL), "OAK RESEARCH LAB": ("Lab. do Carvalho", QL),
+                "POKéMON LEAGUE GATE": ("Portão da Liga", QL), "OAK RESEARCH LAB": ("Lab. do Carvalho", QL),
                 "PEWTER MUSEUM OF SCIENCE (Quest Log)": ("Museu de Ciências", QL),
-                "VOLUNTEER HOUSE (Quest Log)": ("Casa de Voluntários", QL)}
+                "VOLUNTEER HOUSE (Quest Log)": ("Casa de Voluntários", QL),
+                "BILL'S HOUSE": ("Casa do Bill", QL), "POKéMON FAN CLUB": ("Fã-clube Pokémon", QL)}
     for en, (pt, texts) in expected.items():
         assert created.get(en) == pt, en
         assert any(pt in t.replace(BS_N, " ").replace(BS_L, " ") for t in texts.values()), en
+    # RIBBON é termo da G3 (Easy Chat), registrado uma vez só; o Presente Misterioso usa o mesmo "Fita"
+    ribbon = [t for t in data["termos"] if t["en"] == "RIBBON"]
+    assert [t["pt"] for t in ribbon] == ["Fita"] and "mystery_event_msg.c" in ribbon[0]["obs"]
+    assert any("Fita" in t for t in _c_entries("src/mystery_event_msg.c").values())
 
 
 def test_e3_cara_pokemon_na_tv_educativa():
@@ -995,16 +1000,45 @@ def test_e3_union_room_rotulos_iguais_aos_menus():
 
 # --- plural montado em código (Pulo Pokémon) ----------------------------------------------------------------
 
-def test_e3_plural_do_premio_do_pulo_pokemon_em_portugues():
-    """PrintPrizeMessage trocava a última letra da fruta por "IES" ("Fruta CherIES"); agora o "s" entra
-    depois da 1ª palavra ("Frutas Cheri"), como o ScrCmd_bufferitemnameplural da E2."""
-    jump = (REPO_ROOT / "src" / "pokemon_jump.c").read_text(encoding="utf-8")
-    assert '_("IES")' not in jump and 'sPluralTxt[] = _("s");' in jump
-    body = jump[jump.index("static void PrintPrizeMessage(u16 itemId, u16 quantity)"):]
-    body = body[:body.index("\n}\n")]
-    assert "endi[sPokemonJumpGfx->itemName] = EOS;" not in body
-    assert "StringAppend(sPokemonJumpGfx->itemName, sPluralTxt);" in body
-    assert re.search(r"u8 itemName\[64\];", jump)
+def _c_body(rel: str, signature: str) -> str:
+    source = (REPO_ROOT / rel).read_text(encoding="utf-8")
+    body = source[source.index(signature):]
+    return body[:body.index("\n}\n")]
+
+
+def berry_name_plural(name: str) -> str:
+    """Espelho de BufferBerryNamePlural (src/item.c): o "s" entra antes do 1º espaço (ou no fim)."""
+    first, space, rest = name.partition(" ")
+    return first + "s" + space + rest
+
+
+def test_e3_plural_de_fruta_numa_funcao_so():
+    """O plural de fruta (era "IES" no Pulo Pokémon) fica em BufferBerryNamePlural (src/item.c), chamada pelo
+    prêmio do Pulo Pokémon e por bufferitemnameplural; o C confere com o espelho em Python."""
+    helper = _c_body("src/item.c", "void BufferBerryNamePlural(u8 *name)")
+    assert "while (*space != EOS && *space != CHAR_SPACE)" in helper
+    assert "*space = EOS;" in helper and helper.index("sText_PluralS") < helper.index("StringAppend(name, tail);")
+    assert 'sText_PluralS[] = _("s");' in (REPO_ROOT / "src" / "item.c").read_text(encoding="utf-8")
+    assert "void BufferBerryNamePlural(u8 *name);" in (REPO_ROOT / "include" / "item.h").read_text(encoding="utf-8")
+    jump = _c_body("src/pokemon_jump.c", "static void PrintPrizeMessage(u16 itemId, u16 quantity)")
+    scr = _c_body("src/scrcmd.c", "bool8 ScrCmd_bufferitemnameplural")
+    assert "BufferBerryNamePlural(sPokemonJumpGfx->itemName);" in jump and "tail" not in jump
+    assert "BufferBerryNamePlural(sScriptStringVars[stringVarIndex]);" in scr and "tail" not in scr
+    for rel in ("src/pokemon_jump.c", "src/scrcmd.c"):
+        assert '_("IES")' not in (REPO_ROOT / rel).read_text(encoding="utf-8")
+
+
+def test_e3_plural_de_toda_fruta_cabe(env):
+    """Toda fruta do items.json no plural: "Frutas X", até 19 letras (gStringVar) e < 64 (itemName do Pulo)."""
+    assert berry_name_plural("Fruta Cheri") == "Frutas Cheri"
+    assert berry_name_plural("Fruta Ocipêra") == "Frutas Ocipêra"
+    assert berry_name_plural("Enigma") == "Enigmas"
+    berries = [n for n in _e2_item_names() if n.startswith("Fruta ")]
+    assert len(berries) >= 40
+    for name in berries:
+        plural = berry_name_plural(name)
+        assert plural.startswith("Frutas ") and plural[len("Frutas "):] == name[len("Fruta "):]
+        assert ct.measure(plural, env).nbytes + 1 <= min(STRING_VAR_SIZES["2"], 64), plural
 
 
 # --- limpeza (Ruling 25) ---------------------------------------------------------------------------------------

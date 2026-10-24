@@ -86,7 +86,7 @@ ALIGNED(4) static const u8 sText_SearchingForParticipants[] = _("ため\nさん�
 ALIGNED(4) const u8 gText_UR_PlayerContactedYouForXAccept[] = _("{STR_VAR_2} chamou você para\n{STR_VAR_1}. Aceita?");
 ALIGNED(4) const u8 gText_UR_PlayerContactedYouShareX[] = _("{STR_VAR_2} chamou você.\nVai compartilhar {STR_VAR_1}?");
 ALIGNED(4) const u8 gText_UR_PlayerContactedYouAddToMembers[] = _("{STR_VAR_2} chamou você.\nIncluir entre os membros?");
-ALIGNED(4) const u8 gText_UR_AreTheseMembersOK[] = _("{STR_VAR_1}!\nEstes membros estão certos?");
+ALIGNED(4) const u8 gText_UR_AreTheseMembersOK[] = _("{STR_VAR_1}!\nConfirma estes membros?");
 ALIGNED(4) const u8 gText_UR_CancelModeWithTheseMembers[] = _("Cancelar o modo {STR_VAR_1}\ncom estes membros?");
 ALIGNED(4) const u8 gText_UR_AnOKWasSentToPlayer[] = _("Um “OK” foi enviado\npara {STR_VAR_1}.");
 
@@ -170,7 +170,7 @@ const u8 *const gTexts_UR_CommunicatingWait[] = {
 
 ALIGNED(4) static const u8 sText_HiDoSomethingMale[] = _("Opa! Tem alguma coisa que você\nqueira fazer?");
 ALIGNED(4) static const u8 sText_HiDoSomethingFemale[] = _("Olá!\nQuer fazer alguma coisa?");
-ALIGNED(4) static const u8 sText_HiDoSomethingAgainMale[] = _("{STR_VAR_1}: Opa, de novo por aqui!\nO que vai ser desta vez?");
+ALIGNED(4) static const u8 sText_HiDoSomethingAgainMale[] = _("{STR_VAR_1}: Opa, a gente se encontra\nde novo! O que vai ser desta vez?");
 ALIGNED(4) static const u8 sText_HiDoSomethingAgainFemale[] = _("{STR_VAR_1}: Ah! Olá, {PLAYER}!\nQuer fazer alguma coisa?");
 
 const u8 *const gTexts_UR_HiDoSomething[][GENDER_COUNT] = {
@@ -556,7 +556,7 @@ const u8 *const gTexts_UR_GladToMeetYou[GENDER_COUNT] = {
     sText_GladToMeetYouFemale
 };
 
-ALIGNED(4) const u8 gText_UR_FinishedCheckingPlayersTrainerCard[] = _("Viu todo o Cartão de Treinador\nde {DYNAMIC 1}.{PAUSE 60}");
+ALIGNED(4) const u8 gText_UR_FinishedCheckingPlayersTrainerCard[] = _("Terminou de ver o\nCartão de Treinador de {DYNAMIC 1}.{PAUSE 60}");
 ALIGNED(4) static const u8 sText_CanceledReadingCard[] = _("A leitura do Cartão foi cancelada.");
 
 static const struct MysteryGiftClientCmd sClientScript_DynamicError[] = {

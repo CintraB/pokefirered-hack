@@ -3334,29 +3334,14 @@ static bool32 ResetVineGfx(void)
     return TRUE;
 }
 
-static const u8 sPluralTxt[] = _("s");
-
-// PT-BR plural: "Fruta Cheri" -> "Frutas Cheri" (the "s" goes after the first word, as in
-// ScrCmd_bufferitemnameplural); the English code replaced the last letter with "IES".
+// PT-BR plural: "Fruta Cheri" -> "Frutas Cheri" (BufferBerryNamePlural, src/item.c); the English
+// code replaced the last letter with "IES".
 static void PrintPrizeMessage(u16 itemId, u16 quantity)
 {
     CopyItemName(itemId, sPokemonJumpGfx->itemName);
     ConvertIntToDecimalStringN(sPokemonJumpGfx->itemQuantityStr, quantity, STR_CONV_MODE_LEFT_ALIGN, 1);
-    if (itemId >= FIRST_BERRY_INDEX && itemId < LAST_BERRY_INDEX)
-    {
-        if (quantity > 1)
-        {
-            u8 *space = sPokemonJumpGfx->itemName;
-            u8 tail[ITEM_NAME_LENGTH + 1];
-
-            while (*space != EOS && *space != CHAR_SPACE)
-                space++;
-            StringCopy(tail, space);
-            *space = EOS;
-            StringAppend(sPokemonJumpGfx->itemName, sPluralTxt);
-            StringAppend(sPokemonJumpGfx->itemName, tail);
-        }
-    }
+    if (itemId >= FIRST_BERRY_INDEX && itemId < LAST_BERRY_INDEX && quantity > 1)
+        BufferBerryNamePlural(sPokemonJumpGfx->itemName);
     DynamicPlaceholderTextUtil_Reset();
     DynamicPlaceholderTextUtil_SetPlaceholderPtr(0, sPokemonJumpGfx->itemName);
     DynamicPlaceholderTextUtil_SetPlaceholderPtr(1, sPokemonJumpGfx->itemQuantityStr);
