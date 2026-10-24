@@ -30,7 +30,7 @@ Route6_Text_KeigoDefeat::
 
 Route6_Text_KeigoPostBattle::
     .string "Eu gosto de insetos, então vou voltar\n"
-    .string "para a Floresta Viridian.$"
+    .string "para a Floresta de Viridian.$"
 
 Route6_Text_JeffIntro::
     .string "Hã?\n"
@@ -71,5 +71,5 @@ Route6_Text_ElijahPostBattle::
 Route6_Text_UndergroundPathSign::
     .string "Via Subterrânea\n"
     .string "Cidade de Cerulean -\l"
-    .string "Cidade Vermilion$"
+    .string "Cidade de Vermilion$"
 

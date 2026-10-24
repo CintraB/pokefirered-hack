@@ -102,6 +102,6 @@ ViridianForest_Text_WeakenMonsBeforeCapture::
     .string "escapar!$"
 
 ViridianForest_Text_LeavingViridianForest::
-    .string "Saindo da Floresta Viridian\n"
+    .string "Saindo da Floresta de Viridian\n"
     .string "Cidade de Pewter à frente$"
 

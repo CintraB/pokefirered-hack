@@ -36,7 +36,7 @@ ViridianCity_Text_GoShoppingInPewterOccasionally::
     .string "Vez ou outra eu faço compras na\n"
     .string "Cidade de Pewter.\p"
     .string "Para ir, preciso pegar a trilha\n"
-    .string "sinuosa da Floresta Viridian.$"
+    .string "sinuosa da Floresta de Viridian.$"
 
 ViridianCity_Text_ThisIsPrivateProperty::
     .string "Eu proíbo terminantemente que passe\n"

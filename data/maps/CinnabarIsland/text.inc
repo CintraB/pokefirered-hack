@@ -73,6 +73,6 @@ CinnabarIsland_Text_IfYouHaveTriPassYouCanGoAgain::
     .string "novo.\p"
     .string "Se você tiver um Passe Triplo,\n"
     .string "sempre poderá pegar uma balsa para\l"
-    .string "lá, no Porto Vermilion.\p"
+    .string "lá, no Porto de Vermilion.\p"
     .string "Certo, obrigado pela companhia!$"
 

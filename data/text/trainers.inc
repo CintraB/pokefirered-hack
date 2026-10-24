@@ -16,7 +16,7 @@ VSSeeker_Text_TrainersNotReady::
 
 Route3_Text_ColtonRematchIntro::
 	.string "Ei!\n"
-	.string "Eu vi você na Floresta Viridian!$"
+	.string "Eu vi você na Floresta de Viridian!$"
 
 Route3_Text_BenRematchIntro::
 	.string "Oi! Eu adoro bermudas! São\n"

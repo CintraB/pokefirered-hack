@@ -39,7 +39,7 @@ Route16_Text_HideoPostBattle::
     .string "Vamos ficar por aqui sempre, mesmo\n"
     .string "que você não goste.\p"
     .string "Dá para ir da Cidade de Fuchsia até\n"
-    .string "a Cidade Vermilion contornando a\l"
+    .string "a Cidade de Vermilion contornando a\l"
     .string "costa.$"
 
 Route16_Text_CamronIntro::
