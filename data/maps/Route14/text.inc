@@ -95,7 +95,7 @@ Route14_Text_IsaacDefeat::
     .string "Você!?$"
 
 Route14_Text_IsaacPostBattle::
-    .string "Criar Pokémon é um saco, cara.$"
+    .string "Criar Pokémon é um saco, hein.$"
 
 Route14_Text_GeraldIntro::
     .string "Andamos por aqui por causa dos\n"
