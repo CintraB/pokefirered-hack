@@ -1,9 +1,10 @@
 """Hack 8: os 3 cães lendários em sequência.
 
-O cão do inicial começa a correr depois das Ilhas Sevii (como no original). Ao capturar o cão
-errante, o próximo cão não capturado (ordem fixa Entei -> Raikou -> Suicune, em ciclo, a partir do
-cão do inicial) passa a correr, até os 3. Sem campo novo no save: o "próximo" sai da Pokédex.
-Save antigo (cão do inicial já capturado): o mesmo teste roda ao CONTINUAR o jogo.
+O cão do inicial começa a correr depois das Ilhas Sevii (como no original). Quando o cão errante
+para (capturado, derrotado ou empate), passa a correr o próximo cão não capturado na Pokédex depois
+dele no ciclo fixo Entei -> Raikou -> Suicune, dando a volta e com o próprio cão por último: o
+derrotado só volta quando for o único que falta. Sem campo novo no save: o "próximo" sai da Pokédex.
+Save antigo (cão capturado ou derrotado, errante parado): o mesmo teste roda ao CONTINUAR o jogo.
 
 Testes estáticos (C lido como texto) + espelho Python da regra. O comportamento é conferido no
 emulador (relatório em .superpowers/sdd/hack8-caes/).
@@ -51,14 +52,28 @@ def _inicio_do_c() -> dict[str, str]:
     return out
 
 
-def proximo_cao(inicial: str, capturados: set[str]) -> str | None:
+def proximo_cao(atual: str, capturados: set[str]) -> str | None:
+    """Próximo não capturado depois de `atual` no ciclo, com o próprio `atual` por último."""
     ciclo = _ciclo_do_c()
-    start = ciclo.index(_inicio_do_c()[inicial])
+    start = ciclo.index(atual) + 1
     for i in range(len(ciclo)):
         s = ciclo[(start + i) % len(ciclo)]
         if s not in capturados:
             return s
     return None
+
+
+def _jogar(inicial: str, eventos: list[str]) -> list[str]:
+    """Simula: 'c' = captura o cão que corre, 'd' = derrota. Devolve os cães que correram."""
+    atual, capturados, correram = _inicio_do_c()[inicial], set(), []
+    for e in eventos:
+        correram.append(atual)
+        if e == "c":
+            capturados.add(atual)
+        atual = proximo_cao(atual, capturados)
+        if atual is None:
+            break
+    return correram
 
 
 def test_ciclo_fixo_dos_caes():
@@ -76,25 +91,31 @@ def test_sequencia_completa_por_inicial():
         "SQUIRTLE": ["SPECIES_RAIKOU", "SPECIES_SUICUNE", "SPECIES_ENTEI"],
     }
     for inicial, seq in esperado.items():
-        capturados: set[str] = set()
-        obtida = []
-        while (s := proximo_cao(inicial, capturados)) is not None:
-            obtida.append(s)
-            capturados.add(s)
-        assert obtida == seq, inicial
+        assert _jogar(inicial, ["c"] * 5) == seq, inicial
 
 
 def test_pula_cao_ja_capturado_por_troca():
-    # Bulbasaur, Entei capturado e Raikou já na Pokédex (troca): o próximo é o Suicune.
-    assert proximo_cao("BULBASAUR", {"SPECIES_ENTEI", "SPECIES_RAIKOU"}) == "SPECIES_SUICUNE"
-    assert proximo_cao("SQUIRTLE", set(CICLO)) is None
+    # Entei capturado e Raikou já na Pokédex (troca): o próximo é o Suicune.
+    assert proximo_cao("SPECIES_ENTEI", {"SPECIES_ENTEI", "SPECIES_RAIKOU"}) == "SPECIES_SUICUNE"
+    assert proximo_cao("SPECIES_RAIKOU", set(CICLO)) is None
+
+
+def test_derrotado_passa_a_vez_e_volta_por_ultimo():
+    # Bulbasaur: Entei derrotado -> Raikou; capturar Raikou e Suicune -> Entei volta; captura.
+    assert _jogar("BULBASAUR", ["d", "c", "c", "c"]) == [
+        "SPECIES_ENTEI", "SPECIES_RAIKOU", "SPECIES_SUICUNE", "SPECIES_ENTEI"]
+    # derrotar o último que falta: ele volta na hora
+    assert proximo_cao("SPECIES_SUICUNE", {"SPECIES_ENTEI", "SPECIES_RAIKOU"}) == "SPECIES_SUICUNE"
+    # Charmander: Suicune derrotado, Entei derrotado -> Raikou -> Suicune -> Entei
+    assert _jogar("CHARMANDER", ["d", "d", "c", "c", "c"]) == [
+        "SPECIES_SUICUNE", "SPECIES_ENTEI", "SPECIES_RAIKOU", "SPECIES_SUICUNE", "SPECIES_ENTEI"]
 
 
 # ---- o C implementa a mesma regra -------------------------------------------------------------
 
 def test_get_next_roamer_species_percorre_o_ciclo_pela_pokedex():
     body = _func(_read(ROAMER), "GetNextRoamerSpecies")
-    assert "GetStarterRoamerIndex()" in body
+    assert "GetRoamerCycleIndex(current) + 1" in body
     assert "sRoamerCycle[" in body
     assert "IsRoamerSpeciesCaught(" in body
     assert "SPECIES_NONE" in body
@@ -114,26 +135,26 @@ def test_errante_inicial_continua_sendo_o_cao_do_inicial():
     assert "ROAMER->active = TRUE;" in create
 
 
-def test_try_start_next_roamer_so_depois_de_capturar():
+def test_try_start_next_roamer_com_o_errante_parado():
     body = _func(_read(ROAMER), "TryStartNextRoamer")
-    # só com o errante parado, se ele era um cão e o cão está capturado na Pokédex
+    # só com o errante parado e se ele era um cão (capturado ou derrotado, tanto faz)
     assert "ROAMER->active" in body
     assert "IsRoamerDog(ROAMER->species)" in body
-    assert "IsRoamerSpeciesCaught(ROAMER->species)" in body
-    assert "GetNextRoamerSpecies()" in body
+    assert "IsRoamerSpeciesCaught(ROAMER->species)" not in body
+    assert "GetNextRoamerSpecies(ROAMER->species)" in body
     assert "ClearRoamerData()" in body
     assert "CreateRoamerMonOfSpecies(" in body
     assert "TryStartNextRoamer(void);" in _read("include/roamer.h")
 
 
-def test_gatilho_na_captura():
+def test_gatilho_quando_o_errante_para_na_batalha():
     src = _read("src/battle_main.c")
     body = _func(src, "ReturnFromBattleToOverworld")
     i_inativo = body.index("SetRoamerInactive();")
-    m = re.search(r"if \(gBattleOutcome == B_OUTCOME_CAUGHT\)\s*TryStartNextRoamer\(\);", body)
-    assert m, "TryStartNextRoamer não é chamado na captura"
-    assert m.start() > i_inativo
-    # derrotar o cão continua como no original: desativa e não chama o próximo
+    i_prox = body.index("TryStartNextRoamer();")
+    assert i_prox > i_inativo
+    # sem condição de resultado: captura, derrota e empate (os que param o errante) passam a vez
+    assert not re.search(r"if \(gBattleOutcome == B_OUTCOME_CAUGHT\)\s*TryStartNextRoamer", body)
     assert body.count("TryStartNextRoamer") == 1
 
 

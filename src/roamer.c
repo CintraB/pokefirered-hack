@@ -81,9 +81,10 @@ void ClearRoamerData(void)
     }
 }
 
-// Hack 8: the 3 legendary dogs in sequence. The starter's dog roams first (as in vanilla);
-// catching the roaming dog starts the next uncaught one, in this fixed cycle from the starter's
-// dog. No new save field: "next" comes from the Pokédex caught flags.
+// Hack 8: the 3 legendary dogs in sequence. The starter's dog roams first (as in vanilla).
+// When the roaming dog stops (caught, defeated or draw), the next dog not caught in the Pokédex
+// after it in this fixed cycle starts roaming, with the stopped dog itself last: a defeated dog
+// only comes back when it is the only one left. No new save field: it all comes from the Pokédex.
 static const u16 sRoamerCycle[] = { SPECIES_ENTEI, SPECIES_RAIKOU, SPECIES_SUICUNE };
 
 static u32 GetStarterRoamerIndex(void)
@@ -104,21 +105,28 @@ static bool32 IsRoamerSpeciesCaught(u16 species)
     return GetSetPokedexFlag(SpeciesToNationalPokedexNum(species), FLAG_GET_CAUGHT);
 }
 
-static bool32 IsRoamerDog(u16 species)
+// Index of `species` in sRoamerCycle, or ARRAY_COUNT(sRoamerCycle) if it is not a dog.
+static u32 GetRoamerCycleIndex(u16 species)
 {
     u32 i;
     for (i = 0; i < ARRAY_COUNT(sRoamerCycle); i++)
     {
         if (sRoamerCycle[i] == species)
-            return TRUE;
+            break;
     }
-    return FALSE;
+    return i;
 }
 
-// First dog not caught in the Pokédex, starting from the starter's dog; SPECIES_NONE if all caught.
-u16 GetNextRoamerSpecies(void)
+static bool32 IsRoamerDog(u16 species)
 {
-    u32 i, start = GetStarterRoamerIndex();
+    return GetRoamerCycleIndex(species) < ARRAY_COUNT(sRoamerCycle);
+}
+
+// First dog not caught in the Pokédex after `current` in the cycle (wrapping around, `current`
+// itself last); SPECIES_NONE if all are caught.
+u16 GetNextRoamerSpecies(u16 current)
+{
+    u32 i, start = GetRoamerCycleIndex(current) + 1;
     for (i = 0; i < ARRAY_COUNT(sRoamerCycle); i++)
     {
         u16 species = sRoamerCycle[(start + i) % ARRAY_COUNT(sRoamerCycle)];
@@ -153,16 +161,15 @@ void CreateInitialRoamerMon(void)
     CreateRoamerMonOfSpecies(sRoamerCycle[GetStarterRoamerIndex()]);
 }
 
-// Called right after catching the roamer and when continuing a saved game (old saves where the
-// starter's dog was caught before this version). Only acts when the roamer is stopped, was a dog
-// and that dog is caught in the Pokédex: a defeated dog stays gone, as in vanilla.
+// Called after a roamer battle and when continuing a saved game (old saves where the dog was
+// caught or defeated before this version). Only acts when the roamer is stopped and was a dog.
 void TryStartNextRoamer(void)
 {
     u16 next;
 
-    if (ROAMER->active || !IsRoamerDog(ROAMER->species) || !IsRoamerSpeciesCaught(ROAMER->species))
+    if (ROAMER->active || !IsRoamerDog(ROAMER->species))
         return;
-    next = GetNextRoamerSpecies();
+    next = GetNextRoamerSpecies(ROAMER->species);
     if (next == SPECIES_NONE)
         return;
     ClearRoamerData();

@@ -3939,9 +3939,8 @@ static void ReturnFromBattleToOverworld(void)
             if ((gBattleOutcome & B_OUTCOME_WON) || gBattleOutcome == B_OUTCOME_CAUGHT) // Bug: When Roar is used by roamer, gBattleOutcome is B_OUTCOME_PLAYER_TELEPORTED (5).
 #endif                                                                                  // & with B_OUTCOME_WON (1) will return TRUE and deactivates the roamer.
                 SetRoamerInactive();
-            // Hack 8: catching a legendary dog starts the next uncaught one
-            if (gBattleOutcome == B_OUTCOME_CAUGHT)
-                TryStartNextRoamer();
+            // Hack 8: if the dog stopped (caught, defeated or draw), the next dog starts roaming
+            TryStartNextRoamer();
         }
         m4aSongNumStop(SE_LOW_HEALTH);
         SetMainCallback2(gMain.savedCallback);

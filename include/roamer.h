@@ -14,7 +14,7 @@ void CreateRoamerMonInstance(void);
 u8 TryStartRoamerEncounter(void);
 void UpdateRoamerHPStatus(struct Pokemon *mon);
 void SetRoamerInactive(void);
-u16 GetNextRoamerSpecies(void);
+u16 GetNextRoamerSpecies(u16 current);
 void TryStartNextRoamer(void);
 void GetRoamerLocation(u8 *mapGroup, u8 *mapNum);
 u16 GetRoamerLocationMapSectionId(void);
