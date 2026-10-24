@@ -21,8 +21,8 @@ Regras (nome usado em `excecoes.json`):
               (`TRANSLATION_BASE`; `\\n`, `\\l` e `\\p` podem mudar);
   glossario   texto mudado em relação à base com variante proibida ou termo inglês do glossário
               (`esteira/glossario.json`);
-  ingles      palavras inglesas (modo `progresso`: um aviso com o total; `bloqueante`: falha
-              por texto; `desligado`);
+  ingles      palavras inglesas (`bloqueante`, o modo do pipeline: falha por texto; `progresso`:
+              um aviso com o total; `desligado`);
   buffer      texto copiado em tempo de execução para um buffer fixo (gStringVar1/2/3, mapName[25]...)
               maior que ele, sem piorar a base inglesa (esteira/buffers.py; só roda com a base).
 
@@ -33,7 +33,8 @@ Exceções (`exceptions["text"]`, em `test/excecoes.json`) congelam problemas pr
 uma é um objeto com:
   file, label, rule  - qual achado (arquivo relativo ao repo com `/`, rótulo, regra);
   fingerprint        - sha1 (16 primeiros hex) do texto cru do rótulo na hora do congelamento;
-  valor              - medida congelada (px, linhas ou letras), quando a regra mede algo.
+  valor              - medida congelada (px, linhas ou letras), quando a regra mede algo;
+  obs                - (opcional) por que o achado fica; não entra na comparação.
 A exceção só cala o achado enquanto o fingerprint (e o valor) batem com o texto atual: texto
 alterado volta a ser checado normalmente. Exceção cujo rótulo sumiu, cujo texto mudou ou cujo
 problema desapareceu vira `aviso` "exceção obsoleta", para a lista poder encolher.
@@ -62,8 +63,11 @@ PLAYER_NAME_CHARS = 7  # {PLAYER}/{RIVAL}: nome de até 7 letras
 # Commit da hack-switch antes da tradução (merge do Hack 7): a versão inglesa de cada texto.
 TRANSLATION_BASE = "3a8d861f513f0805d586532acd56b7e2065b89ff"   # 3a8d861f5
 
-# Regra `ingles`: "progresso" (aviso com o total) até a Task 11, que muda para "bloqueante".
-ENGLISH_MODE = "progresso"
+# Regra `ingles`: "bloqueante" desde a Task 11 (integração da tradução): cada texto com palavra
+# inglesa fora da lista de permissões reprova o build. Os textos que ficam em inglês de propósito
+# (mensagens de depuração) são exceções congeladas em `excecoes.json`, com fingerprint.
+# "progresso" (um aviso com o total) foi o modo das frentes da tradução, antes da integração.
+ENGLISH_MODE = "bloqueante"
 ENGLISH_MODES = ("progresso", "bloqueante", "desligado")
 
 # Nome de item: ITEM_NAME_LENGTH = 14 bytes com o terminador (include/constants/global.h:62);
@@ -1613,9 +1617,12 @@ def coverage_kind(rules: list[Rule | None]) -> str:
     return "sem medida"
 
 
-def compute_baseline(repo: str, base: str | None = TRANSLATION_BASE) -> list[dict]:
-    """Exceções (ordenadas) que congelam todos os problemas de texto atuais (sem o inglês residual)."""
-    scan = _scan(Path(repo), base)
+def compute_baseline(repo: str, base: str | None = TRANSLATION_BASE, english: str = ENGLISH_MODE) -> list[dict]:
+    """Exceções (ordenadas) que congelam todos os problemas de texto atuais; o inglês residual entra
+    só com `english="bloqueante"` (o modo do pipeline), o único em que a regra `ingles` falha por texto."""
+    if english not in ENGLISH_MODES:
+        raise ValueError(f"modo de inglês desconhecido: {english}")
+    scan = _scan(Path(repo), base, english)
     if scan.syntax:
         raise ValueError(f"linhas .string não reconhecidas: {[r.detail for r in scan.syntax]}")
     baseline = []

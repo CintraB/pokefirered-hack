@@ -60,7 +60,7 @@ Os relatórios são arquivos normais do Windows: abra o `relatorio.html` com dup
    - **textos do jogo**: caractere fora do charmap, falta de terminador, linha larga demais
      para a caixa, linhas demais, nome longo demais para o buffer, sintaxe; e, para a tradução,
      códigos de controle diferentes do original, termo fora do glossário, texto copiado para um
-     buffer fixo menor que ele (regra `buffer`) e o inglês que sobrou (aviso de progresso);
+     buffer fixo menor que ele (regra `buffer`) e texto com palavra inglesa (regra `ingles`);
    - **3 roteiros no emulador**: `abertura` (nome, inicial, batalha do rival), `rota1`
      (passos, Rota 1, encomenda do Oak) e `captura` (loja, captura com apelido, Poção, Centro,
      salvar, reiniciar e continuar).
@@ -742,9 +742,12 @@ inglês que entrar depois na `hack-switch` e for trazida para a tradução apare
   "Pallet Town"). O glossário de máquina é `test/esteira/glossario.json`, gerado do glossário
   aprovado (`python3 -m esteira.glossario gerar <md>`); termo novo de uma frente entra lá com
   fonte "criado". `python3 -m esteira.glossario checar "texto"` mostra os achados de um texto.
-- `ingles`: em **modo progresso** (`ENGLISH_MODE`) é um aviso só, com o total de palavras
-  inglesas e os maiores arquivos; nunca reprova. A Task 11 muda para `bloqueante` (falha por
-  texto). Lista de permissões: nomes de espécie e de Treinador, créditos (`gCreditsString_*`),
+- `ingles`: **bloqueante** (`ENGLISH_MODE`, desde a Task 11 da tradução): cada texto com
+  palavra inglesa reprova, com as palavras achadas. Texto que fica em inglês de propósito
+  (as mensagens de depuração `sDmaOverErrorMsg` e `sText_TaskOver`) é exceção congelada em
+  `excecoes.json` (regra `ingles`, com fingerprint e `obs`); se o texto mudar, volta a
+  reprovar e a exceção vira "obsoleta". O modo `progresso` (um aviso só, com o total; usado
+  pelas frentes da tradução) continua disponível em `check_text(..., english=...)`. Lista de permissões: nomes de espécie e de Treinador, créditos (`gCreditsString_*`),
   japonês (`gJPText_*`), teclados (`src/keyboard_text.c`). Por arquivo:
   `python3 -m esteira.check_text --ingles [arquivo...]` (em `test/`).
 - `largura` no **pior caso** dos placeholders de conteúdo variável (`VAR_SIZES` em

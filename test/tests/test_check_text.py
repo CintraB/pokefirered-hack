@@ -359,7 +359,7 @@ def test_missing_sources_are_not_an_error(repo):
     assert run(repo) == []
 
 
-# ---- inglês residual (modo progresso) ------------------------------------------------------
+# ---- inglês residual -----------------------------------------------------------------------
 
 def english(results):
     return [r for r in results if r.name == "texto/ingles"]
@@ -367,7 +367,7 @@ def english(results):
 
 def test_english_progress_is_one_aviso_with_the_total(repo):
     inc(repo, 'Text_A::\n\t.string "You are the best$"\n\nText_B::\n\t.string "Where is your bike?$"\n')
-    results = run(repo)
+    results = run(repo, english="progresso")
     assert failures(results) == []
     (aviso,) = english(results)
     assert aviso.status == "aviso"
@@ -453,8 +453,82 @@ def test_english_check_can_be_turned_off(repo):
     assert run(repo, english="desligado") == []
 
 
-def test_english_mode_of_the_pipeline_is_progress():
-    assert ENGLISH_MODE == "progresso"
+def test_english_mode_of_the_pipeline_is_blocking():
+    """Task 11 da tradução: o pipeline (`esteira/__main__._text_checks`, que chama check_text sem `english`)
+    reprova texto com inglês."""
+    assert ENGLISH_MODE == "bloqueante"
+    import inspect
+    from esteira import __main__ as cli
+    assert "check_text(str(REPO_ROOT), exceptions)" in inspect.getsource(cli._text_checks)
+
+
+def test_new_english_in_a_translated_text_fails_the_build(repo):
+    """Inglês que volta (ou sobra) num texto já traduzido é falha no modo padrão do pipeline, e só nesse texto."""
+    inc(repo, 'Text_A::\n\t.string "Você ganhou a Insígnia!$"\n\n'
+              'Text_B::\n\t.string "Você ganhou the badge!$"\n')
+    results = run(repo)
+    (failed,) = failures(results)
+    assert failed.name == "texto/ingles" and failed.detail.startswith("data/text/pc.inc: Text_B: ")
+    assert "the" in failed.detail
+    assert [r for r in results if r.status != "falha"] == []      # nada de aviso de progresso
+
+
+# exceções congeladas do inglês no repo real: as mensagens de depuração (test_traducao_e.E3_DEBUG_ENGLISH)
+DEBUG_ENGLISH = {("src/sprite.c", "sDmaOverErrorMsg"), ("src/battle_anim_status_effects.c", "sText_TaskOver")}
+
+
+def _real_english_exceptions():
+    exceptions = json.loads((REPO_ROOT / "test" / "excecoes.json").read_text(encoding="utf-8"))
+    return [e for e in exceptions["text"] if e["rule"] == "ingles"]
+
+
+def test_english_exceptions_are_only_the_debug_messages():
+    frozen = _real_english_exceptions()
+    assert {(e["file"], e["label"]) for e in frozen} == DEBUG_ENGLISH
+    assert all(len(e["fingerprint"]) == 16 and "valor" not in e and e.get("obs") for e in frozen)
+
+
+@pytest.fixture
+def debug_repo(repo):
+    """Fixture com os dois .c reais das mensagens de depuração (o fingerprint congelado bate)."""
+    for rel, _label in DEBUG_ENGLISH:
+        put(repo, rel, (REPO_ROOT / rel).read_text(encoding="utf-8"))
+    return repo
+
+
+def test_debug_english_exceptions_silence_only_those_labels(debug_repo):
+    exceptions = {"text": _real_english_exceptions()}
+    assert {(r.detail.split(": ")[0], r.detail.split(": ")[1]) for r in failures(run(debug_repo))} == DEBUG_ENGLISH
+    assert run(debug_repo, exceptions) == []
+    # outro texto em inglês no mesmo arquivo (ou em outro) continua reprovando
+    with open(debug_repo / "src" / "sprite.c", "a", encoding="utf-8") as f:
+        f.write('\nstatic const u8 sNewMsg[] = _("Press the button");\n')
+    inc(debug_repo, 'Text_A::\n\t.string "Where is your bike?$"\n')
+    failed = failures(run(debug_repo, exceptions))
+    assert sorted(r.detail.split(": ")[1] for r in failed) == ["Text_A", "sNewMsg"]
+    assert all(r.name == "texto/ingles" for r in failed)
+
+
+def test_debug_english_exception_goes_obsolete_when_the_text_changes(debug_repo):
+    rel = debug_repo / "src" / "battle_anim_status_effects.c"
+    source = rel.read_text(encoding="utf-8")
+    assert '_("TASK OVER\\n' in source
+    rel.write_text(source.replace('_("TASK OVER\\n', '_("TASK IS OVER\\n'), encoding="utf-8")
+    results = run(debug_repo, {"text": _real_english_exceptions()})
+    (failed,) = failures(results)
+    assert failed.name == "texto/ingles" and "sText_TaskOver" in failed.detail
+    (obsolete,) = [r for r in results if r.name == "texto/obsoleta"]
+    assert obsolete.status == "aviso" and "sText_TaskOver" in obsolete.detail and "o texto mudou" in obsolete.detail
+
+
+def test_compute_baseline_freezes_english_only_in_blocking_mode(repo):
+    inc(repo, 'Text_A::\n\t.string "You are the best$"\n')
+    (exc,) = compute_baseline(str(repo))
+    assert exc["rule"] == "ingles" and exc["label"] == "Text_A"
+    assert run(repo, {"text": [exc]}) == []
+    assert compute_baseline(str(repo), english="progresso") == []
+    with pytest.raises(ValueError):
+        compute_baseline(str(repo), english="talvez")
 
 
 # ---- fontes novas --------------------------------------------------------------------------
@@ -633,7 +707,7 @@ def test_action_prompt_names_the_players_mon_without_prefix(repo):
     put(repo, "src/battle_message.c", 'static const u8 sText_WildPkmnPrefix[] = _("Wild ");\n'
         'const u8 gText_WhatWillPkmnDo[] = _("What will\\n{B_ACTIVE_NAME_WITH_PREFIX} AAAAAAA");\n'   # 60 + 48
         'const u8 gText_WhatWillBad[] = _("What will\\n{B_ACTIVE_NAME_WITH_PREFIX} AAAAAAAi");\n')    # 112
-    (failed,) = failures(run(repo))
+    (failed,) = failures(run(repo, english="desligado"))    # o texto de largura é o inglês original
     assert "gText_WhatWillBad" in failed.detail and "limite 110" in failed.detail
 
 
@@ -914,12 +988,14 @@ def test_real_repo_has_no_unfrozen_failures():
     exceptions = json.loads((REPO_ROOT / "test" / "excecoes.json").read_text(encoding="utf-8"))
     # os achados conhecidos (esteira/buffers.KNOWN_OVERFLOWS, check_text.KNOWN_FINDINGS) são aviso de
     # propósito, como uma exceção congelada que ainda vale; o obsoleto ("não ocorre mais") continua contando
-    results = [r for r in check_text(str(REPO_ROOT), exceptions) if r.name != "texto/ingles"
-               and not (r.status == "aviso" and "(conhecido:" in r.detail)]
+    # o inglês entra (modo bloqueante): as mensagens de depuração congeladas calam, nada mais sobra
+    results = [r for r in check_text(str(REPO_ROOT), exceptions)
+               if not (r.status == "aviso" and "(conhecido:" in r.detail)]
     assert results == [], [r.detail for r in results[:5]]  # nem falha nova, nem exceção obsoleta
 
 
-def test_real_repo_english_is_only_a_progress_aviso():
-    exceptions = json.loads((REPO_ROOT / "test" / "excecoes.json").read_text(encoding="utf-8"))
-    (aviso,) = [r for r in check_text(str(REPO_ROOT), exceptions) if r.name == "texto/ingles"]
-    assert aviso.status == "aviso" and aviso.detail.startswith("modo progresso:")
+def test_real_repo_english_without_exceptions_is_only_the_debug_messages():
+    """Sem as exceções, a regra `ingles` acusa só as duas mensagens de depuração (e é falha, não aviso)."""
+    english_results = [r for r in check_text(str(REPO_ROOT), {"text": []}) if r.name == "texto/ingles"]
+    assert all(r.status == "falha" for r in english_results)
+    assert {tuple(r.detail.split(": ")[:2]) for r in english_results} == DEBUG_ENGLISH
