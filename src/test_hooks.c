@@ -32,6 +32,7 @@
 #include "wild_encounter.h"
 extern u32 TestSpeciesOnMap(u8 mapGroup, u8 mapNum, u16 species);
 extern u32 TestLandSpecies(u8 mapGroup, u8 mapNum, u8 slot, u8 period);
+extern u32 TestRollWild(u8 area, u8 rod, bool8 startBattle); // Hack 8
 // Hack 7 — frente C
 #include "pokemon_storage_system.h"
 
@@ -663,6 +664,11 @@ void TestHooks_Run(void)
         break;
 
     // Hack 7 front B: end
+    // Hack 8: start
+    case TEST_CMD_ROLL_WILD:
+        result = TestRollWild(gTestMailbox.arg0 & 0xFF, (gTestMailbox.arg0 >> 8) & 0xFF, gTestMailbox.arg1 == 1);
+        break;
+    // Hack 8: end
     // Hack 7 front C: start
     case TEST_CMD_RARE_EGG_ROLL:    result = GetRandomRareEggSpecies(); break;
     case TEST_CMD_SET_KANTO_OWNED:  result = SetKantoOwned(gTestMailbox.arg0); break;

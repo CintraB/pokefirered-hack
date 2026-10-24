@@ -83,3 +83,4 @@ test/fixtures/*.tmp
 .superpowers/
 docs/superpowers/
 src/data/wild_encounters_time.h
+src/data/wild_encounters_leafgreen.h

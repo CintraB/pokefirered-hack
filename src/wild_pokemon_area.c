@@ -282,6 +282,8 @@ static bool32 IsSpeciesOnMap(const struct WildPokemonHeader * data, s32 species)
     if (IsSpeciesInEncounterTable(data->landMonsInfo, species, LAND_WILD_COUNT)
      || IsSpeciesInTimeTables(data, species)) // Hack 7
         return TRUE;
+    if (IsLeafGreenSlotSpeciesOnMap(data, species)) // Hack 8: LeafGreen half of shared slots
+        return TRUE;
     if (IsSpeciesInEncounterTable(data->waterMonsInfo, species, WATER_WILD_COUNT))
         return TRUE;
 // When searching the fishing encounters, this incorrectly uses the size of the land encounters.

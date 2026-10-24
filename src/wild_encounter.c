@@ -48,6 +48,69 @@ static void AddToWildEncounterRateBuff(u8 encouterRate);
 
 #include "data/wild_encounters.h"
 #include "data/wild_encounters_time.h"
+#include "data/wild_encounters_leafgreen.h"
+
+// Hack 8: LeafGreen exclusives where LeafGreen has them. If the slot's LeafGreen twin is a
+// LeafGreen exclusive (gWildLeafGreenSwaps, generated from wild_encounters.json), the slot rolls
+// 50/50 between the FireRed line and the LeafGreen line (species and levels of the LeafGreen
+// slot). Other slots return their FireRed line without touching the RNG.
+static const struct WildPokemon *GetLeafGreenSlotMon(const struct WildPokemonInfo *info, u8 slot)
+{
+#ifdef FIRERED
+    u32 i;
+
+    for (i = 0; i < gWildLeafGreenSwapsCount; i++)
+    {
+        if (gWildLeafGreenSwaps[i].info == info && gWildLeafGreenSwaps[i].slot == slot)
+        {
+            if (Random() % 2)
+                return &gWildLeafGreenSwaps[i].mon;
+            break;
+        }
+    }
+#endif
+    return &info->wildPokemon[slot];
+}
+
+// Hack 8: does some period keep the FireRed species of this land slot? (no time table = yes)
+// Where the time table always replaces it, the LeafGreen half of the slot never shows up.
+static bool8 TimeTableKeepsLandSlot(const struct WildPokemonHeader *header, u8 slot)
+{
+    u32 i, p;
+
+    for (i = 0; gWildMonTimeTables[i].mapGroup != MAP_GROUP(MAP_UNDEFINED)
+             || gWildMonTimeTables[i].mapNum != MAP_NUM(MAP_UNDEFINED); i++)
+    {
+        if (gWildMonTimeTables[i].mapGroup != header->mapGroup || gWildMonTimeTables[i].mapNum != header->mapNum)
+            continue;
+        for (p = 0; p < 3; p++)
+            if (gWildMonTimeTables[i].species[p][slot] == header->landMonsInfo->wildPokemon[slot].species)
+                return TRUE;
+        return FALSE;
+    }
+    return TRUE;
+}
+
+// Hack 8: Pokédex AREA, the species a header gets from the LeafGreen half of a shared slot
+bool8 IsLeafGreenSlotSpeciesOnMap(const struct WildPokemonHeader *header, u16 species)
+{
+#ifdef FIRERED
+    u32 i;
+
+    for (i = 0; i < gWildLeafGreenSwapsCount; i++)
+    {
+        const struct WildPokemonInfo *info = gWildLeafGreenSwaps[i].info;
+
+        if (gWildLeafGreenSwaps[i].mon.species != species)
+            continue;
+        if (info == header->landMonsInfo && TimeTableKeepsLandSlot(header, gWildLeafGreenSwaps[i].slot))
+            return TRUE;
+        if (info == header->waterMonsInfo || info == header->rockSmashMonsInfo || info == header->fishingMonsInfo)
+            return TRUE;
+    }
+#endif
+    return FALSE;
+}
 
 // Hack 7 — frente B: land species by time of day (HeartGold tables); level and rate stay FRLG's
 u16 GetTimeOfDayLandSpecies(u8 mapGroup, u8 mapNum, u8 slot, u8 period, u16 fallback)
@@ -307,6 +370,7 @@ static bool8 TryGenerateWildMon(const struct WildPokemonInfo * info, u8 area, u8
     u8 slot = 0;
     u8 level;
     u16 species;
+    const struct WildPokemon *mon;
     switch (area)
     {
     case WILD_AREA_LAND:
@@ -319,14 +383,28 @@ static bool8 TryGenerateWildMon(const struct WildPokemonInfo * info, u8 area, u8
         slot = ChooseWildMonIndex_WaterRock();
         break;
     }
-    level = ChooseWildMonLevel(&info->wildPokemon[slot]);
+    mon = &info->wildPokemon[slot];
+    level = ChooseWildMonLevel(mon);
+    species = mon->species;
+    if (area == WILD_AREA_LAND)
+        species = GetTimeOfDayLandSpecies(gSaveBlock1Ptr->location.mapGroup, gSaveBlock1Ptr->location.mapNum, slot, DayNight_GetPeriod(), species);
+    // Hack 8: time of day first; the LeafGreen half of the slot only when the time table kept
+    // the FireRed species. The LeafGreen half rerolls the level on its own line, and Repel
+    // checks the final level (slots without a LeafGreen twin keep the FRLG RNG order).
+    if (species == mon->species)
+    {
+        const struct WildPokemon *lg = GetLeafGreenSlotMon(info, slot);
+
+        if (lg != mon)
+        {
+            species = lg->species;
+            level = ChooseWildMonLevel(lg);
+        }
+    }
     if (flags == WILD_CHECK_REPEL && !IsWildLevelAllowedByRepel(level))
     {
         return FALSE;
     }
-    species = info->wildPokemon[slot].species;
-    if (area == WILD_AREA_LAND)
-        species = GetTimeOfDayLandSpecies(gSaveBlock1Ptr->location.mapGroup, gSaveBlock1Ptr->location.mapNum, slot, DayNight_GetPeriod(), species);
     GenerateWildMon(species, level, slot);
     return TRUE;
 }
@@ -334,9 +412,10 @@ static bool8 TryGenerateWildMon(const struct WildPokemonInfo * info, u8 area, u8
 static u16 GenerateFishingEncounter(const struct WildPokemonInfo * info, u8 rod)
 {
     u8 slot = ChooseWildMonIndex_Fishing(rod);
-    u8 level = ChooseWildMonLevel(&info->wildPokemon[slot]);
-    GenerateWildMon(info->wildPokemon[slot].species, level, slot);
-    return info->wildPokemon[slot].species;
+    const struct WildPokemon *mon = GetLeafGreenSlotMon(info, slot); // Hack 8
+    u8 level = ChooseWildMonLevel(mon);
+    GenerateWildMon(mon->species, level, slot);
+    return mon->species;
 }
 
 static bool8 DoWildEncounterRateDiceRoll(u16 encounterRate)
@@ -845,5 +924,45 @@ u32 TestLandSpecies(u8 mapGroup, u8 mapNum, u8 slot, u8 period)
             return GetTimeOfDayLandSpecies(mapGroup, mapNum, slot, period, gWildMonHeaders[i].landMonsInfo->wildPokemon[slot].species);
     }
     return 0xFFFFFFFF;
+}
+#endif
+
+// Hack 8: test hook, one wild mon of the current map through the real generator (time of day
+// and LeafGreen slots included), optionally starting the battle like a real encounter.
+// result = species | level << 16 of gEnemyParty[0] (0xFFFFFFFF = no table of that kind here)
+#if TESTBUILD
+u32 TestRollWild(u8 area, u8 rod, bool8 startBattle)
+{
+    u16 headerId = GetCurrentMapWildMonHeaderId();
+    const struct WildPokemonInfo *info;
+
+    if (headerId == HEADER_NONE)
+        return 0xFFFFFFFF;
+    switch (area)
+    {
+    case WILD_AREA_LAND:
+        info = gWildMonHeaders[headerId].landMonsInfo;
+        break;
+    case WILD_AREA_WATER:
+        info = gWildMonHeaders[headerId].waterMonsInfo;
+        break;
+    case WILD_AREA_ROCKS:
+        info = gWildMonHeaders[headerId].rockSmashMonsInfo;
+        break;
+    case WILD_AREA_FISHING:
+        info = gWildMonHeaders[headerId].fishingMonsInfo;
+        break;
+    default:
+        return 0xFFFFFFFF;
+    }
+    if (info == NULL || (area == WILD_AREA_FISHING && rod > SUPER_ROD))
+        return 0xFFFFFFFF;
+    if (area == WILD_AREA_FISHING)
+        GenerateFishingEncounter(info, rod);
+    else
+        TryGenerateWildMon(info, area, 0);
+    if (startBattle)
+        StartWildBattle();
+    return GetMonData(&gEnemyParty[0], MON_DATA_SPECIES) | (GetMonData(&gEnemyParty[0], MON_DATA_LEVEL) << 16);
 }
 #endif
