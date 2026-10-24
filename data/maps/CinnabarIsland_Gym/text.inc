@@ -178,7 +178,7 @@ CinnabarIsland_Gym_Text_QuizQuestion3::
 
 CinnabarIsland_Gym_Text_QuizQuestion4::
     .string "Golpes elétricos são eficazes\n"
-    .string "contra Pokémon do tipo Terra?$"
+    .string "contra Pokémon do tipo Terrestre?$"
 
 CinnabarIsland_Gym_Text_QuizQuestion5::
     .string "Pokémon da mesma espécie e do\n"

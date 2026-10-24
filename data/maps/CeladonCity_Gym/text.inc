@@ -72,7 +72,8 @@ CeladonCity_Gym_Text_BridgetPostBattle::
     .string "Pokémon do tipo Planta são fortes\n"
     .string "contra o tipo Água.\p"
     .string "Eles também levam vantagem sobre\n"
-    .string "os Pokémon dos tipos Pedra e Terra.$"
+    .string "os Pokémon dos tipos Pedra e\l"
+    .string "Terrestre.$"
 
 CeladonCity_Gym_Text_TinaIntro::
     .string "…Não foi você que estava\n"
