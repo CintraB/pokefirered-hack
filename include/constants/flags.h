@@ -799,8 +799,8 @@
 #define FLAG_MEW_FLEW_AWAY       0x302
 #define FLAG_HIDE_CELEBI         0x303
 #define FLAG_CELEBI_FLEW_AWAY    0x304
-#define FLAG_0x305               0x305
-#define FLAG_0x306               0x306
+#define FLAG_HIDE_JIRACHI        0x305
+#define FLAG_JIRACHI_FLEW_AWAY   0x306
 #define FLAG_0x307               0x307
 #define FLAG_0x308               0x308
 #define FLAG_0x309               0x309

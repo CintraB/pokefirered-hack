@@ -49,3 +49,14 @@ SevenIsland_TanobyRuins_Text_CliffordPostBattle::
     .string "conta própria…\p"
     .string "Sim, você é de fato uma pessoa\n"
     .string "extraordinária, realmente.$"
+
+SevenIsland_TanobyRuins_Text_StarGlintWakes::
+    .string "O brilho de uma estrela cintila\n"
+    .string "diante de você!$"
+
+SevenIsland_TanobyRuins_Text_Inscription::
+    .string "Há uma inscrição gasta na pedra.\p"
+    .string "Em noites claras, uma estrela\n"
+    .string "desperta sobre as ruínas.\p"
+    .string "Dizem que ela só se mostra a quem\n"
+    .string "capturou uma estrela caída do céu.$"

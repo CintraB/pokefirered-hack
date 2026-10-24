@@ -1752,3 +1752,9 @@ static const struct SpriteFrameImage sPicTable_Mom[] = {
     overworld_frame(gObjectEventPic_Mom, 2, 4, 2),
     overworld_frame(gObjectEventPic_Mom, 2, 4, 2),
 };
+
+// Hack 8: Jirachi's star glint reuses the field effect's small sparkle art
+static const struct SpriteFrameImage sPicTable_JirachiStar[] = {
+    overworld_frame(gFieldEffectObjectPic_SmallSparkle, 2, 2, 0),
+    overworld_frame(gFieldEffectObjectPic_SmallSparkle, 2, 2, 1),
+};

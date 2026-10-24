@@ -122,7 +122,9 @@ GRUPOS = {
 
 ARQUIVOS = sorted({f for files in GRUPOS.values() for f in files})
 # rótulos que os hacks acrescentaram depois da base da tradução (não são rótulos renomeados)
-ROTULOS_DOS_HACKS = {"ThreeIsland_BerryForest_Text_ForestWakesWithSun"}      # Hack 8: pista do Celebi
+ROTULOS_DOS_HACKS = {"ThreeIsland_BerryForest_Text_ForestWakesWithSun",      # Hack 8: pista do Celebi
+                     "SevenIsland_TanobyRuins_Text_StarGlintWakes",      # Hack 8: brilho do Jirachi
+                     "SevenIsland_TanobyRuins_Text_Inscription"}      # Hack 8: pista do Jirachi
 
 
 @pytest.fixture(scope="module")
