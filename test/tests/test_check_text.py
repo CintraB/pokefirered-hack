@@ -411,6 +411,21 @@ def test_to_in_all_caps_english_still_counts(repo):
     assert counts["data/text/pc.inc"].texts == 4        # E (frase PT) e Help_Text_OT (título) ficam de fora
 
 
+def test_english_word_glued_to_control_codes_counts(repo):
+    """Qualquer código de controle separa palavras: "{CLEAR 26}the{CLEAR 6}you{PLAYER}with" são três."""
+    inc(repo, 'Text_A::\n\t.string "{CLEAR 26}the{CLEAR 6}you{PLAYER}with{COLOR RED}$"\n')
+    assert english_report(str(repo))["data/text/pc.inc"].words == 3
+
+
+def test_english_label_of_the_easy_chat_keyboard_counts(repo):
+    """Achado da I2: "others" do teclado A-Z do Easy Chat (keyboard_text.c) escapava da checagem."""
+    put(repo, "src/keyboard_text.c", 'const u8 gText_EasyChatKeyboard_ABCDEFothers[] = '
+        '_("{CLEAR 11}A{CLEAR 6}B{CLEAR 6}C{CLEAR 26}D{CLEAR 6}E{CLEAR 6}F{CLEAR 26}others");\n'
+        'const u8 gText_UnionRoomChatKeyboard_ABCDE[] = _("ABCDE");\n')
+    counts = english_report(str(repo))
+    assert (counts["src/keyboard_text.c"].words, counts["src/keyboard_text.c"].texts) == (1, 1)
+
+
 def test_english_allowlist(repo):
     put(repo, "src/data/text/species_names.h", 'const u8 gSpeciesNames[][11] = {\n'
         '    [SPECIES_X] = _("WHAT"),\n};\n')
@@ -418,7 +433,6 @@ def test_english_allowlist(repo):
         '    [TRAINER_A] = {\n        .trainerName = _("WILL"),\n    },\n};\n')
     put(repo, "src/strings.c", 'const u8 gCreditsString_Director[] = _("The director and the team");\n'
         'const u8 gJPText_X[] = _("あいう");\n')
-    put(repo, "src/keyboard_text.c", 'const u8 gText_Keys[] = _("what the you");\n')
     inc(repo, 'Text_A::\n\t.string "WILL é o mais forte. WHAT apareceu!$"\n')
     assert english(run(repo)) == []
 

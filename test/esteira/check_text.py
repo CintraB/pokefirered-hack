@@ -1224,7 +1224,7 @@ what are were was is isn't aren't wasn't weren't there their they they're them f
 would wouldn't can can't cannot could couldn't should shouldn't not don't doesn't didn't does did
 it it's its i'm i've i'll i'd we we're we've our ours us he he's she she's his her him hers who
 whom whose which why how when where here now then than been being be because about after before
-again just only also too very really any every each other another all but if or so get gets
+again just only also too very really any every each other others another all but if or so get gets
 got getting give gives gave given take takes took make makes made let let's look looks see sees
 saw seen know knows knew think thought want wants wanted need needs tell told say said says go
 goes going went gone back still yet way thing things something anything nothing everything
@@ -1234,7 +1234,7 @@ of to in on at an by my up out off with your yourself myself
 """.split())
 _WORD = re.compile(r"[A-Za-zÀ-ÿ]+(?:'[A-Za-z]+)?")
 # Lista de permissões: arquivos e rótulos que ficam em inglês/japonês de propósito
-_ENGLISH_SKIP_FILES = ("src/keyboard_text.c", "src/data/text/species_names.h")
+_ENGLISH_SKIP_FILES = ("src/data/text/species_names.h",)
 _ENGLISH_SKIP_LABELS = ("gCreditsString_*", "gJPText_*", "*.trainerName")
 # Título da ajuda que é só a sigla "TO" (Treinador Original), sem letra minúscula
 _TO_TITLE_LABELS = frozenset({"Help_Text_OT"})

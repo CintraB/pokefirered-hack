@@ -36,7 +36,7 @@ EC_WORD_GROUPS = ("trainer", "status", "battle", "greetings", "people", "voices"
                   "conditions", "actions", "lifestyle", "hobbies", "time", "misc", "adjectives", "events",
                   "trendy_saying")
 G3_FILES = tuple(f"src/data/easy_chat/easy_chat_group_{g}.h" for g in EC_WORD_GROUPS) + (
-    "src/trainer_tower_sets.c", "data/mystery_event_msg.s")
+    "src/trainer_tower_sets.c", "data/mystery_event_msg.s", "src/keyboard_text.c")
 FILES = G1_FILES + G2_FILES + G3_FILES
 
 # Descrição que fica como estava: marcador vazio do jogo e texto que o Hack 7 já pôs em PT-BR
@@ -810,6 +810,17 @@ def test_listas_por_letra_tem_as_mesmas_palavras_do_original():
     rel = f"{EC_DIR}/easy_chat_words_by_letter.h"
     now, before = Counter(_letter_tokens(_read(rel))), Counter(_letter_tokens(_need_base(rel)))
     assert (now - before, before - now) == (Counter(), Counter())
+
+
+def test_rotulo_outros_do_teclado_a_z_cabe_no_cursor(env):
+    """Achado da I2: "others" em inglês no teclado A-Z. O cursor do botão (MoveCursor_Alpha, x=157,
+    RECTCURSOR_ANIM_ON_OTHERS) foi feito para a largura do inglês: o rótulo não pode passar dela."""
+    label = "gText_EasyChatKeyboard_ABCDEFothers"
+    pick = lambda src: re.search(rf'{label}\[\] = _\("([^"]*)"\)', src).group(1)
+    now, before = pick(_read("src/keyboard_text.c")), pick(_need_base("src/keyboard_text.c"))
+    assert now.endswith("{CLEAR 26}Outros"), now                       # gText_Others / gPCText_Etcetera
+    assert now.rsplit("}", 1)[0] == before.rsplit("}", 1)[0]          # as letras e os {CLEAR n} não mudam
+    assert ct.measure(now, env).widest <= ct.measure(before, env).widest
 
 
 def test_habilidades_e_tipos_do_easy_chat_usam_os_nomes_do_jogo():
