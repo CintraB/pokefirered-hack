@@ -13,3 +13,11 @@ PokemonLeague_HallOfFame_Text_OakCongratulations::
     .string "Parabéns, {PLAYER}! Você e os seus\n"
     .string "Pokémon agora estão no Hall da Fama!$"
 
+PokemonLeague_HallOfFame_Text_OakTickets::
+    .string "Ah, quase esqueci! Chegaram estes\n"
+    .string "bilhetes para você.\p"
+    .string "Quando estiver viajando para as\n"
+    .string "Ilhas Sevii com o Passe 7 Cores,\l"
+    .string "mostre-os ao marinheiro do porto da\l"
+    .string "Cidade de Vermilion.$"
+
