@@ -151,8 +151,6 @@ extern const u8 gText_HelpSystemControls_AorBtoCancel[];
 extern const u8 gText_HelpSystemControls_PickOkCancel[];
 
 // help_system
-extern const u8 gString_Bill[];
-extern const u8 gString_Someone[];
 extern const u8 gString_Help[];
 extern const u8 gString_HelpSystem_ClearTo8[];
 

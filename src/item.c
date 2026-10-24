@@ -83,6 +83,23 @@ void CopyItemName(u16 itemId, u8 * dest)
     }
 }
 
+static const u8 sText_PluralS[] = _("s");
+
+// PT-BR plural of a berry name already in `name`: "Fruta Cheri" -> "Frutas Cheri" (the "s" goes
+// after the first word). Adds one byte; the tail is at most an item name (ITEM_NAME_LENGTH).
+void BufferBerryNamePlural(u8 *name)
+{
+    u8 *space = name;
+    u8 tail[ITEM_NAME_LENGTH + 1];
+
+    while (*space != EOS && *space != CHAR_SPACE)
+        space++;
+    StringCopy(tail, space);
+    *space = EOS;
+    StringAppend(name, sText_PluralS);
+    StringAppend(name, tail);
+}
+
 s8 BagPocketGetFirstEmptySlot(u8 pocketId)
 {
     u16 i;

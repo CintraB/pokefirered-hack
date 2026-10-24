@@ -1646,18 +1646,7 @@ bool8 ScrCmd_bufferitemnameplural(struct ScriptContext * ctx)
     if (itemId == ITEM_POKE_BALL && quantity >= 2)
         StringAppend(sScriptStringVars[stringVarIndex], sText_S);
     else if (itemId >= FIRST_BERRY_INDEX && itemId < LAST_BERRY_INDEX && quantity >= 2)
-    {
-        u8 * name = sScriptStringVars[stringVarIndex];
-        u8 * space = name;
-        u8 tail[ITEM_NAME_LENGTH + 1];
-
-        while (*space != EOS && *space != CHAR_SPACE)
-            space++;
-        StringCopy(tail, space);
-        *space = EOS;
-        StringAppend(name, sText_S);
-        StringAppend(name, tail);
-    }
+        BufferBerryNamePlural(sScriptStringVars[stringVarIndex]);
 
     return FALSE;
 }

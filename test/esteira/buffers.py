@@ -1290,6 +1290,9 @@ DECLARED: list[Declared] = [
     Declared("src/item.c", "CopyItemName", r".*", None,
              why="implementação de CopyItemName (src/item.c:73-84): cada chamada mede o nome de item (com a "
                  "Fruta Enigma = gText_Berry + nome) no buffer de quem chama"),
+    Declared("src/item.c", "BufferBerryNamePlural", r".*", None,
+             why="plural de fruta (src/item.c): +1 letra ('s') no nome que já está no buffer de quem chama "
+                 "(bufferitemnameplural, prêmio do Pulo Pokémon), medido lá com sText_PluralS"),
     Declared("src/region_map.c", r"GetMapNameGeneric_?", r".*", None,
              why="GetMapNameGeneric(_) só repassam para GetMapName (src/region_map.c:3828-3837): medido em quem chama"),
     Declared("src/scrcmd.c", r"ScrCmd_\w*buffer\w*", r".*", None,
@@ -1505,7 +1508,7 @@ DECLARED: list[Declared] = [
              why="apelido do ovo: GetMonData(MON_DATA_NICKNAME) copia gText_EggNickname no buffer de apelido de "
                  "quem chama (src/pokemon.c:3083)"),
     Declared("src/pokemon_jump.c", r"Print\w*Prize\w*Message", r".*", BufRef("itemName", "src/pokemon_jump.c"),
-             (ITEMS, Text("sPluralTxt", file="src/pokemon_jump.c")),
+             (ITEMS, Text("sText_PluralS", file="src/item.c")),
              why="prêmio do Pokémon Jump: itemName[64] = nome do item + plural (src/pokemon_jump.c:3339-3382)"),
     Declared("src/pokemon_size_record.c", "FormatMonSizeRecord", r".*", BufRef("gStringVar2"),
              (Fixed(8, "parte inteira, até 8 algarismos"), Text("gText_DecimalPoint"), Fixed(1, "décimo")),
