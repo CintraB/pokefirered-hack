@@ -1,5 +1,5 @@
 PokedexRating_Text_HowIsPokedexComingAlong::
-	.string "CARVALHO: Que bom ver você!\n"
+	.string "Carvalho: Que bom ver você!\n"
 	.string "Como está indo a sua Pokédex?\p"
 	.string "Vamos ver, deixe-me dar uma olhada.$"
 
@@ -127,7 +127,7 @@ PokedexRating_Text_ThankYouMadeDreamReality::
 	.string "Você realizou o meu sonho!$"
 
 PokedexRating_Text_LoveSeeingYourPokedex::
-	.string "CARVALHO: Ah, que bom ver você!\p"
+	.string "Carvalho: Ah, que bom ver você!\p"
 	.string "Diga, como está indo a sua\n"
 	.string "Pokédex?\p"
 	.string "Rá, rá!\p"

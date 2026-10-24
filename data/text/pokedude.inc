@@ -1,5 +1,5 @@
 Pokedude_Text_SpeedierBattlerGoesFirst::
-	.string "CARA POKÉMON: Quem for mais veloz\n"
+	.string "Cara Pokémon: Quem for mais veloz\n"
 	.string "na batalha ataca primeiro.$"
 
 Pokedude_Text_MyRattataFasterThanPidgey::
@@ -21,8 +21,8 @@ Pokedude_Text_MyRattataWonGetsEXP::
 	.string "mais forte do que antes.$"
 
 Pokedude_Text_UhOhRattataPoisoned::
-	.string "CARA POKÉMON: Ih…\n"
-	.string "O meu RATTATA foi envenenado…\p"
+	.string "Cara Pokémon: Ih…\n"
+	.string "O meu Rattata foi envenenado…\p"
 	.string "Se um Pokémon está envenenado,\n"
 	.string "ele perde PS aos poucos.$"
 
@@ -40,7 +40,7 @@ Pokedude_Text_YayWeManagedToWin::
 	.string "Conseguimos vencer!$"
 
 Pokedude_Text_WaterNotVeryEffectiveAgainstGrass::
-	.string "CARA POKÉMON: O golpe Bolha é\n"
+	.string "Cara Pokémon: O golpe Bolha é\n"
 	.string "um ataque do tipo Água.\p"
 	.string "O ODDISH alvo é um Pokémon\n"
 	.string "do tipo Planta/Venenoso.\p"
@@ -95,7 +95,7 @@ Pokedude_Text_YeahWeWon::
 	.string "Ganhamos!$"
 
 Pokedude_Text_WeakenMonBeforeCatching::
-	.string "CARA POKÉMON: Para capturar um\n"
+	.string "Cara Pokémon: Para capturar um\n"
 	.string "Pokémon, não saia jogando Poké Bolas\l"
 	.string "direto.\p"
 	.string "Primeiro, é preciso enfraquecê-lo\n"

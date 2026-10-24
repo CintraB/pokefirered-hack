@@ -18,7 +18,7 @@ Text_MonsHealed::
 	.string "Desejamos sucesso!$"
 
 Text_HadQuiteAnExperienceTakeRest::
-	.string "MÃE: {PLAYER}!\n"
+	.string "Mãe: {PLAYER}!\n"
 	.string "Que bom que voltou para casa.\p"
 	.string "Pelo jeito foi uma\n"
 	.string "experiência e tanto.\p"
@@ -26,7 +26,7 @@ Text_HadQuiteAnExperienceTakeRest::
 	.string "um pouquinho?$"
 
 Text_MomExplainHPGetPotions::
-	.string "MÃE: Ah, que bom! Você e os seus\n"
+	.string "Mãe: Ah, que bom! Você e os seus\n"
 	.string "Pokémon estão ótimos.\p"
 	.string "Acabei de falar com o\n"
 	.string "Prof. Carvalho.\p"
