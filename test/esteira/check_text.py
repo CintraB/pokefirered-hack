@@ -297,10 +297,12 @@ WIDTH_RULES: list[Rule] = [
          "de y = 42 no resumo, 8 tiles no tutor); também é a descrição da MT/MO (src/data/items.json.txt:17-18) "
          "no estojo e na loja de MT: WIN_DESCRIPTION de 18 tiles (src/tm_case.c:254-261) com x = 2 "
          "(src/tm_case.c:743), 142 px e 4 linhas, mais folgada", lines=4),
-    Rule("src/data/pokemon/pokedex_text_fr.h", None, 30 * 8,
+    Rule("src/data/pokemon/pokedex_text_fr.h", None, 232,
          "entrada da Pokédex: sWindowTemplate_DexEntry_FlavorText .width = 30 tiles "
          "(src/pokedex_screen.c:618-623), centralizada em 240 px pela linha mais larga "
-         "(src/pokedex_screen.c:2803-2811); 7 tiles de altura com o texto em y = 8 (src/pokedex_screen.c:2882): 3 linhas",
+         "(src/pokedex_screen.c:2803-2811), mas a moldura do fundo cobre as colunas 1-2 e 237-238: "
+         "232 px deixam 1 px livre de cada lado, sombra inclusive; 7 tiles de altura com o texto em y = 8 "
+         "(src/pokedex_screen.c:2882): 3 linhas",
          lines=3),
     Rule("src/data/pokemon/pokedex_entries.h", "*.categoryName", None,
          "categoria da Pokédex: categoryName[12] (include/pokedex.h:104)", chars=11),

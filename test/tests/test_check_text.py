@@ -658,10 +658,11 @@ def test_move_description_is_113_px_and_four_lines(repo):
     assert any("5 linhas, limite 4" in r.detail for r in failed)
 
 
-def test_pokedex_entry_is_240_px_and_three_lines(repo):
+def test_pokedex_entry_is_232_px_and_three_lines(repo):
+    """240 px da janela menos a moldura do fundo (colunas 1-2 e 237-238) e 1 px livre de cada lado."""
     put(repo, "src/data/pokemon/pokedex_text_fr.h",
-        'const u8 gAPokedexText[] = _("' + "A" * 40 + '\\n2\\n3");\n'                      # 240, 3 linhas
-        'const u8 gBPokedexText[] = _("' + "A" * 40 + 'i");\n'
+        'const u8 gAPokedexText[] = _("' + "A" * 38 + 'i\\n2\\n3");\n'                 # 232, 3 linhas
+        'const u8 gBPokedexText[] = _("' + "A" * 38 + 'ii");\n'                          # 236
         'const u8 gCPokedexText[] = _("1\\n2\\n3\\n4");\n')
     labels = sorted(r.detail.split(": ")[1] for r in failures(run(repo)))
     assert labels == ["gBPokedexText", "gCPokedexText"]
@@ -845,7 +846,7 @@ def test_window_citations_point_at_the_templates():
     oak = rule_for("src/battle_message.c", "gText_ForPetesSake")
     assert oak.px == 208 and ".width = 26" in cited_text(oak)
     dex = rule_for("src/data/pokemon/pokedex_text_fr.h", "gBulbasaurPokedexText")
-    assert dex.px == 240 and dex.lines == 3 and ".width = 30" in cited_text(dex)
+    assert dex.px == 232 and dex.lines == 3 and ".width = 30" in cited_text(dex)
     popup = rule_for("src/data/region_map/region_map_sections.json", "MAPSEC_PALLET_TOWN")
     assert popup.px == 108 and popup.chars == 18
     assert "u8 mapName[19];" in cited_text(popup) and ".width = 15" in cited_text(popup)
