@@ -9471,6 +9471,36 @@
    "tela": "Resumo"
   },
   {
+   "en": "PRESS START",
+   "pt": "Aperte START",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "frente": "H",
+   "obs": "imagem copyright_press_start.png (tela de título); mesma construção do texto da Sala União (\"aperte START\")",
+   "tela": "Título"
+  },
+  {
+   "en": "TEACHY (logo)",
+   "pt": "Educativa",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "frente": "H",
+   "obs": "imagem teachy_tv/tiles.png: logo EDUCATIVA sobre o TV; nome do programa = TV Educativa",
+   "tela": "TV Educativa"
+  },
+  {
+   "en": "Lv (imagem)",
+   "pt": "Nv",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "frente": "H",
+   "obs": "imagem healthbox_*: \"Lv\" desenhado igualado ao glifo {LV} (Nv) da fonte",
+   "tela": "Batalha"
+  },
+  {
    "en": "Ayers Rock",
    "pt": "Uluru",
    "fonte": "criado",
