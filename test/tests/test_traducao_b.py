@@ -52,6 +52,8 @@ FILES = sorted(f for files in GROUPS.values() for f in files)
 RULES = ("controle", "glossario", "largura", "linhas", "letras")
 
 _LABEL = re.compile(r"^([A-Za-z_][A-Za-z0-9_]*)::", re.M)
+# rótulos que os hacks acrescentaram depois da base da tradução (não são rótulos renomeados)
+ROTULOS_DOS_HACKS = {"PokemonLeague_HallOfFame_Text_OakTickets"}     # Hack 8: Carvalho entrega os bilhetes
 
 
 @lru_cache(maxsize=None)
@@ -86,7 +88,8 @@ def test_rotulos_iguais_aos_da_base(rel):
     if out.returncode != 0:
         pytest.skip("sem o commit base da tradução")
     base = _LABEL.findall(out.stdout.decode("utf-8"))
-    current = _LABEL.findall((REPO_ROOT / rel).read_text(encoding="utf-8"))
+    current = [lbl for lbl in _LABEL.findall((REPO_ROOT / rel).read_text(encoding="utf-8"))
+               if lbl not in ROTULOS_DOS_HACKS]
     assert current == base
 
 

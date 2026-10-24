@@ -25,6 +25,7 @@ PokemonLeague_HallOfFame_EventScript_EnterRoom::
 	waitmovement 0
 	delay 18
 	msgbox PokemonLeague_HallOfFame_Text_OakCongratulations
+	call PokemonLeague_HallOfFame_EventScript_OakGivesTickets
 	closemessage
 	applymovement LOCALID_HALL_OF_FAME_PROF_OAK, Common_Movement_WalkInPlaceFasterUp
 	applymovement LOCALID_PLAYER, Common_Movement_WalkInPlaceFasterUp
@@ -41,6 +42,18 @@ PokemonLeague_HallOfFame_EventScript_EnterRoom::
 	waitstate
 	releaseall
 	end
+
+PokemonLeague_HallOfFame_EventScript_OakGivesTickets::
+	goto_if_set FLAG_RECEIVED_AURORA_TICKET, PokemonLeague_HallOfFame_EventScript_OakGivesTicketsDone
+	msgbox PokemonLeague_HallOfFame_Text_OakTickets
+	giveitem ITEM_AURORA_TICKET
+	giveitem ITEM_MYSTIC_TICKET
+	setflag FLAG_ENABLE_SHIP_BIRTH_ISLAND
+	setflag FLAG_ENABLE_SHIP_NAVEL_ROCK
+	setflag FLAG_RECEIVED_AURORA_TICKET
+	setflag FLAG_RECEIVED_MYSTIC_TICKET
+PokemonLeague_HallOfFame_EventScript_OakGivesTicketsDone::
+	return
 
 PokemonLeague_HallOfFame_Movement_EnterRoom::
 	walk_up
