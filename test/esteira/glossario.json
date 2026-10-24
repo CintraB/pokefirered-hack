@@ -13962,6 +13962,15 @@
    "frente": "H",
    "obs": "imagem union_room_chat/icons.png: \"Registrar\" não cabe em 32 px; no texto fica \"Registrar\"",
    "tela": "Sala União"
+  },
+  {
+   "en": "Water's-edge POKéMON",
+   "pt": "Pokémon da Beira d'Água",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": false,
+   "frente": "I",
+   "obs": "categoria de habitat da Pokédex (gText_DexCategory_WatersEdgePkmn); decisão do Cintra em 24/10, no lugar de Pokémon Ribeirinhos"
   }
  ],
  "proibidos": [
