@@ -31,4 +31,9 @@ void QuestLog_TryRecordDepartedLocation(void);
 // Hack 7 — frente C
 u16 GetRandomRareEggSpecies(void);
 
+// Hack 8 — míticos no endgame
+u16 GetDayNightPeriodForScript(void);
+bool16 IsSkyClear(void);
+bool16 IsSpeciesCaught(void);
+
 #endif // GUARD_FIELD_SPECIALS_H

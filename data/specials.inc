@@ -454,4 +454,8 @@ gSpecials::
 	def_special CreateEnemyEventMon
 	@ Hack 7 — frente C
 	def_special GetRandomRareEggSpecies
+	@ Hack 8 — míticos no endgame
+	def_special GetDayNightPeriodForScript
+	def_special IsSkyClear
+	def_special IsSpeciesCaught
 gSpecialsEnd::

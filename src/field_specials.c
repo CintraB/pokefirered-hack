@@ -33,6 +33,8 @@
 #include "party_menu.h"
 #include "dynamic_placeholder_text_util.h"
 #include "new_menu_helpers.h"
+#include "day_night.h"
+#include "field_weather.h"
 #include "constants/songs.h"
 #include "constants/items.h"
 #include "constants/maps.h"
@@ -41,6 +43,7 @@
 #include "constants/menu.h"
 #include "constants/event_objects.h"
 #include "constants/metatile_labels.h"
+#include "constants/weather.h"
 
 static EWRAM_DATA u8 sElevatorCurrentFloorWindowId = 0;
 static EWRAM_DATA u16 sElevatorScroll = 0;
@@ -2560,4 +2563,36 @@ u16 GetRandomRareEggSpecies(void)
     static const u16 sRareEggSpecies[] = {SPECIES_LARVITAR, SPECIES_BAGON, SPECIES_BELDUM};
 
     return sRareEggSpecies[Random() % NELEMS(sRareEggSpecies)];
+}
+
+// Hack 8 — míticos no endgame
+// specialvar VAR_RESULT, GetDayNightPeriodForScript -> TIME_MORNING..TIME_NIGHT
+u16 GetDayNightPeriodForScript(void)
+{
+    return DayNight_GetPeriod();
+}
+
+// TRUE unless the current map weather is rain, storm, fog, snow, sand or ash
+bool16 IsSkyClear(void)
+{
+    switch (GetCurrentWeather())
+    {
+    case WEATHER_RAIN:
+    case WEATHER_RAIN_THUNDERSTORM:
+    case WEATHER_DOWNPOUR:
+    case WEATHER_FOG_HORIZONTAL:
+    case WEATHER_FOG_DIAGONAL:
+    case WEATHER_SNOW:
+    case WEATHER_SANDSTORM:
+    case WEATHER_VOLCANIC_ASH:
+        return FALSE;
+    default:
+        return TRUE;
+    }
+}
+
+// 8004 = species; TRUE if it is registered as caught in the Pokédex
+bool16 IsSpeciesCaught(void)
+{
+    return GetSetPokedexFlag(SpeciesToNationalPokedexNum(gSpecialVar_0x8004), FLAG_GET_CAUGHT);
 }
