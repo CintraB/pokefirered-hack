@@ -3,15 +3,15 @@ Pokedude_Text_SpeedierBattlerGoesFirst::
 	.string "na batalha ataca primeiro.$"
 
 Pokedude_Text_MyRattataFasterThanPidgey::
-	.string "Parece que o meu RATTATA foi\n"
-	.string "mais rápido que o PIDGEY.$"
+	.string "Parece que o meu Rattata foi\n"
+	.string "mais rápido que o Pidgey.$"
 
 Pokedude_Text_BattlersTakeTurnsAttacking::
 	.string "Os lutadores se revezam atacando\n"
 	.string "e reduzindo os PS um do outro.$"
 
 Pokedude_Text_MyRattataWonGetsEXP::
-	.string "O meu RATTATA reduziu os PS do\n"
+	.string "O meu Rattata reduziu os PS do\n"
 	.string "inimigo a zero, então venceu!\p"
 	.string "Os Pokémon que participaram da\n"
 	.string "batalha ganham PE.\p"
@@ -42,7 +42,7 @@ Pokedude_Text_YayWeManagedToWin::
 Pokedude_Text_WaterNotVeryEffectiveAgainstGrass::
 	.string "Cara Pokémon: O golpe Bolha é\n"
 	.string "um ataque do tipo Água.\p"
-	.string "O ODDISH alvo é um Pokémon\n"
+	.string "O Oddish alvo é um Pokémon\n"
 	.string "do tipo Planta/Venenoso.\p"
 	.string "O ataque do tipo Água é absorvido\n"
 	.string "pelo Pokémon do tipo Planta…\p"
@@ -54,7 +54,7 @@ Pokedude_Text_GrassEffectiveAgainstWater::
 	.string "Ih, isso não é bom!\p"
 	.string "O ataque Absorção que você acabou\n"
 	.string "de ver é um golpe do tipo Planta.\p"
-	.string "O POLIWAG é um Pokémon do tipo\n"
+	.string "O Poliwag é um Pokémon do tipo\n"
 	.string "Água.\p"
 	.string "Então Absorção fica supereficaz,\n"
 	.string "dobrando o dano.$"
@@ -70,7 +70,7 @@ Pokedude_Text_ShiftingUsesTurn::
 	.string "Agora é a vez do oponente.$"
 
 Pokedude_Text_ButterfreeDoubleResistsGrass::
-	.string "O BUTTERFREE é um Pokémon do tipo\n"
+	.string "O Butterfree é um Pokémon do tipo\n"
 	.string "Inseto/Voador.\p"
 	.string "Contra ele, um ataque do tipo\n"
 	.string "Planta…\p"
@@ -78,11 +78,11 @@ Pokedude_Text_ButterfreeDoubleResistsGrass::
 	.string "Pokémon do tipo Inseto…\p"
 	.string "…E também só metade do dano em um\n"
 	.string "Pokémon do tipo Voador.\p"
-	.string "Por isso, o BUTTERFREE sofre só\n"
+	.string "Por isso, o Butterfree sofre só\n"
 	.string "um quarto do dano normal.$"
 
 Pokedude_Text_ButterfreeGoodAgainstOddish::
-	.string "O ODDISH é um Pokémon do tipo\n"
+	.string "O Oddish é um Pokémon do tipo\n"
 	.string "Planta/Venenoso.\p"
 	.string "Um ataque do tipo Voador ou Psíquico\n"
 	.string "é supereficaz contra ele.\p"
