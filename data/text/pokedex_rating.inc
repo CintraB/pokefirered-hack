@@ -43,8 +43,9 @@ PokedexRating_Text_LessThan50::
 PokedexRating_Text_LessThan60::
 	.string "Ah, você finalmente passou de 50\n"
 	.string "espécies!\p"
-	.string "Dei o Compart. Exp. a um dos meus\n"
-	.string "assistentes. Não deixe de buscá-lo!$"
+	.string "Dei o Compartilhador de Exp. a um\n"
+	.string "dos meus assistentes. Não deixe de\l"
+	.string "buscá-lo!$"
 
 PokedexRating_Text_LessThan70::
 	.string "Hoho! Isso está virando uma\n"

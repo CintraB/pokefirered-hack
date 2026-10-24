@@ -12,7 +12,7 @@ FuchsiaCity_WardensHouse_Text_HeOhayHeHaHoo::
     .string "Hê ohay heh ha hoo ee haheh!$"
 
 FuchsiaCity_WardensHouse_Text_GaveGoldTeethToWarden::
-    .string "{PLAYER} entregou os Dentes Ouro\n"
+    .string "{PLAYER} entregou os Dentes de Ouro\n"
     .string "ao Diretor.$"
 
 FuchsiaCity_WardensHouse_Text_WardenPoppedInHisTeeth::
