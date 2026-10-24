@@ -44,3 +44,11 @@ ThreeIsland_BerryForest_Text_BewareWildBerryLovingMons::
     .string "Cuidado com os Pokémon selvagens\n"
     .string "que adoram frutas!$"
 
+ThreeIsland_BerryForest_Text_ForestWakesWithSun::
+    .string "O bosque dorme na penumbra.\n"
+    .string "Dizem que ele acorda com o sol\l"
+    .string "da manhã.\p"
+    .string "Quem chegar ao fundo do bosque\n"
+    .string "nessa hora talvez conheça quem\l"
+    .string "cuida das árvores.$"
+
