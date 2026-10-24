@@ -4,4 +4,5 @@ SixIsland_AlteringCave_MapScripts::
 
 SixIsland_AlteringCave_OnTransition::
 	setworldmapflag FLAG_WORLD_MAP_SIX_ISLAND_ALTERING_CAVE
+	specialvar VAR_ALTERING_CAVE_WILD_SET, GetAlteringCaveSetForScript
 	end

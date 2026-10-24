@@ -34,6 +34,7 @@
 #include "dynamic_placeholder_text_util.h"
 #include "new_menu_helpers.h"
 #include "day_night.h"
+#include "wild_encounter.h"
 #include "field_weather.h"
 #include "constants/songs.h"
 #include "constants/items.h"
@@ -2597,4 +2598,11 @@ bool16 IsSkyClear(void)
 bool16 IsSpeciesCaught(void)
 {
     return GetSetPokedexFlag(SpeciesToNationalPokedexNum(gSpecialVar_0x8004), FLAG_GET_CAUGHT);
+}
+
+// Hack 8 — Caverna Mutante: um conjunto novo a cada dia do relógio do Hack 7
+// specialvar VAR_ALTERING_CAVE_WILD_SET, GetAlteringCaveSetForScript -> 0..NUM_ALTERING_CAVE_TABLES-1
+u16 GetAlteringCaveSetForScript(void)
+{
+    return DayNight_GetDay() % NUM_ALTERING_CAVE_TABLES;
 }

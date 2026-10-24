@@ -458,4 +458,6 @@ gSpecials::
 	def_special GetDayNightPeriodForScript
 	def_special IsSkyClear
 	def_special IsSpeciesCaught
+	@ Hack 8 — Caverna Mutante
+	def_special GetAlteringCaveSetForScript
 gSpecialsEnd::
