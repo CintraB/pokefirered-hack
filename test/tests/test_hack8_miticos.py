@@ -112,22 +112,27 @@ def test_jirachi_condicoes_t5():
     body = _label_body_t5(scripts, f"{TANOBY_PFX}_OnTransition") + _label_body_t5(
         scripts, f"{TANOBY_PFX}_EventScript_TryShowJirachi"
     )
-    ordem = [
+    ret = "EventScript_Return"
+    ordem = [  # linhas inteiras: travam também o sentido de cada comparação
         "setflag FLAG_HIDE_JIRACHI",  # esconde por padrão a cada entrada
-        "FLAG_JIRACHI_FLEW_AWAY",
+        f"goto_if_set FLAG_JIRACHI_FLEW_AWAY, {ret}",
         "setvar VAR_0x8004, SPECIES_DEOXYS",
         "specialvar VAR_RESULT, IsSpeciesCaught",
+        f"goto_if_eq VAR_RESULT, FALSE, {ret}",  # Deoxys não capturado: some
         "setvar VAR_0x8004, SPECIES_JIRACHI",
+        "specialvar VAR_RESULT, IsSpeciesCaught",
+        f"goto_if_eq VAR_RESULT, TRUE, {ret}",  # Jirachi já capturado: some
         "specialvar VAR_RESULT, GetDayNightPeriodForScript",
-        "TIME_NIGHT",
+        f"goto_if_ne VAR_RESULT, TIME_NIGHT, {ret}",
         "specialvar VAR_RESULT, IsSkyClear",
+        f"goto_if_eq VAR_RESULT, FALSE, {ret}",
         "clearflag FLAG_HIDE_JIRACHI",  # só depois de todas as condições
     ]
+    linhas = [ln.strip() for ln in body.splitlines()]
     pos = -1
     for item in ordem:
-        nxt = body.find(item, pos + 1)
-        assert nxt > pos, f"'{item}' ausente ou fora de ordem no script de mapa"
-        pos = nxt
+        assert item in linhas[pos + 1:], f"'{item}' ausente ou fora de ordem no script de mapa"
+        pos = linhas.index(item, pos + 1)
     assert body.count("clearflag FLAG_HIDE_JIRACHI") == 1
     assert body.count("specialvar VAR_RESULT, IsSpeciesCaught") == 2  # Deoxys e Jirachi
 
@@ -138,15 +143,13 @@ def test_jirachi_batalha_t5():
     assert "playmoncry SPECIES_JIRACHI" in body
     assert "seteventmon SPECIES_JIRACHI, 30" in body
     assert "special StartLegendaryBattle" in body
-    assert re.search(r"B_OUTCOME_WON,\s*" + TANOBY_PFX + "_EventScript_DefeatedJirachi", body)
-    assert re.search(r"B_OUTCOME_RAN,\s*" + TANOBY_PFX + "_EventScript_RanFromJirachi", body)
-    assert re.search(r"B_OUTCOME_PLAYER_TELEPORTED,\s*" + TANOBY_PFX + "_EventScript_RanFromJirachi", body)
+    for saida in ("B_OUTCOME_WON", "B_OUTCOME_RAN", "B_OUTCOME_PLAYER_TELEPORTED"):
+        assert re.search(rf"goto_if_eq VAR_RESULT, {saida},\s*{TANOBY_PFX}_EventScript_JirachiFlewAway\b", body)
     assert "FLEW_AWAY" not in body, "o caminho do capturado não pode ligar FLEW_AWAY"
-    for rotulo in ("DefeatedJirachi", "RanFromJirachi"):
-        corpo = _label_body_t5(scripts, f"{TANOBY_PFX}_EventScript_{rotulo}")
-        assert "setflag FLAG_JIRACHI_FLEW_AWAY" in corpo
-        assert "setvar VAR_0x8004, SPECIES_JIRACHI" in corpo
-        assert "goto EventScript_MonFlewAway" in corpo
+    corpo = _label_body_t5(scripts, f"{TANOBY_PFX}_EventScript_JirachiFlewAway")
+    assert "setflag FLAG_JIRACHI_FLEW_AWAY" in corpo
+    assert "setvar VAR_0x8004, SPECIES_JIRACHI" in corpo
+    assert "goto EventScript_MonFlewAway" in corpo
     # capturado: ON_RESUME tira o objeto (como o Lugia) e a Pokédex impede a volta
     assert "B_OUTCOME_CAUGHT" in _label_body_t5(scripts, f"{TANOBY_PFX}_EventScript_TryRemoveJirachi")
     assert re.search(r"map_script MAP_SCRIPT_ON_RESUME, " + TANOBY_PFX + r"_OnResume\b", scripts)
@@ -170,6 +173,8 @@ def test_jirachi_objeto_de_brilho_t5():
     assert o["graphics_id"] == "OBJ_EVENT_GFX_JIRACHI_STAR"
     assert (o["x"], o["y"], o["elevation"]) == (STAR_X_T5, STAR_Y_T5, 3)
     assert o["trainer_type"] == "TRAINER_TYPE_NONE"
+    # FACE_DOWN pausaria a animação (FaceDirection liga animPaused): o brilho só cintila com NONE
+    assert o["movement_type"] == "MOVEMENT_TYPE_NONE"
     # gráfico reaproveitado do brilho de campo (nenhuma arte nova)
     consts = _read("include/constants/event_objects.h")
     num = int(re.search(r"#define NUM_OBJ_EVENT_GFX\s+(\d+)", consts).group(1))

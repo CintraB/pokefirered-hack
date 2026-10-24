@@ -52,19 +52,14 @@ SevenIsland_TanobyRuins_EventScript_Jirachi::
 	waitstate
 	clearflag FLAG_SYS_SPECIAL_WILD_BATTLE
 	specialvar VAR_RESULT, GetBattleOutcome
-	goto_if_eq VAR_RESULT, B_OUTCOME_WON, SevenIsland_TanobyRuins_EventScript_DefeatedJirachi
-	goto_if_eq VAR_RESULT, B_OUTCOME_RAN, SevenIsland_TanobyRuins_EventScript_RanFromJirachi
-	goto_if_eq VAR_RESULT, B_OUTCOME_PLAYER_TELEPORTED, SevenIsland_TanobyRuins_EventScript_RanFromJirachi
+	goto_if_eq VAR_RESULT, B_OUTCOME_WON, SevenIsland_TanobyRuins_EventScript_JirachiFlewAway
+	goto_if_eq VAR_RESULT, B_OUTCOME_RAN, SevenIsland_TanobyRuins_EventScript_JirachiFlewAway
+	goto_if_eq VAR_RESULT, B_OUTCOME_PLAYER_TELEPORTED, SevenIsland_TanobyRuins_EventScript_JirachiFlewAway
 	release
 	end
 
-SevenIsland_TanobyRuins_EventScript_DefeatedJirachi::
-	setflag FLAG_JIRACHI_FLEW_AWAY
-	setvar VAR_0x8004, SPECIES_JIRACHI
-	goto EventScript_MonFlewAway
-	end
-
-SevenIsland_TanobyRuins_EventScript_RanFromJirachi::
+@ Defeated or ran away: it flies off until the next Hall of Fame entry
+SevenIsland_TanobyRuins_EventScript_JirachiFlewAway::
 	setflag FLAG_JIRACHI_FLEW_AWAY
 	setvar VAR_0x8004, SPECIES_JIRACHI
 	goto EventScript_MonFlewAway
