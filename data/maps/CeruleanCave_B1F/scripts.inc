@@ -14,10 +14,18 @@ CeruleanCave_B1F_EventScript_TryRemoveMewtwo::
 	return
 
 CeruleanCave_B1F_OnTransition::
-	call_if_unset FLAG_FOUGHT_MEWTWO, CeruleanCave_B1F_EventScript_ShowMewtwo
+	call_if_set FLAG_FOUGHT_MEWTWO, CeruleanCave_B1F_EventScript_HideMewtwo
+	call_if_unset FLAG_FOUGHT_MEWTWO, CeruleanCave_B1F_EventScript_TryShowMewtwo
 	end
 
-CeruleanCave_B1F_EventScript_ShowMewtwo::
+@ FLAG_FOUGHT_MEWTWO means "caught" (Mewtwo is gone for good); defeating or running
+@ sets FLAG_MEWTWO_FLEW_AWAY instead, which the Hall of Fame clears.
+CeruleanCave_B1F_EventScript_HideMewtwo::
+	setflag FLAG_HIDE_MEWTWO
+	return
+
+CeruleanCave_B1F_EventScript_TryShowMewtwo::
+	goto_if_set FLAG_MEWTWO_FLEW_AWAY, EventScript_Return
 	clearflag FLAG_HIDE_MEWTWO
 	return
 
@@ -48,11 +56,12 @@ CeruleanCave_B1F_EventScript_Mewtwo::
 	end
 
 CeruleanCave_B1F_EventScript_DefeatedMewtwo::
-	setflag FLAG_FOUGHT_MEWTWO
+	setflag FLAG_MEWTWO_FLEW_AWAY
 	goto EventScript_RemoveStaticMon
 	end
 
 CeruleanCave_B1F_EventScript_RanFromMewtwo::
+	setflag FLAG_MEWTWO_FLEW_AWAY
 	setvar VAR_0x8004, SPECIES_MEWTWO
 	goto EventScript_MonFlewAway
 	end

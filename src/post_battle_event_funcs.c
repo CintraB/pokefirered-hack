@@ -6,6 +6,8 @@
 #include "hall_of_fame.h"
 #include "load_save.h"
 #include "item.h"
+#include "pokedex.h"
+#include "pokemon.h"
 #include "constants/heal_locations.h"
 #include "constants/items.h"
 
@@ -16,6 +18,10 @@ bool8 EnterHallOfFame(void)
     int i;
     bool8 gaveAtLeastOneRibbon;
     HealPlayerParty();
+    // FLAG_FOUGHT_MEWTWO now means "caught". Saves from before the Mewtwo started returning
+    // may have it set after a mere defeat: unset it so he comes back after this Hall of Fame.
+    if (FlagGet(FLAG_FOUGHT_MEWTWO) && !GetSetPokedexFlag(SpeciesToNationalPokedexNum(SPECIES_MEWTWO), FLAG_GET_CAUGHT))
+        FlagClear(FLAG_FOUGHT_MEWTWO);
     if (FlagGet(FLAG_SYS_GAME_CLEAR) == TRUE)
     {
         gHasHallOfFameRecords = TRUE;
