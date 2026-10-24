@@ -46,6 +46,17 @@ struct WildMonTimeTable
 extern const struct WildMonTimeTable gWildMonTimeTables[];
 u16 GetTimeOfDayLandSpecies(u8 mapGroup, u8 mapNum, u8 slot, u8 period, u16 fallback);
 
+// Hack 8: a FireRed slot whose LeafGreen twin is a LeafGreen exclusive (generated from
+// wild_encounters.json into src/data/wild_encounters_leafgreen.h); the slot rolls 50/50
+struct WildLeafGreenSwap
+{
+    const struct WildPokemonInfo *info; // the FireRed table
+    u8 slot;
+    struct WildPokemon mon;             // the LeafGreen line of the slot (species and levels)
+};
+
+bool8 IsLeafGreenSlotSpeciesOnMap(const struct WildPokemonHeader *header, u16 species);
+
 void DisableWildEncounters(bool8 disabled);
 bool8 StandardWildEncounter(u32 currMetatileAttrs, u16 previousMetaTileBehavior);
 bool8 SweetScentWildEncounter(void);

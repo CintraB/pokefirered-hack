@@ -217,3 +217,7 @@ CMD_START_WILD_BATTLE = 0x78  # arg0 = espécie, arg1 = nível -> 1 (batalha sel
 CMD_FILL_PC = 0x79
 CMD_SET_FLAG = 0x7A
 CMD_SPECIES_ON_MAP = 0x7B
+
+# --- Hack 8: exclusivos do LeafGreen na natureza (enum à parte, a partir de 0x80) ---
+CMD_ROLL_WILD = 0x80        # arg0 = área (0 grama, 1 água, 2 pedra, 3 pesca) | vara << 8, arg1 = 1: também
+                            # começa a batalha -> espécie | nível << 16 (0xFFFFFFFF = sem essa tabela aqui)

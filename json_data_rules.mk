@@ -45,3 +45,10 @@ $(DATA_SRC_SUBDIR)/wild_encounters_time.h: $(DATA_SRC_SUBDIR)/wild_encounters_ti
 	$(JSONPROC) $^ $@
 
 $(C_BUILDDIR)/wild_encounter.o: c_dep += $(DATA_SRC_SUBDIR)/wild_encounters_time.h
+
+# Hack 8 — LeafGreen exclusives share the slot 50/50 (table generated from wild_encounters.json)
+AUTO_GEN_TARGETS += $(DATA_SRC_SUBDIR)/wild_encounters_leafgreen.h
+$(DATA_SRC_SUBDIR)/wild_encounters_leafgreen.h: $(DATA_SRC_SUBDIR)/wild_encounters.json tools/wild_leafgreen/gen_swaps.py
+	python3 tools/wild_leafgreen/gen_swaps.py $< $@
+
+$(C_BUILDDIR)/wild_encounter.o: c_dep += $(DATA_SRC_SUBDIR)/wild_encounters_leafgreen.h

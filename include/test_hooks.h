@@ -94,6 +94,13 @@ enum
 };
 // --- end of Hack 7 -------------------------------------------------------------------------
 
+// --- Hack 8: LeafGreen exclusives in the wild ---------------------------------------------
+enum
+{
+    TEST_CMD_ROLL_WILD = 0x80,   // arg0 = area (0 land, 1 water, 2 rock smash, 3 fishing) | rod << 8, arg1 = 1: also StartWildBattle; result = species | level << 16 of the generated mon (0xFFFFFFFF = no such table here)
+};
+// --- end of Hack 8 -------------------------------------------------------------------------
+
 extern struct TestMailbox gTestMailbox;
 extern u8 gTestText[TEST_TEXT_SIZE];
 
