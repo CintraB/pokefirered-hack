@@ -9471,15 +9471,6 @@
    "tela": "Resumo"
   },
   {
-   "en": "ADMIN",
-   "pt": "Executivo",
-   "fonte": "anime",
-   "categoria": "personagem",
-   "detectar": false,
-   "frente": "D",
-   "obs": "decisão D4 do Cintra (18/10): classe dos 2 ADMIN da Equipe Rocket (trainers.h usa TRAINER_CLASS_TEAM_ROCKET + nome \"ADMIN\"; exige classe própria — frente D/trainers)"
-  },
-  {
    "en": "Ayers Rock",
    "pt": "Uluru",
    "fonte": "criado",
@@ -10873,6 +10864,249 @@
    "detectar": false,
    "frente": "G3",
    "obs": "palavra do Easy Chat (≤ 12 bytes, src/trainer_card.c easyChatProfile[..][13])"
+  },
+  {
+   "en": "ADMIN",
+   "pt": "Executivo",
+   "fonte": "anime",
+   "categoria": "personagem",
+   "detectar": false,
+   "frente": "D",
+   "obs": "decisão D4 do Cintra (18/10): classe dos 2 ADMIN da Equipe Rocket; feito na D3 com TRAINER_CLASS_ROCKET_ADMIN (107, \"Executivo\", pic masculina) e, por decisão do Cintra de 23/10, TRAINER_CLASS_ROCKET_ADMIN_F (108, \"Executiva\", pic feminina) em trainers.h, trainer_class_names.h, gTrainerMoneyTable e as músicas; o nome do Treinador é \"Rocket\""
+  },
+  {
+   "en": "CERULEAN CAPE",
+   "pt": "Cabo Cerulean",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true,
+   "frente": "D3",
+   "obs": "local de origem da Beldade da Rota 25 no Arquivo Fama; como em Cabo Extremo (CAPE BRINK); no texto corrido, \"o cabo\""
+  },
+  {
+   "en": "NUGGET BRIDGE",
+   "pt": "Ponte da Pepita",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true,
+   "frente": "D3",
+   "obs": "Rota 24; como \"Ponte da União\" (BOND BRIDGE) e NUGGET = Pepita"
+  },
+  {
+   "en": "POKéMON CONTEST",
+   "pt": "Torneio Pokémon",
+   "fonte": "criado",
+   "categoria": "interface",
+   "detectar": true,
+   "frente": "D3",
+   "obs": "CONTEST = Torneio (glossário: CONTEST PASS = Passe Torneio); \"Torneio Pokémon da Primavera\" no Jornal Pokémon"
+  },
+  {
+   "en": "GRUNT (nome do Treinador)",
+   "pt": "Rocket",
+   "fonte": "criado",
+   "categoria": "personagem",
+   "detectar": false,
+   "frente": "D3",
+   "obs": "trainerName dos 51 recrutas em trainers.h: classe \"Recruta\" + nome \"Rocket\" = \"Recruta Rocket\" (glossário §2.9)"
+  },
+  {
+   "en": "ADMIN (nome do Treinador)",
+   "pt": "Rocket",
+   "fonte": "criado",
+   "categoria": "personagem",
+   "detectar": false,
+   "frente": "D3",
+   "obs": "trainerName dos 2 executivos: classe \"Executivo\" (TRAINER_CLASS_ROCKET_ADMIN) + nome \"Rocket\" = \"Executivo Rocket\""
+  },
+  {
+   "en": "ROCKET HIDEOUT (etiqueta do Arquivo Fama)",
+   "pt": "Base Rocket",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": false,
+   "frente": "D3",
+   "obs": "etiqueta de 84 px em FONT_SMALL: \"Esconderijo Rocket\" mede 89 px"
+  },
+  {
+   "en": "WATER LABYRINTH (etiqueta do Arquivo Fama)",
+   "pt": "Labirinto Aquát.",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": false,
+   "frente": "D3",
+   "obs": "etiqueta de 84 px em FONT_SMALL: \"Labirinto Aquático\" mede 87 px"
+  },
+  {
+   "en": "RESORT GORGEOUS (etiqueta do Arquivo Fama)",
+   "pt": "Rec. Esplêndido",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": false,
+   "frente": "D3",
+   "obs": "etiqueta de 84 px em FONT_SMALL: \"Recanto Esplêndido\" mede 89 px"
+  },
+  {
+   "en": "PALLET TOWN (etiqueta do Arquivo Fama)",
+   "pt": "Cidade Pallet",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": false,
+   "frente": "D3",
+   "obs": "etiqueta de 84 px em FONT_SMALL: sem \"de\" em todas as cidades da mesma tela (regra 1; \"Cidade de Cerulean\" mede 89 px)"
+  },
+  {
+   "en": "VIRIDIAN CITY (etiqueta do Arquivo Fama)",
+   "pt": "Cidade Viridian",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": false,
+   "frente": "D3",
+   "obs": "etiqueta de 84 px em FONT_SMALL: sem \"de\" em todas as cidades da mesma tela (regra 1; \"Cidade de Cerulean\" mede 89 px)"
+  },
+  {
+   "en": "PEWTER CITY (etiqueta do Arquivo Fama)",
+   "pt": "Cidade Pewter",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": false,
+   "frente": "D3",
+   "obs": "etiqueta de 84 px em FONT_SMALL: sem \"de\" em todas as cidades da mesma tela (regra 1; \"Cidade de Cerulean\" mede 89 px)"
+  },
+  {
+   "en": "CERULEAN CITY (etiqueta do Arquivo Fama)",
+   "pt": "Cidade Cerulean",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": false,
+   "frente": "D3",
+   "obs": "etiqueta de 84 px em FONT_SMALL: sem \"de\" em todas as cidades da mesma tela (regra 1; \"Cidade de Cerulean\" mede 89 px)"
+  },
+  {
+   "en": "VERMILION CITY (etiqueta do Arquivo Fama)",
+   "pt": "Cidade Vermilion",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": false,
+   "frente": "D3",
+   "obs": "etiqueta de 84 px em FONT_SMALL: sem \"de\" em todas as cidades da mesma tela (regra 1; \"Cidade de Cerulean\" mede 89 px)"
+  },
+  {
+   "en": "LAVENDER TOWN (etiqueta do Arquivo Fama)",
+   "pt": "Cidade Lavender",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": false,
+   "frente": "D3",
+   "obs": "etiqueta de 84 px em FONT_SMALL: sem \"de\" em todas as cidades da mesma tela (regra 1; \"Cidade de Cerulean\" mede 89 px)"
+  },
+  {
+   "en": "CELADON CITY (etiqueta do Arquivo Fama)",
+   "pt": "Cidade Celadon",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": false,
+   "frente": "D3",
+   "obs": "etiqueta de 84 px em FONT_SMALL: sem \"de\" em todas as cidades da mesma tela (regra 1; \"Cidade de Cerulean\" mede 89 px)"
+  },
+  {
+   "en": "FUCHSIA CITY (etiqueta do Arquivo Fama)",
+   "pt": "Cidade Fuchsia",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": false,
+   "frente": "D3",
+   "obs": "etiqueta de 84 px em FONT_SMALL: sem \"de\" em todas as cidades da mesma tela (regra 1; \"Cidade de Cerulean\" mede 89 px)"
+  },
+  {
+   "en": "SAFFRON CITY (etiqueta do Arquivo Fama)",
+   "pt": "Cidade Saffron",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": false,
+   "frente": "D3",
+   "obs": "etiqueta de 84 px em FONT_SMALL: sem \"de\" em todas as cidades da mesma tela (regra 1; \"Cidade de Cerulean\" mede 89 px)"
+  },
+  {
+   "en": "PEWTER GYM (etiqueta do Arquivo Fama)",
+   "pt": "Ginásio Pewter",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": false,
+   "frente": "D3",
+   "obs": "etiqueta de 84 px em FONT_SMALL: \"Ginásio de Cerulean\" mede 93 px; todos sem \"de\" (no texto corrido vale \"Ginásio de X\")"
+  },
+  {
+   "en": "CERULEAN GYM (etiqueta do Arquivo Fama)",
+   "pt": "Ginásio Cerulean",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": false,
+   "frente": "D3",
+   "obs": "etiqueta de 84 px em FONT_SMALL: \"Ginásio de Cerulean\" mede 93 px; todos sem \"de\" (no texto corrido vale \"Ginásio de X\")"
+  },
+  {
+   "en": "VERMILION GYM (etiqueta do Arquivo Fama)",
+   "pt": "Ginásio Vermilion",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": false,
+   "frente": "D3",
+   "obs": "etiqueta de 84 px em FONT_SMALL: \"Ginásio de Cerulean\" mede 93 px; todos sem \"de\" (no texto corrido vale \"Ginásio de X\")"
+  },
+  {
+   "en": "CELADON GYM (etiqueta do Arquivo Fama)",
+   "pt": "Ginásio Celadon",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": false,
+   "frente": "D3",
+   "obs": "etiqueta de 84 px em FONT_SMALL: \"Ginásio de Cerulean\" mede 93 px; todos sem \"de\" (no texto corrido vale \"Ginásio de X\")"
+  },
+  {
+   "en": "FUCHSIA GYM (etiqueta do Arquivo Fama)",
+   "pt": "Ginásio Fuchsia",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": false,
+   "frente": "D3",
+   "obs": "etiqueta de 84 px em FONT_SMALL: \"Ginásio de Cerulean\" mede 93 px; todos sem \"de\" (no texto corrido vale \"Ginásio de X\")"
+  },
+  {
+   "en": "SAFFRON GYM (etiqueta do Arquivo Fama)",
+   "pt": "Ginásio Saffron",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": false,
+   "frente": "D3",
+   "obs": "etiqueta de 84 px em FONT_SMALL: \"Ginásio de Cerulean\" mede 93 px; todos sem \"de\" (no texto corrido vale \"Ginásio de X\")"
+  },
+  {
+   "en": "CINNABAR GYM (etiqueta do Arquivo Fama)",
+   "pt": "Ginásio Cinnabar",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": false,
+   "frente": "D3",
+   "obs": "etiqueta de 84 px em FONT_SMALL: \"Ginásio de Cerulean\" mede 93 px; todos sem \"de\" (no texto corrido vale \"Ginásio de X\")"
+  },
+  {
+   "en": "VIRIDIAN GYM (etiqueta do Arquivo Fama)",
+   "pt": "Ginásio Viridian",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": false,
+   "frente": "D3",
+   "obs": "etiqueta de 84 px em FONT_SMALL: \"Ginásio de Cerulean\" mede 93 px; todos sem \"de\" (no texto corrido vale \"Ginásio de X\")"
+  },
+  {
+   "en": "ADMIN (pic feminina)",
+   "pt": "Executiva",
+   "fonte": "criado",
+   "categoria": "personagem",
+   "detectar": false,
+   "frente": "D3",
+   "obs": "decisão do Cintra (23/10): a Admin de pic ROCKET_GRUNT_F usa TRAINER_CLASS_ROCKET_ADMIN_F = 108"
   }
  ],
  "proibidos": [

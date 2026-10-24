@@ -604,8 +604,8 @@ def test_action_prompt_names_the_players_mon_without_prefix(repo):
 
 
 def test_fame_checker_windows(repo):
-    inc(repo, 'gFameCheckerPersonName_A::\n\t.string "' + "A" * 9 + '$"\n\n'        # 54 <= 56
-              'gFameCheckerPersonName_B::\n\t.string "' + "A" * 10 + '$"\n\n'       # 60 > 56
+    inc(repo, 'gFameCheckerPersonName_A::\n\t.string "' + "A" * 34 + 'i$"\n\n'      # 208: sai na caixa de 208 px
+              'gFameCheckerPersonName_B::\n\t.string "' + "A" * 35 + '$"\n\n'        # 210 > 208
               'gFameCheckerFlavorTextOriginLocation_A::\n\t.string "' + "A" * 16 + 'i$"\n\n'   # small: 80+4
               'gFameCheckerFlavorTextOriginObjectName_A::\n\t.string "' + "A" * 17 + '$"\n\n'  # 85 > 84
               'gFameCheckerFlavorText_A::\n\t.string "' + "A" * 34 + 'i$"\n',                # 208
