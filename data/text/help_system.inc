@@ -401,11 +401,11 @@ Help_Text_AnswerWhatAreMoves::
 	.string "máquinas.$"
 
 Help_Text_AnswerWhatAreHiddenMoves::
-	.string "Os golpes ocultos são os que têm\n"
+	.string "Golpes ocultos são os que têm\n"
 	.string "importância especial para a sua\n"
-	.string "aventura. Para usar um deles fora de\n"
-	.string "batalha, abra o menu “Pokémon” e faça\n"
-	.string "o Pokémon que conhece o golpe usá-lo.\n"
+	.string "aventura. Para usar um desses golpes\n"
+	.string "fora de batalha, abra o menu “Pokémon”\n"
+	.string "e faça o Pokémon que o conhece usá-lo.\n"
 	.string "Um Pokémon desmaiado pode usar um\n"
 	.string "golpe oculto fora de batalha.$"
 
