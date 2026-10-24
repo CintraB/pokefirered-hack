@@ -245,7 +245,8 @@ def _nomes_inteiros() -> set[str]:
              if " " in t["pt"] and len(t["pt"]) > 5 and "{" not in t["pt"]}
     nomes |= {"Equipe Rocket", "Poké Bola", "Poké Bolas", "Dojo de Luta", "Mestre de Caratê",
               "Deslize de Pedras", "Dança das Espadas", "Repelente Máximo", "Ataque Especial",
-              "Defesa Especial", "Dentes de Ouro",
+              "Defesa Especial", "Dentes de Ouro", "Cidade de Vermilion", "Floresta de Viridian",
+              "Caverna de Cerulean", "Esmagamento de Pedras", "Compartilhador de Exp.",
               # C2: nomes criados em fala (alguns são "interface" no glossário e ficam fora do filtro acima)
               "Irmãos Rocket", "Relatório Pokémon", "Quadro de Tempos", "Pontos de Exp.", "Centro Pokémon",
               "Federação Motoqueira de Kanto", "Filial de Tiksi", "Porto da Ilha Seis",

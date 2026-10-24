@@ -186,15 +186,15 @@ def test_mutacao_tipo_terra_e_acusado():
 
 # ---- I4 / M11: lugares compostos com a forma cheia -----------------------------------------
 
-# forma curta -> (forma cheia, arquivos onde a curta continua valendo: nome de mapa/região, etiqueta de
-# 84 px do Arquivo Fama e Quest Log, que copia o lugar para gStringVar2 de 19 letras)
+# forma curta -> (forma cheia, arquivos onde a curta continua valendo: nome de mapa/região (18 letras), etiqueta
+# de 84 px do Arquivo Fama e, só para a Floresta, o Quest Log, que copia o lugar para gStringVar2 (19 letras
+# + fim; "Floresta de Viridian" tem 20, "Caverna de Cerulean" tem 19 e cabe)
 SHORT_PLACES = {
     "Cidade Vermilion": ("Cidade de Vermilion", {"src/data/region_map/region_map_sections.json",
                                                  "data/text/fame_checker.inc"}),
     "Floresta Viridian": ("Floresta de Viridian", {"src/data/region_map/region_map_sections.json",
                                                    "src/data/text/quest_log.h"}),
-    "Caverna Cerulean": ("Caverna de Cerulean", {"src/data/region_map/region_map_sections.json",
-                                                 "src/data/text/quest_log.h"}),
+    "Caverna Cerulean": ("Caverna de Cerulean", {"src/data/region_map/region_map_sections.json"}),
     "Porto Vermilion": ("Porto de Vermilion", set()),
 }
 
@@ -238,10 +238,8 @@ def test_a_forma_curta_continua_no_nome_de_mapa_e_no_arquivo_fama():
 
 
 def test_vermilion_na_rota_16_nao_mistura_as_duas_formas():
-    flat = _flat(_text("data/maps/Route16/text.inc", "Route16_Text_FuchsiaToVermilionInfo")) \
-        if ("data/maps/Route16/text.inc", "Route16_Text_FuchsiaToVermilionInfo") in _entries() else None
     texts = [_flat(t) for (f, _), t in _entries().items() if f == "data/maps/Route16/text.inc" and "Fuchsia" in t]
-    assert flat or any("da Cidade de Fuchsia até a Cidade de Vermilion" in t for t in texts), texts
+    assert texts and any("da Cidade de Fuchsia até a Cidade de Vermilion" in t for t in texts), texts
 
 
 def test_mutacao_forma_curta_de_lugar_e_acusada():
@@ -455,8 +453,8 @@ def test_falas_em_serie_com_uma_redacao_so():
         == flat[("data/maps/FuchsiaCity_Gym/text.inc", "FuchsiaCity_Gym_Text_MakeSpaceForThis")] \
         == "Abra espaço para isto, criança!$"
     # troca no jogo
-    assert "Quer trocar pelo meu {STR_VAR_2}?$" in flat[("data/text/ingame_trade.inc", "Trade_Text_DoYouHaveMonWantToTradeForMon")] \
-        or "Quer trocar pelo meu" in " ".join(t for (f, _), t in flat.items() if f == "data/text/ingame_trade.inc")
+    assert flat[("data/text/ingame_trade.inc", "Trade_Text_DoYouHaveMonWantToTradeForMon")].endswith(
+        "Quer trocar pelo meu {STR_VAR_2}?$")
     assert "Quer trocar pelo meu {STR_VAR_2}?" in " ".join(
         t for (f, _), t in flat.items() if f == "data/maps/VermilionCity_House2/text.inc")
 
@@ -472,10 +470,8 @@ def test_pergunta_de_salvar_com_uma_redacao_so():
 
 
 def test_pontos_de_experiencia_da_torre_como_o_resto_do_jogo():
-    t = _flat(_text("data/maps/TrainerTower_Lobby/text.inc", "TrainerTower_Lobby_Text_ExplainLobby")) \
-        if ("data/maps/TrainerTower_Lobby/text.inc", "TrainerTower_Lobby_Text_ExplainLobby") in _entries() else None
     joined = " ".join(_flat(x) for (f, _), x in _entries().items() if f == "data/maps/TrainerTower_Lobby/text.inc")
-    assert "não rende PE nem dinheiro." in joined, t
+    assert "não rende PE nem dinheiro." in joined
     assert "Pontos de Exp." not in joined
 
 
@@ -489,3 +485,59 @@ def test_mutacao_ajuda_diferente_e_acusada():
     a = _flat(_text("data/text/help_system.inc", "Help_Text_AnswerWhatAreHiddenMoves"))
     b = _flat(_text("data/text/help_system.inc", "Help_Text_DefineHMMove")).replace("Golpes ocultos", "Os golpes ocultos")
     assert a != b
+
+
+# ---- Fix round 1: Quest Log, Passe 7 Cores e vocativo "cara" ---------------------------------
+
+def test_quest_log_caverna_cheia_e_floresta_curta():
+    """O Quest Log copia o lugar para gStringVar2 (19 letras + fim): a Caverna cabe na forma cheia."""
+    caverna = _text("src/data/text/quest_log.h", "gText_QuestLog_CeruleanCave")
+    floresta = _text("src/data/text/quest_log.h", "gText_QuestLog_ViridianForest")
+    assert caverna == "Caverna de Cerulean" and len(caverna) <= 19
+    assert floresta == "Floresta Viridian"          # "Floresta de Viridian" tem 20 letras e estoura o buffer
+    assert len("Floresta de Viridian") > 19
+
+
+def test_passe_7_cores_com_o_desenho_do_arco_iris():
+    desc = _flat(_text("src/data/items.json", "ITEM_RAINBOW_PASS"))
+    assert "Cidade de Vermilion e Ilhas Sevii." in desc and "desenho de arco-íris" in desc, desc
+
+
+# vocativo "cara" (e "minha cara jovem") dirigido ao jogador marca gênero (Ruling 24); "um cara legal", "com cara de",
+# "Cara Pokémon" e "Cara Feia" são outra coisa. A palavra do Easy Chat ("cara" = dude) fica de fora.
+VOCATIVE_CARA = re.compile(r"(?:,\s*|^|[.!?…:]\s+)(?:[Mm]inha\s+)?[Cc]ara\b(?!\s+(?:Pokémon|Feia|de\b))")
+
+
+def vocativo_cara(entries: dict[tuple[str, str], str]) -> list[str]:
+    return [f"{f}: {lbl}" for (f, lbl), t in entries.items()
+            if "easy_chat" not in f and VOCATIVE_CARA.search(_flat(t))]
+
+
+def test_nenhum_vocativo_cara():
+    assert vocativo_cara(_entries()) == []
+
+
+def test_vocativos_cara_trocados_mantendo_o_tom():
+    flat = {k: _flat(t) for k, t in _entries().items()}
+    assert flat[("data/maps/Route14/text.inc", "Route14_Text_IsaacPostBattle")] == "Criar Pokémon é um saco, hein.$"
+    assert "Não, sério, eu não entendo mesmo." in flat[("data/maps/ThreeIsland/text.inc", "ThreeIsland_Text_OughtToBeThankingUs")]
+    assert flat[("data/maps/ThreeIsland/text.inc", "ThreeIsland_Text_Biker1PostBattle")].startswith("Poxa, sério…")
+    assert flat[("data/maps/Route17/text.inc", "Route17_Text_BillyIntro")].endswith("A gente manda nas estradas!$")
+    assert flat[("data/maps/SilphCo_11F/text.inc", "SilphCo_11F_Text_ThanksForSavingMeDearGirl")].startswith(
+        "Presidente: Ah, que alívio!")
+
+
+def test_mutacao_vocativo_cara_e_acusado():
+    for file, label, old, new in (
+            ("data/maps/Route14/text.inc", "Route14_Text_IsaacPostBattle", "saco, hein.", "saco, cara."),
+            ("data/maps/ThreeIsland/text.inc", "ThreeIsland_Text_OughtToBeThankingUs", "Não, sério,", "Não, cara,"),
+            ("data/maps/ThreeIsland/text.inc", "ThreeIsland_Text_Biker1PostBattle", "Poxa, sério", "Poxa, cara"),
+            ("data/maps/SilphCo_11F/text.inc", "SilphCo_11F_Text_ThanksForSavingMeDearGirl", "Ah, que alívio!",
+             "Ah, minha cara jovem!")):
+        entries = dict(_entries())
+        assert old in entries[(file, label)], (file, label)
+        entries[(file, label)] = entries[(file, label)].replace(old, new)
+        assert vocativo_cara(entries) == [f"{file}: {label}"], (file, label)
+    # falsos positivos que o teste não pode acusar
+    for ok in ("Eu sou um cara legal.", "Cara Pokémon: Ih…", "Está com cara de cansaço.", "Cara Feia"):
+        assert not VOCATIVE_CARA.search(ok), ok
