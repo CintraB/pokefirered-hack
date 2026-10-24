@@ -3,7 +3,7 @@ gText_WouldYouLikeToSaveTheGame::
 
 gText_AlreadySaveFile_WouldLikeToOverwrite::
 	.string "Já existe um jogo salvo.\n"
-	.string "Pode sobrescrevê-lo?$"
+	.string "Quer gravar por cima?$"
 
 gText_SavingDontTurnOffThePower::
 	.string "Salvando…\n"

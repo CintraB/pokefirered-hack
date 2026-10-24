@@ -761,7 +761,7 @@ Help_Text_HowToUsePlayer::
 Help_Text_HowToUseSave::
 	.string "{CIRCLE_1} Escolha “Salvar” no menu.\n"
 	.string "{CIRCLE_2} Escolha “Sim” e seu progresso é\n"
-	.string "   gravado no arquivo de save.\n"
+	.string "   registrado no jogo salvo.\n"
 	.string "Depois de salvar, você pode desligar o\n"
 	.string "jogo. Ele poderá ser retomado de onde\n"
 	.string "você salvou.$"
