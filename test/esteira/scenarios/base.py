@@ -48,6 +48,24 @@ class Scenario:
         self.emu.screenshot(path)
         return path
 
+    def _shot_next_frame(self, name: str) -> str:
+        """Foto do estado que acabou de ser lido na RAM, sem mudar o ritmo do roteiro.
+
+        O jogo grava rolagem e janelas na RAM durante o quadro e só as copia para os
+        registradores no VBlank: se a condição ficou verdadeira justo no último quadro
+        emulado, a tela atual ainda é a do quadro anterior (ex.: `gBattle_BG0_Y = 160` do
+        menu de ação da batalha). Avança um quadro, fotografa e volta ao savestate, para que
+        o resto do roteiro (e o RNG, que avança a cada VBlank) siga igual a sem a foto."""
+        self.shots.mkdir(parents=True, exist_ok=True)
+        state = str(self.shots / f".{name}.foto.ss")
+        self.emu.save_state(state)
+        try:
+            self.emu.frames(1)
+            return self._shot(name)
+        finally:
+            self.emu.load_state(state)
+            Path(state).unlink(missing_ok=True)
+
     def _flow(self, name: str, fn) -> None:
         """Passo de fluxo: falha (tempo esgotado/asserção) vira Result e interrompe o roteiro."""
         if self.suite.run(name, fn).status == "falha":

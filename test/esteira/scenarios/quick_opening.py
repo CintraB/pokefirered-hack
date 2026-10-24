@@ -274,7 +274,8 @@ class OpeningScenario(Scenario):
         driver.wait_battle_start()
         self.ctl.advance_text(lambda: driver.controller_func() == "HandleInputChooseAction",
                               SCENE_TIMEOUT, "menu de ação da batalha do rival")
-        self.measures["battle_shot"] = self._shot("batalha_rival")
+        # o controller e gBattle_BG0_Y mudam no mesmo quadro; a tela só no VBlank seguinte
+        self.measures["battle_shot"] = self._shot_next_frame("batalha_rival")
         outcome = driver.fight_to_end()
         self.measures["rival_outcome"] = outcome
         self._finish_script("volta ao overworld depois do rival")
