@@ -122,4 +122,4 @@ const u8 gText_QuestLog_PokemonMansion[] = _("Mansão Pokémon");
 const u8 gText_QuestLog_PokemonResearchLab[] = _("Laboratório Pokémon");
 const u8 gText_QuestLog_VictoryRoad[] = _("Estrada da Vitória");
 const u8 gText_QuestLog_PokemonLeague[] = _("Liga Pokémon");
-const u8 gText_QuestLog_CeruleanCave[] = _("Caverna Cerulean");
+const u8 gText_QuestLog_CeruleanCave[] = _("Caverna de Cerulean");
