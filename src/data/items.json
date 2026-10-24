@@ -5648,7 +5648,7 @@
       "price": 0,
       "holdEffect": "HOLD_EFFECT_NONE",
       "holdEffectParam": 0,
-      "description_english": "Uma encomenda a ser entregue ao\\nProf. Carvalho, da Poké Mart da\\nCidade de Viridian.",
+      "description_english": "Uma encomenda do Poké Mart da\\nCidade de Viridian para o\\nProf. Carvalho.",
       "importance": 2,
       "registrability": 0,
       "pocket": "POCKET_KEY_ITEMS",
