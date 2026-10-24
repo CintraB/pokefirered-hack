@@ -150,7 +150,7 @@ def test_real_families_have_their_windows(real_rules):
 @pytest.mark.parametrize("label, expected", [
     ("gText_1BigMushroom", 214),                    # multiescolha: (largura + 9) / 8 + 1 <= 28
     ("gText_Kanto", 44), ("gText_Seen", 72), ("gText_AreaUnknown", 88), ("gText_Cry", 228),
-    ("gText_PokedexPokemon", 49), ("gText_Page", 200),                          # Pokédex
+    ("gText_PokedexPokemonPrefix", 49), ("gText_Page", 200),                    # Pokédex
     ("gText_F700JoinedChat", 168), ("gText_Exit", 48), ("gText_Register", 80),  # Union Room
     ("gFameCheckerOakName", 56), ("gFameCheckerText_MainScreenUI", 188),        # Fame Checker
     ("gText_Profile", 128), ("gText_QuitEditing", 176),                         # Easy Chat

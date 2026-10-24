@@ -207,3 +207,395 @@ def test_regex_do_leitor_reconhece_o_caso_da_revisao():
     assert _gendered_reader_sentences("Se você sente que está sendo observado no escuro.")
     assert not _gendered_reader_sentences("Se você sentir olhos te vigiando no escuro, é o Haunter.")
     assert not _gendered_reader_sentences("Dizem que o Pokémon, ao ser perseguido, atrai o agressor.")
+
+
+# ---- Task F3: descrições de golpes e habilidades + minors da Pokédex -------------------------
+
+MOVES_C = "src/move_descriptions.c"
+ABILITIES_H = "src/data/text/abilities.h"
+MOVE_DESC_PX = 15 * 8 - 7          # janela mais estreita da descrição de golpe (resumo): 113 px
+MOVE_DESC_LINES = 4
+ABILITY_DESC_PX = 29 * 8 - 2       # janela da habilidade no resumo: 230 px
+ABILITY_DESC_CHARS = 51            # abilityDescStrBuf[52]
+
+
+def _read(rel: str) -> str:
+    return (REPO_ROOT / rel).read_text(encoding="utf-8")
+
+
+def _move_descriptions() -> dict[str, str]:
+    """rótulo -> texto cru (com as quebras `\n` literais) de cada gMoveDescription_*."""
+    out = {}
+    for m in re.finditer(r"const u8 (gMoveDescription_\w+)\[\] = _\((.*?)\);", _read(MOVES_C), re.S):
+        out[m.group(1)] = "".join(re.findall(r'"((?:[^"\\]|\\.)*)"', m.group(2)))
+    return out
+
+
+def _ability_descriptions() -> dict[str, str]:
+    return {m.group(1): m.group(2)
+            for m in re.finditer(r'static const u8 (s\w+Description)\[\] = _\("((?:[^"\\]|\\.)*)"\);', _read(ABILITIES_H))}
+
+
+def _flat(text: str) -> str:
+    return text.replace(BS_N, " ")
+
+
+def test_golpes_e_habilidades_cobertos_por_inteiro():
+    moves, abilities = _move_descriptions(), _ability_descriptions()
+    assert len(moves) == 354
+    assert len(abilities) == 78                       # 77 habilidades + "sem habilidade"
+    pointers = re.findall(r"\[MOVE_\w+\s*-\s*1\]\s*=\s*(gMoveDescription_\w+)", _read(MOVES_C))
+    assert sorted(pointers) == sorted(moves)          # nenhum golpe sem descrição
+
+
+@pytest.fixture(scope="module")
+def f3_entries():
+    return [e for e in ct._sources(REPO_ROOT)
+            if isinstance(e, ct._Entry) and e.file in (MOVES_C, ABILITIES_H)
+            and (e.label.startswith("gMoveDescription_") or e.label.endswith("Description"))]
+
+
+def test_f3_entradas_foram_extraidas(f3_entries):
+    assert len(f3_entries) == 354 + 78
+
+
+def test_f3_nenhum_ingles_sobrando(f3_entries):
+    assert ct.english_report(str(REPO_ROOT), f3_entries) == {}
+
+
+def test_f3_sem_achado_de_regra_nos_golpes_e_habilidades():
+    bad = []
+    for r in _results():
+        if r.status == "falha" and r.name.startswith("texto/") and (MOVES_C in r.detail or ABILITIES_H in r.detail):
+            if re.search(r"gMoveDescription_|Description", r.detail):
+                bad.append(f"{r.name}: {r.detail}")
+    assert bad == []
+
+
+def test_descricao_de_golpe_cabe_em_4_linhas_de_113_px():
+    wide, tall = [], []
+    for label, text in _move_descriptions().items():
+        if len(text.split(BS_N)) > MOVE_DESC_LINES:
+            tall.append(label)
+        if max(line_widths(text)) > MOVE_DESC_PX:
+            wide.append(label)
+    assert (wide, tall) == ([], [])
+
+
+def test_descricao_de_habilidade_cabe_numa_linha_de_230_px_e_51_letras():
+    bad = []
+    for label, text in _ability_descriptions().items():
+        if BS_N in text or max(line_widths(text)) > ABILITY_DESC_PX or len(text) > ABILITY_DESC_CHARS:
+            bad.append(label)
+    assert bad == []
+
+
+# Caixa alta do jogo inglês ("ATTACK", "POKéMON"): no texto achatado (quebra -> espaço) e sem códigos
+CAPS = re.compile(r"(?<![\w{])[A-Z]{3,}")
+
+
+def _caps(text: str) -> bool:
+    return bool(CAPS.search(re.sub(r"\{[^}]*\}", "", _flat(text))))
+
+
+def test_f3_sem_unidade_imperial_nem_caixa_alta_do_jogo_ingles():
+    texts = {**_move_descriptions(), **_ability_descriptions()}
+    imperial = [k for k, t in texts.items() if IMPERIAL.search(_flat(t))]
+    caps = [k for k, t in texts.items() if _caps(t)]
+    assert (imperial, caps) == ([], [])
+
+
+# Termos que a quebra de linha não pode partir (atributos abreviados, valor + unidade, nomes de golpe citados)
+F3_PROTECTED = [r"(?:Atq\.|Def\.) Esp\.", r"\d+º? (?:PS|PP|turnos?|vezes)\b", r"Centro Pokémon", r"Tela de Luz",
+                r"tipos? (?:Normal|Lutador|Voador|Venenoso|Terrestre|Pedra|Inseto|Fantasma|Aço|Fogo|Água|Planta"
+                r"|Elétrico|Psíquico|Gelo|Dragão|Sombrio)\b"]
+
+
+def test_f3_termos_compostos_nao_sao_partidos_na_quebra():
+    split = []
+    for label, text in _move_descriptions().items():
+        flat_break = text.replace(BS_N, "\n")
+        for pattern in F3_PROTECTED:
+            for m in re.finditer(pattern.replace(" ", r"[ \n]"), flat_break):
+                if "\n" in m.group(0):
+                    split.append(f"{label}: {m.group(0)!r}")
+    assert split == []
+
+
+# Número por extenso + quebra + o que ele conta ("cinco\nvezes", "dois\nturnos"), como o NUMBER_BREAK_UNIT
+# da F2: a quebra só pode vir depois do conectivo de uma faixa ("de duas a\ncinco vezes"). "um/uma" fica de
+# fora (é artigo na maioria das descrições: "um\nalvo").
+NUMBER_WORD_BREAK = re.compile(r"\b(?:duas|dois|três|quatro|cinco|seis|sete|oito|nove|dez|\d+º?)"
+                               + re.escape(BS_N) + r"(?!(?:a|ou|e)\b)", re.I)
+
+
+def test_f3_numero_por_extenso_nao_fica_partido_do_que_conta():
+    found = [f"{k}: {t[max(0, m.start() - 10):m.end() + 8]!r}" for k, t in _move_descriptions().items()
+             for m in NUMBER_WORD_BREAK.finditer(t)]
+    assert found == []
+
+
+def test_f3_regex_de_numero_partido_reconhece_os_casos_da_revisao():
+    assert NUMBER_WORD_BREAK.search(r"de duas a cinco\nvezes.")
+    assert NUMBER_WORD_BREAK.search(r"por dois\nturnos")
+    assert NUMBER_WORD_BREAK.search(r"duas a cinco\nsementes")
+    assert not NUMBER_WORD_BREAK.search(r"de duas a\ncinco vezes.")
+    assert not NUMBER_WORD_BREAK.search(r"por dois a\ntrês turnos")
+    assert not NUMBER_WORD_BREAK.search(r"acerta um\nalvo")
+
+
+READER_F3 = re.compile(r"\b(?:você|vocês|te|lhe)\b", re.I)
+
+
+def _addresses_player(text: str) -> bool:
+    return "{PLAYER}" in text or bool(READER_F3.search(_flat(text)))
+
+
+def test_f3_nao_dirige_fala_ao_jogador():
+    # descrições falam do usuário/alvo, nunca "você": sem gênero do jogador por construção
+    texts = {**_move_descriptions(), **_ability_descriptions()}
+    assert [k for k, t in texts.items() if _addresses_player(t)] == []
+
+
+def test_f3_guardas_veem_depois_da_quebra():
+    # controles positivos: a regex roda no texto achatado, então `\n` literal não a cega
+    assert _addresses_player(r"serve para\nvocê usar")
+    assert _addresses_player(r"protege {PLAYER} do golpe")
+    assert not _addresses_player(r"o usuário\nusa o golpe")
+    assert _caps(r"reduz o\nATTACK do alvo")
+    assert _caps(r"um POKéMON selvagem")
+    assert not _caps(r"reduz o Atq. Esp.\ndo alvo em 20 PS")
+
+
+def test_f3_atributos_e_status_no_vocabulario_do_glossario():
+    texts = {**_move_descriptions(), **_ability_descriptions()}
+    old = re.compile(r"\b(?:alvo selvagem|HP|ATK|ATAQUE|DEFESA|VELOCIDADE|Ataque Esp\.|Defesa Esp\.|Atq Esp|Def Esp"
+                     r"|foe|inimig\w*)\b")
+    found = [f"{k}: {m.group(0)}" for k, t in texts.items() for m in [old.search(_flat(t))] if m]
+    assert found == []
+
+
+TM_CASE_PX = 18 * 8                 # estojo/loja de MT: janela de 18 tiles, x = 2, letterSpacing 1
+
+
+def test_f3_descricao_de_golpe_cabe_com_espacamento_1_do_estojo_de_mt():
+    # tm_case.c e shop.c imprimem com letterSpacing = 1, que a regra do check_text não conta:
+    # largura + 1 px por letra + x = 2 (vale para todos os golpes, não só os 58 de MT/MO)
+    wide = [k for k, t in _move_descriptions().items()
+            if max(line_widths(ln)[0] + len(ln) + 2 for ln in t.split(BS_N)) > TM_CASE_PX]
+    assert wide == []
+
+
+def test_f3_minors_da_revisao():
+    moves = {k[len("gMoveDescription_"):]: _flat(t) for k, t in _move_descriptions().items()}
+    assert "ficando com 1 PS" in moves["Endure"]
+    assert "do usuário" in moves["SilverWind"]
+    assert "para o usuário" in moves["LeechSeed"] and moves["LeechSeed"].count("alvo") == 1
+    assert "é feito rir" not in moves["Tickle"] and "Faz o alvo rir" in moves["Tickle"]
+    assert moves["Sandstorm"].startswith("Tempestade de areia")
+    assert "oponente" in moves["Spikes"]
+
+
+def test_golpes_citados_na_descricao_usam_o_nome_do_golpe():
+    names = set(re.findall(r'_\("([^"]+)"\)', _read("src/data/text/move_names.h")))
+    moves = _move_descriptions()
+    cited = {"RapidSpin": ["Ligação", "Embrulho", "Sanguessuga", "Espinhos"], "BrickBreak": ["Tela de Luz", "Refletir"],
+             "SpitUp": ["Acumular"], "Swallow": ["Acumular"], "MagicCoat": ["Sanguessuga"]}
+    for key, wanted in cited.items():
+        text = _flat(moves[f"gMoveDescription_{key}"])
+        for name in wanted:
+            assert name in names, name
+            assert name in text, (key, name)
+
+
+def test_minors_da_pokedex_herdados_da_f2():
+    ho_oh = "".join(re.findall(r'"([^"]*)"', _body("gHoOhPokedexText")))
+    clamperl = "".join(re.findall(r'"([^"]*)"', _body("gClamperlPokedexText")))
+    camerupt = _flat("".join(re.findall(r'"([^"]*)"', _body("gCameruptPokedexText"))))
+    salamence = _flat("".join(re.findall(r'"([^"]*)"', _body("gSalamencePokedexText"))))
+    assert "sete" + BS_N + "cores" not in ho_oh and "sete cores" in _flat(ho_oh)
+    assert "Uma" + BS_N + "vez" not in clamperl and "Uma vez na vida" in _flat(clamperl)
+    assert "Se irritado" not in camerupt and "Quando irritado" in camerupt
+    assert "garras que despedaçam e fogo" not in salamence
+    for label in ("gHoOhPokedexText", "gClamperlPokedexText", "gCameruptPokedexText", "gSalamencePokedexText"):
+        text = "".join(re.findall(r'"([^"]*)"', _body(label)))
+        assert len(text.split(BS_N)) <= DEX_LINES and max(line_widths(text)) <= DEX_WIDTH_PX, label
+
+
+# ---- Task F4: categorias da Pokédex, ordem "Pokémon Semente" e m/kg na tela ------------------
+
+ENTRIES_H = "src/data/pokemon/pokedex_entries.h"
+SCREEN_C = "src/pokedex_screen.c"
+CATEGORY_CHARS = 11                 # categoryStr[12] e o laço `index < 11` (src/pokedex_screen.c)
+STATS_WINDOW_PX = 13 * 8            # sWindowTemplate_DexEntry_SpeciesStats
+FOOTPRINT_X = 88                    # pegada na mesma janela, à direita de altura/peso
+
+
+def _dex_entries() -> dict[str, dict]:
+    """NATIONAL_DEX_X -> {category, height, weight} de `gPokedexEntries`."""
+    out = {}
+    for m in re.finditer(r"\[(NATIONAL_DEX_\w+)\]\s*=\s*\{(.*?)\n    \}", _read(ENTRIES_H), re.S):
+        body = m.group(2)
+        out[m.group(1)] = {"category": re.search(r'\.categoryName = _\("([^"]*)"\)', body).group(1),
+                           "height": int(re.search(r"\.height = (\d+)", body).group(1)),
+                           "weight": int(re.search(r"\.weight = (\d+)", body).group(1))}
+    return out
+
+
+@pytest.fixture(scope="module")
+def f4_entries():
+    return [e for e in ct._sources(REPO_ROOT)
+            if isinstance(e, ct._Entry) and e.file == ENTRIES_H and e.label.endswith(".categoryName")]
+
+
+def test_f4_todas_as_categorias_extraidas(f4_entries):
+    entries = _dex_entries()
+    assert len(entries) == 387                                     # NONE + 386 espécies
+    assert len(f4_entries) == len(entries)
+
+
+def test_f4_categoria_cabe_em_11_letras():
+    long_ = [f"{k}: {v['category']}" for k, v in _dex_entries().items() if len(v["category"]) > CATEGORY_CHARS]
+    assert long_ == []
+
+
+def test_f4_nenhuma_categoria_em_ingles(f4_entries):
+    assert ct.english_report(str(REPO_ROOT), f4_entries) == {}
+    caps = [k for k, v in _dex_entries().items() if v["category"].isupper() and v["category"] != "DNA"]
+    assert caps == []                                              # caixa alta do jogo inglês ("SEED")
+
+
+def test_f4_categorias_conhecidas():
+    entries = _dex_entries()
+    assert entries["NATIONAL_DEX_BULBASAUR"]["category"] == "Semente"
+    assert entries["NATIONAL_DEX_PIKACHU"]["category"] == "Rato"
+    assert entries["NATIONAL_DEX_MEW"]["category"] == "Inédito"
+    assert entries["NATIONAL_DEX_TOTODILE"]["category"] == entries["NATIONAL_DEX_CROCONAW"]["category"] == "Bocarra"
+
+
+def test_f4_sem_achado_de_regra_nas_categorias():
+    bad = [f"{r.name}: {r.detail}" for r in _results()
+           if r.status == "falha" and r.name.startswith("texto/") and ENTRIES_H in r.detail]
+    assert bad == []
+
+
+def test_f4_ordem_pokemon_semente_e_cabe_na_janela():
+    src = _read(SCREEN_C)
+    body = src[src.index("void DexScreen_PrintMonCategory"):src.index("static void DexScreen_PrintMonMeasure")]
+    assert "gText_PokedexPokemon," not in body
+    assert body.index("gText_PokedexPokemonPrefix") < body.index("FONT_SMALL, categoryStr")
+    strings = _read("src/strings.c")
+    prefix = re.search(r'gText_PokedexPokemonPrefix\[\] = _\("([^"]*)"\)', strings).group(1)
+    assert prefix == "Pokémon "
+    widest = max(line_widths(v["category"], "small")[0] for v in _dex_entries().values())
+    unknown = line_widths("?" * CATEGORY_CHARS, "small")[0]
+    assert line_widths(prefix, "small")[0] + max(widest, unknown) <= STATS_WINDOW_PX
+
+
+def _dex_measure(tenths: int, unit: str) -> str:
+    """Porte de DexScreen_PrintMonMeasure (src/pokedex_screen.c): 3 casas inteiras com espaço à
+    esquerda, vírgula decimal, espaço e a unidade."""
+    tenths = min(tenths, 9999)
+    digits, output = "", False
+    for divisor in (1000, 100, 10):
+        digit = tenths // divisor % 10
+        if digit == 0 and not output and divisor != 10:
+            digits += " "
+        else:
+            output = True
+            digits += str(digit)
+    return f"{digits},{tenths % 10} {unit}"
+
+
+def test_f4_conversao_metrica_casos_conhecidos():
+    e = _dex_entries()
+    pikachu, onix, snorlax = e["NATIONAL_DEX_PIKACHU"], e["NATIONAL_DEX_ONIX"], e["NATIONAL_DEX_SNORLAX"]
+    assert _dex_measure(pikachu["height"], "m") == "  0,4 m"
+    assert _dex_measure(pikachu["weight"], "kg") == "  6,0 kg"
+    assert _dex_measure(onix["height"], "m") == "  8,8 m"
+    assert _dex_measure(onix["weight"], "kg") == "210,0 kg"
+    assert _dex_measure(snorlax["weight"], "kg") == "460,0 kg"
+    assert _dex_measure(e["NATIONAL_DEX_GASTLY"]["weight"], "kg") == "  0,1 kg"
+    assert _dex_measure(e["NATIONAL_DEX_WAILORD"]["height"], "m") == " 14,5 m"
+    assert _dex_measure(e["NATIONAL_DEX_GROUDON"]["weight"], "kg") == "950,0 kg"
+    # nenhum valor da tabela passa de 999,9: as 3 casas inteiras bastam
+    assert max(max(v["height"], v["weight"]) for v in e.values()) <= 9999
+
+
+def test_f4_tela_usa_metro_e_quilo_sem_conversao_imperial():
+    src = _read(SCREEN_C)
+    body = src[src.index("static void DexScreen_PrintMonMeasure"):src.index("void DexScreen_PrintMonFlavorText")]
+    assert "gText_Meters" in body and "gText_Kg" in body and "CHAR_COMMA" in body
+    for imperial in ("gText_Lbs", "4536", "254", "inches", "feet", "lbs", "CHAR_SGL_QUOTE_RIGHT", "CHAR_PERIOD"):
+        assert imperial not in body, imperial
+    assert "gText_Lbs" not in src
+    # o valor começa em x + 30; "999,9 " são 6 casas de 5 px; a unidade termina antes da pegada
+    assert "x += 30;" in body
+    for unit in ("m", "kg"):
+        assert 30 + 6 * 5 + line_widths(unit, "small")[0] <= FOOTPRINT_X
+
+
+def test_f4_formato_do_c_e_o_do_porte():
+    # amarra `_dex_measure` ao C: se o laço ou as casas mudarem lá, este teste reprova
+    src = _read(SCREEN_C)
+    body = src[src.index("#define DEX_MEASURE_INT_DIGITS"):src.index("void DexScreen_PrintMonFlavorText")]
+    assert re.search(r"#define DEX_MEASURE_INT_DIGITS 3\b", body)
+    assert "if (tenths > 9999)" in body and "tenths = 9999;" in body
+    assert "for (divisor = 1000; divisor >= 10; divisor /= 10)" in body
+    assert "if (digit == 0 && !output && divisor != 10)" in body
+    assert "buffer[i++] = CHAR_COMMA;" in body and "buffer[i++] = (tenths % 10) + CHAR_0;" in body
+    assert "buffer[i++] = 5;" in body and "buffer[i++] = 0;" in body          # espaçamento mínimo 5, depois 0
+    # não capturado: DEX_MEASURE_INT_DIGITS casas, as `unknownDigits` da direita com "?" (" ??,?" / "???,?")
+    assert "for (j = 0; j < DEX_MEASURE_INT_DIGITS; j++)" in body
+    assert "(j < DEX_MEASURE_INT_DIGITS - unknownDigits) ? CHAR_SPACE : CHAR_QUESTION_MARK" in body
+    assert re.search(r"gText_HT, gText_Meters, gPokedexEntries\[species\]\.height, 2,", body)
+    assert re.search(r"gText_WT, gText_Kg, gPokedexEntries\[species\]\.weight, 3,", body)
+    assert len(_dex_measure(0, "m")) == len(" ??,? m") and len(_dex_measure(0, "kg")) == len("???,? kg")
+
+
+def _english_categories() -> dict[str, str]:
+    """NATIONAL_DEX_X -> categoria inglesa, do commit base da tradução."""
+    out = subprocess.run(["git", "-C", str(REPO_ROOT), "show", f"{ct.TRANSLATION_BASE}:{ENTRIES_H}"],
+                         capture_output=True, text=True, encoding="utf-8")
+    if out.returncode != 0:
+        pytest.fail("sem o commit base da tradução: não dá para conferir as categorias no glossário")
+    return {m.group(1): re.search(r'\.categoryName = _\("([^"]*)"\)', m.group(2)).group(1)
+            for m in re.finditer(r"\[(NATIONAL_DEX_\w+)\]\s*=\s*\{(.*?)\n    \}", out.stdout, re.S)}
+
+
+def test_f4_toda_categoria_esta_no_glossario():
+    # cada par (inglês da base, PT-BR da tela) está no glossário como termo de interface;
+    # EGG/EVOLUTION já existiam (Ovo/Evolução) e não são duplicados (test_glossario.py)
+    terms = json.loads((REPO_ROOT / "test" / "esteira" / "glossario.json").read_text(encoding="utf-8"))["termos"]
+    interface = {(t["en"], t["pt"]) for t in terms if t["categoria"] == "interface"}
+    english, pt = _english_categories(), _dex_entries()
+    assert set(english) == set(pt)
+    pairs = {(english[k], pt[k]["category"]) for k in pt}
+    assert sorted(pairs - interface) == []
+    added = [t for t in terms if t.get("obs") == "categoria da Pokédex"]
+    assert {(t["en"], t["pt"]) for t in added} <= pairs                    # nada sobrando no bloco
+    assert len(added) == len(pairs) - len({("EGG", "Ovo"), ("EVOLUTION", "Evolução")} & pairs)
+    assert all(t["detectar"] is False and t["frente"] == "F" and t["fonte"] in ("GO", "criado") for t in added)
+    fonte = {t["en"]: t["fonte"] for t in added}
+    assert fonte["SEED"] == fonte["PSI"] == fonte["YOUNG FOWL"] == "GO"
+    assert fonte["FIRE MOUSE"] == fonte["FIRE HORSE"] == fonte["TIME TRAVEL"] == "criado"
+
+
+def test_f4_categorias_decididas_na_revisao():
+    e = _dex_entries()
+    assert e["NATIONAL_DEX_COMBUSKEN"]["category"] == "Ave Jovem"
+    assert e["NATIONAL_DEX_ABRA"]["category"] == e["NATIONAL_DEX_ALAKAZAM"]["category"] == "Psi"
+    assert e["NATIONAL_DEX_CYNDAQUIL"]["category"] == "Rato Fogo"         # mesmo molde de "Cavalo Fogo"
+    assert e["NATIONAL_DEX_PONYTA"]["category"] == "Cavalo Fogo"
+    assert e["NATIONAL_DEX_CELEBI"]["category"] == "Crononauta"
+    assert e["NATIONAL_DEX_LILEEP"]["category"] == "Lírio-Mar"
+    assert e["NATIONAL_DEX_SHEDINJA"]["category"] == "Casca"
+    assert e["NATIONAL_DEX_NUMEL"]["category"] == "Entorpecido"
+    cats = {v["category"] for v in e.values()}
+    assert not cats & {"Frango", "Psíquico", "Rato Ígneo", "Atemporal", "Anêmona", "Muda", "Lerdo"}
+
+
+def test_f4_textos_mortos_apagados():
+    for rel in ("src/strings.c", "include/strings.h"):
+        text = _read(rel)
+        assert "gText_Lbs" not in text and not re.search(r"gText_PokedexPokemon\[\]", text), rel

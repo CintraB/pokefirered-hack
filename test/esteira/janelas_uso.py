@@ -61,13 +61,13 @@ class SharedRow(NamedTuple):
 SHARED_ROWS: list[SharedRow] = [
     SharedRow("src/strings.c", 8, "gText_Cry", "gText_NextDataCancel", "", 236, "small",
               "barra de baixo da entrada da Pokédex: \"{START_BUTTON}Grito\" em x = 8 e os controles alinhados à "
-              "direita em 236 (src/pokedex_screen.c:2962-2963, :2297-2299)"),
+              "direita em 236 (src/pokedex_screen.c:2890-2891, :2297-2299)"),
     SharedRow("src/strings.c", 8, "gText_Cry", "gText_CancelPreviousData", "", 236, "small",
               "barra de baixo do mapa de área: \"{START_BUTTON}Grito\" em x = 8 e os controles alinhados à "
-              "direita em 236 (src/pokedex_screen.c:3142-3143, :2297-2299)"),
+              "direita em 236 (src/pokedex_screen.c:3070-3071, :2297-2299)"),
     SharedRow("src/strings.c", 8, "gText_DexCategory_*", "gText_Page", "99/99", 232, "normal",
               "título da categoria em x = 8 e \"PÁG. xx/xx\" alinhado à direita em 232 na janela 0 "
-              "(src/pokedex_screen.c:2380-2381, :2357-2364, :3439-3447)"),
+              "(src/pokedex_screen.c:2380-2381, :2357-2364, :3367-3375)"),
 ]
 
 
@@ -321,7 +321,7 @@ USAGE_RULES: list[UsageRule] = [
       "(src/pokedex_screen.c:2376-2380)"),
     U("src/pokedex_screen.c", "call:DexScreen_PrintStringWithAlignment", 30 * 8,
       "título da Pokédex: janela 0 de 30 tiles (src/pokedex_screen.c:246-250), centralizado em 240 "
-      "(src/pokedex_screen.c:1162, :3433-3451)"),
+      "(src/pokedex_screen.c:1162, :3361-3379)"),
     U("src/pokedex_screen.c", "call:DexScreen_PrintControlInfo", 236,
       "controles da Pokédex: FONT_SMALL alinhado à direita em 236 (src/pokedex_screen.c:2297-2299)", font="small"),
     *(U("src/pokedex_screen.c", "*", 52 - 8,
@@ -334,31 +334,32 @@ USAGE_RULES: list[UsageRule] = [
         "(src/pokedex_screen.c:1139, :1144); mede na normal, a mais larga", label=lb)
       for lb in ("gText_Seen", "gText_Owned")),
     U("src/pokedex_screen.c", "*", 88,
-      "\"Área desconhecida\": centralizado sobre a elipse de 88 px (src/pokedex_screen.c:3133-3136)",
+      "\"Área desconhecida\": centralizado sobre a elipse de 88 px (src/pokedex_screen.c:3061-3064)",
       font="small", label="gText_AreaUnknown"),
     *(U("src/pokedex_screen.c", "*", 10 * 8,
         "\"Área\"/\"Tamanho\": centralizados nas janelas sWindowTemplate_AreaMap_Area/Size de 10 tiles "
-        "(src/pokedex_screen.c:648-667, :3066, :3075)", font="small", label=lb) for lb in ("gText_Area", "gText_Size")),
+        "(src/pokedex_screen.c:648-667, :2994, :3003)", font="small", label=lb) for lb in ("gText_Area", "gText_Size")),
     U("src/pokedex_screen.c", "*", 236 - 8,
       "\"{START_BUTTON}Grito\": FONT_SMALL em x = 8 na barra de baixo, que divide com os controles alinhados "
-      "à direita em 236 (src/pokedex_screen.c:2962, :2299)", font="small", label="gText_Cry"),
+      "à direita em 236 (src/pokedex_screen.c:2890, :2299)", font="small", label="gText_Cry"),
     U("src/pokedex_screen.c", "*", 10,
       "\"{NO}\" antes do número, que vem em x + 9 (src/pokedex_screen.c:2215-2219); o glifo original mede "
       "10 px", font="small", label="gText_PokedexNo"),
     U("src/pokedex_screen.c", "*", 13 * 8 - 11 * 5,
-      "\" POKéMON\" depois da categoria (até 11 letras FONT_SMALL) na sWindowTemplate_DexEntry_SpeciesStats "
-      "de 13 tiles (src/pokedex_screen.c:608-613, :2700-2703)", font="small", label="gText_PokedexPokemon"),
+      "\"Pokémon \" antes da categoria (até 11 letras FONT_SMALL) na sWindowTemplate_DexEntry_SpeciesStats "
+      "de 13 tiles (src/pokedex_screen.c:608-613, :2702-2704)", font="small", label="gText_PokedexPokemonPrefix"),
     U("src/pokedex_screen.c", "*", 30,
-      "\"Alt.\"/\"Peso\": FONT_SMALL com o valor em x + 30 (src/pokedex_screen.c:2716, :2758-2759, :2850-2851)",
+      "\"Alt.\"/\"Peso\": FONT_SMALL com o valor em x + 30 (src/pokedex_screen.c:2771, :2762-2764)",
       font="small", label="gText_HT"),
     U("src/pokedex_screen.c", "*", 30,
-      "\"Alt.\"/\"Peso\": FONT_SMALL com o valor em x + 30 (src/pokedex_screen.c:2776, :2758-2759, :2850-2851)",
+      "\"Alt.\"/\"Peso\": FONT_SMALL com o valor em x + 30 (src/pokedex_screen.c:2779, :2762-2764)",
       font="small", label="gText_WT"),
-    U("src/pokedex_screen.c", "*", 13 * 8 - 30 - 6 * 5,
-      "unidade do peso: no valor que começa em x + 30 na janela de 13 tiles (src/pokedex_screen.c:608-613, "
-      ":2777-2851), depois de até 6 algarismos com espaçamento 5", font="small", label="gText_Lbs"),
+    *(U("src/pokedex_screen.c", "*", 88 - 30 - 6 * 5,
+        "unidade de altura/peso: no valor que começa em x + 30 (src/pokedex_screen.c:2771, :2779, "
+        ":2752-2764), depois de \"999,9 \" (6 casas com espaçamento 5), antes da pegada em x = 88 (src/pokedex_screen.c:2876)",
+        font="small", label=lb) for lb in ("gText_Meters", "gText_Kg")),
     U("src/pokedex_screen.c", "*", 200,
-      "\"PÁG. 1/ 2\": alinhado à direita em 232 (src/pokedex_screen.c:2357-2364, :3448) na janela 0 de 30 tiles "
+      "\"PÁG. 1/ 2\": alinhado à direita em 232 (src/pokedex_screen.c:2357-2364, :3375) na janela 0 de 30 tiles "
       "(src/pokedex_screen.c:246-250), menos \" 99/99\"", label="gText_Page"),
     U("src/pokedex_screen.c", "*", 23 * 8 - 56,
       "item vazio da lista numérica: sListMenuTemplate_OrderedListMenu item_X = 56 (src/pokedex_screen.c:517) "
