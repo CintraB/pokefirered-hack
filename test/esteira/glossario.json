@@ -13707,7 +13707,7 @@
    "categoria": "interface",
    "detectar": false,
    "frente": "H",
-   "obs": "imagem naming_screen/back_button.png (VOLTAR); mesmo termo do texto \"Voltar\"",
+   "obs": "imagens naming_screen/back_button.png e union_room_chat/bg.png (VOLTAR); mesmo termo do texto \"Voltar\"",
    "tela": "Tela de nome"
   },
   {
@@ -13717,8 +13717,8 @@
    "categoria": "interface",
    "detectar": false,
    "frente": "H",
-   "obs": "imagem easy_chat/button_window.png e naming_screen/back_button.png (BOTÃO)",
-   "tela": "Tela de nome"
+   "obs": "imagens easy_chat/button_window.png e naming_screen/back_button.png (BOTÃO)",
+   "tela": "Tela de nome / Easy Chat"
   },
   {
    "en": "SEND",
@@ -13762,12 +13762,12 @@
   },
   {
    "en": "CREDIT",
-   "pt": "Fichas",
+   "pt": "Moedas",
    "fonte": "criado",
    "categoria": "interface",
    "detectar": false,
    "frente": "H",
-   "obs": "imagem slot_machine/firered/bg.png (FICHAS); crédito do caça-níquel = fichas",
+   "obs": "imagem slot_machine/firered/bg.png (MOEDAS); mesmo termo de COINS (\"moedas\"); alternativa FICHAS gerada em h4/out, não aplicada",
    "tela": "Caça-níquel"
   },
   {
