@@ -125,37 +125,37 @@ Route15_Text_RouteSign::
     .string "A oeste: Cidade de Fuchsia$"
 
 Route15_Text_MyaIntro::
-    .string "MYA: Você é a pessoa certa.\n"
+    .string "Mya: Você é a pessoa certa.\n"
     .string "Me ajuda a treinar meu irmãozinho?$"
 
 Route15_Text_MyaDefeat::
-    .string "MYA: RON, você precisa se\n"
+    .string "Mya: Ron, você precisa se\n"
     .string "concentrar!\l"
     .string "Foque no que está fazendo!$"
 
 Route15_Text_MyaPostBattle::
-    .string "MYA: Certo, vamos intensificar.\n"
+    .string "Mya: Certo, vamos intensificar.\n"
     .string "Vou aumentar o nosso cardápio de\l"
     .string "treino!$"
 
 Route15_Text_MyaNotEnoughMons::
-    .string "MYA: Quer nos desafiar?\n"
+    .string "Mya: Quer nos desafiar?\n"
     .string "Mas você vai precisar de dois\l"
     .string "Pokémon.$"
 
 Route15_Text_RonIntro::
-    .string "RON: Minha irmã fica assustadora\n"
+    .string "Ron: Minha irmã fica assustadora\n"
     .string "quando a gente perde.$"
 
 Route15_Text_RonDefeat::
-    .string "RON: Ah, não, não…\n"
+    .string "Ron: Ah, não, não…\n"
     .string "Mana, desculpa!$"
 
 Route15_Text_RonPostBattle::
-    .string "RON: Ai, que saco…\n"
+    .string "Ron: Ai, que saco…\n"
     .string "Queria ter uma irmã legal…$"
 
 Route15_Text_RonNotEnoughMons::
-    .string "RON: Você queria batalhar com minha\n"
+    .string "Ron: Você queria batalhar com minha\n"
     .string "irmã e comigo?\p"
     .string "Então precisa ter dois Pokémon.$"

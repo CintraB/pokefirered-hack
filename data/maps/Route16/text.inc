@@ -83,37 +83,37 @@ Route16_Text_RouteSign::
     .string "Cidade de Fuchsia$"
 
 Route16_Text_JedIntro::
-    .string "JED: Nosso amor não tem limites.\n"
+    .string "Jed: Nosso amor não tem limites.\n"
     .string "Estamos apaixonados e fazemos\l"
     .string "questão de mostrar!$"
 
 Route16_Text_JedDefeat::
-    .string "JED: Ah, não!\n"
+    .string "Jed: Ah, não!\n"
     .string "Meu amor me viu como um perdedor!$"
 
 Route16_Text_JedPostBattle::
-    .string "JED: Escuta, LEA.\n"
+    .string "Jed: Escuta, Lea.\n"
     .string "Você precisa se concentrar menos em\l"
     .string "mim.$"
 
 Route16_Text_JedNotEnoughMons::
-    .string "JED: Você tem só um Pokémon?\n"
+    .string "Jed: Você tem só um Pokémon?\n"
     .string "Não há amor no seu coração?$"
 
 Route16_Text_LeaIntro::
-    .string "LEA: Às vezes, a intensidade do nosso\n"
+    .string "Lea: Às vezes, a intensidade do nosso\n"
     .string "amor me assusta.$"
 
 Route16_Text_LeaDefeat::
-    .string "LEA: Ohh! Mas o JED fica lindo até\n"
+    .string "Lea: Ohh! Mas o Jed fica lindo até\n"
     .string "perdendo!$"
 
 Route16_Text_LeaPostBattle::
-    .string "LEA: Ehehe, desculpa.\n"
-    .string "O JED é tão legal.$"
+    .string "Lea: Ehehe, desculpa.\n"
+    .string "O Jed é tão legal.$"
 
 Route16_Text_LeaNotEnoughMons::
-    .string "LEA: Ah, você não está com dois\n"
+    .string "Lea: Ah, você não está com dois\n"
     .string "Pokémon?\p"
     .string "Não é solitário para você ou para o\n"
     .string "seu Pokémon?$"

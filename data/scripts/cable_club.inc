@@ -1691,7 +1691,7 @@ CableClub_Text_EnjoyUnionRoom::
 
 CableClub_Text_FirstTimeRightThisWay::
 	.string "Olá!\n"
-	.string "Meu nome é TEALA.\p"
+	.string "Meu nome é Teala.\p"
 	.string "Deve ser a sua primeira vez\n"
 	.string "aqui em cima.\p"
 	.string "Vou mostrar como funciona a\n"
@@ -1724,7 +1724,7 @@ CableClub_Text_ExplainWirelessClubFirstTime::
 
 CableClub_Text_AskAboutLinking::
 	.string "Olá, {PLAYER}!\p"
-	.string "Sou eu, a TEALA, a atendente do\n"
+	.string "Sou eu, a Teala, a atendente do\n"
 	.string "2º andar do Centro Pokémon.\p"
 	.string "Precisa me perguntar algo\n"
 	.string "sobre conexão?$"

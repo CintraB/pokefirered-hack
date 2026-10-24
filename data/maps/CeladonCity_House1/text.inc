@@ -4,7 +4,7 @@ CeladonCity_House1_Text_SlotsReelInTheDough::
     .string "é impressionante!$"
 
 CeladonCity_House1_Text_ShippedMonsAsSlotPrizes::
-    .string "CHEFE!\p"
+    .string "Chefe!\p"
     .string "Hoje despachamos mais dois mil\n"
     .string "Pokémon como prêmios dos\l"
     .string "caça-níqueis!$"

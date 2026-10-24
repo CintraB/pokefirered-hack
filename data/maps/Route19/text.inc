@@ -119,37 +119,37 @@ Route19_Text_RouteSign::
     .string "Ilhas Seafoam$"
 
 Route19_Text_LiaIntro::
-    .string "LIA: Estou cuidando do meu irmão.\n"
+    .string "Lia: Estou cuidando do meu irmão.\n"
     .string "Ele acabou de virar Treinador.$"
 
 Route19_Text_LiaDefeat::
-    .string "LIA: Não se trata assim o meu\n"
+    .string "Lia: Não se trata assim o meu\n"
     .string "irmãozinho!$"
 
 Route19_Text_LiaPostBattle::
-    .string "LIA: Você tem um irmão mais novo?\p"
+    .string "Lia: Você tem um irmão mais novo?\p"
     .string "Espero que esteja ensinando muitas\n"
     .string "coisas a ele.$"
 
 Route19_Text_LiaNotEnoughMons::
-    .string "LIA: Quero batalhar junto com o meu\n"
+    .string "Lia: Quero batalhar junto com o meu\n"
     .string "irmãozinho.\p"
     .string "Você não tem dois Pokémon?$"
 
 Route19_Text_LucIntro::
-    .string "LUC: Minha irmã mais velha me ensinou\n"
+    .string "Luc: Minha irmã mais velha me ensinou\n"
     .string "a nadar e a treinar Pokémon.$"
 
 Route19_Text_LucDefeat::
-    .string "LUC: Uau!\n"
+    .string "Luc: Uau!\n"
     .string "Alguém mais forte que a minha irmã\l"
     .string "mais velha!$"
 
 Route19_Text_LucPostBattle::
-    .string "LUC: Minha irmã é forte e legal.\n"
+    .string "Luc: Minha irmã é forte e legal.\n"
     .string "Acho ela demais!$"
 
 Route19_Text_LucNotEnoughMons::
-    .string "LUC: Só batalho com você se for\n"
+    .string "Luc: Só batalho com você se for\n"
     .string "junto com a minha irmã.\p"
     .string "Você não tem dois Pokémon?$"

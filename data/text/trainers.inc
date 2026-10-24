@@ -124,11 +124,11 @@ Route8_Text_JarenRematchIntro::
 	.string "Não espere piedade desta vez!$"
 
 Route8_Text_EliRematchIntro::
-	.string "ELI: Nosso poder de gêmeas ficou\n"
+	.string "Eli: Nosso poder de gêmeas ficou\n"
 	.string "ainda melhor!$"
 
 Route8_Text_AnneRematchIntro::
-	.string "ANNE: Nosso poder de gêmeas ficou\n"
+	.string "Anne: Nosso poder de gêmeas ficou\n"
 	.string "mais forte!$"
 
 Route9_Text_AliciaRematchIntro::
@@ -274,11 +274,11 @@ Route12_Text_AndrewRematchIntro::
 	.string "vencer!$"
 
 Route12_Text_JesRematchIntro::
-	.string "JES: Vou vencer aqui hoje e pedir\n"
-	.string "a minha GIA em casamento.$"
+	.string "Jes: Vou vencer aqui hoje e pedir\n"
+	.string "a minha Gia em casamento.$"
 
 Route12_Text_GiaRematchIntro::
-	.string "GIA: Ei, JES…\n"
+	.string "Gia: Ei, Jes…\n"
 	.string "Faz muito tempo que estou esperando.\p"
 	.string "Se a gente ganhar hoje, eu me caso\n"
 	.string "com você!$"
@@ -368,11 +368,11 @@ Route14_Text_MalikRematchIntro::
 	.string "Legal! Bora brigar!$"
 
 Route14_Text_KiriRematchIntro::
-	.string "KIRI: JAN, espero que a gente ganhe\n"
+	.string "Kiri: Jan, espero que a gente ganhe\n"
 	.string "hoje.$"
 
 Route14_Text_JanRematchIntro::
-	.string "JAN: KIRI, lá vamos nós!\n"
+	.string "Jan: Kiri, lá vamos nós!\n"
 	.string "Desta vez vamos vencer com certeza!$"
 
 Route15_Text_KindraRematchIntro::
@@ -420,13 +420,13 @@ Route15_Text_YazminRematchIntro::
 	.string "de novo?$"
 
 Route15_Text_MyaRematchIntro::
-	.string "MYA: Oi, a gente sempre se\n"
+	.string "Mya: Oi, a gente sempre se\n"
 	.string "encontra, né?\p"
 	.string "Me ajuda a treinar meu irmãozinho\n"
 	.string "de novo?$"
 
 Route15_Text_RonRematchIntro::
-	.string "RON: Minha irmã ficou mais\n"
+	.string "Ron: Minha irmã ficou mais\n"
 	.string "poderosa…$"
 
 Route16_Text_LaoRematchIntro::
@@ -453,11 +453,11 @@ Route16_Text_RubenRematchIntro::
 	.string "Vamos nos divertir muito!$"
 
 Route16_Text_JedRematchIntro::
-	.string "JED: Veio ver o nosso amor, que\n"
+	.string "Jed: Veio ver o nosso amor, que\n"
 	.string "não tem limites?$"
 
 Route16_Text_LeaRematchIntro::
-	.string "LEA: Às vezes, a intensidade do nosso\n"
+	.string "Lea: Às vezes, a intensidade do nosso\n"
 	.string "amor me assusta.$"
 
 Route17_Text_RaulRematchIntro::
@@ -557,13 +557,13 @@ Route19_Text_ConnieRematchIntro::
 	.string "Precisamos mesmo batalhar de novo?$"
 
 Route19_Text_LiaRematchIntro::
-	.string "LIA: Você sabe que meu irmão acabou\n"
+	.string "Lia: Você sabe que meu irmão acabou\n"
 	.string "de virar Treinador, né?\p"
 	.string "Quero que ele melhore, então\n"
 	.string "preciso da sua ajuda de novo.$"
 
 Route19_Text_LucRematchIntro::
-	.string "LUC: Minha irmã mais velha me ensinou\n"
+	.string "Luc: Minha irmã mais velha me ensinou\n"
 	.string "tudo sobre Pokémon.\p"
 	.string "Será que já estou melhor?$"
 
@@ -646,11 +646,11 @@ Route21_South_Text_NolanRematchIntro::
 	.string "alguma coisa.$"
 
 Route21_North_Text_LilRematchIntro::
-	.string "LIL: Hã? Outra batalha?\n"
-	.string "IAN, não pode fazer sozinho?$"
+	.string "Lil: Hã? Outra batalha?\n"
+	.string "Ian, não pode fazer sozinho?$"
 
 Route21_North_Text_IanRematchIntro::
-	.string "IAN: Minha irmã ainda é desleixada.\n"
+	.string "Ian: Minha irmã ainda é desleixada.\n"
 	.string "Me ajude a colocá-la em forma!$"
 
 Route25_Text_JoeyRematchIntro::
