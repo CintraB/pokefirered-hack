@@ -8,7 +8,7 @@ FuchsiaCity_House2_Text_DoYouLikeToFish::
 FuchsiaCity_House2_Text_LikeYourStyleTakeThis::
     .string "Ótimo! Gostei do seu estilo.\n"
     .string "Acho que podemos ser amigos.\p"
-    .string "Leve isto e pesque à vontade!$"
+    .string "Pegue isto e vá pescar, jovem!$"
 
 FuchsiaCity_House2_Text_ReceivedGoodRod::
     .string "{PLAYER} recebeu uma Vara Boa do\n"

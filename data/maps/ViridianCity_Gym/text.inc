@@ -155,7 +155,7 @@ ViridianCity_Gym_Text_GymGuyAdvice::
     .string "Líderes de Ginásio.\p"
     .string "Além disso, ouvi dizer que os\n"
     .string "Treinadores daqui gostam de Pokémon\l"
-    .string "do tipo Terra.$"
+    .string "do tipo Terrestre.$"
 
 ViridianCity_Gym_Text_GymGuyPostVictory::
     .string "Caramba! O Giovanni era o Líder do\n"

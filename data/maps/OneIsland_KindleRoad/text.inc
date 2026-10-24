@@ -121,36 +121,36 @@ OneIsland_KindleRoad_Text_ClairePostBattle::
     .string "Já estou faminta de novo.$"
 
 OneIsland_KindleRoad_Text_KiaIntro::
-    .string "KIA: Meu irmão mais velho e eu\n"
+    .string "Kia: Meu irmão mais velho e eu\n"
     .string "formamos uma dupla incrível!$"
 
 OneIsland_KindleRoad_Text_KiaDefeat::
-    .string "KIA: Hã?!\n"
+    .string "Kia: Hã?!\n"
     .string "Não acredito!$"
 
 OneIsland_KindleRoad_Text_KiaPostBattle::
-    .string "KIA: Como pode haver alguém melhor\n"
+    .string "Kia: Como pode haver alguém melhor\n"
     .string "do que o meu irmão mais velho?$"
 
 OneIsland_KindleRoad_Text_KiaNotEnoughMons::
-    .string "KIA: Para batalhar com a gente, você\n"
+    .string "Kia: Para batalhar com a gente, você\n"
     .string "tem que trazer pelo menos dois\l"
     .string "Pokémon.$"
 
 OneIsland_KindleRoad_Text_MikIntro::
-    .string "MIK: Junto com a KIA, não tenho\n"
+    .string "Mik: Junto com a Kia, não tenho\n"
     .string "medo de nada!$"
 
 OneIsland_KindleRoad_Text_MikDefeat::
-    .string "MIK: Uau!\n"
+    .string "Mik: Uau!\n"
     .string "Isso foi demais!$"
 
 OneIsland_KindleRoad_Text_MikPostBattle::
-    .string "MIK: Como a minha dupla com a KIA\n"
+    .string "Mik: Como a minha dupla com a Kia\n"
     .string "pôde falhar?$"
 
 OneIsland_KindleRoad_Text_MikNotEnoughMons::
-    .string "MIK: Ei, quer batalhar com a gente?\p"
+    .string "Mik: Ei, quer batalhar com a gente?\p"
     .string "Então traga dois ou mais Pokémon com\n"
     .string "você.$"
 

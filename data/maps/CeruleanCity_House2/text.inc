@@ -1,5 +1,5 @@
 CeruleanCity_House2_Text_RocketsStoleTMForDig::
-    .string "Aqueles miseráveis da Rocket!\p"
+    .string "Aqueles miseráveis da Equipe Rocket!\p"
     .string "Vejam o que fizeram com a minha\n"
     .string "casa!\p"
     .string "Roubaram uma MT que ensina os\n"

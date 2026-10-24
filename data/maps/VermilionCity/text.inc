@@ -10,9 +10,9 @@ VermilionCity_Text_DidYouSeeSSAnneInHarbor::
 
 VermilionCity_Text_SSAnneHasDepartedForYear::
     .string "Então o S.S. Anne partiu?\p"
-    .string "Ele volta à Cidade Vermilion mais ou\n"
-    .string "menos nesta mesma época no ano que\l"
-    .string "vem.$"
+    .string "Ele volta à Cidade de Vermilion mais\n"
+    .string "ou menos nesta mesma época no ano\l"
+    .string "que vem.$"
 
 VermilionCity_Text_BuildingOnThisLand::
     .string "Estou construindo um prédio neste\n"
@@ -30,11 +30,11 @@ VermilionCity_Text_MachopStompingLandFlat::
 VermilionCity_Text_SSAnneVisitsOnceAYear::
     .string "O S.S. Anne é um famoso cruzeiro de\n"
     .string "luxo.\p"
-    .string "Ele visita a Cidade Vermilion uma vez\n"
-    .string "por ano.$"
+    .string "Ele visita a Cidade de Vermilion uma\n"
+    .string "vez por ano.$"
 
 VermilionCity_Text_CitySign::
-    .string "Cidade Vermilion\n"
+    .string "Cidade de Vermilion\n"
     .string "O Porto dos Pores do Sol Esplêndidos$"
 
 VermilionCity_Text_SnorlaxBlockingRoute12::
@@ -56,7 +56,7 @@ VermilionCity_Text_GymSign::
     .string "O Americano Relâmpago!$"
 
 VermilionCity_Text_VermilionHarbor::
-    .string "Porto Vermilion$"
+    .string "Porto de Vermilion$"
 
 VermilionCity_Text_WelcomeToTheSSAnne::
     .string "Boas-vindas ao S.S. Anne!$"

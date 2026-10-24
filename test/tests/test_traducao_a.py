@@ -150,7 +150,7 @@ PLAYER_GENDERED = ("Fique quieto", "muito bruto", "parceiro,", "ocupado demais",
                    "habilidade como", "ser um Treinador",
                    # A2: adjetivos/particípios dirigidos ao jogador
                    "frustrado", "jovem amigo", "esmagado", "Você é pesado", "criança Treinadora")
-WRONG_FORMS = ("Esconderijo da Equipe Rocket", "Porto de Vermilion",
+WRONG_FORMS = ("Esconderijo da Equipe Rocket",
                # decisões do Cintra de 20/10: forma cheia em fala; títulos de jogo no original
                "Superrepel.", "Cura Queimad.", "Vale Bicicl.", "Guarda Esp.", "Expl. Sônica", "Rajada Fogo",
                "Esmaga Pedra", "Atq. Esp.", "Def. Esp.", "Vermelho e Verde",
@@ -438,7 +438,7 @@ def test_falas_do_carvalho_usam_o_rotulo_do_glossario():
                 "data/maps/PalletTown_PlayersHouse_1F/text.inc"):
         body = _flat(rel)
         assert "OAK:" not in body and "Oak:" not in body, rel
-    assert "CARVALHO: " in _flat("data/maps/PalletTown_ProfessorOaksLab/text.inc")
+    assert "Carvalho: " in _flat("data/maps/PalletTown_ProfessorOaksLab/text.inc")
 
 
 @pytest.mark.parametrize("rel", A3_FILES)

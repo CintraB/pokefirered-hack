@@ -6,7 +6,7 @@ Route3_Text_TunnelFromCeruleanTiring::
 
 Route3_Text_ColtonIntro::
     .string "Ei!\n"
-    .string "Eu vi você na Floresta Viridian!$"
+    .string "Eu vi você na Floresta de Viridian!$"
 
 Route3_Text_ColtonDefeat::
     .string "Você me venceu de novo!$"

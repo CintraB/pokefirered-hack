@@ -142,7 +142,7 @@ const u8 gTeachyTvText_TMsScript1[] = _(
     "Dá para ver cada uma em detalhes,\n"
     "também.");
 const u8 gPokedudeText_TMTypes[] = _(
-    "CARA POKÉMON: Normal, Água, Planta…\n"
+    "Cara Pokémon: Normal, Água, Planta…\n"
     "As MTs também têm tipos.\p"
     "Veja o tipo e ensine a MT a um\n"
     "Pokémon que combine com ela.\p"

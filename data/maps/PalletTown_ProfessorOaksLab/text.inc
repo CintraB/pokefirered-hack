@@ -70,7 +70,7 @@ PalletTown_ProfessorOaksLab_Text_RivalTellSisNotToGiveYouMap::
     .string "depois disso!$"
 
 PalletTown_ProfessorOaksLab_Text_OakThreeMonsChooseOne::
-    .string "CARVALHO: {RIVAL}?\n"
+    .string "Carvalho: {RIVAL}?\n"
     .string "Deixe-me pensar…\p"
     .string "Ah, é verdade, eu mandei você vir!\n"
     .string "Espere só!\p"
@@ -87,17 +87,17 @@ PalletTown_ProfessorOaksLab_Text_OakThreeMonsChooseOne::
     .string "Vamos, escolha!$"
 
 PalletTown_ProfessorOaksLab_Text_OakBePatientRival::
-    .string "CARVALHO: Seja paciente, {RIVAL}.\n"
+    .string "Carvalho: Seja paciente, {RIVAL}.\n"
     .string "Você também pode ficar com um!$"
 
 PalletTown_ProfessorOaksLab_Text_OakWhichOneWillYouChoose::
-    .string "CARVALHO: Agora, {PLAYER}.\p"
+    .string "Carvalho: Agora, {PLAYER}.\p"
     .string "Dentro daquelas três Poké Bolas há\n"
     .string "Pokémon.\p"
     .string "Qual deles você vai escolher?$"
 
 PalletTown_ProfessorOaksLab_Text_OakHeyDontGoAwayYet::
-    .string "CARVALHO: Ei!\n"
+    .string "Carvalho: Ei!\n"
     .string "Ainda não vá embora!$"
 
 PalletTown_ProfessorOaksLab_Text_OakChoosingCharmander::
@@ -126,19 +126,19 @@ PalletTown_ProfessorOaksLab_Text_ReceivedMonFromOak::
     .string "do Prof. Carvalho!$"
 
 PalletTown_ProfessorOaksLab_Text_OakCanReachNextTownWithMon::
-    .string "CARVALHO: Se um Pokémon selvagem\n"
+    .string "Carvalho: Se um Pokémon selvagem\n"
     .string "aparecer, o seu Pokémon pode\l"
     .string "enfrentá-lo.\p"
     .string "Com ele ao seu lado, você deve\n"
     .string "conseguir chegar à próxima cidade.$"
 
 PalletTown_ProfessorOaksLab_Text_OakBattleMonForItToGrow::
-    .string "CARVALHO: {PLAYER}, crie o seu jovem\n"
+    .string "Carvalho: {PLAYER}, crie o seu jovem\n"
     .string "Pokémon fazendo-o batalhar.\p"
     .string "Ele precisa batalhar para crescer.$"
 
 PalletTown_ProfessorOaksLab_Text_OakHaveSomethingForMe::
-    .string "CARVALHO: Ah, {PLAYER}!\n"
+    .string "Carvalho: Ah, {PLAYER}!\n"
     .string "Como está o meu velho Pokémon?\p"
     .string "Bem, parece que ele está cada vez\n"
     .string "mais apegado a você.\p"
@@ -157,7 +157,7 @@ PalletTown_ProfessorOaksLab_Text_OakCustomBallIOrdered::
     .string "Obrigado!$"
 
 PalletTown_ProfessorOaksLab_Text_OakHaveRequestForYouTwo::
-    .string "CARVALHO: Ah, é verdade!\n"
+    .string "Carvalho: Ah, é verdade!\n"
     .string "Tenho um pedido para vocês.$"
 
 PalletTown_ProfessorOaksLab_Text_OakPokedexOnDesk::
@@ -170,7 +170,7 @@ PalletTown_ProfessorOaksLab_Text_OakPokedexOnDesk::
     .string "tecnologia!$"
 
 PalletTown_ProfessorOaksLab_Text_OakTakeTheseWithYou::
-    .string "CARVALHO: {PLAYER} e {RIVAL}.\n"
+    .string "Carvalho: {PLAYER} e {RIVAL}.\n"
     .string "Levem isto com vocês.$"
 
 PalletTown_ProfessorOaksLab_Text_ReceivedPokedexFromOak::
@@ -178,7 +178,7 @@ PalletTown_ProfessorOaksLab_Text_ReceivedPokedexFromOak::
     .string "do Prof. Carvalho.$"
 
 PalletTown_ProfessorOaksLab_Text_OakCatchMonsForDataTakeThese::
-    .string "CARVALHO: Não dá para obter dados\n"
+    .string "Carvalho: Não dá para obter dados\n"
     .string "detalhados dos Pokémon só de vê-los.\p"
     .string "É preciso capturá-los para obter\n"
     .string "dados completos.\p"
@@ -227,7 +227,7 @@ PalletTown_ProfessorOaksLab_Text_OakAddedNothingToPokedex::
     .string "um pouco mais.$"
 
 PalletTown_ProfessorOaksLab_Text_OakComeSeeMeSometime::
-    .string "CARVALHO: Venha me ver um dia.\p"
+    .string "Carvalho: Venha me ver um dia.\p"
     .string "Afinal, quero saber como anda a sua\n"
     .string "Pokédex.$"
 
@@ -324,7 +324,7 @@ PalletTown_ProfessorOaksLab_Text_RivalJustLetMeHandleEverything::
     .string "Era só deixar tudo comigo.$"
 
 PalletTown_ProfessorOaksLab_Text_OakNeedYourHelpToo::
-    .string "CARVALHO: Eu sei, eu sei.\n"
+    .string "Carvalho: Eu sei, eu sei.\n"
     .string "É claro que também preciso da sua\l"
     .string "ajuda.$"
 
@@ -349,7 +349,7 @@ PalletTown_ProfessorOaksLab_Text_RivalIllCompleteThePokedex::
 
 
 PalletTown_ProfessorOaksLab_Text_OakDexRecordsOtherRegions::
-    .string "CARVALHO: Ah, mais uma coisa!\p"
+    .string "Carvalho: Ah, mais uma coisa!\p"
     .string "Ultimamente, Pokémon de outras\n"
     .string "regiões têm aparecido em Kanto.\p"
     .string "A sua Pokédex também registra\n"
@@ -357,7 +357,7 @@ PalletTown_ProfessorOaksLab_Text_OakDexRecordsOtherRegions::
 
 @ Hack 7 — frente C
 PalletTown_ProfessorOaksLab_Text_OakThanksRareEgg::
-    .string "CARVALHO: Vocês dois ajudaram\n"
+    .string "Carvalho: Vocês dois ajudaram\n"
     .string "muito a minha pesquisa.\p"
     .string "{PLAYER}, como agradecimento,\n"
     .string "quero que fique com isto.\p"

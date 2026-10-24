@@ -1,5 +1,5 @@
 PokedexRating_Text_HowIsPokedexComingAlong::
-	.string "CARVALHO: Que bom ver você!\n"
+	.string "Carvalho: Que bom ver você!\n"
 	.string "Como está indo a sua Pokédex?\p"
 	.string "Vamos ver, deixe-me dar uma olhada.$"
 
@@ -43,8 +43,9 @@ PokedexRating_Text_LessThan50::
 PokedexRating_Text_LessThan60::
 	.string "Ah, você finalmente passou de 50\n"
 	.string "espécies!\p"
-	.string "Dei o Compart. Exp. a um dos meus\n"
-	.string "assistentes. Não deixe de buscá-lo!$"
+	.string "Dei o Compartilhador de Exp. a um\n"
+	.string "dos meus assistentes. Não deixe de\l"
+	.string "buscá-lo!$"
 
 PokedexRating_Text_LessThan70::
 	.string "Hoho! Isso está virando uma\n"
@@ -127,7 +128,7 @@ PokedexRating_Text_ThankYouMadeDreamReality::
 	.string "Você realizou o meu sonho!$"
 
 PokedexRating_Text_LoveSeeingYourPokedex::
-	.string "CARVALHO: Ah, que bom ver você!\p"
+	.string "Carvalho: Ah, que bom ver você!\p"
 	.string "Diga, como está indo a sua\n"
 	.string "Pokédex?\p"
 	.string "Rá, rá!\p"

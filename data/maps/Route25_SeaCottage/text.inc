@@ -79,7 +79,7 @@ Route25_SeaCottage_Text_YouveGotTooMuchStuff::
 
 Route25_SeaCottage_Text_SSAnnePartyYouGoInstead::
     .string "O cruzeiro S.S. Anne está na\n"
-    .string "Cidade Vermilion.\p"
+    .string "Cidade de Vermilion.\p"
     .string "Dizem que há muitos Treinadores a\n"
     .string "bordo também.\p"
     .string "Me convidaram para a festa, mas não\n"

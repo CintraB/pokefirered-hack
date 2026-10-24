@@ -158,7 +158,7 @@ Help_Text_WhatsPokemonCenter::
 	.string "O que é um Centro Pokémon?$"
 
 Help_Text_WhatsPokemonMart::
-	.string "O que é uma Poké Mart?$"
+	.string "O que é um Poké Mart?$"
 
 Help_Text_WantToEndGame::
 	.string "Quero encerrar o jogo.$"
@@ -256,7 +256,7 @@ Help_Text_AnswerWhatAreMyAdventureBasics::
 	.string "os atendentes os curem. Crie o hábito\n"
 	.string "de salvar o jogo e registrar seu\n"
 	.string "progresso. Antes de viajar para longe,\n"
-	.string "abasteça-se de itens de cura nas\n"
+	.string "abasteça-se de itens de cura nos\n"
 	.string "Poké Marts.$"
 
 Help_Text_AnswerHowAreRoadsForestsDifferent::
@@ -304,7 +304,7 @@ Help_Text_AnswerHowDoIPrepareForBattle::
 	.string "Primeiro, cure totalmente os Pokémon da\n"
 	.string "sua equipe (os Pokémon que estão com\n"
 	.string "você) em qualquer Centro Pokémon.\n"
-	.string "Compre também, em uma Poké Mart, itens\n"
+	.string "Compre também, em um Poké Mart, itens\n"
 	.string "de cura para emergências.$"
 
 Help_Text_AnswerWhatIsAMonsVitality::
@@ -356,7 +356,7 @@ Help_Text_AnswerRanOutOfPotions::
 	.string "rotas, florestas ou cavernas.\n"
 	.string "Abasteça-se dos itens de que precisa\n"
 	.string "quando passar por uma cidade que tenha\n"
-	.string "uma Poké Mart.$"
+	.string "um Poké Mart.$"
 
 Help_Text_AnswerCanIBuyPokeBalls::
 	.string "Você pode comprar Poké Bolas em\n"
@@ -364,7 +364,7 @@ Help_Text_AnswerCanIBuyPokeBalls::
 	.string "Não há Poké Marts em rotas, florestas\n"
 	.string "ou cavernas. Abasteça-se de Poké Bolas\n"
 	.string "quando passar por uma cidade que tenha\n"
-	.string "uma Poké Mart.$"
+	.string "um Poké Mart.$"
 
 Help_Text_AnswerWhatsATrainer::
 	.string "Treinador é quem cria Pokémon por meio\n"
@@ -401,11 +401,11 @@ Help_Text_AnswerWhatAreMoves::
 	.string "máquinas.$"
 
 Help_Text_AnswerWhatAreHiddenMoves::
-	.string "Os golpes ocultos são os que têm\n"
+	.string "Golpes ocultos são os que têm\n"
 	.string "importância especial para a sua\n"
-	.string "aventura. Para usar um deles fora de\n"
-	.string "batalha, abra o menu “Pokémon” e faça\n"
-	.string "o Pokémon que conhece o golpe usá-lo.\n"
+	.string "aventura. Para usar um desses golpes\n"
+	.string "fora de batalha, abra o menu “Pokémon”\n"
+	.string "e faça o Pokémon que o conhece usá-lo.\n"
 	.string "Um Pokémon desmaiado pode usar um\n"
 	.string "golpe oculto fora de batalha.$"
 
@@ -468,11 +468,11 @@ Help_Text_AnswerWhatsPokemonCenter::
 	.string "com amigos e outras pessoas.$"
 
 Help_Text_AnswerWhatsPokemonMart::
-	.string "Uma Poké Mart é identificada pelo\n"
+	.string "Um Poké Mart é identificado pelo\n"
 	.string "telhado azul e por uma placa com\n"
 	.string "“MART”. Em qualquer Poké Mart é\n"
 	.string "possível comprar e vender itens.\n"
-	.string "Algumas Marts têm itens que só estão à\n"
+	.string "Alguns Marts têm itens que só estão à\n"
 	.string "venda nas suas cidades.$"
 
 Help_Text_AnswerWantToEndGame::
@@ -761,7 +761,7 @@ Help_Text_HowToUsePlayer::
 Help_Text_HowToUseSave::
 	.string "{CIRCLE_1} Escolha “Salvar” no menu.\n"
 	.string "{CIRCLE_2} Escolha “Sim” e seu progresso é\n"
-	.string "   gravado no arquivo de save.\n"
+	.string "   registrado no jogo salvo.\n"
 	.string "Depois de salvar, você pode desligar o\n"
 	.string "jogo. Ele poderá ser retomado de onde\n"
 	.string "você salvou.$"

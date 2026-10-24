@@ -1,7 +1,7 @@
 VermilionCity_House2_Text_DoYouHaveMonWantToTradeForMyMon::
 	.string "Oi!\n"
 	.string "Você tem um {STR_VAR_1}?\p"
-	.string "Quer trocá-lo pelo meu\n"
+	.string "Quer trocar pelo meu\n"
 	.string "{STR_VAR_2}?$"
 
 VermilionCity_House2_Text_ThatsTooBad::

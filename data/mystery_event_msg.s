@@ -248,7 +248,7 @@ sText_AuroraTicket1:
 
 sText_AuroraTicket2:
 	.string "Parece que é para usar no\n"
-	.string "Porto Vermilion.\p"
+	.string "Porto de Vermilion.\p"
 	.string "Que tal experimentar e descobrir\n"
 	.string "do que se trata?$"
 
@@ -308,7 +308,7 @@ sText_MysticTicket2:
 
 sText_MysticTicket1:
 	.string "Parece que é para usar no\n"
-	.string "Porto Vermilion.\p"
+	.string "Porto de Vermilion.\p"
 	.string "Que tal experimentar e descobrir\n"
 	.string "do que se trata?$"
 

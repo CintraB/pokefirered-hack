@@ -5,15 +5,15 @@ SafariZone_Text_WouldYouLikeToExit::
 	.string "agora mesmo?$"
 
 SafariZone_Text_TimesUp::
-	.string "ALTO-FALANTE: Ding-dong!\p"
+	.string "Alto-falante: Ding-dong!\p"
 	.string "O tempo acabou!\p"
-	.string "ALTO-FALANTE: O seu Jogo do Safári\n"
+	.string "Alto-falante: O seu Jogo do Safári\n"
 	.string "acabou!$"
 
 SafariZone_Text_OutOfBalls::
-	.string "ALTO-FALANTE: Ding-dong!\p"
+	.string "Alto-falante: Ding-dong!\p"
 	.string "As suas Bolas Safári acabaram!\p"
-	.string "ALTO-FALANTE: O seu Jogo do Safári\n"
+	.string "Alto-falante: O seu Jogo do Safári\n"
 	.string "acabou!$"
 
 SafariZone_Text_WelcomeToSafariZone::

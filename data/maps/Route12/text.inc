@@ -111,36 +111,36 @@ Route12_Text_SportfishingArea::
     .string "Pesca Esportiva$"
 
 Route12_Text_JesIntro::
-    .string "JES: Se eu ganhar, vou pedir a GIA\n"
+    .string "Jes: Se eu ganhar, vou pedir a Gia\n"
     .string "em casamento.$"
 
 Route12_Text_JesDefeat::
-    .string "JES: Ah, qual é, por que você não\n"
+    .string "Jes: Ah, qual é, por que você não\n"
     .string "deixou a gente ganhar?$"
 
 Route12_Text_JesPostBattle::
-    .string "JES: Ah, GIA, me perdoe,\n"
+    .string "Jes: Ah, Gia, me perdoe,\n"
     .string "meu amor!$"
 
 Route12_Text_JesNotEnoughMons::
-    .string "JES: A GIA e eu vamos ficar juntos\n"
+    .string "Jes: A Gia e eu vamos ficar juntos\n"
     .string "para sempre.\p"
     .string "Não batalhamos se você não tiver\n"
     .string "dois Pokémon seus.$"
 
 Route12_Text_GiaIntro::
-    .string "GIA: Ei, JES…\p"
+    .string "Gia: Ei, Jes…\p"
     .string "Se a gente ganhar, eu me caso com\n"
     .string "você!$"
 
 Route12_Text_GiaDefeat::
-    .string "GIA: Ah, mas por quê?$"
+    .string "Gia: Ah, mas por quê?$"
 
 Route12_Text_GiaPostBattle::
-    .string "GIA: JES, seu bobo!\n"
+    .string "Gia: Jes, seu bobo!\n"
     .string "Você estragou tudo!$"
 
 Route12_Text_GiaNotEnoughMons::
-    .string "GIA: Não suporto batalhar sem o meu\n"
-    .string "JES!\p"
+    .string "Gia: Não suporto batalhar sem o meu\n"
+    .string "Jes!\p"
     .string "Você não tem mais um Pokémon?$"

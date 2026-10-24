@@ -1,9 +1,9 @@
 PalletTown_Text_OakDontGoOut::
-    .string "CARVALHO: Ei! Espere!\n"
+    .string "Carvalho: Ei! Espere!\n"
     .string "Não saia!$"
 
 PalletTown_Text_OakGrassUnsafeNeedMon::
-    .string "CARVALHO: É perigoso!\n"
+    .string "Carvalho: É perigoso!\n"
     .string "Há Pokémon selvagens na grama alta!\p"
     .string "Você precisa de um Pokémon seu para\n"
     .string "a sua proteção.\p"
@@ -35,7 +35,7 @@ PalletTown_Text_TownSign::
     .string "Onde a sua jornada ganha cor!$"
 
 PalletTown_Text_OakLetMeSeePokedex::
-    .string "CARVALHO: Ah, {PLAYER}!\n"
+    .string "Carvalho: Ah, {PLAYER}!\n"
     .string "Voltou, é?\p"
     .string "Quanto você já preencheu da sua\n"
     .string "Pokédex?\p"
@@ -58,7 +58,7 @@ PalletTown_Text_CaughtXImpressiveFollowMe::
     .string "Siga-me.$"
 
 PalletTown_Text_OakYouEnjoyingTraveling::
-    .string "CARVALHO: Ah, {PLAYER}!\n"
+    .string "Carvalho: Ah, {PLAYER}!\n"
     .string "Parece que está gostando de viajar.\p"
     .string "Conhecendo você, {PLAYER}, é fácil\n"
     .string "imaginar você indo a lugares ainda\l"

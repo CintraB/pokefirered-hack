@@ -110,7 +110,7 @@ EventScript_DontSmashRock::
 
 Text_UseRockSmash::
 	.string "Esta rocha parece quebrável.\n"
-	.string "Quer usar Esmaga Pedra?$"
+	.string "Quer usar Esmagamento de Pedras?$"
 
 Text_MonMaySmashRock::
 	.string "É uma rocha resistente, mas um\n"

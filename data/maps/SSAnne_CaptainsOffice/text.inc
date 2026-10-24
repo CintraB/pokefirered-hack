@@ -30,7 +30,7 @@ SSAnne_CaptainsOffice_Text_ExplainCut::
     .string "Usando Cortar, você pode derrubar\n"
     .string "árvores pequenas.\p"
     .string "Que tal experimentar nas árvores em\n"
-    .string "volta da Cidade Vermilion?$"
+    .string "volta da Cidade de Vermilion?$"
 
 SSAnne_CaptainsOffice_Text_SSAnneWillSetSailSoon::
     .string "Capitão: …Ufa!\p"
@@ -38,7 +38,7 @@ SSAnne_CaptainsOffice_Text_SSAnneWillSetSailSoon::
     .string "acho que é hora.\p"
     .string "O S.S. Anne vai zarpar em breve!\p"
     .string "Adeus, até a nossa volta à\n"
-    .string "Cidade Vermilion!$"
+    .string "Cidade de Vermilion!$"
 
 SSAnne_CaptainsOffice_Text_YouHaveNoRoomForThis::
     .string "Ah, não!\n"

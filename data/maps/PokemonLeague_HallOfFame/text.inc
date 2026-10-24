@@ -1,5 +1,5 @@
 PokemonLeague_HallOfFame_Text_OakCongratulations::
-    .string "CARVALHO: Hã-hém!\n"
+    .string "Carvalho: Hã-hém!\n"
     .string "Parabéns, {PLAYER}!\p"
     .string "Este andar abriga o\n"
     .string "Hall da Fama Pokémon.\p"

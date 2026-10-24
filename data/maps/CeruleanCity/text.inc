@@ -148,7 +148,7 @@ CeruleanCity_Text_WantBrightRedBicycle::
     .string "não sujar.$"
 
 CeruleanCity_Text_ThisIsCeruleanCave::
-    .string "Esta é a Caverna Cerulean.\p"
+    .string "Esta é a Caverna de Cerulean.\p"
     .string "Pokémon terrivelmente fortes\n"
     .string "vivem lá dentro.\p"
     .string "Só quem é muito especial tem\n"

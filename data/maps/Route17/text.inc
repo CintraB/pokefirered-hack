@@ -34,7 +34,7 @@ Route17_Text_VirgilPostBattle::
 
 Route17_Text_BillyIntro::
     .string "Somos Motoqueiros!\n"
-    .string "A gente manda nas estradas, cara!$"
+    .string "A gente manda nas estradas!$"
 
 Route17_Text_BillyDefeat::
     .string "Fui atropelado!$"

@@ -499,7 +499,7 @@ D3_PLAYER_GENDERED = (r"\bbem-vind[oa]\b", r"\bamig[oa]\s*[,!?]", r"\bcara\s*[,!
                       r"\bcriança Treinadora\b", r"(?:^|[.!?…] )Seu [a-zç]+[!,]", r"\bjovem amigo\b",
                       r"\bvocê (?:é|está|ficou|parece|estava|era|foi) (?:muito |tão |bem |mais )?"
                       r"(?:enxerid|bobalhon|esperto|burro|bruto|grosseir|mal-educad|malcriad|abusad|sozinh)[oa]\b")
-D3_WRONG_FORMS = ("Esconderijo da Equipe Rocket", "Cidade de Vermilion", "Porto de Vermilion", "Elite dos Quatro",
+D3_WRONG_FORMS = ("Esconderijo da Equipe Rocket", "Elite dos Quatro",
                   "Professor Carvalho", "Pokébola", "Time Rocket", "Lt. Surge", "LT. SURGE", "Tenente Surge",
                   "Pokémon GYM", "Pokémon Journal")
 

@@ -1539,13 +1539,13 @@ Text_PokemonJumpInfo::
 
 Text_DodrioBerryPickingInfo::
 	.string "“Colheita do Dodrio”\p"
-	.string "Comande as três cabeças do DODRIO\n"
+	.string "Comande as três cabeças do Dodrio\n"
 	.string "para pegar as Frutas que caem.\p"
 	.string "Aperte direita, cima ou esquerda\n"
 	.string "no {PLUS} Direcional para mover\l"
 	.string "as cabeças.\p"
 	.string "Para jogar, é preciso ter\n"
-	.string "um DODRIO.$"
+	.string "um Dodrio.$"
 
 Text_TalkToManToPlay::
 	.string "Se quiser jogar, fale com o\n"
@@ -1600,7 +1600,7 @@ Text_ShortJumpingPokemonAllowed::
 Text_OnlyDodrioAllowed::
 	.string "“Colheita do Dodrio”…\n"
 	.string "Bem, o nome já diz tudo.\p"
-	.string "É preciso ter um DODRIO para\n"
+	.string "É preciso ter um Dodrio para\n"
 	.string "jogar este jogo.$"
 
 @ Unused, translated in Emerald
@@ -1691,7 +1691,7 @@ CableClub_Text_EnjoyUnionRoom::
 
 CableClub_Text_FirstTimeRightThisWay::
 	.string "Olá!\n"
-	.string "Meu nome é TEALA.\p"
+	.string "Meu nome é Teala.\p"
 	.string "Deve ser a sua primeira vez\n"
 	.string "aqui em cima.\p"
 	.string "Vou mostrar como funciona a\n"
@@ -1724,7 +1724,7 @@ CableClub_Text_ExplainWirelessClubFirstTime::
 
 CableClub_Text_AskAboutLinking::
 	.string "Olá, {PLAYER}!\p"
-	.string "Sou eu, a TEALA, a atendente do\n"
+	.string "Sou eu, a Teala, a atendente do\n"
 	.string "2º andar do Centro Pokémon.\p"
 	.string "Precisa me perguntar algo\n"
 	.string "sobre conexão?$"

@@ -14,7 +14,7 @@ Route25_Text_JoeyPostBattle::
 Route25_Text_DanIntro::
     .string "Meu pai me levou a uma festa\n"
     .string "incrível no S.S. Anne, na\l"
-    .string "Cidade Vermilion.$"
+    .string "Cidade de Vermilion.$"
 
 Route25_Text_DanDefeat::
     .string "Não estou bravo!$"

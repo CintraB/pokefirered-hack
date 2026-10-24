@@ -39,7 +39,7 @@ CinnabarIsland_Gym_Text_BlainePostBattle::
     .string "para esse golpe.$"
 
 CinnabarIsland_Gym_Text_MakeSpaceForThis::
-    .string "Abra espaço para isto, jovem!$"
+    .string "Abra espaço para isto, criança!$"
 
 CinnabarIsland_Gym_Text_ErikIntro::
     .string "Você sabe como o sopro de fogo de\n"
@@ -178,7 +178,7 @@ CinnabarIsland_Gym_Text_QuizQuestion3::
 
 CinnabarIsland_Gym_Text_QuizQuestion4::
     .string "Golpes elétricos são eficazes\n"
-    .string "contra Pokémon do tipo Terra?$"
+    .string "contra Pokémon do tipo Terrestre?$"
 
 CinnabarIsland_Gym_Text_QuizQuestion5::
     .string "Pokémon da mesma espécie e do\n"

@@ -67,10 +67,10 @@ PokemonLeague_ChampionsRoom_Text_PostBattle::
     .string "Embora eu não queira admitir…$"
 
 PokemonLeague_ChampionsRoom_Text_OakPlayer::
-    .string "CARVALHO: {PLAYER}!$"
+    .string "Carvalho: {PLAYER}!$"
 
 PokemonLeague_ChampionsRoom_Text_OakCongratulations::
-    .string "CARVALHO: Então você venceu!\n"
+    .string "Carvalho: Então você venceu!\n"
     .string "Meus sinceros parabéns!\p"
     .string "O título de Campeão da Liga Pokémon\n"
     .string "agora é seu!\p"
@@ -80,7 +80,7 @@ PokemonLeague_ChampionsRoom_Text_OakCongratulations::
     .string "{PLAYER}, você cresceu de verdade!$"
 
 PokemonLeague_ChampionsRoom_Text_OakImDisappointedRival::
-    .string "CARVALHO: {RIVAL}…\n"
+    .string "Carvalho: {RIVAL}…\n"
     .string "Estou decepcionado com você.\p"
     .string "Vim assim que soube que você\n"
     .string "tinha derrotado a Elite Quatro.\p"
@@ -94,7 +94,7 @@ PokemonLeague_ChampionsRoom_Text_OakImDisappointedRival::
     .string "ser Campeão!$"
 
 PokemonLeague_ChampionsRoom_Text_OakPlayerComeWithMe::
-    .string "CARVALHO: {PLAYER}.\p"
+    .string "Carvalho: {PLAYER}.\p"
     .string "Você entende que a sua vitória\n"
     .string "não foi só mérito seu.\p"
     .string "O laço que você tem com os seus\n"

@@ -19,5 +19,5 @@ SSAnne_B1F_Room4_Text_DuncanDefeat::
 
 SSAnne_B1F_Room4_Text_DuncanPostBattle::
     .string "Você viu o Mestre da Pesca na\n"
-    .string "Cidade Vermilion?$"
+    .string "Cidade de Vermilion?$"
 

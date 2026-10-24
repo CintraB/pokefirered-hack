@@ -13,7 +13,7 @@ VermilionCity_Gym_Text_LtSurgePostBattle::
     .string "Um conselhinho, recruta!\p"
     .string "A eletricidade é poderosa mesmo!\p"
     .string "Mas não adianta nada contra Pokémon\n"
-    .string "do tipo Terra!$"
+    .string "do tipo Terrestre!$"
 
 VermilionCity_Gym_Text_ExplainThunderBadgeTakeThis::
     .string "A Insígnia Trovão aumenta a\n"

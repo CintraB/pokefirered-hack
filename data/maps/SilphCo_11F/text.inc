@@ -9,7 +9,7 @@ SilphCo_11F_Text_ThanksForSavingMeDearBoy::
     .string "Aqui, talvez isto sirva.$"
 
 SilphCo_11F_Text_ThanksForSavingMeDearGirl::
-    .string "Presidente: Ah, minha cara jovem!\n"
+    .string "Presidente: Ah, que alívio!\n"
     .string "Obrigado por salvar a Silph.\p"
     .string "Nunca vou esquecer que você nos\n"
     .string "salvou num momento de perigo.\p"

@@ -44,7 +44,7 @@ ThreeIsland_Text_FollowersRaisingHavoc::
     .string "nos deram nesta ilha?$"
 
 ThreeIsland_Text_OughtToBeThankingUs::
-    .string "Não, cara, eu não entendo mesmo.\p"
+    .string "Não, sério, eu não entendo mesmo.\p"
     .string "Olhe só este lugar.\n"
     .string "O que vocês fazem para se divertir?\p"
     .string "Deviam nos agradecer por animar este\n"
@@ -74,7 +74,7 @@ ThreeIsland_Text_Biker1Defeat::
     .string "Quem é essa criança?!$"
 
 ThreeIsland_Text_Biker1PostBattle::
-    .string "Poxa, cara…\n"
+    .string "Poxa, sério…\n"
     .string "Nem pense em rir!$"
 
 ThreeIsland_Text_Biker2Intro::
