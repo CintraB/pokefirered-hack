@@ -38,6 +38,15 @@ SevenIsland_TanobyRuins_EventScript_TryRemoveJirachi::
 
 SevenIsland_TanobyRuins_EventScript_Jirachi::
 	goto_if_questlog EventScript_ReleaseEnd
+	@ Reconfere na conversa o que não depende de horário/clima: um save anterior ao Hack 8 gravado
+	@ dentro do mapa pode trazer um objeto velho com este script até a troca de mapa (fica mudo).
+	goto_if_set FLAG_JIRACHI_FLEW_AWAY, EventScript_ReleaseEnd
+	setvar VAR_0x8004, SPECIES_DEOXYS
+	specialvar VAR_RESULT, IsSpeciesCaught
+	goto_if_eq VAR_RESULT, FALSE, EventScript_ReleaseEnd
+	setvar VAR_0x8004, SPECIES_JIRACHI
+	specialvar VAR_RESULT, IsSpeciesCaught
+	goto_if_eq VAR_RESULT, TRUE, EventScript_ReleaseEnd
 	special QuestLog_CutRecording
 	lock
 	msgbox SevenIsland_TanobyRuins_Text_StarGlintWakes, MSGBOX_DEFAULT

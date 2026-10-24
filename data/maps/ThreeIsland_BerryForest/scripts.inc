@@ -36,6 +36,13 @@ ThreeIsland_BerryForest_EventScript_TryRemoveCelebi::
 
 ThreeIsland_BerryForest_EventScript_Celebi::
 	goto_if_questlog EventScript_ReleaseEnd
+	@ Reconfere na conversa o que não depende de horário/clima: um save anterior ao Hack 8 gravado
+	@ dentro do mapa pode trazer um objeto velho com este script até a troca de mapa (fica mudo).
+	goto_if_set FLAG_CELEBI_FLEW_AWAY, EventScript_ReleaseEnd
+	goto_if_unset FLAG_SYS_CAN_LINK_WITH_RS, EventScript_ReleaseEnd
+	setvar VAR_0x8004, SPECIES_CELEBI
+	specialvar VAR_RESULT, IsSpeciesCaught
+	goto_if_eq VAR_RESULT, TRUE, EventScript_ReleaseEnd
 	special QuestLog_CutRecording
 	lock
 	faceplayer
