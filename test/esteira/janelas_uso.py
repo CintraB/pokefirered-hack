@@ -499,6 +499,12 @@ USAGE_RULES: list[UsageRule] = [
     U("src/hall_of_fame.c", "*", 0xD0, "Hall da Fama: janela 0 do diálogo (src/hall_of_fame.c:1202), "
       "texto centralizado em 0xD0 (src/hall_of_fame.c:986)"),
     U("src/diploma.c", "*", 30 * 8, "diploma: centralizado em 240 px (src/diploma.c:269-273)"),
+    U("src/novidades.c", "call:AddTextPrinterParameterized4", 148,
+      "título da tela de novidades: WIN_TITLE 30 tiles (src/novidades.c:253-258), FONT_NORMAL em x = 4 "
+      "(src/novidades.c:828), até 152, antes dos controles", label="sText_Title"),
+    U("src/novidades.c", "*", 80,
+      "controles da tela de novidades: FONT_SMALL alinhado à direita em 236 na WIN_TITLE "
+      "(src/novidades.c:829-830), de 156 em diante", font="small", label="sText_Controls"),
     U("src/credits.c", "*", 30 * 8, "créditos: janela de 30 tiles (src/credits.c:456-460), centralizados",
       unica=True),
     U("src/help_system*.c", "*", 26 * 8, "ajuda: bitmap de 26 tiles (src/help_system_util.c:265)"),

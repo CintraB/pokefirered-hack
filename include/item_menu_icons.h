@@ -22,6 +22,8 @@ void DestroyItemMenuIcon(bool8 a0);
 void CreateItemMenuIcon(u16 itemId, bool8 a0);
 void CopyItemIconPicTo4x4Buffer(const void *src, void *dest);
 u8 AddItemIconObject(u16 tilesTag, u16 paletteTag, u16 itemId);
+u8 AddItemIconObjectFromGfx(u16 tilesTag, u16 paletteTag, const u32 *tiles, const u32 *palette);
+u8 AddItemIconObjectFromGfxWithTemplate(const struct SpriteTemplate *origTemplate, u16 tilesTag, u16 paletteTag, const u32 *tiles, const u32 *palette);
 u8 AddItemIconObjectWithCustomObjectTemplate(const struct SpriteTemplate * origTemplate, u16 tilesTag, u16 paletteTag, u16 itemId);
 void CreateBerryPouchItemIcon(u16 itemId, u8 idx);
 void UpdateSwapLinePos(s16 x, u16 y);

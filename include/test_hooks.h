@@ -101,6 +101,15 @@ enum
 };
 // --- end of Hack 8 -------------------------------------------------------------------------
 
+// --- Tela de novidades do Prof. Carvalho ---------------------------------------------------
+enum
+{
+    TEST_CMD_OPEN_NOVIDADES = 0x90, // field script: lockall, fadescreen, special OpenNovidadesScreen, waitstate, releaseall; result = special number (0xFFFFFFFF = not in gSpecials)
+    TEST_CMD_NOVIDADES_STATE,       // result = Novidades_TestGetState(): cursor | input ready << 8 | live icons << 16 | (open card + 1, 0 = grid) << 24 (0xFFFFFFFF = screen closed)
+    TEST_CMD_NOVIDADES_CARD,        // result = Novidades_TestGetCard(): topic | card << 8 | image kind << 16 | live image sprites << 24 (0xFFFFFFFF = not on a card)
+};
+// --- end of novidades ----------------------------------------------------------------------
+
 extern struct TestMailbox gTestMailbox;
 extern u8 gTestText[TEST_TEXT_SIZE];
 

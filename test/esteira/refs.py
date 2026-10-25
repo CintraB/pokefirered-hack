@@ -17,6 +17,7 @@ from esteira.evolutions import SCREEN_POINTS as EVOLUTION_POINTS
 from esteira.ivev_page import SCREEN_POINTS as IVEV_PAGE_POINTS
 from esteira.breeding import SHOP_SCREEN_POINTS   # Hack 6
 from esteira.evolution_page import FRIENDSHIP_SCREEN_POINTS   # Hack 7 - frente D
+from esteira.scenarios.full_novidades import SCREEN_POINTS as NOVIDADES_POINTS   # tela de novidades
 from esteira.result import Result
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -38,7 +39,8 @@ KEY_POINTS = (("nome", "inicial", "batalha_rival", "captura", "save_continue") +
 SHARED_REFS = "COMUM"
 SHARED_POINTS = (EVOLUTION_POINTS + EVOLUTION_PAGE_POINTS + SUMMARY_PAGE_POINTS + IVEV_PAGE_POINTS
                  + SHOP_SCREEN_POINTS
-                 + FRIENDSHIP_SCREEN_POINTS)  # Hack 7 - frente D
+                 + FRIENDSHIP_SCREEN_POINTS  # Hack 7 - frente D
+                 + NOVIDADES_POINTS)  # tela de novidades do Carvalho
 DIFF_RED = (255, 0, 0)
 # O Pillow acusa PNG quebrado com OSError (UnidentifiedImageError é subclasse, "image file is
 # truncated"), SyntaxError ("broken PNG file") ou ValueError, conforme onde o arquivo está estragado.

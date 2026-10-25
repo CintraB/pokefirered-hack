@@ -239,7 +239,7 @@ def test_generic_rule_flag():
 
 
 _CHECKED_FILES = ("src/pokedex_screen.c", "src/union_room", "src/data/union_room.h", "src/fame_checker.c",
-                  "src/easy_chat", "src/data/easy_chat/", "src/script_menu.c")
+                  "src/easy_chat", "src/data/easy_chat/", "src/script_menu.c", "src/novidades.c")
 _TILES = re.compile(r"\b(\d+) tiles\b")
 _CITE = re.compile(r"((?:src|include|data)/[\w./-]+\.(?:c|h|inc|s)):(\d+)(?:-(\d+))?((?:, :\d+(?:-\d+)?)*)")
 

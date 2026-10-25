@@ -391,3 +391,17 @@ PalletTown_ProfessorOaksLab_Text_OakShinyCharmGoal::
     .string "Se você capturar os 151\n"
     .string "Pokémon de Kanto, eu lhe darei algo\l"
     .string "muito especial: o Amuleto Brilhante!$"
+
+@ Novidades: o Carvalho oferece a tela de novidades
+PalletTown_ProfessorOaksLab_Text_OakOfferNovidadesFirst::
+    .string "Carvalho: Ah, {PLAYER}! Anotei tudo\n"
+    .string "o que há de novo em Kanto.\p"
+    .string "Quer ver as novidades agora?$"
+
+PalletTown_ProfessorOaksLab_Text_OakNovidadesAnytime::
+    .string "Carvalho: Quando quiser, é só falar\n"
+    .string "comigo aqui no laboratório.$"
+
+PalletTown_ProfessorOaksLab_Text_OakOfferNovidades::
+    .string "Carvalho: Quer ver as novidades\n"
+    .string "de Kanto?$"

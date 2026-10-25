@@ -114,7 +114,10 @@ def test_excecao_do_to_continua_sendo_so_a_sigla():
 
 
 # rótulos que os hacks acrescentaram depois da base da tradução (não são rótulos renomeados)
-ROTULOS_DOS_HACKS = {"PalletTown_ProfessorOaksLab_Text_OakAnotherRareEgg"}      # Hack 8: ovo raro por vitória
+ROTULOS_DOS_HACKS = {"PalletTown_ProfessorOaksLab_Text_OakAnotherRareEgg",      # Hack 8: ovo raro por vitória
+                     "PalletTown_ProfessorOaksLab_Text_OakOfferNovidadesFirst",  # tela de novidades (Task 5)
+                     "PalletTown_ProfessorOaksLab_Text_OakNovidadesAnytime",
+                     "PalletTown_ProfessorOaksLab_Text_OakOfferNovidades"}
 
 
 @lru_cache(maxsize=None)

@@ -1,8 +1,9 @@
 """Roteiro rápido A: abertura, nome digitado, inicial em rodízio e batalha do rival.
 
 Só aperta botões e lê memória. Checkpoints: `abertura` (jogador livre no quarto),
-`inicial` (inicial recebido, rival já pegou o dele) e `rival` (de volta ao overworld no
-laboratório depois da batalha). Os Tasks 6-7 continuam do checkpoint `rival`.
+`inicial` (inicial recebido, rival já pegou o dele e o Carvalho ofereceu as novidades, NÃO)
+e `rival` (de volta ao overworld no laboratório depois da batalha). Os Tasks 6-7 continuam
+do checkpoint `rival`.
 
 Uso avulso (até o CLI do Task 8 existir), a partir de test/:
     python3 -m esteira.scenarios.quick_opening --starter BULBASAUR --out /tmp/abertura
@@ -15,6 +16,7 @@ import time
 from statistics import median
 
 from ..battle import BattleDriver
+from ..breeding import header_defines
 from ..emu import KEY_A, KEY_B, KEY_DOWN, KEY_START, KEY_UP
 from ..naming import NamingScreen
 from ..rotation import STARTERS
@@ -43,6 +45,7 @@ BUTTON_WAIT_STATES = {1, 2, 3}
 # o jogador fica embaixo da bola, olhando para cima.
 STARTER_BALL_X = {"BULBASAUR": 8, "SQUIRTLE": 9, "CHARMANDER": 10}
 BALL_ROW = 4
+SB1_VARS, VAR_BASE = 0x1000, 0x4000   # u16 vars[] em struct SaveBlock1 (include/global.h)
 LAB_EXIT_TRIGGER = (6, 8)   # coord_events em y=8 (x 5..7): rival desafia na saída
 
 
@@ -53,6 +56,11 @@ def _text_speed_fast() -> int:
 
 
 class OpeningScenario(Scenario):
+    def _lab_scene_var(self) -> int:
+        """VAR_MAP_SCENE_PALLET_TOWN_PROFESSOR_OAKS_LAB (u16 vars[] do SaveBlock1)."""
+        var = header_defines(REPO_ROOT, "vars.h")["VAR_MAP_SCENE_PALLET_TOWN_PROFESSOR_OAKS_LAB"]
+        return self.emu.read_u16(self.game._sb1() + SB1_VARS + (var - VAR_BASE) * 2)
+
     # --- abertura ------------------------------------------------------------------
     def _boot_to_oak_speech(self) -> None:
         self.ctl.wait_until(lambda: "TitleScreen" in self.game.callback2(), TITLE_TIMEOUT,
@@ -242,6 +250,13 @@ class OpeningScenario(Scenario):
             if not self.game.party():
                 self.measures.setdefault("starter_shot", self._shot("inicial"))
                 return KEY_A                         # "Quer o <inicial>?" -> SIM
+            if self._novidades_offer():              # tela de novidades (depois do rival pegar o dele)
+                if self.menu_new:                    # uma vez por menu, mesmo que o B leve dois toques
+                    self.measures["novidades_offers"] = int(self.measures.get("novidades_offers", 0)) + 1
+                # a do apelido vem antes do rival pegar o dele; a das novidades, com a var de cena em 3
+                self.measures["novidades_offer_scene_var"] = self._lab_scene_var()
+                self.measures.setdefault("novidades_offer_shot", self._shot_next_frame("novidades_oferta"))
+                return KEY_B                         # "Quer ver as novidades agora?" -> NÃO
             return KEY_B                             # "Dar apelido?" -> NÃO
         self._finish_script(f"recebimento do {starter}", yesno=answer)
 
@@ -263,6 +278,19 @@ class OpeningScenario(Scenario):
             res.images.append(self.measures["starter_shot"])
         if res.status == "falha":
             raise Abort("inicial")
+
+        def check_novidades_offer() -> str:
+            offers = self.measures.get("novidades_offers", 0)
+            assert offers == 1, f"o Carvalho perguntou das novidades {offers} vez(es), esperava 1"
+            var = self.measures.get("novidades_offer_scene_var")
+            assert var == 3, f"a pergunta veio com a var de cena {var}, esperava 3 (depois do rival pegar o dele)"
+            # um SIM abriria a tela e o roteiro não chegaria aqui (timeout no campo livre)
+            self._assert_location("MAP_PALLET_TOWN_PROFESSOR_OAKS_LAB")
+            return "Carvalho perguntou das novidades depois do inicial; NÃO seguiu a história no laboratório"
+
+        res = self.suite.run("inicial: Carvalho oferece as novidades (NÃO)", check_novidades_offer)
+        if "novidades_offer_shot" in self.measures:
+            res.images.append(self.measures["novidades_offer_shot"])
         self.ctl.checkpoint("inicial")
 
     # --- rival ---------------------------------------------------------------------

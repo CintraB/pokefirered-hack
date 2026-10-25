@@ -58,8 +58,14 @@ def _text(file: str, label: str) -> str:
 SPEECH_LABEL = re.compile(r"(?:^|\\[nlp$]|\})\s*([A-ZÀ-Ý][A-ZÀ-Ý .']{2,}): ")
 
 
+# Textos que não são fala: os rótulos "ANTES:"/"AGORA:"/"SEM:"/"COM:" da linha de comparação dos cartões
+# da tela de novidades (cartoes.json) ficam em maiúsculas de propósito, como no mockup aprovado.
+NOT_SPEECH_FILES = ("src/data/novidades/cartoes.json",)
+
+
 def caps_labels(entries: dict[tuple[str, str], str]) -> list[str]:
-    return [f"{f}: {lbl}: {m.group(1)}:" for (f, lbl), t in entries.items() for m in SPEECH_LABEL.finditer(t)]
+    return [f"{f}: {lbl}: {m.group(1)}:" for (f, lbl), t in entries.items() if f not in NOT_SPEECH_FILES
+            for m in SPEECH_LABEL.finditer(t)]
 
 
 def test_nenhum_rotulo_de_fala_em_maiuscula():

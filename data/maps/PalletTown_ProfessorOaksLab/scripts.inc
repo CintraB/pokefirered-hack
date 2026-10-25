@@ -4,6 +4,8 @@
 .equ RIVAL_STARTER_ID,        VAR_TEMP_4
 
 .equ SHOWED_OAK_COMPLETE_DEX, FLAG_TEMP_2
+@ Novidades: a avaliação pode entregar o Amuleto (ver NoteShinyCharmBeforeRating)
+.equ HAD_SHINY_CHARM_BEFORE_RATING, FLAG_TEMP_3
 
 PalletTown_ProfessorOaksLab_MapScripts::
 	map_script MAP_SCRIPT_ON_TRANSITION, PalletTown_ProfessorOaksLab_OnTransition
@@ -623,17 +625,17 @@ PalletTown_ProfessorOaksLab_EventScript_ProfOakStoryStage::
 
 PalletTown_ProfessorOaksLab_EventScript_OakJustShownCompleteDex::
 	msgbox PokedexRating_Text_ThankYouMadeDreamReality
-	release
+	goto PalletTown_ProfessorOaksLab_EventScript_OfferNovidades
 	end
 
 PalletTown_ProfessorOaksLab_EventScript_OakCanReachNextTownWithMon::
 	msgbox PalletTown_ProfessorOaksLab_Text_OakCanReachNextTownWithMon
-	release
+	goto PalletTown_ProfessorOaksLab_EventScript_OfferNovidades
 	end
 
 PalletTown_ProfessorOaksLab_EventScript_OakBattleMonForItToGrow::
 	msgbox PalletTown_ProfessorOaksLab_Text_OakBattleMonForItToGrow
-	release
+	goto PalletTown_ProfessorOaksLab_EventScript_OfferNovidades
 	end
 
 PalletTown_ProfessorOaksLab_EventScript_ReceiveDexScene::
@@ -824,9 +826,10 @@ PalletTown_ProfessorOaksLab_EventScript_RatePokedexOrTryGiveBalls::
 	end
 
 PalletTown_ProfessorOaksLab_EventScript_RatePokedex::
+	call PalletTown_ProfessorOaksLab_EventScript_NoteShinyCharmBeforeRating
 	call PokedexRating_EventScript_RateInPerson
 	goto_if_set FLAG_OAK_SAW_DEX_COMPLETION, PalletTown_ProfessorOaksLab_EventScript_DexCompleted
-	release
+	goto PalletTown_ProfessorOaksLab_EventScript_OfferNovidadesAfterRating
 	end
 
 PalletTown_ProfessorOaksLab_EventScript_DexCompleted::
@@ -944,6 +947,7 @@ PalletTown_ProfessorOaksLab_Movement_VerticalPacing:
 	step_end
 
 PalletTown_ProfessorOaksLab_EventScript_TryStartNationalDexScene::
+	call PalletTown_ProfessorOaksLab_EventScript_NoteShinyCharmBeforeRating
 	call PokedexRating_EventScript_RateInPerson
 	closemessage
 	goto_if_lt VAR_0x8009, 60, PalletTown_ProfessorOaksLab_EventScript_DontStartNationalDexScene
@@ -954,7 +958,7 @@ PalletTown_ProfessorOaksLab_EventScript_TryStartNationalDexScene::
 	end
 
 PalletTown_ProfessorOaksLab_EventScript_DontStartNationalDexScene::
-	release
+	goto PalletTown_ProfessorOaksLab_EventScript_OfferNovidadesAfterRating
 	end
 
 PalletTown_ProfessorOaksLab_EventScript_CheckIfPlayerNeedsBalls::
@@ -981,12 +985,12 @@ PalletTown_ProfessorOaksLab_EventScript_GivePlayerMoreBalls::
 
 PalletTown_ProfessorOaksLab_EventScript_MonsAroundWorldWait::
 	msgbox PalletTown_ProfessorOaksLab_Text_OakMonsAroundWorldWait
-	release
+	goto PalletTown_ProfessorOaksLab_EventScript_OfferNovidades
 	end
 
 PalletTown_ProfessorOaksLab_EventScript_PlayerAlreadyGotBalls::
 	msgbox PalletTown_ProfessorOaksLab_Text_OakComeSeeMeSometime
-	release
+	goto PalletTown_ProfessorOaksLab_EventScript_OfferNovidades
 	end
 
 PalletTown_ProfessorOaksLab_EventScript_DexSceneRivalEnterNorth::
@@ -1216,7 +1220,7 @@ PalletTown_ProfessorOaksLab_EventScript_RivalTakesStarter::
 	waitfanfare
 	setvar VAR_MAP_SCENE_PALLET_TOWN_PROFESSOR_OAKS_LAB, 3
 	call_if_set FLAG_OPENED_START_MENU, PalletTown_ProfessorOaksLab_EventScript_ReadyEndSignLadyScene
-	release
+	goto PalletTown_ProfessorOaksLab_EventScript_OfferNovidadesFirst
 	end
 
 PalletTown_ProfessorOaksLab_EventScript_ReadyEndSignLadyScene::
@@ -1340,4 +1344,49 @@ PalletTown_ProfessorOaksLab_EventScript_RightSign::
 PalletTown_ProfessorOaksLab_EventScript_RightSignAlt::
 	msgbox PalletTown_ProfessorOaksLab_Text_AllMonTypesHaveStrongAndWeakPoints
 	releaseall
+	end
+
+@ Novidades (tela de novidades do Prof. Carvalho, src/novidades.c): logo depois do inicial e no fim de
+@ qualquer conversa comum com ele no laboratório, o Carvalho oferece a tela. Cenas obrigatórias e conversas
+@ de presente (Poké Balls, ovo raro, Dex completa, Amuleto recém-entregue) terminam sem a oferta.
+PalletTown_ProfessorOaksLab_EventScript_OfferNovidadesFirst::
+	goto_if_questlog EventScript_ReleaseEnd
+	textcolor NPC_TEXT_COLOR_MALE
+	msgbox PalletTown_ProfessorOaksLab_Text_OakOfferNovidadesFirst, MSGBOX_YESNO
+	goto_if_eq VAR_RESULT, YES, PalletTown_ProfessorOaksLab_EventScript_OpenNovidades
+	msgbox PalletTown_ProfessorOaksLab_Text_OakNovidadesAnytime
+	release
+	end
+
+PalletTown_ProfessorOaksLab_EventScript_OfferNovidades::
+	goto_if_questlog EventScript_ReleaseEnd
+	textcolor NPC_TEXT_COLOR_MALE
+	msgbox PalletTown_ProfessorOaksLab_Text_OakOfferNovidades, MSGBOX_YESNO
+	goto_if_eq VAR_RESULT, YES, PalletTown_ProfessorOaksLab_EventScript_OpenNovidades
+	release
+	end
+
+PalletTown_ProfessorOaksLab_EventScript_OpenNovidades::
+	closemessage
+	fadescreen FADE_TO_BLACK
+	special OpenNovidadesScreen
+	waitstate
+	release
+	end
+
+@ A avaliação da Pokédex pode entregar o Amuleto Brilhante (PokedexRating_EventScript_TryGiveShinyCharm):
+@ guarda antes se o jogador já o tinha; se acabou de ganhar, a conversa fica só com o presente.
+PalletTown_ProfessorOaksLab_EventScript_NoteShinyCharmBeforeRating::
+	clearflag HAD_SHINY_CHARM_BEFORE_RATING
+	call_if_set FLAG_GOT_SHINY_CHARM, PalletTown_ProfessorOaksLab_EventScript_SetHadShinyCharm
+	return
+
+PalletTown_ProfessorOaksLab_EventScript_SetHadShinyCharm::
+	setflag HAD_SHINY_CHARM_BEFORE_RATING
+	return
+
+PalletTown_ProfessorOaksLab_EventScript_OfferNovidadesAfterRating::
+	goto_if_unset FLAG_GOT_SHINY_CHARM, PalletTown_ProfessorOaksLab_EventScript_OfferNovidades
+	goto_if_set HAD_SHINY_CHARM_BEFORE_RATING, PalletTown_ProfessorOaksLab_EventScript_OfferNovidades
+	release
 	end
