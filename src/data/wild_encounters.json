@@ -11899,7 +11899,7 @@
               {
                 "min_level": 15,
                 "max_level": 25,
-                "species": "SPECIES_PSYDUCK"
+                "species": "SPECIES_FEEBAS"
               },
               {
                 "min_level": 25,
@@ -24441,7 +24441,7 @@
               {
                 "min_level": 15,
                 "max_level": 25,
-                "species": "SPECIES_SLOWPOKE"
+                "species": "SPECIES_FEEBAS"
               },
               {
                 "min_level": 25,
