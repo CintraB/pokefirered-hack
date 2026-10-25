@@ -39,6 +39,7 @@ class Scenario:
         self.consts = ctx.consts
         self.shots = Path(ctx.out_dir) / "telas"
         self.measures: dict[str, object] = {}
+        self.menu_new = False      # _finish_script: 1º toque no menu Sim/Não aberto agora
 
     def _press(self, key: int) -> None:
         self.emu.press(key, hold=2, release=TEXT_PERIOD - 2)
@@ -97,16 +98,22 @@ class Scenario:
     def _finish_script(self, what: str, timeout: int = SCENE_TIMEOUT, yesno=None) -> None:
         """Avança falas com A até o overworld ficar livre; `yesno()` escolhe a tecla de cada
         pergunta sim/não do script (padrão: A = SIM, menos a oferta das novidades do Carvalho,
-        que recebe NÃO e fica contada em measures["novidades_offers"])."""
-        spent = 0
+        que recebe NÃO e fica contada em measures["novidades_offers"]). O menu pode precisar de mais
+        de um toque: `self.menu_new` diz ao `yesno()` se é o primeiro toque neste menu, e a oferta
+        conta uma vez por menu."""
+        spent, in_menu = 0, False
         while not self._settled_idle():
             if spent >= timeout:
                 raise self.ctl.timeout_error(what)
-            if YESNO_TASK in self._tasks():
+            menu = YESNO_TASK in self._tasks()
+            self.menu_new = menu and not in_menu
+            in_menu = menu
+            if menu:
                 if yesno:
                     self._press(yesno())
                 elif self._novidades_offer():
-                    self.measures["novidades_offers"] = int(self.measures.get("novidades_offers", 0)) + 1
+                    if self.menu_new:
+                        self.measures["novidades_offers"] = int(self.measures.get("novidades_offers", 0)) + 1
                     self._press(KEY_B)
                 else:
                     self._press(KEY_A)

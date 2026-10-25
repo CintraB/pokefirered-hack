@@ -115,17 +115,76 @@ def test_amuleto_recem_entregue_fica_sem_oferta():
     assert re.search(r"^\.equ HAD_SHINY_CHARM_BEFORE_RATING,\s*FLAG_TEMP_3$", _scripts(), re.M)
 
 
-# cenas obrigatórias e conversas de presente: nenhuma passa pela oferta
+def _rotulos() -> tuple[dict[str, list[str]], list[str]]:
+    """Comandos de cada rótulo do laboratório, na ordem do arquivo."""
+    labels: dict[str, list[str]] = {}
+    order: list[str] = []
+    cur = None
+    for line in _scripts().splitlines():
+        m = re.match(r"^(\w+)::\s*$", line)
+        if m:
+            cur = m.group(1)
+            labels[cur], order = [], order + [cur]
+        elif cur and line.strip():
+            labels[cur].append(line.strip())
+    return labels, order
+
+
+def _alcancaveis(nome: str) -> set[str]:
+    """Rótulos do laboratório que o script alcança a partir de `nome`: segue goto, goto_if_*, call,
+    call_if_* e a queda para o rótulo seguinte (até `end`, `return` ou um `goto` incondicional)."""
+    labels, order = _rotulos()
+
+    def seguintes(rotulo: str) -> list[str]:
+        out = []
+        for cmd in labels[rotulo]:
+            partes = re.split(r"[\s,]+", cmd)
+            op = partes[0]
+            if op in ("goto", "call") or op.startswith(("goto_if", "call_if")):
+                if partes[-1] in labels:
+                    out.append(partes[-1])
+                if op == "goto":
+                    return out
+            if op in ("end", "return"):
+                return out
+        i = order.index(rotulo)
+        return out + order[i + 1:i + 2]
+
+    vistos, pilha = set(), [nome]
+    while pilha:
+        rotulo = pilha.pop()
+        if rotulo not in vistos:
+            vistos.add(rotulo)
+            pilha.extend(seguintes(rotulo))
+    return vistos
+
+
+OFERTAS = {OFFER, OFFER_FIRST, OFFER_AFTER_RATING, OPEN}
+
+# cenas obrigatórias e conversas de presente: nenhuma chega à oferta
 SEM_OFERTA = ("LeaveStarterSceneTrigger", "RivalBattle", "EndRivalBattle",
-              "ConfirmStarterChoice", "ChoseStarter", "RivalPicksStarter",
               "ReceiveDexScene", "EnterForNationalDexScene", "NationalDexScene",
-              "GivePlayerMoreBalls", "OakGivePendingRareEgg", "TryGiveRareEgg", "DexCompleted",
-              "ProfOakStoryStage", "ProfOak", "OakCheckRareEgg", "CheckIfPlayerNeedsBalls")
+              "GivePlayerMoreBalls", "OakGivePendingRareEgg", "TryGiveRareEgg", "DexCompleted")
+# escolha do inicial: termina na oferta da 1ª vez (depois do rival pegar o dele), nunca na comum
+CENA_DO_INICIAL = ("ConfirmStarterChoice", "ChoseStarter", "RivalPicksStarter")
 
 
 @pytest.mark.parametrize("nome", SEM_OFERTA)
 def test_cenas_e_presentes_sem_oferta(nome):
-    assert "Novidades" not in _bloco(f"{P}EventScript_{nome}"), nome
+    alcance = _alcancaveis(f"{P}EventScript_{nome}")
+    assert not alcance & OFERTAS, sorted(alcance & OFERTAS)
+
+
+@pytest.mark.parametrize("nome", CENA_DO_INICIAL)
+def test_escolha_do_inicial_so_chega_a_primeira_oferta(nome):
+    alcance = _alcancaveis(f"{P}EventScript_{nome}")
+    assert alcance & OFERTAS == {OFFER_FIRST, OPEN}
+
+
+def test_caminhante_acha_a_oferta_pelos_despachos():
+    # sem isto o teste acima poderia passar com um caminhante que não anda
+    for nome in ("ProfOak", "ProfOakStoryStage", "OakCheckRareEgg", "CheckIfPlayerNeedsBalls"):
+        assert OFFER in _alcancaveis(f"{P}EventScript_{nome}"), nome
 
 
 def test_antes_do_inicial_sem_oferta():
@@ -153,8 +212,13 @@ def test_roteiro_rapido_responde_nao_e_confere_a_pergunta():
     from esteira.scenarios import base
 
     opening = (REPO_ROOT / "test" / "esteira" / "scenarios" / "quick_opening.py").read_text(encoding="utf-8")
-    assert "self._novidades_offer()" in opening and 'return KEY_B                         # "Quer ver as novidades' in opening
+    assert "self._novidades_offer()" in opening
+    assert re.search(r"return KEY_B\s+# \"Quer ver as novidades", opening)
     assert 'assert offers == 1' in opening
+    # a pergunta vem depois do rival pegar o dele (var de cena 3), não na do apelido; e nada de
+    # afirmação sempre verdadeira depois do campo livre (review-t5, Minor 2)
+    assert re.search(r"novidades_offer_scene_var.*== 3", opening, re.S)
+    assert '"Novidades" not in self.game.callback2()' not in opening
     # o texto que o roteiro procura é o das duas perguntas do Carvalho
     texto = (LAB / "text.inc").read_text(encoding="utf-8")
     for label in (f"{P}Text_OakOfferNovidadesFirst", f"{P}Text_OakOfferNovidades"):
