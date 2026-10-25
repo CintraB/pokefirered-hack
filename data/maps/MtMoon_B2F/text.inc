@@ -9,7 +9,7 @@ MtMoon_B2F_Text_MiguelDefeat::
 
 MtMoon_B2F_Text_WellEachTakeAFossil::
     .string "Pode levar os dois fósseis!\n"
-    .string "Sem ganância!$"
+    .string "Eu não sou ganancioso!$"
 
 MtMoon_B2F_Text_TakeTheOtherFossilToo::
     .string "Pode levar o outro fóssil também.\n"

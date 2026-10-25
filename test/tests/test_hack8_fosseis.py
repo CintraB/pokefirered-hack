@@ -1,4 +1,4 @@
-"""Hack 8: os dois fósseis do Monte Moon (Domo e Hélice) no mesmo save.
+"""Hack 8: os dois fósseis do Monte Lua (Domo e Hélice) no mesmo save.
 
 - O jogador pega um fóssil; o outro continua no chão e pode ser pego em seguida (cada um com a sua
   flag de objeto `FLAG_HIDE_*` e a sua flag de posse `FLAG_GOT_*`). O Super Nerd (Miguel) só comenta:
@@ -127,6 +127,7 @@ def test_falas_do_miguel_nao_dizem_mais_que_cada_um_leva_um():
         txt = _flat(_text(rotulo))
         assert "Cada um" not in txt and "dividir" not in txt and "é meu" not in txt, rotulo
     assert "os dois" in _flat(_text("MtMoon_B2F_Text_WellEachTakeAFossil"))
+    assert "Eu não sou ganancioso" in _flat(_text("MtMoon_B2F_Text_WellEachTakeAFossil"))  # a ganância é dele, não bronca no jogador
     assert "outro" in _flat(_text("MtMoon_B2F_Text_TakeTheOtherFossilToo"))
 
 
@@ -163,6 +164,7 @@ def test_cartao_os_dois_fosseis_no_topico_da_pokedex_e_captura():
     topico = next(t for t in dados["topics"] if t["name"] == "Pokédex e captura")
     cartao = next(c for c in topico["cards"] if c["title"] == "Os dois fósseis")
     corpo = re.sub(r"\s+", " ", cartao["body"])
-    assert all(e in corpo for e in ("Monte Moon", "Fóssil Domo", "Fóssil Hélice"))
+    assert all(e in corpo for e in ("Monte Lua", "Fóssil Domo", "Fóssil Hélice", "laboratório da Ilha Cinnabar"))
+    assert "Monte Moon" not in corpo
     assert cartao["itemId"] == "ITEM_DOME_FOSSIL"
     assert "speciesBefore" not in cartao

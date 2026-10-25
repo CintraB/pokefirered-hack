@@ -268,7 +268,7 @@ CinnabarIsland_PokemonLab_ExperimentRoom_EventScript_RevivedAllFossils::
 	release
 	end
 
-@ Hack 8: o jogador pode ter os dois fósseis do Monte Moon. "Já reviveu tudo" só vale sem nenhum
+@ Hack 8: o jogador pode ter os dois fósseis do Monte Lua. "Já reviveu tudo" só vale sem nenhum
 @ fóssil pendente (com a flag de posse e sem a de reviver) e com pelo menos um deles em mãos.
 CinnabarIsland_PokemonLab_ExperimentRoom_EventScript_CheckRevivedMtMoonFossil::
 	call CinnabarIsland_PokemonLab_ExperimentRoom_EventScript_CheckAddHelixFossilToList
