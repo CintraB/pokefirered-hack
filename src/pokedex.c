@@ -120,6 +120,20 @@ bool16 HasAllKantoMons(void)
     return TRUE;
 }
 
+// Hack 8: Shiny Charm condition. All 151 Kanto species caught, Mew included (HasAllKantoMons and
+// HasAllMons keep excluding it: the diploma, the trainer card and the National Dex rating use them).
+bool16 HasAllKantoMonsWithMew(void)
+{
+    u16 i;
+
+    for (i = 0; i < KANTO_DEX_COUNT; i++)
+    {
+        if (!GetSetPokedexFlag(i + 1, FLAG_GET_CAUGHT))
+            return FALSE;
+    }
+    return TRUE;
+}
+
 bool16 HasAllMons(void)
 {
     u16 i;

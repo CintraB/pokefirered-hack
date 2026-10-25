@@ -13,7 +13,8 @@ roteiro liga, CONTINUAR e:
 1. 1 000 pares (personalidade, OT ID) fixos: cor (IsMonShiny do jogo e Mon.is_shiny lido do
    Pokémon criado) == fórmula original com limite 8;
 2. taxa sem charm: 200 000 Pokémon por CreateMonWithNature (o caminho dos selvagens);
-3. atalho marca a Dex Nacional completa (tudo que HasAllMons() exige);
+3. atalho marca a Dex Nacional completa (tudo que HasAllMons() exige, mais o Mew: o Amuleto
+   Brilhante exige os 151 de Kanto, HasAllKantoMonsWithMew);
 4. avaliação pelo PC do Oak (Centro de Viridian) com a Dex completa: não entrega o charm;
 5. anda até o laboratório e fala com o Oak: entrega o charm (1 na bolsa, FLAG_GOT_SHINY_CHARM);
 6. sai, volta e fala de novo: continua 1;
@@ -310,7 +311,7 @@ class ShinyScenario(PcMenuMixin, CatchSaveScenario):
         self._enter_lab()
         # SHOWED_OAK_COMPLETE_DEX (FLAG_TEMP_2, data/maps/PalletTown_ProfessorOaksLab/scripts.inc):
         # desligada => o Oak avalia de novo; ligada no fim => a avaliação chegou à Dex completa
-        # (PokedexRating_EventScript_TryGiveShinyCharm roda nesse caminho)
+        # (a avaliação de Kanto, onde PokedexRating_EventScript_TryGiveShinyCharm roda, vem antes)
         showed = self.consts.flag("FLAG_TEMP_2")
         assert not self.game.flag(showed), "FLAG_TEMP_2 ligada ao voltar: o Oak não avaliaria"
         self._talk_to_oak()

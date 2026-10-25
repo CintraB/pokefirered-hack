@@ -463,4 +463,6 @@ gSpecials::
 	@ Hack 8 — ovos raros por vitória na Liga
 	def_special MarkRareEggDelivered
 	def_special QueueRareEggAfterHallOfFame
+	@ Hack 8 — Amuleto Brilhante: os 151 de Kanto (Mew incluído)
+	def_special HasAllKantoMonsWithMew
 gSpecialsEnd::
