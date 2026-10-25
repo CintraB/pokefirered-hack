@@ -317,7 +317,12 @@ void CopyItemIconPicTo4x4Buffer(const void *src, void *dest)
         CpuCopy16(src + 0x60 * i, dest + 0x80 * i, 0x60);
 }
 
-u8 AddItemIconObject(u16 tilesTag, u16 paletteTag, u16 itemId)
+// Cria o sprite de ícone (24x24 no canto de 32x32) a partir de tiles e paleta LZ quaisquer, no mesmo
+// formato dos ícones de item, com o template dado (só tileTag/paletteTag são trocados). A tela de novidades
+// usa para os ícones que não são itens (na grade e, em dobro com template afim, no cartão).
+// Tiles e paleta entram por tag (tilesTag/paletteTag): quem cria libera por tag com FreeSpriteTilesByTag e
+// FreeSpritePaletteByTag (o template do sprite é local, então DestroySpriteAndFreeResources não basta).
+u8 AddItemIconObjectFromGfxWithTemplate(const struct SpriteTemplate *origTemplate, u16 tilesTag, u16 paletteTag, const u32 *tiles, const u32 *palette)
 {
     struct SpriteTemplate template;
     struct SpriteSheet spriteSheet;
@@ -327,45 +332,14 @@ u8 AddItemIconObject(u16 tilesTag, u16 paletteTag, u16 itemId)
     if (!TryAllocItemIconTilesBuffers())
         return MAX_SPRITES;
 
-    LZDecompressWram(GetItemIconGfxPtr(itemId, ITEMICON_TILES), sItemIconTilesBuffer);
+    LZDecompressWram(tiles, sItemIconTilesBuffer);
     CopyItemIconPicTo4x4Buffer(sItemIconTilesBuffer, sItemIconTilesBufferPadded);
     spriteSheet.data = sItemIconTilesBufferPadded;
     spriteSheet.size = 0x200;
     spriteSheet.tag = tilesTag;
     LoadSpriteSheet(&spriteSheet);
 
-    spritePalette.data = GetItemIconGfxPtr(itemId, ITEMICON_PAL);
-    spritePalette.tag = paletteTag;
-    LoadCompressedSpritePalette(&spritePalette);
-
-    CpuCopy16(&sSpriteTemplate_ItemIcon, &template, sizeof(struct SpriteTemplate));
-    template.tileTag = tilesTag;
-    template.paletteTag = paletteTag;
-    spriteId = CreateSprite(&template, 0, 0, 0);
-
-    Free(sItemIconTilesBuffer);
-    Free(sItemIconTilesBufferPadded);
-    return spriteId;
-}
-
-u8 AddItemIconObjectWithCustomObjectTemplate(const struct SpriteTemplate * origTemplate, u16 tilesTag, u16 paletteTag, u16 itemId)
-{
-    struct SpriteTemplate template;
-    struct SpriteSheet spriteSheet;
-    struct CompressedSpritePalette spritePalette;
-    u8 spriteId;
-
-    if (!TryAllocItemIconTilesBuffers())
-        return MAX_SPRITES;
-
-    LZDecompressWram(GetItemIconGfxPtr(itemId, ITEMICON_TILES), sItemIconTilesBuffer);
-    CopyItemIconPicTo4x4Buffer(sItemIconTilesBuffer, sItemIconTilesBufferPadded);
-    spriteSheet.data = sItemIconTilesBufferPadded;
-    spriteSheet.size = 0x200;
-    spriteSheet.tag = tilesTag;
-    LoadSpriteSheet(&spriteSheet);
-
-    spritePalette.data = GetItemIconGfxPtr(itemId, ITEMICON_PAL);
+    spritePalette.data = palette;
     spritePalette.tag = paletteTag;
     LoadCompressedSpritePalette(&spritePalette);
 
@@ -377,6 +351,21 @@ u8 AddItemIconObjectWithCustomObjectTemplate(const struct SpriteTemplate * origT
     Free(sItemIconTilesBuffer);
     Free(sItemIconTilesBufferPadded);
     return spriteId;
+}
+
+u8 AddItemIconObjectFromGfx(u16 tilesTag, u16 paletteTag, const u32 *tiles, const u32 *palette)
+{
+    return AddItemIconObjectFromGfxWithTemplate(&sSpriteTemplate_ItemIcon, tilesTag, paletteTag, tiles, palette);
+}
+
+u8 AddItemIconObject(u16 tilesTag, u16 paletteTag, u16 itemId)
+{
+    return AddItemIconObjectFromGfx(tilesTag, paletteTag, GetItemIconGfxPtr(itemId, ITEMICON_TILES), GetItemIconGfxPtr(itemId, ITEMICON_PAL));
+}
+
+u8 AddItemIconObjectWithCustomObjectTemplate(const struct SpriteTemplate * origTemplate, u16 tilesTag, u16 paletteTag, u16 itemId)
+{
+    return AddItemIconObjectFromGfxWithTemplate(origTemplate, tilesTag, paletteTag, GetItemIconGfxPtr(itemId, ITEMICON_TILES), GetItemIconGfxPtr(itemId, ITEMICON_PAL));
 }
 
 void CreateItemMenuIcon(u16 itemId, u8 idx)

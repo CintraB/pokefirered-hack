@@ -3,6 +3,8 @@
 
 #include "global.h"
 
+struct SpriteTemplate;
+
 // Tela de novidades do Prof. Carvalho (docs/superpowers/specs/2026-10-17-novidades-professor-design.md).
 //
 // Os textos e a estrutura (tópicos -> cartões) moram em src/data/novidades/cartoes.json; o make
@@ -45,8 +47,7 @@ struct NovidadesCard
 };
 
 // Ícone do tópico: iconItemId é o ícone de item do jogo. iconCustom != 0 indexa um dos ícones novos
-// da Task 4 (1 relógio, 2 clima, 3 cartucho, 4 ficha); enquanto ele não existe, vale iconItemId
-// (provisório nos tópicos com iconCustom != 0).
+// (graphics/novidades/icon_*.png: 1 relógio, 2 clima, 3 cartucho, 4 ficha) e prevalece sobre iconItemId.
 struct NovidadesTopic
 {
     const u8 *name;
@@ -57,6 +58,12 @@ struct NovidadesTopic
 };
 
 extern const struct NovidadesTopic gNovidadesTopics[];
+
+// Cria o sprite do ícone do tópico (src/novidades_icones.c): o ícone novo (iconCustom) ou o ícone de item
+// (iconItemId), os dois no tamanho e no formato de AddItemIconObject. MAX_SPRITES se não coube.
+u8 Novidades_AddTopicIcon(u16 tilesTag, u16 paletteTag, u8 topicId);
+// O mesmo, com outro template (só tileTag/paletteTag são trocados): o cartão sem imagem usa em dobro.
+u8 Novidades_AddTopicIconWithTemplate(const struct SpriteTemplate *template, u16 tilesTag, u16 paletteTag, u8 topicId);
 
 // Special (data/specials.inc): abre a tela de tópicos (src/novidades.c); ao sair (B), volta ao campo e o
 // script continua (CB2_ReturnToFieldContinueScript). No script: `special OpenNovidadesScreen` + `waitstate`.

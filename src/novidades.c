@@ -164,7 +164,6 @@ static void Novidades_DrawBackground(void);
 static void Novidades_DrawPanel(u8 topicId, u8 palette);
 static void Novidades_CreateIcons(void);
 static void Novidades_DestroyIcons(void);
-static u16 Novidades_GetIconItemId(u8 topicId);
 static void Novidades_PrintTitle(void);
 static void Novidades_PrintTopicName(void);
 static bool8 Novidades_MoveCursor(void);
@@ -646,7 +645,6 @@ static void Novidades_PrintCardText(void)
 static void Novidades_CreateCardImage(void)
 {
     const struct NovidadesCard *card = &gNovidadesTopics[sNovidades->cursor].cards[sNovidades->card];
-    u16 itemId;
     u8 spriteId;
 
     if (card->speciesBefore != SPECIES_NONE && card->speciesAfter != SPECIES_NONE)
@@ -665,15 +663,16 @@ static void Novidades_CreateCardImage(void)
     if (card->itemId != ITEM_NONE)
     {
         sNovidades->cardImage = CARD_IMAGE_ITEM;
-        itemId = card->itemId;
+        spriteId = AddItemIconObjectWithCustomObjectTemplate(&sSpriteTemplate_CardIcon, TAG_NOVIDADES_CARD_ICON,
+                                                             TAG_NOVIDADES_CARD_ICON, card->itemId);
     }
     else
     {
+        // ícone do tópico: o novo (relógio, clima, cartucho, ficha) ou o de item, em dobro como o item
         sNovidades->cardImage = CARD_IMAGE_TOPIC_ICON;
-        itemId = Novidades_GetIconItemId(sNovidades->cursor);
+        spriteId = Novidades_AddTopicIconWithTemplate(&sSpriteTemplate_CardIcon, TAG_NOVIDADES_CARD_ICON,
+                                                      TAG_NOVIDADES_CARD_ICON, sNovidades->cursor);
     }
-    spriteId = AddItemIconObjectWithCustomObjectTemplate(&sSpriteTemplate_CardIcon, TAG_NOVIDADES_CARD_ICON,
-                                                         TAG_NOVIDADES_CARD_ICON, itemId);
     sNovidades->cardSpriteIds[0] = spriteId;
     if (spriteId == MAX_SPRITES)
         return;
@@ -782,20 +781,13 @@ static void Novidades_DrawPanel(u8 topicId, u8 palette)
     FillBgTilemapBufferRect(BG_FUNDO, TILE_PANEL_BR, right, bottom, 1, 1, palette);
 }
 
-// iconCustom != 0: ícone novo da Task 4 (1 relógio, 2 clima, 3 cartucho, 4 ficha).
-// PROVISÓRIO até a Task 4: esses tópicos mostram o iconItemId (ícone de item) que o JSON traz para eles.
-static u16 Novidades_GetIconItemId(u8 topicId)
-{
-    return gNovidadesTopics[topicId].iconItemId;
-}
-
 static void Novidades_CreateIcons(void)
 {
     u8 i;
 
     for (i = 0; i < NOVIDADES_TOPIC_COUNT; i++)
     {
-        u8 spriteId = AddItemIconObject(TAG_NOVIDADES_ICON + i, TAG_NOVIDADES_ICON + i, Novidades_GetIconItemId(i));
+        u8 spriteId = Novidades_AddTopicIcon(TAG_NOVIDADES_ICON + i, TAG_NOVIDADES_ICON + i, i);
         sNovidades->iconSpriteIds[i] = spriteId;
         if (spriteId == MAX_SPRITES)
             continue;
