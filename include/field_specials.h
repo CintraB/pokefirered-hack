@@ -31,6 +31,10 @@ void QuestLog_TryRecordDepartedLocation(void);
 // Hack 7 — frente C
 u16 GetRandomRareEggSpecies(void);
 
+// Hack 8 — ovos raros por vitória na Liga
+void MarkRareEggDelivered(void);
+void QueueRareEggAfterHallOfFame(void);
+
 // Hack 8 — míticos no endgame
 u16 GetDayNightPeriodForScript(void);
 bool16 IsSkyClear(void);

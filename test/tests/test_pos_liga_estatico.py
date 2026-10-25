@@ -27,11 +27,15 @@ def _scene() -> str:
 
 def test_ovo_tres_especies():
     c = _read("src/field_specials.c")
+    # Hack 8: as 3 espécies vivem na tabela sRareEggs; o sorteio escolhe entre as que sobraram
+    tab = c[c.index("sRareEggs[] = {"):]
+    tab = tab[:tab.index("};")]
+    for sp in ("SPECIES_LARVITAR", "SPECIES_BAGON", "SPECIES_BELDUM"):
+        assert sp in tab
+    assert tab.count("SPECIES_") == 3
     body = c[c.index("u16 GetRandomRareEggSpecies(void)"):]
     body = body[:body.index("\n}")]
-    for sp in ("SPECIES_LARVITAR", "SPECIES_BAGON", "SPECIES_BELDUM"):
-        assert sp in body
-    assert "Random() % NELEMS(sRareEggSpecies)" in body and body.count("SPECIES_") == 3
+    assert "Random() % left" in body
     assert "def_special GetRandomRareEggSpecies" in _read("data/specials.inc")
     scripts = _read(f"{OAK}/scripts.inc")
     assert "specialvar VAR_0x8004, GetRandomRareEggSpecies" in scripts
@@ -72,7 +76,8 @@ def test_flag_nova():
     assert re.search(r"#define FLAG_GOT_RARE_EGG\s+0x4A8\b", h)
     assert "FLAG_UNUSED_0x4A8" not in h
     scripts = _read(f"{OAK}/scripts.inc")
-    assert scripts.count("setflag FLAG_GOT_RARE_EGG") == 2   # equipe e PC
+    # Hack 8: a flag passou a ser ligada pelo special MarkRareEggDelivered (equipe e PC)
+    assert scripts.count("special MarkRareEggDelivered") == 2
 
 
 def test_resultado_do_ovo_trata_os_tres_casos():
@@ -94,7 +99,7 @@ def test_oak_entrega_pendente_ao_falar():
     assert ge8 < oak.index("VAR_MAP_SCENE_PALLET_TOWN_PROFESSOR_OAKS_LAB, 8, PalletTown_ProfessorOaksLab_EventScript_MonsAround")
     check = s[s.index("PalletTown_ProfessorOaksLab_EventScript_OakCheckRareEgg::"):]
     check = check[:check.index("\n\n")]
-    assert "goto_if_set FLAG_GOT_RARE_EGG, PalletTown_ProfessorOaksLab_EventScript_ProfOakStoryStage" in check
+    assert "goto PalletTown_ProfessorOaksLab_EventScript_ProfOakStoryStage" in check   # Hack 8: ainda pode haver ovo pendente
     assert "OakGivePendingRareEgg" in check
     pending = s[s.index("PalletTown_ProfessorOaksLab_EventScript_OakGivePendingRareEgg::"):]
     assert "call PalletTown_ProfessorOaksLab_EventScript_TryGiveRareEgg" in pending[:pending.index("\n\n")]

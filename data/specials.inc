@@ -460,4 +460,7 @@ gSpecials::
 	def_special IsSpeciesCaught
 	@ Hack 8 — Caverna Mutante
 	def_special GetAlteringCaveSetForScript
+	@ Hack 8 — ovos raros por vitória na Liga
+	def_special MarkRareEggDelivered
+	def_special QueueRareEggAfterHallOfFame
 gSpecialsEnd::

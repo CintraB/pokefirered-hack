@@ -801,10 +801,10 @@
 #define FLAG_CELEBI_FLEW_AWAY    0x304
 #define FLAG_HIDE_JIRACHI        0x305
 #define FLAG_JIRACHI_FLEW_AWAY   0x306
-#define FLAG_0x307               0x307
-#define FLAG_0x308               0x308
-#define FLAG_0x309               0x309
-#define FLAG_0x30A               0x30A
+#define FLAG_GOT_EGG_LARVITAR    0x307
+#define FLAG_GOT_EGG_BAGON       0x308
+#define FLAG_GOT_EGG_BELDUM      0x309
+#define FLAG_RARE_EGG_PENDING    0x30A
 #define FLAG_0x30B               0x30B
 #define FLAG_0x30C               0x30C
 #define FLAG_0x30D               0x30D
