@@ -130,10 +130,6 @@ def relogio():
             c.set(x, y, 5)
         else:
             c.set(x, y, 6)
-    # metade de baixo da face azul-noite? (dia e noite): só um quarto, discreto
-    for (x, y) in circle(cx, cy, R - 2.2):
-        if x + 0.5 > cx and y + 0.5 > cy + 0.5 and (x + 0.5 - cx) + (y + 0.5 - cy) > 5.2:
-            pass
     # marcas das horas (12, 3, 6, 9)
     for (x, y) in ((11, 8), (12, 8), (11, 20), (12, 20), (6, 13), (6, 14), (17, 13), (17, 14)):
         c.set(x, y, 10)
