@@ -958,9 +958,9 @@ const u8 gPorygonPokedexText[] = _(
 const u8 gPorygonPokedexTextUnused[] = _("");
 
 const u8 gOmanytePokedexText[] = _(
-    "Pokémon pré-histórico do mar primitivo.\n"
-    "Nada torcendo seus 10 tentáculos de um\n"
-    "lado para o outro.");
+    "Pokémon pré-histórico que vivia no mar\n"
+    "primitivo. Nadava torcendo seus\n"
+    "10 tentáculos de um lado para o outro.");
 
 const u8 gOmanytePokedexTextUnused[] = _("");
 

@@ -884,7 +884,7 @@ const u8 gText_PokeSum_EvoAtkGtDef[] = _("{LV_2} {STR_VAR_1}, Atq > Def {RIGHT_A
 const u8 gText_PokeSum_EvoAtkEqDef[] = _("{LV_2} {STR_VAR_1}, Atq = Def {RIGHT_ARROW_2} {STR_VAR_3}");
 const u8 gText_PokeSum_EvoAtkLtDef[] = _("{LV_2} {STR_VAR_1}, Atq < Def {RIGHT_ARROW_2} {STR_VAR_3}");
 const u8 gText_PokeSum_EvoLevelRandom[] = _("{LV_2} {STR_VAR_1} (sorteio) {RIGHT_ARROW_2} {STR_VAR_3}");
-const u8 gText_PokeSum_EvoLevelFreeSlot[] = _("{LV_2} {STR_VAR_1} + vaga {RIGHT_ARROW_2} {STR_VAR_3}");
+const u8 gText_PokeSum_EvoLevelFreeSlot[] = _("{LV_2} {STR_VAR_1} + vaga na equipe {RIGHT_ARROW_2} {STR_VAR_3}");
 const u8 gText_PokeSum_EvoTrade[] = _("Troca {RIGHT_ARROW_2} {STR_VAR_3}");
 const u8 gText_PokeSum_EvoTradeItem[] = _("Troca + {STR_VAR_2} {RIGHT_ARROW_2} {STR_VAR_3}");
 const u8 gText_PokeSum_EvoNotPossible[] = _(" (impossível)");
