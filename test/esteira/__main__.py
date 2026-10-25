@@ -71,6 +71,7 @@ from esteira.scenarios.full_summary_friendship import run_full_summary_friendshi
 from esteira.scenarios.full_weather import run_full_weather      # Hack 7 frente A (clima)
 from esteira.scenarios.full_novidades import (run_full_novidades,   # tela de novidades
                                              run_full_novidades_first_offer)
+from esteira.scenarios.full_ritmo import run_full_pace             # Hack 2 (ritmo do jogo)
 from esteira.scenarios.full_forest_brock import run_full_forest_brock
 from esteira.scenarios.full_master import run_full_master
 from esteira.scenarios.full_pc import run_full_pc
@@ -178,6 +179,7 @@ FULL_SCENARIOS: list[ScenarioSpec] = [
     # tela de novidades do Carvalho: o percurso na ROM de teste e o SIM logo depois do inicial na
     # jogável (do checkpoint `abertura`; último do grupo jogável, não muda os checkpoints dos outros)
     ScenarioSpec("novidades", run_full_novidades, rom=TEST, save_from="captura"),
+    ScenarioSpec("ritmo", run_full_pace, rom=TEST, save_from="captura"),       # Hack 2: andar e correr por input
     ScenarioSpec("novidades_inicial", run_full_novidades_first_offer, needs="abertura"),
 ]
 # Cenários do modo completo que o `assistir --cenario` mostra numa janela (ROM de teste, a
@@ -189,7 +191,8 @@ WATCH_FULL_SCENARIOS = ("evolucoes", "resumo_evolucao", "resumo_ivs", "ovo",
                         "dex_nacional", "pos_liga",  # Hack 7 — frente C
                         "evo_dia_noite", "resumo_amizade",  # Hack 7 - frente D
                         "clima",  # Hack 7 — frente A
-                        "novidades")  # tela de novidades
+                        "novidades",  # tela de novidades
+                        "ritmo")  # Hack 2
 
 
 def scenarios_for(mode: str) -> list[ScenarioSpec]:
