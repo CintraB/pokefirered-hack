@@ -317,7 +317,11 @@ void CopyItemIconPicTo4x4Buffer(const void *src, void *dest)
         CpuCopy16(src + 0x60 * i, dest + 0x80 * i, 0x60);
 }
 
-u8 AddItemIconObject(u16 tilesTag, u16 paletteTag, u16 itemId)
+// Cria o sprite de ícone (24x24 no canto de 32x32) a partir de tiles e paleta LZ quaisquer, no mesmo
+// formato dos ícones de item. A tela de novidades usa para os ícones que não são itens.
+// Tiles e paleta entram por tag (tilesTag/paletteTag): quem cria libera por tag com FreeSpriteTilesByTag e
+// FreeSpritePaletteByTag (o template do sprite é local, então DestroySpriteAndFreeResources não basta).
+u8 AddItemIconObjectFromGfx(u16 tilesTag, u16 paletteTag, const u32 *tiles, const u32 *palette)
 {
     struct SpriteTemplate template;
     struct SpriteSheet spriteSheet;
@@ -327,14 +331,14 @@ u8 AddItemIconObject(u16 tilesTag, u16 paletteTag, u16 itemId)
     if (!TryAllocItemIconTilesBuffers())
         return MAX_SPRITES;
 
-    LZDecompressWram(GetItemIconGfxPtr(itemId, ITEMICON_TILES), sItemIconTilesBuffer);
+    LZDecompressWram(tiles, sItemIconTilesBuffer);
     CopyItemIconPicTo4x4Buffer(sItemIconTilesBuffer, sItemIconTilesBufferPadded);
     spriteSheet.data = sItemIconTilesBufferPadded;
     spriteSheet.size = 0x200;
     spriteSheet.tag = tilesTag;
     LoadSpriteSheet(&spriteSheet);
 
-    spritePalette.data = GetItemIconGfxPtr(itemId, ITEMICON_PAL);
+    spritePalette.data = palette;
     spritePalette.tag = paletteTag;
     LoadCompressedSpritePalette(&spritePalette);
 
@@ -346,6 +350,11 @@ u8 AddItemIconObject(u16 tilesTag, u16 paletteTag, u16 itemId)
     Free(sItemIconTilesBuffer);
     Free(sItemIconTilesBufferPadded);
     return spriteId;
+}
+
+u8 AddItemIconObject(u16 tilesTag, u16 paletteTag, u16 itemId)
+{
+    return AddItemIconObjectFromGfx(tilesTag, paletteTag, GetItemIconGfxPtr(itemId, ITEMICON_TILES), GetItemIconGfxPtr(itemId, ITEMICON_PAL));
 }
 
 u8 AddItemIconObjectWithCustomObjectTemplate(const struct SpriteTemplate * origTemplate, u16 tilesTag, u16 paletteTag, u16 itemId)
