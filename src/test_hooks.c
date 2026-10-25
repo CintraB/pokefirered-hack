@@ -578,6 +578,37 @@ static const u8 sWildBattleScript[] =
 };
 // --- end of Hack 7 front A ------------------------------------------------------------------
 
+// Tela de novidades: opens through the real special, from a field script built in gTestText
+#include "novidades.h"
+
+extern u16 (*const gSpecials[])(void);
+extern u16 (*const gSpecialsEnd[])(void);
+
+static u32 OpenNovidades(void)
+{
+    u32 special;
+
+    for (special = 0; &gSpecials[special] < gSpecialsEnd; special++)
+    {
+        if ((void *)gSpecials[special] == (void *)OpenNovidadesScreen)
+            break;
+    }
+    if (&gSpecials[special] >= gSpecialsEnd)
+        return 0xFFFFFFFF;
+    gTestText[0] = 0x69;            // lockall
+    gTestText[1] = 0x97;            // fadescreen FADE_TO_BLACK
+    gTestText[2] = 1;
+    gTestText[3] = 0x25;            // special OpenNovidadesScreen
+    gTestText[4] = special & 0xFF;
+    gTestText[5] = special >> 8;
+    gTestText[6] = 0x27;            // waitstate
+    gTestText[7] = 0x6B;            // releaseall
+    gTestText[8] = 0x02;            // end
+    ScriptContext_SetupScript(gTestText);
+    return special;
+}
+// --- end of novidades -----------------------------------------------------------------------
+
 void TestHooks_Run(void)
 {
     u32 result = 0;
@@ -683,6 +714,10 @@ void TestHooks_Run(void)
     // Hack 7 front E: start
 
     // Hack 7 front E: end
+    // novidades: start
+    case TEST_CMD_OPEN_NOVIDADES:   result = OpenNovidades(); break;
+    case TEST_CMD_NOVIDADES_STATE:  result = Novidades_TestGetState(); break;
+    // novidades: end
     default:
         result = 0xFFFFFFFF;
         break;

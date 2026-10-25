@@ -463,4 +463,6 @@ gSpecials::
 	@ Hack 8 — ovos raros por vitória na Liga
 	def_special MarkRareEggDelivered
 	def_special QueueRareEggAfterHallOfFame
+	@ Tela de novidades do Prof. Carvalho
+	def_special OpenNovidadesScreen
 gSpecialsEnd::

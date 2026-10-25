@@ -58,4 +58,13 @@ struct NovidadesTopic
 
 extern const struct NovidadesTopic gNovidadesTopics[];
 
+// Special (data/specials.inc): abre a tela de tópicos (src/novidades.c); ao sair (B), volta ao campo e o
+// script continua (CB2_ReturnToFieldContinueScript). No script: `special OpenNovidadesScreen` + `waitstate`.
+void OpenNovidadesScreen(void);
+
+#if TESTBUILD
+// TEST_CMD_NOVIDADES_STATE: 0xFFFFFFFF = tela fechada; senão cursor | pronta para input << 8 | ícones vivos << 16.
+u32 Novidades_TestGetState(void);
+#endif
+
 #endif // GUARD_NOVIDADES_H
