@@ -452,13 +452,18 @@ def test_e2_nenhum_achado_das_regras_de_texto():
     assert found == []
 
 
+# Rótulos que os nossos hacks acrescentaram depois da base inglesa (Hack 8: "falta só o Mew" do Amuleto)
+E2_NEW_LABELS = {"PokedexRating_Text_OnlyMewMissing", "PokedexRating_EventScript_ShinyCharmOnlyMewMissing"}
+
+
 @pytest.mark.parametrize("rel", E2_FILES)
 def test_e2_rotulos_e_fim_de_arquivo_iguais_aos_da_base(rel):
     base = _e2_base(rel)
     if base is None:
         pytest.skip("sem git ou sem o commit base da tradução")
     now = (REPO_ROOT / rel).read_text(encoding="utf-8")
-    assert re.findall(r"^(\w+)::?\s*$", now, re.M) == re.findall(r"^(\w+)::?\s*$", base, re.M)
+    labels = [x for x in re.findall(r"^(\w+)::?\s*$", now, re.M) if x not in E2_NEW_LABELS]
+    assert labels == re.findall(r"^(\w+)::?\s*$", base, re.M)
     assert len(now) - len(now.rstrip("\n")) == len(base) - len(base.rstrip("\n"))
 
 

@@ -388,6 +388,6 @@ PalletTown_ProfessorOaksLab_Text_ReceivedMoneyFromOak::
 PalletTown_ProfessorOaksLab_Text_OakShinyCharmGoal::
     .string "Pokémon de outras regiões estão\n"
     .string "aparecendo por toda parte.\p"
-    .string "Se você completar a\n"
-    .string "Pokédex Nacional, eu lhe darei algo\l"
+    .string "Se você capturar os 151\n"
+    .string "Pokémon de Kanto, eu lhe darei algo\l"
     .string "muito especial: o Amuleto Brilhante!$"

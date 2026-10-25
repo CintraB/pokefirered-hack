@@ -70,14 +70,15 @@ static u32 CountShinies(u32 count, bool32 withCharm)
     return shinies;
 }
 
-// Same ranges HasAllMons() checks: everything but Mew, Lugia, Ho-Oh, Celebi, Jirachi and Deoxys.
+// Same ranges HasAllMons() checks (everything but Lugia, Ho-Oh, Celebi, Jirachi and Deoxys) plus Mew,
+// so the Shiny Charm condition (HasAllKantoMonsWithMew, the 151 of Kanto) holds as well.
 static u32 SetDexComplete(void)
 {
     u16 i;
 
     for (i = 0; i < NATIONAL_DEX_COUNT - 2; i++)
     {
-        if (i == KANTO_DEX_COUNT - 1 || (i >= JOHTO_DEX_COUNT - 3 && i < JOHTO_DEX_COUNT))
+        if (i >= JOHTO_DEX_COUNT - 3 && i < JOHTO_DEX_COUNT)
             continue;
         GetSetPokedexFlag(i + 1, FLAG_SET_SEEN);
         GetSetPokedexFlag(i + 1, FLAG_SET_CAUGHT);

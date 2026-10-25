@@ -22,7 +22,7 @@ enum
 {
     TEST_CMD_NONE,
     TEST_CMD_COUNT_SHINIES,     // arg0 = how many mons, arg1 = with Shiny Charm (0/1); result = shinies
-    TEST_CMD_SET_DEX_COMPLETE,  // every mon HasAllMons() needs seen+caught, National Dex on; result = HasAllMons()
+    TEST_CMD_SET_DEX_COMPLETE,  // every mon HasAllMons() needs, plus Mew (Shiny Charm), seen+caught, National Dex on; result = HasAllMons()
     TEST_CMD_GIVE_ITEM,         // arg0 = item, arg1 = quantity; result = AddBagItem()
     TEST_CMD_CHECK_SHINY,       // arg0 = personality, arg1 = OT ID: gEnemyParty[0] built with them; result = IsMonShiny()
     TEST_CMD_SET_PARTY_MON,     // arg0 = species | level << 16, arg1 = held item | slot << 16 | friendship << 24 (0 = base); result = party count (0 = bad args)
