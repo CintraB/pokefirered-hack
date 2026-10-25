@@ -225,4 +225,7 @@ CMD_ROLL_WILD = 0x80        # arg0 = área (0 grama, 1 água, 2 pedra, 3 pesca) 
 # --- Tela de novidades do Prof. Carvalho (enum à parte, a partir de 0x90) ---
 CMD_OPEN_NOVIDADES = 0x90   # script de campo com `special OpenNovidadesScreen` -> número do special
                             # (0xFFFFFFFF = fora de gSpecials); o script usa gTestText como buffer
-CMD_NOVIDADES_STATE = 0x91  # -> cursor | pronta para input << 8 | ícones vivos << 16 (0xFFFFFFFF = fechada)
+CMD_NOVIDADES_STATE = 0x91  # -> cursor | pronta para input << 8 | ícones vivos << 16
+                            # | (cartão aberto + 1, 0 = grade) << 24 (0xFFFFFFFF = fechada)
+CMD_NOVIDADES_CARD = 0x92   # -> tópico | cartão << 8 | imagem (0 ícone do tópico, 1 item, 2 uma espécie,
+                            # 3 duas) << 16 | sprites vivos da imagem << 24 (0xFFFFFFFF = fora do cartão)

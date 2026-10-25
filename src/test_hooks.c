@@ -717,6 +717,7 @@ void TestHooks_Run(void)
     // novidades: start
     case TEST_CMD_OPEN_NOVIDADES:   result = OpenNovidades(); break;
     case TEST_CMD_NOVIDADES_STATE:  result = Novidades_TestGetState(); break;
+    case TEST_CMD_NOVIDADES_CARD:   result = Novidades_TestGetCard(); break;
     // novidades: end
     default:
         result = 0xFFFFFFFF;

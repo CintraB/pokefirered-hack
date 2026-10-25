@@ -63,8 +63,12 @@ extern const struct NovidadesTopic gNovidadesTopics[];
 void OpenNovidadesScreen(void);
 
 #if TESTBUILD
-// TEST_CMD_NOVIDADES_STATE: 0xFFFFFFFF = tela fechada; senão cursor | pronta para input << 8 | ícones vivos << 16.
+// TEST_CMD_NOVIDADES_STATE: 0xFFFFFFFF = tela fechada; senão cursor | pronta para input << 8 | ícones vivos << 16
+// | (cartão aberto + 1, 0 na grade) << 24.
 u32 Novidades_TestGetState(void);
+// TEST_CMD_NOVIDADES_CARD: 0xFFFFFFFF = fora do cartão; senão tópico | cartão << 8 | imagem << 16 (0 ícone do
+// tópico, 1 item, 2 uma espécie, 3 duas) | sprites vivos da imagem << 24.
+u32 Novidades_TestGetCard(void);
 #endif
 
 #endif // GUARD_NOVIDADES_H
