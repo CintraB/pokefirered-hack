@@ -1,8 +1,9 @@
 """Roteiro rápido A: abertura, nome digitado, inicial em rodízio e batalha do rival.
 
 Só aperta botões e lê memória. Checkpoints: `abertura` (jogador livre no quarto),
-`inicial` (inicial recebido, rival já pegou o dele) e `rival` (de volta ao overworld no
-laboratório depois da batalha). Os Tasks 6-7 continuam do checkpoint `rival`.
+`inicial` (inicial recebido, rival já pegou o dele e o Carvalho ofereceu as novidades, NÃO)
+e `rival` (de volta ao overworld no laboratório depois da batalha). Os Tasks 6-7 continuam
+do checkpoint `rival`.
 
 Uso avulso (até o CLI do Task 8 existir), a partir de test/:
     python3 -m esteira.scenarios.quick_opening --starter BULBASAUR --out /tmp/abertura
@@ -242,6 +243,11 @@ class OpeningScenario(Scenario):
             if not self.game.party():
                 self.measures.setdefault("starter_shot", self._shot("inicial"))
                 return KEY_A                         # "Quer o <inicial>?" -> SIM
+            if self._novidades_offer():              # tela de novidades (depois do rival pegar o dele)
+                self.measures["novidades_offers"] = int(self.measures.get("novidades_offers", 0)) + 1
+                self.measures["novidades_offer_after_rival"] = len(self.game.party()) == 1 and                     self.game.callback2() == "CB2_Overworld"
+                self.measures.setdefault("novidades_offer_shot", self._shot_next_frame("novidades_oferta"))
+                return KEY_B                         # "Quer ver as novidades agora?" -> NÃO
             return KEY_B                             # "Dar apelido?" -> NÃO
         self._finish_script(f"recebimento do {starter}", yesno=answer)
 
@@ -263,6 +269,18 @@ class OpeningScenario(Scenario):
             res.images.append(self.measures["starter_shot"])
         if res.status == "falha":
             raise Abort("inicial")
+
+        def check_novidades_offer() -> str:
+            offers = self.measures.get("novidades_offers", 0)
+            assert offers == 1, f"o Carvalho perguntou das novidades {offers} vez(es), esperava 1"
+            assert self.measures.get("novidades_offer_after_rival"), "a pergunta não veio no campo, depois do inicial"
+            assert "Novidades" not in self.game.callback2(), "NÃO abriu a tela de novidades"
+            self._assert_location("MAP_PALLET_TOWN_PROFESSOR_OAKS_LAB")
+            return "Carvalho perguntou das novidades depois do inicial; NÃO seguiu a história no laboratório"
+
+        res = self.suite.run("inicial: Carvalho oferece as novidades (NÃO)", check_novidades_offer)
+        if "novidades_offer_shot" in self.measures:
+            res.images.append(self.measures["novidades_offer_shot"])
         self.ctl.checkpoint("inicial")
 
     # --- rival ---------------------------------------------------------------------

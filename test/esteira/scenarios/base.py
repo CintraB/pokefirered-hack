@@ -2,7 +2,7 @@
 
 from pathlib import Path
 
-from ..emu import KEY_A
+from ..emu import KEY_A, KEY_B
 from ..result import Suite
 from . import ScenarioContext
 
@@ -10,6 +10,10 @@ TEXT_PERIOD = 10            # A segurado 2 quadros + 8 soltos
 SETTLE_FRAMES = 30          # overworld tem que ficar livre por tanto tempo seguido
 SCENE_TIMEOUT = 6000
 YESNO_TASK = "Task_YesNoMenu_HandleInput"
+# Pergunta da tela de novidades do Carvalho (data/maps/PalletTown_ProfessorOaksLab/text.inc:
+# Text_OakOfferNovidadesFirst e Text_OakOfferNovidades). Os roteiros respondem NÃO.
+NOVIDADES_OFFER = "Quer ver as novidades"
+FIELD_MESSAGE_BYTES = 400   # a fala expandida fica em gStringVar4 (src/field_message_box.c)
 
 
 def print_summary(suite: Suite, seconds: float, frames: int) -> int:
@@ -81,15 +85,31 @@ class Scenario:
                 return False
         return True
 
+    def _field_message(self) -> str:
+        """Fala do campo que está na caixa (o script expande o texto em gStringVar4)."""
+        raw = self.emu.read(self.game.syms.addr("gStringVar4"), FIELD_MESSAGE_BYTES)
+        return self.game.charmap.decode(raw)
+
+    def _novidades_offer(self) -> bool:
+        """O Carvalho está perguntando se o jogador quer ver a tela de novidades."""
+        return NOVIDADES_OFFER in self._field_message()
+
     def _finish_script(self, what: str, timeout: int = SCENE_TIMEOUT, yesno=None) -> None:
         """Avança falas com A até o overworld ficar livre; `yesno()` escolhe a tecla de cada
-        pergunta sim/não do script (padrão: A = SIM)."""
+        pergunta sim/não do script (padrão: A = SIM, menos a oferta das novidades do Carvalho,
+        que recebe NÃO e fica contada em measures["novidades_offers"])."""
         spent = 0
         while not self._settled_idle():
             if spent >= timeout:
                 raise self.ctl.timeout_error(what)
             if YESNO_TASK in self._tasks():
-                self._press(yesno() if yesno else KEY_A)
+                if yesno:
+                    self._press(yesno())
+                elif self._novidades_offer():
+                    self.measures["novidades_offers"] = int(self.measures.get("novidades_offers", 0)) + 1
+                    self._press(KEY_B)
+                else:
+                    self._press(KEY_A)
             else:
                 self._press(KEY_A)
             spent += TEXT_PERIOD
