@@ -1491,7 +1491,7 @@
     {
       "english": "Pedra Solar",
       "itemId": "ITEM_SUN_STONE",
-      "price": 2100,
+      "price": 5000,
       "holdEffect": "HOLD_EFFECT_NONE",
       "holdEffectParam": 0,
       "description_english": "Uma pedra peculiar que faz certas\\nespécies de Pokémon evoluírem.\\nÉ vermelha como o sol.",

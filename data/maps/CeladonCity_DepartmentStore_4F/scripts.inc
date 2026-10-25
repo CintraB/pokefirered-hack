@@ -32,6 +32,7 @@ CeladonCity_DepartmentStore_4F_Items::
 	.2byte ITEM_THUNDER_STONE
 	.2byte ITEM_WATER_STONE
 	.2byte ITEM_LEAF_STONE
+	.2byte ITEM_SUN_STONE
 	.2byte ITEM_KINGS_ROCK
 	.2byte ITEM_METAL_COAT
 	.2byte ITEM_DRAGON_SCALE

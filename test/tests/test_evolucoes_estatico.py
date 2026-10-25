@@ -124,7 +124,9 @@ def test_loja_do_4f_vende_os_6_itens_depois_das_pedras():
     items = parse_shop((REPO_ROOT / SHOP_SCRIPT).read_text(encoding="utf-8"))
     stones = items.index(SHOP_STONES[0])
     assert items[stones:stones + 4] == list(SHOP_STONES)
-    assert items[stones + 4:] == list(SHOP_NEW_ITEMS)
+    # Hack 8: a Pedra Solar entra logo depois das 4 pedras (preço próprio, ¥5.000)
+    assert items[stones + 4] == "ITEM_SUN_STONE"
+    assert items[stones + 5:] == list(SHOP_NEW_ITEMS)
     assert items[:stones] == ["ITEM_POKE_DOLL", "ITEM_RETRO_MAIL"]
 
 
