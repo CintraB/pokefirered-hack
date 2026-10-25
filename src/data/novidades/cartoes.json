@@ -261,6 +261,11 @@
           "title": "Caverna Mutante",
           "body": "A Caverna Mutante muda de Pokémon a cada\ndia. Volte sempre para ver quem aparece!",
           "speciesBefore": "SPECIES_MAREEP"
+        },
+        {
+          "title": "Os dois fósseis",
+          "body": "Agora dá para pegar os dois fósseis do\nMonte Lua: o Fóssil Domo e o Fóssil Hélice.\nO Miguel não leva mais o outro. Reviva um de\ncada vez no laboratório da Ilha Cinnabar.",
+          "itemId": "ITEM_DOME_FOSSIL"
         }
       ]
     },
