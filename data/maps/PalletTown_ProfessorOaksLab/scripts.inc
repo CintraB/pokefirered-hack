@@ -104,14 +104,16 @@ PalletTown_ProfessorOaksLab_EventScript_NationalDexScene::
 	releaseall
 	end
 
-@ Hack 7 — frente C
-@ Subroutine: gives the rare egg (party, else PC); with no room anywhere Oak keeps it for later
+@ Hack 7 — frente C / Hack 8 — ovos raros por vitória na Liga
+@ Subroutine: gives a rare egg (party, else PC) picked among the species not given yet; with no room
+@ anywhere Oak keeps it for later. MarkRareEggDelivered flags the species and FLAG_GOT_RARE_EGG
 PalletTown_ProfessorOaksLab_EventScript_TryGiveRareEgg::
 	specialvar VAR_0x8004, GetRandomRareEggSpecies
+	goto_if_eq VAR_0x8004, SPECIES_NONE, PalletTown_ProfessorOaksLab_EventScript_NoRareEggLeft
 	giveegg VAR_0x8004
 	goto_if_eq VAR_RESULT, MON_CANT_GIVE, PalletTown_ProfessorOaksLab_EventScript_NoRoomForRareEgg
 	goto_if_eq VAR_RESULT, MON_GIVEN_TO_PC, PalletTown_ProfessorOaksLab_EventScript_RareEggSentToPC
-	setflag FLAG_GOT_RARE_EGG
+	special MarkRareEggDelivered
 	textcolor NPC_TEXT_COLOR_NEUTRAL
 	playfanfare MUS_LEVEL_UP
 	message PalletTown_ProfessorOaksLab_Text_ReceivedRareEgg
@@ -121,7 +123,7 @@ PalletTown_ProfessorOaksLab_EventScript_TryGiveRareEgg::
 	return
 
 PalletTown_ProfessorOaksLab_EventScript_RareEggSentToPC::
-	setflag FLAG_GOT_RARE_EGG
+	special MarkRareEggDelivered
 	textcolor NPC_TEXT_COLOR_NEUTRAL
 	playfanfare MUS_LEVEL_UP
 	message PalletTown_ProfessorOaksLab_Text_ReceivedRareEgg
@@ -135,15 +137,26 @@ PalletTown_ProfessorOaksLab_EventScript_NoRoomForRareEgg::
 	msgbox PalletTown_ProfessorOaksLab_Text_OakNoRoomForEgg
 	return
 
+PalletTown_ProfessorOaksLab_EventScript_NoRareEggLeft::
+	return
+
+@ Oak talk after the national dex scene: the 1st egg still owed (no room in the scene) or the egg left
+@ pending by a later Hall of Fame win (FLAG_RARE_EGG_PENDING)
 PalletTown_ProfessorOaksLab_EventScript_OakCheckRareEgg::
-	goto_if_set FLAG_GOT_RARE_EGG, PalletTown_ProfessorOaksLab_EventScript_ProfOakStoryStage
-	goto PalletTown_ProfessorOaksLab_EventScript_OakGivePendingRareEgg
+	goto_if_unset FLAG_GOT_RARE_EGG, PalletTown_ProfessorOaksLab_EventScript_OakGivePendingRareEgg
+	goto_if_set FLAG_RARE_EGG_PENDING, PalletTown_ProfessorOaksLab_EventScript_OakGivePendingRareEgg
+	goto PalletTown_ProfessorOaksLab_EventScript_ProfOakStoryStage
 	end
 
 PalletTown_ProfessorOaksLab_EventScript_OakGivePendingRareEgg::
+	call_if_set FLAG_GOT_RARE_EGG, PalletTown_ProfessorOaksLab_EventScript_OakSaysAnotherRareEgg
 	call PalletTown_ProfessorOaksLab_EventScript_TryGiveRareEgg
 	release
 	end
+
+PalletTown_ProfessorOaksLab_EventScript_OakSaysAnotherRareEgg::
+	msgbox PalletTown_ProfessorOaksLab_Text_OakAnotherRareEgg
+	return
 
 PalletTown_ProfessorOaksLab_EventScript_NationalDexSceneRivalEnterNorth::
 	setobjectxyperm LOCALID_OAKS_LAB_RIVAL, 5, 10

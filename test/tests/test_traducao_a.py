@@ -113,6 +113,10 @@ def test_excecao_do_to_continua_sendo_so_a_sigla():
     assert [w for w in words if w.lower() in ct.ENGLISH_WORDS] == ["TO", "TO"]
 
 
+# rótulos que os hacks acrescentaram depois da base da tradução (não são rótulos renomeados)
+ROTULOS_DOS_HACKS = {"PalletTown_ProfessorOaksLab_Text_OakAnotherRareEgg"}      # Hack 8: ovo raro por vitória
+
+
 @lru_cache(maxsize=None)
 def _base_labels(rel):
     out = subprocess.run(["git", "-C", str(REPO_ROOT), "show", f"{ct.TRANSLATION_BASE}:{rel}"],
@@ -129,7 +133,8 @@ def test_rotulos_iguais_aos_da_base(rel):
     base = _base_labels(rel)
     if base is None:
         pytest.skip("sem o commit base da tradução")
-    now = re.findall(r"^(\w+)::", (REPO_ROOT / rel).read_text(encoding="utf-8"), re.M)
+    now = [lbl for lbl in re.findall(r"^(\w+)::", (REPO_ROOT / rel).read_text(encoding="utf-8"), re.M)
+           if lbl not in ROTULOS_DOS_HACKS]
     assert now == base
 
 

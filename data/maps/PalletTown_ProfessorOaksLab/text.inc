@@ -374,6 +374,11 @@ PalletTown_ProfessorOaksLab_Text_OakNoRoomForEgg::
     .string "Venha falar comigo quando tiver,\n"
     .string "que eu entrego o Ovo.$"
 
+@ Hack 8 — ovos raros por vitória na Liga
+PalletTown_ProfessorOaksLab_Text_OakAnotherRareEgg::
+    .string "Carvalho: Mais uma vitória na Liga!\n"
+    .string "Tenho outro Ovo raro para você.$"
+
 PalletTown_ProfessorOaksLab_Text_OakAndThisForTravels::
     .string "E isto é para as suas viagens!$"
 

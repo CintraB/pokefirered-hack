@@ -2558,14 +2558,6 @@ static void Task_WingFlapSound(u8 taskId)
         DestroyTask(taskId);
 }
 
-// Hack 7 — frente C
-u16 GetRandomRareEggSpecies(void)
-{
-    static const u16 sRareEggSpecies[] = {SPECIES_LARVITAR, SPECIES_BAGON, SPECIES_BELDUM};
-
-    return sRareEggSpecies[Random() % NELEMS(sRareEggSpecies)];
-}
-
 // Hack 8 — míticos no endgame
 // specialvar VAR_RESULT, GetDayNightPeriodForScript -> TIME_MORNING..TIME_NIGHT
 u16 GetDayNightPeriodForScript(void)
@@ -2605,4 +2597,117 @@ bool16 IsSpeciesCaught(void)
 u16 GetAlteringCaveSetForScript(void)
 {
     return DayNight_GetDay() % NUM_ALTERING_CAVE_TABLES;
+}
+
+// Hack 8 — ovos raros do Prof. Carvalho: um por vitória na Liga, até os 3.
+// Cada espécie dada liga a sua flag (0x307..0x309); FLAG_RARE_EGG_PENDING (0x30A) é o ovo que o
+// Carvalho guarda para a próxima conversa (no máximo um por vez). Sem RAM nova: só flags do save.
+static const struct {
+    u16 species;
+    u16 flag;
+} sRareEggs[] = {
+    {SPECIES_LARVITAR, FLAG_GOT_EGG_LARVITAR},
+    {SPECIES_BAGON, FLAG_GOT_EGG_BAGON},
+    {SPECIES_BELDUM, FLAG_GOT_EGG_BELDUM},
+};
+
+static u32 CountRareEggsLeft(void)
+{
+    u32 i, left = 0;
+
+    for (i = 0; i < NELEMS(sRareEggs); i++)
+        if (!FlagGet(sRareEggs[i].flag))
+            left++;
+    return left;
+}
+
+// specialvar VAR_0x8004, GetRandomRareEggSpecies -> sorteia entre as que ainda não foram dadas;
+// SPECIES_NONE se as 3 já foram
+u16 GetRandomRareEggSpecies(void)
+{
+    u32 i, pick = 0, left = CountRareEggsLeft();
+
+    if (left == 0)
+        return SPECIES_NONE;
+    pick = Random() % left;
+    for (i = 0; i < NELEMS(sRareEggs); i++)
+    {
+        if (FlagGet(sRareEggs[i].flag))
+            continue;
+        if (pick == 0)
+            return sRareEggs[i].species;
+        pick--;
+    }
+    return SPECIES_NONE;
+}
+
+// special MarkRareEggDelivered, logo depois do giveegg bem-sucedido (equipe ou PC).
+// 8004 = a espécie entregue. O 1º ovo (FLAG_GOT_RARE_EGG ainda desligada) não gasta o pendente.
+void MarkRareEggDelivered(void)
+{
+    u32 i;
+
+    for (i = 0; i < NELEMS(sRareEggs); i++)
+        if (sRareEggs[i].species == gSpecialVar_0x8004)
+            FlagSet(sRareEggs[i].flag);
+    if (!FlagGet(FLAG_GOT_RARE_EGG))
+        FlagSet(FLAG_GOT_RARE_EGG);
+    else
+        FlagClear(FLAG_RARE_EGG_PENDING);
+    if (CountRareEggsLeft() == 0)
+        FlagClear(FLAG_RARE_EGG_PENDING);
+}
+
+// Save do Hack 7: FLAG_GOT_RARE_EGG ligada, mas nenhuma flag de espécie (o save não sabia qual veio).
+// Marca como dada UMA espécie: a de um ovo fechado na equipe ou no PC (o ovo ainda não consta na
+// Pokédex); senão a 1ª da lista capturada (o ovo chocado registra); senão a 1ª vista; senão Larvitar.
+// Assim o total continua sendo 3 ovos.
+static void MigrateLegacyRareEgg(void)
+{
+    static const u8 sDexCases[] = {FLAG_GET_CAUGHT, FLAG_GET_SEEN};
+    u32 i, j, b, c;
+
+    if (!FlagGet(FLAG_GOT_RARE_EGG) || CountRareEggsLeft() != NELEMS(sRareEggs))
+        return;
+    // 1º: um ovo ainda fechado de uma das 3 espécies na equipe ou no PC (o ovo não consta na Pokédex)
+    for (i = 0; i < NELEMS(sRareEggs); i++)
+    {
+        bool8 found = FALSE;
+
+        for (j = 0; j < PARTY_SIZE && !found; j++)
+            found = GetMonData(&gPlayerParty[j], MON_DATA_SPECIES) == sRareEggs[i].species
+                 && GetMonData(&gPlayerParty[j], MON_DATA_IS_EGG);
+        for (b = 0; b < TOTAL_BOXES_COUNT && !found; b++)
+            for (j = 0; j < IN_BOX_COUNT && !found; j++)
+                found = GetBoxMonDataAt(b, j, MON_DATA_SPECIES) == sRareEggs[i].species
+                     && GetBoxMonDataAt(b, j, MON_DATA_IS_EGG);
+        if (found)
+        {
+            FlagSet(sRareEggs[i].flag);
+            return;
+        }
+    }
+    // 2º: Pokédex (o ovo chocado registra), capturada antes de vista
+    for (c = 0; c < NELEMS(sDexCases); c++)
+    {
+        for (i = 0; i < NELEMS(sRareEggs); i++)
+        {
+            if (GetSetPokedexFlag(SpeciesToNationalPokedexNum(sRareEggs[i].species), sDexCases[c]))
+            {
+                FlagSet(sRareEggs[i].flag);
+                return;
+            }
+        }
+    }
+    FlagSet(sRareEggs[0].flag);   // a Pokédex não diz: Larvitar
+}
+
+// special QueueRareEggAfterHallOfFame, junto da entrada no Hall (EventScript_SetDefeatedEliteFourFlagsVars).
+// Roda antes de EnterHallOfFame ligar FLAG_SYS_GAME_CLEAR: ligada aqui = já é a 2ª vitória ou mais.
+// Fica um ovo pendente por vez (flag, não contador), e só se sobrou espécie para dar.
+void QueueRareEggAfterHallOfFame(void)
+{
+    MigrateLegacyRareEgg();
+    if (FlagGet(FLAG_SYS_GAME_CLEAR) && CountRareEggsLeft() != 0)
+        FlagSet(FLAG_RARE_EGG_PENDING);
 }

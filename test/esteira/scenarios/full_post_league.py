@@ -114,13 +114,19 @@ class PostLeagueScenario(CatchSaveScenario):
         for slot in range(size):
             self.box.set_party_mon(slot, self._sp("SPECIES_RATTATA"), 5)
 
+    def _clear_egg_flags(self) -> None:
+        """Estado de antes do 1º ovo (Hack 8: uma flag por espécie dada e a do ovo pendente)."""
+        for name in ("FLAG_GOT_RARE_EGG", "FLAG_GOT_EGG_LARVITAR", "FLAG_GOT_EGG_BAGON",
+                     "FLAG_GOT_EGG_BELDUM", "FLAG_RARE_EGG_PENDING"):
+            assert not self.box.set_flag(self.consts.flag(name), False), name
+
     def _prepare(self, owned: int) -> None:
         """Liga (pelos atalhos) tudo que a cena exige, menos o warp para Pallet Town."""
         got = self.box.set_kanto_owned(owned)
         assert got == owned, f"{got} capturados de Kanto, esperava {owned}"
         for name in ("FLAG_SYS_GAME_CLEAR", "FLAG_WORLD_MAP_ONE_ISLAND"):
             assert self.box.set_flag(self.consts.flag(name), True), name
-        assert not self.box.set_flag(self.consts.flag("FLAG_GOT_RARE_EGG"), False)
+        self._clear_egg_flags()
         self.box.call(CMD_SET_VAR, self.vars["VAR_MAP_SCENE_PALLET_TOWN_OAK"], 2)
 
     def _warp(self, map_name: str, xy: tuple[int, int]) -> None:
@@ -261,6 +267,7 @@ class PostLeagueScenario(CatchSaveScenario):
                 f"de {kind} (uma vez só)")
 
     def _roll(self) -> str:
+        self._clear_egg_flags()      # o sorteio ignora as espécies já dadas (Hack 8)
         counts = {n: 0 for n in RARE_EGGS}
         ids = {self._sp(n): n for n in RARE_EGGS}
         for _ in range(ROLLS):
