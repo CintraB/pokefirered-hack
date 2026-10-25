@@ -101,6 +101,13 @@ def test_abertura_zera_hblank_e_copias_de_bg_agendadas():
     assert "SetVBlankHBlankCallbacksToNull()" in abrir and "ClearScheduledBgCopiesToVram()" in abrir
 
 
+def test_abertura_zera_a_tabela_de_pics():
+    # sSpritePics é global (trainer_pokemon_sprites.c): a tela não depende de quem a abriu tê-la zerado
+    abrir = _funcao(_sem_comentarios(_src()), "CB2_OpenNovidades")
+    assert "ResetAllPicSprites()" in abrir
+    assert abrir.index("ResetSpriteData()") < abrir.index("ResetAllPicSprites()")
+
+
 ICONES_SRC = REPO_ROOT / "src" / "novidades_icones.c"
 ICONES_NOVOS = {1: "relogio", 2: "clima", 3: "cartucho", 4: "ficha"}  # iconCustom -> nome do arquivo
 
@@ -309,13 +316,43 @@ def test_janelas_do_cartao_usam_as_constantes_do_header():
     for const in ("NOVIDADES_BEFORE_AFTER_WIDTH_PX", "FONT_SMALL", "CARD_BODY_X", "CARD_BODY_Y"):
         assert const in texto, const
     # as medidas cabem na janela e na tela: conferido em tempo de compilação
-    for conta in (r"CARD_CHIPS_X\s*\+\s*2\s*\*\s*NOVIDADES_BEFORE_AFTER_WIDTH_PX\s*<=\s*DISPLAY_WIDTH",
+    for conta in (r"CARD_CHIPS_X\s*\+\s*2\s*\*\s*NOVIDADES_BEFORE_AFTER_WIDTH_PX\s*\+\s*CARD_CHIPS_GAP\s*<=\s*DISPLAY_WIDTH",
                   r"CARD_BODY_X\s*\+\s*NOVIDADES_BODY_WIDTH_PX\s*<=\s*DISPLAY_WIDTH",
                   r"CARD_BODY_Y\s*\+\s*NOVIDADES_BODY_LINES\s*\*\s*NOVIDADES_BODY_LINE_HEIGHT_PX\s*<=\s*CARD_TEXT_HEIGHT\s*\*\s*8",
                   r"CARD_TEXT_TOP\s*\+\s*CARD_TEXT_HEIGHT\s*<=\s*DISPLAY_TILE_HEIGHT"):
         assert re.search(rf"STATIC_ASSERT\(\s*{conta}", code), conta
     titulo = _funcao(code, "Novidades_PrintCardTitle")
     assert "FONT_NORMAL" in titulo and "CARD_TITLE_X" in titulo
+
+
+def test_rotulo_antes_agora_tem_a_largura_da_medida():
+    # o retângulo azul tem os mesmos NOVIDADES_BEFORE_AFTER_WIDTH_PX que a esteira mede para o texto
+    code = _sem_comentarios(_src())
+    texto = _funcao(code, "Novidades_PrintCardText")
+    assert re.search(r"FillWindowPixelRect\(WIN_CARD_TEXT,\s*PIXEL_FILL\(COLOR_NAVY\),\s*chipX,\s*0,\s*"
+                     r"NOVIDADES_BEFORE_AFTER_WIDTH_PX,", texto), texto
+    assert re.search(r"chipX\s*=\s*CARD_CHIPS_X\s*\+\s*i\s*\*\s*\(NOVIDADES_BEFORE_AFTER_WIDTH_PX\s*\+\s*CARD_CHIPS_GAP\)", texto)
+    assert _define(code, "CARD_CHIPS_GAP") >= 1
+
+
+def test_comentarios_de_medida_batem_com_a_tela():
+    header = HEADER.read_text(encoding="utf-8")
+    assert "158" not in header and "158" not in _src()
+    assert "16 + 64 + 13 + 2 + 5 * 13 = 160" in header
+    assert "28 tiles" not in header and "x = 2;" not in header
+
+
+def test_base_block_das_janelas_em_macros():
+    code = _sem_comentarios(_src())
+    nomes = ("WIN_TITLE_BASE_BLOCK", "WIN_TOPIC_NAME_BASE_BLOCK", "CARD_TITLE_BASE_BLOCK", "CARD_POS_BASE_BLOCK",
+             "CARD_TEXT_BASE_BLOCK", "NOVIDADES_WINDOWS_END")
+    for nome in nomes:
+        assert re.search(rf"^#define\s+{nome}\b", code, re.M), nome
+    for win, macro in (("WIN_TITLE", "WIN_TITLE_BASE_BLOCK"), ("WIN_TOPIC_NAME", "WIN_TOPIC_NAME_BASE_BLOCK"),
+                       ("WIN_CARD_TITLE", "CARD_TITLE_BASE_BLOCK"), ("WIN_CARD_POS", "CARD_POS_BASE_BLOCK"),
+                       ("WIN_CARD_TEXT", "CARD_TEXT_BASE_BLOCK")):
+        assert re.search(rf"\[{win}\][^}}]*\.baseBlock\s*=\s*{macro},", code, re.S), win
+    assert re.search(r"STATIC_ASSERT\(\s*NOVIDADES_WINDOWS_END\s*<=\s*512", code)
 
 
 def test_antes_agora_so_quando_o_cartao_tem():
@@ -379,7 +416,12 @@ def test_imagem_do_cartao_quatro_tipos():
     assert "AddItemIconObjectWithCustomObjectTemplate(" in criar
     # espécie normal (sem brilho): personalidade fixa que não é shiny
     assert "NOVIDADES_PIC_PERSONALITY" in _funcao(code, "Novidades_CreateMonPic")
-    assert _define(code, "NOVIDADES_PIC_PERSONALITY") & 0xFFFF != 0
+    otid = _define(code, "NOVIDADES_PIC_OTID")
+    pers = _define(code, "NOVIDADES_PIC_PERSONALITY")
+    brilho = (otid >> 16) ^ (otid & 0xFFFF) ^ (pers >> 16) ^ (pers & 0xFFFF)  # GET_SHINY_VALUE
+    odds = _define((REPO_ROOT / "include" / "constants" / "pokemon.h").read_text(encoding="utf-8"), "SHINY_ODDS")
+    assert brilho >= odds, f"valor de brilho {brilho:#x} < SHINY_ODDS {odds}: o Pokémon do cartão sairia shiny"
+    assert "NOVIDADES_PIC_OTID" in _funcao(code, "Novidades_CreateMonPic")
     # a seta entre as duas espécies vem do fundo
     assert "TILE_BIG_ARROW" in code
 

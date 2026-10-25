@@ -52,7 +52,7 @@ STATIC_ASSERT(TAG_NOVIDADES_ICON + NOVIDADES_TOPIC_COUNT <= TAG_NOVIDADES_CARD_I
 #define DISPLAY_TILE_WIDTH  (DISPLAY_WIDTH / 8)
 #define DISPLAY_TILE_HEIGHT (DISPLAY_HEIGHT / 8)
 
-// Cartão, de cima para baixo (include/novidades.h: 16 + 64 + 13 + 5 * 13 = 158 px):
+// Cartão, de cima para baixo (include/novidades.h: 16 + 64 + 13 + 2 + 5 * 13 = 160 px):
 //   linhas 0-1  barra: título (FONT_NORMAL, x = CARD_TITLE_X), ◀ "3/15" ▶ à direita
 //   linhas 2-9  imagem (64 px): sprites de 64 x 64 centrados em y = CARD_IMAGE_Y
 //   linhas 10-19 WIN_CARD_TEXT: "ANTES" e "AGORA" (FONT_SMALL, 13 px) e a caixa branca do corpo
@@ -68,13 +68,14 @@ STATIC_ASSERT(TAG_NOVIDADES_ICON + NOVIDADES_TOPIC_COUNT <= TAG_NOVIDADES_CARD_I
 #define CARD_BIG_ARROW_Y    5
 #define CARD_TEXT_TOP       10
 #define CARD_TEXT_HEIGHT    10
-#define CARD_CHIPS_X        8    // ANTES em x = 8, AGORA em x = 8 + 112 (dentro da janela, que começa em 0)
+#define CARD_CHIPS_X        7    // ANTES em x = 7, AGORA em x = 7 + 112 + 2 (dentro da janela, que começa em 0)
+#define CARD_CHIPS_GAP      2    // vão entre os dois rótulos
 #define CARD_CHIP_HEIGHT    NOVIDADES_BODY_LINE_HEIGHT_PX
 #define CARD_BOX_TOP        (CARD_CHIP_HEIGHT + 1)   // linha da borda da caixa branca (1 px de creme antes)
 #define CARD_BODY_X         ((DISPLAY_WIDTH - NOVIDADES_BODY_WIDTH_PX) / 2)
 #define CARD_BODY_Y         (CARD_BOX_TOP + 1)
 
-STATIC_ASSERT(CARD_CHIPS_X + 2 * NOVIDADES_BEFORE_AFTER_WIDTH_PX <= DISPLAY_WIDTH, NovidadesChipsFit);
+STATIC_ASSERT(CARD_CHIPS_X + 2 * NOVIDADES_BEFORE_AFTER_WIDTH_PX + CARD_CHIPS_GAP <= DISPLAY_WIDTH, NovidadesChipsFit);
 STATIC_ASSERT(CARD_BODY_X + NOVIDADES_BODY_WIDTH_PX <= DISPLAY_WIDTH, NovidadesBodyFitsWidth);
 STATIC_ASSERT(CARD_BODY_Y + NOVIDADES_BODY_LINES * NOVIDADES_BODY_LINE_HEIGHT_PX <= CARD_TEXT_HEIGHT * 8, NovidadesBodyFitsHeight);
 STATIC_ASSERT(CARD_TEXT_TOP + CARD_TEXT_HEIGHT <= DISPLAY_TILE_HEIGHT, NovidadesCardTextFitsScreen);
@@ -239,6 +240,14 @@ static const struct BgTemplate sBgTemplates[] = {
     }
 };
 
+// Tiles de cada janela no bloco de caracteres 0 do BG0, uma depois da outra (o tile 0 fica vazio).
+#define WIN_TITLE_BASE_BLOCK        0x001
+#define WIN_TOPIC_NAME_BASE_BLOCK   (WIN_TITLE_BASE_BLOCK + 30 * 2)
+#define CARD_TITLE_BASE_BLOCK       (WIN_TOPIC_NAME_BASE_BLOCK + (NOVIDADES_TOPIC_NAME_WIDTH_PX / 8) * 2)
+#define CARD_POS_BASE_BLOCK         (CARD_TITLE_BASE_BLOCK + (CARD_TITLE_X + NOVIDADES_TITLE_WIDTH_PX + 7) / 8 * 2)
+#define CARD_TEXT_BASE_BLOCK        (CARD_POS_BASE_BLOCK + CARD_POS_WIDTH * 2)
+#define NOVIDADES_WINDOWS_END       (CARD_TEXT_BASE_BLOCK + DISPLAY_TILE_WIDTH * CARD_TEXT_HEIGHT)
+
 // As janelas da grade e as do cartão dividem linhas da tela; só as da visão atual ficam no tilemap.
 static const struct WindowTemplate sWindowTemplates[WIN_COUNT + 1] = {
     [WIN_TITLE] = {
@@ -248,7 +257,7 @@ static const struct WindowTemplate sWindowTemplates[WIN_COUNT + 1] = {
         .width = 30,
         .height = 2,
         .paletteNum = PAL_NORMAL,
-        .baseBlock = 0x001,
+        .baseBlock = WIN_TITLE_BASE_BLOCK,
     },
     // Nome do tópico sob o cursor, centralizado na caixa branca de baixo (linhas 17-19)
     [WIN_TOPIC_NAME] = {
@@ -258,7 +267,7 @@ static const struct WindowTemplate sWindowTemplates[WIN_COUNT + 1] = {
         .width = NOVIDADES_TOPIC_NAME_WIDTH_PX / 8,
         .height = 2,
         .paletteNum = PAL_NORMAL,
-        .baseBlock = 0x001 + 30 * 2,
+        .baseBlock = WIN_TOPIC_NAME_BASE_BLOCK,
     },
     // Título do cartão na barra: NOVIDADES_TITLE_WIDTH_PX a partir de x = CARD_TITLE_X
     [WIN_CARD_TITLE] = {
@@ -268,7 +277,7 @@ static const struct WindowTemplate sWindowTemplates[WIN_COUNT + 1] = {
         .width = (CARD_TITLE_X + NOVIDADES_TITLE_WIDTH_PX + 7) / 8,
         .height = 2,
         .paletteNum = PAL_NORMAL,
-        .baseBlock = 0x001 + 30 * 2 + (NOVIDADES_TOPIC_NAME_WIDTH_PX / 8) * 2,
+        .baseBlock = CARD_TITLE_BASE_BLOCK,
     },
     // "3/15", entre as setas da barra
     [WIN_CARD_POS] = {
@@ -278,8 +287,7 @@ static const struct WindowTemplate sWindowTemplates[WIN_COUNT + 1] = {
         .width = CARD_POS_WIDTH,
         .height = 2,
         .paletteNum = PAL_NORMAL,
-        .baseBlock = 0x001 + 30 * 2 + (NOVIDADES_TOPIC_NAME_WIDTH_PX / 8) * 2
-                   + (CARD_TITLE_X + NOVIDADES_TITLE_WIDTH_PX + 7) / 8 * 2,
+        .baseBlock = CARD_POS_BASE_BLOCK,
     },
     // ANTES/AGORA e o corpo (a caixa branca é desenhada em pixels, na mesma janela)
     [WIN_CARD_TEXT] = {
@@ -289,15 +297,13 @@ static const struct WindowTemplate sWindowTemplates[WIN_COUNT + 1] = {
         .width = DISPLAY_TILE_WIDTH,
         .height = CARD_TEXT_HEIGHT,
         .paletteNum = PAL_NORMAL,
-        .baseBlock = 0x001 + 30 * 2 + (NOVIDADES_TOPIC_NAME_WIDTH_PX / 8) * 2
-                   + (CARD_TITLE_X + NOVIDADES_TITLE_WIDTH_PX + 7) / 8 * 2 + CARD_POS_WIDTH * 2,
+        .baseBlock = CARD_TEXT_BASE_BLOCK,
     },
     [WIN_COUNT] = DUMMY_WIN_TEMPLATE
 };
 
 // Os tiles das janelas cabem no bloco de caracteres 0 do BG0 (512 tiles; o fundo usa o bloco 1)
-STATIC_ASSERT(0x001 + 30 * 2 + (NOVIDADES_TOPIC_NAME_WIDTH_PX / 8) * 2 + (CARD_TITLE_X + NOVIDADES_TITLE_WIDTH_PX + 7) / 8 * 2
-              + CARD_POS_WIDTH * 2 + DISPLAY_TILE_WIDTH * CARD_TEXT_HEIGHT <= 512, NovidadesWindowsFitCharBlock);
+STATIC_ASSERT(NOVIDADES_WINDOWS_END <= 512, NovidadesWindowsFitCharBlock);
 
 // Special: como o ShowDiploma, só troca o callback; a tela monta no próximo quadro, fora do script de campo.
 // O script escurece antes (`fadescreen FADE_TO_BLACK`) e espera a volta com `waitstate`.
@@ -316,6 +322,7 @@ static void CB2_OpenNovidades(void)
     memset(sNovidades->iconSpriteIds, MAX_SPRITES, sizeof(sNovidades->iconSpriteIds));
     memset(sNovidades->cardSpriteIds, MAX_SPRITES, sizeof(sNovidades->cardSpriteIds));
     ResetSpriteData();
+    ResetAllPicSprites();
     ResetPaletteFade();
     FreeAllSpritePalettes();
     ResetTasks();
@@ -619,13 +626,13 @@ static void Novidades_PrintCardText(void)
         chips[1] = card->after;
         for (i = 0; i < 2; i++)
         {
-            u16 chipX = CARD_CHIPS_X + i * NOVIDADES_BEFORE_AFTER_WIDTH_PX;
+            u16 chipX = CARD_CHIPS_X + i * (NOVIDADES_BEFORE_AFTER_WIDTH_PX + CARD_CHIPS_GAP);
             s32 x = chipX + (NOVIDADES_BEFORE_AFTER_WIDTH_PX - GetStringWidth(FONT_SMALL, chips[i], 0)) / 2;
 
             if (x < chipX)
                 x = chipX;
-            FillWindowPixelRect(WIN_CARD_TEXT, PIXEL_FILL(COLOR_NAVY), chipX + 1, 0,
-                                NOVIDADES_BEFORE_AFTER_WIDTH_PX - 2, CARD_CHIP_HEIGHT);
+            FillWindowPixelRect(WIN_CARD_TEXT, PIXEL_FILL(COLOR_NAVY), chipX, 0,
+                                NOVIDADES_BEFORE_AFTER_WIDTH_PX, CARD_CHIP_HEIGHT);
             AddTextPrinterParameterized4(WIN_CARD_TEXT, FONT_SMALL, x, 0, 0, 0, sTextColors_Chip,
                                          TEXT_SKIP_DRAW, chips[i]);
         }

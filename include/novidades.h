@@ -17,17 +17,20 @@ struct SpriteTemplate;
 #define NOVIDADES_TOPIC_COUNT 11
 
 // Layout do cartão (tela de 240x160, layout B do mockup): barra de título 16 px, imagem 64 px
-// (sprite frontal de 64x64; duas espécies lado a lado), uma linha ANTES/AGORA e o corpo.
-//   16 + 64 + 13 + 5 * 13 = 158 px.
+// (sprite frontal de 64x64; duas espécies lado a lado), uma linha ANTES/AGORA, 1 px de creme, a borda
+// da caixa (1 px) e o corpo:
+//   16 + 64 + 13 + 2 + 5 * 13 = 160 px.
 //
 // Nome do tópico (FONT_NORMAL, 1 linha): mostrado na grade, sob o tópico selecionado.
 #define NOVIDADES_TOPIC_NAME_WIDTH_PX 160
 // Título do cartão (FONT_NORMAL, 1 linha): na barra de cima; o resto da barra fica com "3/7" e as setas.
 #define NOVIDADES_TITLE_WIDTH_PX 160
-// "ANTES: ..." e "AGORA: ..." (FONT_SMALL, 1 linha cada), lado a lado: 2 * 112 = 224 px.
+// "ANTES: ..." e "AGORA: ..." (FONT_SMALL, 1 linha cada), lado a lado: dois rótulos de 112 px (o
+// retângulo azul tem essa largura) com 2 px de vão.
 // O texto guardado já traz o rótulo ("ANTES: troca"); a tela o imprime como está.
 #define NOVIDADES_BEFORE_AFTER_WIDTH_PX 112
-// Corpo do cartão (FONT_SMALL): janela de 28 tiles com o texto em x = 2; `\n` desce uma linha, sem `\l`/`\p`.
+// Corpo do cartão (FONT_SMALL): janela da largura da tela (30 tiles), texto centrado em
+// x = (240 - 222) / 2 = 9; `\n` desce uma linha, sem `\l`/`\p`.
 // A altura de cada linha é maxLetterHeight (13) + lineSpacing (0) de FONT_SMALL (src/new_menu_helpers.c).
 #define NOVIDADES_BODY_WIDTH_PX 222
 #define NOVIDADES_BODY_LINES 5
