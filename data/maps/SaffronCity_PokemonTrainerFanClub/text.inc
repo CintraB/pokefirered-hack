@@ -92,8 +92,8 @@ SaffronCity_PokemonTrainerFanClub_Text_BrocksFanToBitterEnd::
 
 SaffronCity_PokemonTrainerFanClub_Text_BrocksLastWordOnCool::
     .string "O Brock é o máximo, e ponto final!\p"
-    .string "Aquele, sim, é um cara que eu quero\n"
-    .string "ser!$"
+    .string "Aquele, sim, é um cara que\n"
+    .string "eu quero ser!$"
 
 SaffronCity_PokemonTrainerFanClub_Text_HadPleasureOfWatchingYouBattle::
     .string "{PLAYER}, tive o prazer de assistir às\n"
@@ -111,7 +111,8 @@ SaffronCity_PokemonTrainerFanClub_Text_NeverSeenTrainerOfYourMagnificence::
     .string "magnificência em batalha.\p"
     .string "Tenha coragem nas suas habilidades e\n"
     .string "continue batalhando!\p"
-    .string "Faça-me essa promessa, jovem ídolo!$"
+    .string "Faça-me essa promessa,\n"
+    .string "estrela das batalhas!$"
 
 SaffronCity_PokemonTrainerFanClub_Text_HmmAndYouAre::
     .string "Hmm…\n"

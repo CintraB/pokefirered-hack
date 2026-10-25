@@ -18,7 +18,7 @@ Formatos (➡ = {RIGHT_ARROW_2}, "Lv" = {LV_2}, os glifos do jogo):
     EVO_BEAUTY                      Beleza alta ➡ X (só R/S/E; nenhuma espécie usa mais)
     EVO_LEVEL_ATK_GT/EQ/LT_DEF      Lv 20, Atq > Def ➡ HITMONLEE
     EVO_LEVEL_SILCOON / _CASCOON    Lv 7 (sorteio) ➡ SILCOON
-    EVO_LEVEL_SHEDINJA              Lv 20 + vaga ➡ SHEDINJA
+    EVO_LEVEL_SHEDINJA              Lv 20 + vaga na equipe ➡ SHEDINJA
     EVO_TRADE / EVO_TRADE_ITEM      Troca ➡ X / Troca + ITEM ➡ X   (não sobrou nenhuma no jogo)
 Dia/noite (Hack 7): o relógio do jogo decide (DayNight_IsDayPeriod), então Eevee mostra Espeon e
 Umbreon sem sufixo; Feebas evolui com a Escama Prisma. EVO_BEAUTY ("só R/S/E") continua no
@@ -93,7 +93,7 @@ def evolution_line(method: str, param: str, target: str, species_names: dict[str
         "EVO_LEVEL_ATK_LT_DEF": lambda: f"{LV} {param}, Atq < Def {ARROW} {name}",
         "EVO_LEVEL_SILCOON": lambda: f"{LV} {param} (sorteio) {ARROW} {name}",
         "EVO_LEVEL_CASCOON": lambda: f"{LV} {param} (sorteio) {ARROW} {name}",
-        "EVO_LEVEL_SHEDINJA": lambda: f"{LV} {param} + vaga {ARROW} {name}",
+        "EVO_LEVEL_SHEDINJA": lambda: f"{LV} {param} + vaga na equipe {ARROW} {name}",
         "EVO_TRADE": lambda: f"Troca {ARROW} {name}",
         "EVO_TRADE_ITEM": lambda: f"Troca + {item_names[param]} {ARROW} {name}",
     }

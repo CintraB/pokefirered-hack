@@ -13984,6 +13984,33 @@
    "detectar": false,
    "frente": "novidades",
    "obs": "forma cheia de Escama Abiss., usada no texto dos cartões da tela de novidades (Cintra, 20/10: nome de item em texto corrido vai por extenso); a curta fica na bolsa e nos campos com limite de letras"
+  },
+  {
+   "en": "PEWTER POLICE",
+   "pt": "Polícia de Pewter",
+   "fonte": "criado",
+   "categoria": "personagem",
+   "detectar": true,
+   "frente": "ajustes",
+   "obs": "aviso do mural de Pewter (PewterCity_Text_CallPoliceIfInfoOnThieves); 'Polícia' como em Polícia Internacional"
+  },
+  {
+   "en": "VERMILION POLICE",
+   "pt": "Polícia de Vermilion",
+   "fonte": "criado",
+   "categoria": "personagem",
+   "detectar": true,
+   "frente": "ajustes",
+   "obs": "assinatura do aviso da Rota 12 (VermilionCity_Text_SnorlaxBlockingRoute12)"
+  },
+  {
+   "en": "PEWTER MUSEUM OF SCIENCE",
+   "pt": "Museu de Ciências de Pewter",
+   "fonte": "criado",
+   "categoria": "lugar",
+   "detectar": true,
+   "frente": "ajustes",
+   "obs": "placa da cidade (PewterCity_Text_MuseumOfScience); a forma curta do Quest Log, 'Museu de Ciências', tem entrada própria"
   }
  ],
  "proibidos": [

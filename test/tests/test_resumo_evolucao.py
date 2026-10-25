@@ -50,7 +50,7 @@ FIXED = {
     "SPECIES_WURMPLE": [f"{LV} 7 (sorteio) {ARROW} SILCOON",
                         f"{LV} 7 (sorteio) {ARROW} CASCOON"],
     "SPECIES_NINCADA": [f"{LV} 20 {ARROW} NINJASK",
-                        f"{LV} 20 + vaga {ARROW} SHEDINJA"],
+                        f"{LV} 20 + vaga na equipe {ARROW} SHEDINJA"],
     "SPECIES_TYROGUE": [f"{LV} 20, Atq < Def {ARROW} HITMONCHAN",
                         f"{LV} 20, Atq > Def {ARROW} HITMONLEE",
                         f"{LV} 20, Atq = Def {ARROW} HITMONTOP"],
