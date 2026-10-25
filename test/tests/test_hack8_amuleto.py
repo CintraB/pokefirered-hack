@@ -99,7 +99,7 @@ def test_amuleto_uma_vez_so_e_flag_depois_do_item():
     assert bloco.index("goto_if_set FLAG_GOT_SHINY_CHARM") < bloco.index("HasAllKantoMonsWithMew") \
         < bloco.index("giveitem ITEM_SHINY_CHARM") < bloco.index("setflag FLAG_GOT_SHINY_CHARM")
     # sem a checagem verdadeira, nada de mensagem nem de item
-    assert re.search(r"goto_if_eq VAR_RESULT, FALSE, PokedexRating_EventScript_ShinyCharmDone",
+    assert re.search(r"goto_if_eq VAR_RESULT, FALSE, PokedexRating_EventScript_ShinyCharm(?:Done|OnlyMewMissing)",
                      bloco[:bloco.index("msgbox")])
 
 
@@ -135,3 +135,34 @@ def test_objetivo_mantem_o_termo_inteiro_e_a_estrutura_da_tela():
     # jogador sem gênero e no máximo 2 linhas visíveis por caixa
     for caixa in body.split("\\p"):
         assert len(re.split(r"\\[nl]", caixa)) <= 3, caixa  # 3ª linha só chega por rolagem (\l)
+
+
+# --- falta só o Mew ------------------------------------------------------------------------
+
+def test_carvalho_avisa_que_falta_so_o_mew():
+    """Kanto 'completa' pela regra original (1..150, sem o Mew) e o Amuleto ainda não entregue:
+    depois da avaliação o Carvalho diz que só falta o Mew. Só em pessoa (a sub-rotina do Amuleto
+    já é chamada só assim)."""
+    src = _read(RATING)
+    bloco = _script_block(src, "PokedexRating_EventScript_TryGiveShinyCharm")
+    aviso = _script_block(src, "PokedexRating_EventScript_ShinyCharmOnlyMewMissing")
+    # sem os 151 -> vai para o aviso; o aviso só fala se os 150 sem o Mew estão capturados
+    assert re.search(r"goto_if_eq VAR_RESULT, FALSE, PokedexRating_EventScript_ShinyCharmOnlyMewMissing",
+                     bloco[:bloco.index("msgbox")])
+    assert aviso.index("specialvar VAR_RESULT, HasAllKantoMons\n") < aviso.index("msgbox PokedexRating_Text_OnlyMewMissing")
+    assert re.search(r"goto_if_eq VAR_RESULT, FALSE, PokedexRating_EventScript_ShinyCharmDone",
+                     aviso[:aviso.index("msgbox")])
+    assert "return" in aviso
+    assert re.search(r"^\tdef_special HasAllKantoMons$", _read("data/specials.inc"), re.M)
+    # já com o Amuleto na mão o aviso não vem (a flag é a 1ª checagem da sub-rotina)
+    assert bloco.index("goto_if_set FLAG_GOT_SHINY_CHARM") < bloco.index("ShinyCharmOnlyMewMissing")
+
+
+def test_fala_do_mew_cita_o_mew_e_o_amuleto_sem_genero():
+    body = _text("data/text/pokedex_rating.inc", "PokedexRating_Text_OnlyMewMissing")
+    flat = _flat(body)
+    assert "Mew" in flat and "Amuleto Brilhante" in flat and "151" in flat, flat
+    assert "Nacional" not in flat
+    assert r"Amuleto\n" not in body and r"Amuleto\l" not in body and r"Amuleto\p" not in body
+    for caixa in body.split(r"\p"):
+        assert len(caixa.split(r"\n")) <= 2 and r"\l" not in caixa, caixa

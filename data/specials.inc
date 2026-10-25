@@ -465,4 +465,5 @@ gSpecials::
 	def_special QueueRareEggAfterHallOfFame
 	@ Hack 8 — Amuleto Brilhante: os 151 de Kanto (Mew incluído)
 	def_special HasAllKantoMonsWithMew
+	def_special HasAllKantoMons
 gSpecialsEnd::

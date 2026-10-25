@@ -110,6 +110,12 @@ PokedexRating_Text_TakeShinyCharm::
 	.string "Por ter capturado os 151 Pokémon\n"
 	.string "de Kanto, quero que fique com isto.$"
 
+PokedexRating_Text_OnlyMewMissing::
+	.string "Só falta o Mew para completar\n"
+	.string "os 151 Pokémon de Kanto!\p"
+	.string "Capture-o e eu lhe darei o\n"
+	.string "Amuleto Brilhante.$"
+
 PokedexRating_Text_ShinyCharmExplanation::
 	.string "Dizem que o Amuleto Brilhante faz\n"
 	.string "Pokémon brilhantes aparecerem mais.\p"

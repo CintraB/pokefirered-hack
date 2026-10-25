@@ -81,13 +81,20 @@ PokedexRating_EventScript_DexComplete::
 PokedexRating_EventScript_TryGiveShinyCharm::
 	goto_if_set FLAG_GOT_SHINY_CHARM, PokedexRating_EventScript_ShinyCharmDone
 	specialvar VAR_RESULT, HasAllKantoMonsWithMew
-	goto_if_eq VAR_RESULT, FALSE, PokedexRating_EventScript_ShinyCharmDone
+	goto_if_eq VAR_RESULT, FALSE, PokedexRating_EventScript_ShinyCharmOnlyMewMissing
 	msgbox PokedexRating_Text_TakeShinyCharm
 	giveitem ITEM_SHINY_CHARM
 	goto_if_eq VAR_RESULT, FALSE, PokedexRating_EventScript_ShinyCharmDone
 	setflag FLAG_GOT_SHINY_CHARM
 	msgbox PokedexRating_Text_ShinyCharmExplanation
 PokedexRating_EventScript_ShinyCharmDone::
+	return
+
+@ Not all 151: when only the Mew is missing (1..150 caught, the original "Kanto complete" rating) Oak says so
+PokedexRating_EventScript_ShinyCharmOnlyMewMissing::
+	specialvar VAR_RESULT, HasAllKantoMons
+	goto_if_eq VAR_RESULT, FALSE, PokedexRating_EventScript_ShinyCharmDone
+	msgbox PokedexRating_Text_OnlyMewMissing
 	return
 
 PokedexRating_EventScript_EndRating::
