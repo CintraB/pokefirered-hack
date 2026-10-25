@@ -1679,7 +1679,7 @@
               {
                 "min_level": 22,
                 "max_level": 22,
-                "species": "SPECIES_PARAS"
+                "species": "SPECIES_BULBASAUR"
               },
               {
                 "min_level": 25,
@@ -1833,7 +1833,7 @@
               {
                 "min_level": 23,
                 "max_level": 23,
-                "species": "SPECIES_PARAS"
+                "species": "SPECIES_CHARMANDER"
               },
               {
                 "min_level": 26,
@@ -2027,7 +2027,7 @@
               {
                 "min_level": 30,
                 "max_level": 35,
-                "species": "SPECIES_PSYDUCK"
+                "species": "SPECIES_SQUIRTLE"
               },
               {
                 "min_level": 35,
@@ -14221,7 +14221,7 @@
               {
                 "min_level": 22,
                 "max_level": 22,
-                "species": "SPECIES_PARAS"
+                "species": "SPECIES_BULBASAUR"
               },
               {
                 "min_level": 25,
@@ -14375,7 +14375,7 @@
               {
                 "min_level": 23,
                 "max_level": 23,
-                "species": "SPECIES_PARAS"
+                "species": "SPECIES_CHARMANDER"
               },
               {
                 "min_level": 26,
@@ -14569,7 +14569,7 @@
               {
                 "min_level": 30,
                 "max_level": 35,
-                "species": "SPECIES_SLOWPOKE"
+                "species": "SPECIES_SQUIRTLE"
               },
               {
                 "min_level": 35,
