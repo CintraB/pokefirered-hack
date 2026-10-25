@@ -103,13 +103,18 @@ def test_toda_descricao_de_item_foi_traduzida():
     assert same == []
 
 
+# preços que os hacks mudaram depois da base da tradução
+PRECOS_DOS_HACKS = {"ITEM_SUN_STONE": 5000}      # Hack 8: Pedra Solar à venda em Celadon, mais cara
+
+
 def test_nomes_de_item_nao_mudaram_nesta_task():
     """O campo `english` é da Task 2: a G1 só mexe em `description_english`."""
     base = _base_text("src/data/items.json")
     if base is None:
         pytest.skip("sem git ou sem o commit base da tradução")
     names = lambda s: [(it["itemId"], it["price"], it["pocket"]) for it in json.loads(s)["items"]]
-    assert names((REPO_ROOT / "src/data/items.json").read_text(encoding="utf-8")) == names(base)
+    esperado = [(i, PRECOS_DOS_HACKS.get(i, p), b) for i, p, b in names(base)]
+    assert names((REPO_ROOT / "src/data/items.json").read_text(encoding="utf-8")) == esperado
 
 
 def test_descricoes_de_item_tem_ate_tres_linhas_e_sem_quebra_solta():
