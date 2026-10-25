@@ -52,3 +52,10 @@ $(DATA_SRC_SUBDIR)/wild_encounters_leafgreen.h: $(DATA_SRC_SUBDIR)/wild_encounte
 	python3 tools/wild_leafgreen/gen_swaps.py $< $@
 
 $(C_BUILDDIR)/wild_encounter.o: c_dep += $(DATA_SRC_SUBDIR)/wild_encounters_leafgreen.h
+
+# Prof. Oak news screen: topics and cards table generated from novidades/cartoes.json
+AUTO_GEN_TARGETS += $(DATA_SRC_SUBDIR)/novidades_cartoes.h
+$(DATA_SRC_SUBDIR)/novidades_cartoes.h: $(DATA_SRC_SUBDIR)/novidades/cartoes.json tools/novidades/gen_cartoes.py
+	python3 tools/novidades/gen_cartoes.py $< $@
+
+$(C_BUILDDIR)/novidades_data.o: c_dep += $(DATA_SRC_SUBDIR)/novidades_cartoes.h

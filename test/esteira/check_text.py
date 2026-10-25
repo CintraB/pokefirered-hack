@@ -159,6 +159,36 @@ _C_RESIDUE = ("textos soltos de outros .c/.h (troca, link, minijogos, menus, cen
               "cada rótulo é usado (esteira/janelas_uso.py); rótulo sem uso indexável (macro, item "
               "posicional) fica sem medida")
 
+
+def _novidades_rules(repo: Path) -> list[Rule]:
+    """Janelas da tela de novidades do Prof. Carvalho, com as medidas de include/novidades.h
+    (`NOVIDADES_*_PX`/`NOVIDADES_BODY_LINES`): a tela desenha as janelas com as mesmas constantes."""
+    try:
+        header = (repo / "include" / "novidades.h").read_text(encoding="utf-8")
+    except OSError:
+        return []
+    c: dict[str, int] = {}
+    at: dict[str, str] = {}   # constante -> "include/novidades.h:<linha>"
+    for m in re.finditer(r"^#define NOVIDADES_(\w+)\s+(\d+)\b", header, re.M):
+        c[m.group(1)] = int(m.group(2))
+        at[m.group(1)] = f"include/novidades.h:{header.count(chr(10), 0, m.start()) + 1}"
+    json_rel = "src/data/novidades/cartoes.json"
+    where = "tela de novidades do Prof. Carvalho: "
+    return [
+        Rule(json_rel, "*.name", c["TOPIC_NAME_WIDTH_PX"], where + f"nome do tópico na grade, FONT_NORMAL, 1 linha "
+             f"(NOVIDADES_TOPIC_NAME_WIDTH_PX, {at['TOPIC_NAME_WIDTH_PX']})", lines=1),
+        Rule(json_rel, "*.title", c["TITLE_WIDTH_PX"], where + f"título do cartão na barra de cima, FONT_NORMAL, "
+             f"1 linha (NOVIDADES_TITLE_WIDTH_PX, {at['TITLE_WIDTH_PX']})", lines=1),
+        *[Rule(json_rel, f"*.{field}", c["BEFORE_AFTER_WIDTH_PX"], where + "linha ANTES/AGORA, FONT_SMALL, 1 linha "
+              f"(NOVIDADES_BEFORE_AFTER_WIDTH_PX, {at['BEFORE_AFTER_WIDTH_PX']}); o rótulo faz parte do texto",
+              font="small", lines=1)
+          for field in ("before", "after")],
+        Rule(json_rel, "*.body", c["BODY_WIDTH_PX"], where + "corpo do cartão, FONT_SMALL, só `\\n` "
+             f"(NOVIDADES_BODY_WIDTH_PX, NOVIDADES_BODY_LINES, {at['BODY_WIDTH_PX']})", font="small",
+             lines=c["BODY_LINES"]),
+    ]
+
+
 WIDTH_RULES: list[Rule] = [
     Rule("data/maps/*/text.inc", None, DIALOG_WIDTH_PX, _DIALOG, box_lines=DIALOG_BOX_LINES),
     *[Rule(f"data/text/{name}.inc", None, DIALOG_WIDTH_PX, _DIALOG + "; usado só via msgbox/message",
@@ -260,6 +290,7 @@ WIDTH_RULES: list[Rule] = [
          "roteiro da TV Educativa: janela 0 .width = 26 tiles (src/teachy_tv.c:147-151), FONT_MALE em x = 0 "
          "(src/teachy_tv.c:679)"),
     Rule("src/data/text/*.h", None, None, "tabela de texto sem janela própria conhecida"),
+    *_novidades_rules(Path(__file__).resolve().parents[2]),
     # -- batalha (dona: frente G) --
     *[Rule("src/battle_message.c", label, DIALOG_WIDTH_PX,
            _OAK_OLD_MAN + "; impresso em src/battle_controller_oak_old_man.c:652-844") for label in _OAK_TUTORIAL],
@@ -810,13 +841,27 @@ def _extract_region_map_text(rel: str, source: str) -> Iterator[_Entry]:
             yield _Entry(rel, section.get("id", "?"), (section["name"],), False)
 
 
+def _extract_novidades_text(rel: str, source: str) -> Iterator[_Entry]:
+    """Tela de novidades do Prof. Carvalho (cartoes.json): `<id>.name` de cada tópico e
+    `<id>.<n>.title|before|after|body` de cada cartão (n a partir de 1). A quebra de linha do JSON
+    (`\\n` de verdade) entra como `\\n` literal, como no `_("...")` que o gerador escreve."""
+    for topic in json.loads(source).get("topics", []):
+        yield _Entry(rel, f"{topic['id']}.name", (topic["name"].replace("\n", "\\n"),), False)
+        for n, card in enumerate(topic.get("cards", []), 1):
+            for field in ("title", "before", "after", "body"):
+                if card.get(field):
+                    yield _Entry(rel, f"{topic['id']}.{n}.{field}", (card[field].replace("\n", "\\n"),), False)
+
+
 # Arquivos C fora da varredura: o que a build FireRed não compila (pokedex_text.h inclui o _fr
 # ou o _lg) e os .h gerados pelo build a partir dos JSON (.gitignore), que repetem o texto da fonte
 _C_EXCLUDED = {"src/data/pokemon/pokedex_text_lg.h", "src/data/items.h", "src/data/heal_locations.h",
                "src/data/region_map/region_map_entries.h", "src/data/region_map/region_map_entry_strings.h",
-               "src/data/wild_encounters.h", "src/data/wild_encounters_time.h"}
+               "src/data/wild_encounters.h", "src/data/wild_encounters_time.h",
+               "src/data/novidades_cartoes.h"}
 _ITEMS = "src/data/items.json"
 _REGION_MAP = "src/data/region_map/region_map_sections.json"
+_NOVIDADES = "src/data/novidades/cartoes.json"
 
 
 def _source_files(repo: Path) -> list[tuple[str, str]]:
@@ -843,14 +888,14 @@ def _source_files(repo: Path) -> list[tuple[str, str]]:
         base = Path(top).relative_to(repo).as_posix()
         c_files += [f"{base}/{name}" for name in names if name.endswith((".c", ".h"))]
     files += [(rel, "c") for rel in sorted(c_files) if rel not in _C_EXCLUDED]
-    for rel, kind in ((_ITEMS, "items"), (_REGION_MAP, "region_map")):
+    for rel, kind in ((_ITEMS, "items"), (_REGION_MAP, "region_map"), (_NOVIDADES, "novidades")):
         if (repo / rel).is_file():
             files.append((rel, kind))
     return files
 
 
 _EXTRACTORS = {"inc": _extract_inc_text, "c": _extract_c_text, "items": _extract_items_text,
-               "region_map": _extract_region_map_text}
+               "region_map": _extract_region_map_text, "novidades": _extract_novidades_text}
 
 
 def _extract(rel: str, kind: str, source: str) -> Iterator[_Entry | Result]:

@@ -1,0 +1,326 @@
+{
+  "_comentario": "Fonte única da tela de novidades do Prof. Carvalho (tools/novidades/gen_cartoes.py gera src/data/novidades_cartoes.h; medidas das janelas em include/novidades.h). Quebras de linha do corpo são feitas à mão (\\n): corpo em FONT_SMALL, 222 px, até 5 linhas; título em FONT_NORMAL, 160 px; before/after em FONT_SMALL, 112 px (o texto já traz o rótulo ANTES/AGORA). Para refazer as quebras de um texto: python3 -m esteira.reflow --largura 222 --fonte small --estilo linhas --texto \"...\". Imagem do cartão: speciesBefore+speciesAfter (antes -> depois), só speciesBefore, só itemId, ou nada (ícone do tópico). iconCustom != 0 = ícone novo da Task 4 (1 relógio, 2 clima, 3 cartucho, 4 ficha); iconItemId é o ícone de item do jogo (provisório nesses tópicos).",
+  "topics": [
+    {
+      "id": "ritmo",
+      "name": "Ritmo de jogo",
+      "iconItemId": "ITEM_BICYCLE",
+      "iconCustom": 0,
+      "cards": [
+        {
+          "title": "Andar e correr mais rápido",
+          "body": "Você anda e corre mais rápido pelo mundo. Os\neventos da história seguem no ritmo normal."
+        },
+        {
+          "title": "Texto instantâneo",
+          "body": "Com a velocidade de texto Rápida, o novo\npadrão, as falas aparecem de uma vez."
+        },
+        {
+          "title": "Batalhas mais ágeis",
+          "body": "As pausas da batalha ficaram mais curtas, e\nas barras de PS e PE andam mais rápido."
+        }
+      ]
+    },
+    {
+      "id": "shiny",
+      "name": "Shiny",
+      "iconItemId": "ITEM_SHINY_CHARM",
+      "iconCustom": 0,
+      "cards": [
+        {
+          "title": "Shiny mais comum",
+          "before": "ANTES: 1 em 8.192",
+          "after": "AGORA: 1 em 4.096",
+          "body": "Vale para os Pokémon selvagens e para os\novos da Creche Pokémon."
+        },
+        {
+          "title": "Amuleto Brilhante",
+          "before": "SEM: 1 em 4.096",
+          "after": "COM: 1 em 2.048",
+          "body": "Capture os 151 Pokémon de Kanto e mostre a\nPokédex ao Prof. Carvalho, em pessoa. Ele dá\no Amuleto Brilhante, que dobra a chance de\nbrilhantes.",
+          "itemId": "ITEM_SHINY_CHARM"
+        }
+      ]
+    },
+    {
+      "id": "evolucoes",
+      "name": "Evoluções",
+      "iconItemId": "ITEM_MOON_STONE",
+      "iconCustom": 0,
+      "cards": [
+        {
+          "title": "Kadabra evolui por nível",
+          "before": "ANTES: troca",
+          "after": "AGORA: Nv. 37",
+          "body": "Kadabra evolui para Alakazam ao chegar ao\nnível 37. Não precisa mais trocar!",
+          "speciesBefore": "SPECIES_KADABRA",
+          "speciesAfter": "SPECIES_ALAKAZAM"
+        },
+        {
+          "title": "Machoke evolui por nível",
+          "before": "ANTES: troca",
+          "after": "AGORA: Nv. 37",
+          "body": "Machoke evolui para Machamp ao chegar ao\nnível 37. Não precisa mais trocar!",
+          "speciesBefore": "SPECIES_MACHOKE",
+          "speciesAfter": "SPECIES_MACHAMP"
+        },
+        {
+          "title": "Graveler evolui por nível",
+          "before": "ANTES: troca",
+          "after": "AGORA: Nv. 37",
+          "body": "Graveler evolui para Golem ao chegar ao\nnível 37. Não precisa mais trocar!",
+          "speciesBefore": "SPECIES_GRAVELER",
+          "speciesAfter": "SPECIES_GOLEM"
+        },
+        {
+          "title": "Haunter evolui por nível",
+          "before": "ANTES: troca",
+          "after": "AGORA: Nv. 37",
+          "body": "Haunter evolui para Gengar ao chegar ao\nnível 37. Não precisa mais trocar!",
+          "speciesBefore": "SPECIES_HAUNTER",
+          "speciesAfter": "SPECIES_GENGAR"
+        },
+        {
+          "title": "Onix evolui por nível",
+          "before": "ANTES: troca + item",
+          "after": "AGORA: Nv. 37 + item",
+          "body": "Onix evolui para Steelix a partir do nível\n37, segurando o Revestimento Metálico. O item\nnão é gasto!",
+          "speciesBefore": "SPECIES_ONIX",
+          "speciesAfter": "SPECIES_STEELIX"
+        },
+        {
+          "title": "Scyther evolui por nível",
+          "before": "ANTES: troca + item",
+          "after": "AGORA: Nv. 37 + item",
+          "body": "Scyther evolui para Scizor a partir do nível\n37, segurando o Revestimento Metálico. O item\nnão é gasto!",
+          "speciesBefore": "SPECIES_SCYTHER",
+          "speciesAfter": "SPECIES_SCIZOR"
+        },
+        {
+          "title": "Seadra evolui por nível",
+          "before": "ANTES: troca + item",
+          "after": "AGORA: Nv. 37 + item",
+          "body": "Seadra evolui para Kingdra a partir do nível\n37, segurando a Escama de Dragão. O item não\né gasto!",
+          "speciesBefore": "SPECIES_SEADRA",
+          "speciesAfter": "SPECIES_KINGDRA"
+        },
+        {
+          "title": "Porygon evolui por nível",
+          "before": "ANTES: troca + item",
+          "after": "AGORA: Nv. 37 + item",
+          "body": "Porygon evolui para Porygon2 a partir do\nnível 37, segurando a Melhora. O item não é\ngasto!",
+          "speciesBefore": "SPECIES_PORYGON",
+          "speciesAfter": "SPECIES_PORYGON2"
+        },
+        {
+          "title": "Clamperl evolui por nível",
+          "before": "ANTES: troca + item",
+          "after": "AGORA: Nv. 37 + item",
+          "body": "Clamperl evolui a partir do nível 37,\nsegurando o Dente Abissal (Huntail) ou a\nEscama Abissal (Gorebyss). Os itens não são\ngastos!",
+          "speciesBefore": "SPECIES_CLAMPERL"
+        },
+        {
+          "title": "Slowpoke evolui por nível",
+          "before": "ANTES: troca + item",
+          "after": "AGORA: Nv. 37 + item",
+          "body": "Slowpoke evolui para Slowking a partir do\nnível 37, segurando a Pedra do Rei. O item\nnão é gasto!",
+          "speciesBefore": "SPECIES_SLOWPOKE",
+          "speciesAfter": "SPECIES_SLOWKING"
+        },
+        {
+          "title": "Poliwhirl evolui por nível",
+          "before": "ANTES: troca + item",
+          "after": "AGORA: Nv. 37 + item",
+          "body": "Poliwhirl evolui para Politoed a partir do\nnível 37, segurando a Pedra do Rei. O item\nnão é gasto!",
+          "speciesBefore": "SPECIES_POLIWHIRL",
+          "speciesAfter": "SPECIES_POLITOED"
+        },
+        {
+          "title": "Itens à venda em Celadon",
+          "body": "No 4º andar da Loja de Celadon:\nPedra do Rei, Revestimento Metálico,\nEscama de Dragão, Melhora, Dente Abissal e\nEscama Abissal.",
+          "itemId": "ITEM_METAL_COAT"
+        },
+        {
+          "title": "Pedra Solar à venda",
+          "body": "A Pedra Solar agora é vendida no 4º andar da\nLoja de Celadon, por ¥5.000. Com ela, Gloom\nvira Bellossom e Sunkern vira Sunflora.",
+          "itemId": "ITEM_SUN_STONE"
+        },
+        {
+          "title": "Espeon e Umbreon",
+          "body": "Eevee com muita amizade (220 ou mais) evolui\nao subir de nível: de dia vira Espeon; no\nentardecer ou à noite, Umbreon.",
+          "speciesBefore": "SPECIES_EEVEE",
+          "speciesAfter": "SPECIES_ESPEON"
+        },
+        {
+          "title": "Feebas e a Escama Prisma",
+          "body": "Feebas evolui para Milotic ao subir de nível\nsegurando a Escama Prisma (loja da\nIlha Quatro, ¥7.000). Pesque Feebas com a\nSupervara na Ilha Quatro.",
+          "speciesBefore": "SPECIES_FEEBAS",
+          "speciesAfter": "SPECIES_MILOTIC"
+        }
+      ]
+    },
+    {
+      "id": "resumo",
+      "name": "Resumo do Pokémon",
+      "iconItemId": "ITEM_FAME_CHECKER",
+      "iconCustom": 4,
+      "cards": [
+        {
+          "title": "Página EVOLUÇÃO",
+          "body": "No resumo do Pokémon, a página EVOLUÇÃO\nmostra como ele evolui: nível, pedra, item\nsegurado, troca ou amizade."
+        },
+        {
+          "title": "Amizade com corações",
+          "body": "A página EVOLUÇÃO mostra a amizade em\ncorações, o número (até 255) e uma frase. A\npartir de 220 aparece a marca (220+)."
+        },
+        {
+          "title": "Página IVs/EVs",
+          "body": "Mostra a nota de cada IV, de Fraco a\nPerfeito, o total em %, os EVs e o tipo do\nPoder Oculto do Pokémon."
+        }
+      ]
+    },
+    {
+      "id": "creche",
+      "name": "Creche",
+      "iconItemId": "ITEM_LUCKY_EGG",
+      "iconCustom": 0,
+      "cards": [
+        {
+          "title": "Herança de IVs",
+          "body": "Os IVs do ovo seguem os dos pais: em geral a\nmédia dos dois, com um pouco de variação.\nRaramente há uma mutação."
+        },
+        {
+          "title": "Natureza e golpes",
+          "body": "O ovo herda a natureza de um dos pais, às\nvezes com mutação. Os golpes de ovo dos dois\npais podem passar."
+        },
+        {
+          "title": "Itens de criação",
+          "body": "Na loja da Ilha Quatro: a Pedra Eterna passa\na natureza, o Nó do Destino favorece os\nmelhores IVs e cada item de Poder passa o IV\ndo seu atributo.",
+          "itemId": "ITEM_DESTINY_KNOT"
+        }
+      ]
+    },
+    {
+      "id": "dia_noite",
+      "name": "Dia e noite",
+      "iconItemId": "ITEM_TIMER_BALL",
+      "iconCustom": 1,
+      "cards": [
+        {
+          "title": "Relógio e períodos",
+          "body": "Um dia do jogo dura uma hora. Manhã (04h a\n10h), tarde (10h a 17h), entardecer (17h a\n20h) e noite (20h a 04h)."
+        },
+        {
+          "title": "Hora e cor do céu",
+          "body": "Veja a hora no menu START. A cor do céu muda\ncom o período, e um aviso conta quando ele\nvira."
+        },
+        {
+          "title": "Encontros por horário",
+          "body": "Na grama e nas cavernas, os Pokémon mudam\ncom a hora: à noite aparecem Hoothoot e\noutros notívagos. No entardecer valem os da\ntarde e os da noite.",
+          "speciesBefore": "SPECIES_HOOTHOOT"
+        }
+      ]
+    },
+    {
+      "id": "clima",
+      "name": "Clima",
+      "iconItemId": "ITEM_MYSTIC_WATER",
+      "iconCustom": 2,
+      "cards": [
+        {
+          "title": "Clima por região",
+          "body": "Cada região tem o seu clima, sorteado a cada\nperíodo: chuva no litoral, neve na\nIlha Quatro, areia na Rota 3 e cinzas na\nIlha Cinnabar."
+        },
+        {
+          "title": "Clima e batalha",
+          "body": "Interiores e cavernas ficam sempre secos. Na\nbatalha, a neve vira granizo!"
+        }
+      ]
+    },
+    {
+      "id": "dex",
+      "name": "Pokédex e captura",
+      "iconItemId": "ITEM_MASTER_BALL",
+      "iconCustom": 0,
+      "cards": [
+        {
+          "title": "Pokédex Nacional",
+          "body": "A Pokédex já mostra a lista Nacional desde o\ninício: Pokémon de outras regiões têm\naparecido em Kanto."
+        },
+        {
+          "title": "Pokémon do LeafGreen",
+          "body": "Os exclusivos do LeafGreen aparecem nos\nmesmos lugares do FireRed, dividindo a vez\ncom os de lá. Assim dá para completar a\nPokédex!",
+          "speciesBefore": "SPECIES_VULPIX"
+        },
+        {
+          "title": "Iniciais na Zona de Safári",
+          "body": "Na Zona de Safári aparecem, raros, os\niniciais de Kanto: Bulbasaur no Leste,\nCharmander no Norte e Squirtle no Oeste,\nsurfando.",
+          "speciesBefore": "SPECIES_BULBASAUR"
+        },
+        {
+          "title": "Caverna Mutante",
+          "body": "A Caverna Mutante muda de Pokémon a cada\ndia. Volte sempre para ver quem aparece!",
+          "speciesBefore": "SPECIES_MAREEP"
+        }
+      ]
+    },
+    {
+      "id": "lendarios",
+      "name": "Lendários",
+      "iconItemId": "ITEM_MYSTIC_TICKET",
+      "iconCustom": 0,
+      "cards": [
+        {
+          "title": "Bilhetes do Carvalho",
+          "body": "Na primeira vez no Hall da Fama, o\nProf. Carvalho dá o Bilhete Místico (Lugia e\nHo-Oh) e o Bilhete Aurora (Deoxys).",
+          "itemId": "ITEM_MYSTIC_TICKET"
+        },
+        {
+          "title": "Cães em sequência",
+          "body": "Entei, Raikou e Suicune: ao capturar ou\nderrotar o que corre pelo mapa, outro passa\na correr, até os três."
+        },
+        {
+          "title": "Segunda chance",
+          "body": "Se você derrotar um lendário, ele volta na\npróxima entrada no Hall da Fama."
+        },
+        {
+          "title": "Míticos: pistas",
+          "body": "Mew, Celebi e Jirachi estão escondidos pelo\nmundo, com pistas em diários, placas e\ninscrições. Quer saber onde estão? Veja o\npróximo cartão."
+        },
+        {
+          "title": "Míticos: revelação",
+          "body": "Mew: porão da Mansão Pokémon, após capturar\nMewtwo. Celebi: fundo do Bosque das Frutas,\nde manhã, após as Ilhas Sevii. Jirachi:\nbrilho nas Ruínas de Tanoby, à noite com céu\nlimpo, após capturar Deoxys."
+        }
+      ]
+    },
+    {
+      "id": "pos_liga",
+      "name": "Pós-Liga",
+      "iconItemId": "ITEM_RARE_CANDY",
+      "iconCustom": 0,
+      "cards": [
+        {
+          "title": "Presentes do Carvalho",
+          "body": "O Prof. Carvalho dá um Ovo raro a cada\nvitória na Liga Pokémon, até os 3 (Larvitar,\nBagon, Beldum), e ¥45.000 na primeira.\nDesafio final: os 151 de Kanto valem o\nAmuleto Brilhante.",
+          "itemId": "ITEM_LUCKY_EGG"
+        }
+      ]
+    },
+    {
+      "id": "sobre",
+      "name": "Sobre a hack",
+      "iconItemId": "ITEM_TEACHY_TV",
+      "iconCustom": 3,
+      "cards": [
+        {
+          "title": "Em português do Brasil",
+          "body": "O jogo inteiro está em português do Brasil:\ntextos, menus, nomes e a Pokédex."
+        },
+        {
+          "title": "Save em qualquer emulador",
+          "body": "O save desta hack funciona em qualquer\nemulador de GBA. Jogue onde preferir!"
+        }
+      ]
+    }
+  ]
+}

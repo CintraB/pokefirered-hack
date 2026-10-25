@@ -13975,6 +13975,15 @@
    "detectar": false,
    "frente": "I",
    "obs": "categoria de habitat da Pokédex (gText_DexCategory_WatersEdgePkmn); decisão do Cintra em 24/10, no lugar de Pokémon Ribeirinhos"
+  },
+  {
+   "en": "DEEP SEA SCALE (forma cheia)",
+   "pt": "Escama Abissal",
+   "fonte": "criado",
+   "categoria": "item",
+   "detectar": false,
+   "frente": "novidades",
+   "obs": "forma cheia de Escama Abiss., usada no texto dos cartões da tela de novidades (Cintra, 20/10: nome de item em texto corrido vai por extenso); a curta fica na bolsa e nos campos com limite de letras"
   }
  ],
  "proibidos": [
