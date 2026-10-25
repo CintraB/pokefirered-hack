@@ -268,18 +268,14 @@ CinnabarIsland_PokemonLab_ExperimentRoom_EventScript_RevivedAllFossils::
 	release
 	end
 
+@ Hack 8: o jogador pode ter os dois fósseis do Monte Moon. "Já reviveu tudo" só vale sem nenhum
+@ fóssil pendente (com a flag de posse e sem a de reviver) e com pelo menos um deles em mãos.
 CinnabarIsland_PokemonLab_ExperimentRoom_EventScript_CheckRevivedMtMoonFossil::
-	goto_if_set FLAG_GOT_HELIX_FOSSIL, CinnabarIsland_PokemonLab_ExperimentRoom_EventScript_CheckRevivedHelix
-	goto_if_set FLAG_GOT_DOME_FOSSIL, CinnabarIsland_PokemonLab_ExperimentRoom_EventScript_CheckRevivedDome
+	call CinnabarIsland_PokemonLab_ExperimentRoom_EventScript_CheckAddHelixFossilToList
+	goto_if_eq VAR_RESULT, TRUE, CinnabarIsland_PokemonLab_ExperimentRoom_EventScript_SetResultFalse
+	call CinnabarIsland_PokemonLab_ExperimentRoom_EventScript_CheckAddDomeFossilToList
+	goto_if_eq VAR_RESULT, TRUE, CinnabarIsland_PokemonLab_ExperimentRoom_EventScript_SetResultFalse
+	goto_if_set FLAG_GOT_HELIX_FOSSIL, EventScript_SetResultTrue
+	goto_if_set FLAG_GOT_DOME_FOSSIL, EventScript_SetResultTrue
 	goto CinnabarIsland_PokemonLab_ExperimentRoom_EventScript_SetResultFalse
 	end
-
-CinnabarIsland_PokemonLab_ExperimentRoom_EventScript_CheckRevivedHelix::
-	goto_if_unset FLAG_REVIVED_HELIX, CinnabarIsland_PokemonLab_ExperimentRoom_EventScript_SetResultFalse
-	setvar VAR_RESULT, TRUE
-	return
-
-CinnabarIsland_PokemonLab_ExperimentRoom_EventScript_CheckRevivedDome::
-	goto_if_unset FLAG_REVIVED_DOME, CinnabarIsland_PokemonLab_ExperimentRoom_EventScript_SetResultFalse
-	setvar VAR_RESULT, TRUE
-	return

@@ -3,12 +3,28 @@ MtMoon_B2F_MapScripts::
 	.byte 0
 
 MtMoon_B2F_OnTransition::
-	call_if_unset FLAG_GOT_FOSSIL_FROM_MT_MOON, MtMoon_B2F_EventScript_ShowFossils
+	call MtMoon_B2F_EventScript_ShowFossils
+	call_if_set FLAG_GOT_FOSSIL_FROM_MT_MOON, MtMoon_B2F_EventScript_PutMiguelBack
 	end
 
+@ Cada fóssil aparece enquanto o jogador ainda não o pegou (flag de posse própria).
+@ Vale também para save antigo: o fóssil que o Miguel levou volta ao chão.
 MtMoon_B2F_EventScript_ShowFossils::
+	call_if_unset FLAG_GOT_DOME_FOSSIL, MtMoon_B2F_EventScript_ShowDomeFossil
+	call_if_unset FLAG_GOT_HELIX_FOSSIL, MtMoon_B2F_EventScript_ShowHelixFossil
+	return
+
+MtMoon_B2F_EventScript_ShowDomeFossil::
 	clearflag FLAG_HIDE_DOME_FOSSIL
+	return
+
+MtMoon_B2F_EventScript_ShowHelixFossil::
 	clearflag FLAG_HIDE_HELIX_FOSSIL
+	return
+
+@ Save antigo: o Miguel parava embaixo do fóssil que levou; volta ao lugar de origem (o mapa nasce com ele em 13, 11).
+MtMoon_B2F_EventScript_PutMiguelBack::
+	setobjectxyperm LOCALID_MIGUEL, 13, 11
 	return
 
 MtMoon_B2F_EventScript_MiguelTrigger::
@@ -41,7 +57,15 @@ MtMoon_B2F_EventScript_BattleMiguel::
 	return
 
 MtMoon_B2F_EventScript_MiguelFossilPicked::
+	goto_if_unset FLAG_GOT_DOME_FOSSIL, MtMoon_B2F_EventScript_MiguelLetsYouTakeTheOther
+	goto_if_unset FLAG_GOT_HELIX_FOSSIL, MtMoon_B2F_EventScript_MiguelLetsYouTakeTheOther
 	msgbox MtMoon_B2F_Text_LabOnCinnabarRegeneratesFossils
+	release
+	end
+
+MtMoon_B2F_EventScript_MiguelLetsYouTakeTheOther::
+	textcolor NPC_TEXT_COLOR_MALE
+	msgbox MtMoon_B2F_Text_TakeTheOtherFossilToo
 	release
 	end
 
@@ -59,27 +83,11 @@ MtMoon_B2F_EventScript_DomeFossil::
 	giveitem_msg MtMoon_B2F_Text_ObtainedDomeFossil, ITEM_DOME_FOSSIL, 1, MUS_OBTAIN_KEY_ITEM
 	closemessage
 	special QuestLog_CutRecording
-	delay 10
-	applymovement LOCALID_MIGUEL, MtMoon_B2F_Movement_MiguelToHelixFossil
-	waitmovement 0
-	copyobjectxytoperm LOCALID_MIGUEL
-	textcolor NPC_TEXT_COLOR_MALE
-	playfanfare MUS_OBTAIN_KEY_ITEM
-	message MtMoon_B2F_Text_ThenThisFossilIsMine
-	waitmessage
-	waitfanfare
-	removeobject LOCALID_HELIX_FOSSIL
 	setflag FLAG_GOT_DOME_FOSSIL
 	setflag FLAG_GOT_FOSSIL_FROM_MT_MOON
+	goto_if_unset FLAG_GOT_HELIX_FOSSIL, MtMoon_B2F_EventScript_MiguelLetsYouTakeTheOther
 	release
 	end
-
-MtMoon_B2F_Movement_MiguelToHelixFossil::
-	walk_right
-	walk_up
-	walk_up
-	walk_up
-	step_end
 
 MtMoon_B2F_EventScript_HelixFossil::
 	lock
@@ -90,30 +98,15 @@ MtMoon_B2F_EventScript_HelixFossil::
 	giveitem_msg MtMoon_B2F_Text_ObtainedHelixFossil, ITEM_HELIX_FOSSIL, 1, MUS_OBTAIN_KEY_ITEM
 	closemessage
 	special QuestLog_CutRecording
-	delay 10
-	applymovement LOCALID_MIGUEL, MtMoon_B2F_Movement_MiguelToDomeFossil
-	waitmovement 0
-	copyobjectxytoperm LOCALID_MIGUEL
-	textcolor NPC_TEXT_COLOR_MALE
-	playfanfare MUS_OBTAIN_KEY_ITEM
-	message MtMoon_B2F_Text_ThenThisFossilIsMine
-	waitmessage
-	waitfanfare
-	removeobject LOCALID_DOME_FOSSIL
 	setflag FLAG_GOT_HELIX_FOSSIL
 	setflag FLAG_GOT_FOSSIL_FROM_MT_MOON
+	goto_if_unset FLAG_GOT_DOME_FOSSIL, MtMoon_B2F_EventScript_MiguelLetsYouTakeTheOther
 	release
 	end
 
 MtMoon_B2F_EventScript_DontTakeFossil::
 	release
 	end
-
-MtMoon_B2F_Movement_MiguelToDomeFossil::
-	walk_up
-	walk_up
-	walk_up
-	step_end
 
 MtMoon_B2F_EventScript_Grunt1::
 	trainerbattle_single TRAINER_TEAM_ROCKET_GRUNT, MtMoon_B2F_Text_Grunt1Intro, MtMoon_B2F_Text_Grunt1Defeat

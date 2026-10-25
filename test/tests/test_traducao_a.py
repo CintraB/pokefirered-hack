@@ -117,7 +117,10 @@ def test_excecao_do_to_continua_sendo_so_a_sigla():
 ROTULOS_DOS_HACKS = {"PalletTown_ProfessorOaksLab_Text_OakAnotherRareEgg",      # Hack 8: ovo raro por vitória
                      "PalletTown_ProfessorOaksLab_Text_OakOfferNovidadesFirst",  # tela de novidades (Task 5)
                      "PalletTown_ProfessorOaksLab_Text_OakNovidadesAnytime",
-                     "PalletTown_ProfessorOaksLab_Text_OakOfferNovidades"}
+                     "PalletTown_ProfessorOaksLab_Text_OakOfferNovidades",
+                     "MtMoon_B2F_Text_TakeTheOtherFossilToo"}                    # Hack 8: dois fósseis no Monte Moon
+# rótulos da base que um hack tirou de propósito (o texto deixou de existir)
+ROTULOS_REMOVIDOS_DOS_HACKS = {"MtMoon_B2F_Text_ThenThisFossilIsMine"}           # Hack 8: o Miguel não leva mais o outro fóssil
 
 
 @lru_cache(maxsize=None)
@@ -138,7 +141,7 @@ def test_rotulos_iguais_aos_da_base(rel):
         pytest.skip("sem o commit base da tradução")
     now = [lbl for lbl in re.findall(r"^(\w+)::", (REPO_ROOT / rel).read_text(encoding="utf-8"), re.M)
            if lbl not in ROTULOS_DOS_HACKS]
-    assert now == base
+    assert now == [lbl for lbl in base if lbl not in ROTULOS_REMOVIDOS_DOS_HACKS]
 
 
 @pytest.mark.parametrize("rel", FILES)

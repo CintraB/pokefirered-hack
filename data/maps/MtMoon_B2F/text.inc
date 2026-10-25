@@ -5,15 +5,15 @@ MtMoon_B2F_Text_MiguelIntro::
 
 MtMoon_B2F_Text_MiguelDefeat::
     .string "Tá bom!\n"
-    .string "Vou dividir!$"
+    .string "Você venceu!$"
 
 MtMoon_B2F_Text_WellEachTakeAFossil::
-    .string "Cada um leva um fóssil!\n"
+    .string "Pode levar os dois fósseis!\n"
     .string "Sem ganância!$"
 
-MtMoon_B2F_Text_ThenThisFossilIsMine::
-    .string "Certo.\n"
-    .string "Então este fóssil é meu!$"
+MtMoon_B2F_Text_TakeTheOtherFossilToo::
+    .string "Pode levar o outro fóssil também.\n"
+    .string "Eu não vou tomá-lo!$"
 
 MtMoon_B2F_Text_LabOnCinnabarRegeneratesFossils::
     .string "Bem longe daqui, na Ilha Cinnabar,\n"

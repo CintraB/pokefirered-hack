@@ -159,7 +159,8 @@ def test_fatos_dos_hacks_pos_liga_lendarios_e_dex():
     dex = todos["Pokédex e captura"]
     assert "LeafGreen" in dex and "FireRed" in dex
     assert all(e in dex for e in ("Zona de Safári", "Bulbasaur", "Charmander", "Squirtle", "Leste", "Norte",
-                                  "Oeste", "surfando", "Caverna Mutante", "a cada dia"))
+                                  "Oeste", "surfando", "Caverna Mutante", "a cada dia", "Monte Moon", "Fóssil Domo",
+                                  "Fóssil Hélice"))
 
 
 def test_hack7_clima_relogio_creche_e_resumo():
@@ -205,7 +206,8 @@ def test_quebras_de_linha_nao_partem_termos():
               "Dente Abissal", "Revestimento Metálico", "Pedra do Rei", "Pedra Solar", "Pedra Eterna",
               "Nó do Destino", "Zona de Safári", "Hall da Fama", "Liga Pokémon", "Ilha Quatro", "Ilhas Sevii",
               "Mansão Pokémon", "Bosque das Frutas", "Ruínas de Tanoby", "Caverna Mutante", "Loja de Celadon",
-              "Pokédex Nacional", "Poder Oculto", "Ovo raro", "Nv. 37")
+              "Pokédex Nacional", "Poder Oculto", "Ovo raro", "Nv. 37", "Monte Moon", "Fóssil Domo",
+              "Fóssil Hélice")
     for t, i, c in _cartoes():
         for campo in CAMPOS_DE_TEXTO:
             texto = c.get(campo, "")
