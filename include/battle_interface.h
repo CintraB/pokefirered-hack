@@ -48,6 +48,9 @@ enum
 #define TAG_PARTY_SUMMARY_BALL_PLAYER_TILE      55060
 #define TAG_PARTY_SUMMARY_BALL_OPPONENT_TILE    55061
 
+// POK-35: paleta própria da barra de PS de cada batalhador (+ battlerId), para a cor seguir o PS
+#define TAG_HEALTHBAR_GRADIENT_PAL              55062
+
 #define TAG_HEALTHBOX_PAL                       TAG_HEALTHBOX_PLAYER1_TILE
 #define TAG_HEALTHBAR_PAL                       TAG_HEALTHBAR_PLAYER1_TILE
 

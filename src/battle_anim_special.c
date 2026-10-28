@@ -547,7 +547,9 @@ void DoFreeHealthboxPalsForLevelUp(u8 battler)
     FreeSpritePaletteByTag(TAG_HEALTHBOX_PALS_1);
     FreeSpritePaletteByTag(TAG_HEALTHBOX_PALS_2);
     paletteId1 = IndexOfSpritePaletteTag(TAG_HEALTHBOX_PAL);
-    paletteId2 = IndexOfSpritePaletteTag(TAG_HEALTHBAR_PAL);
+    paletteId2 = IndexOfSpritePaletteTag(TAG_HEALTHBAR_GRADIENT_PAL + battler); // POK-35: a paleta da barra deste batalhador
+    if (paletteId2 == 0xFF)
+        paletteId2 = IndexOfSpritePaletteTag(TAG_HEALTHBAR_PAL);
     gSprites[healthBoxSpriteId].oam.paletteNum = paletteId1;
     gSprites[spriteId1].oam.paletteNum = paletteId1;
     gSprites[spriteId2].oam.paletteNum = paletteId2;
