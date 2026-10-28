@@ -333,6 +333,16 @@
           "after": "AGORA: a equipe toda",
           "body": "Quem lutou ganha todos os PE, e o resto da\nequipe ganha metade, sem item nenhum. O\nassistente da Rota 15 agora dá o Ovo da\nSorte.",
           "itemId": "ITEM_EXP_SHARE"
+        },
+        {
+          "title": "Chefes mais espertos",
+          "body": "Líderes de ginásio, Elite 4 e rival preparam\no terreno no 1º turno e escolhem o golpe\nde acordo com o PS de cada lado.",
+          "itemId": "ITEM_X_ATTACK"
+        },
+        {
+          "title": "Barra de PS moderna",
+          "body": "A barra de PS anda rápido mesmo com muito\nPS, e a cor muda aos poucos do verde para\no amarelo e o vermelho.",
+          "itemId": "ITEM_HYPER_POTION"
         }
       ]
     },
