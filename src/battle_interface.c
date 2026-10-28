@@ -600,6 +600,14 @@ u8 CreateBattlerHealthboxSprites(u8 battlerId)
     healthbarSprite->subspriteMode = SUBSPRITES_IGNORE_PRIORITY;
     healthbarSprite->oam.priority = 1;
     CpuCopy32(GetBattleInterfaceGfxPtr(B_INTERFACE_GFX_HP_BAR_HP_TEXT), OBJ_VRAM0 + healthbarSprite->oam.tileNum * TILE_SIZE_4BPP, 2 * TILE_SIZE_4BPP);
+    // POK-35: cópia da paleta da barra só deste batalhador (sem vaga, fica na paleta comum, sem gradiente)
+    {
+        struct SpritePalette gradientPal = {gBattleInterface_Healthbar_Pal, TAG_HEALTHBAR_GRADIENT_PAL + battlerId};
+        u8 paletteNum = LoadSpritePalette(&gradientPal);
+
+        if (paletteNum != 0xFF)
+            healthbarSprite->oam.paletteNum = paletteNum;
+    }
 
     gSprites[healthboxSpriteId].sHealthBarSpriteId = healthbarSpriteId;
     gSprites[healthboxSpriteId].sBattlerId = battlerId;
@@ -1864,7 +1872,8 @@ s32 MoveBattleBar(u8 battlerId, u8 healthboxSpriteId, u8 whichBar, u8 unused)
                                               gBattleSpritesDataPtr->battleBars[battlerId].receivedValue,
                                               &gBattleSpritesDataPtr->battleBars[battlerId].currValue,
                                               B_HEALTHBAR_NUM_TILES,
-                                              1);
+                                              // ~1 pixel por passo (era 1 PS): a barra cheia esvazia no mesmo tempo com qualquer PS
+                                              max(1, gBattleSpritesDataPtr->battleBars[battlerId].maxValue / B_HEALTHBAR_NUM_PIXELS));
         }
         else // exp bar
         {
@@ -1902,6 +1911,51 @@ s32 MoveBattleBar(u8 battlerId, u8 healthboxSpriteId, u8 whichBar, u8 unused)
     return currentBarValue;
 }
 
+// POK-35: cores 10/11 da paleta da barra (verde claro e escuro em healthbar.pal) num gradiente
+// contínuo: vermelho (0) -> amarelo (metade) -> verde (cheia). Valores RGB de 5 bits de healthbar.pal.
+static const u8 sHealthbarGradient[3][2][3] = {
+    {{31, 11, 7}, {21, 8, 9}},   // vermelho (cores 14/15)
+    {{31, 28, 7}, {25, 21, 1}},  // amarelo (cores 12/13)
+    {{14, 31, 21}, {11, 26, 16}}, // verde (cores 10/11)
+};
+
+// FALSE quando a barra está na paleta comum (sem vaga para a dela): aí valem as três cores fixas.
+static bool8 SetHealthbarGradient(u8 healthbarSpriteId, u8 filledPixels)
+{
+    const u8 half = B_HEALTHBAR_NUM_PIXELS / 2;
+    u8 paletteNum = gSprites[healthbarSpriteId].oam.paletteNum;
+    const u8 (*from)[3], (*to)[3];
+    u16 colors[2];
+    u32 t, i;
+
+    if (paletteNum == IndexOfSpritePaletteTag(TAG_HEALTHBAR_PAL))
+        return FALSE;
+
+    if (filledPixels >= half)
+    {
+        from = sHealthbarGradient[1];
+        to = sHealthbarGradient[2];
+        t = filledPixels - half;
+    }
+    else
+    {
+        from = sHealthbarGradient[0];
+        to = sHealthbarGradient[1];
+        t = filledPixels;
+    }
+    for (i = 0; i < 2; i++)
+    {
+        colors[i] = RGB(from[i][0] + ((to[i][0] - from[i][0]) * (s32)t) / half,
+                        from[i][1] + ((to[i][1] - from[i][1]) * (s32)t) / half,
+                        from[i][2] + ((to[i][2] - from[i][2]) * (s32)t) / half);
+    }
+    // o esmaecimento de tela recalcula a partir do Unfaded; durante ele, só esse muda
+    CpuCopy16(colors, &gPlttBufferUnfaded[OBJ_PLTT_ID(paletteNum) + 10], sizeof(colors));
+    if (!gPaletteFade.active)
+        CpuCopy16(colors, &gPlttBufferFaded[OBJ_PLTT_ID(paletteNum) + 10], sizeof(colors));
+    return TRUE;
+}
+
 static void MoveBattleBarGraphically(u8 battlerId, u8 whichBar)
 {
     u8 filledPixels[B_HEALTHBAR_NUM_TILES > B_EXPBAR_NUM_TILES ? B_HEALTHBAR_NUM_TILES : B_EXPBAR_NUM_TILES];
@@ -1919,7 +1973,9 @@ static void MoveBattleBarGraphically(u8 battlerId, u8 whichBar)
                                                 filledPixels,
                                                 B_HEALTHBAR_NUM_TILES);
 
-        if (totalFilledPixels > (B_HEALTHBAR_NUM_PIXELS * 50 / 100)) // more than 50 % hp
+        if (SetHealthbarGradient(gSprites[gBattleSpritesDataPtr->battleBars[battlerId].healthboxSpriteId].sHealthBarSpriteId, totalFilledPixels))
+            barElementId = B_INTERFACE_GFX_HP_BAR_GREEN; // a cor vem da paleta da barra
+        else if (totalFilledPixels > (B_HEALTHBAR_NUM_PIXELS * 50 / 100)) // more than 50 % hp
             barElementId = B_INTERFACE_GFX_HP_BAR_GREEN;
         else if (totalFilledPixels > (B_HEALTHBAR_NUM_PIXELS * 20 / 100)) // more than 20% hp
             barElementId = B_INTERFACE_GFX_HP_BAR_YELLOW;
