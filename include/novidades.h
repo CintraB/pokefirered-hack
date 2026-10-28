@@ -14,7 +14,7 @@ struct SpriteTemplate;
 // mede cada texto do JSON nelas. Mudou uma constante? Rode test/tests/test_novidades_cartoes.py.
 
 // Quantos tópicos há em gNovidadesTopics (o header gerado confere em tempo de compilação).
-#define NOVIDADES_TOPIC_COUNT 11
+#define NOVIDADES_TOPIC_COUNT 12
 
 // Layout do cartão (tela de 240x160, layout B do mockup): barra de título 16 px, imagem 64 px
 // (sprite frontal de 64x64; duas espécies lado a lado), uma linha ANTES/AGORA, 1 px de creme, a borda

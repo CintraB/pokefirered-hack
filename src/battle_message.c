@@ -51,6 +51,7 @@ static const u8 sText_Trainer1RecallPkmn2[] = _("{B_TRAINER1_NAME}: {B_OPPONENT_
 static const u8 sText_Trainer1RecallBoth[] = _("{B_TRAINER1_NAME}: {B_OPPONENT_MON1_NAME} e\n{B_OPPONENT_MON2_NAME}, voltem!");
 static const u8 sText_Trainer2WinText[] = _("{B_TRAINER2_WIN_TEXT}");
 static const u8 sText_PkmnGainedEXP[] = _("O {B_BUFF1} ganhou\n{B_BUFF3} PE{B_BUFF2}!\p");
+static const u8 sText_TeamGainedExp[] = _("O resto da equipe também\nganhou PE!\p");
 static const u8 sText_EmptyString4[] = _("");
 static const u8 sText_ABoosted[] = _(" com bônus");
 static const u8 sText_PkmnGrewToLv[] = _("O {B_BUFF1} subiu para o\nNv. {B_BUFF2}!{WAIT_SE}\p");
@@ -888,7 +889,8 @@ const u8 *const gBattleStringsTable[BATTLESTRINGS_COUNT - BATTLESTRINGS_TABLE_ST
     [STRINGID_TRAINER1MON1COMEBACK - BATTLESTRINGS_TABLE_START]          = sText_Trainer1RecallPkmn1,
     [STRINGID_TRAINER1WINTEXT - BATTLESTRINGS_TABLE_START]               = sText_Trainer1WinText,
     [STRINGID_TRAINER1MON2COMEBACK - BATTLESTRINGS_TABLE_START]          = sText_Trainer1RecallPkmn2,
-    [STRINGID_TRAINER1MON1AND2COMEBACK - BATTLESTRINGS_TABLE_START]      = sText_Trainer1RecallBoth
+    [STRINGID_TRAINER1MON1AND2COMEBACK - BATTLESTRINGS_TABLE_START]      = sText_Trainer1RecallBoth,
+    [STRINGID_TEAMGAINEDEXP - BATTLESTRINGS_TABLE_START]                 = sText_TeamGainedExp,
 };
 
 const u16 gMissStringIds[] =

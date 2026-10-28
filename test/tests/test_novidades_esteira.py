@@ -39,14 +39,14 @@ def test_espelho_usa_as_medidas_do_c():
     (2, "right", 3), (5, "left", 4),
     (1, "down", 5), (9, "up", 5),
     (6, "down", 10), (4, "down", 8),
-    (7, "down", 10),                           # ▼ para um quadro vazio vai ao último tópico
-    (10, "right", 10), (10, "down", 10), (8, "down", 8),
+    (7, "down", 11), (11, "right", 11),         # 12 tópicos: a grade 4 x 3 está cheia
+    (10, "right", 11), (10, "down", 10), (8, "down", 8),
 ])
 def test_espelho_do_cursor_da_grade(cursor, tecla, esperado):
     assert fn.move_cursor(cursor, tecla) == esperado
 
 
-def test_caminho_da_grade_passa_pelos_11_topicos_em_ordem():
+def test_caminho_da_grade_passa_pelos_12_topicos_em_ordem():
     # grid_walk(t): as teclas de t - 1 até t, cada uma com o cursor esperado depois dela
     cursor = 0
     for topic in range(1, fn.TOPIC_COUNT):
@@ -56,8 +56,8 @@ def test_caminho_da_grade_passa_pelos_11_topicos_em_ordem():
             cursor = fn.move_cursor(cursor, tecla)
             assert cursor == depois, (topic, tecla)
         assert cursor == topic
-    # de 7 para 8 o caminho passa pela regra do ▼ (7 -> 10) e volta com ◀
-    assert fn.grid_walk(8)[0] == ("down", 10)
+    # de 7 para 8 o caminho desce (7 -> 11) e volta com ◀
+    assert fn.grid_walk(8)[0] == ("down", 11)
 
 
 def test_plano_dos_cartoes_vem_do_json():

@@ -111,9 +111,9 @@ _DIALOG_INC = ("aide", "berries", "competitive_brothers", "day_care", "eon_ticke
                "ingame_trade", "itemfinder", "obtain_item", "pc", "poke_mart", "route23", "safari_zone",
                "seagallop", "sign_lady", "surf", "trainer_card", "trainers", "white_out")
 _BATTLE_MSG = ("janela de mensagem da batalha: sStandardBattleWindowTemplates[B_WIN_MSG] .width = 28 tiles "
-               "(src/battle_bg.c:143-148), texto em x = 2 (src/battle_message.c:2402-2405)")
+               "(src/battle_bg.c:143-148), texto em x = 2 (src/battle_message.c:2404-2407)")
 _OAK_OLD_MAN = ("janela do tutorial do Carvalho e do velho: [B_WIN_OAK_OLD_MAN] .width = 26 tiles "
-                "(src/battle_bg.c:359-363), FONT_MALE em x = 0 (src/battle_message.c:2690-2693)")
+                "(src/battle_bg.c:359-363), FONT_MALE em x = 0 (src/battle_message.c:2692-2695)")
 _OAK_TUTORIAL = ("gText_ForPetesSake", "gText_TheTrainerThat", "gText_TryBattling", "gText_InflictingDamageIsKey",
                  "gText_LoweringStats", "gText_KeepAnEyeOnHP", "gText_OakNoRunningFromATrainer",
                  "gText_WinEarnsPrizeMoney", "gText_HowDissapointing")   # src/battle_controller_oak_old_man.c:652-844
@@ -270,7 +270,7 @@ WIDTH_RULES: list[Rule] = [
     Rule("src/data/text/move_names.h", None, 8 * 8,
          "nome de golpe: MOVE_NAME_LENGTH (include/constants/global.h:67); na batalha, janela "
          "B_WIN_MOVE_NAME .width = 8 tiles (src/battle_bg.c:170-174) em FONT_SMALL, x = 0 "
-         "(src/battle_message.c:2438-2441)", font="small", chars=12),
+         "(src/battle_message.c:2440-2443)", font="small", chars=12),
     Rule("src/data/text/abilities.h", "s*Description", 29 * 8 - 2,
          "descrição de habilidade no resumo: [POKESUM_WIN_SKILLS_5] .width = 29 tiles "
          "(src/pokemon_summary_screen.c:848-852), x = 2 (src/pokemon_summary_screen.c:3393); buffer "
@@ -296,23 +296,23 @@ WIDTH_RULES: list[Rule] = [
            _OAK_OLD_MAN + "; impresso em src/battle_controller_oak_old_man.c:652-844") for label in _OAK_TUTORIAL],
     Rule("src/battle_message.c", "gText_WhatWill", 14 * 8 - 2,
          "pergunta de ação: [B_WIN_ACTION_PROMPT] .width = 14 tiles (src/battle_bg.c:152-156), x = 2 "
-         "(src/battle_message.c:2414-2417); o Pokémon ativo é o do jogador, sem o prefixo do oponente "
-         "(src/battle_message.c:1811-1813)", no_prefix=True),
+         "(src/battle_message.c:2416-2419); o Pokémon ativo é o do jogador, sem o prefixo do oponente "
+         "(src/battle_message.c:1813-1815)", no_prefix=True),
     *[Rule("src/battle_message.c", label, 12 * 8,
            "menu de ação: [B_WIN_ACTION_MENU] .width = 12 tiles (src/battle_bg.c:161-165), x = 0 "
-           "(src/battle_message.c:2426-2429)") for label in ("gText_BattleMenu", "gText_SafariZoneMenu")],
+           "(src/battle_message.c:2428-2431)") for label in ("gText_BattleMenu", "gText_SafariZoneMenu")],
     Rule("src/battle_message.c", "gText_BattleSwitchWhich", 8 * 8,
          "pergunta de troca: [B_WIN_SWITCH_PROMPT] .width = 8 tiles (src/battle_bg.c:242-246), x = 0 "
-         "(src/battle_message.c:2534-2537)"),
+         "(src/battle_message.c:2536-2539)"),
     Rule("src/battle_message.c", "gText_BattleYesNoChoice", 4 * 8,
          "Sim/Não da batalha: [B_WIN_YESNO] .width = 4 tiles (src/battle_bg.c:269-273), x = 0 "
-         "(src/battle_message.c:2570-2573)"),
+         "(src/battle_message.c:2572-2575)"),
     *[Rule("src/battle_message.c", label, 64,
-           "resultado do link: centralizado em 64 px (src/battle_message.c:2745-2748)")
+           "resultado do link: centralizado em 64 px (src/battle_message.c:2747-2750)")
       for label in ("gText_Win", "gText_Loss", "gText_Draw")],
     Rule("src/battle_message.c", "gText_MoveInterfacePP", 3 * 8,
          "rótulo do PP: [B_WIN_PP] 3 tiles (src/battle_bg.c:206-210), FONT_SMALL x = 0 "
-         "(src/battle_message.c:2486-2489); copiado em src/battle_controller_player.c:1389", font="small"),
+         "(src/battle_message.c:2488-2491); copiado em src/battle_controller_player.c:1389", font="small"),
     Rule("src/battle_message.c", "gText_MoveInterfaceType", 8 * 8 - 6 * 5,
          "rótulo do tipo: [B_WIN_MOVE_TYPE] 8 tiles (src/battle_bg.c:215-219), FONT_SMALL x = 0; o nome do tipo "
          "(até 6 letras de 5 px) vem depois (src/battle_controller_player.c:1413)", font="small"),
@@ -462,10 +462,10 @@ VAR_SIZES: dict[str, VarSize] = {
     **{name: VarSize(_MON) for name in ("STR_VAR_1", "STR_VAR_2", "STR_VAR_3")},
     # gUnknownStringVar (src/string_util.c:361-364); sem uso no FRLG
     "UNKNOWN_STR": VarSize(_MON),
-    # batalha: {B_BUFF1..3} expandem gBattleTextBuff1..3 (src/battle_message.c:1846-1875) com nome de
+    # batalha: {B_BUFF1..3} expandem gBattleTextBuff1..3 (src/battle_message.c:1848-1877) com nome de
     # golpe (12), tipo, apelido com ou sem prefixo, atributo, espécie, habilidade (12), item (13) ou
-    # número (src/battle_message.c:2207-2300); {B_COPY_VAR_n} = gStringVar1..3 (src/battle_message.c:1877-1885);
-    # {B_26} = apelido (src/battle_message.c:2135-2136). Padrão de 10 letras; o contexto pode subir ou descer.
+    # número (src/battle_message.c:2209-2302); {B_COPY_VAR_n} = gStringVar1..3 (src/battle_message.c:1879-1887);
+    # {B_26} = apelido (src/battle_message.c:2137-2138). Padrão de 10 letras; o contexto pode subir ou descer.
     **{name: VarSize(_MON) for name in ("B_BUFF1", "B_BUFF2", "B_BUFF3", "B_COPY_VAR_1", "B_COPY_VAR_2",
                                         "B_COPY_VAR_3", "B_26")},
     # apelidos do charmap para FD 08/09/0C/0D (nome de Treinador/Pokémon na batalha), sem uso no texto
@@ -480,7 +480,7 @@ VAR_SIZES: dict[str, VarSize] = {
     "DYNAMIC": VarSize(_MON),
 }
 # Medem 0 de propósito: {KUN} (gExpandedPlaceholder_Kun/Chan vazios, src/strings.c:5-6) e
-# {B_TRAINER1/2_LOSE/WIN_TEXT} (a fala inteira do Treinador, src/battle_message.c:2105-2134, medida
+# {B_TRAINER1/2_LOSE/WIN_TEXT} (a fala inteira do Treinador, src/battle_message.c:2107-2136, medida
 # no próprio rótulo de onde vem).
 
 

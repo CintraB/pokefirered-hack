@@ -27,7 +27,7 @@ GITIGNORE = REPO_ROOT / ".gitignore"
 GENERATED_REL = "src/data/novidades_cartoes.h"
 
 TOPICOS_DO_SPEC = ["Ritmo de jogo", "Shiny", "Evoluções", "Resumo do Pokémon", "Creche", "Dia e noite",
-                   "Clima", "Pokédex e captura", "Lendários", "Pós-Liga", "Sobre a hack"]
+                   "Clima", "Pokédex e captura", "Lendários", "Pós-Liga", "Melhorias modernas", "Sobre a hack"]
 CAMPOS_DE_TEXTO = ("title", "before", "after", "body")
 
 
@@ -71,7 +71,7 @@ def _cartoes():
 
 def test_onze_topicos_na_ordem_do_spec():
     assert [t["name"] for t in _topicos()] == TOPICOS_DO_SPEC
-    assert _constantes()["TOPIC_COUNT"] == 11 == len(_topicos())
+    assert _constantes()["TOPIC_COUNT"] == 12 == len(_topicos())
 
 
 def test_cada_topico_tem_cartao():

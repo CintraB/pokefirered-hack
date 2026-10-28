@@ -6,13 +6,13 @@ Dois cenários:
 1. CONTINUAR, warp para o laboratório diante do Carvalho e foto do campo (mapa, posição, música,
    objetos do mapa);
 2. fala de verdade com o Carvalho (a avaliação da Pokédex roda inteira) e SIM na oferta: a tela abre
-   na grade, com os 11 ícones vivos (atalho 0x91); tela `novidades_grade`;
+   na grade, com os 12 ícones vivos (atalho 0x91); tela `novidades_grade`;
 3. grade: ◀ e ▲ no tópico 0 não mexem; ▶ e ▼ no último também não; o caminho de um tópico ao
-   próximo segue a regra do cursor (sem dar a volta; ▼ do 7 vai ao 10), conferida a cada tecla;
-4. em cada um dos 11 tópicos (o espelho do plano vem do JSON dos cartões): A abre no 1º cartão;
+   próximo segue a regra do cursor (sem dar a volta; com 12 tópicos a grade 4 x 3 fica cheia), conferida a cada tecla;
+4. em cada um dos 12 tópicos (o espelho do plano vem do JSON dos cartões): A abre no 1º cartão;
    ◀ no 1º não muda o cartão; ▶ vai até o último conferindo, em cada cartão, tópico, cartão, tipo de
    imagem e sprites vivos (atalho 0x92); ▶ no último não muda (o Pós-Liga fica em 1/1); B volta à
-   grade com o mesmo tópico e os 11 ícones; telas de um cartão de cada tipo de imagem, da revelação
+   grade com o mesmo tópico e os 12 ícones; telas de um cartão de cada tipo de imagem, da revelação
    dos míticos e de um cartão com ícone novo (CARD_SHOTS);
 5. sprites, tiles e paletas de OBJ e matrizes afins iguais na grade antes e depois do percurso;
 6. B sai: volta ao campo no mesmo mapa, posição e música, com os mesmos objetos; falar de novo com
@@ -49,7 +49,7 @@ LAB_SCENE_VAR = "VAR_MAP_SCENE_PALLET_TOWN_PROFESSOR_OAKS_LAB"
 
 # Espelho de src/novidades.c (test_novidades_esteira.py confere com o C)
 GRID_COLUMNS = 4
-TOPIC_COUNT = 11
+TOPIC_COUNT = 12
 GRID_ROWS = (TOPIC_COUNT + GRID_COLUMNS - 1) // GRID_COLUMNS
 IMAGE_TOPIC_ICON, IMAGE_ITEM, IMAGE_ONE_MON, IMAGE_TWO_MONS = range(4)   # CARD_IMAGE_*
 LIVE_SPRITES = {IMAGE_TOPIC_ICON: 1, IMAGE_ITEM: 1, IMAGE_ONE_MON: 1, IMAGE_TWO_MONS: 2}

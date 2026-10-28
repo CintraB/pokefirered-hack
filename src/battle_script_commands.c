@@ -3110,13 +3110,16 @@ static void Cmd_jumpiftype(void)
         gBattlescriptCurrInstr += 7;
 }
 
+// gBattleStruct->expSharePass
+#define EXP_SHARE_PASS_REST      (1 << 0) // 2ª volta: quem não lutou
+#define EXP_SHARE_PASS_MSG_SHOWN (1 << 1) // "o resto da equipe ganhou PE" já saiu
+
 static void Cmd_getexp(void)
 {
     u16 item;
     s32 i; // also used as stringId
     u8 holdEffect;
     s32 sentIn;
-    s32 viaExpShare = 0;
     u16 *exp = &gBattleStruct->expValue;
 
     gBattlerFainted = GetBattlerForBattleScript(gBattlescriptCurrInstr[1]);
@@ -3142,50 +3145,21 @@ static void Cmd_getexp(void)
         break;
     case 1: // calculate experience points to redistribute
         {
-            u16 calculatedExp;
-            s32 viaSentIn;
+            u16 calculatedExp = gSpeciesInfo[gBattleMons[gBattlerFainted].species].expYield * gBattleMons[gBattlerFainted].level / 7;
 
-            for (viaSentIn = 0, i = 0; i < PARTY_SIZE; i++)
-            {
-                if (GetMonData(&gPlayerParty[i], MON_DATA_SPECIES) == SPECIES_NONE || GetMonData(&gPlayerParty[i], MON_DATA_HP) == 0)
-                    continue;
-                if (gBitTable[i] & sentIn)
-                    viaSentIn++;
-
-                item = GetMonData(&gPlayerParty[i], MON_DATA_HELD_ITEM);
-
-                if (item == ITEM_ENIGMA_BERRY)
-                    holdEffect = gSaveBlock1Ptr->enigmaBerry.holdEffect;
-                else
-                    holdEffect = ItemId_GetHoldEffect(item);
-
-                if (holdEffect == HOLD_EFFECT_EXP_SHARE)
-                    viaExpShare++;
-            }
-
-            calculatedExp = gSpeciesInfo[gBattleMons[gBattlerFainted].species].expYield * gBattleMons[gBattlerFainted].level / 7;
-
-            if (viaExpShare) // at least one mon is getting exp via exp share
-            {
-                *exp = SAFE_DIV(calculatedExp / 2, viaSentIn);
-                if (*exp == 0)
-                    *exp = 1;
-
-                gExpShareExp = calculatedExp / 2 / viaExpShare;
-                if (gExpShareExp == 0)
-                    gExpShareExp = 1;
-            }
-            else
-            {
-                *exp = SAFE_DIV(calculatedExp, viaSentIn);
-                if (*exp == 0)
-                    *exp = 1;
-                gExpShareExp = 0;
-            }
+            // Exp. Share da Gen 6, sempre ligado: quem lutou ganha a EXP inteira
+            // (sem dividir) e o resto da equipe ganha metade.
+            *exp = calculatedExp;
+            if (*exp == 0)
+                *exp = 1;
+            gExpShareExp = calculatedExp / 2;
+            if (gExpShareExp == 0)
+                gExpShareExp = 1;
 
             gBattleScripting.getexpState++;
             gBattleStruct->expGetterMonId = 0;
             gBattleStruct->sentInPokes = sentIn;
+            gBattleStruct->expSharePass = 0;
         }
         // fall through
     case 2: // set exp value to the poke in expgetter_id and print message
@@ -3198,7 +3172,8 @@ static void Cmd_getexp(void)
             else
                 holdEffect = ItemId_GetHoldEffect(item);
 
-            if (holdEffect != HOLD_EFFECT_EXP_SHARE && !(gBattleStruct->sentInPokes & 1))
+            // 1ª volta: só quem lutou; 2ª volta: o resto da equipe
+            if (!(gBattleStruct->sentInPokes & 1) == !(gBattleStruct->expSharePass & EXP_SHARE_PASS_REST))
             {
                 *(&gBattleStruct->sentInPokes) >>= 1;
                 gBattleScripting.getexpState = 5;
@@ -3225,10 +3200,8 @@ static void Cmd_getexp(void)
                     if (gBattleStruct->sentInPokes & 1)
                         gBattleMoveDamage = *exp;
                     else
-                        gBattleMoveDamage = 0;
+                        gBattleMoveDamage = gExpShareExp;
 
-                    if (holdEffect == HOLD_EFFECT_EXP_SHARE)
-                        gBattleMoveDamage += gExpShareExp;
                     if (holdEffect == HOLD_EFFECT_LUCKY_EGG)
                         gBattleMoveDamage = (gBattleMoveDamage * 150) / 100;
                     if (gBattleTypeFlags & BATTLE_TYPE_TRAINER)
@@ -3267,7 +3240,14 @@ static void Cmd_getexp(void)
                     PREPARE_STRING_BUFFER(gBattleTextBuff2, i);
                     PREPARE_WORD_NUMBER_BUFFER(gBattleTextBuff3, 5, gBattleMoveDamage);
 
-                    PrepareStringBattle(STRINGID_PKMNGAINEDEXP, gBattleStruct->expGetterBattlerId);
+                    // o resto da equipe ganha calado, com uma mensagem só para todos
+                    if (gBattleStruct->sentInPokes & 1)
+                        PrepareStringBattle(STRINGID_PKMNGAINEDEXP, gBattleStruct->expGetterBattlerId);
+                    else if (!(gBattleStruct->expSharePass & EXP_SHARE_PASS_MSG_SHOWN))
+                    {
+                        PrepareStringBattle(STRINGID_TEAMGAINEDEXP, gBattleStruct->expGetterBattlerId);
+                        gBattleStruct->expSharePass |= EXP_SHARE_PASS_MSG_SHOWN;
+                    }
                     MonGainEVs(&gPlayerParty[gBattleStruct->expGetterMonId], gBattleMons[gBattlerFainted].species);
                 }
                 gBattleStruct->sentInPokes >>= 1;
@@ -3362,9 +3342,21 @@ static void Cmd_getexp(void)
         {
             gBattleStruct->expGetterMonId++;
             if (gBattleStruct->expGetterMonId < PARTY_SIZE)
+            {
                 gBattleScripting.getexpState = 2; // loop again
+            }
+            else if (!(gBattleStruct->expSharePass & EXP_SHARE_PASS_REST))
+            {
+                // 2ª volta pela equipe, agora para quem não lutou
+                gBattleStruct->expSharePass |= EXP_SHARE_PASS_REST;
+                gBattleStruct->expGetterMonId = 0;
+                gBattleStruct->sentInPokes = sentIn;
+                gBattleScripting.getexpState = 2;
+            }
             else
+            {
                 gBattleScripting.getexpState = 6; // we're done
+            }
         }
         break;
     case 6: // increment instruction
@@ -9596,6 +9588,7 @@ static void Cmd_handleballthrow(void)
             BtlController_EmitBallThrowAnim(BUFFER_A, BALL_3_SHAKES_SUCCESS);
             MarkBattlerForControllerExec(gActiveBattler);
             gBattlescriptCurrInstr = BattleScript_SuccessBallThrow;
+            gBattleStruct->wildVictorySong++; // a EXP da captura não troca a música da captura
             SetMonData(&gEnemyParty[gBattlerPartyIndexes[gBattlerTarget]], MON_DATA_POKEBALL, &gLastUsedItem);
 
             if (CalculatePlayerPartyCount() == PARTY_SIZE)
@@ -9621,6 +9614,7 @@ static void Cmd_handleballthrow(void)
             if (shakes == BALL_3_SHAKES_SUCCESS) // mon caught, copy of the code above
             {
                 gBattlescriptCurrInstr = BattleScript_SuccessBallThrow;
+                gBattleStruct->wildVictorySong++; // a EXP da captura não troca a música da captura
                 SetMonData(&gEnemyParty[gBattlerPartyIndexes[gBattlerTarget]], MON_DATA_POKEBALL, &gLastUsedItem);
 
                 if (CalculatePlayerPartyCount() == PARTY_SIZE)

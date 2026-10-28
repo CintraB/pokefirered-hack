@@ -38,6 +38,7 @@
 #include "field_weather.h"
 #include "constants/songs.h"
 #include "constants/items.h"
+#include "item.h"
 #include "constants/maps.h"
 #include "constants/region_map_sections.h"
 #include "constants/moves.h"
@@ -2710,4 +2711,32 @@ void QueueRareEggAfterHallOfFame(void)
     MigrateLegacyRareEgg();
     if (FlagGet(FLAG_SYS_GAME_CLEAR) && CountRareEggsLeft() != 0)
         FlagSet(FLAG_RARE_EGG_PENDING);
+}
+
+// Repel automático: quando o efeito acaba, EventScript_RepelWoreOff oferece o último
+// repelente usado; se ele acabou na bolsa, oferece outro que houver. ITEM_NONE = nenhum.
+u16 GetRepelToReuse(void)
+{
+    static const u16 sRepels[] = {ITEM_REPEL, ITEM_SUPER_REPEL, ITEM_MAX_REPEL};
+    u16 lastRepel = VarGet(VAR_LAST_REPEL_USED);
+    u32 i;
+
+    if (lastRepel != ITEM_NONE && CheckBagHasItem(lastRepel, 1))
+        return lastRepel;
+    for (i = 0; i < ARRAY_COUNT(sRepels); i++)
+    {
+        if (CheckBagHasItem(sRepels[i], 1))
+            return sRepels[i];
+    }
+    return ITEM_NONE;
+}
+
+// special UseRepelFromField: usa o repelente de VAR_0x8004 fora da bolsa (mesmo efeito de Task_UseRepel).
+void UseRepelFromField(void)
+{
+    u16 itemId = gSpecialVar_0x8004;
+
+    VarSet(VAR_REPEL_STEP_COUNT, ItemId_GetHoldEffectParam(itemId));
+    VarSet(VAR_LAST_REPEL_USED, itemId);
+    RemoveBagItem(itemId, 1);
 }

@@ -393,7 +393,8 @@ def test_mutacao_especie_em_maiuscula_e_acusada():
 # ---- M1: forma cheia de item e golpe em fala ------------------------------------------------
 
 def test_forma_cheia_de_item_e_golpe_em_fala():
-    assert "Dei o Compartilhador de Exp. a um" in _flat(_text("data/text/pokedex_rating.inc", "PokedexRating_Text_LessThan60"))
+    # POK-34: o assistente dá o Ovo da Sorte no lugar do Exp. Share
+    assert "Dei o Ovo da Sorte a um" in _flat(_text("data/text/pokedex_rating.inc", "PokedexRating_Text_LessThan60"))
     assert "entregou os Dentes de Ouro" in _flat(_text("data/maps/FuchsiaCity_WardensHouse/text.inc",
                                                        "FuchsiaCity_WardensHouse_Text_GaveGoldTeethToWarden"))
     assert "Quer usar Esmagamento de Pedras?" in _flat(_text("data/scripts/field_moves.inc", "Text_UseRockSmash"))

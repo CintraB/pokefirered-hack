@@ -34,6 +34,8 @@ u16 GetRandomRareEggSpecies(void);
 // Hack 8 — ovos raros por vitória na Liga
 void MarkRareEggDelivered(void);
 void QueueRareEggAfterHallOfFame(void);
+u16 GetRepelToReuse(void);
+void UseRepelFromField(void);
 
 // Hack 8 — míticos no endgame
 u16 GetDayNightPeriodForScript(void);
