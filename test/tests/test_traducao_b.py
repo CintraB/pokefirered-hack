@@ -234,7 +234,8 @@ def test_b2_termos_criados_no_glossario():
     body = (_flat("data/maps/Route12_FishingHouse/text.inc") + _flat("data/maps/Route12/text.inc")
             + _flat("data/maps/Route13/text.inc") + _flat("data/maps/Route15_WestEntrance_2F/text.inc")
             + _flat("data/maps/Route19/text.inc"))
-    for pt in ("Mestre da Pesca", "Ponte do Silêncio", "Pesca Esportiva", "Compartilhador de Exp."):
+    # "Compartilhador de Exp." saiu da Rota 15: o Exp. Share virou fixo (POK-34) e o assistente dá o Ovo da Sorte
+    for pt in ("Mestre da Pesca", "Ponte do Silêncio", "Pesca Esportiva"):
         assert pt in body, pt
 
 

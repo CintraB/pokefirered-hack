@@ -312,6 +312,31 @@
       ]
     },
     {
+      "id": "modernas",
+      "name": "Melhorias modernas",
+      "iconItemId": "ITEM_EXP_SHARE",
+      "iconCustom": 0,
+      "cards": [
+        {
+          "title": "Repelente automático",
+          "body": "Quando o efeito do Repelente acaba, o jogo\npergunta se você quer usar outro da bolsa.",
+          "itemId": "ITEM_MAX_REPEL"
+        },
+        {
+          "title": "PE ao capturar",
+          "body": "Capturar um Pokémon selvagem dá PE à\nequipe, como se ele tivesse sido derrotado.",
+          "itemId": "ITEM_POKE_BALL"
+        },
+        {
+          "title": "PE para a equipe toda",
+          "before": "ANTES: só quem lutou",
+          "after": "AGORA: a equipe toda",
+          "body": "Quem lutou ganha todos os PE, e o resto da\nequipe ganha metade, sem item nenhum. O\nassistente da Rota 15 agora dá o Ovo da\nSorte.",
+          "itemId": "ITEM_EXP_SHARE"
+        }
+      ]
+    },
+    {
       "id": "sobre",
       "name": "Sobre a hack",
       "iconItemId": "ITEM_TEACHY_TV",

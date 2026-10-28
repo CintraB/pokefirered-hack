@@ -468,4 +468,7 @@ gSpecials::
 	def_special HasAllKantoMons
 	@ Tela de novidades do Prof. Carvalho
 	def_special OpenNovidadesScreen
+	@ Repel automático
+	def_special GetRepelToReuse
+	def_special UseRepelFromField
 gSpecialsEnd::

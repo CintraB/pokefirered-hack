@@ -22,10 +22,10 @@ Route15_WestEntrance_2F_Text_ReceivedItemFromAide::
     .string "do assistente.$"
 
 Route15_WestEntrance_2F_Text_ExplainExpShare::
-    .string "O Compartilhador de Exp. é um item\n"
+    .string "O Ovo da Sorte é um item\n"
     .string "para um Pokémon segurar.\p"
-    .string "O Pokémon receberá uma parte dos PE\n"
-    .string "sem precisar batalhar.$"
+    .string "Quem o segura ganha mais PE\n"
+    .string "nas batalhas.$"
 
 Route15_WestEntrance_2F_Text_LargeShiningBird::
     .string "Vamos ver o que os binóculos têm a\n"

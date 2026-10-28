@@ -453,7 +453,10 @@ def test_e2_nenhum_achado_das_regras_de_texto():
 
 
 # Rótulos que os nossos hacks acrescentaram depois da base inglesa (Hack 8: "falta só o Mew" do Amuleto)
-E2_NEW_LABELS = {"PokedexRating_Text_OnlyMewMissing", "PokedexRating_EventScript_ShinyCharmOnlyMewMissing"}
+E2_NEW_LABELS = {"PokedexRating_Text_OnlyMewMissing", "PokedexRating_EventScript_ShinyCharmOnlyMewMissing",
+                 # POK-31 (Repelente automático)
+                 "EventScript_RepelWoreOffEnd", "EventScript_RepelWoreOffNoneLeft",
+                 "Text_RepelWoreOffUseAnother", "Text_PlayerUsedRepel"}
 
 
 @pytest.mark.parametrize("rel", E2_FILES)
