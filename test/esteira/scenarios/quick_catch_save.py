@@ -5,8 +5,9 @@ com a Pokédex e 5 Poké Balls do Oak). Checkpoints: `captura` (capturado com ap
 `centro` (time curado no Centro de Viridian) e `save` (de volta ao jogo depois de salvar,
 reiniciar e escolher CONTINUAR). O modo completo (Task 11) continua de `save`.
 
-Adaptativo (RNG livre): lança bolas até capturar; se o selvagem fugir/desmaiar ou o time
-todo desmaiar (o jogo leva ao Centro), procura outro, até MAX_CATCH_ENCOUNTERS encontros.
+Adaptativo (RNG livre): um golpe para ferir o selvagem e depois bolas até capturar; se o
+selvagem fugir/desmaiar ou o time todo desmaiar (o jogo leva ao Centro), procura outro, até
+MAX_CATCH_ENCOUNTERS encontros.
 Se só o inicial desmaiar (o capturado entra no lugar), a batalha termina e o roteiro volta ao
 Centro antes de tentar de novo. O 1º passo pelo Centro de Viridian fixa ali o ponto de
 retorno (setrespawn em data/maps/ViridianCity_PokemonCenter_1F/scripts.inc).
@@ -268,6 +269,13 @@ class CatchSaveScenario(Route1Scenario):
             try:
                 wild = self._wild_battle()
                 species = self.driver.battler_species_level(1)[0]
+                # Um golpe antes das bolas: com o selvagem ferido a chance por bola sobe de ~1/3
+                # para ~2/3. Sem isso, o sorteio (que anda a cada quadro) pode gastar as 15 bolas
+                # num roteiro azarado (Squirtle, 28/10). Se ele desmaiar, vai para o próximo.
+                if self.driver.fight_turn() == "end":
+                    log.append(f"{wild}: a batalha acabou no golpe antes das bolas")
+                    self._after_battle("batalha da captura")
+                    continue
                 thrown = 0
                 while self.game.in_battle():
                     if self.game.bag_quantity(ball) == 0:
