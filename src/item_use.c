@@ -9,6 +9,7 @@
 #include "event_scripts.h"
 #include "field_effect.h"
 #include "field_fadetransition.h"
+#include "field_move_rules.h"
 #include "event_object_movement.h"
 #include "field_player_avatar.h"
 #include "field_specials.h"
@@ -719,9 +720,27 @@ void FieldUseFunc_TownMap(u8 taskId)
     }
 }
 
+// POK-39: cumprida a regra do Fly (e fora de lugar fechado), o Mapa da Cidade abre a tela de voo
+static bool8 TownMapCanFly(void)
+{
+    if (!Overworld_MapTypeAllowsTeleportAndFly(gMapHeader.mapType) || !CanUseFieldMove(MOVE_FLY))
+        return FALSE;
+    gPartyMenu.slotId = FindPartyMonForFieldMove(MOVE_FLY); // quem aparece voando
+    return TRUE;
+}
+
+static void CB2_ReturnToFieldFromTownMapFly(void)
+{
+    SetFieldCallback2ForItemUse();
+    SetMainCallback2(CB2_ReturnToField);
+}
+
 static void UseTownMapFromBag(void)
 {
-    InitRegionMapWithExitCB(REGIONMAP_TYPE_NORMAL, CB2_BagMenuFromStartMenu);
+    if (TownMapCanFly())
+        OpenFlyMapWithCancelCB(CB2_BagMenuFromStartMenu);
+    else
+        InitRegionMapWithExitCB(REGIONMAP_TYPE_NORMAL, CB2_BagMenuFromStartMenu);
 }
 
 static void Task_UseTownMapFromField(u8 taskId)
@@ -729,8 +748,16 @@ static void Task_UseTownMapFromField(u8 taskId)
     if (!gPaletteFade.active)
     {
         CleanupOverworldWindowsAndTilemaps();
-        SetFieldCallback2ForItemUse();
-        InitRegionMapWithExitCB(REGIONMAP_TYPE_NORMAL, CB2_ReturnToField);
+        if (TownMapCanFly())
+        {
+            // o voo usa gFieldCallback; gFieldCallback2 só na volta sem voar
+            OpenFlyMapWithCancelCB(CB2_ReturnToFieldFromTownMapFly);
+        }
+        else
+        {
+            SetFieldCallback2ForItemUse();
+            InitRegionMapWithExitCB(REGIONMAP_TYPE_NORMAL, CB2_ReturnToField);
+        }
         DestroyTask(taskId);
     }
 }

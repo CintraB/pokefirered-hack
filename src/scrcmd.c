@@ -3,6 +3,7 @@
 #include "script.h"
 #include "mystery_event_script.h"
 #include "event_data.h"
+#include "field_move_rules.h"
 #include "random.h"
 #include "item.h"
 #include "overworld.h"
@@ -1773,19 +1774,11 @@ bool8 ScrCmd_checkpartymove(struct ScriptContext * ctx)
     u8 i;
     u16 moveId = ScriptReadHalfword(ctx);
 
-    gSpecialVar_Result = PARTY_SIZE;
-    for (i = 0; i < PARTY_SIZE; i++)
-    {
-        u16 species = GetMonData(&gPlayerParty[i], MON_DATA_SPECIES, NULL);
-        if (!species)
-            break;
-        if (!GetMonData(&gPlayerParty[i], MON_DATA_IS_EGG) && MonKnowsMove(&gPlayerParty[i], moveId) == TRUE)
-        {
-            gSpecialVar_Result = i;
-            gSpecialVar_0x8004 = species;
-            break;
-        }
-    }
+    // POK-38: quem sabe o golpe ou, com insígnia e HM, quem pode aprender
+    i = FindPartyMonForFieldMove(moveId);
+    gSpecialVar_Result = i;
+    if (i != PARTY_SIZE)
+        gSpecialVar_0x8004 = GetMonData(&gPlayerParty[i], MON_DATA_SPECIES, NULL);
     return FALSE;
 }
 

@@ -353,6 +353,16 @@
           "title": "Incubadora",
           "body": "O dono da creche da Ilha Quatro dá a\nIncubadora: na bolsa, os Ovos chocam 2×\nmais rápido. Corpo Chama ou Armadura\nMagma na equipe dobram de novo.",
           "itemId": "ITEM_INCUBATOR"
+        },
+        {
+          "title": "HMs sem ensinar",
+          "body": "Com a insígnia e a HM na bolsa, basta um\nPokémon da equipe que possa aprender o\ngolpe. Cavernas escuras já acendem com o\nFlash liberado.",
+          "itemId": "ITEM_HM01"
+        },
+        {
+          "title": "Viagem pelo Mapa",
+          "body": "Com o Voar liberado (insígnia, HM e um\nPokémon que possa aprender), o Mapa da\nCidade leva direto a uma cidade visitada.",
+          "itemId": "ITEM_TOWN_MAP"
         }
       ]
     },
