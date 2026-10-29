@@ -3870,6 +3870,15 @@ static void ClearOrDrawTopBar(bool8 clear)
     }
 }
 
+// POK-39: o Mapa da Cidade também abre a tela de voo; no cancelar volta para quem abriu (bolsa ou campo)
+static EWRAM_DATA MainCallback sFlyMapCancelCallback = NULL;
+
+void OpenFlyMapWithCancelCB(MainCallback cancelCallback)
+{
+    sFlyMapCancelCallback = cancelCallback;
+    SetMainCallback2(CB2_OpenFlyMap);
+}
+
 void CB2_OpenFlyMap(void)
 {
     InitFlyMap();
@@ -4015,8 +4024,11 @@ static void FreeFlyMap(u8 taskId)
     FreeAllWindowBuffers();
     if (sFlyMap->selectedDestination == TRUE)
         SetMainCallback2(CB2_ReturnToField);
+    else if (sFlyMapCancelCallback != NULL)
+        SetMainCallback2(sFlyMapCancelCallback);
     else
         SetMainCallback2(CB2_ReturnToPartyMenuFromFlyMap);
+    sFlyMapCancelCallback = NULL;
     FREE_IF_NOT_NULL(sFlyMap);
 }
 

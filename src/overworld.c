@@ -28,6 +28,8 @@
 #include "map_preview_screen.h"
 #include "metatile_behavior.h"
 #include "money.h"
+#include "field_move_rules.h"
+#include "constants/moves.h"
 #include "new_game.h"
 #include "new_menu_helpers.h"
 #include "overworld.h"
@@ -961,6 +963,11 @@ static void SetDefaultFlashLevel(void)
         gSaveBlock1Ptr->flashLevel = 0;
     else if (FlagGet(FLAG_SYS_FLASH_ACTIVE))
         gSaveBlock1Ptr->flashLevel = 0;
+    else if (CanUseFieldMove(MOVE_FLASH)) // POK-38: a caverna escura já acende sozinha
+    {
+        FlagSet(FLAG_SYS_FLASH_ACTIVE);
+        gSaveBlock1Ptr->flashLevel = 0;
+    }
     else
         gSaveBlock1Ptr->flashLevel = gMaxFlashLevel;
 }
