@@ -8,6 +8,7 @@ extern bool8 gDifferentSaveFile;
 void SetTrainerId(u32 trainerId, u8 *dst);
 void CopyTrainerId(u8 *dst, u8 *src);
 void NewGameInitData(void);
+void GivePortablePcIfMissing(void);
 void ResetMenuAndMonGlobals(void);
 void Sav2_ClearSetDefault(void);
 

@@ -102,6 +102,7 @@ class Mon:
     pp: list[int]
     pp_bonuses: int = 0           # 2 bits por golpe (PP Up), PokemonSubstruct0.ppBonuses
     held_item: int = 0            # PokemonSubstruct0.heldItem
+    friendship: int = 0           # PokemonSubstruct0.friendship (no ovo: ciclos que faltam)
 
     @property
     def is_shiny(self) -> bool:
@@ -132,6 +133,7 @@ def decode_mon(raw: bytes, charmap: Charmap) -> Mon:
     species = struct.unpack_from("<H", sub(0), 0)[0]          # PokemonSubstruct0.species
     pp_bonuses = sub(0)[8]                                     # PokemonSubstruct0.ppBonuses
     held_item = struct.unpack_from("<H", sub(0), 2)[0]        # PokemonSubstruct0.heldItem
+    friendship = sub(0)[9]                                     # PokemonSubstruct0.friendship
     moves = list(struct.unpack_from("<4H", sub(1), 0))        # PokemonSubstruct1.moves
     pp = list(struct.unpack_from("<4B", sub(1), 8))           # PokemonSubstruct1.pp
     return Mon(
@@ -146,6 +148,7 @@ def decode_mon(raw: bytes, charmap: Charmap) -> Mon:
         pp=pp,
         pp_bonuses=pp_bonuses,
         held_item=held_item,
+        friendship=friendship,
     )
 
 

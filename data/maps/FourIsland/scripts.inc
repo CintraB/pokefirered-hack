@@ -72,6 +72,8 @@ FourIsland_EventScript_DaycareMan::
 	special QuestLog_CutRecording
 	lock
 	faceplayer
+	checkitem ITEM_INCUBATOR
+	call_if_eq VAR_RESULT, FALSE, FourIsland_EventScript_DaycareGiveIncubator
 	special GetDaycareMonNicknames
 	specialvar VAR_RESULT, GetDaycareState
 	goto_if_eq VAR_RESULT, DAYCARE_EGG_WAITING, FourIsland_EventScript_DaycareEggWaiting
@@ -111,6 +113,12 @@ FourIsland_EventScript_DaycareReceivedEgg::
 	clearflag FLAG_PENDING_DAYCARE_EGG
 	release
 	end
+
+@ POK-37: a Incubadora vem do dono da creche
+FourIsland_EventScript_DaycareGiveIncubator::
+	msgbox FourIsland_Text_DaycareManIncubator
+	giveitem ITEM_INCUBATOR
+	return
 
 FourIsland_EventScript_CheckOnOneMon::
 	special GetDaycareMonNicknames

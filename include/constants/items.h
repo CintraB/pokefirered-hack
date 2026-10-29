@@ -62,8 +62,8 @@
 #define ITEM_POWER_BAND 58
 #define ITEM_POWER_ANKLET 59
 #define ITEM_PRISM_SCALE 60
-#define ITEM_03D 61
-#define ITEM_03E 62
+#define ITEM_PORTABLE_PC 61
+#define ITEM_INCUBATOR 62
 #define ITEM_HP_UP 63
 #define ITEM_PROTEIN 64
 #define ITEM_IRON 65

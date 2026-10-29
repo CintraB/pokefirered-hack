@@ -65,8 +65,8 @@ static const u32 *const sItemIconTable[ITEMS_COUNT + 1][2] =
     [ITEM_POWER_BAND]     = {gItemIcon_PowerItem, gItemIconPalette_PowerBand},
     [ITEM_POWER_ANKLET]   = {gItemIcon_PowerItem, gItemIconPalette_PowerAnklet},
     [ITEM_PRISM_SCALE]     = {gItemIcon_PrismScale, gItemIconPalette_PrismScale},
-    [ITEM_03D]            = {gItemIcon_QuestionMark, gItemIconPalette_QuestionMark},
-    [ITEM_03E]            = {gItemIcon_QuestionMark, gItemIconPalette_QuestionMark},
+    [ITEM_PORTABLE_PC]    = {gItemIcon_TeachyTV, gItemIconPalette_TeachyTV},
+    [ITEM_INCUBATOR]      = {gItemIcon_LuckyEgg, gItemIconPalette_Incubator},
     // Vitamins
     [ITEM_HP_UP]          = {gItemIcon_HPUp, gItemIconPalette_HPUp},
     [ITEM_PROTEIN]        = {gItemIcon_Vitamin, gItemIconPalette_Protein},

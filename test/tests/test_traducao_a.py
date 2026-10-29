@@ -118,7 +118,8 @@ ROTULOS_DOS_HACKS = {"PalletTown_ProfessorOaksLab_Text_OakAnotherRareEgg",      
                      "PalletTown_ProfessorOaksLab_Text_OakOfferNovidadesFirst",  # tela de novidades (Task 5)
                      "PalletTown_ProfessorOaksLab_Text_OakNovidadesAnytime",
                      "PalletTown_ProfessorOaksLab_Text_OakOfferNovidades",
-                     "MtMoon_B2F_Text_TakeTheOtherFossilToo"}                    # Hack 8: dois fósseis no Monte Lua
+                     "MtMoon_B2F_Text_TakeTheOtherFossilToo",                    # Hack 8: dois fósseis no Monte Lua
+                     "FourIsland_Text_DaycareManIncubator"}                      # POK-37: a creche dá a Incubadora
 # rótulos da base que um hack tirou de propósito (o texto deixou de existir)
 ROTULOS_REMOVIDOS_DOS_HACKS = {"MtMoon_B2F_Text_ThenThisFossilIsMine"}           # Hack 8: o Miguel não leva mais o outro fóssil
 

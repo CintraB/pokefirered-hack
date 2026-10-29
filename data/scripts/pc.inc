@@ -99,3 +99,16 @@ EventScript_ExitOaksPC::
 	msgbox Text_ClosedLinkToProfOaksPC
 	goto EventScript_PCMainMenu
 	end
+
+@ POK-36: PC Portátil — o mesmo menu do PC, sem máquina na frente para acender ou apagar
+EventScript_PortablePC::
+	goto_if_questlog EventScript_ReleaseEnd
+	lockall
+	goto_if_set FLAG_SYS_PC_STORAGE_DISABLED, EventScript_PCDisabled
+	setvar VAR_0x8004, HELPCONTEXT_PC
+	special Script_SetHelpContext
+	special StartPortablePc
+	playse SE_PC_ON
+	msgbox Text_BootedUpPortablePC
+	goto EventScript_PCMainMenu
+	end

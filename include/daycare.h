@@ -28,6 +28,7 @@ void ScriptHatchMon(void);
 void EggHatch(void);
 u8 GetEggStepsToSubtract(void);
 bool8 ShouldEggHatch(void);
+u32 GetEggCyclesPerTick(void);
 
 #if TESTBUILD
 u32 TestHooks_RollEggPersonalities(u32 count, u32 otId, u32 *shinies);

@@ -54,6 +54,7 @@ static EWRAM_DATA struct ListMenuItem * sListMenuItems = NULL;
 static EWRAM_DATA u16 sListMenuLastScrollPosition = 0;
 static EWRAM_DATA u8 sPCBoxToSendMon = 0;
 static EWRAM_DATA u8 sBrailleTextCursorSpriteID = 0;
+static EWRAM_DATA bool8 sPortablePcActive = FALSE; // POK-36: o PC Portátil não tem máquina para apagar
 
 COMMON_DATA struct ListMenuTemplate sFieldSpecialsListMenuTemplate = {0};
 COMMON_DATA u16 sFieldSpecialsListMenuScrollBuffer = 0;
@@ -288,12 +289,23 @@ static void PcTurnOnUpdateMetatileId(bool16 flickerOff)
     MapGridSetMetatileIdAt(gSaveBlock1Ptr->pos.x + deltaX + MAP_OFFSET, gSaveBlock1Ptr->pos.y + deltaY + MAP_OFFSET, metatileId | MAPGRID_COLLISION_MASK);
 }
 
+void StartPortablePc(void)
+{
+    sPortablePcActive = TRUE;
+}
+
 void AnimatePcTurnOff()
 {
     u16 metatileId = 0;
     s8 deltaX = 0;
     s8 deltaY = 0;
     u8 direction = GetPlayerFacingDirection();
+
+    if (sPortablePcActive)
+    {
+        sPortablePcActive = FALSE;
+        return;
+    }
 
     switch (direction)
     {

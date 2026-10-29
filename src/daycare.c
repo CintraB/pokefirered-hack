@@ -29,6 +29,7 @@
 #include "trade.h"
 #include "constants/daycare.h"
 #include "constants/hold_effects.h"
+#include "constants/abilities.h"
 #include "daycare.h"
 #include "item.h"
 #include "constants/region_map_sections.h"
@@ -1163,6 +1164,30 @@ u8 TestHooks_DaycareCompatibility(void)
 }
 #endif
 
+// POK-37: a Incubadora na bolsa dobra a velocidade dos ovos, e Corpo Chama ou
+// Armadura Magma na equipe dobram de novo (como na Gen 4+): até 4 ciclos por vez.
+u32 GetEggCyclesPerTick(void)
+{
+    u32 i, cycles = 1;
+
+    if (CheckBagHasItem(ITEM_INCUBATOR, 1))
+        cycles *= 2;
+    for (i = 0; i < gPlayerPartyCount; i++)
+    {
+        u16 ability;
+
+        if (GetMonData(&gPlayerParty[i], MON_DATA_IS_EGG))
+            continue;
+        ability = GetAbilityBySpecies(GetMonData(&gPlayerParty[i], MON_DATA_SPECIES), GetMonData(&gPlayerParty[i], MON_DATA_ABILITY_NUM));
+        if (ability == ABILITY_FLAME_BODY || ability == ABILITY_MAGMA_ARMOR)
+        {
+            cycles *= 2;
+            break;
+        }
+    }
+    return cycles;
+}
+
 static bool8 TryProduceOrHatchEgg(struct DayCare *daycare)
 {
     u32 i, validEggs = 0;
@@ -1184,7 +1209,7 @@ static bool8 TryProduceOrHatchEgg(struct DayCare *daycare)
     // Hatch Egg
     if (++daycare->stepCounter == 255)
     {
-        u32 steps;
+        u32 steps, cyclesPerTick = GetEggCyclesPerTick();
 
         for (i = 0; i < gPlayerPartyCount; i++)
         {
@@ -1196,7 +1221,7 @@ static bool8 TryProduceOrHatchEgg(struct DayCare *daycare)
             steps = GetMonData(&gPlayerParty[i], MON_DATA_FRIENDSHIP);
             if (steps != 0)
             {
-                steps -= 1;
+                steps = (steps > cyclesPerTick) ? steps - cyclesPerTick : 0;
                 SetMonData(&gPlayerParty[i], MON_DATA_FRIENDSHIP, &steps);
             }
             else // hatch the egg

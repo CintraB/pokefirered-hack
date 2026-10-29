@@ -456,7 +456,9 @@ def test_e2_nenhum_achado_das_regras_de_texto():
 E2_NEW_LABELS = {"PokedexRating_Text_OnlyMewMissing", "PokedexRating_EventScript_ShinyCharmOnlyMewMissing",
                  # POK-31 (Repelente automático)
                  "EventScript_RepelWoreOffEnd", "EventScript_RepelWoreOffNoneLeft",
-                 "Text_RepelWoreOffUseAnother", "Text_PlayerUsedRepel"}
+                 "Text_RepelWoreOffUseAnother", "Text_PlayerUsedRepel",
+                 # POK-36 (PC Portátil)
+                 "Text_BootedUpPortablePC", "EventScript_PortablePC"}
 
 
 @pytest.mark.parametrize("rel", E2_FILES)
