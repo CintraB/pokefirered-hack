@@ -1,6 +1,9 @@
 Text_BootedUpPC::
 	.string "{PLAYER} ligou o PC.$"
 
+Text_BootedUpPortablePC::
+	.string "{PLAYER} ligou o PC Portátil.$"
+
 Text_AccessWhichPC::
 	.string "Qual PC deve ser acessado?$"
 

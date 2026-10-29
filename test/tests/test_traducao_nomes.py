@@ -27,7 +27,9 @@ CLASS_OVERRIDES = {"TEAM ROCKET": "Recruta"}
 # Chaves acrescentadas por nós (não existem na base inglesa): arquivo -> {chave: nome}
 # D3 / decisão D4 do Cintra: os 2 ADMIN da Equipe Rocket viram "Executivo" (pic masculina) e "Executiva" (feminina)
 NEW_KEYS = {"src/data/text/trainer_class_names.h": {"TRAINER_CLASS_ROCKET_ADMIN": "Executivo",
-                                                  "TRAINER_CLASS_ROCKET_ADMIN_F": "Executiva"}}
+                                                  "TRAINER_CLASS_ROCKET_ADMIN_F": "Executiva"},
+            # itens novos em slots que eram "????????" na base (POK-36, POK-37)
+            "src/data/items.json": {"ITEM_PORTABLE_PC": "PC Portátil", "ITEM_INCUBATOR": "Incubadora"}}
 BERRY_NAME_LENGTH = 6          # include/global.berry.h
 POPUP_PX = 112                 # aviso de nome do mapa: maxWidth (src/map_name_popup.c:195)
 

@@ -6,6 +6,7 @@
 #include "bike.h"
 #include "coins.h"
 #include "event_data.h"
+#include "event_scripts.h"
 #include "field_effect.h"
 #include "field_fadetransition.h"
 #include "event_object_movement.h"
@@ -529,6 +530,62 @@ void FieldUseFunc_TeachyTv(u8 taskId)
         FadeScreen(FADE_TO_BLACK, 0);
         gTasks[taskId].func = Task_InitTeachyTvFromField;
     }
+}
+
+// POK-36: PC Portátil. Não funciona nos ginásios nem na Liga.
+static const u16 sPortablePcBlockedMaps[] =
+{
+    MAP_VIRIDIAN_CITY_GYM,
+    MAP_PEWTER_CITY_GYM,
+    MAP_CERULEAN_CITY_GYM,
+    MAP_VERMILION_CITY_GYM,
+    MAP_CELADON_CITY_GYM,
+    MAP_FUCHSIA_CITY_GYM,
+    MAP_SAFFRON_CITY_GYM,
+    MAP_CINNABAR_ISLAND_GYM,
+    MAP_POKEMON_LEAGUE_LORELEIS_ROOM,
+    MAP_POKEMON_LEAGUE_BRUNOS_ROOM,
+    MAP_POKEMON_LEAGUE_AGATHAS_ROOM,
+    MAP_POKEMON_LEAGUE_LANCES_ROOM,
+    MAP_POKEMON_LEAGUE_CHAMPIONS_ROOM,
+    MAP_POKEMON_LEAGUE_HALL_OF_FAME,
+};
+
+static bool8 IsPortablePcBlockedHere(void)
+{
+    u16 map = gSaveBlock1Ptr->location.mapNum | (gSaveBlock1Ptr->location.mapGroup << 8);
+    u32 i;
+
+    for (i = 0; i < ARRAY_COUNT(sPortablePcBlockedMaps); i++)
+    {
+        if (sPortablePcBlockedMaps[i] == map)
+            return TRUE;
+    }
+    return FALSE;
+}
+
+static void ItemUseOnFieldCB_PortablePC(u8 taskId)
+{
+    DestroyTask(taskId);
+    ScriptContext_SetupScript(EventScript_PortablePC);
+    LockPlayerFieldControls();
+}
+
+void FieldUseFunc_PortablePC(u8 taskId)
+{
+    if (IsPortablePcBlockedHere())
+    {
+        DisplayItemMessageInCurrentContext(taskId, gTasks[taskId].data[3], FONT_NORMAL, gText_PortablePcNotHere);
+        return;
+    }
+    sItemUseOnFieldCB = ItemUseOnFieldCB_PortablePC;
+    SetUpItemUseOnFieldCallback(taskId);
+}
+
+// POK-37: Incubadora. O efeito está em TryProduceOrHatchEgg (daycare.c); aqui só explica.
+void FieldUseFunc_Incubator(u8 taskId)
+{
+    DisplayItemMessageInCurrentContext(taskId, gTasks[taskId].data[3], FONT_NORMAL, gText_IncubatorInfo);
 }
 
 static void InitTeachyTvFromBag(void)

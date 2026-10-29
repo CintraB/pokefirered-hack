@@ -471,4 +471,6 @@ gSpecials::
 	@ Repel automático
 	def_special GetRepelToReuse
 	def_special UseRepelFromField
+	@ PC Portátil (POK-36)
+	def_special StartPortablePc
 gSpecialsEnd::

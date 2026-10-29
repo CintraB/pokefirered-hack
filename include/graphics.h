@@ -3091,6 +3091,7 @@ extern const u32 gItemIconPalette_DestinyKnot[];
 // Hack 7 - frente D
 extern const u32 gItemIcon_PrismScale[];
 extern const u32 gItemIconPalette_PrismScale[];
+extern const u32 gItemIconPalette_Incubator[];
 extern const u32 gItemIcon_PowerItem[];
 extern const u32 gItemIconPalette_PowerWeight[];
 extern const u32 gItemIconPalette_PowerBracer[];

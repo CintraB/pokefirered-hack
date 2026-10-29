@@ -1698,6 +1698,7 @@ static void FieldCB_ShowMapNameOnContinue(void)
 void CB2_ContinueSavedGame(void)
 {
     DayNight_ForgetSeenPeriod(); /* Hack 7 — frente A */
+    GivePortablePcIfMissing(); // POK-36
     FieldClearVBlankHBlankCallbacks();
     StopMapMusic();
     ResetSafariZoneFlag_();
@@ -2329,6 +2330,7 @@ static bool32 LoadMap_QLPlayback(u8 *state)
 
 void CB2_EnterFieldFromQuestLog(void)
 {
+    GivePortablePcIfMissing(); // POK-36: CONTINUAR com cenas no Quest Log entra por aqui
     FieldClearVBlankHBlankCallbacks();
     StopMapMusic();
     gGlobalFieldTintMode = QL_TINT_BACKUP_GRAYSCALE;

@@ -54,3 +54,9 @@ FourIsland_Text_MadeSlushieUsingIcefallCaveIce::
 FourIsland_Text_LoreleisHouse::
     .string "Casa da Lorelei$"
 
+FourIsland_Text_DaycareManIncubator::
+    .string "Você cuida bem dos seus Pokémon!\n"
+    .string "Leve esta Incubadora.\p"
+    .string "Com ela na bolsa, os Ovos da equipe\n"
+    .string "chocam duas vezes mais rápido.$"
+

@@ -18,6 +18,8 @@
 #include "pokemon_storage_system.h"
 #include "roamer.h"
 #include "item.h"
+#include "new_game.h"
+#include "constants/items.h"
 #include "player_pc.h"
 #include "berry.h"
 #include "easy_chat.h"
@@ -140,6 +142,7 @@ void NewGameInitData(void)
     gSaveBlock1Ptr->registeredItem = 0;
     ClearBag();
     NewGameInitPCItems();
+    GivePortablePcIfMissing();
     ClearEnigmaBerries();
     InitEasyChatPhrases();
     ResetTrainerFanClub();
@@ -159,4 +162,11 @@ static void ResetMiniGamesResults(void)
     SetBerryPowder(&gSaveBlock2Ptr->berryCrush.berryPowderAmount, 0);
     ResetPokemonJumpRecords();
     CpuFill16(0, &gSaveBlock2Ptr->berryPick, sizeof(struct BerryPickingResults));
+}
+
+// POK-36: o PC Portátil vem na bolsa desde o início; saves antigos o ganham ao continuar.
+void GivePortablePcIfMissing(void)
+{
+    if (!CheckBagHasItem(ITEM_PORTABLE_PC, 1))
+        AddBagItem(ITEM_PORTABLE_PC, 1);
 }

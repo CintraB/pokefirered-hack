@@ -92,11 +92,17 @@ def _item_descriptions(source: str) -> dict[str, str]:
     return {f"{i}:{it['itemId']}": it["description_english"] for i, it in enumerate(json.loads(source)["items"])}
 
 
+# slots vazios ("????????") que os hacks ocuparam depois da base da tradução: "slot:id da base" -> "slot:id novo"
+ITENS_NOVOS_DOS_HACKS = {61: ("ITEM_PORTABLE_PC", "POCKET_KEY_ITEMS"),   # POK-36: PC Portátil
+                         62: ("ITEM_INCUBATOR", "POCKET_KEY_ITEMS")}     # POK-37: Incubadora
+_SLOT_DOS_HACKS = {f"{i}:ITEM_NONE": f"{i}:{item}" for i, (item, _) in ITENS_NOVOS_DOS_HACKS.items()}
+
+
 def test_toda_descricao_de_item_foi_traduzida():
     base = _base_text("src/data/items.json")
     if base is None:
         pytest.skip("sem git ou sem o commit base da tradução")
-    before = _item_descriptions(base)
+    before = {_SLOT_DOS_HACKS.get(k, k): v for k, v in _item_descriptions(base).items()}
     now = _item_descriptions((REPO_ROOT / "src/data/items.json").read_text(encoding="utf-8"))
     assert set(now) == set(before), "os itens mudaram de lugar ou de id"
     same = [k for k in before if now[k] == before[k] and now[k] not in ITEM_DESC_UNCHANGED]
@@ -114,6 +120,8 @@ def test_nomes_de_item_nao_mudaram_nesta_task():
         pytest.skip("sem git ou sem o commit base da tradução")
     names = lambda s: [(it["itemId"], it["price"], it["pocket"]) for it in json.loads(s)["items"]]
     esperado = [(i, PRECOS_DOS_HACKS.get(i, p), b) for i, p, b in names(base)]
+    for slot, (item, bolso) in ITENS_NOVOS_DOS_HACKS.items():
+        esperado[slot] = (item, 0, bolso)
     assert names((REPO_ROOT / "src/data/items.json").read_text(encoding="utf-8")) == esperado
 
 

@@ -343,6 +343,16 @@
           "title": "Barra de PS moderna",
           "body": "A barra de PS anda rápido mesmo com muito\nPS, e a cor muda aos poucos do verde para\no amarelo e o vermelho.",
           "itemId": "ITEM_HYPER_POTION"
+        },
+        {
+          "title": "PC Portátil",
+          "body": "Já vem nos Itens-chave: abre o PC de\nqualquer lugar, menos nos ginásios e na\nLiga. Registre no SELECT para abrir com\num botão.",
+          "itemId": "ITEM_PORTABLE_PC"
+        },
+        {
+          "title": "Incubadora",
+          "body": "O dono da creche da Ilha Quatro dá a\nIncubadora: na bolsa, os Ovos chocam 2×\nmais rápido. Corpo Chama ou Armadura\nMagma na equipe dobram de novo.",
+          "itemId": "ITEM_INCUBATOR"
         }
       ]
     },

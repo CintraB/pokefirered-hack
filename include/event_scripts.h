@@ -1133,6 +1133,7 @@ extern const u8 SafariZone_EventScript_OutOfBallsMidBattle[];
 extern const u8 SafariZone_EventScript_OutOfBalls[];
 
 extern const u8 EventScript_ItemfinderDigUpUnderfootItem[];
+extern const u8 EventScript_PortablePC[];
 
 // battle_setup
 extern const u8 EventScript_DoNoIntroTrainerBattle[];
