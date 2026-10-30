@@ -1,6 +1,7 @@
 #include "global.h"
 #include "gflib.h"
 #include "data.h"
+#include "help_system.h"
 #include "item.h"
 #include "item_menu.h"
 #include "link.h"
@@ -83,6 +84,7 @@ static void PlayerCmdEnd(void);
 
 static void PlayerBufferRunCommand(void);
 static void HandleInputChooseTarget(void);
+static void HandleInputChooseAction(void);
 static void MoveSelectionDisplayPpNumber(void);
 static void MoveSelectionDisplayPpString(void);
 static void MoveSelectionDisplayMoveType(void);
@@ -185,6 +187,7 @@ void SetControllerToPlayer(void)
 
 static void PlayerBufferExecCompleted(void)
 {
+    gHelpSystemBattleLRBlocked = FALSE;
     gBattlerControllerFuncs[gActiveBattler] = PlayerBufferRunCommand;
     if (gBattleTypeFlags & BATTLE_TYPE_LINK)
     {
@@ -216,13 +219,162 @@ static void CompleteOnBattlerSpritePosX_0(void)
         PlayerBufferExecCompleted();
 }
 
+// POK-40: L shows the player's stat stages, R the opponent's (R again swaps
+// opponents in doubles); any other key closes the window.
+static const u8 sText_StatStageNoChanges[] = _(" sem alterações");
+static const u8 sText_StatStageWild[] = _(" selvagem");
+static const u8 sText_StatStageFoe[] = _(" inimigo");
+static const u8 sText_StatStageColon[] = _(":");
+static const u8 sText_StatStagePlus[] = _("+");
+static const u8 sText_StatStageMinus[] = _("-");
+static const u8 sText_StatStageNewLine[] = _("\n");
+static const u8 sText_StatStageAtk[] = _("Atq");
+static const u8 sText_StatStageDef[] = _("Def");
+static const u8 sText_StatStageSpeed[] = _("Vel");
+static const u8 sText_StatStageSpAtk[] = _("Atq.E");
+static const u8 sText_StatStageSpDef[] = _("Def.E");
+static const u8 sText_StatStageAcc[] = _("Prec");
+static const u8 sText_StatStageEvasion[] = _("Evas");
+static const u8 *const sStatStageNames[NUM_BATTLE_STATS] =
+{
+    [STAT_ATK]     = sText_StatStageAtk,
+    [STAT_DEF]     = sText_StatStageDef,
+    [STAT_SPEED]   = sText_StatStageSpeed,
+    [STAT_SPATK]   = sText_StatStageSpAtk,
+    [STAT_SPDEF]   = sText_StatStageSpDef,
+    [STAT_ACC]     = sText_StatStageAcc,
+    [STAT_EVASION] = sText_StatStageEvasion,
+};
+
+#define STAT_STAGES_LINE_WIDTH 216
+
+static EWRAM_DATA u8 sStatStagesBattler = 0;
+EWRAM_DATA bool8 gHelpSystemBattleLRBlocked = FALSE;
+
+static bool8 IsStatStagesBattlerShown(u8 battler)
+{
+    return battler < gBattlersCount && !(gAbsentBattlerFlags & gBitTable[battler]) && gBattleMons[battler].hp != 0;
+}
+
+static u8 GetStatStagesOpponent(u8 current)
+{
+    u8 left = GetBattlerAtPosition(B_POSITION_OPPONENT_LEFT);
+    u8 right = GetBattlerAtPosition(B_POSITION_OPPONENT_RIGHT);
+
+    if (!(gBattleTypeFlags & BATTLE_TYPE_DOUBLE))
+        return left;
+    if (current == left && IsStatStagesBattlerShown(right))
+        return right;
+    if (IsStatStagesBattlerShown(left))
+        return left;
+    return right;
+}
+
+// Builds "NAME inimigo: Atq+2 Vel-1 ..." in two lines at most. Returns FALSE
+// if the stages don't fit, so the caller can retry without the suffix.
+static bool8 BuildStatStagesString(u8 *str, u8 battler, bool8 withSuffix)
+{
+    u8 entry[16];
+    u8 *end;
+    struct Pokemon *mon;
+    s32 lineWidth, entryWidth, stat, stage;
+    bool8 anyChanged = FALSE, secondLine = FALSE;
+
+    if (GetBattlerSide(battler) == B_SIDE_PLAYER)
+        mon = &gPlayerParty[gBattlerPartyIndexes[battler]];
+    else
+        mon = &gEnemyParty[gBattlerPartyIndexes[battler]];
+    GetMonData(mon, MON_DATA_NICKNAME, str);
+    end = StringGet_Nickname(str);
+    if (withSuffix && GetBattlerSide(battler) == B_SIDE_OPPONENT)
+        end = StringCopy(end, (gBattleTypeFlags & BATTLE_TYPE_TRAINER) ? sText_StatStageFoe : sText_StatStageWild);
+    StringCopy(end, sText_StatStageColon);
+    lineWidth = GetStringWidth(FONT_NORMAL, str, 0);
+
+    for (stat = STAT_ATK; stat < NUM_BATTLE_STATS; stat++)
+    {
+        stage = gBattleMons[battler].statStages[stat] - DEFAULT_STAT_STAGE;
+        if (stage == 0)
+            continue;
+        anyChanged = TRUE;
+        entry[0] = CHAR_SPACE;
+        end = StringCopy(&entry[1], sStatStageNames[stat]);
+        end = StringCopy(end, stage > 0 ? sText_StatStagePlus : sText_StatStageMinus);
+        ConvertIntToDecimalStringN(end, stage > 0 ? stage : -stage, STR_CONV_MODE_LEFT_ALIGN, 1);
+        entryWidth = GetStringWidth(FONT_NORMAL, entry, 0);
+        if (lineWidth + entryWidth > STAT_STAGES_LINE_WIDTH)
+        {
+            if (secondLine)
+                return FALSE;
+            StringAppend(str, sText_StatStageNewLine);
+            secondLine = TRUE;
+            StringAppend(str, &entry[1]);
+            lineWidth = GetStringWidth(FONT_NORMAL, &entry[1], 0);
+        }
+        else
+        {
+            StringAppend(str, entry);
+            lineWidth += entryWidth;
+        }
+    }
+    if (!anyChanged)
+        StringAppend(str, sText_StatStageNoChanges);
+    return TRUE;
+}
+
+static void PrintStatStages(u8 battler)
+{
+    u8 *str = gDisplayedStringBattle;
+
+    if (!BuildStatStagesString(str, battler, TRUE))
+        BuildStatStagesString(str, battler, FALSE);
+    sStatStagesBattler = battler;
+    gBattle_BG0_Y = 0;
+    BattlePutTextOnWindow(str, B_WIN_MSG);
+}
+
+static void HandleInputShowStatStages(void)
+{
+    gHelpSystemBattleLRBlocked = TRUE;
+    DoBounceEffect(gActiveBattler, BOUNCE_HEALTHBOX, 7, 1);
+    DoBounceEffect(gActiveBattler, BOUNCE_MON, 7, 1);
+    if (JOY_NEW(R_BUTTON))
+    {
+        PlaySE(SE_SELECT);
+        if (GetBattlerSide(sStatStagesBattler) == B_SIDE_OPPONENT)
+            PrintStatStages(GetStatStagesOpponent(sStatStagesBattler));
+        else
+            PrintStatStages(GetStatStagesOpponent(0xFF));
+    }
+    else if (JOY_NEW(L_BUTTON) && gSaveBlock2Ptr->optionsButtonMode != OPTIONS_BUTTON_MODE_L_EQUALS_A)
+    {
+        PlaySE(SE_SELECT);
+        PrintStatStages(gActiveBattler);
+    }
+    else if (JOY_NEW(A_BUTTON | B_BUTTON | START_BUTTON | SELECT_BUTTON | DPAD_ANY))
+    {
+        PlaySE(SE_SELECT);
+        BattlePutTextOnWindow(gText_EmptyString3, B_WIN_MSG);
+        gBattle_BG0_Y = 160;
+        gBattlerControllerFuncs[gActiveBattler] = HandleInputChooseAction;
+    }
+}
+
 static void HandleInputChooseAction(void)
 {
     u16 itemId = gBattleBufferA[gActiveBattler][2] | (gBattleBufferA[gActiveBattler][3] << 8);
 
+    gHelpSystemBattleLRBlocked = TRUE;
     DoBounceEffect(gActiveBattler, BOUNCE_HEALTHBOX, 7, 1);
     DoBounceEffect(gActiveBattler, BOUNCE_MON, 7, 1);
-    if (JOY_NEW(A_BUTTON))
+    if (JOY_NEW(R_BUTTON)
+     || (JOY_NEW(L_BUTTON) && gSaveBlock2Ptr->optionsButtonMode != OPTIONS_BUTTON_MODE_L_EQUALS_A))
+    {
+        PlaySE(SE_SELECT);
+        PrintStatStages(JOY_NEW(L_BUTTON) ? gActiveBattler : GetStatStagesOpponent(0xFF));
+        gBattlerControllerFuncs[gActiveBattler] = HandleInputShowStatStages;
+    }
+    else if (JOY_NEW(A_BUTTON))
     {
         PlaySE(SE_SELECT);
 

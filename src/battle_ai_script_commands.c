@@ -1378,12 +1378,16 @@ enum
     WEATHER_TYPE_RAIN,
     WEATHER_TYPE_SANDSTORM,
     WEATHER_TYPE_HAIL,
+    WEATHER_TYPE_NONE,
 };
 
 extern u16 gBattleWeather;
 
 static void Cmd_get_weather(void)
 {
+    // POK-41: without weather the result used to keep the previous command's
+    // value (often 0 = sun), so the AI never set up Sunny Day from a clear sky
+    AI_THINKING_STRUCT->funcResult = WEATHER_TYPE_NONE;
     if (gBattleWeather & B_WEATHER_RAIN)
         AI_THINKING_STRUCT->funcResult = WEATHER_TYPE_RAIN;
     if (gBattleWeather & B_WEATHER_SANDSTORM)

@@ -363,6 +363,16 @@
           "title": "Viagem pelo Mapa",
           "body": "Com o Voar liberado (insígnia, HM e um\nPokémon que possa aprender), o Mapa da\nCidade leva direto a uma cidade visitada.",
           "itemId": "ITEM_TOWN_MAP"
+        },
+        {
+          "title": "Status na batalha",
+          "body": "Na escolha da ação, L mostra os bônus e\nquedas de status do seu Pokémon e R os do\nadversário (Atq+2, Vel-1...). Qualquer\noutro botão fecha.",
+          "itemId": "ITEM_X_ATTACK"
+        },
+        {
+          "title": "Chefes com clima",
+          "body": "A Misty abre com Dança Chuva e o\nBlaine com Dia de Sol, com times\nmontados para o clima. A IA agora usa o\nclima quando o time ganha com ele.",
+          "itemId": "ITEM_TM11"
         }
       ]
     },

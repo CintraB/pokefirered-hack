@@ -2169,6 +2169,16 @@ AI_CV_RainDance2::
 	if_equal AI_WEATHER_SANDSTORM, AI_CV_RainDance3
 	get_ability AI_USER
 	if_equal ABILITY_RAIN_DISH, AI_CV_RainDance3
+	@ POK-41: from a clear sky, set up rain when the user gains from it
+	get_weather
+	if_not_equal AI_WEATHER_NONE, AI_CV_RainDance_End
+	get_ability AI_USER
+	if_equal ABILITY_SWIFT_SWIM, AI_CV_RainDance3
+	if_has_move AI_USER, MOVE_THUNDER, AI_CV_RainDance3
+	get_user_type1
+	if_equal TYPE_WATER, AI_CV_RainDance3
+	get_user_type2
+	if_equal TYPE_WATER, AI_CV_RainDance3
 	goto AI_CV_RainDance_End
 
 AI_CV_RainDance3::
@@ -2187,6 +2197,15 @@ AI_CV_SunnyDay::
 	if_equal AI_WEATHER_HAIL, AI_CV_SunnyDay2
 	if_equal AI_WEATHER_RAIN, AI_CV_SunnyDay2
 	if_equal AI_WEATHER_SANDSTORM, AI_CV_SunnyDay2
+	@ POK-41: from a clear sky, set up sun when the user gains from it
+	if_not_equal AI_WEATHER_NONE, AI_CV_SunnyDay_End
+	get_ability AI_USER
+	if_equal ABILITY_CHLOROPHYLL, AI_CV_SunnyDay2
+	if_has_move AI_USER, MOVE_SOLAR_BEAM, AI_CV_SunnyDay2
+	get_user_type1
+	if_equal TYPE_FIRE, AI_CV_SunnyDay2
+	get_user_type2
+	if_equal TYPE_FIRE, AI_CV_SunnyDay2
 	goto AI_CV_SunnyDay_End
 
 AI_CV_SunnyDay2::
