@@ -66,7 +66,11 @@ def test_interface_publica():
 
 def test_granizo_e_areia_sao_particulas():
     c = MODULO.read_text(encoding="utf-8")
-    assert "#define BWV_HAIL_COUNT 8" in c and "#define BWV_SAND_COUNT 10" in c
+    assert "#define BWV_HAIL_COUNT 8" in c and "#define BWV_SAND_COUNT 12" in c
+    # grãos soltos de 8x8 (tiles 1, 2 e 5 de flying_dirt.png), não os blocos de 32x16
+    assert "gOamData_AffineOff_ObjNormal_8x8" in c and "ObjNormal_32x16" not in c
+    for tile in (1, 2, 5):
+        assert f"ANIMCMD_FRAME({tile}, 1)" in c, tile
     assert "ANIM_TAG_HAIL" in c and "ANIM_TAG_FLYING_DIRT" in c
     # a areia não usa a camada de fundo da animação do golpe
     assert "AnimTask_LoadSandstormBackground" not in c

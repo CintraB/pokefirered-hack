@@ -38,7 +38,7 @@ SB1_DEX_SEEN_COPIES = (0x5F8, 0x3A18)
 CLIMAS = {   # nome: (gBattleWeather, BWV_*, partículas, callback das partículas)
     "chuva": (0x5, BWV_RAIN, 10, "SpriteCB_RainDrop"),
     "granizo": (0x180, BWV_HAIL, 8, "SpriteCB_Hail"),
-    "areia": (0x18, BWV_SAND, 10, "SpriteCB_Sand"),
+    "areia": (0x18, BWV_SAND, 12, "SpriteCB_Sand"),
     "sol": (0x60, BWV_SUN, 0, None),
 }
 CALLBACKS = [cb for *_, cb in CLIMAS.values() if cb]
@@ -155,7 +155,7 @@ class BattleWeatherVisualScenario(WeatherScenario):
         """Revisão, achado 3: mexer o cursor no menu de golpes (fade 0→0) não recria o clima."""
         self._set_battle_weather(CLIMAS["areia"][0])
         base = self.game.syms.addr("gBattleWeatherVisual")
-        ids = self.emu.read(base + VIS_SPRITE_IDS, 10)
+        ids = self.emu.read(base + VIS_SPRITE_IDS, 12)
         d = self.driver
         d._choose_action(ACTION_FIGHT)
         self.ctl.wait_until(lambda: d.controller_func().endswith(MOVE_FUNC_SUFFIX), 300, "menu de golpes")
@@ -163,10 +163,10 @@ class BattleWeatherVisualScenario(WeatherScenario):
             self.emu.press(key, hold=2, release=2)
             for _ in range(8):
                 self.emu.frames(1)
-                assert self._vis() == (BWV_SAND, 10), f"cursor: {self._vis()}"
-        assert self.emu.read(base + VIS_SPRITE_IDS, 10) == ids, "as partículas foram recriadas"
+                assert self._vis() == (BWV_SAND, 12), f"cursor: {self._vis()}"
+        assert self.emu.read(base + VIS_SPRITE_IDS, 12) == ids, "as partículas foram recriadas"
         self.ctl.press_until(KEY_B, lambda: d.controller_func() == ACTION_FUNC, "volta do menu de golpes")
-        return "8 movimentos do cursor: as mesmas 10 partículas de areia o tempo todo"
+        return "8 movimentos do cursor: as mesmas 12 partículas de areia o tempo todo"
 
     def _switch_in_tint(self) -> str:
         """Revisão, achado 5: Pokémon que entra (LoadPalette nos dois buffers) recebe o tom do sol

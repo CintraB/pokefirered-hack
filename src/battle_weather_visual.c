@@ -17,7 +17,7 @@
 
 #define BWV_RAIN_COUNT 10
 #define BWV_HAIL_COUNT 8
-#define BWV_SAND_COUNT 10
+#define BWV_SAND_COUNT 12
 #define BWV_SUBPRIORITY 2   // OAM priority 1 like the healthboxes (subpriority 0-1): drawn behind them
 
 // Scene tint, on the battle background and the battlers only (never the healthboxes or the text).
@@ -72,30 +72,38 @@ static const struct SpriteTemplate sHailSpriteTemplate =
     .callback = SpriteCB_Hail,
 };
 
-// flying_dirt.png holds two 32x16 frames: loose grains and a sand crescent
-static const union AnimCmd sAnim_SandGrains[] =
+// flying_dirt.png drawn whole (32x16) reads as blocks over the scene: only its sparse tiles, a few
+// loose grains each, as 8x8 sprites
+static const union AnimCmd sAnim_SandGrains1[] =
 {
-    ANIMCMD_FRAME(0, 1),
+    ANIMCMD_FRAME(1, 1),
     ANIMCMD_END,
 };
 
-static const union AnimCmd sAnim_SandCrescent[] =
+static const union AnimCmd sAnim_SandGrains2[] =
 {
-    ANIMCMD_FRAME(8, 1),
+    ANIMCMD_FRAME(2, 1),
+    ANIMCMD_END,
+};
+
+static const union AnimCmd sAnim_SandGrains5[] =
+{
+    ANIMCMD_FRAME(5, 1),
     ANIMCMD_END,
 };
 
 static const union AnimCmd *const sAnims_Sand[] =
 {
-    sAnim_SandGrains,
-    sAnim_SandCrescent,
+    sAnim_SandGrains1,
+    sAnim_SandGrains2,
+    sAnim_SandGrains5,
 };
 
 static const struct SpriteTemplate sSandSpriteTemplate =
 {
     .tileTag = ANIM_TAG_FLYING_DIRT,
     .paletteTag = ANIM_TAG_FLYING_DIRT,
-    .oam = &gOamData_AffineOff_ObjNormal_32x16,
+    .oam = &gOamData_AffineOff_ObjNormal_8x8,
     .anims = sAnims_Sand,
     .images = NULL,
     .affineAnims = gDummySpriteAffineAnimTable,
@@ -264,7 +272,7 @@ static void CreateParticles(const struct SpriteTemplate *template, u8 count, s16
         gSprites[spriteId].sSpeedY = speedY;
         gSprites[spriteId].sWaveTimer = Random() % 64;
         if (template->anims == sAnims_Sand)
-            StartSpriteAnim(&gSprites[spriteId], i % 2);
+            StartSpriteAnim(&gSprites[spriteId], i % ARRAY_COUNT(sAnims_Sand));
         gBattleWeatherVisual.spriteIds[gBattleWeatherVisual.count++] = spriteId;
     }
 }
