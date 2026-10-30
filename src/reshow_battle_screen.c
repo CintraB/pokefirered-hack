@@ -8,6 +8,7 @@
 #include "battle_interface.h"
 #include "battle_anim.h"
 #include "battle_controllers.h"
+#include "battle_weather_visual.h"
 
 static void CB2_ReshowBattleScreenAfterMenu(void);
 static void ReshowBattleScreen_TurnOnDisplay(void);
@@ -21,6 +22,7 @@ void ReshowBattleScreenDummy(void)
 
 void ReshowBattleScreenAfterMenu(void)
 {
+    BattleWeatherVisual_Reset(); // POK-15: the menu dropped the weather sprites and palettes
     gPaletteFade.bufferTransferDisabled = 1;
     SetHBlankCallback(NULL);
     SetGpuReg(REG_OFFSET_MOSAIC, 0);

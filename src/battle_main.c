@@ -9,6 +9,7 @@
 #include "battle_message.h"
 #include "battle_scripts.h"
 #include "battle_setup.h"
+#include "battle_weather_visual.h"
 #include "berry.h"
 #include "data.h"
 #include "decompress.h"
@@ -651,6 +652,7 @@ static void CB2_InitBattleInternal(void)
 {
     s32 i;
 
+    BattleWeatherVisual_Reset(); // POK-15
     SetHBlankCallback(NULL);
     SetVBlankCallback(NULL);
 
@@ -1453,6 +1455,7 @@ void BattleMainCB2(void)
     RunTextPrinters();
     UpdatePaletteFade();
     RunTasks();
+    BattleWeatherVisual_Update(); // POK-15
 
     if (JOY_HELD(B_BUTTON) && gBattleTypeFlags & BATTLE_TYPE_POKEDUDE)
     {

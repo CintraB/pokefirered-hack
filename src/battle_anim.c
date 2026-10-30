@@ -5,6 +5,7 @@
 #include "battle_controllers.h"
 #include "battle_interface.h"
 #include "battle_bg.h"
+#include "battle_weather_visual.h"
 #include "decompress.h"
 #include "graphics.h"
 #include "m4a.h"
@@ -201,6 +202,7 @@ void LaunchBattleAnimation(const u8 *const animsTable[], u16 tableId, bool8 isMo
 {
     s32 i;
 
+    BattleWeatherVisual_Suspend(); // POK-15: the weather comes back when the animation ends
     InitPrioritiesForVisibleBattlers();
     UpdateOamPriorityInAllHealthboxes(0);
     for (i = 0; i < MAX_BATTLERS_COUNT; i++)
