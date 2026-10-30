@@ -2,6 +2,7 @@
 #include "gflib.h"
 #include "battle.h"
 #include "battle_anim.h"
+#include "battle_main.h"
 #include "battle_weather_visual.h"
 #include "decompress.h"
 #include "random.h"
@@ -24,6 +25,8 @@
 #define BWV_SUN_TINT RGB(31, 28, 16)
 #define BWV_SUN_TINT_COEFF 3
 #define BWV_RAIN_TINT_COEFF 3
+// BG palettes 2-3 hold the terrain; palette 1 also frames the action and move menus
+#define BWV_TERRAIN_PALETTES ((1 << 2) | (1 << 3))
 
 // sprite->data
 #define sSpeedX data[0]
@@ -105,11 +108,25 @@ void BattleWeatherVisual_Reset(void)
     memset(&gBattleWeatherVisual, 0, sizeof(gBattleWeatherVisual));
 }
 
+static void RestorePalettes(u32 mask)
+{
+    u8 i;
+
+    for (i = 0; i < 32; i++)
+    {
+        if (mask & (1u << i))
+            CpuCopy16(&gPlttBufferUnfaded[PLTT_ID(i)], &gPlttBufferFaded[PLTT_ID(i)], PLTT_SIZE_4BPP);
+    }
+}
+
+// Always from Unfaded, so it never stacks: safe to redo every frame. Redone every frame because a
+// Pokémon sent out (LoadPalette) or the move menu's 0->0 fade rewrite the battler palettes.
 static void ApplySceneTint(u8 coeff, u16 color)
 {
-    u32 mask = GetBattlePalettesMask(TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE)
-             | GetBattleMonSpritePalettesMask(1, 1, 1, 1);
+    u32 mask = BWV_TERRAIN_PALETTES | GetBattleMonSpritePalettesMask(1, 1, 1, 1);
 
+    if (gBattleWeatherVisual.sunApplied)
+        RestorePalettes(gBattleWeatherVisual.tintMask & ~mask); // a Pokémon left the field
     BlendPalettes(mask, coeff, color);
     gBattleWeatherVisual.tintMask = mask;
     gBattleWeatherVisual.sunApplied = TRUE;
@@ -117,17 +134,26 @@ static void ApplySceneTint(u8 coeff, u16 color)
 
 static void RemoveSceneTint(void)
 {
-    u8 i;
-
     if (!gBattleWeatherVisual.sunApplied)
         return;
-    for (i = 0; i < 32; i++)
-    {
-        if (gBattleWeatherVisual.tintMask & (1u << i))
-            CpuCopy16(&gPlttBufferUnfaded[PLTT_ID(i)], &gPlttBufferFaded[PLTT_ID(i)], PLTT_SIZE_4BPP);
-    }
+    RestorePalettes(gBattleWeatherVisual.tintMask);
     gBattleWeatherVisual.tintMask = 0;
     gBattleWeatherVisual.sunApplied = FALSE;
+}
+
+static void RefreshSceneTint(void)
+{
+    if (gBattleWeatherVisual.shown == BWV_SUN)
+        ApplySceneTint(BWV_SUN_TINT_COEFF, BWV_SUN_TINT);
+    else if (gBattleWeatherVisual.shown == BWV_RAIN)
+        ApplySceneTint(BWV_RAIN_TINT_COEFF, RGB_BLACK);
+}
+
+// A ResetSpriteData this module never saw (the Pokédex page of a capture) leaves stale ids behind
+static bool8 IsWeatherParticle(struct Sprite *sprite)
+{
+    return sprite->inUse
+        && (sprite->callback == SpriteCB_RainDrop || sprite->callback == SpriteCB_Hail || sprite->callback == SpriteCB_Sand);
 }
 
 void BattleWeatherVisual_Suspend(void)
@@ -136,7 +162,10 @@ void BattleWeatherVisual_Suspend(void)
 
     RemoveSceneTint();
     for (i = 0; i < gBattleWeatherVisual.count; i++)
-        DestroySprite(&gSprites[gBattleWeatherVisual.spriteIds[i]]);
+    {
+        if (IsWeatherParticle(&gSprites[gBattleWeatherVisual.spriteIds[i]]))
+            DestroySprite(&gSprites[gBattleWeatherVisual.spriteIds[i]]);
+    }
     gBattleWeatherVisual.count = 0;
     if (gBattleWeatherVisual.loadedTag != 0)
     {
@@ -178,11 +207,22 @@ static bool8 IsBattleAnimRunning(void)
     return FALSE;
 }
 
+// A fade that changes the brightness (to/from black or white). The move menu runs 0->0 fades on
+// every cursor move; those must not drop the weather.
+static bool8 IsBrightnessFade(void)
+{
+    return gPaletteFade.active && (gPaletteFade.y != 0 || gPaletteFade.targetY != 0);
+}
+
 // Pure: what should be on screen now. No AbilityBattleEffects/WEATHER_HAS_EFFECT here, both write
 // gLastUsedAbility and this runs every frame, in the middle of battle scripts.
 u8 BattleWeatherVisual_GetWanted(void)
 {
-    if (gSaveBlock2Ptr->optionsBattleSceneOff || gBattleOutcome != 0 || gPaletteFade.active)
+    if (gSaveBlock2Ptr->optionsBattleSceneOff || gBattleOutcome != 0)
+        return BWV_NONE;
+    // another screen inside BattleMainCB2 (the Pokédex page of a capture), a fade under way, or a
+    // screen left black at the end of one (the frame before the bag or the party menu opens)
+    if (gMain.vblankCallback != VBlankCB_Battle || IsBrightnessFade() || gPaletteFade.y != 0)
         return BWV_NONE;
     if (IsBattleAnimRunning())
         return BWV_NONE;
@@ -234,7 +274,10 @@ void BattleWeatherVisual_Update(void)
     u8 wanted = BattleWeatherVisual_GetWanted();
 
     if (wanted == gBattleWeatherVisual.shown)
+    {
+        RefreshSceneTint();
         return;
+    }
     BattleWeatherVisual_Suspend();
     switch (wanted)
     {

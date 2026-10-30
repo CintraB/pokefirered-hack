@@ -825,7 +825,8 @@ void FadeScreen(u8 mode, s8 delay)
 
     if (fadeOut)
     {
-        if (useWeatherPal)
+        // POK-16: the drought redoes its colors from Unfaded on the fade in, keep it clean
+        if (useWeatherPal && gWeatherPtr->currWeather != WEATHER_DROUGHT)
             CpuFastCopy(gPlttBufferFaded, gPlttBufferUnfaded, PLTT_SIZE);
 
         BeginNormalPaletteFade(PALETTES_ALL, delay, 0, 16, fadeColor);
@@ -893,7 +894,8 @@ void FadeSelectedPals(u8 mode, s8 delay, u32 selectedPalettes)
 
     if (fadeOut)
     {
-        if (useWeatherPal)
+        // POK-16: the drought redoes its colors from Unfaded on the fade in, keep it clean
+        if (useWeatherPal && gWeatherPtr->currWeather != WEATHER_DROUGHT)
             CpuFastCopy(gPlttBufferFaded, gPlttBufferUnfaded, PLTT_SIZE);
 
         BeginNormalPaletteFade(selectedPalettes, delay, 0, 16, fadeColor);

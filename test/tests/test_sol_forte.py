@@ -43,6 +43,20 @@ def test_vulcao_sorteia_sol_forte():
         assert espelho == esperado, periodo
 
 
+def test_revisao_fadescreen_nao_grava_o_sol_forte_em_unfaded():
+    """Achado 4: o fade de saída copiava Faded→Unfaded também no sol forte; o fade de entrada
+    aplicava a tabela de novo sobre isso (tom dobrado depois do fadescreen dos Recrutas no Monte
+    Ember). O sol forte refaz tudo a partir de Unfaded, então Unfaded tem de ficar limpo."""
+    c = _ler("src/field_weather.c")
+    for nome in ("FadeScreen", "FadeSelectedPals"):
+        corpo = _sem_comentarios(_funcao(c, nome))
+        saida = corpo[corpo.index("if (fadeOut)"):corpo.index("CpuFastCopy(gPlttBufferFaded, gPlttBufferUnfaded")]
+        assert "gWeatherPtr->currWeather != WEATHER_DROUGHT" in saida, nome
+        # o fade de entrada continua sendo o do sol forte (FadeInScreen_Drought)
+        lista = corpo[:corpo.index("useWeatherPal = TRUE;")]
+        assert "case WEATHER_DROUGHT:" in lista, nome
+
+
 def test_tabelas_do_sol_forte_existem():
     for t in TABELAS:
         assert t.stat().st_size == 0x1000 * 2, t.name

@@ -44,7 +44,8 @@ def test_get_wanted_nao_tem_efeito_colateral():
     c = MODULO.read_text(encoding="utf-8")
     # GetWanted e os dois ajudantes que ela chama
     wanted = "".join(_corpo(_funcao(c, f)) for f in
-                     ("BattleWeatherVisual_GetWanted", "IsWeatherNegatedOnField", "IsBattleAnimRunning"))
+                     ("BattleWeatherVisual_GetWanted", "IsWeatherNegatedOnField", "IsBattleAnimRunning",
+                      "IsBrightnessFade"))
     assert "IsWeatherNegatedOnField()" in c and "IsBattleAnimRunning()" in c
     # AbilityBattleEffects e WEATHER_HAS_EFFECT gravam gLastUsedAbility
     assert "AbilityBattleEffects" not in wanted and "WEATHER_HAS_EFFECT" not in wanted
@@ -78,16 +79,61 @@ def test_granizo_e_areia_sao_particulas():
 def test_sol_e_chuva_tingem_so_fundo_e_pokemon():
     c = MODULO.read_text(encoding="utf-8")
     tinge = _corpo(_funcao(c, "ApplySceneTint"))
-    assert "GetBattlePalettesMask(TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE)" in tinge
     assert "GetBattleMonSpritePalettesMask(1, 1, 1, 1)" in tinge
     assert "BlendPalettes(" in tinge
     desfaz = _corpo(_funcao(c, "RemoveSceneTint"))
-    assert "gPlttBufferUnfaded" in desfaz and "gPlttBufferFaded" in desfaz and "tintMask" in desfaz
+    assert "RestorePalettes(gBattleWeatherVisual.tintMask);" in desfaz
+    restaura = _corpo(_funcao(c, "RestorePalettes"))
+    assert "gPlttBufferUnfaded" in restaura and "gPlttBufferFaded" in restaura
     assert "RemoveSceneTint();" in _corpo(_funcao(c, "BattleWeatherVisual_Suspend"))
     wanted = _corpo(_funcao(c, "BattleWeatherVisual_GetWanted"))
     assert re.search(r"gBattleWeather & B_WEATHER_SUN\)\s*return BWV_SUN;", wanted)
     assert "#define BWV_SUN_TINT RGB(31, 28, 16)" in c
     assert "u32 tintMask;" in _ler("include/battle_weather_visual.h")
+
+
+def test_revisao_fora_da_tela_da_batalha_nada_aparece():
+    """Achado 1: a página da Pokédex da captura roda dentro do BattleMainCB2 com o VBlank dela."""
+    c = MODULO.read_text(encoding="utf-8")
+    wanted = _corpo(_funcao(c, "BattleWeatherVisual_GetWanted"))
+    assert "gMain.vblankCallback != VBlankCB_Battle" in wanted
+
+
+def test_revisao_suspend_so_destroi_particulas_vivas_do_modulo():
+    """Achado 1: depois de um ResetSpriteData que o módulo não viu, os ids velhos são de outros."""
+    suspend = _corpo(_funcao(MODULO.read_text(encoding="utf-8"), "BattleWeatherVisual_Suspend"))
+    assert "IsWeatherParticle(" in suspend
+    particula = _corpo(_funcao(MODULO.read_text(encoding="utf-8"), "IsWeatherParticle"))
+    assert "->inUse" in particula
+    for cb in ("SpriteCB_RainDrop", "SpriteCB_Hail", "SpriteCB_Sand"):
+        assert cb in particula, cb
+
+
+def test_revisao_tela_apagada_e_fade_sem_brilho():
+    """Achados 2 e 3: tela apagada (fade para preto terminado) = nada; fade 0→0 do menu de golpes
+    não derruba as partículas."""
+    c = MODULO.read_text(encoding="utf-8")
+    wanted = _corpo(_funcao(c, "BattleWeatherVisual_GetWanted"))
+    assert "gPaletteFade.y != 0" in wanted
+    assert "IsBrightnessFade()" in wanted
+    fade = _corpo(_funcao(c, "IsBrightnessFade"))
+    assert "gPaletteFade.active" in fade and "gPaletteFade.targetY" in fade
+
+
+def test_revisao_tom_reaplicado_e_so_no_terreno():
+    """Achados 3, 5 e 6: o tom volta depois de um fade e pega o Pokémon que entrou; só as
+    paletas 2-3 do terreno (a 1 é a das molduras dos menus)."""
+    c = MODULO.read_text(encoding="utf-8")
+    assert "#define BWV_TERRAIN_PALETTES ((1 << 2) | (1 << 3))" in c
+    tinge = _corpo(_funcao(c, "ApplySceneTint"))
+    assert "BWV_TERRAIN_PALETTES" in tinge and "GetBattlePalettesMask" not in tinge
+    update = _corpo(_funcao(c, "BattleWeatherVisual_Update"))
+    assert "RefreshSceneTint();" in update
+    refresh = _corpo(_funcao(c, "RefreshSceneTint"))
+    assert "BWV_SUN" in refresh and "BWV_RAIN" in refresh and "ApplySceneTint(" in refresh
+    tinge_corpo = _corpo(_funcao(c, "ApplySceneTint"))
+    # o Pokémon que saiu de campo volta a Unfaded; o que entrou é tingido
+    assert "RestorePalettes(gBattleWeatherVisual.tintMask & ~mask);" in tinge_corpo
 
 
 def test_chuva_tem_dez_gotas_atras_das_caixas_de_ps():
