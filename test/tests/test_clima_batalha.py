@@ -136,6 +136,18 @@ def test_revisao_tom_reaplicado_e_so_no_terreno():
     assert "RestorePalettes(gBattleWeatherVisual.tintMask & ~mask);" in tinge_corpo
 
 
+def test_telas_da_batalha_nao_colidem_com_outros_cenarios():
+    """O `clima_visual` (Hack 7) já grava `clima_areia`: as telas daqui têm prefixo próprio."""
+    pasta = RAIZ / "test/esteira/scenarios"
+    nossas = {f"batalha_clima_{n}" for n in ("chuva", "granizo", "areia", "sol")}
+    for arq in pasta.glob("*.py"):
+        if arq.name == "full_battle_weather_visual.py":
+            continue
+        literais = set(re.findall(r'_shot\w*\(\s*"([^"]+)"', arq.read_text(encoding="utf-8")))
+        assert not literais & nossas, (arq.name, literais & nossas)
+    assert 'self._shot(f"batalha_clima_{name}")' in (pasta / "full_battle_weather_visual.py").read_text(encoding="utf-8")
+
+
 def test_chuva_tem_dez_gotas_atras_das_caixas_de_ps():
     c = MODULO.read_text(encoding="utf-8")
     assert "#define BWV_RAIN_COUNT 10" in c

@@ -8,7 +8,7 @@ atalho START_WILD_BATTLE (Pikachu nível 5, Magikarp nível 50 na frente para o 
 ninguém) e o clima é escrito direto em gBattleWeather:
 
 - `clima_batalha/<clima>` (chuva, granizo, areia, sol): estado e número de partículas certos, só
-  partículas do clima atual (tela `clima_<clima>`);
+  partículas do clima atual (tela `batalha_clima_<clima>`);
 - `clima_batalha/golpe`: com chuva, um turno de Splash: nada do clima durante a animação, as 10
   gotas de volta depois;
 - `clima_batalha/troca_no_meio`: areia → chuva sem grão de areia sobrando;
@@ -92,7 +92,7 @@ class BattleWeatherVisualScenario(WeatherScenario):
     def _weather(self, name: str) -> str:
         self._set_battle_weather(CLIMAS[name][0])
         detail = self._expect(name)
-        self._shot(f"clima_{name}")
+        self._shot(f"batalha_clima_{name}")
         return detail
 
     def _move(self) -> str:
