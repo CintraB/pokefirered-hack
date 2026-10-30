@@ -344,12 +344,13 @@ def test_pesos_somam_100():
             assert len({c for c, _ in weights}) == len(weights), (region, period)
 
 
-def test_drought_nunca():
-    """WEATHER_DROUGHT trava o jogo no FRLG (pkfr-mundo): nunca sorteado."""
-    for periods in dn.REGION_WEIGHTS.values():
-        for weights in periods.values():
-            assert dn.WEATHER_DROUGHT not in [c for c, _ in weights]
-    assert "WEATHER_DROUGHT" not in WEATHER_TABLE_H.read_text(encoding="utf-8")
+def test_drought_so_no_vulcao():
+    """WEATHER_DROUGHT travava o jogo no FRLG; consertado no POK-16, só a região vulcão o sorteia
+    (Ilha Cinnabar e Monte Ember), e nunca à noite."""
+    for region, periods in dn.REGION_WEIGHTS.items():
+        for period, weights in periods.items():
+            sorteia = dn.WEATHER_DROUGHT in [c for c, _ in weights]
+            assert sorteia == (region == dn.REGION_VOLCANO and period != dn.NIGHT), (region, period)
 
 
 def test_hash_conhecido():

@@ -133,7 +133,8 @@ def test_telas_que_dependem_do_inicial_ficam_por_inicial():
     viraria. Ficam em KEY_POINTS (test/referencias/<INICIAL>/), no fim, depois do tour."""
     from esteira.refs import SHARED_POINTS, STARTER_DEPENDENT_POINTS, TOUR_POINTS
     moved = ("relogio_menu", "relogio_aviso_noite", "pokedex_nacional",
-             "pos_liga_ovo", "pos_liga_dinheiro", "pos_liga_objetivo")
+             "pos_liga_ovo", "pos_liga_dinheiro", "pos_liga_objetivo",
+             "batalha_clima_chuva", "batalha_clima_granizo", "batalha_clima_areia", "batalha_clima_sol")   # POK-15
     assert STARTER_DEPENDENT_POINTS == moved
     assert KEY_POINTS[-len(moved):] == moved
     assert KEY_POINTS[-len(moved) - len(TOUR_POINTS):-len(moved)] == TOUR_POINTS

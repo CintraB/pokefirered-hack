@@ -30,7 +30,9 @@ TOUR_POINTS = ("bolsa", "resumo", "pokedex", "opcoes", "cartao", "pc", "loja", "
 # sobraram na mesa do Oak (pos_liga_*). Por isso referência por inicial, não COMUM.
 STARTER_DEPENDENT_POINTS = ("relogio_menu", "relogio_aviso_noite",   # Hack 7 — frente A
                             "pokedex_nacional",                       # Hack 7 — frente C
-                            "pos_liga_ovo", "pos_liga_dinheiro", "pos_liga_objetivo")
+                            "pos_liga_ovo", "pos_liga_dinheiro", "pos_liga_objetivo",
+                            # POK-15: partículas e selvagem saem do sorteio, que muda com o save
+                            "batalha_clima_chuva", "batalha_clima_granizo", "batalha_clima_areia", "batalha_clima_sol")
 KEY_POINTS = (("nome", "inicial", "batalha_rival", "captura", "save_continue") + TOUR_POINTS
               + STARTER_DEPENDENT_POINTS)
 # Pontos cuja tela não depende do inicial (cena de evolução do cenário `evolucoes`, página

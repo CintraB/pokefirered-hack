@@ -46,6 +46,16 @@ static EWRAM_DATA u8 sFieldEffectPaletteGammaTypes[32] = {};
 static EWRAM_DATA const u8 *sPaletteGammaTypes = NULL;
 static EWRAM_DATA u16 sDroughtFrameDelay = 0;
 
+// POK-16: the drought (strong sunlight) color maps, taken from pokeemerald
+static const u16 sDroughtWeatherColors[][0x1000] = {
+    INCBIN_U16("graphics/weather/drought/colors_0.bin"),
+    INCBIN_U16("graphics/weather/drought/colors_1.bin"),
+    INCBIN_U16("graphics/weather/drought/colors_2.bin"),
+    INCBIN_U16("graphics/weather/drought/colors_3.bin"),
+    INCBIN_U16("graphics/weather/drought/colors_4.bin"),
+    INCBIN_U16("graphics/weather/drought/colors_5.bin"),
+};
+
 static void Task_WeatherMain(u8 taskId);
 static void Task_WeatherInit(u8 taskId);
 static void None_Init(void);
@@ -500,7 +510,31 @@ static void ApplyGammaShift(u8 startPalIndex, u8 numPalettes, s8 gammaIndex)
     else if (gammaIndex < 0)
     {
         // A negative gammIndex value means that the blending will come from the special Drought weather's palette tables.
-        // Dummied out in FRLG
+        // POK-16: restored from pokeemerald
+        gammaIndex = -gammaIndex - 1;
+        palOffset = PLTT_ID(startPalIndex);
+        numPalettes += startPalIndex;
+        curPalIndex = startPalIndex;
+
+        while (curPalIndex < numPalettes)
+        {
+            if (sPaletteGammaTypes[curPalIndex] == GAMMA_NONE)
+            {
+                // No palette change.
+                CpuFastCopy(&gPlttBufferUnfaded[palOffset], &gPlttBufferFaded[palOffset], PLTT_SIZE_4BPP);
+                palOffset += 16;
+            }
+            else
+            {
+                for (i = 0; i < 16; i++)
+                {
+                    gPlttBufferFaded[palOffset] = sDroughtWeatherColors[gammaIndex][DROUGHT_COLOR_INDEX(gPlttBufferUnfaded[palOffset])];
+                    palOffset++;
+                }
+            }
+
+            curPalIndex++;
+        }
     }
     else
     {
@@ -594,16 +628,23 @@ static void ApplyDroughtGammaShiftWithBlend(s8 gammaIndex, u8 blendCoeff, u16 bl
                 u8 r1, g1, b1;
                 u8 r2, g2, b2;
 
+                // POK-16: restored from pokeemerald (blend the drought color, not the raw one)
                 color1 = *(struct RGBColor *)&gPlttBufferUnfaded[palOffset];
                 r1 = color1.r;
                 g1 = color1.g;
                 b1 = color1.b;
 
-                r1 += ((rBlend - r1) * blendCoeff) >> 4;
-                g1 += ((gBlend - g1) * blendCoeff) >> 4;
-                b1 += ((bBlend - b1) * blendCoeff) >> 4;
+                offset = ((b1 & 0x1E) << 7) | ((g1 & 0x1E) << 3) | ((r1 & 0x1E) >> 1);
+                color2 = *(struct RGBColor *)&sDroughtWeatherColors[gammaIndex][offset];
+                r2 = color2.r;
+                g2 = color2.g;
+                b2 = color2.b;
 
-                gPlttBufferFaded[palOffset++] = (b1 << 10) | (g1 << 5) | r1;
+                r2 += ((rBlend - r2) * blendCoeff) >> 4;
+                g2 += ((gBlend - g2) * blendCoeff) >> 4;
+                b2 += ((bBlend - b2) * blendCoeff) >> 4;
+
+                gPlttBufferFaded[palOffset++] = (b2 << 10) | (g2 << 5) | r2;
             }
         }
     }
@@ -784,7 +825,8 @@ void FadeScreen(u8 mode, s8 delay)
 
     if (fadeOut)
     {
-        if (useWeatherPal)
+        // POK-16: the drought redoes its colors from Unfaded on the fade in, keep it clean
+        if (useWeatherPal && gWeatherPtr->currWeather != WEATHER_DROUGHT)
             CpuFastCopy(gPlttBufferFaded, gPlttBufferUnfaded, PLTT_SIZE);
 
         BeginNormalPaletteFade(PALETTES_ALL, delay, 0, 16, fadeColor);
@@ -852,7 +894,8 @@ void FadeSelectedPals(u8 mode, s8 delay, u32 selectedPalettes)
 
     if (fadeOut)
     {
-        if (useWeatherPal)
+        // POK-16: the drought redoes its colors from Unfaded on the fade in, keep it clean
+        if (useWeatherPal && gWeatherPtr->currWeather != WEATHER_DROUGHT)
             CpuFastCopy(gPlttBufferFaded, gPlttBufferUnfaded, PLTT_SIZE);
 
         BeginNormalPaletteFade(selectedPalettes, delay, 0, 16, fadeColor);
@@ -952,9 +995,9 @@ void RestoreDefaultWeatherSpritePalette(void)
 
 static void LoadDroughtWeatherPalette(u8 *gammaIndexPtr, u8 *a1)
 {
-    // Dummied out in FRLG
-    // *gammaIndexPtr = 0x20;
-    // *a1 = 0x20;
+    // POK-16: restored from pokeemerald (the color maps are in ROM, nothing to build)
+    *gammaIndexPtr = 0x20;
+    *a1 = 0x20;
 }
 
 void ResetDroughtWeatherPaletteLoading(void)
