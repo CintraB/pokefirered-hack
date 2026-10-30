@@ -28,6 +28,7 @@ extern struct HelpSystemListMenu gHelpSystemListMenu;
 extern struct ListMenuItem gHelpSystemListMenuItems[];
 extern bool8 gHelpSystemEnabled;
 extern bool8 gHelpSystemToggleWithRButtonDisabled;
+extern bool8 gHelpSystemBattleLRBlocked;
 
 // help_system_812B1E0
 void SetHelpContextDontCheckBattle(u8);

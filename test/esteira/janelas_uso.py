@@ -635,6 +635,9 @@ USAGE_RULES: list[UsageRule] = [
     U("src/easy_chat_3.c", "*", 22 * 8, "Easy Chat: janela de 22 tiles (src/easy_chat_3.c:250-254)"),
     # -- batalha --
     U("src/battle_message.c", "table:gTrainerTowerChallengeTypeTexts", DIALOG_PX, _DIALOG),
+    U("src/battle_controller_player.c", "table:sStatStageNames", 216 // 4 - 16,
+      "status com L/R (POK-40): até 4 rótulos + sinal e dígito (~12 px) + espaço por linha de "
+      "STAT_STAGES_LINE_WIDTH = 216 px (src/battle_controller_player.c:249)"),
     U("src/battle_*.c", "*", 28 * 8 - 2, "mensagem de batalha: B_WIN_MSG 28 tiles (src/battle_bg.c:143-148), x = 2"),
     U("src/battle_setup.c", "*", 28 * 8 - 2, "mensagem de batalha: B_WIN_MSG 28 tiles (src/battle_bg.c:143-148)"),
     # -- nomes que viram {STR_VAR} ou dados --

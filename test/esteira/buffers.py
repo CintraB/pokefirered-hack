@@ -1313,6 +1313,9 @@ DECLARED: list[Declared] = [
     Declared("src/dodrio_berry_picking.c", "Debug_SetPlayerNamesAndResults", r".*", None,
              why="só na depuração do Dodrio Berry Picking (nomes de jogador de teste)"),
     # ---- batalha ---------------------------------------------------------------------------------------
+    Declared("src/battle_controller_player.c", "BuildStatStagesString", r".*", None,
+             why="status com L/R (POK-40): entry[16] = espaço + rótulo de até 5 letras + sinal + 1 algarismo; "
+                 "a frase (apelido + ' selvagem:' + 7 rótulos, < 80 bytes) vai para gDisplayedStringBattle[300]"),
     Declared("src/battle_controller_player.c", "MoveSelectionDisplayMoveNames",
              r"gText_MoveInterfaceDynamicColors|gMoveNames\[.*\]", BufRef("gDisplayedStringBattle"),
              (Text("gText_MoveInterfaceDynamicColors"), Text("gMoveNames")),

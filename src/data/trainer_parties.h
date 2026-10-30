@@ -5616,18 +5616,26 @@ static const struct TrainerMonNoItemCustomMoves sParty_LeaderBrock[] = {
     },
 };
 
+// POK-41: rain team (Staryu sets up Rain Dance, Goldeen has Swift Swim,
+// Starmie's Thunder never misses in the rain)
 static const struct TrainerMonNoItemCustomMoves sParty_LeaderMisty[] = {
     {
         .iv = 0,
         .lvl = 18,
         .species = SPECIES_STARYU,
-        .moves = {MOVE_TACKLE, MOVE_HARDEN, MOVE_RECOVER, MOVE_WATER_PULSE},
+        .moves = {MOVE_RAIN_DANCE, MOVE_SWIFT, MOVE_RECOVER, MOVE_WATER_PULSE},
+    },
+    {
+        .iv = 0,
+        .lvl = 19,
+        .species = SPECIES_GOLDEEN,
+        .moves = {MOVE_HORN_ATTACK, MOVE_SUPERSONIC, MOVE_RAIN_DANCE, MOVE_WATER_PULSE},
     },
     {
         .iv = 0,
         .lvl = 21,
         .species = SPECIES_STARMIE,
-        .moves = {MOVE_SWIFT, MOVE_RECOVER, MOVE_RAPID_SPIN, MOVE_WATER_PULSE},
+        .moves = {MOVE_THUNDER, MOVE_RECOVER, MOVE_RAPID_SPIN, MOVE_WATER_PULSE},
     },
 };
 
@@ -5700,18 +5708,20 @@ static const struct TrainerMonNoItemCustomMoves sParty_LeaderKoga[] = {
     },
 };
 
+// POK-41: sun team (Ninetales and Arcanine set up Sunny Day; Solar Beam
+// fires in one turn and Exeggutor's Chlorophyll doubles its Speed)
 static const struct TrainerMonNoItemCustomMoves sParty_LeaderBlaine[] = {
     {
         .iv = 0,
         .lvl = 42,
-        .species = SPECIES_GROWLITHE,
-        .moves = {MOVE_BITE, MOVE_ROAR, MOVE_TAKE_DOWN, MOVE_FIRE_BLAST},
+        .species = SPECIES_NINETALES,
+        .moves = {MOVE_SUNNY_DAY, MOVE_FLAMETHROWER, MOVE_SOLAR_BEAM, MOVE_CONFUSE_RAY},
     },
     {
         .iv = 0,
-        .lvl = 40,
-        .species = SPECIES_PONYTA,
-        .moves = {MOVE_STOMP, MOVE_BOUNCE, MOVE_FIRE_SPIN, MOVE_FIRE_BLAST},
+        .lvl = 43,
+        .species = SPECIES_EXEGGUTOR,
+        .moves = {MOVE_SUNNY_DAY, MOVE_SOLAR_BEAM, MOVE_PSYCHIC, MOVE_HYPNOSIS},
     },
     {
         .iv = 0,
@@ -5723,7 +5733,7 @@ static const struct TrainerMonNoItemCustomMoves sParty_LeaderBlaine[] = {
         .iv = 0,
         .lvl = 47,
         .species = SPECIES_ARCANINE,
-        .moves = {MOVE_BITE, MOVE_ROAR, MOVE_TAKE_DOWN, MOVE_FIRE_BLAST},
+        .moves = {MOVE_BITE, MOVE_SUNNY_DAY, MOVE_TAKE_DOWN, MOVE_FIRE_BLAST},
     },
 };
 
