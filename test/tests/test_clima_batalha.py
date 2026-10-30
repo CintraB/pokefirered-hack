@@ -63,6 +63,18 @@ def test_interface_publica():
         assert f in h, f
 
 
+def test_granizo_e_areia_sao_particulas():
+    c = MODULO.read_text(encoding="utf-8")
+    assert "#define BWV_HAIL_COUNT 8" in c and "#define BWV_SAND_COUNT 10" in c
+    assert "ANIM_TAG_HAIL" in c and "ANIM_TAG_FLYING_DIRT" in c
+    # a areia não usa a camada de fundo da animação do golpe
+    assert "AnimTask_LoadSandstormBackground" not in c
+    assert not re.search(r"\bBG[12]\b|REG_OFFSET_BG[12]", c)
+    wanted = _corpo(_funcao(c, "BattleWeatherVisual_GetWanted"))
+    for bit, bwv in (("B_WEATHER_HAIL", "BWV_HAIL"), ("B_WEATHER_SANDSTORM", "BWV_SAND")):
+        assert re.search(r"gBattleWeather & " + bit + r"\)\s*return " + bwv + ";", wanted), bwv
+
+
 def test_chuva_tem_dez_gotas_atras_das_caixas_de_ps():
     c = MODULO.read_text(encoding="utf-8")
     assert "#define BWV_RAIN_COUNT 10" in c
