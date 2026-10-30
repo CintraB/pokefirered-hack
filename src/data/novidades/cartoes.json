@@ -373,6 +373,11 @@
           "title": "Chefes com clima",
           "body": "A Misty abre com Dança Chuva e o\nBlaine com Dia de Sol, com times\nmontados para o clima. A IA agora usa o\nclima quando o time ganha com ele.",
           "itemId": "ITEM_TM11"
+        },
+        {
+          "title": "Clima na batalha",
+          "body": "Chuva, granizo, areia e sol aparecem a\nbatalha toda e somem durante os golpes.\nCinnabar e o Monte Ember agora têm\ndias de sol forte.",
+          "itemId": "ITEM_TM18"
         }
       ]
     },
