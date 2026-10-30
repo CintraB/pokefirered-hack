@@ -189,6 +189,13 @@ class Mailbox:
         assert weather != NO_RESULT, "ROLL_WEATHER não implementado nesta ROM"
         return weather
 
+    def calc_damage(self, move: int) -> int:
+        """CalculateBaseDamage com o slot 0 do time atacando o slot 1 (sem crítico, clima, tela,
+        insígnia nem efeito de campo; antes de STAB, eficácia e fator aleatório)."""
+        damage = self.call(CMD_CALC_DAMAGE, move, 0)
+        assert damage != NO_RESULT, f"golpe inválido: {move}"
+        return damage
+
 # --- Hack 6: breeding genético (enum à parte em include/test_hooks.h, a partir de 0x60; ------
 # o uso fica em esteira/breeding.py e scenarios/full_breeding.py / full_egg.py)
 CMD_BREED_SETUP = 0x60      # gTestBreedSetup -> creche (arg0 = 1: ovo pendente) -> compatibilidade (0xFFFFFFFF = pai inválido)
@@ -229,3 +236,7 @@ CMD_NOVIDADES_STATE = 0x91  # -> cursor | pronta para input << 8 | ícones vivos
                             # | (cartão aberto + 1, 0 = grade) << 24 (0xFFFFFFFF = fechada)
 CMD_NOVIDADES_CARD = 0x92   # -> tópico | cartão << 8 | imagem (0 ícone do tópico, 1 item, 2 uma espécie,
                             # 3 duas) << 16 | sprites vivos da imagem << 24 (0xFFFFFFFF = fora do cartão)
+
+# --- POK-43: físico/especial por golpe (enum à parte, a partir de 0xA0) ---
+CMD_CALC_DAMAGE = 0xA0      # arg0 = golpe, arg1 = 0 -> CalculateBaseDamage: gPlayerParty[0] ataca gPlayerParty[1]
+                            # (BattlePokemon montados na hora; sem crítico, clima, tela, insígnia nem efeito de campo)

@@ -599,3 +599,8 @@
 	.macro if_any_move_encored battler:req, ptr:req
 	if_any_move_disabled_or_encored \battler, 1, \ptr
 	.endm
+
+@ POK-43: category of the move in the result (MOVE_CATEGORY_*), like get_move_type_from_result
+	.macro get_move_category_from_result
+	.byte 0x5e
+	.endm

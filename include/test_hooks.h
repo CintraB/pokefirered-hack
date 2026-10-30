@@ -110,6 +110,13 @@ enum
 };
 // --- end of novidades ----------------------------------------------------------------------
 
+// --- POK-43: physical/special split per move -----------------------------------------------
+enum
+{
+    TEST_CMD_CALC_DAMAGE = 0xA0, // arg0 = move, arg1 = 0: gPlayerParty[0] hits gPlayerParty[1] as BattlePokemon built on the spot (no crit, weather, screens, badges, Flash Fire or field effects; gBattleMons untouched); result = CalculateBaseDamage
+};
+// --- end of POK-43 -------------------------------------------------------------------------
+
 extern struct TestMailbox gTestMailbox;
 extern u8 gTestText[TEST_TEXT_SIZE];
 
