@@ -75,6 +75,21 @@ def test_granizo_e_areia_sao_particulas():
         assert re.search(r"gBattleWeather & " + bit + r"\)\s*return " + bwv + ";", wanted), bwv
 
 
+def test_sol_e_chuva_tingem_so_fundo_e_pokemon():
+    c = MODULO.read_text(encoding="utf-8")
+    tinge = _corpo(_funcao(c, "ApplySceneTint"))
+    assert "GetBattlePalettesMask(TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE)" in tinge
+    assert "GetBattleMonSpritePalettesMask(1, 1, 1, 1)" in tinge
+    assert "BlendPalettes(" in tinge
+    desfaz = _corpo(_funcao(c, "RemoveSceneTint"))
+    assert "gPlttBufferUnfaded" in desfaz and "gPlttBufferFaded" in desfaz and "tintMask" in desfaz
+    assert "RemoveSceneTint();" in _corpo(_funcao(c, "BattleWeatherVisual_Suspend"))
+    wanted = _corpo(_funcao(c, "BattleWeatherVisual_GetWanted"))
+    assert re.search(r"gBattleWeather & B_WEATHER_SUN\)\s*return BWV_SUN;", wanted)
+    assert "#define BWV_SUN_TINT RGB(31, 28, 16)" in c
+    assert "u32 tintMask;" in _ler("include/battle_weather_visual.h")
+
+
 def test_chuva_tem_dez_gotas_atras_das_caixas_de_ps():
     c = MODULO.read_text(encoding="utf-8")
     assert "#define BWV_RAIN_COUNT 10" in c

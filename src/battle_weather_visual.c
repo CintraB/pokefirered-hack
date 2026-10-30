@@ -19,6 +19,12 @@
 #define BWV_SAND_COUNT 10
 #define BWV_SUBPRIORITY 2   // OAM priority 1 like the healthboxes (subpriority 0-1): drawn behind them
 
+// Scene tint, on the battle background and the battlers only (never the healthboxes or the text).
+// The sun warms it up; the rain darkens it a little, as General_Rain does, so the drops show.
+#define BWV_SUN_TINT RGB(31, 28, 16)
+#define BWV_SUN_TINT_COEFF 3
+#define BWV_RAIN_TINT_COEFF 3
+
 // sprite->data
 #define sSpeedX data[0]
 #define sSpeedY data[1]
@@ -99,10 +105,36 @@ void BattleWeatherVisual_Reset(void)
     memset(&gBattleWeatherVisual, 0, sizeof(gBattleWeatherVisual));
 }
 
+static void ApplySceneTint(u8 coeff, u16 color)
+{
+    u32 mask = GetBattlePalettesMask(TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE)
+             | GetBattleMonSpritePalettesMask(1, 1, 1, 1);
+
+    BlendPalettes(mask, coeff, color);
+    gBattleWeatherVisual.tintMask = mask;
+    gBattleWeatherVisual.sunApplied = TRUE;
+}
+
+static void RemoveSceneTint(void)
+{
+    u8 i;
+
+    if (!gBattleWeatherVisual.sunApplied)
+        return;
+    for (i = 0; i < 32; i++)
+    {
+        if (gBattleWeatherVisual.tintMask & (1u << i))
+            CpuCopy16(&gPlttBufferUnfaded[PLTT_ID(i)], &gPlttBufferFaded[PLTT_ID(i)], PLTT_SIZE_4BPP);
+    }
+    gBattleWeatherVisual.tintMask = 0;
+    gBattleWeatherVisual.sunApplied = FALSE;
+}
+
 void BattleWeatherVisual_Suspend(void)
 {
     u8 i;
 
+    RemoveSceneTint();
     for (i = 0; i < gBattleWeatherVisual.count; i++)
         DestroySprite(&gSprites[gBattleWeatherVisual.spriteIds[i]]);
     gBattleWeatherVisual.count = 0;
@@ -162,6 +194,8 @@ u8 BattleWeatherVisual_GetWanted(void)
         return BWV_HAIL;
     if (gBattleWeather & B_WEATHER_SANDSTORM)
         return BWV_SAND;
+    if (gBattleWeather & B_WEATHER_SUN)
+        return BWV_SUN;
     return BWV_NONE;
 }
 
@@ -207,6 +241,7 @@ void BattleWeatherVisual_Update(void)
     case BWV_RAIN:
         // diagonal down to the right, along the streak drawn in rain_drops.png
         CreateParticles(&sRainDropSpriteTemplate, BWV_RAIN_COUNT, 2, 6);
+        ApplySceneTint(BWV_RAIN_TINT_COEFF, RGB_BLACK);
         break;
     case BWV_HAIL:
         // almost straight down, slower than the rain
@@ -215,6 +250,10 @@ void BattleWeatherVisual_Update(void)
     case BWV_SAND:
         // swept from left to right, waving up and down
         CreateParticles(&sSandSpriteTemplate, BWV_SAND_COUNT, 5, 0);
+        break;
+    case BWV_SUN:
+        // no particles: a warm, brighter scene
+        ApplySceneTint(BWV_SUN_TINT_COEFF, BWV_SUN_TINT);
         break;
     }
     gBattleWeatherVisual.shown = wanted;

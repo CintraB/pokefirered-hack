@@ -20,6 +20,7 @@ struct BattleWeatherVisual
     u8 spriteIds[BWV_MAX_SPRITES];
     bool8 sunApplied;
     u16 loadedTag;  // particle gfx tag this module loaded (0 = none or loaded by someone else)
+    u32 tintMask;   // palettes tinted by the sun (or darkened by the rain), restored from Unfaded
 };
 
 extern struct BattleWeatherVisual gBattleWeatherVisual;
