@@ -20,6 +20,29 @@ def _sem_comentarios(c):
     return re.sub(r"//[^\n]*|/\*.*?\*/", "", c, flags=re.S)
 
 
+VULCAO = {  # período: (cinzas, sol forte, limpo) em %, decisão do Cintra em 29/10
+    "TIME_MORNING": (40, 20, 40),
+    "TIME_AFTERNOON": (30, 40, 30),
+    "TIME_EVENING": (40, 15, 45),
+    "TIME_NIGHT": (50, 0, 50),
+}
+
+
+def test_vulcao_sorteia_sol_forte():
+    from esteira import dia_noite as dn
+    h = _ler("src/data/day_night_weather.h")
+    bloco = re.search(r"\[WEATHER_REGION_VOLCANO\] =\s*\{(.*?)\n    \},", h.replace("\r", ""), re.S).group(1)
+    periodos = ("TIME_MORNING", "TIME_AFTERNOON", "TIME_EVENING", "TIME_NIGHT")
+    for i, periodo in enumerate(periodos):
+        linha = re.search(r"\[" + periodo + r"\]\s*=\s*\{(.*)\},", bloco).group(1)
+        pares = [(w, int(c)) for w, c in re.findall(r"\{(WEATHER_\w+), (\d+)\}", linha)]
+        cinzas, sol, limpo = VULCAO[periodo]
+        esperado = [("WEATHER_VOLCANIC_ASH", cinzas)] + ([("WEATHER_DROUGHT", sol)] if sol else []) + [("WEATHER_NONE", limpo)]
+        assert pares == esperado, periodo
+        espelho = [(dn.WEATHER_BY_ID[w], c) for w, c in dn.REGION_WEIGHTS[dn.REGION_VOLCANO][i]]
+        assert espelho == esperado, periodo
+
+
 def test_tabelas_do_sol_forte_existem():
     for t in TABELAS:
         assert t.stat().st_size == 0x1000 * 2, t.name

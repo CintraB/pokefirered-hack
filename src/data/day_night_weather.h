@@ -50,9 +50,10 @@ static const struct WeatherChance sRegionWeatherChances[WEATHER_REGION_COUNT][TI
     },
     [WEATHER_REGION_VOLCANO] =
     {
-        [TIME_MORNING]   = {{WEATHER_VOLCANIC_ASH, 50}, {WEATHER_NONE, 50}},
-        [TIME_AFTERNOON] = {{WEATHER_VOLCANIC_ASH, 50}, {WEATHER_NONE, 50}},
-        [TIME_EVENING]   = {{WEATHER_VOLCANIC_ASH, 50}, {WEATHER_NONE, 50}},
+        // POK-16: strong sunlight (drought) by day, never at night
+        [TIME_MORNING]   = {{WEATHER_VOLCANIC_ASH, 40}, {WEATHER_DROUGHT, 20}, {WEATHER_NONE, 40}},
+        [TIME_AFTERNOON] = {{WEATHER_VOLCANIC_ASH, 30}, {WEATHER_DROUGHT, 40}, {WEATHER_NONE, 30}},
+        [TIME_EVENING]   = {{WEATHER_VOLCANIC_ASH, 40}, {WEATHER_DROUGHT, 15}, {WEATHER_NONE, 45}},
         [TIME_NIGHT]     = {{WEATHER_VOLCANIC_ASH, 50}, {WEATHER_NONE, 50}},
     },
     [WEATHER_REGION_SEVII] =

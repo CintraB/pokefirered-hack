@@ -26,6 +26,11 @@ Sessão própria da ROM de teste a partir do .sav do `captura` (`save_from="capt
 - `clima/batalha_areia`, `clima/batalha_chuva`, `clima/batalha_cinzas`: Rota 3 com tempestade de
   areia → B_WEATHER_SANDSTORM; Vermilion (COAST) com chuva → B_WEATHER_RAIN; Cinnabar (VOLCANO)
   com cinzas → gBattleWeather == 0.
+- `clima/sol_forte` (POK-16): Cinnabar num dia de sol forte à tarde → o jogo não trava (o tempo
+  de jogo anda), a paleta do mapa clareia (Faded > Unfaded) e Unfaded não muda depois do menu
+  START nem do Centro Pokémon (sem tom dobrado; tela `clima_sol_forte`); num dia de sol forte no
+  fim de tarde, às 19:59, a noite chega sem travar e sem sol forte;
+- `clima/batalha_sol_forte` (POK-16): Cinnabar com sol forte → B_WEATHER_SUN na batalha.
 
 Uso, a partir de test/ (a pasta OUT precisa do captura.sav de um `rapido`/`completo`):
     python3 -m esteira completo --rom R --elf E --out OUT --only clima
@@ -64,6 +69,7 @@ PERIOD_FLIP_FRAMES = dn.FRAMES_PER_MINUTE + 1200
 # Task 5: clima na batalha (include/constants/battle.h)
 B_WEATHER_RAIN = 0x7                # TEMPORARY | DOWNPOUR | PERMANENT
 B_WEATHER_SANDSTORM = 0x18
+B_WEATHER_SUN = 0x60                # TEMPORARY | PERMANENT
 B_WEATHER_HAIL_TEMPORARY = 1 << 7
 B_WEATHER_HAIL_PERMANENT = 1 << 8
 B_WEATHER_HAIL = B_WEATHER_HAIL_TEMPORARY | B_WEATHER_HAIL_PERMANENT
@@ -80,7 +86,14 @@ BATTLE_CASES = (   # (fluxo, mapa, ponto, região, período, clima do campo, (m�
      (B_WEATHER_RAIN, 0x5)),        # TEMPORARY | PERMANENT
     ("cinzas", "MAP_CINNABAR_ISLAND", (19, 12), dn.REGION_VOLCANO, dn.MORNING, dn.WEATHER_VOLCANIC_ASH,
      (0xFFFF, 0)),
+    ("sol_forte", "MAP_CINNABAR_ISLAND", (19, 12), dn.REGION_VOLCANO, dn.AFTERNOON, dn.WEATHER_DROUGHT,
+     (B_WEATHER_SUN, B_WEATHER_SUN)),
 )
+# POK-16: sol forte no mapa (Cinnabar, região vulcão)
+CINNABAR_SPOT = (19, 12)            # em frente à porta da loja (19, 11)
+CINNABAR_CENTER = "MAP_CINNABAR_ISLAND_POKEMON_CENTER_1F"
+MAP_BG_COLORS = range(16 * 2, 16 * 13)   # paletas de BG do mapa (2-12)
+SB2_PLAYTIME_SECONDS = 0x11         # playTimeSeconds, playTimeVBlanks em 0x12 (include/global.h)
 PERIOD_MINUTE = {dn.MORNING: 6 * 60, dn.AFTERNOON: 12 * 60, dn.EVENING: 18 * 60, dn.NIGHT: 22 * 60}
 
 
@@ -240,6 +253,53 @@ class WeatherScenario(ClockScenario):
                     header, f"{map_name} dia {day} {self._hhmm(minute)} (sorteio {_name(rolled)})"))
         return "; ".join(details)
 
+    # --- POK-16: sol forte no mapa -------------------------------------------------------
+    def _playtime_frames(self) -> int:
+        sb2 = self.game._sb2()
+        return self.emu.read_u8(sb2 + SB2_PLAYTIME_SECONDS) * 60 + self.emu.read_u8(sb2 + SB2_PLAYTIME_SECONDS + 1)
+
+    def _map_bg(self, buffer: str) -> list[int]:
+        base = self.game.syms.addr(buffer)
+        return [self.emu.read_u16(base + c * 2) for c in MAP_BG_COLORS]
+
+    def _drought(self) -> str:
+        day = self._weather_day(dn.REGION_VOLCANO, dn.AFTERNOON, dn.WEATHER_DROUGHT)
+        self.box.set_clock(day, PERIOD_MINUTE[dn.AFTERNOON])
+        self._warp_to("MAP_CINNABAR_ISLAND", CINNABAR_SPOT)
+        steps = [self._expect_weather(dn.WEATHER_DROUGHT, f"Cinnabar, dia {day} tarde")]
+        before = self._playtime_frames()
+        self.emu.frames(120)
+        ran = (self._playtime_frames() - before) % 3600
+        assert ran >= 100, f"o jogo travou com o sol forte: o tempo de jogo andou {ran} em 120 quadros"
+        lum = lambda c: (c & 31) + (c >> 5 & 31) + (c >> 10 & 31)
+        unfaded = self._map_bg("gPlttBufferUnfaded")
+        brighter = sum(lum(f) > lum(u) for u, f in zip(unfaded, self._map_bg("gPlttBufferFaded")))
+        assert brighter > len(unfaded) // 2, f"só {brighter} de {len(unfaded)} cores clarearam"
+        self._shot("clima_sol_forte")
+        steps.append(f"tempo de jogo andou {ran}/120; {brighter}/{len(unfaded)} cores mais claras")
+        self.menu.open_start_menu()
+        self.menu.close_start_menu()
+        self._settle("menu START com sol forte")
+        assert self._map_bg("gPlttBufferUnfaded") == unfaded, "Unfaded mudou depois do menu START (tom dobrado)"
+        self._warp_to(CINNABAR_CENTER, CENTER_SPOT)
+        self._walk(*CENTER_EXIT)
+        self._warp("down", "MAP_CINNABAR_ISLAND")
+        self._settle("saída do Centro Pokémon de Cinnabar")
+        steps.append(self._expect_weather(dn.WEATHER_DROUGHT, "saída do Centro Pokémon"))
+        assert self._map_bg("gPlttBufferUnfaded") == unfaded, "Unfaded mudou depois do Centro Pokémon (tom dobrado)"
+        steps.append("Unfaded igual depois do menu START e do Centro Pokémon")
+        return "; ".join(steps)
+
+    def _drought_to_night(self) -> str:
+        day = self._weather_day(dn.REGION_VOLCANO, dn.EVENING, dn.WEATHER_DROUGHT)
+        night = dn.roll_weather(dn.REGION_VOLCANO, day, dn.NIGHT)
+        self.box.set_clock(day, 19 * 60 + 50)
+        self._warp_to("MAP_CINNABAR_ISLAND", CINNABAR_SPOT)
+        before = self._expect_weather(dn.WEATHER_DROUGHT, f"Cinnabar, dia {day} 19:50")
+        self.box.set_clock(day, 19 * 60 + 59)
+        spent = self._wait_weather(night, "19:59")
+        return f"{before} → noite: {_name(night)} ({spent} quadros depois de 19:59)"
+
     def _cave(self) -> str:
         map_name, spot = CAVE
         day, minute, rolled = self._rolled_inland_days(1)[0]
@@ -333,6 +393,10 @@ class WeatherScenario(ClockScenario):
             self._flow("clima/fixo: Viridian Forest e Pokémon Tower mantêm o clima do header",
                        self._fixed)
             self._flow("clima/caverna: Mt. Moon sem clima", self._cave)
+            self._flow("clima/sol_forte: Cinnabar com sol forte sem travar nem dobrar o tom",
+                       self._drought)
+            self._flow("clima/sol_forte_noite: o sol forte do fim de tarde sai na virada da noite",
+                       self._drought_to_night)
             self._flow("clima/batalha_granizo: neve do mapa vira granizo permanente na batalha",
                        self._battle_hail)
             for name, *case in BATTLE_CASES:
