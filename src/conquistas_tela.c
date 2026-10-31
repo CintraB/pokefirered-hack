@@ -591,12 +591,24 @@ static void DesenharTudo(struct ConquistasTela *t)
 static void TrocarModo(struct ConquistasTela *t)
 {
     u8 i;
+    bool8 falhou = FALSE;
 
     for (i = 0; i < WIN_COUNT; i++)
         RemoveWindow(i);
     t->modo ^= 1;
     for (i = 0; i < WIN_COUNT; i++)
-        AddWindow(&GetJanelas(t->modo)[i]);
+    {
+        if (AddWindow(&GetJanelas(t->modo)[i]) == 0xFF)
+            falhou = TRUE;
+    }
+    if (falhou)
+    {
+        // sem memória para as janelas: nada é desenhado (tileData NULL); a saída libera o que existir
+        t->inputReady = FALSE;
+        BeginNormalPaletteFade(PALETTES_ALL, 0, 0, 16, RGB_BLACK);
+        t->fase = FASE_SAIR;
+        return;
+    }
     if (t->modo)
         Diario_Montar(t);
     DesenharTudo(t);
@@ -960,7 +972,7 @@ static void DesenharDiarioDetalhe(struct ConquistasTela *t)
             StringExpandPlaceholders(gStringVar4, gText_Diario_TempoTurnos);
             ImprimirDetalhe(y, gStringVar4);
             y = DesenharDiarioTime(e, y + DETALHE_PASSO);
-            if (e->mvp != 0xFF && e->mvp < e->tamanhoTime)
+            if (e->mvp != 0xFF && e->mvp < PARTY_SIZE && e->mvp < e->tamanhoTime)
             {
                 StringCopy(gStringVar1, NomeDaEspecie(e->time[e->mvp]));
                 ConvertIntToDecimalStringN(gStringVar2, e->mvpNocautes, STR_CONV_MODE_LEFT_ALIGN, 3);

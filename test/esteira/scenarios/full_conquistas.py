@@ -88,7 +88,7 @@ TELA_TIMEOUT = 300       # a tela de conquistas monta e clareia (fade) em menos 
 TELA_ASSENTA = 8         # quadros depois da entrada pronta, antes da foto
 TELA_CB2 = "CB2_ConquistasTela"
 CARTAO_CB2 = "CB2_TrainerCard"
-CARTAO_DICA_RECORTE = (140, 118, 228, 128)   # (esquerda, topo, direita, base) da faixa "SELECT Conquistas" do cartão
+CARTAO_DICA_RECORTE = (140, 118, 228, 130)   # (esquerda, topo, direita, base) da faixa "SELECT Conquistas" do cartão
 CARTAO_ASSENTA = 90      # o cartão clareia e toca o som de abrir antes de ler os botões (STATE_HANDLE_INPUT_FRONT)
 # Task 6: o aviso
 AVISO_ATIVO = "gConquistasAvisoAtivo"   # u8: 1 enquanto o aviso está na tela (src/conquistas_aviso.c)

@@ -364,6 +364,22 @@ def test_textos_do_diario():
             assert re.search(r"#define \w+", linha), (nome, primeira, linha)
 
 
+def _quebra_time(tokens: list[str], largura: int) -> list[str]:
+    """A quebra de DesenharDiarioTime: "Time:" e os tokens "ESPÉCIE nvN" (vírgula depois de todos menos o último),
+    um espaço entre eles; o token que estoura a largura abre a linha seguinte."""
+    linhas, atual = [], STRINGS_DIARIO["gText_Diario_Time"]
+    for i, token in enumerate(tokens):
+        t = token + ("," if i + 1 < len(tokens) else "")
+        candidata = atual + " " + t
+        if _medir(candidata, "small") > largura:
+            linhas.append(atual)
+            atual = t
+        else:
+            atual = candidata
+    linhas.append(atual)
+    return linhas
+
+
 def test_larguras_diario():
     """O pior caso das linhas do diário cabe na janela: título, vazio, resultado, "hh:mm" até o teto do save
     ("1092:15" = 65535 minutos), cabeçalho nome + local, "Tempo: ... Turnos: 255", o MVP (nome de 10 letras, 255
@@ -396,16 +412,7 @@ def test_larguras_diario():
     # o time: 6 x espécie mais larga em nv100, na quebra gulosa da tela (rótulo na 1ª linha, "," entre eles)
     token = pior_nome + STRINGS_DIARIO["gText_Diario_Nivel"] + "100"
     rotulo = STRINGS_DIARIO["gText_Diario_Time"]
-    linhas, atual = [], rotulo
-    for i in range(6):
-        t = token + ("," if i < 5 else "")
-        candidata = atual + " " + t
-        if _medir(candidata, "small") > largura and atual:
-            linhas.append(atual)
-            atual = t
-        else:
-            atual = candidata
-    linhas.append(atual)
+    linhas = _quebra_time([token] * 6, largura)
     assert all(_medir(l, "small") <= largura for l in linhas), linhas
     maximo = _define("DETALHE_TIME_LINHAS")
     assert len(linhas) <= maximo, (len(linhas), linhas)
@@ -414,9 +421,15 @@ def test_larguras_diario():
     # cabe na janela: cabeçalho (normal) + tempo + time + MVP, em passo de DETALHE_PASSO
     altura = _define("DETALHE_ALTURA")
     assert _define("DETALHE_CABECALHO_Y") + 16 + _define("DETALHE_PASSO") * (1 + maximo + 1) <= altura
-    # 6 Pokémon medianos cabem em 2 linhas
-    medios = ["PIDGEOT nv50", "ALAKAZAM nv48", "RHYDON nv51", "GYARADOS nv55", "ARCANINE nv47", "LAPRAS nv50"]
-    assert _medir(rotulo + " " + ", ".join(medios), "small") <= 2 * largura
+    # um time médio de 6 (as fotos diario_rolado e diario_detalhe_sem_mvp): a mesma quebra palavra a palavra dá 3 linhas
+    # (medir o comprimento total contra 2 x a largura engana: a quebra só acontece entre Pokémon)
+    medios = ["BLASTOISE nv50", "PIDGEOT nv46", "ALAKAZAM nv48", "PIKACHU nv40", "SNORLAX nv52", "LAPRAS nv50"]
+    linhas_medio = _quebra_time(medios, largura)
+    assert len(linhas_medio) == 3, linhas_medio
+    # 3 Pokémon de nomes médios ainda cabem em 2 linhas
+    assert len(_quebra_time(["WARTORTLE nv21", "PIDGEOTTO nv19", "RATTATA nv18"], largura)) == 2
+    # a simulação é a da tela: o time vai em tokens "ESPÉCIE nvN" com vírgula, o rótulo só na 1ª linha
+    assert "DesenharDiarioTime" in _ler(TELA_C) and "CHAR_COMMA" in _corpo(_ler(TELA_C), "DesenharDiarioTime")
 
 
 def test_modo_diario_no_c():
@@ -433,7 +446,7 @@ def test_modo_diario_no_c():
     for token in ("u8 dCursor;", "u8 dTopo;", "u8 dN;", "u8 evts[DIARIO_EVT_COUNT];"):
         assert token in sem, token
     detalhe = _corpo(fonte, "DesenharDiarioDetalhe")
-    assert "e->mvp != 0xFF" in detalhe and "gText_Diario_MvpUm" in detalhe and "gText_Diario_MvpVarios" in detalhe
+    assert "e->mvp != 0xFF && e->mvp < PARTY_SIZE && e->mvp < e->tamanhoTime" in detalhe and "gText_Diario_MvpUm" in detalhe and "gText_Diario_MvpVarios" in detalhe
     assert "gText_Diario_TempoTurnos" in detalhe and "gDiarioEventos[" in detalhe
     lista = _corpo(fonte, "DesenharDiarioLista")
     assert "sText_SetaCima" in lista and "sText_SetaBaixo" in lista, "▲▼ quando há mais linhas"
@@ -441,6 +454,8 @@ def test_modo_diario_no_c():
     # SELECT alterna (nas duas direções), preservando cursor e aba; as janelas do outro modo são recriadas
     troca = _corpo(fonte, "TrocarModo")
     assert "RemoveWindow(" in troca and "AddWindow(" in troca and "t->modo ^= 1" in troca
+    # AddWindow pode falhar (0xFF): a tela sai com segurança em vez de desenhar com tileData NULL
+    assert "== 0xFF" in troca and "FASE_SAIR" in troca and troca.index("FASE_SAIR") < troca.index("DesenharTudo(t);")
     assert "SELECT_BUTTON" in _corpo(fonte, "Task_ConquistasTela_Input")
     # o diário não anda além das pontas (sem dar a volta) e rola quando o cursor sai da janela
     diario = _corpo(fonte, "Input_Diario")

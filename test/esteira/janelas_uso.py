@@ -110,13 +110,13 @@ VAR_CONTENTS: list[VarContent] = [
     # ":" é mais estreito), turnos até 255 e nocautes até 255
     VarContent("src/strings.c", "gText_Diario_TempoTurnos", "STR_VAR_1", 6,
                "tempo do diário: FormatarTempo(gStringVar1, e->minutos) = 4 algarismos de horas e 2 de minutos, com o ':' "
-               "(src/conquistas_tela.c:958)", digits=True),
+               "(src/conquistas_tela.c:970)", digits=True),
     VarContent("src/strings.c", "gText_Diario_TempoTurnos", "STR_VAR_2", 3,
-               "turnos do diário: ConvertIntToDecimalStringN(gStringVar2, e->turnos, ..., 3) (src/conquistas_tela.c:959)",
+               "turnos do diário: ConvertIntToDecimalStringN(gStringVar2, e->turnos, ..., 3) (src/conquistas_tela.c:971)",
                digits=True),
     *(VarContent("src/strings.c", label, "STR_VAR_2", 3,
                  "nocautes do MVP: ConvertIntToDecimalStringN(gStringVar2, e->mvpNocautes, ..., 3) "
-                 "(src/conquistas_tela.c:966)", digits=True)
+                 "(src/conquistas_tela.c:978)", digits=True)
       for label in ("gText_Diario_MvpUm", "gText_Diario_MvpVarios")),
     *(VarContent("src/strings.c", "gText_MenuSafariStats", var, n,
                  "Safari: passos (3), limite 600 (3) e bolas (2) (src/start_menu.c:275-277)", digits=True)
