@@ -1093,6 +1093,7 @@ bool8 HandleWishPerishSongOnTurnEnd(void)
                 gBattlerAttacker = gWishFutureKnock.futureSightAttacker[gActiveBattler];
                 gBattleMoveDamage = gWishFutureKnock.futureSightDmg[gActiveBattler];
                 gSpecialStatuses[gBattlerTarget].dmg = 0xFFFF;
+                gBattleStruct->conqGolpeTardio = TRUE; // POK-44: desligado na próxima passada de BattleTurnPassed
                 BattleScriptExecute(BattleScript_MonTookFutureAttack);
                 return TRUE;
             }

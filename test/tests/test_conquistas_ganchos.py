@@ -115,7 +115,8 @@ def test_campos_novos_no_fim_de_battle_struct():
     m = re.search(r"^struct BattleStruct\n\{\n(.*?)^\};", h, re.S | re.M)
     assert m
     membros = [l.strip() for l in m.group(1).splitlines() if l.strip() and not l.strip().startswith("//")]
-    assert membros[-2:] == ["u32 conqPersonalidade[PARTY_SIZE];", "u8 conqNocautes[PARTY_SIZE];"], membros[-3:]
+    assert membros[-3:] == ["u32 conqPersonalidade[PARTY_SIZE];", "u8 conqNocautes[PARTY_SIZE];",
+                           "u8 conqGolpeTardio;"], membros[-4:]
     # BattleStruct mora no heap (AllocZeroed): sem STATIC_ASSERT de tamanho que o fim novo quebre
     for arq in list(SRC.glob("*.c")) + list((REPO_ROOT / "include").glob("*.h")):
         assert not re.search(r"STATIC_ASSERT\(sizeof\((struct BattleStruct|\*gBattleStruct)\)", _ler(arq)), arq
@@ -166,11 +167,21 @@ def test_x4_ignora_dano_sem_tipo():
 
 
 def test_nocaute_ignora_golpe_tardio():
-    """Future Sight/Doom Desire acertam turnos depois: o Pokémon na posição do atacante pode ser outro."""
-    corpo = _corpo(_ler(CONQ_C), "Conquistas_OnNocaute")
-    for golpe in ("MOVE_FUTURE_SIGHT", "MOVE_DOOM_DESIRE"):
-        assert f"gCurrentMove == {golpe}" in corpo, golpe
-    assert corpo.index("MOVE_DOOM_DESIRE") < corpo.index("conqNocautes")
+    """Future Sight/Doom Desire acertam turnos depois e o `gCurrentMove` já está zerado: a batida tardia é marcada na
+    origem (HandleWishPerishSongOnTurnEnd liga `conqGolpeTardio` antes de rodar o script), desligada no começo de
+    cada passada de BattleTurnPassed (para onde o script volta com end2) e lida em Conquistas_OnNocaute."""
+    util = _corpo(_ler(SRC / "battle_util.c"), "HandleWishPerishSongOnTurnEnd")
+    bloco = util[util.index("futureSightCounter"):util.index("BattleScript_MonTookFutureAttack")]
+    assert "gBattleStruct->conqGolpeTardio = TRUE;" in bloco
+    assert util.count("conqGolpeTardio") == 1
+    passou = _corpo(_ler(SRC / "battle_main.c"), "BattleTurnPassed")
+    linhas = [l.strip() for l in passou.splitlines() if l.strip()]
+    i = linhas.index("TurnValuesCleanUp(TRUE);")
+    assert linhas[i + 1] == "gBattleStruct->conqGolpeTardio = FALSE;", linhas[i:i + 2]
+    nocaute = _corpo(_ler(CONQ_C), "Conquistas_OnNocaute")
+    assert "gBattleStruct->conqGolpeTardio" in nocaute
+    assert nocaute.index("conqGolpeTardio") < nocaute.index("conqNocautes")
+    assert "MOVE_FUTURE_SIGHT" not in nocaute and "MOVE_DOOM_DESIRE" not in nocaute, "filtro morto por gCurrentMove"
 
 
 def test_atalhos_novos():
@@ -183,5 +194,6 @@ def test_atalhos_novos():
 def test_cenario_tem_os_grupos_de_evento():
     texto = _ler(CENARIO)
     for grupo in ("evento/lider_e_sem_desmaio", "evento/golpe_x4", "evento/derrota_nao_conta",
-                  "evento/captura_poke_ball", "evento/ovo_chocado", "evento/lider_antes_da_insignia"):
+                  "evento/captura_poke_ball", "evento/ovo_chocado", "evento/nocaute_tardio",
+                  "evento/lider_antes_da_insignia"):
         assert f'"{grupo}"' in texto, grupo

@@ -12,7 +12,6 @@
 #include "constants/battle_move_effects.h"
 #include "constants/flags.h"
 #include "constants/items.h"
-#include "constants/moves.h"
 #include "constants/opponents.h"
 #include "data/conquistas_ids.h"
 
@@ -632,9 +631,9 @@ void Conquistas_OnNocaute(u8 battlerAtacante)
     u32 personalidade;
     u8 i;
 
-    if (GetBattlerSide(battlerAtacante) != B_SIDE_PLAYER || BatalhaIgnorada()
-     // o golpe tardio acerta turnos depois: gBattlerAttacker é a posição, e o Pokémon ali pode ser outro
-     || gCurrentMove == MOVE_FUTURE_SIGHT || gCurrentMove == MOVE_DOOM_DESIRE)
+    // a batida tardia de Future Sight/Doom Desire acerta turnos depois: gBattlerAttacker é a posição, e o Pokémon ali
+    // pode ser outro (o gCurrentMove já está zerado; HandleWishPerishSongOnTurnEnd liga conqGolpeTardio)
+    if (GetBattlerSide(battlerAtacante) != B_SIDE_PLAYER || BatalhaIgnorada() || gBattleStruct->conqGolpeTardio)
         return;
     personalidade = GetMonData(&gPlayerParty[gBattlerPartyIndexes[battlerAtacante]], MON_DATA_PERSONALITY);
     // vaga com nocautes = vaga usada; a primeira livre ou a do mesmo Pokémon recebe o nocaute

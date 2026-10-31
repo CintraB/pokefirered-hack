@@ -30,7 +30,9 @@ import re
 import sys
 
 from .. import conquistas as cq
-from ..emu import KEY_A, KEY_UP
+from ..battle import (ACTION_FIGHT, MOVE_FUNC_SUFFIX, PARTY_CHOOSE_TASK, PARTY_MENU_SLOT_ID,
+                      PARTY_SELECTION_TASK)
+from ..emu import KEY_A, KEY_DOWN, KEY_UP
 from ..game import SB1_MONEY
 from ..hooks import CMD_CONQ_ESTADO, CMD_START_WILD_BATTLE, CMD_WARP, NO_RESULT, Mailbox
 from . import REPO_ROOT, ScenarioContext
@@ -41,6 +43,11 @@ from .quick_route1 import POST_BATTLE_TIMEOUT
 MOVES = {m.group(1): int(m.group(2)) for m in re.finditer(
     r"^#define (MOVE_\w+)\s+(\d+)\b", (REPO_ROOT / "include/constants/moves.h").read_text(encoding="utf-8"), re.M)}
 GIOVANNI_FRENTE = (2, 3)   # o Giovanni fica em (2, 2), virado para baixo (data/maps/ViridianCity_Gym/map.json)
+ACTION_POKEMON = 2       # menu de ação: LUTAR, BOLSA, POKéMON, FUGIR (cursor 2x2)
+PARTY_SIZE = 6
+# struct BattleStruct (include/battle.h): os 0x200 do jogo, conqPersonalidade[6] (u32), conqNocautes[6], conqGolpeTardio
+BS_CONQ_NOCAUTES, BS_CONQ_GOLPE_TARDIO = 0x218, 0x21E
+TENTATIVAS_TARDIO = 4    # Future Sight tem precisão 90: a chance de errar 4 vezes seguidas é 1 em 10.000
 
 SB1_CONQUISTAS, SB2_DIARIO = 0x348C, 0xB20
 CONQ_SAVE_SIZE, DIARIO_SAVE_SIZE = 400, 0x400
@@ -383,6 +390,93 @@ class ConquistasScenario(CatchSaveScenario):
         assert self.box.conq_contador(1) == 0, "a captura não soma shiny (é o GiveMonToPlayer que soma)"
         return "Pidgey/Poké Ball e Snorlax/Ultra Ball pendentes; Snorlax (taxa 25)/Poké Ball feita"
 
+    def _trocar_para(self, slot: int) -> None:
+        """No menu de ação: POKéMON → slot → TROCAR (a 1ª opção do submenu)."""
+        d = self.driver
+        d.wait_action_menu()
+        d._choose_action(ACTION_POKEMON)
+        self.ctl.wait_until(lambda: PARTY_CHOOSE_TASK in self._tasks(), 300, "tela de Pokémon da batalha")
+        cursor = self.game.syms.addr("gPartyMenu") + PARTY_MENU_SLOT_ID
+        for _ in range(PARTY_SIZE):
+            if self.emu.read_u8(cursor) == slot:
+                break
+            antes = self.emu.read_u8(cursor)
+            self.ctl.press_until(KEY_DOWN, lambda: self.emu.read_u8(cursor) != antes, f"cursor no slot {slot}")
+        assert self.emu.read_u8(cursor) == slot, f"cursor em {self.emu.read_u8(cursor)}"
+        self.ctl.press_until(KEY_A, lambda: PARTY_SELECTION_TASK in self._tasks(), "submenu TROCAR")
+        self.ctl.press_until(KEY_A, lambda: PARTY_SELECTION_TASK not in self._tasks(), "TROCAR")
+        d.wait_action_menu()
+        assert d.active_slot() == slot, f"em campo o slot {d.active_slot()}"
+
+    def _turno_golpe_1(self, on_step) -> str:
+        """Um turno de LUTAR com o 1º golpe, olhando a batalha a cada passo: 'menu' ou 'end'."""
+        d = self.driver
+        d.wait_action_menu()
+        d._choose_action(ACTION_FIGHT)
+        em_golpes = lambda: d.controller_func().endswith(MOVE_FUNC_SUFFIX)
+        self.ctl.wait_until(em_golpes, 300, "menu de golpes")
+        d._choose_first_move_with_pp()
+        self.ctl.wait_until(lambda: not em_golpes(), 60, "saída do menu de golpes")
+        return d._advance_until_menu_or_end("fim do turno", 3000, on_step=on_step)
+
+    def _tardio_info(self) -> tuple[int, int, int]:
+        """(PS do oponente, contador e dano guardado do golpe tardio contra ele: gWishFutureKnock, battler 1)."""
+        base = self.game.syms.addr("gWishFutureKnock")
+        return (self.driver.battler_hp(1), self.emu.read_u8(base + 1),
+                int.from_bytes(self.emu.read(base + 8 + 4, 4), "little", signed=True))
+
+    def _nocaute_tardio(self) -> str:
+        """Mewtwo usa Future Sight e sai; o Magikarp que entrou só usa Splash, e a batida tardia derruba o Pidgey.
+        O nocaute não vai para o Magikarp (gBattlerAttacker é a posição, não quem usou o golpe). A batida tardia
+        tem precisão 90: se errar, foge e tenta de novo (até TENTATIVAS_TARDIO vezes)."""
+        self.box.conq_reset(True)
+        visto = {"tardio": 0, "nocautes": bytes(PARTY_SIZE)}
+
+        def olhar() -> None:
+            if not self.game.in_battle():
+                return
+            base = self.emu.read_u32(self.game.syms.addr("gBattleStruct"))
+            if not 0x02000000 <= base < 0x02040000:
+                return
+            visto["tardio"] = max(visto["tardio"], self.emu.read_u8(base + BS_CONQ_GOLPE_TARDIO))
+            nocautes = self.emu.read(base + BS_CONQ_NOCAUTES, PARTY_SIZE)
+            if any(nocautes):
+                visto["nocautes"] = nocautes
+        tentativas = []
+        for _ in range(TENTATIVAS_TARDIO):
+            self.box.set_party_mon(0, self.consts.species("MEWTWO"), 100)
+            self.box.set_party_mon(1, self.consts.species("MAGIKARP"), 50)
+            assert self.box.party_size(2) == 2
+            self.box.set_party_move(0, 0, MOVES["MOVE_FUTURE_SIGHT"])
+            self.box.set_party_move(1, 0, MOVES["MOVE_SPLASH"])
+            assert self.box.call(CMD_START_WILD_BATTLE, self.consts.species("PIDGEY"), 2) == 1, "START_WILD_BATTLE"
+            historia = []
+            assert self._turno_golpe_1(olhar) == "menu", "turno 1 (Future Sight)"
+            historia.append(("Future Sight", *self._tardio_info()))
+            self._trocar_para(1)
+            historia.append(("troca", *self._tardio_info()))
+            fim = "menu"
+            for _ in range(3):
+                fim = self._turno_golpe_1(olhar)
+                if fim == "end":
+                    break
+                historia.append(("Splash", *self._tardio_info()))
+            tentativas.append(historia)
+            if fim == "end":
+                break
+            # a batida errou (o contador já chegou a 0): foge e recomeça
+            while self.game.in_battle() and not self.driver.run_away():
+                pass
+            self.ctl.wait_overworld_idle(POST_BATTLE_TIMEOUT)
+        assert fim == "end" and self.driver.outcome() == 1, f"o Pidgey não caiu em {len(tentativas)}: {tentativas}"
+        self.ctl.wait_overworld_idle(POST_BATTLE_TIMEOUT)
+        assert self.game.party()[1].hp > 0 and self.game.party()[0].hp > 0, "alguém do time desmaiou"
+        assert not any(visto["nocautes"]), f"nocaute creditado: conqNocautes = {visto['nocautes'].hex()}"
+        assert visto["tardio"] == 1, "conqGolpeTardio nunca foi ligado"
+        self.box.party_size(1)
+        return (f"Future Sight do Mewtwo derruba o Pidgey com o Magikarp em campo, na tentativa {len(tentativas)} "
+                f"(PS, contador e dano por turno: {tentativas[-1]}): conqNocautes todo 0, conqGolpeTardio ligado")
+
     def _ovo_chocado(self) -> str:
         """Ovos do jogador chocados pelo special de verdade (AddHatchedMonToParty → Conquistas_OnOvoChocado)."""
         self.box.conq_reset(True)
@@ -455,6 +549,7 @@ class ConquistasScenario(CatchSaveScenario):
             self.suite.run("evento/derrota_nao_conta", self._derrota_nao_conta)
             self.suite.run("evento/captura_poke_ball", self._captura_poke_ball)
             self.suite.run("evento/ovo_chocado", self._ovo_chocado)
+            self.suite.run("evento/nocaute_tardio", self._nocaute_tardio)
             self.suite.run("evento/lider_antes_da_insignia", self._lider_antes_da_insignia)
         except Abort:
             pass

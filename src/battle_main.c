@@ -2974,7 +2974,9 @@ void BattleTurnPassed(void)
 {
     s32 i;
 
+    // POK-44: a batida tardia (battle_util.c, conqGolpeTardio) volta aqui com end2; toda passada desliga a marca
     TurnValuesCleanUp(TRUE);
+    gBattleStruct->conqGolpeTardio = FALSE;
     if (gBattleOutcome == 0)
     {
         if (DoFieldEndTurnEffects())
