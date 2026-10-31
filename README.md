@@ -282,7 +282,7 @@ flowchart LR
   comparadas pixel a pixel com as referências aprovadas de cada um.
 - **Checagem de texto**: mede a largura de cada frase traduzida na janela onde ela aparece e o
   tamanho dos buffers, para nada estourar.
-- **4660 testes em pytest** cobrem a própria esteira e as regras de cada hack.
+- **4709 testes em pytest** cobrem a própria esteira e as regras de cada hack.
 
 <details>
 <summary>Comandos (WSL)</summary>
