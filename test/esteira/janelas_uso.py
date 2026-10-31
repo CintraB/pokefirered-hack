@@ -136,7 +136,7 @@ VAR_CONTENTS: list[VarContent] = [
 # Chamadas que montam menu/lista: o texto que passa por elas tem de cair numa regra específica
 MENU_CALL = re.compile(r"^call:\w*(?:Menu|List|PrintTextArray|ActionText|Multichoice)\w*$")
 # Menu montado à mão: AddTextPrinterParameterized* numa função que também põe o cursor de menu
-# (menu do PC, Seagallop: src/script_menu.c:986-1036, :1236-1289)
+# (menu do PC, Seagallop: src/script_menu.c:997-1047, :1247-1300)
 MENU_PRINT = re.compile(r"^call:AddTextPrinterParameterized\d?$")
 _MENU_INIT = re.compile(r"\b(?:Menu_InitCursor\w*|InitMenu\w*|CreateMCMenuInputHandlerTask|ListMenuInit\w*|"
                         r"MultichoiceGrid_InitCursor|CreateYesNoMenu\w*)\s*\(")
@@ -429,30 +429,33 @@ USAGE_RULES: list[UsageRule] = [
     U("src/script_menu.c", "table:sMultichoiceList_TrainerSchoolWhiteboard", 6 * 8,
       "quadro da Escola de Treinadores (src/script_menu.c:94-101): grade de 3 colunas "
       "(data/maps/ViridianCity_School/scripts.inc:56), "
-      "célula de (GetMenuWidthFromList + 1) * 8 px com o texto em x = 8 (src/script_menu.c:680-693, :930-937; "
-      "src/menu.c:580-591); a janela começa no tile 8 (src/script_menu.c:1193-1195) e a borda tem de caber no "
+      "célula de (GetMenuWidthFromList + 1) * 8 px com o texto em x = 8 (src/script_menu.c:691-704, :941-948; "
+      "src/menu.c:580-591); a janela começa no tile 8 (src/script_menu.c:1204-1206) e a borda tem de caber no "
       "29, logo 3 células <= 21 tiles e o texto <= 6 tiles = 48 px"),
     U("src/script_menu.c", "table:sMultichoiceList_*", 214,
       "multiescolha vertical: a janela cresce com o texto, com (largura + 9) / 8 + 1 de largura em tiles, e se "
-      "desloca para caber em 28 (src/script_menu.c:736-738): largura <= 214 px (com left = 0 a borda já sai da tela)"),
+      "desloca para caber em 28 (src/script_menu.c:747-749): largura <= 214 px (com left = 0 a borda já sai da tela)"),
     *(U("src/script_menu.c", "call:AddTextPrinterParameterized", 13 * 8 - 8,
-        "menu do PC: janela de 13 tiles antes da Pokédex (src/script_menu.c:993-999), texto em "
-        "x = cursorWidth = 8 (src/script_menu.c:988, :1025, :1028-1030; src/new_menu_helpers.c:147)", label=lb)
+        "menu do PC: janela de 13 tiles antes da Pokédex (src/script_menu.c:1004-1010), texto em "
+        "x = cursorWidth = 8 (src/script_menu.c:999, :1036, :1039-1041; src/new_menu_helpers.c:147)", label=lb)
       for lb in ("gText_SomeoneSPc", "gText_BillSPc", "gText_LogOff")),
     *(U("src/script_menu.c", "call:AddTextPrinterParameterized", 14 * 8 - 8,
-        "menu do PC com a Pokédex: janela de 14 tiles (src/script_menu.c:996-997), texto em x = 8 "
-        "(src/script_menu.c:1011-1012, :1024)", label=lb) for lb in ("gText_ProfOakSPc", "gText_HallOfFame_2")),
+        "menu do PC com a Pokédex: janela de 14 tiles (src/script_menu.c:1007-1008), texto em x = 8 "
+        "(src/script_menu.c:1022-1023, :1035)", label=lb) for lb in ("gText_ProfOakSPc", "gText_HallOfFame_2")),
     U("src/script_menu.c", "call:*", 13 * 8 - 8,
-      "\"PC de {PLAYER}\" no menu do PC: janela de 13 tiles (src/script_menu.c:993-999), texto em x = 8 "
-      "(src/script_menu.c:1031-1032)", label="gText_SPc"),
+      "\"PC de {PLAYER}\" no menu do PC: janela de 13 tiles (src/script_menu.c:1004-1010), texto em x = 8 "
+      "(src/script_menu.c:1042-1043)", label="gText_SPc"),
     U("src/script_menu.c", "table:sSeagallopDestStrings", 11 * 8 - 8,
-      "menu do Seagallop: janela de 11 tiles (src/script_menu.c:1267), texto em x = cursorWidth = 8 "
-      "(src/script_menu.c:1265, :1274)"),
+      "menu do Seagallop: janela de 11 tiles (src/script_menu.c:1278), texto em x = cursorWidth = 8 "
+      "(src/script_menu.c:1276, :1285)"),
     *(U("src/script_menu.c", "call:AddTextPrinterParameterized", 11 * 8 - 8,
-        "\"Outro\"/\"Sair\" do menu do Seagallop: janela de 11 tiles (src/script_menu.c:1267), texto em x = 8 "
-        "(src/script_menu.c:1283-1285)", label=lb) for lb in ("gText_Other", "gOtherText_Exit")),
+        "\"Outro\"/\"Sair\" do menu do Seagallop: janela de 11 tiles (src/script_menu.c:1278), texto em x = 8 "
+        "(src/script_menu.c:1294-1296)", label=lb) for lb in ("gText_Other", "gOtherText_Exit")),
     U("src/script_menu.c", "table:gStdStringPtrs", DIALOG_PX,
-      _DIALOG + "; vai para {STR_VAR_n} pelo bufferstdstring (src/scrcmd.c:1693, src/script_menu.c:574)"),
+      _DIALOG + "; vai para {STR_VAR_n} pelo bufferstdstring (src/scrcmd.c:1693, src/script_menu.c:585)"),
+    # POK-42: o degrau atual na fala da guarda da Liga (data/maps/IndigoPlateau_PokemonCenter_1F/text.inc)
+    U("src/rematch_tier.c", "table:sRematchTierNames", DIALOG_PX,
+      _DIALOG + "; vai para {STR_VAR_1} pelo special BufferRematchTierName (src/rematch_tier.c:159)"),
     U("src/field_specials.c", "table:sFloorNamePointers", 56,
       "andar do elevador: alinhado à direita em x = 56 (src/field_specials.c:1108)"),
     U("src/field_specials.c", "call:AddTextPrinterParameterized", 7 * 8,

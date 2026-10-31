@@ -478,4 +478,5 @@ gSpecials::
 	def_special Conquistas_AbrirTelaDoScript
 	@ Revanches por degrau (POK-42)
 	def_special ShouldUseLeagueRematchTeams
+	def_special BufferRematchTierName
 gSpecialsEnd::

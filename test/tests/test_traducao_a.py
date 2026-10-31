@@ -119,7 +119,10 @@ ROTULOS_DOS_HACKS = {"PalletTown_ProfessorOaksLab_Text_OakAnotherRareEgg",      
                      "PalletTown_ProfessorOaksLab_Text_OakNovidadesAnytime",
                      "PalletTown_ProfessorOaksLab_Text_OakOfferNovidades",
                      "MtMoon_B2F_Text_TakeTheOtherFossilToo",                    # Hack 8: dois fósseis no Monte Lua
-                     "FourIsland_Text_DaycareManIncubator"}                      # POK-37: a creche dá a Incubadora
+                     "FourIsland_Text_DaycareManIncubator",                      # POK-37: a creche dá a Incubadora
+                     "IndigoPlateau_PokemonCenter_1F_Text_AskTier",              # POK-42: a guarda da Liga pergunta o degrau
+                     "IndigoPlateau_PokemonCenter_1F_Text_TierSet",
+                     "IndigoPlateau_PokemonCenter_1F_Text_KeepTier"}
 # rótulos da base que um hack tirou de propósito (o texto deixou de existir)
 ROTULOS_REMOVIDOS_DOS_HACKS = {"MtMoon_B2F_Text_ThenThisFossilIsMine"}           # Hack 8: o Miguel não leva mais o outro fóssil
 

@@ -41,3 +41,18 @@ IndigoPlateau_PokemonCenter_1F_Text_LancesCousinGymLeaderFarAway::
     .string "que é Líder de Ginásio em algum\l"
     .string "lugar bem distante.$"
 
+IndigoPlateau_PokemonCenter_1F_Text_AskTier::
+    .string "Que bom ver você de volta à Liga!\p"
+    .string "A Liga Pokémon pode ajustar a força\n"
+    .string "dos desafiantes.\p"
+    .string "Hoje está em {STR_VAR_1}. Qual nível\n"
+    .string "você quer enfrentar?$"
+
+IndigoPlateau_PokemonCenter_1F_Text_TierSet::
+    .string "Combinado!\p"
+    .string "A Elite Quatro e as revanches do\n"
+    .string "Explorador VS vão usar {STR_VAR_1}.$"
+
+IndigoPlateau_PokemonCenter_1F_Text_KeepTier::
+    .string "Tudo bem, fica como está.$"
+

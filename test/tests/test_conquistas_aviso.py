@@ -86,7 +86,8 @@ def test_special_no_fim_e_script():
     # no fim, depois de todos os da base; a Task 7 acrescentou o da tela logo depois e o POK-42 o da Liga
     nomes = re.findall(r"def_special (\w+)", specials.split("gSpecialsEnd::")[0])
     finais = nomes[nomes.index("Conquistas_MostrarAviso"):]
-    assert finais == ["Conquistas_MostrarAviso", "Conquistas_AbrirTelaDoScript", "ShouldUseLeagueRematchTeams"], finais
+    assert finais == ["Conquistas_MostrarAviso", "Conquistas_AbrirTelaDoScript", "ShouldUseLeagueRematchTeams",
+                      "BufferRematchTierName"], finais
     script = _ler(SCRIPT)
     m = re.search(r"^EventScript_AvisoConquista::\n(.*?)\n\n", script + "\n\n", re.S | re.M)
     assert m, "EventScript_AvisoConquista não encontrado"

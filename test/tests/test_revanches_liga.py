@@ -155,7 +155,8 @@ def test_liga_no_c():
                      r"TRAINER_CHAMPION_REMATCH_CHARMANDER - TRAINER_ELITE_FOUR_LORELEI_2 \+ 1", fonte)
     specials = _ler(REPO_ROOT / "data" / "specials.inc")
     fim = specials[:specials.index("gSpecialsEnd::")].rstrip().splitlines()
-    assert fim[-1].strip() == "def_special ShouldUseLeagueRematchTeams"
+    # o da Task 4 (BufferRematchTierName) vem logo depois
+    assert [l.strip() for l in fim[-2:]] == ["def_special ShouldUseLeagueRematchTeams", "def_special BufferRematchTierName"]
 
 
 @pytest.mark.parametrize("sala", SALAS)

@@ -5,6 +5,8 @@
 #include "data.h"
 #include "event_data.h"
 #include "pokemon.h"
+#include "string_util.h"
+#include "strings.h"
 #include "vs_seeker.h"
 #include "constants/battle.h"
 #include "constants/flags.h"
@@ -138,4 +140,21 @@ u8 GetCurrentBattleRematchTier(void)
                            | BATTLE_TYPE_EREADER_TRAINER | BATTLE_TYPE_TRAINER_TOWER)) != BATTLE_TYPE_TRAINER)
         return 0;
     return sRematchTierState & STATE_TIER_MASK;
+}
+
+// Os mesmos rótulos da lista da guarda da Liga (sMultichoiceList_RematchTier, src/script_menu.c), por degrau.
+static const u8 *const sRematchTierNames[] = {
+    gText_RematchTier_Normal,
+    gText_RematchTier_60,
+    gText_RematchTier_70,
+    gText_RematchTier_80,
+    gText_RematchTier_90,
+    gText_RematchTier_100,
+};
+
+STATIC_ASSERT(NELEMS(sRematchTierNames) == REMATCH_TIER_MAX + 1, RematchTierNamesCobreOsDegraus);
+
+void BufferRematchTierName(void)
+{
+    StringCopy(gStringVar1, sRematchTierNames[GetRematchTier()]);
 }

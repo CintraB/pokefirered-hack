@@ -19,6 +19,7 @@ IndigoPlateau_PokemonCenter_1F_EventScript_DoorGuard::
 	faceplayer
 	specialvar VAR_RESULT, IsNationalPokedexEnabled
 	goto_if_eq VAR_RESULT, TRUE, IndigoPlateau_PokemonCenter_1F_EventScript_CheckSeviiIslandComplete
+	call_if_set FLAG_SYS_GAME_CLEAR, IndigoPlateau_PokemonCenter_1F_EventScript_AskTier
 	msgbox IndigoPlateau_PokemonCenter_1F_Text_FaceEliteFourGoodLuck
 	release
 	end
@@ -30,9 +31,41 @@ IndigoPlateau_PokemonCenter_1F_EventScript_CheckSeviiIslandComplete::
 	end
 
 IndigoPlateau_PokemonCenter_1F_EventScript_SeviiIslandComplete::
+	call_if_set FLAG_SYS_GAME_CLEAR, IndigoPlateau_PokemonCenter_1F_EventScript_AskTier
 	msgbox IndigoPlateau_PokemonCenter_1F_Text_FaceEliteFourGoodLuck
 	release
 	end
+
+@ POK-42: depois do Hall da Fama, a guarda pergunta o degrau da Liga e das revanches do Vs. Seeker quando o jogador
+@ pisa em frente à porta (uma vez por visita: VAR_TEMP_1 zera a cada mapa) ou fala com ela.
+IndigoPlateau_PokemonCenter_1F_EventScript_TierTrigger::
+	goto_if_questlog EventScript_ReleaseEnd
+	goto_if_unset FLAG_SYS_GAME_CLEAR, IndigoPlateau_PokemonCenter_1F_EventScript_TierTriggerOff
+	lockall
+	textcolor NPC_TEXT_COLOR_FEMALE
+	call IndigoPlateau_PokemonCenter_1F_EventScript_AskTier
+	releaseall
+	end
+
+IndigoPlateau_PokemonCenter_1F_EventScript_TierTriggerOff::
+	setvar VAR_TEMP_1, 1
+	end
+
+IndigoPlateau_PokemonCenter_1F_EventScript_AskTier::
+	setvar VAR_TEMP_1, 1
+	special BufferRematchTierName
+	message IndigoPlateau_PokemonCenter_1F_Text_AskTier
+	waitmessage
+	multichoice 20, 0, MULTICHOICE_REMATCH_TIER, FALSE
+	goto_if_eq VAR_RESULT, SCR_MENU_CANCEL, IndigoPlateau_PokemonCenter_1F_EventScript_KeepTier
+	copyvar VAR_REMATCH_TIER, VAR_RESULT
+	special BufferRematchTierName
+	msgbox IndigoPlateau_PokemonCenter_1F_Text_TierSet
+	return
+
+IndigoPlateau_PokemonCenter_1F_EventScript_KeepTier::
+	msgbox IndigoPlateau_PokemonCenter_1F_Text_KeepTier
+	return
 
 IndigoPlateau_PokemonCenter_1F_EventScript_GymGuy::
 	msgbox IndigoPlateau_PokemonCenter_1F_Text_GymGuyAdvice, MSGBOX_NPC
