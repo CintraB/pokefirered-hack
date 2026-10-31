@@ -180,3 +180,51 @@ def test_golpes_de_ovo_gen6():
     achado = {(esp, g) for esp, lista in atuais.items() for g in lista if g in NOVOS}
     esperado = {(esp, g) for esp, lista in GEN6["egg"].items() for g in lista}
     assert esperado and achado == esperado
+
+
+# --- Task 4b: moveset padrão e IA com Soundproof ---------------------------------------------
+
+def _moveset_padrao(learnset: list[tuple[int, str]], nivel: int) -> list[str]:
+    """Espelho de GiveBoxMonInitialMoveset (src/pokemon.c): percorre o learnset até passar do nível;
+    golpe já conhecido é pulado; com 4 golpes, apaga o primeiro e põe o novo no fim."""
+    golpes: list[str] = []
+    for lv, golpe in learnset:
+        if lv > nivel:
+            break
+        if golpe in golpes:
+            continue
+        if len(golpes) == 4:
+            golpes.pop(0)
+        golpes.append(golpe)
+    return golpes
+
+
+def test_golpes_novos_nivel1_nao_mudam_moveset_padrao():
+    atuais = _learnsets(_ler("src/data/pokemon/level_up_learnsets.h"))
+    base = _learnsets(_git_show("src/data/pokemon/level_up_learnsets.h"))
+    com_nivel1 = {nome for nome, lista in atuais.items() if any(lv == 1 and g in NOVOS for lv, g in lista)}
+    assert {"sClefableLevelUpLearnset", "sWigglytuffLevelUpLearnset", "sJynxLevelUpLearnset",
+            "sLinooneLevelUpLearnset"} <= com_nivel1
+    for nome in com_nivel1:
+        # golpes novos de nível > 1 (Gen 6 pura, de propósito) ficam fora; aqui só pesa o de nível 1
+        lista = [(lv, g) for lv, g in atuais[nome] if not (g in NOVOS and lv > 1)]
+        bloco1 = [g for lv, g in lista if lv == 1]
+        novos1 = [g for g in bloco1 if g in NOVOS]
+        assert bloco1[:len(novos1)] == novos1, nome          # o novo vem antes dos outros de nível 1
+        for nivel in range(1, 101):
+            velho, novo = _moveset_padrao(base[nome], nivel), _moveset_padrao(lista, nivel)
+            if len(velho) == 4:
+                assert novo == velho, (nome, nivel)          # nada sai do moveset padrão
+            else:
+                # base com menos de 4 golpes (Clefairy, Persian, Mawile): o novo só ocupa a vaga vazia
+                assert [g for g in novo if g not in novos1] == velho, (nome, nivel)
+
+
+def test_ia_soundproof_cobre_todos_os_golpes_de_som():
+    tabela = re.search(r"sSoundMovesTable\[\] =\s*\{(.*?)\};", _ler("src/battle_util.c"), re.S).group(1)
+    som = [g for g in re.findall(r"MOVE_\w+", tabela)]
+    assert {"MOVE_HYPER_VOICE", "MOVE_DISARMING_VOICE"} <= set(som)
+    ia = re.search(r"^AI_CheckBadMove_CheckSoundproof::\n(.*?)\n\n", _ler("data/battle_ai_scripts.s"), re.M | re.S).group(1)
+    linhas = ia.splitlines()
+    assert linhas[:2] == ["\tget_ability AI_TARGET", "\tif_not_equal ABILITY_SOUNDPROOF, AI_CheckBadMove_CheckEffect"]
+    assert linhas[2:] == [f"\tif_move {g}, Score_Minus10" for g in som]
