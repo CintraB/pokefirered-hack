@@ -476,7 +476,8 @@ def test_registro_dos_cenarios_completos():
                  "novidades",  # tela de novidades
                  "ritmo",  # Hack 2: andar e correr por input
                  "clima_batalha",  # POK-15
-                 "fisico_fada"):  # POK-43, 45
+                 "fisico_fada",  # POK-43, 45
+                 "conquistas"):  # POK-44
         spec = by_name[name]
         assert (spec.rom, spec.save_from, spec.needs) == (TEST, "captura", None)
     playable = [s.name for s in specs if s.rom == cli.PLAYABLE]
@@ -497,7 +498,8 @@ def test_registro_dos_cenarios_completos():
         (TEST, ["novidades"]),  # tela de novidades
         (TEST, ["ritmo"]),  # Hack 2
         (TEST, ["clima_batalha"]),  # POK-15
-        (TEST, ["fisico_fada"])]  # POK-43, 45
+        (TEST, ["fisico_fada"]),  # POK-43, 45
+        (TEST, ["conquistas"])]  # POK-44
     for spec in specs:
         if spec.save_from is not None:
             assert spec.rom == TEST and any(g[0] is spec for _, g in groups)

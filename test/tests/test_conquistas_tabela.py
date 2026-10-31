@@ -262,6 +262,33 @@ def test_gerador_recusa_degraus_fora_de_ordem(tmp_path):
     assert r.returncode != 0 and "estritamente crescentes" in r.stderr
 
 
+def test_slots_de_degrau_fixos(tmp_path):
+    """O progresso dos degraus vai no save (`degrauEntregue[slot]`): o slot é explícito no JSON e não muda
+    quando uma conquista nova entra (Task 2)."""
+    c = {x["id"]: x for x in _dados()["conquistas"]}
+    assert {i: x["slot"] for i, x in c.items() if "slot" in x} == {"treinadores": 0, "shinies": 1, "horas": 2}
+    _, tabela = _gerar(tmp_path)
+    for cid, slot in (("treinadores", 0), ("shinies", 1), ("horas", 2)):
+        bloco = re.search(rf"\[CONQ_{cid.upper()}\] =\n    \{{(.*?)\n    \}}", tabela, re.S).group(1)
+        assert f".slotDegrau = {slot}," in bloco, cid
+
+
+@pytest.mark.parametrize("mexe, erro", [
+    (lambda d: next(c for c in d["conquistas"] if c["id"] == "horas").pop("slot"), "slot"),
+    (lambda d: next(c for c in d["conquistas"] if c["id"] == "horas").update(slot=0), "slot 0 repetido"),
+    (lambda d: next(c for c in d["conquistas"] if c["id"] == "horas").update(slot=8), "fora de 0-7"),
+    (lambda d: d["conquistas"][0].update(slot=3), "`slot` só existe"),
+])
+def test_gerador_recusa_slot_malformado(tmp_path, mexe, erro):
+    dados = copy.deepcopy(_dados())
+    mexe(dados)
+    ruim = tmp_path / "ruim.json"
+    ruim.write_text(json.dumps(dados, ensure_ascii=False), encoding="utf-8")
+    r = subprocess.run([sys.executable, str(GEN_SCRIPT), str(ruim), str(tmp_path / "i.h"), str(tmp_path / "t.h")],
+                       capture_output=True, encoding="utf-8")
+    assert r.returncode != 0 and erro in r.stderr
+
+
 def test_make_gera_os_headers_e_o_git_ignora():
     mk = RULES_MK.read_text(encoding="utf-8")
     assert "tools/conquistas/gen_conquistas.py" in mk

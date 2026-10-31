@@ -201,6 +201,30 @@ class Mailbox:
         defensor `type1`/`type2`, como o Cmd_typecalc aplica, sem Foresight (400 = x4, 25 = x0,25)."""
         return self.call(CMD_TYPE_EFFECTIVENESS, move_type, type1 | type2 << 8)
 
+    # --- POK-44: conquistas e diário ----------------------------------------------------
+    def conq_estado(self, num: int) -> tuple[int, int, int, int]:
+        """(estado, entregue, degrau entregue, degrau atual) da conquista `num` (CONQ_*): estado
+        0 pendente, 1 feita, 2 perdida; o degrau atual é 0 até as regras de estado (Task 3)."""
+        packed = self.call(CMD_CONQ_ESTADO, num)
+        assert packed != NO_RESULT, f"conquista inválida: {num}"
+        return packed & 0xFF, packed >> 8 & 0xFF, packed >> 16 & 0xFF, packed >> 24 & 0xFF
+
+    def conq_contador(self, k: int) -> int:
+        """0 vitórias, 1 shinies, 2 origem | resumoPendente << 8, 3 magic, 4 + aba: feitas |
+        válidas << 8 daquela aba (0 até a Task 3)."""
+        value = self.call(CMD_CONQ_CONTADOR, k)
+        assert value != NO_RESULT, f"contador inválido: {k}"
+        return value
+
+    def conq_reset(self, jogo_novo: bool) -> int:
+        """jogo_novo: Conquistas_IniciarJogoNovo(); senão zera as duas áreas (save antigo, sem
+        marcador). Devolve o magic."""
+        return self.call(CMD_CONQ_RESET, int(jogo_novo))
+
+    def conq_checar(self) -> int:
+        """Conquistas_ChecarEstado() agora; devolve Conquistas_AvisosPendentes() (0 até a Task 3)."""
+        return self.call(CMD_CONQ_CHECAR)
+
 # --- Hack 6: breeding genético (enum à parte em include/test_hooks.h, a partir de 0x60; ------
 # o uso fica em esteira/breeding.py e scenarios/full_breeding.py / full_egg.py)
 CMD_BREED_SETUP = 0x60      # gTestBreedSetup -> creche (arg0 = 1: ovo pendente) -> compatibilidade (0xFFFFFFFF = pai inválido)
@@ -247,3 +271,11 @@ CMD_CALC_DAMAGE = 0xA0      # arg0 = golpe, arg1 = 0 -> CalculateBaseDamage: gPl
                             # (BattlePokemon montados na hora; sem crítico, clima, tela, insígnia nem efeito de campo)
 CMD_TYPE_EFFECTIVENESS = 0xA1  # arg0 = tipo do golpe, arg1 = tipo1 | tipo2 << 8 do defensor -> multiplicador x 100
                               # (gTypeEffectiveness como no Cmd_typecalc, sem Foresight; POK-45)
+
+# --- POK-44: conquistas e diário de batalhas (enum à parte, a partir de 0xB0) ---
+CMD_CONQ_ESTADO = 0xB0      # arg0 = num -> estado | entregue << 8 | degrau entregue << 16 | degrau atual << 24
+                            # (0xFFFFFFFF = num inválido; degrau atual 0 até a Task 3)
+CMD_CONQ_CONTADOR = 0xB1    # arg0 = 0 vitórias, 1 shinies, 2 origem | resumoPendente << 8, 3 magic,
+                            # 4 + aba -> feitas | válidas << 8 (0 até a Task 3)
+CMD_CONQ_RESET = 0xB2       # arg0 = 0 zera as duas áreas (save antigo), 1 Conquistas_IniciarJogoNovo -> magic
+CMD_CONQ_CHECAR = 0xB3      # Conquistas_ChecarEstado() -> Conquistas_AvisosPendentes() (0 até a Task 3)

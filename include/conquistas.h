@@ -37,7 +37,8 @@ struct ConquistaPremio
 //   VITORIAS      degraus = treinadores derrotados
 //   SHINIES       degraus = shinies capturados/chocados
 //   EVENTO        param = CONQ_EVT_*
-// Com degraus, `numDegraus` > 0 e `slotDegrau` (0 a CONQ_MAX_DEGRAUS - 1) é o slot de progresso no save;
+// Com degraus, `numDegraus` > 0 e `slotDegrau` (0 a CONQ_MAX_DEGRAUS - 1) é o slot de progresso no save
+// (campo `slot` do JSON, explícito e fixo: `degrauEntregue[slot]` em struct ConquistasSave);
 // sem degraus `slotDegrau` é 0xFF. `premios` tem max(1, numDegraus) entradas (um prêmio por degrau).
 struct Conquista
 {
@@ -70,5 +71,17 @@ struct DiarioEvento
 extern const struct Conquista gConquistas[];
 extern const struct DiarioEvento gDiarioEventos[];
 extern const u8 *const gConquistasAbaNomes[];
+
+// Estado no save (src/conquistas.c; struct ConquistasSave em gSaveBlock1Ptr->conquistas, struct DiarioSave em
+// gSaveBlock2Ptr->diario). `num` é CONQ_<ID>; fora da tabela, as leituras dão 0 e as escritas não fazem nada.
+bool8 Conquistas_NumValido(u8 num);              // num de uma conquista da tabela
+void Conquistas_IniciarJogoNovo(void);           // zera as duas áreas e grava o marcador (origem: jogo novo)
+u8 Conquistas_GetEstado(u8 num);                 // CONQ_PENDENTE / CONQ_FEITA / CONQ_PERDIDA
+void Conquistas_Marcar(u8 num);                  // só PENDENTE -> FEITA (perdida nunca vira feita)
+void Conquistas_Perder(u8 num);                  // só PENDENTE -> PERDIDA
+bool8 Conquistas_Entregue(u8 num);               // prêmio já entregue
+void Conquistas_SetEntregue(u8 num);
+u8 Conquistas_DegrauEntregue(u8 num);            // degraus já entregues (0 sem degraus)
+void Conquistas_SetDegrauEntregue(u8 num, u8 degrau);
 
 #endif // GUARD_CONQUISTAS_H

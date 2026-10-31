@@ -11,6 +11,7 @@
 #include "constants/pokedex.h"
 #include "constants/easy_chat.h"
 #include "constants/rgb.h"
+#include "constants/conquistas.h"
 
 // Prevent cross-jump optimization.
 #define BLOCK_CROSS_JUMP asm("");
@@ -324,6 +325,46 @@ struct BattleTowerData // Leftover from R/S
     /*0x04D1, 0x0581*/ u8 filler_4D1[0x317];
 }; /* size = 0x7E8 */
 
+// Conquistas e diário de batalhas (POK-44). As duas áreas eram espaço sem uso, com zeros em todo save desta
+// hack: magic != CONQ_MAGIC é um save de antes das conquistas. Os campos só crescem por dentro de `livre`.
+struct ConquistasSave
+{
+    /*0x00*/ u32 magic;            // CONQ_MAGIC ("CQD1") depois do jogo novo ou da varredura retroativa
+    /*0x04*/ u8 versao;            // CONQ_VERSAO
+    /*0x05*/ u8 origem;            // CONQ_ORIGEM_JOGO_NOVO / CONQ_ORIGEM_SAVE_ANTIGO
+    /*0x06*/ u8 resumoPendente;
+    /*0x07*/ u8 livre0;
+    /*0x08*/ u16 vitoriasTreinador;
+    /*0x0A*/ u16 shiniesObtidos;
+    /*0x0C*/ u8 estados[CONQ_MAX / 4];           // 2 bits por conquista (CONQ_PENDENTE/FEITA/PERDIDA)
+    /*0x1C*/ u8 entregues[CONQ_MAX / 8];         // 1 bit por conquista: prêmio já entregue
+    /*0x24*/ u8 degrauEntregue[CONQ_MAX_DEGRAUS]; // por slot (struct Conquista.slotDegrau): degraus entregues
+    /*0x2C*/ u16 adiadoNoMapa;     // mapa (grupo << 8 | número) onde um prêmio sem espaço foi adiado; 0xFFFF = nenhum
+    /*0x2E*/ u8 livre[354];
+}; // size: 400 (46 usados)
+
+// Uma entrada do diário: a primeira vitória/captura de um evento (test/esteira/conquistas.py lê este layout).
+struct DiarioEntrada
+{
+    /*0x00*/ u16 minutos;          // tempo de jogo (h * 60 + m, teto 65535)
+    /*0x02*/ u8 turnos;
+    /*0x03*/ u8 resultado;         // 0 = vazio, DIARIO_VENCEU/CAPTURADO/DERROTOU
+    /*0x04*/ u8 ordem;             // ordem de registro (1, 2, ...); 0 = entrada vazia
+    /*0x05*/ u8 mvp;               // índice no time (0xFF = ninguém nocauteou)
+    /*0x06*/ u8 mvpNocautes;
+    /*0x07*/ u8 tamanhoTime;
+    /*0x08*/ u16 time[PARTY_SIZE]; // espécie | nível << 9
+}; // size: 20
+
+struct DiarioSave
+{
+    /*0x000*/ u8 proximaOrdem;
+    /*0x001*/ u8 versao;
+    /*0x002*/ u8 livre0[2];
+    /*0x004*/ struct DiarioEntrada entradas[DIARIO_MAX]; // índice = DIARIO_EVT_*
+    /*0x3C4*/ u8 livre[60];
+}; // size: 0x400 (964 usados)
+
 struct SaveBlock2
 {
     /*0x000*/ u8 playerName[PLAYER_NAME_LENGTH + 1];
@@ -355,7 +396,7 @@ struct SaveBlock2
     /*0xAF0*/ struct BerryCrush berryCrush;
     /*0xB00*/ struct PokemonJumpRecords pokeJump;
     /*0xB10*/ struct BerryPickingResults berryPick;
-    /*0xB20*/ u8 filler_B20[0x400];
+    /*0xB20*/ struct DiarioSave diario; // POK-44, era filler_B20[0x400]
     /*0xF20*/ u32 encryptionKey;
 }; // size: 0xF24
 
@@ -807,7 +848,7 @@ struct SaveBlock1
     /*0x30D0*/ struct Roamer roamer;
     /*0x30EC*/ struct EnigmaBerry enigmaBerry;
     /*0x3120*/ struct MysteryGiftSave mysteryGift;
-    /*0x348C*/ u8 unused_348C[400];
+    /*0x348C*/ struct ConquistasSave conquistas; // POK-44, era unused_348C[400]
     /*0x361C*/ struct RamScript ramScript;
     /*0x3A08*/ struct RecordMixingGift recordMixingGift; // unused
     /*0x3A18*/ u8 seen2[DEX_FLAGS_NO];

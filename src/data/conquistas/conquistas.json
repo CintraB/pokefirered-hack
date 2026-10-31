@@ -1,5 +1,5 @@
 {
-  "_comentario": "Fonte única das conquistas e do diário de batalhas (POK-44). tools/conquistas/gen_conquistas.py gera src/data/conquistas_ids.h (CONQ_<ID> = num, DIARIO_EVT_<ID> = posição em `diario`) e src/data/conquistas_tabela.h; as estruturas e as larguras estão em include/conquistas.h. NÃO renumere `num` nem reordene `diario`: ambos viram posições no save (só acrescente num número livre / no fim). `{N}` no nome vira {STR_VAR_1} (a tela escreve o degrau atual) e a esteira mede com 300. `param`/`param2`/`lista`/`degraus` por tipo: ver include/conquistas.h; `param` pode ser número ou constante (FLAG_*, GAME_STAT_*, CONQ_EVT_*); `paramFim` (FLAGS_TODAS) confere na compilação que há param2 flags consecutivas. `premios` tem 1 entrada (vale para todos os degraus) ou uma por degrau. `ativa: false` = existe mas não aparece, não conta e não dispara (POK-42). `perdivel: true` = pode virar 'perdida' num save antigo. `condicao` é só para a tabela do Cintra (--tabela). `faixas` agrupa os itens de prêmio em fácil/média/difícil (só para a tabela). N da Pokédex (dex_obtivel) = 245: espécies obtíveis num save, contadas em 31/10/2026 com .superpowers/sdd/2026-10-31-conquistas-e-diario/contar_dex_atual.py (rodar: python3 -I <esse arquivo>, da raiz do repo), que é o contar_dex.py do levantamento de 24/10 (.superpowers/sdd/levantamento-dex/, 202 com os padrões) atualizado para o estado de hoje: exclusivos do LeafGreen (18), Caverna Mutante em 9 conjuntos, Mew/Celebi/Jirachi, os 3 cães, os iniciais do Safari, os dois fósseis, a Pedra do Sol dupla, os 3 ovos raros e Feebas. Faltam só Johto (18) e Hoenn (123). Confere com o Brain: 386 - 18 - 125 = 243, mais Feebas e Milotic.",
+  "_comentario": "Fonte única das conquistas e do diário de batalhas (POK-44). tools/conquistas/gen_conquistas.py gera src/data/conquistas_ids.h (CONQ_<ID> = num, DIARIO_EVT_<ID> = posição em `diario`) e src/data/conquistas_tabela.h; as estruturas e as larguras estão em include/conquistas.h. NÃO renumere `num` nem reordene `diario`: ambos viram posições no save (só acrescente num número livre / no fim). `{N}` no nome vira {STR_VAR_1} (a tela escreve o degrau atual) e a esteira mede com 300. `param`/`param2`/`lista`/`degraus` por tipo: ver include/conquistas.h; `param` pode ser número ou constante (FLAG_*, GAME_STAT_*, CONQ_EVT_*); `paramFim` (FLAGS_TODAS) confere na compilação que há param2 flags consecutivas. `premios` tem 1 entrada (vale para todos os degraus) ou uma por degrau. `slot` (só nas com degraus, 0 a 7, único) é a posição do progresso no save (degrauEntregue[slot]): NÃO mude o de uma conquista que já existe; uma nova pega um slot livre. `ativa: false` = existe mas não aparece, não conta e não dispara (POK-42). `perdivel: true` = pode virar 'perdida' num save antigo. `condicao` é só para a tabela do Cintra (--tabela). `faixas` agrupa os itens de prêmio em fácil/média/difícil (só para a tabela). N da Pokédex (dex_obtivel) = 245: espécies obtíveis num save, contadas em 31/10/2026 com .superpowers/sdd/2026-10-31-conquistas-e-diario/contar_dex_atual.py (rodar: python3 -I <esse arquivo>, da raiz do repo), que é o contar_dex.py do levantamento de 24/10 (.superpowers/sdd/levantamento-dex/, 202 com os padrões) atualizado para o estado de hoje: exclusivos do LeafGreen (18), Caverna Mutante em 9 conjuntos, Mew/Celebi/Jirachi, os 3 cães, os iniciais do Safari, os dois fósseis, a Pedra do Sol dupla, os 3 ovos raros e Feebas. Faltam só Johto (18) e Hoenn (123). Confere com o Brain: 386 - 18 - 125 = 243, mais Feebas e Milotic.",
   "abas": [
     {
       "id": "historia",
@@ -178,6 +178,7 @@
       "aba": "batalha",
       "nome": "Vencer {N} treinadores",
       "tipo": "VITORIAS",
+      "slot": 0,
       "condicao": "Vencer treinadores (degraus de 10 em 10, até 300)",
       "degraus": [10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200, 210, 220, 230, 240, 250, 260, 270, 280, 290, 300],
       "premios": [
@@ -308,6 +309,7 @@
       "aba": "captura",
       "nome": "{N} shiny(s)",
       "tipo": "SHINIES",
+      "slot": 1,
       "condicao": "Capturar ou chocar shinies (1, 5, 10, 20, 30 e 50)",
       "degraus": [1, 5, 10, 20, 30, 50],
       "premios": [
@@ -557,6 +559,7 @@
       "aba": "exploracao",
       "nome": "{N} horas de jogo",
       "tipo": "HORAS",
+      "slot": 2,
       "condicao": "Tempo de jogo (10, 50 e 100 horas)",
       "degraus": [10, 50, 100],
       "premios": [

@@ -5,7 +5,7 @@ Uso (o make chama sozinho): python3 tools/conquistas/gen_conquistas.py <conquist
 Para o Cintra:             python3 tools/conquistas/gen_conquistas.py --tabela <conquistas.json>
 
 O JSON tem `abas[]`, `conquistas[]` (num, id, aba, nome, tipo, param, param2, lista, degraus, premios,
-perdivel, ativa, ...) e `diario[]` (id, nome, local, tipo, lider, rival, especie, treinadores), com os
+perdivel, ativa, slot, ...) e `diario[]` (id, nome, local, tipo, lider, rival, especie, treinadores), com os
 mesmos nomes dos campos de `struct Conquista`/`struct DiarioEvento` (include/conquistas.h). As constantes
 (FLAG_*, GAME_STAT_*, SPECIES_*, ITEM_*, TRAINER_*, CONQ_EVT_*) são conferidas contra os headers do repo:
 constante que não existe é erro.
@@ -79,7 +79,7 @@ def validar(data: dict) -> None:
     abas = [a["id"] for a in data["abas"]]
     if len(set(abas)) != len(abas) or not all(IDENT.fullmatch(a) for a in abas):
         raise ValueError("ids de aba inválidos ou repetidos")
-    nums, ids, com_degraus = set(), set(), 0
+    nums, ids, slots, com_degraus = set(), set(), set(), 0
     for c in data["conquistas"]:
         cid = c.get("id", "?")
         if not IDENT.fullmatch(str(cid)) or cid in ids:
@@ -107,8 +107,18 @@ def validar(data: dict) -> None:
                 raise ValueError(f"{cid}: degraus precisam ser estritamente crescentes")
             if tipo not in ("VITORIAS", "SHINIES", "HORAS"):
                 raise ValueError(f"{cid}: só VITORIAS, SHINIES e HORAS têm degraus")
+            # o slot é a posição do progresso no save (degrauEntregue[slot]): explícito, para não mudar
+            # quando outra conquista com degraus entrar na tabela
+            if "slot" not in c:
+                raise ValueError(f"{cid}: conquista com degraus precisa do campo `slot`")
+            slot = _inteiro(c["slot"], f"{cid}: slot", 0, CONQ_MAX_DEGRAUS - 1)
+            if slot in slots:
+                raise ValueError(f"{cid}: slot {slot} repetido")
+            slots.add(slot)
         elif tipo in ("VITORIAS", "SHINIES", "HORAS"):
             raise ValueError(f"{cid}: o tipo {tipo} exige degraus")
+        elif "slot" in c:
+            raise ValueError(f"{cid}: `slot` só existe em conquista com degraus")
         if not premios or len(premios) not in {1, len(degraus)}:
             raise ValueError(f"{cid}: `premios` tem 1 ou len(degraus) entradas")
         for p in premios:
@@ -199,10 +209,7 @@ def render_tabela(data: dict) -> str:
     out += ["};", ""]
 
     ordenadas = sorted(data["conquistas"], key=lambda c: c["num"])
-    slots: dict[str, int] = {}
-    for c in ordenadas:
-        if c.get("degraus"):
-            slots[c["id"]] = len(slots)
+    slots = {c["id"]: c["slot"] for c in ordenadas if c.get("degraus")}
     for c in ordenadas:
         cid = c["id"]
         out.append(f"static const u8 sConqNome_{cid}[] = _(\"{_texto(c['nome'], cid)}\");")
