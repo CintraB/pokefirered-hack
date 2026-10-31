@@ -290,6 +290,21 @@ def test_textos_da_tela_e_regra():
     assert _medir(rodape) <= regra.px, rodape
 
 
+def test_citacoes_dos_buffers_apontam_para_quem_enche():
+    """As exceções de VAR_CONTENTS que citam a tela apontam para as linhas que enchem aquele buffer
+    (STR_VAR_n → gStringVarn): a citação não fica velha quando a tela cresce."""
+    from esteira.janelas_uso import VAR_CONTENTS
+    linhas = _ler(TELA_C).splitlines()
+    vistas = 0
+    for vc in VAR_CONTENTS:
+        for primeira, ultima in re.findall(r"src/conquistas_tela\.c:(\d+)(?:-(\d+))?", vc.source):
+            trecho = linhas[int(primeira) - 1:int(ultima or primeira)]
+            buffer = "gStringVar" + vc.var.rsplit("_", 1)[1]
+            assert any(re.search(rf"\b{buffer}\b", l) for l in trecho), (vc.label, vc.var, primeira, trecho)
+            vistas += 1
+    assert vistas >= 6, vistas   # rodapé (2), tempo, turnos e os dois do MVP
+
+
 def test_icones():
     png = Image.open(GFX / "icones.png")
     assert png.mode == "P" and png.size == (32, 8), (png.mode, png.size)

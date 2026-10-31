@@ -756,11 +756,14 @@ class ConquistasScenario(CatchSaveScenario):
         self.ctl.press_until(KEY_A, lambda: not self._aviso_ativo(), what, tries=15, wait=20)
         self.ctl.wait_overworld_idle(300)
 
-    def _ir(self, mapa: str, xy: tuple[int, int]) -> None:
+    def _ir(self, mapa: str, xy: tuple[int, int], assentar: bool = True) -> None:
+        """Warp pelo atalho. `assentar=False` volta assim que o mapa muda: com um aviso pendente, esperar o campo livre
+        deixaria o aviso aparecer e fechar sozinho (180 quadros) antes de `_esperar_aviso` olhar."""
         group, num = self.consts.map(mapa)
         self.box.call(CMD_WARP, group | num << 8, xy[0] | xy[1] << 16)
         self.ctl.wait_until(lambda: self.game.location() == (group, num), 600, f"warp para {mapa}")
-        self.ctl.wait_overworld_idle(600)
+        if assentar:
+            self.ctl.wait_overworld_idle(600)
 
     def _sem_pendentes(self) -> None:
         """Jogo novo nas conquistas, com tudo o que o save já prova marcado como entregue: nenhum aviso pendente.
@@ -896,7 +899,7 @@ class ConquistasScenario(CatchSaveScenario):
         self.emu.frames(64)
         assert not self._aviso_ativo() and self._estado("insignia_rocha")[1] == 0
         self._poke_ball_na_bolsa(1)
-        self._ir("MAP_VIRIDIAN_CITY", VIRIDIAN_LIVRE)
+        self._ir("MAP_VIRIDIAN_CITY", VIRIDIAN_LIVRE, assentar=False)   # o aviso sai logo ao chegar
         texto2 = self._esperar_aviso("aviso com entrega depois de trocar de mapa")
         assert "na bolsa" in texto2, texto2
         assert self._estado("insignia_rocha")[:2] == (FEITA, 1), self._estado("insignia_rocha")

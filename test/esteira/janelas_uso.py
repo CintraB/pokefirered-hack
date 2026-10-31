@@ -104,7 +104,7 @@ VAR_CONTENTS: list[VarContent] = [
                "moedas: ConvertIntToDecimalStringN(gStringVar1, coinAmount, ..., 4) (src/coins.c:54, :72)", digits=True),
     *(VarContent("src/strings.c", "gText_ConqTela_Rodape", var, 2,
                  "rodapé da tela de conquistas: feitas e válidas da aba com 2 algarismos (CONQ_COUNT = 41) "
-                 "(src/conquistas_tela.c:763-764)", digits=True)
+                 "(src/conquistas_tela.c:775-776)", digits=True)
       for var in ("STR_VAR_2", "STR_VAR_3")),
     # diário (Task 8): "hh:mm" (o save guarda até 65535 minutos = "1092:15": 6 algarismos medem mais que o texto, o
     # ":" é mais estreito), turnos até 255 e nocautes até 255
