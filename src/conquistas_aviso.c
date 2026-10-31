@@ -237,24 +237,32 @@ static void MontarResumo(struct Aviso *a)
 
 static void Task_Aviso(u8 taskId);
 
-void Conquistas_MostrarAviso(void)
+// Special (specialvar): FALSE = sem task para o aviso (as 16 ocupadas); o script então pula o waitstate e nada é
+// entregue (o prêmio continua pendente para o próximo quadro livre).
+bool8 Conquistas_MostrarAviso(void)
 {
-    struct Aviso *a = AllocZeroed(sizeof(*a));
+    struct Aviso *a;
     u8 taskId = CreateTask(Task_Aviso, 80);
     u8 num, degrau;
 
+    if (taskId == TASK_NONE)
+        return FALSE;
+    a = AllocZeroed(sizeof(*a));
     gTasks[taskId].tWindow = WINDOW_NONE;
     gTasks[taskId].tEstrela = MAX_SPRITES;
     gTasks[taskId].tIcone = MAX_SPRITES;
     SetWordTaskArg(taskId, TASK_PTR, (u32)a);
     if (a == NULL)
-        return;
+        return TRUE;
+    // a fila não trava no primeiro: um prêmio que não cabe deixa passar os que cabem; o "fica para depois" sai quando
+    // só sobram os que não cabem (e adia até trocar de mapa)
     if (sConq->resumoPendente)
         MontarResumo(a);
-    else if (Conquistas_ProximoPendente(&num, &degrau))
+    else if (Conquistas_ProximoQueCabe(&num, &degrau) || Conquistas_ProximoPendente(&num, &degrau))
         MontarConquista(a, num, degrau);
     else
         a->nada = TRUE;
+    return TRUE;
 }
 
 static void SetBg0Y(s16 y)
@@ -317,6 +325,8 @@ static void MostrarSprites(struct Task *t, struct Aviso *a)
     }
     if (a->item != ITEM_NONE)
     {
+        FreeSpriteTilesByTag(TAG_AVISO_ICONE);     // nada de um aviso anterior sob a mesma tag
+        FreeSpritePaletteByTag(TAG_AVISO_ICONE);
         id = AddItemIconObject(TAG_AVISO_ICONE, TAG_AVISO_ICONE, a->item);
         if (id != MAX_SPRITES)
         {
@@ -330,12 +340,19 @@ static void MostrarSprites(struct Task *t, struct Aviso *a)
     }
 }
 
+// Tudo solto por tag, como a bolsa e as novidades (src/novidades.c): o AddItemIconObject monta o SpriteTemplate
+// numa variável local, então o sprite->template do ícone aponta para lixo e o DestroySpriteAndFreeResources não
+// soltaria os tiles nem a paleta (o aviso seguinte mostraria o ícone antigo).
 static void EsconderSprites(struct Task *t)
 {
     if (t->tEstrela != MAX_SPRITES)
-        DestroySpriteAndFreeResources(&gSprites[t->tEstrela]);
+        DestroySprite(&gSprites[t->tEstrela]);
     if (t->tIcone != MAX_SPRITES)
-        DestroySpriteAndFreeResources(&gSprites[t->tIcone]);
+        DestroySprite(&gSprites[t->tIcone]);
+    FreeSpriteTilesByTag(TAG_AVISO_ESTRELA);
+    FreeSpritePaletteByTag(TAG_AVISO_ESTRELA);
+    FreeSpriteTilesByTag(TAG_AVISO_ICONE);
+    FreeSpritePaletteByTag(TAG_AVISO_ICONE);
     t->tEstrela = t->tIcone = MAX_SPRITES;
 }
 

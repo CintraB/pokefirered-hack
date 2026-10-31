@@ -123,6 +123,7 @@ bool8 Diario_TreinadorDoEvento(u8 evt, u16 treinador); // `treinador` está em g
 #define CONQ_ENTREGA_BOLSA    1
 #define CONQ_ENTREGA_PC       2
 bool8 Conquistas_ProximoPendente(u8 *num, u8 *degrau); // o próximo prêmio a entregar (degrau = índice; 0 sem degraus)
+bool8 Conquistas_ProximoQueCabe(u8 *num, u8 *degrau);  // o mesmo, só entre os que cabem na bolsa ou no PC
 const struct ConquistaPremio *Conquistas_Premio(u8 num, u8 degrau);
 u8 Conquistas_EntregarPremio(u8 num, u8 degrau);    // CONQ_ENTREGA_*; marca entregue/degrau só se entregou
 void Conquistas_EntregarTudo(u8 *naBolsa, u8 *noPc, u8 *pendentes); // o resumo do save antigo; desliga resumoPendente
@@ -131,6 +132,7 @@ void Conquistas_EntregarTudo(u8 *naBolsa, u8 *noPc, u8 *pendentes); // o resumo 
 // depois de TryRunOnFrameMapScript. Fecha com A/B depois de 30 quadros ou sozinho em 180.
 extern u8 gConquistasAvisoAtivo;                     // 1 enquanto o aviso está na tela (a esteira lê)
 bool8 Conquistas_TentarAviso(void);                  // TRUE = começou o script do aviso (EventScript_AvisoConquista)
-void Conquistas_MostrarAviso(void);                  // special: entrega o próximo prêmio (ou o resumo) e mostra a janela
+bool8 Conquistas_MostrarAviso(void);                 // special(var): entrega o próximo prêmio (ou o resumo) e mostra a
+                                                     // janela; FALSE = sem task, o script não espera
 
 #endif // GUARD_CONQUISTAS_H

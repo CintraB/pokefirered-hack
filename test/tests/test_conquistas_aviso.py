@@ -59,7 +59,8 @@ def test_aviso_um_so_ponto_de_chamada():
     assert chamadas == ["field_control_avatar.c"], chamadas
     corpo = _corpo(_ler(SRC / "field_control_avatar.c"), "ProcessPlayerFieldInput")
     frame = corpo.index("TryRunOnFrameMapScript() == TRUE")
-    aviso = corpo.index("if (Conquistas_TentarAviso() == TRUE)")
+    # no quadro em que o passo termina, o passo (gatilho de chão, warp, encontro, GAME_STAT_STEPS) vem antes do aviso
+    aviso = corpo.index("if (!input->tookStep && Conquistas_TentarAviso() == TRUE)")
     assert frame < aviso, "o aviso tem de vir depois do script de quadro do mapa"
     entre = corpo[frame:aviso]
     assert entre.count("return TRUE;") == 1 and "if (" not in entre.replace("if (TryRunOnFrameMapScript", ""), (
@@ -88,15 +89,20 @@ def test_special_no_fim_e_script():
     m = re.search(r"^EventScript_AvisoConquista::\n(.*?)\n\n", script + "\n\n", re.S | re.M)
     assert m, "EventScript_AvisoConquista não encontrado"
     comandos = [linha.strip() for linha in m.group(1).splitlines() if linha.strip()]
-    assert comandos == ["goto_if_questlog EventScript_ReleaseEnd", "lockall", "special Conquistas_MostrarAviso",
+    # sem task livre o special devolve FALSE e o script não espera (senão o waitstate travaria)
+    assert comandos == ["goto_if_questlog EventScript_ReleaseEnd", "lockall",
+                        "specialvar VAR_RESULT, Conquistas_MostrarAviso",
+                        "goto_if_eq VAR_RESULT, FALSE, EventScript_AvisoConquistaSemTask",
                         "waitstate", "releaseall", "end"], comandos
+    corpo = _corpo(_ler(AVISO_C), "Conquistas_MostrarAviso")
+    assert corpo.index("TASK_NONE") < corpo.index("AllocZeroed"), "confere a task antes de alocar e entregar"
     assert '.include "data/scripts/conquistas.inc"' in _ler(EVENT_SCRIPTS)
     assert "extern const u8 EventScript_AvisoConquista[];" in _ler(EVENT_SCRIPTS_H)
 
 
 def test_interface():
     h = _ler(CONQ_H)
-    for proto in ("bool8 Conquistas_TentarAviso(void);", "void Conquistas_MostrarAviso(void);",
+    for proto in ("bool8 Conquistas_TentarAviso(void);", "bool8 Conquistas_MostrarAviso(void);",
                   "extern u8 gConquistasAvisoAtivo;"):
         assert proto in h, proto
     # o comentário do Diario_ListarEmOrdem voltou para a linha dele
@@ -137,6 +143,21 @@ def test_entrega_bolsa_pc_ou_pendente():
     assert bolsa < pc
     assert corpo.index("Conquistas_SetEntregue(") > pc and corpo.index("Conquistas_SetDegrauEntregue(") > pc, (
         "só marca entregue depois de entregar")
+
+
+def test_icone_solto_por_tag():
+    """O AddItemIconObject monta o SpriteTemplate na pilha: o ícone é solto pela tag, nunca pelo sprite->template."""
+    fonte = _ler(AVISO_C)
+    corpo = _corpo(fonte, "EsconderSprites")
+    assert "DestroySpriteAndFreeResources" not in _sem_comentarios(fonte)
+    for chamada in ("FreeSpriteTilesByTag(TAG_AVISO_ICONE)", "FreeSpritePaletteByTag(TAG_AVISO_ICONE)",
+                    "FreeSpriteTilesByTag(TAG_AVISO_ESTRELA)", "FreeSpritePaletteByTag(TAG_AVISO_ESTRELA)"):
+        assert chamada in corpo, chamada
+
+
+def test_fila_nao_trava_no_que_nao_cabe():
+    corpo = _corpo(_ler(AVISO_C), "Conquistas_MostrarAviso")
+    assert corpo.index("Conquistas_ProximoQueCabe(") < corpo.index("Conquistas_ProximoPendente(")
 
 
 def test_checagem_cadenciada_sem_decifrar_os_ovos():
@@ -233,7 +254,8 @@ def test_esteira_convive_com_o_aviso():
     cenario = _ler(CENARIO)
     assert "conq_silencio(False)" in cenario
     for grupo in ("aviso/aparece_e_entrega", "aviso/espera_fim_da_batalha", "aviso/fila", "aviso/degrau",
-                  "premio/bolsa_cheia_vai_ao_pc", "premio/tudo_cheio_fica_pendente", "aviso/resumo_retro"):
+                  "premio/bolsa_cheia_vai_ao_pc", "premio/tudo_cheio_fica_pendente", "premio/fila_nao_trava",
+                  "aviso/passo_antes", "aviso/resumo_retro"):
         assert f'"{grupo}"' in cenario, grupo
     # o grupo da derrota desliga o Hall da Fama antes: a asserção do slot do rival separa as duas guardas
     corpo = re.search(r"def _derrota_nao_conta\(.*?(?=\n    def )", cenario, re.S).group(0)

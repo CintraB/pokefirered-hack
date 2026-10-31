@@ -212,7 +212,9 @@ int ProcessPlayerFieldInput(struct FieldInput *input)
 
     if (TryRunOnFrameMapScript() == TRUE)
         return TRUE;
-    if (Conquistas_TentarAviso() == TRUE)   // POK-44: o aviso de conquista pausa o jogo
+    // POK-44: o aviso de conquista pausa o jogo; no quadro em que o passo termina (tookStep) o passo roda antes
+    // (gatilho de chão, warp de piso, encontro, GAME_STAT_STEPS) e o aviso sai no quadro seguinte, já parado
+    if (!input->tookStep && Conquistas_TentarAviso() == TRUE)
         return TRUE;
 
     if (input->tookStep)

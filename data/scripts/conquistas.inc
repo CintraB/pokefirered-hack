@@ -3,8 +3,14 @@
 EventScript_AvisoConquista::
 	goto_if_questlog EventScript_ReleaseEnd
 	lockall
-	special Conquistas_MostrarAviso
+	specialvar VAR_RESULT, Conquistas_MostrarAviso
+	goto_if_eq VAR_RESULT, FALSE, EventScript_AvisoConquistaSemTask
 	waitstate
+	releaseall
+	end
+
+@ sem task livre para o aviso: nada foi entregue, e o aviso volta num quadro livre seguinte
+EventScript_AvisoConquistaSemTask::
 	releaseall
 	end
 

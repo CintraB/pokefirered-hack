@@ -566,7 +566,38 @@ void Conquistas_ContarAba(u8 aba, u8 *feitas, u8 *validas)
 // A ordem é a da tabela; numa conquista com degraus, o primeiro degrau alcançado e ainda não entregue (cada degrau é
 // um aviso, com o prêmio dele).
 
+static bool8 Cabe(u8 num, u8 degrau)
+{
+    const struct ConquistaPremio *p = Conquistas_Premio(num, degrau);
+    u8 i;
+
+    if (p == NULL)
+        return FALSE;
+    if (CheckBagHasSpace(p->item, p->qtd))
+        return TRUE;
+    // o PC tem uma pilha por item, como a bolsa (AddPCItem)
+    for (i = 0; i < PC_ITEMS_COUNT; i++)
+    {
+        if (gSaveBlock1Ptr->pcItems[i].itemId == p->item)
+            return GetPcItemQuantity(&gSaveBlock1Ptr->pcItems[i].quantity) + p->qtd <= 999;
+    }
+    return CountItemsInPC() < PC_ITEMS_COUNT;
+}
+
+static bool8 Proximo(u8 *num, u8 *degrau, bool8 soQueCabe);
+
 bool8 Conquistas_ProximoPendente(u8 *num, u8 *degrau)
+{
+    return Proximo(num, degrau, FALSE);
+}
+
+bool8 Conquistas_ProximoQueCabe(u8 *num, u8 *degrau)
+{
+    return Proximo(num, degrau, TRUE);
+}
+
+// Numa conquista com degraus só o primeiro degrau não entregue conta (os degraus saem em ordem).
+static bool8 Proximo(u8 *num, u8 *degrau, bool8 soQueCabe)
 {
     u8 n, entregue;
 
@@ -579,14 +610,14 @@ bool8 Conquistas_ProximoPendente(u8 *num, u8 *degrau)
         if (gConquistas[n].numDegraus > 0)
         {
             entregue = Conquistas_DegrauEntregue(n);
-            if (Conquistas_DegrauAtual(n) > entregue)
+            if (Conquistas_DegrauAtual(n) > entregue && (!soQueCabe || Cabe(n, entregue)))
             {
                 *num = n;
                 *degrau = entregue;
                 return TRUE;
             }
         }
-        else if (Conquistas_GetEstado(n) == CONQ_FEITA && !Conquistas_Entregue(n))
+        else if (Conquistas_GetEstado(n) == CONQ_FEITA && !Conquistas_Entregue(n) && (!soQueCabe || Cabe(n, 0)))
         {
             *num = n;
             *degrau = 0;

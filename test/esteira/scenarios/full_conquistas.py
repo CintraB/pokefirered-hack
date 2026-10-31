@@ -43,7 +43,7 @@ import sys
 from .. import conquistas as cq
 from ..battle import (ACTION_FIGHT, B_OUTCOME_CAUGHT, MOVE_FUNC_SUFFIX, NICKNAME_COMMAND, PARTY_CHOOSE_TASK,
                       PARTY_MENU_SLOT_ID, PARTY_SELECTION_TASK)
-from ..emu import KEY_A, KEY_B, KEY_DOWN, KEY_UP
+from ..emu import KEY_A, KEY_B, KEY_DOWN, KEY_RIGHT, KEY_UP
 from ..game import SB1_MONEY
 from ..hooks import CMD_CONQ_ESTADO, CMD_GIVE_ITEM, CMD_START_WILD_BATTLE, CMD_WARP, NO_RESULT, Mailbox
 from . import REPO_ROOT, ScenarioContext
@@ -77,6 +77,22 @@ SB1_PC_ITEMS, PC_ITEMS_COUNT = 0x298, 30          # struct ItemSlot pcItems[30] 
 SB1_BALLS, BALLS_COUNT = 0x430, 13                # bagPocket_PokeBalls (quantidade XOR chave)
 PALLET_LIVRE = (15, 9)   # Pallet: linha 9 livre de x=2 a x=21 (quick_route1.PACE_START)
 VIRIDIAN_LIVRE = (26, 27)  # Viridian, diante do Centro
+
+
+TAG_AVISO_ICONE = 0x5C41   # tag dos tiles e da paleta do ícone do prêmio (src/conquistas_aviso.c)
+SB1_GAME_STATS = 0x1200    # u32 gameStats[] (XOR encryptionKey)
+T_TILE_TRANSITION = 1      # PlayerAvatar.tileTransitionState (include/global.fieldmap.h)
+
+
+def paleta_do_item(item_const: str) -> list[int]:
+    """As 16 cores (RGB5) do ícone do item, do .pal que o sItemIconTable usa (src/data/item_icon_table.h →
+    src/data/graphics/items.h)."""
+    tabela = (REPO_ROOT / "src/data/item_icon_table.h").read_text(encoding="utf-8")
+    simbolo = re.search(rf"\[{item_const}\]\s*=\s*\{{\w+,\s*(\w+)\}}", tabela).group(1)
+    itens = (REPO_ROOT / "src/data/graphics/items.h").read_text(encoding="utf-8")
+    caminho = re.search(rf"{simbolo}\[\]\s*=\s*INCBIN_U32\(\"([^\"]+)\.gbapal\.lz\"\)", itens).group(1)
+    rgb = [int(v) for v in (REPO_ROOT / f"{caminho}.pal").read_text(encoding="utf-8").split()[3:]]
+    return [(rgb[i] >> 3) | (rgb[i + 1] >> 3) << 5 | (rgb[i + 2] >> 3) << 10 for i in range(0, 48, 3)]
 
 
 def struct_unpack(raw: bytes, i: int) -> tuple[int, int]:
@@ -695,6 +711,25 @@ class ConquistasScenario(CatchSaveScenario):
             self.measures.setdefault("fotos_aviso", []).append(self._shot(foto))
         return texto
 
+    def _paleta_do_icone(self) -> list[int] | None:
+        """As 16 cores da paleta de sprite com a tag do ícone do aviso (gPlttBufferUnfaded); None sem o ícone."""
+        tags = struct.unpack("<16H", self.emu.read(self.game.syms.addr("sSpritePaletteTags"), 32))
+        if TAG_AVISO_ICONE not in tags:
+            return None
+        base = self.game.syms.addr("gPlttBufferUnfaded") + 0x200 + tags.index(TAG_AVISO_ICONE) * 32
+        return list(struct.unpack("<16H", self.emu.read(base, 32)))
+
+    def _icone_e(self, item_const: str) -> None:
+        """O ícone do aviso na tela é o do item (a paleta dele: um ícone velho preso na tag apareceria aqui)."""
+        self.emu.frames(AVISO_ENTRADA)
+        lida, esperada = self._paleta_do_icone(), paleta_do_item(item_const)
+        assert lida is not None, "aviso sem o ícone do prêmio"
+        assert lida[1:] == esperada[1:], f"ícone não é o de {item_const}: {lida} ≠ {esperada}"
+
+    def _passos(self) -> int:
+        raw = self.emu.read_u32(self._sb(1) + SB1_GAME_STATS + 4 * 5)   # GAME_STAT_STEPS
+        return raw ^ self.emu.read_u32(self._sb(2) + 0xF20)              # encryptionKey
+
     def _fechar_aviso(self, what: str) -> None:
         self.ctl.press_until(KEY_A, lambda: not self._aviso_ativo(), what, tries=15, wait=20)
         self.ctl.wait_overworld_idle(300)
@@ -781,8 +816,9 @@ class ConquistasScenario(CatchSaveScenario):
         for flag in ("FLAG_BADGE01_GET", "FLAG_BADGE02_GET"):
             self._flag(flag)
         textos = []
-        for i in range(2):
+        for i, item in enumerate(("ITEM_POKE_BALL", "ITEM_SUPER_POTION")):
             textos.append(self._esperar_aviso(f"aviso {i + 1} da fila"))
+            self._icone_e(item)    # dois avisos seguidos no mesmo mapa: cada um com o seu ícone
             entregues = [self._estado(c)[1] for c in ("insignia_rocha", "insignia_cascata")]
             assert sum(entregues) == i + 1, f"aviso {i + 1}: entregues {entregues} (um por vez)"
             self._fechar_aviso(f"fecha o aviso {i + 1}")
@@ -796,6 +832,7 @@ class ConquistasScenario(CatchSaveScenario):
         antes = self.game.bag_quantity(great)
         texto = self._esperar_aviso("aviso do degrau de treinadores", foto="conquista_aviso_degrau")
         assert "Vencer 10 treinadores" in texto, texto
+        self._icone_e("ITEM_GREAT_BALL")
         self._fechar_aviso("fecha o aviso do degrau")
         assert self._estado("treinadores")[2] == 1, self._estado("treinadores")
         assert self.game.bag_quantity(great) == antes + 3
@@ -811,6 +848,7 @@ class ConquistasScenario(CatchSaveScenario):
         self._flag("FLAG_BADGE01_GET")
         texto = self._esperar_aviso("aviso da Insígnia Rocha com a bolsa cheia", foto="conquista_aviso_pc")
         assert "no PC" in texto, texto
+        self._icone_e("ITEM_POKE_BALL")
         assert self._pc_qtd(poke) == pc + 5, f"PC: {pc} → {self._pc_qtd(poke)}"
         assert self._estado("insignia_rocha")[1] == 1
         self._fechar_aviso("fecha o aviso no PC")
@@ -843,6 +881,51 @@ class ConquistasScenario(CatchSaveScenario):
         self._fechar_aviso("fecha o aviso entregue")
         return (f"{ocupados} espaços cheios: {texto!r}; 20 passos em Pallet sem aviso; espaço liberado e Viridian: "
                 f"{texto2!r}")
+
+    def _fila_nao_trava(self) -> str:
+        """Bolso de bolas e PC cheios: a Insígnia Rocha (Poké Bolas) não cabe, a Cascata (Superpoções) cabe. A Cascata
+        sai antes, com entrega; depois, uma vez, o "fica para depois" da Rocha (e nada mais neste mapa)."""
+        poke = self.consts.item("ITEM_POKE_BALL")
+        for flag in ("FLAG_BADGE01_GET", "FLAG_BADGE02_GET"):
+            self._flag(flag, False)
+        self._sem_pendentes()
+        self._ir("MAP_PALLET_TOWN", PALLET_LIVRE)
+        self.box.encher_bolso(poke, pc=True)
+        for flag in ("FLAG_BADGE01_GET", "FLAG_BADGE02_GET"):
+            self._flag(flag)
+        primeiro = self._esperar_aviso("1º aviso: o que cabe")
+        assert "Cascata" in primeiro and "na bolsa" in primeiro, primeiro
+        self._fechar_aviso("fecha a Cascata")
+        segundo = self._esperar_aviso("2º aviso: o que não cabe")
+        assert "Rocha" in segundo and "fica para depois" in segundo, segundo
+        self._fechar_aviso("fecha o fica para depois")
+        self.emu.frames(AVISO_TIMEOUT)
+        assert not self._aviso_ativo(), "o fica para depois voltou no mesmo mapa"
+        assert self._estado("insignia_cascata")[1] == 1 and self._estado("insignia_rocha")[1] == 0
+        return f"{primeiro!r} → {segundo!r}"
+
+    def _passo_antes(self) -> str:
+        """O aviso fica pendente no meio de um passo: no quadro em que o passo termina (tookStep) o passo é processado
+        (GAME_STAT_STEPS +1, gatilho de chão, encontro...) e o aviso sai no quadro seguinte."""
+        self._flag("FLAG_BADGE03_GET", False)
+        self._ir("MAP_PALLET_TOWN", PALLET_LIVRE)
+        self._sem_pendentes()
+        self.box.conq_silencio(True)
+        self._flag("FLAG_BADGE03_GET")
+        assert self.box.conq_checar() >= 1, "Trovão não ficou pendente"
+        antes, xy = self._passos(), self.game.player_xy()
+        avatar = self.game.syms.addr("gPlayerAvatar")
+        self.emu.keys(KEY_RIGHT)
+        self.ctl.wait_until(lambda: self.emu.read_u8(avatar + 3) == T_TILE_TRANSITION, 30, "começo do passo")
+        self.box.conq_silencio(False)   # no meio do passo: o aviso só pode sair quando o passo terminar
+        self.ctl.wait_until(lambda: self.game.player_xy() != xy, 30, "fim do passo")
+        self.emu.keys(0)
+        texto = self._esperar_aviso("aviso depois do passo")
+        assert "Trovão" in texto, texto
+        depois = self._passos()
+        assert depois == antes + 1, f"GAME_STAT_STEPS {antes} → {depois}: o passo não foi processado"
+        self._fechar_aviso("fecha a Trovão")
+        return f"passo de {xy} a {self.game.player_xy()}: GAME_STAT_STEPS {antes} → {depois}; depois {texto!r}"
 
     def _resumo_retro(self) -> str:
         self.ctl.restore("conquistas_avisos")       # sem a bolsa e o PC cheios dos grupos premio/*
@@ -904,6 +987,8 @@ class ConquistasScenario(CatchSaveScenario):
                              ("aviso/degrau", self._degrau),
                              ("premio/bolsa_cheia_vai_ao_pc", self._bolsa_cheia),
                              ("premio/tudo_cheio_fica_pendente", self._tudo_cheio),
+                             ("premio/fila_nao_trava", self._fila_nao_trava),
+                             ("aviso/passo_antes", self._passo_antes),
                              ("aviso/resumo_retro", self._resumo_retro)):
                 res = self.suite.run(nome, fn)
                 res.images += self.measures.pop("fotos_aviso", [])
