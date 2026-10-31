@@ -111,7 +111,10 @@ void Conquistas_OnCaptura(struct Pokemon *mon, u16 bola); // Cmd_givecaughtmon, 
 void Conquistas_OnPokemonRecebido(struct Pokemon *mon);   // GiveMonToPlayer: não-ovo shiny soma shiniesObtidos
 void Conquistas_OnOvoChocado(struct Pokemon *mon);        // AddHatchedMonToParty: shiny, 6 IVs 31
 
-// Diário (Task 5 move para src/diario.c; até lá, stub vazio em src/conquistas.c).
-void Diario_OnFimDeBatalha(void);
+// Diário (src/diario.c). Só a primeira vitória/captura de cada evento entra; revanche nunca. Um lendário capturado
+// depois de um DERROTOU troca a entrada, com ordem nova.
+void Diario_OnFimDeBatalha(void);                   // chamado por Conquistas_OnFimDeBatalha (já sem as batalhas ignoradas)
+const struct DiarioEntrada *Diario_GetEntrada(u8 evt); // NULL com o slot vazio (ordem 0) ou evt fora da tabela
+u8 Diario_ListarEmOrdem(u8 *evts);                  // DIARIO_EVT_* preenchidos, em ordem crescente de `ordem`; devolve quantos
 
 #endif // GUARD_CONQUISTAS_H

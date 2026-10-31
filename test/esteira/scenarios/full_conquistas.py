@@ -20,6 +20,9 @@ Sessão própria da ROM de teste a partir do .sav do `captura` (`save_from="capt
   com o 1º golpe): líder vencido com um Pokémon só e sem desmaio, golpe x4, derrota para o rival (perde
   `rival_todas`, não conta vitória), Poké Ball numa espécie difícil (`conq_captura`) e o caso real do 8º líder no
   Ginásio de Viridian (a marca vem antes do `setflag FLAG_BADGE08_GET` do script).
+- `diario/*` (Task 5): a entrada do Brock (VENCEU, turnos, time, MVP, minutos; ordem 1 com proximaOrdem 0), só a
+  1ª vitória entra, o Articuno derrotado (DERROTOU) e depois capturado com Master Ball (CAPTURADO, ordem nova), o
+  MVP pela personalidade depois de uma troca e o jogo novo zerando o diário (`diario_entrada`, CMD_DIARIO_ENTRADA).
 
 Uso, a partir de test/ (a pasta OUT precisa do captura.sav de um `rapido`/`completo`):
     python3 -m esteira completo --rom R --elf E --out OUT --only conquistas
@@ -30,11 +33,11 @@ import re
 import sys
 
 from .. import conquistas as cq
-from ..battle import (ACTION_FIGHT, MOVE_FUNC_SUFFIX, PARTY_CHOOSE_TASK, PARTY_MENU_SLOT_ID,
-                      PARTY_SELECTION_TASK)
-from ..emu import KEY_A, KEY_DOWN, KEY_UP
+from ..battle import (ACTION_FIGHT, B_OUTCOME_CAUGHT, MOVE_FUNC_SUFFIX, NICKNAME_COMMAND, PARTY_CHOOSE_TASK,
+                      PARTY_MENU_SLOT_ID, PARTY_SELECTION_TASK)
+from ..emu import KEY_A, KEY_B, KEY_DOWN, KEY_UP
 from ..game import SB1_MONEY
-from ..hooks import CMD_CONQ_ESTADO, CMD_START_WILD_BATTLE, CMD_WARP, NO_RESULT, Mailbox
+from ..hooks import CMD_CONQ_ESTADO, CMD_GIVE_ITEM, CMD_START_WILD_BATTLE, CMD_WARP, NO_RESULT, Mailbox
 from . import REPO_ROOT, ScenarioContext
 from .base import Abort
 from .quick_catch_save import WHITEOUT_TIMEOUT, CatchSaveScenario
@@ -528,6 +531,111 @@ class ConquistasScenario(CatchSaveScenario):
         return ("Giovanni vencido com o Mewtwo sozinho: feita no fim da batalha; o script liga FLAG_BADGE08_GET "
                 "depois e a checagem com 8 insígnias mantém lider_um_pokemon feita")
 
+    # --- Task 5: diário das batalhas marcantes ---------------------------------------------
+    def _entrada(self, eid: str) -> dict | None:
+        return self.box.diario_entrada(cq.evento(eid))
+
+    def _minutos_de_jogo(self) -> int:
+        raw = self.emu.read(self._sb(2) + SB2_PLAY_TIME_HOURS, 3)
+        return int.from_bytes(raw[:2], "little") * 60 + raw[2]
+
+    def _diario_brock(self) -> str:
+        """Mewtwo nv 100 com Psychic vence o Brock (2 Pokémon, um golpe cada): a 1ª entrada do diário, com a ordem 1
+        num diário recém-zerado (proximaOrdem 0 conta como 1)."""
+        self.box.conq_reset(True)
+        assert self._diario_raw()[0] == 0, "proximaOrdem do jogo novo"
+        assert self._entrada("brock") is None, "diário de jogo novo com o Brock"
+        self._time_de_um("MEWTWO", 100, "MOVE_PSYCHIC")
+        self.box.start_trainer_battle(self._trainer_const("TRAINER_LEADER_BROCK"))
+        self._lutar("Brock", "win")
+        minutos = self._minutos_de_jogo()
+        e = self._entrada("brock")
+        assert e is not None, "Brock vencido e o diário vazio"
+        assert (e["resultado"], e["ordem"], e["turnos"]) == (cq.DIARIO_VENCEU, 1, 2), e
+        assert e["time"] == [(self.consts.species("MEWTWO"), 100)] and e["tamanhoTime"] == 1, e
+        assert (e["mvp"], e["mvpNocautes"]) == (0, 2), e
+        assert abs(e["minutos"] - minutos) <= 1, (e["minutos"], minutos)
+        assert self._diario_raw()[0] == 2, f"proximaOrdem = {self._diario_raw()[0]}"
+        self._brock = e
+        return f"entrada do Brock: {e}"
+
+    def _diario_so_a_primeira(self) -> str:
+        """Vencer o Brock de novo (com outro time) não mexe na entrada: só a 1ª vitória entra."""
+        antes = getattr(self, "_brock", None)
+        assert antes is not None, "sem a entrada do diario/brock"
+        self.box.set_party_mon(0, self.consts.species("MEWTWO"), 99)
+        self.box.party_size(1)
+        self.box.set_party_move(0, 0, MOVES["MOVE_PSYCHIC"])
+        self.box.start_trainer_battle(self._trainer_const("TRAINER_LEADER_BROCK"))
+        self._lutar("Brock de novo", "win")
+        depois = self._entrada("brock")
+        assert depois == antes, (antes, depois)
+        assert self._diario_raw()[0] == 2, f"proximaOrdem = {self._diario_raw()[0]}"
+        return f"2ª vitória (Mewtwo nv 99): entrada igual, ordem {depois['ordem']}, turnos {depois['turnos']}"
+
+    def _diario_lendario(self) -> str:
+        """Articuno nv 50: derrotado entra como DERROTOU; capturado depois (Master Ball) troca a entrada, com ordem
+        nova, maior que a do Brock."""
+        articuno = self.consts.species("ARTICUNO")
+        brock = self._entrada("brock")
+        assert brock is not None, "o diário perdeu o Brock"
+        self._time_de_um("MEWTWO", 100, "MOVE_PSYCHIC")
+        assert self.box.call(CMD_START_WILD_BATTLE, articuno, 50) == 1, "START_WILD_BATTLE"
+        self._lutar("Articuno (derrotado)", "win")
+        derrotado = self._entrada("articuno")
+        assert derrotado is not None and derrotado["resultado"] == cq.DIARIO_DERROTOU, derrotado
+        assert derrotado["ordem"] > brock["ordem"], (derrotado, brock)
+        master = self.consts.item("ITEM_MASTER_BALL")
+        assert self.box.call(CMD_GIVE_ITEM, master, 1) == 1, "GIVE_ITEM Master Ball"
+        assert self.box.call(CMD_START_WILD_BATTLE, articuno, 50) == 1, "START_WILD_BATTLE"
+        assert self.driver.throw_ball(master), "Master Ball não capturou"
+        d = self.driver
+        while not d._battle_over():          # sem apelido (B) e o resto das mensagens
+            d._press(KEY_B if d._script_command() == NICKNAME_COMMAND else KEY_A)
+        assert d.outcome() == B_OUTCOME_CAUGHT, f"gBattleOutcome = {d.outcome()}"
+        self.ctl.wait_overworld_idle(POST_BATTLE_TIMEOUT)
+        e = self._entrada("articuno")
+        assert e is not None and e["resultado"] == cq.DIARIO_CAPTURADO, e
+        assert e["ordem"] > derrotado["ordem"] > brock["ordem"], (e, derrotado, brock)
+        assert e["time"] == [(self.consts.species("MEWTWO"), 100)], e
+        assert (e["mvp"], e["mvpNocautes"]) == (0xFF, 0), e
+        assert self._entrada("brock") == brock, "o Brock mudou"
+        self.box.party_size(1)
+        return f"Articuno DERROTOU (ordem {derrotado['ordem']}) → CAPTURADO (ordem {e['ordem']}); Brock {brock['ordem']}"
+
+    def _diario_mvp_depois_da_troca(self) -> str:
+        """Magikarp nv 5 na frente e Mewtwo nv 100 atrás: troca para o Mewtwo no 1º turno e ele vence o Brock.
+        O MVP é o Mewtwo (índice 1 do time, pela personalidade) e o time sai na ordem do time. O set_party_mon dá a
+        todos a mesma personalidade fixa: o Magikarp sai de um ovo shiny chocado (conq_chocar), com outra."""
+        magikarp = self.consts.species("MAGIKARP")
+        self.box.set_party_mon(0, magikarp, 5)
+        self.box.set_party_mon(1, self.consts.species("MEWTWO"), 100)
+        assert self.box.party_size(2) == 2
+        self.box.conq_chocar(0, magikarp, shiny=True)
+        pids = [m.personality for m in self.game.party()[:2]]
+        assert pids[0] != pids[1], f"personalidades iguais: {pids}"
+        self.box.conq_reset(True)
+        self.box.set_party_move(0, 0, MOVES["MOVE_SPLASH"])
+        self.box.set_party_move(1, 0, MOVES["MOVE_PSYCHIC"])
+        self.box.start_trainer_battle(self._trainer_const("TRAINER_LEADER_BROCK"))
+        self._trocar_para(1)
+        self._lutar("Brock depois da troca", "win")
+        e = self._entrada("brock")
+        assert e is not None and e["resultado"] == cq.DIARIO_VENCEU and e["ordem"] == 1, e
+        # o Magikarp ganha EXP pelo Geodude (estava em campo no 1º turno): o nível é o do fim da batalha
+        nivel_magikarp = self.game.party()[0].level
+        assert e["time"] == [(magikarp, nivel_magikarp), (self.consts.species("MEWTWO"), 100)], e
+        assert (e["mvp"], e["mvpNocautes"]) == (1, 2), e
+        self.box.party_size(1)
+        return f"troca no 1º turno: {e}"
+
+    def _diario_jogo_novo_zera(self) -> str:
+        assert self._entrada("brock") is not None, "nada para zerar"
+        self.box.conq_reset(True)
+        assert self._entrada("brock") is None and self._entrada("articuno") is None
+        assert self._diario_raw()[0] == 0, "proximaOrdem"
+        return "jogo novo: entrada do Brock vazia"
+
     def run(self) -> None:
         try:
             self._flow("conquistas: CONTINUAR com o save do modo rápido", self._start)
@@ -551,6 +659,11 @@ class ConquistasScenario(CatchSaveScenario):
             self.suite.run("evento/ovo_chocado", self._ovo_chocado)
             self.suite.run("evento/nocaute_tardio", self._nocaute_tardio)
             self.suite.run("evento/lider_antes_da_insignia", self._lider_antes_da_insignia)
+            self.suite.run("diario/brock", self._diario_brock)
+            self.suite.run("diario/so_a_primeira", self._diario_so_a_primeira)
+            self.suite.run("diario/lendario", self._diario_lendario)
+            self.suite.run("diario/mvp_depois_da_troca", self._diario_mvp_depois_da_troca)
+            self.suite.run("diario/jogo_novo_zera", self._diario_jogo_novo_zera)
         except Abort:
             pass
 

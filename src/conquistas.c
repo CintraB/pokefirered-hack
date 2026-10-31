@@ -747,8 +747,3 @@ void Conquistas_OnOvoChocado(struct Pokemon *mon)
     if (ivs31)
         Conquistas_Evento(CONQ_EVT_OVO_6IVS);
 }
-
-// Stub até a Task 5 (src/diario.c).
-void Diario_OnFimDeBatalha(void)
-{
-}

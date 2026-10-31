@@ -145,3 +145,31 @@ def test_atalhos_no_bloco_b0():
         0xB0, 0xB1, 0xB2, 0xB3)
     for nome in ("conq_estado", "conq_contador", "conq_reset", "conq_checar"):
         assert callable(getattr(hooks.Mailbox, nome)), nome
+
+
+DIARIO_C = REPO_ROOT / "src" / "diario.c"
+
+
+def test_diario_sem_ovo():
+    """O time registrado no diário pula os ovos (o laço sobre gPlayerParty em Diario_OnFimDeBatalha)."""
+    fonte = DIARIO_C.read_text(encoding="utf-8")
+    assert "void Diario_OnFimDeBatalha(void)" in fonte
+    lacos = re.findall(r"for \(i = 0; i < PARTY_SIZE; i\+\+\)\s*\{(.*?)\n    \}", fonte, re.S)
+    do_time = [l for l in lacos if "gPlayerParty[i]" in l and "time[" in l]
+    assert len(do_time) == 1, lacos
+    assert re.search(r"MON_DATA_IS_EGG\)\)?\s*\n\s*continue;", do_time[0]), do_time[0]
+    h = CONQ_H.read_text(encoding="utf-8")
+    for proto in ("void Diario_OnFimDeBatalha(void);", "const struct DiarioEntrada *Diario_GetEntrada(u8 evt);",
+                  "u8 Diario_ListarEmOrdem(u8 *evts);"):
+        assert proto in h, proto
+    assert "void Diario_OnFimDeBatalha(void)" not in CONQ_C.read_text(encoding="utf-8"), "stub da Task 4 ficou"
+
+
+def test_atalho_e_grupos_do_diario():
+    from esteira import hooks
+    assert hooks.CMD_DIARIO_ENTRADA == 0xBB
+    assert callable(getattr(hooks.Mailbox, "diario_entrada", None))
+    texto = (REPO_ROOT / "test" / "esteira" / "scenarios" / "full_conquistas.py").read_text(encoding="utf-8")
+    for grupo in ("diario/brock", "diario/so_a_primeira", "diario/mvp_depois_da_troca", "diario/lendario",
+                  "diario/jogo_novo_zera"):
+        assert f'"{grupo}"' in texto, grupo

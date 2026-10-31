@@ -132,6 +132,7 @@ enum
     TEST_CMD_PARTY_SIZE,         // arg0 = n (1-6): keeps only the first n party mons (slots n-5 zeroed); result = gPlayerPartyCount
     TEST_CMD_CONQ_CAPTURA,       // arg0 = species, arg1 = ball (ITEM_*): gEnemyParty[0] built at level 30, then Conquistas_OnCaptura(&gEnemyParty[0], ball); result = 1 (0xFFFFFFFF = invalid species)
     TEST_CMD_CONQ_CHOCAR,        // arg0 = party slot (<= party count) | options << 8 (bit 0 shiny, bit 1 6 IVs 31), arg1 = species: an egg of the player in that slot, hatched by ScriptHatchMon (AddHatchedMonToParty); result = species | isEgg << 16 read back (0xFFFFFFFF = invalid)
+    TEST_CMD_DIARIO_ENTRADA,     // arg0 = journal event (DIARIO_EVT_*): its 20-byte struct DiarioEntrada copied into gTestText; result = its ordem (0 = empty slot, 0xFFFFFFFF = invalid event)
 };
 // --- end of POK-44 -------------------------------------------------------------------------
 

@@ -883,6 +883,18 @@ static u32 ConqCaptura(u16 species, u16 ball)
     return 1;
 }
 
+// The raw journal slot of an event (also an empty one) into gTestText.
+static u32 DiarioEntrada(u32 evt)
+{
+    const struct DiarioEntrada *e;
+
+    if (evt >= DIARIO_EVT_COUNT)
+        return 0xFFFFFFFF;
+    e = &gSaveBlock2Ptr->diario.entradas[evt];
+    memcpy(gTestText, e, sizeof(*e));
+    return e->ordem;
+}
+
 // An egg of the player (shiny PID and/or 6 IVs 31 as asked) in a party slot, hatched through the real special.
 static u32 ConqChocar(u32 arg0, u16 species)
 {
@@ -1034,6 +1046,7 @@ void TestHooks_Run(void)
     case TEST_CMD_PARTY_SIZE:       result = PartySize(gTestMailbox.arg0); break;
     case TEST_CMD_CONQ_CAPTURA:     result = ConqCaptura(gTestMailbox.arg0, gTestMailbox.arg1); break;
     case TEST_CMD_CONQ_CHOCAR:      result = ConqChocar(gTestMailbox.arg0, gTestMailbox.arg1); break;
+    case TEST_CMD_DIARIO_ENTRADA:   result = DiarioEntrada(gTestMailbox.arg0); break;
     // POK-44: end
     default:
         result = 0xFFFFFFFF;

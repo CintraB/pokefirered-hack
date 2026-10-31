@@ -272,6 +272,18 @@ class Mailbox:
         lido = self.call(CMD_CONQ_CHOCAR, slot | (int(shiny) | int(ivs31) << 1) << 8, species)
         assert lido == species, f"CONQ_CHOCAR recusado/errado: slot {slot}, espécie {species} (lido {lido:#x})"
 
+    def diario_entrada(self, evt: int) -> dict | None:
+        """A entrada do diário do evento `evt` (DIARIO_EVT_*), decodificada por conquistas.parse_entrada;
+        None se o slot está vazio (ordem 0)."""
+        from .conquistas import DIARIO_ENTRADA_SIZE, parse_entrada
+        ordem = self.call(CMD_DIARIO_ENTRADA, evt)
+        assert ordem != NO_RESULT, f"DIARIO_ENTRADA recusado: evento {evt}"
+        if ordem == 0:
+            return None
+        entrada = parse_entrada(self.emu.read(self.ctl.game.syms.addr(TEXT_SYMBOL), DIARIO_ENTRADA_SIZE))
+        assert entrada["ordem"] == ordem, (entrada, ordem)
+        return entrada
+
 # --- Hack 6: breeding genético (enum à parte em include/test_hooks.h, a partir de 0x60; ------
 # o uso fica em esteira/breeding.py e scenarios/full_breeding.py / full_egg.py)
 CMD_BREED_SETUP = 0x60      # gTestBreedSetup -> creche (arg0 = 1: ovo pendente) -> compatibilidade (0xFFFFFFFF = pai inválido)
@@ -337,3 +349,5 @@ CMD_PARTY_SIZE = 0xB8       # arg0 = n -> fica só com os n primeiros do time ->
 CMD_CONQ_CAPTURA = 0xB9     # arg0 = espécie, arg1 = bola -> gEnemyParty[0] nv 30 e Conquistas_OnCaptura -> 1
 CMD_CONQ_CHOCAR = 0xBA      # arg0 = slot | opções << 8 (1 shiny, 2 seis IVs 31), arg1 = espécie -> ovo do jogador no slot,
                             # chocado pelo ScriptHatchMon (AddHatchedMonToParty) -> espécie | ovo << 16 lidos
+CMD_DIARIO_ENTRADA = 0xBB   # arg0 = evento (DIARIO_EVT_*) -> ordem (0 = vazia; 0xFFFFFFFF = evento inválido);
+                            # os 20 bytes da struct DiarioEntrada em gTestText
