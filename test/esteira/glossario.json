@@ -14011,6 +14011,59 @@
    "detectar": true,
    "frente": "ajustes",
    "obs": "placa da cidade (PewterCity_Text_MuseumOfScience); a forma curta do Quest Log, 'Museu de Ciências', tem entrada própria"
+  },
+  {
+   "en": "MOONBLAST",
+   "pt": "Expl. Lunar",
+   "fonte": "GO",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "POK-45",
+   "obs": "✂ de: Explosão Lunar"
+  },
+  {
+   "en": "PLAY ROUGH",
+   "pt": "Jogo Duro",
+   "fonte": "GO",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "POK-45"
+  },
+  {
+   "en": "DAZZLING GLEAM",
+   "pt": "Clarão Desl.",
+   "fonte": "GO",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "POK-45",
+   "obs": "✂ de: Clarão Deslumbrante"
+  },
+  {
+   "en": "DRAINING KISS",
+   "pt": "Beijo Dren.",
+   "fonte": "GO",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "POK-45",
+   "obs": "✂ de: Beijo Drenante"
+  },
+  {
+   "en": "FAIRY WIND",
+   "pt": "Vento Fada",
+   "fonte": "GO",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "POK-45",
+   "obs": "✂ de: Vento de Fada (sem a preposição)"
+  },
+  {
+   "en": "DISARMING VOICE",
+   "pt": "Voz Desarm.",
+   "fonte": "GO",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "POK-45",
+   "obs": "✂ de: Voz Desarmante"
   }
  ],
  "proibidos": [

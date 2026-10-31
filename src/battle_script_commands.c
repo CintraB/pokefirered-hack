@@ -6624,7 +6624,10 @@ static void Cmd_stockpiletohpheal(void)
 
 static void Cmd_negativedamage(void)
 {
-    gBattleMoveDamage = -(gHpDealt / 2);
+    if (gCurrentMove == MOVE_DRAINING_KISS)
+        gBattleMoveDamage = -(gHpDealt * 3 / 4);   // Gen 6: Draining Kiss recupera 75% do dano
+    else
+        gBattleMoveDamage = -(gHpDealt / 2);
     if (gBattleMoveDamage == 0)
         gBattleMoveDamage = -1;
 

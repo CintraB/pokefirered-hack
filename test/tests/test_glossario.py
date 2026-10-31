@@ -41,8 +41,9 @@ def test_glossary_has_every_section_of_the_approved_document():
     assert counts["natureza"] == 25
     assert counts["habilidade"] == 77
     assert counts["golpe"] == 178
-    # Task 2: os 176 golpes fora da amostra entram com fonte própria; o glossário cobre os 354
-    assert sum(t["categoria"] == "golpe" for t in TERMS) == 354
+    # Task 2: os 176 golpes fora da amostra entram com fonte própria; o glossário cobre os 354,
+    # e o POK-45 acrescenta os 6 golpes de Fada da Gen 6
+    assert sum(t["categoria"] == "golpe" for t in TERMS) == 360
     assert counts["item"] >= 163          # linhas agrupadas ("BLUE / YELLOW / RED FLUTE") viram termos
     assert counts["lugar"] >= 70
     assert len(TERMS) >= 688

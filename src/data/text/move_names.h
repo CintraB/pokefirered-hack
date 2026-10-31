@@ -353,5 +353,11 @@ const u8 gMoveNames[MOVES_COUNT][MOVE_NAME_LENGTH + 1] = {
     [MOVE_SHOCK_WAVE]    = _("Onda Choque"),
     [MOVE_WATER_PULSE]   = _("Pulso d'Água"),
     [MOVE_DOOM_DESIRE]   = _("Desejo Cruel"),
-    [MOVE_PSYCHO_BOOST]  = _("I. Psíquico")
+    [MOVE_PSYCHO_BOOST]  = _("I. Psíquico"),
+    [MOVE_MOONBLAST]       = _("Expl. Lunar"),
+    [MOVE_PLAY_ROUGH]      = _("Jogo Duro"),
+    [MOVE_DAZZLING_GLEAM]  = _("Clarão Desl."),
+    [MOVE_DRAINING_KISS]   = _("Beijo Dren."),
+    [MOVE_FAIRY_WIND]      = _("Vento Fada"),
+    [MOVE_DISARMING_VOICE] = _("Voz Desarm.")
 };

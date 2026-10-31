@@ -36,7 +36,7 @@ def test_snapshot_completo():
 
 def test_categoria_de_cada_golpe():
     entradas = _entradas()
-    assert len(entradas) == 355
+    assert len(entradas) == len(GEN6["categories"]) + 1          # MOVE_NONE + 1..MOVES_COUNT-1
     errados = {}
     for nome, corpo in entradas.items():
         if nome == "MOVE_NONE":
