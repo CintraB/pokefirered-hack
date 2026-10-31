@@ -731,8 +731,8 @@ static u32 ConqEstado(u8 num)
 {
     if (!Conquistas_NumValido(num))
         return 0xFFFFFFFF;
-    // current tier (bits 24-31) comes with the state rules (Task 3)
-    return Conquistas_GetEstado(num) | Conquistas_Entregue(num) << 8 | Conquistas_DegrauEntregue(num) << 16;
+    return Conquistas_GetEstado(num) | Conquistas_Entregue(num) << 8 | Conquistas_DegrauEntregue(num) << 16
+         | Conquistas_DegrauAtual(num) << 24;
 }
 
 static u32 ConqContador(u32 which)
@@ -747,7 +747,12 @@ static u32 ConqContador(u32 which)
     case 3: return conq->magic;
     }
     if (which - 4 < CONQ_ABAS_COUNT)
-        return 0; // done | valid << 8 of the tab: Conquistas_ContarAba (Task 3)
+    {
+        u8 feitas, validas;
+
+        Conquistas_ContarAba(which - 4, &feitas, &validas);
+        return feitas | validas << 8;
+    }
     return 0xFFFFFFFF;
 }
 
@@ -764,6 +769,21 @@ static u32 ConqReset(u32 jogoNovo)
         memset(&gSaveBlock2Ptr->diario, 0, sizeof(gSaveBlock2Ptr->diario));
     }
     return gSaveBlock1Ptr->conquistas.magic;
+}
+
+static u32 ConqAplicar(u32 num, u32 opDegrau)
+{
+    if (num >= 0x100 || !Conquistas_NumValido(num))
+        return 0xFFFFFFFF;
+    switch (opDegrau & 0xFF)
+    {
+    case 0: Conquistas_Marcar(num); break;
+    case 1: Conquistas_Perder(num); break;
+    case 2: Conquistas_SetEntregue(num); break;
+    case 3: Conquistas_SetDegrauEntregue(num, opDegrau >> 8); break;
+    default: return 0xFFFFFFFF;
+    }
+    return ConqEstado(num);
 }
 // --- end of POK-44 --------------------------------------------------------------------------
 
@@ -887,7 +907,8 @@ void TestHooks_Run(void)
     case TEST_CMD_CONQ_ESTADO:      result = ConqEstado(gTestMailbox.arg0 < 0x100 ? gTestMailbox.arg0 : 0xFF); break;
     case TEST_CMD_CONQ_CONTADOR:    result = ConqContador(gTestMailbox.arg0); break;
     case TEST_CMD_CONQ_RESET:       result = ConqReset(gTestMailbox.arg0); break;
-    case TEST_CMD_CONQ_CHECAR:      result = 0; break; // Conquistas_ChecarEstado + Conquistas_AvisosPendentes (Task 3)
+    case TEST_CMD_CONQ_CHECAR:      Conquistas_ChecarEstado(); result = Conquistas_AvisosPendentes(); break;
+    case TEST_CMD_CONQ_APLICAR:     result = ConqAplicar(gTestMailbox.arg0, gTestMailbox.arg1); break;
     // POK-44: end
     default:
         result = 0xFFFFFFFF;

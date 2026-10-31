@@ -84,4 +84,15 @@ void Conquistas_SetEntregue(u8 num);
 u8 Conquistas_DegrauEntregue(u8 num);            // degraus já entregues (0 sem degraus)
 void Conquistas_SetDegrauEntregue(u8 num, u8 degrau);
 
+// Regras de estado (src/conquistas.c; nada de regra fora de lá). Só as conquistas ativas contam.
+void Conquistas_ChecarEstado(void);              // sem marcador, varre o save antigo antes; depois avalia os tipos de
+                                                 // estado (NIVEL/AMIZADE_MAX só no time) e, com as 8 insígnias,
+                                                 // perde `lider_um_pokemon` pendente
+void Conquistas_VarrerSaveAntigo(void);          // uma vez por save sem marcador: grava o marcador (origem save antigo,
+                                                 // resumo pendente) e reconhece o que o save prova, inclusive no PC
+u8 Conquistas_DegrauAtual(u8 num);               // degraus alcançados (0 sem degraus); FEITA quando = numDegraus
+bool8 Conquistas_Progresso(u8 num, u32 *atual, u32 *meta); // FALSE nas de sim/não; com degraus, meta = próximo degrau
+u8 Conquistas_AvisosPendentes(void);             // feitas não entregues + degraus não entregues (1 com o resumo pendente)
+void Conquistas_ContarAba(u8 aba, u8 *feitas, u8 *validas); // válidas = ativas e não perdidas
+
 #endif // GUARD_CONQUISTAS_H

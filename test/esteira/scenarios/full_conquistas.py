@@ -8,8 +8,14 @@ Sessão própria da ROM de teste a partir do .sav do `captura` (`save_from="capt
   NewGameInitData chama logo depois do ClearSav1) → marcador "CQD1", versão 1, origem jogo novo,
   `adiadoNoMapa` 0xFFFF, todos os estados pendentes, nada entregue, contadores e diário zerados;
 - `save/antigo_sem_marcador`: `conq_reset(False)` (as duas áreas zeradas, como em todo save de antes
-  das conquistas) → magic 0, e a checagem (`conq_checar`) não quebra;
-- `save/num_invalido`: um `num` fora da tabela devolve 0xFFFFFFFF.
+  das conquistas) → magic 0 (a checagem desse save entra na varredura: `retro/*`);
+- `save/num_invalido`: um `num` fora da tabela devolve 0xFFFFFFFF;
+- `estado/*` (Task 3): as regras de `Conquistas_ChecarEstado` num save com marcador (insígnia, dinheiro,
+  nível no time, degraus de horas, contagem por aba) e os acessores Marcar/Perder/SetEntregue/
+  SetDegrauEntregue em tempo de execução (`conq_aplicar`): feita fica feita, perdida nunca vira feita;
+- `retro/*` (Task 3): um save sem marcador passa pela varredura uma vez (origem save antigo, resumo
+  pendente; insígnias, Campeão, Elite 4 e nível feitos, vitórias = flags de treinador ligadas,
+  `lider_um_pokemon` e `rival_todas` perdidas), e a varredura não roda de novo.
 
 Uso, a partir de test/ (a pasta OUT precisa do captura.sav de um `rapido`/`completo`):
     python3 -m esteira completo --rom R --elf E --out OUT --only conquistas
@@ -19,6 +25,7 @@ Numa janela, em tempo real: `make test-watch CENARIO=conquistas`.
 import sys
 
 from .. import conquistas as cq
+from ..game import SB1_MONEY
 from ..hooks import CMD_CONQ_ESTADO, NO_RESULT, Mailbox
 from . import ScenarioContext
 from .base import Abort
@@ -27,6 +34,11 @@ from .quick_catch_save import CatchSaveScenario
 SB1_CONQUISTAS, SB2_DIARIO = 0x348C, 0xB20
 CONQ_SAVE_SIZE, DIARIO_SAVE_SIZE = 400, 0x400
 ADIADO_NO_MAPA = 0x2C   # offset de adiadoNoMapa em struct ConquistasSave
+SB2_PLAY_TIME_HOURS = 0x0E   # u16 playTimeHours, seguido de u8 playTimeMinutes
+PENDENTE, FEITA, PERDIDA = cq.CONQ_PENDENTE, cq.CONQ_FEITA, cq.CONQ_PERDIDA
+ABA_HISTORIA, ABA_BATALHA = 0, 1
+APLICAR_MARCAR, APLICAR_PERDER, APLICAR_ENTREGUE, APLICAR_DEGRAU = 0, 1, 2, 3
+BADGES = [f"FLAG_BADGE0{i}_GET" for i in range(1, 9)]
 
 
 class ConquistasScenario(CatchSaveScenario):
@@ -44,12 +56,21 @@ class ConquistasScenario(CatchSaveScenario):
         self.box = Mailbox(self.ctl)
         self._title_to_continue("tela de título da build de teste", shot="conquistas_continue")
         magic = self.box.conq_contador(3)
+        # O captura.sav de uma ROM de antes das conquistas não tem marcador e tem as duas áreas zeradas.
+        # Quando a ROM jogável já trouxer as conquistas (Task 9), o modo rápido começa um jogo novo e o
+        # save sai com o marcador de jogo novo; qualquer outra coisa é lixo.
+        if magic == 0:
+            assert not any(self._conq_raw()), "save sem marcador com a área das conquistas suja"
+            assert not any(self._diario_raw()), "save sem marcador com a área do diário suja"
+        else:
+            assert magic == cq.CONQ_MAGIC, f"magic = {magic:#x}"
+            assert self.box.conq_contador(2) & 0xFF == cq.CONQ_ORIGEM_JOGO_NOVO, "origem"
         return f"CONTINUAR com o save do modo rápido; magic do save = {magic:#010x}"
 
     def _jogo_novo(self) -> str:
         # lixo nas duas áreas: o jogo novo zera tudo (o de um jogo anterior não sobrevive)
-        self.emu.write(self._sb(2) + SB2_DIARIO, bytes([0x5A]) * 64)
-        self.emu.write(self._sb(1) + SB1_CONQUISTAS + 8, bytes([0xA5]) * 36)
+        self.emu.write(self._sb(2) + SB2_DIARIO, bytes([0x5A]) * DIARIO_SAVE_SIZE)
+        self.emu.write(self._sb(1) + SB1_CONQUISTAS, bytes([0xA5]) * CONQ_SAVE_SIZE)
         magic = self.box.conq_reset(True)
         assert magic == cq.CONQ_MAGIC == self.box.conq_contador(3), f"magic = {magic:#x}"
         assert self.box.conq_contador(2) == cq.CONQ_ORIGEM_JOGO_NOVO, "origem | resumoPendente"
@@ -68,8 +89,7 @@ class ConquistasScenario(CatchSaveScenario):
         magic = self.box.conq_reset(False)
         assert magic == 0 == self.box.conq_contador(3), f"magic = {magic:#x}"
         assert not any(self._conq_raw()) and not any(self._diario_raw()), "áreas não zeradas"
-        avisos = self.box.conq_checar()
-        assert avisos == 0, f"avisos = {avisos}"
+        # a checagem num save assim entra na varredura: grupo retro/*
         return "save sem marcador: magic 0"
 
     def _invalido(self) -> str:
@@ -77,12 +97,163 @@ class ConquistasScenario(CatchSaveScenario):
         assert self.box.call(CMD_CONQ_ESTADO, 0x100) == NO_RESULT
         return "num 63 e 0x100 → 0xFFFFFFFF"
 
+    # --- Task 3: regras de estado -------------------------------------------------------
+    def _flag(self, name: str, on: bool = True) -> None:
+        assert self.box.set_flag(self.consts.flag(name), on) == on, name
+
+    def _estado(self, cid: str) -> tuple[int, int, int, int]:
+        return self.box.conq_estado(cq.num(cid))
+
+    def _set_money(self, amount: int) -> None:
+        """Dinheiro do jogador (u32 XOR encryptionKey), escrito na RAM (molde de full_egg.py)."""
+        self.emu.write(self._sb(1) + SB1_MONEY, (amount ^ self.game._key()).to_bytes(4, "little"))
+
+    def _set_horas(self, horas: int) -> None:
+        self.emu.write(self._sb(2) + SB2_PLAY_TIME_HOURS, horas.to_bytes(2, "little") + bytes([0]))
+
+    def _insignia(self) -> str:
+        self.box.conq_reset(True)
+        self._flag("FLAG_BADGE01_GET", False)
+        self.box.conq_checar()
+        assert self._estado("insignia_rocha")[0] == PENDENTE, "sem a insígnia"
+        self._flag("FLAG_BADGE01_GET")
+        avisos = self.box.conq_checar()
+        assert self._estado("insignia_rocha") == (FEITA, 0, 0, 0), self._estado("insignia_rocha")
+        assert avisos >= 1, f"avisos = {avisos}"
+        return f"FLAG_BADGE01_GET → insignia_rocha feita, não entregue; {avisos} aviso(s) pendente(s)"
+
+    def _dinheiro(self) -> str:
+        self.box.conq_reset(True)
+        self._set_money(999998)
+        self.box.conq_checar()
+        assert self._estado("dinheiro")[0] == PENDENTE, "₽999.998 não basta"
+        self._set_money(999999)
+        self.box.conq_checar()
+        assert self._estado("dinheiro")[0] == FEITA, self._estado("dinheiro")
+        return "₽999.998 pendente, ₽999.999 feita"
+
+    def _nivel(self) -> str:
+        self.box.conq_reset(True)
+        mewtwo = self.consts.species("MEWTWO")
+        for slot, mon in enumerate(self.game.party()):
+            if mon.level >= 50:   # o time do save não pode ter nível 50 antes do teste
+                self.box.set_party_mon(slot, mewtwo, 5)
+        self.box.set_party_mon(0, mewtwo, 49)
+        self.box.conq_checar()
+        assert self._estado("nivel_50")[0] == PENDENTE == self._estado("nivel_100")[0], "nível 49"
+        self.box.set_party_mon(0, mewtwo, 100)
+        self.box.conq_checar()
+        assert self._estado("nivel_50")[0] == FEITA == self._estado("nivel_100")[0], (
+            self._estado("nivel_50"), self._estado("nivel_100"))
+        return "Mewtwo nv 49: pendentes; nv 100: nivel_50 e nivel_100 feitas"
+
+    def _degraus_horas(self) -> str:
+        self.box.conq_reset(True)
+        self._set_horas(9)
+        self.box.conq_checar()
+        assert self._estado("horas") == (PENDENTE, 0, 0, 0), self._estado("horas")
+        self._set_horas(37)
+        antes = self.box.conq_checar()
+        assert self._estado("horas") == (PENDENTE, 0, 0, 1), self._estado("horas")
+        self._set_horas(100)
+        depois = self.box.conq_checar()
+        assert self._estado("horas") == (FEITA, 0, 0, 3), self._estado("horas")
+        assert depois == antes + 2, f"avisos {antes} → {depois} (2 degraus a mais)"
+        return f"9 h: degrau 0; 37 h: degrau 1, pendente; 100 h: degrau 3, feita; avisos {antes} → {depois}"
+
+    def _conta_aba(self) -> str:
+        self.box.conq_reset(True)
+        for i, flag in enumerate(BADGES):
+            self._flag(flag, i < 3)
+        for flag in ("FLAG_SYS_GAME_CLEAR", "FLAG_HIDE_SAFFRON_ROCKETS", "FLAG_SYS_CAN_LINK_WITH_RS"):
+            self._flag(flag, False)
+        self.box.conq_checar()
+        historia = self.box.conq_contador(4 + ABA_HISTORIA)
+        assert historia == 3 | 12 << 8, f"história = {historia & 0xFF} de {historia >> 8}"
+        ativas = [c for c in cq.dados()["conquistas"] if c.get("ativa", True) and c["aba"] == "batalha"]
+        batalha = self.box.conq_contador(4 + ABA_BATALHA)
+        assert batalha >> 8 == len(ativas) == 5, f"batalha: {batalha >> 8} válidas"
+        self.box.conq_aplicar(cq.num("rival_todas"), APLICAR_PERDER)
+        perdeu = self.box.conq_contador(4 + ABA_BATALHA)
+        assert perdeu >> 8 == 4 and perdeu & 0xFF == batalha & 0xFF, f"batalha depois = {perdeu:#x}"
+        return f"3 insígnias: história 3 de 12; rival_todas perdida: batalha {batalha >> 8} → {perdeu >> 8} válidas"
+
+    def _marcar_perder(self) -> str:
+        self.box.conq_reset(True)
+        sem, x4, trein = cq.num("sem_desmaio"), cq.num("golpe_x4"), cq.num("treinadores")
+        base = self.box.conq_checar()
+        assert self.box.conq_aplicar(sem, APLICAR_MARCAR) == (FEITA, 0, 0, 0)
+        assert self.box.conq_aplicar(sem, APLICAR_PERDER) == (FEITA, 0, 0, 0), "feita virou perdida"
+        assert self.box.conq_checar() == base + 1, "a feita não entregue é um aviso"
+        assert self.box.conq_aplicar(sem, APLICAR_ENTREGUE) == (FEITA, 1, 0, 0)
+        assert self.box.conq_checar() == base, "a entregue deixa de ser aviso"
+        assert self.box.conq_aplicar(x4, APLICAR_PERDER) == (PERDIDA, 0, 0, 0)
+        assert self.box.conq_aplicar(x4, APLICAR_MARCAR) == (PERDIDA, 0, 0, 0), "perdida virou feita"
+        assert self.box.conq_aplicar(trein, APLICAR_DEGRAU, 2) == (PENDENTE, 0, 2, 0)
+        assert self.box.conq_aplicar(sem, APLICAR_DEGRAU, 2) == (FEITA, 1, 0, 0), "degrau sem degraus"
+        # os vizinhos de bit não mudaram
+        for cid in ("golpe_x4", "rival_todas", "lider_um_pokemon"):
+            assert self._estado(cid)[1] == 0, cid
+        assert self._estado("rival_todas")[0] == PENDENTE == self._estado("lider_um_pokemon")[0]
+        return "Marcar/Perder/SetEntregue/SetDegrauEntregue: feita fica feita, perdida nunca vira feita"
+
+    # --- Task 3: varredura do save antigo -------------------------------------------------
+    def _trainer_const(self, name: str) -> int:
+        return self.consts._eval(name)   # TRAINER_* e NUM_TRAINERS (opponents.h), TRAINER_FLAGS_START (flags.h)
+
+    def _flags_de_treinador(self) -> int:
+        inicio = self._trainer_const("TRAINER_FLAGS_START")
+        return sum(self.game.flag(inicio + t) for t in range(1, self._trainer_const("NUM_TRAINERS")))
+
+    def _save_antigo(self) -> str:
+        assert self.box.conq_reset(False) == 0
+        for flag in BADGES + ["FLAG_SYS_GAME_CLEAR"]:
+            self._flag(flag)
+        inicio = self._trainer_const("TRAINER_FLAGS_START")
+        assert self.box.set_flag(inicio + self._trainer_const("TRAINER_RIVAL_OAKS_LAB_SQUIRTLE"))
+        self.box.set_party_mon(0, self.consts.species("MEWTWO"), 100)
+        vitorias = self._flags_de_treinador()
+        avisos = self.box.conq_checar()
+        assert self.box.conq_contador(3) == cq.CONQ_MAGIC, "marcador"
+        assert self.box.conq_contador(2) == cq.CONQ_ORIGEM_SAVE_ANTIGO | 1 << 8, "origem | resumoPendente"
+        assert avisos == 1, f"com o resumo pendente o aviso é um só: {avisos}"
+        feitas = [f"insignia_{n}" for n in ("rocha", "cascata", "trovao", "arcoiris", "alma", "pantano",
+                                              "vulcao", "terra")] + ["campeao", "vencer_elite4", "nivel_100"]
+        for cid in feitas:
+            assert self._estado(cid)[0] == FEITA, (cid, self._estado(cid))
+        for cid in ("lider_um_pokemon", "rival_todas"):
+            assert self._estado(cid)[0] == PERDIDA, (cid, self._estado(cid))
+        assert self._estado("sem_desmaio")[0] == PENDENTE, self._estado("sem_desmaio")
+        assert self.box.conq_contador(0) == vitorias, f"vitórias {self.box.conq_contador(0)} ≠ flags {vitorias}"
+        diario = self._diario_raw()
+        assert diario[1] == 1 and not any(diario[:1]) and not any(diario[2:]), "diário de save antigo"
+        self._vitorias_retro = vitorias
+        return f"varredura: {len(feitas)} feitas conferidas, 2 perdidas, {vitorias} vitórias pelas flags"
+
+    def _roda_uma_vez(self) -> str:
+        assert getattr(self, "_vitorias_retro", None) is not None, "depende de retro/save_antigo"
+        inicio = self._trainer_const("TRAINER_FLAGS_START")
+        livre = next(t for t in range(1, self._trainer_const("NUM_TRAINERS")) if not self.game.flag(inicio + t))
+        assert self.box.set_flag(inicio + livre)
+        self.box.conq_checar()
+        assert self.box.conq_contador(0) == self._vitorias_retro, "a varredura rodou de novo"
+        assert self.box.conq_contador(2) & 0xFF == cq.CONQ_ORIGEM_SAVE_ANTIGO, "origem"
+        return f"flag do treinador {livre} ligada depois: vitórias continuam {self._vitorias_retro}"
+
     def run(self) -> None:
         try:
             self._flow("conquistas: CONTINUAR com o save do modo rápido", self._start)
             self.suite.run("save/jogo_novo", self._jogo_novo)
             self.suite.run("save/antigo_sem_marcador", self._antigo)
             self.suite.run("save/num_invalido", self._invalido)
+            self.suite.run("estado/insignia", self._insignia)
+            self.suite.run("estado/dinheiro", self._dinheiro)
+            self.suite.run("estado/nivel", self._nivel)
+            self.suite.run("estado/degraus_horas", self._degraus_horas)
+            self.suite.run("estado/conta_aba", self._conta_aba)
+            self.suite.run("estado/marcar_perder", self._marcar_perder)
+            self.suite.run("retro/save_antigo", self._save_antigo)
+            self.suite.run("retro/roda_uma_vez", self._roda_uma_vez)
         except Abort:
             pass
 

@@ -121,10 +121,11 @@ enum
 // --- POK-44: achievements and battle journal ------------------------------------------------
 enum
 {
-    TEST_CMD_CONQ_ESTADO = 0xB0, // arg0 = num (CONQ_*); result = state | delivered << 8 | delivered tier << 16 | current tier << 24 (0xFFFFFFFF = invalid num; current tier is 0 until Task 3)
-    TEST_CMD_CONQ_CONTADOR,      // arg0 = 0 trainer wins, 1 shinies, 2 origem | resumoPendente << 8, 3 magic, 4 + tab: done | valid << 8 of that tab (Conquistas_ContarAba, Task 3; 0 until then); result = that value (0xFFFFFFFF = invalid arg0)
+    TEST_CMD_CONQ_ESTADO = 0xB0, // arg0 = num (CONQ_*); result = state | delivered << 8 | delivered tier << 16 | current tier (Conquistas_DegrauAtual) << 24 (0xFFFFFFFF = invalid num)
+    TEST_CMD_CONQ_CONTADOR,      // arg0 = 0 trainer wins, 1 shinies, 2 origem | resumoPendente << 8, 3 magic, 4 + tab: done | valid << 8 of that tab (Conquistas_ContarAba); result = that value (0xFFFFFFFF = invalid arg0)
     TEST_CMD_CONQ_RESET,         // arg0 = 0: zero both save areas (an old save, no marker), 1: Conquistas_IniciarJogoNovo(); result = magic
-    TEST_CMD_CONQ_CHECAR,        // Conquistas_ChecarEstado() now; result = Conquistas_AvisosPendentes() (stub returning 0 until Task 3)
+    TEST_CMD_CONQ_CHECAR,        // Conquistas_ChecarEstado() now (an old save is scanned first); result = Conquistas_AvisosPendentes()
+    TEST_CMD_CONQ_APLICAR,       // arg0 = num, arg1 = op | tier << 8: 0 Conquistas_Marcar, 1 Conquistas_Perder, 2 Conquistas_SetEntregue, 3 Conquistas_SetDegrauEntregue(num, tier); result = as TEST_CMD_CONQ_ESTADO afterwards (0xFFFFFFFF = invalid num or op)
 };
 // --- end of POK-44 -------------------------------------------------------------------------
 

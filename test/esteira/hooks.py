@@ -222,8 +222,17 @@ class Mailbox:
         return self.call(CMD_CONQ_RESET, int(jogo_novo))
 
     def conq_checar(self) -> int:
-        """Conquistas_ChecarEstado() agora; devolve Conquistas_AvisosPendentes() (0 até a Task 3)."""
+        """Conquistas_ChecarEstado() agora (num save sem marcador, a varredura antes); devolve
+        Conquistas_AvisosPendentes()."""
         return self.call(CMD_CONQ_CHECAR)
+
+    def conq_aplicar(self, num: int, op: int, degrau: int = 0) -> tuple[int, int, int, int]:
+        """Acessor do núcleo na conquista `num`: op 0 Conquistas_Marcar, 1 Conquistas_Perder,
+        2 Conquistas_SetEntregue, 3 Conquistas_SetDegrauEntregue(num, degrau). Devolve o
+        conq_estado(num) depois."""
+        packed = self.call(CMD_CONQ_APLICAR, num, op | degrau << 8)
+        assert packed != NO_RESULT, f"conq_aplicar recusado: num {num}, op {op}"
+        return packed & 0xFF, packed >> 8 & 0xFF, packed >> 16 & 0xFF, packed >> 24 & 0xFF
 
 # --- Hack 6: breeding genético (enum à parte em include/test_hooks.h, a partir de 0x60; ------
 # o uso fica em esteira/breeding.py e scenarios/full_breeding.py / full_egg.py)
@@ -274,8 +283,10 @@ CMD_TYPE_EFFECTIVENESS = 0xA1  # arg0 = tipo do golpe, arg1 = tipo1 | tipo2 << 8
 
 # --- POK-44: conquistas e diário de batalhas (enum à parte, a partir de 0xB0) ---
 CMD_CONQ_ESTADO = 0xB0      # arg0 = num -> estado | entregue << 8 | degrau entregue << 16 | degrau atual << 24
-                            # (0xFFFFFFFF = num inválido; degrau atual 0 até a Task 3)
+                            # (0xFFFFFFFF = num inválido)
 CMD_CONQ_CONTADOR = 0xB1    # arg0 = 0 vitórias, 1 shinies, 2 origem | resumoPendente << 8, 3 magic,
-                            # 4 + aba -> feitas | válidas << 8 (0 até a Task 3)
+                            # 4 + aba -> feitas | válidas << 8 (Conquistas_ContarAba)
 CMD_CONQ_RESET = 0xB2       # arg0 = 0 zera as duas áreas (save antigo), 1 Conquistas_IniciarJogoNovo -> magic
-CMD_CONQ_CHECAR = 0xB3      # Conquistas_ChecarEstado() -> Conquistas_AvisosPendentes() (0 até a Task 3)
+CMD_CONQ_CHECAR = 0xB3      # Conquistas_ChecarEstado() -> Conquistas_AvisosPendentes()
+CMD_CONQ_APLICAR = 0xB4     # arg0 = num, arg1 = op | degrau << 8 (0 Marcar, 1 Perder, 2 SetEntregue,
+                            # 3 SetDegrauEntregue) -> o mesmo de CMD_CONQ_ESTADO depois
