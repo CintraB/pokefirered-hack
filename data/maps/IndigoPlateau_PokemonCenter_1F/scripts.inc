@@ -68,13 +68,15 @@ IndigoPlateau_PokemonCenter_1F_EventScript_AskTierLeagueClosed::
 	msgbox IndigoPlateau_PokemonCenter_1F_Text_TierSetLeagueClosed
 	return
 
-@ A pergunta e a lista; com B, VAR_RESULT fica em SCR_MENU_CANCEL (o msgbox não mexe nele) e o degrau não muda.
+@ A pergunta e a lista, com o cursor no degrau atual (A sem mexer mantém o degrau); com B, VAR_RESULT fica em
+@ SCR_MENU_CANCEL (o msgbox não mexe nele) e o degrau não muda.
 IndigoPlateau_PokemonCenter_1F_EventScript_ChooseTier::
 	setvar VAR_TEMP_1, 1
 	special BufferRematchTierName
 	message IndigoPlateau_PokemonCenter_1F_Text_AskTier
 	waitmessage
-	multichoice 20, 0, MULTICHOICE_REMATCH_TIER, FALSE
+	special ShowRematchTierMenu
+	waitstate
 	goto_if_eq VAR_RESULT, SCR_MENU_CANCEL, IndigoPlateau_PokemonCenter_1F_EventScript_KeepTier
 	copyvar VAR_REMATCH_TIER, VAR_RESULT
 	special BufferRematchTierName

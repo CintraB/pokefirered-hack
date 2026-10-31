@@ -6,6 +6,7 @@
 #include "data.h"
 #include "event_data.h"
 #include "pokemon.h"
+#include "script_menu.h"
 #include "string_util.h"
 #include "strings.h"
 #include "vs_seeker.h"
@@ -13,6 +14,7 @@
 #include "constants/battle_ai.h"
 #include "constants/flags.h"
 #include "constants/items.h"
+#include "constants/menu.h"
 #include "constants/moves.h"
 #include "constants/opponents.h"
 #include "constants/pokemon.h"
@@ -181,4 +183,11 @@ STATIC_ASSERT(NELEMS(sRematchTierNames) == REMATCH_TIER_MAX + 1, RematchTierName
 void BufferRematchTierName(void)
 {
     StringCopy(gStringVar1, sRematchTierNames[GetRematchTier()]);
+}
+
+// Special da guarda da Liga: a lista dos degraus com o cursor no degrau atual, para quem aperta A sem mexer manter
+// o degrau. O script espera com waitstate; a escolha volta em VAR_RESULT (SCR_MENU_CANCEL no B).
+void ShowRematchTierMenu(void)
+{
+    ScriptMenu_MultichoiceWithDefault(20, 0, MULTICHOICE_REMATCH_TIER, FALSE, GetRematchTier());
 }

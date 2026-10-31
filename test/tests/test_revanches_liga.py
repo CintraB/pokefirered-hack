@@ -125,6 +125,30 @@ def test_golpes_aprendiveis(g):
     assert g.problemas_liga() == []
 
 
+def test_golpes_do_jogo_so_golpes(g):
+    """Só os golpes de verdade de moves.h: ficam de fora MOVE_UNAVAILABLE (0xFFFF) e MOVES_COUNT."""
+    golpes = g.golpes_do_jogo()
+    assert "MOVE_UNAVAILABLE" not in golpes and "MOVES_COUNT" not in golpes
+    assert golpes["MOVE_NONE"] == 0
+    total = re.search(r"^#define MOVES_COUNT\s+(\d+)", _ler(REPO_ROOT / "include" / "constants" / "moves.h"), re.M)
+    assert total and max(golpes.values()) == int(total.group(1)) - 1
+    assert "MOVES_COUNT" not in g.golpes_do_jogo.__doc__
+
+
+def test_header_recusa_liga_quebrada(g, monkeypatch, tmp_path):
+    """Com liga.json fora da regra, o gerador para antes de montar o header: nem grava nem confere um header ruim."""
+    problema = "CAMPEAO_SQUIRTLE degrau 5 pos. 1 (Alakazam nv 99): não aprende MOVE_SURF"
+    monkeypatch.setattr(g, "problemas_liga", lambda: [problema])
+    with pytest.raises(SystemExit, match="não aprende MOVE_SURF"):
+        g.header()
+    destino = tmp_path / "rematch_tiers.h"
+    monkeypatch.setattr(g, "HEADER", destino)
+    monkeypatch.setattr(sys, "argv", ["gerar.py"])
+    with pytest.raises(SystemExit, match="liga.json"):
+        g.main()
+    assert not destino.exists()
+
+
 def test_itens_da_liga(g):
     """Todos têm item em todos os degraus; nos degraus 1–2 quem não é o ás leva a fruta do Vs. Seeker."""
     for (rotulo, _, d), time in _times(g):
@@ -155,8 +179,9 @@ def test_liga_no_c():
                      r"TRAINER_CHAMPION_REMATCH_CHARMANDER - TRAINER_ELITE_FOUR_LORELEI_2 \+ 1", fonte)
     specials = _ler(REPO_ROOT / "data" / "specials.inc")
     fim = specials[:specials.index("gSpecialsEnd::")].rstrip().splitlines()
-    # o da Task 4 (BufferRematchTierName) vem logo depois
-    assert [l.strip() for l in fim[-2:]] == ["def_special ShouldUseLeagueRematchTeams", "def_special BufferRematchTierName"]
+    # os da Task 4 (BufferRematchTierName) e da onda final (ShowRematchTierMenu) vêm logo depois
+    assert [l.strip() for l in fim[-3:]] == ["def_special ShouldUseLeagueRematchTeams", "def_special BufferRematchTierName",
+                                           "def_special ShowRematchTierMenu"]
 
 
 @pytest.mark.parametrize("sala", SALAS)

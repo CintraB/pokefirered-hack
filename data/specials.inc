@@ -479,4 +479,5 @@ gSpecials::
 	@ Revanches por degrau (POK-42)
 	def_special ShouldUseLeagueRematchTeams
 	def_special BufferRematchTierName
+	def_special ShowRematchTierMenu
 gSpecialsEnd::

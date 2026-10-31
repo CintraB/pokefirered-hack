@@ -398,10 +398,12 @@ def times_liga():
 
 @functools.cache
 def golpes_do_jogo() -> dict[str, int]:
-    """MOVE_* -> id, de include/constants/moves.h, sem MOVE_UNAVAILABLE (MOVES_COUNT nem casa com o padrão)."""
+    """MOVE_* -> id dos golpes de include/constants/moves.h (de MOVE_NONE ao último).
+
+    Só os #define com prefixo MOVE_ e valor decimal: o total e o marcador de golpe indisponível (em hexadecimal)
+    ficam de fora pelo próprio padrão."""
     texto = _ler("include/constants/moves.h")
-    return {m.group(1): int(m.group(2)) for m in re.finditer(r"^#define (MOVE_\w+)\s+(\d+)\b", texto, re.M)
-            if m.group(1) not in ("MOVE_UNAVAILABLE",)}
+    return {m.group(1): int(m.group(2)) for m in re.finditer(r"^#define (MOVE_\w+)\s+(\d+)\b", texto, re.M)}
 
 
 @functools.cache
@@ -656,7 +658,13 @@ HEADER = REPO / "src" / "data" / "rematch_tiers.h"
 
 
 def header() -> str:
-    """O texto de src/data/rematch_tiers.h: sRematchTierParties[linha de sRematches][degrau - 1][posição]."""
+    """O texto de src/data/rematch_tiers.h: sRematchTierParties[linha de sRematches][degrau - 1][posição].
+
+    Para (falha) se liga.json estiver fora da regra (problemas_liga): um header com golpe ilegal ou item errado
+    nunca é gravado nem aceito pelo --conferir."""
+    problemas = problemas_liga()
+    if problemas:
+        falha("liga.json fora da regra:\n  " + "\n  ".join(problemas))
     linhas = ler_revanches()
     out = ["// GERADO por tools/revanches/gerar.py; não editar (regenere com python3 -I tools/revanches/gerar.py).",
            "// Times das revanches do Vs. Seeker por degrau (POK-42), lidos por src/rematch_tier.c:",

@@ -321,7 +321,7 @@ def test_special_e_atalhos():
     # no fim (o POK-42 acrescentou o da Liga depois)
     finais = specials[specials.index("Conquistas_MostrarAviso"):]
     assert finais == ["Conquistas_MostrarAviso", "Conquistas_AbrirTelaDoScript", "ShouldUseLeagueRematchTeams",
-                      "BufferRematchTierName"], finais
+                      "BufferRematchTierName", "ShowRematchTierMenu"], finais
     assert hooks.CMD_OPEN_CONQUISTAS == 0xBE and hooks.CMD_CONQ_TELA == 0xBF
     assert callable(hooks.Mailbox.open_conquistas) and callable(hooks.Mailbox.conq_tela)
     corpo = _ler(SRC / "test_hooks.c")

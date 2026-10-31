@@ -64,8 +64,13 @@ def test_script_do_degrau():
         assert bloco[3] == f"msgbox IndigoPlateau_PokemonCenter_1F_{confirma}" and bloco[4:] == ["return"], bloco
     escolha = _bloco(texto, f"{P}_ChooseTier")
     assert escolha.index("setvar VAR_TEMP_1, 1") < escolha.index("special BufferRematchTierName")
-    assert any(re.fullmatch(r"multichoice \d+, \d+, MULTICHOICE_REMATCH_TIER, FALSE", c) for c in escolha), escolha
+    # a lista abre com o cursor no degrau atual (special ShowRematchTierMenu) e o script espera a escolha
+    lista = escolha.index("special ShowRematchTierMenu")
+    assert escolha[lista + 1] == "waitstate", escolha
+    assert escolha.index("waitmessage") < lista
+    assert not any(c.startswith("multichoice") for c in escolha), escolha
     cancela = [c for c in escolha if c.startswith("goto_if_eq VAR_RESULT, SCR_MENU_CANCEL, ")]
+    assert escolha.index(cancela[0]) == lista + 2, escolha
     assert len(cancela) == 1, escolha
     fica = _bloco(texto, cancela[0].split(", ")[2])
     # sem copyvar e sem mexer no VAR_RESULT (as subs de cima testam o SCR_MENU_CANCEL depois)
@@ -75,7 +80,26 @@ def test_script_do_degrau():
     assert i > escolha.index(cancela[0])
     assert escolha[i + 1:] == ["special BufferRematchTierName", "return"], escolha
     assert len(re.findall(r"^\tcopyvar VAR_REMATCH_TIER, VAR_RESULT$", texto, re.M)) == 1
-    assert len(re.findall(r"MULTICHOICE_REMATCH_TIER", texto)) == 1
+    # a lista sai só do special (nenhum multichoice com o cursor fixo em Normal)
+    assert "MULTICHOICE_REMATCH_TIER" not in texto
+    assert len(re.findall(r"special ShowRematchTierMenu$", texto, re.M)) == 1
+
+
+def test_lista_abre_no_degrau_atual():
+    """A guarda abre a lista com o cursor no degrau salvo: quem aperta A sem mexer mantém o degrau (B cancela)."""
+    fonte = _ler(REPO_ROOT / "src" / "rematch_tier.c")
+    assert "void ShowRematchTierMenu(void);" in _ler(REPO_ROOT / "include" / "rematch_tier.h")
+    m = re.search(r"^void ShowRematchTierMenu\(void\)\n\{\n(.*?)^\}", fonte, re.S | re.M)
+    assert m, "ShowRematchTierMenu não encontrada"
+    chamada = re.sub(r"\s+", " ", m.group(1)).strip()
+    assert re.fullmatch(r"ScriptMenu_MultichoiceWithDefault\(\d+, \d+, MULTICHOICE_REMATCH_TIER, FALSE, "
+                        r"GetRematchTier\(\)\);", chamada), chamada
+    assert '#include "script_menu.h"' in fonte
+    # a mesma posição da lista de antes (20, 0), à direita da caixa de texto
+    assert "ScriptMenu_MultichoiceWithDefault(20, 0, " in chamada
+    # a assinatura: (left, top, mcId, ignoreBpress, cursorPos)
+    menu = _ler(REPO_ROOT / "src" / "script_menu.c")
+    assert "bool8 ScriptMenu_MultichoiceWithDefault(u8 left, u8 top, u8 mcId, u8 ignoreBpress, u8 cursorPos)" in menu
 
 
 def test_guarda_oferece():
@@ -125,7 +149,7 @@ def test_special_do_rotulo():
     assert tabela and re.findall(r"(gText_RematchTier_\w+)", tabela.group(1)) == list(ROTULOS)
     specials = _ler(REPO_ROOT / "data" / "specials.inc")
     nomes = re.findall(r"def_special (\w+)", specials.split("gSpecialsEnd::")[0])
-    assert nomes[-2:] == ["ShouldUseLeagueRematchTeams", "BufferRematchTierName"], nomes[-3:]
+    assert nomes[-3:] == ["ShouldUseLeagueRematchTeams", "BufferRematchTierName", "ShowRematchTierMenu"], nomes[-4:]
 
 
 def test_textos_aprovados():

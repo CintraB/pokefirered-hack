@@ -9,6 +9,8 @@ quebraria o warp e o `in_battle`); a conquista é lida pelo estado (CONQ_ESTADO)
 
 - `revanches/escolha`: no Centro da Liga, um passo até (4,2) dispara a guarda: pergunta (`revanche_pergunta`), a
   lista dos 6 degraus (`revanche_lista`, cursor em "Nível 90") e A → VAR_REMATCH_TIER = 4;
+- `revanches/escolha_atual`: a lista abre com o cursor no degrau salvo: com Nível 90 (4), A sem mexer mantém o 4;
+  com Nível 70 (2), B cancela ("fica como está") e mantém o 2;
 - `revanches/vs_seeker`: degrau 4, Ben derrotado e `trainerRematches[9]` = 1 na RAM (o warp zera a tabela, então
   a escrita vem depois dele); falar com o Ben (Rota 3, 17,4) abre a revanche com o time de
   `gerar.time_vs(linha do Ben, 4)`: níveis 87–92, IV 30 e os itens (`revanche_batalha`). A IA dos chefes do POK-32
@@ -21,29 +23,35 @@ quebraria o warp e o `in_battle`); a conquista é lida pelo estado (CONQ_ESTADO)
 - `revanches/var_lixo`: var 9 → BUILD_TRAINER_PARTY(BEN_4, revanche) dá o time de hoje, degrau 0;
 - `revanches/lorelei`: degrau 2; entrar na sala (a cena anda o jogador para dentro) e falar com a Lorelei: uma
   batalha só, contra LORELEI_2 com o time de `liga.json` no degrau 2 (espécie, nível, item, golpes, IV 31);
-  vencida, a sala volta ao campo com FLAG_DEFEATED_LORELEI e nenhuma outra batalha em 300 quadros;
+  vencida, a sala volta ao campo com FLAG_DEFEATED_LORELEI e nenhuma outra batalha nem script em 300 quadros;
 - `revanches/degrau_zero_liga`: sem FLAG_SYS_CAN_LINK_WITH_RS e com degrau 0, a Lorelei usa
   TRAINER_ELITE_FOUR_LORELEI com o time de hoje;
-- `revanches/conquista_max`: degrau 5, a revanche do Ben vencida de verdade → `revanche_max` (POK-44) feita.
+- `revanches/conquista_max`: degrau 5, a revanche do Ben vencida de verdade → `revanche_max` (POK-44) feita, e o
+  prêmio em dinheiro = 4 × nível do ás do degrau × valor da classe (gTrainerMoneyTable) × 2 se dupla;
+- `revanches/e4_degrau100`: degrau 5, a sala do Campeão de verdade (cena de entrada, batalha contra o
+  CHAMPION_REMATCH_* com o time de `liga.json`, falas, Carvalho e o warp para o Hall): antes do Hall o degrau da
+  batalha ainda é 5 (sRematchTierState e gBattleTypeFlags), e o EnterHallOfFame marca `e4_degrau100` (POK-44).
+  É o último caso: a tela do Hall grava o save.
 
 Uso, a partir de test/ (a pasta OUT precisa do captura.sav de um `rapido`/`completo`):
     python3 -m esteira completo --rom R --elf E --out OUT --only revanches
 """
 
 import importlib.util
+import re
 import struct
 import sys
 from functools import cache
 
 from .. import conquistas as cq
 from ..bag import MENU_CURSOR_POS, MENU_MAX_CURSOR, MENU_MIN_CURSOR
-from ..battle import ACTION_FIGHT, ACTION_FUNC, B_OUTCOME_WON, MOVE_FUNC_SUFFIX
+from ..battle import ACTION_FIGHT, ACTION_FUNC, B_OUTCOME_WON, BATTLE_TYPE_TRAINER, MOVE_FUNC_SUFFIX
 from ..breeding import header_defines
-from ..emu import KEY_A, KEY_DOWN, KEY_UP
+from ..emu import KEY_A, KEY_B, KEY_DOWN, KEY_UP
 from ..game import _SUBSTRUCT_ORDER, MON_SECURE, PARTY_SIZE, POKEMON_SIZE, SUBSTRUCT_SIZE
 from ..hooks import CMD_SET_VAR, CMD_WARP, Mailbox
 from . import REPO_ROOT, ScenarioContext
-from .base import Abort
+from .base import TEXT_PERIOD, Abort
 from .quick_catch_save import CatchSaveScenario
 from .quick_route1 import POST_BATTLE_TIMEOUT
 
@@ -63,10 +71,26 @@ BEN_FRONT, BEN_LOCAL_ID = (17, 5), 9  # o Ben fica em (17,4), olhando para baixo
 LORELEI_ROOM = "MAP_POKEMON_LEAGUE_LORELEIS_ROOM"
 ROOM_ENTRY = (6, 12)                  # o warp de entrada; a cena anda 5 para cima
 LORELEI_FRONT = (6, 6)                # a Lorelei fica em (6,5)
+CHAMPIONS_ROOM = "MAP_POKEMON_LEAGUE_CHAMPIONS_ROOM"
+CHAMPION_ENTRY = (6, 19)              # o warp de entrada; a cena anda 10 para cima, até o rival em (6,8)
+CHAMPION_VARIANTS = ("SQUIRTLE", "BULBASAUR", "CHARMANDER")   # TRAINER_CHAMPION_REMATCH_<inicial do rival>
+HALL_SCREEN = "CB2_DoHallOfFameScreen"   # o EnterHallOfFame põe esta callback logo depois do gancho do POK-42
+HALL_TIMEOUT = 12000                  # falas do rival e do Carvalho, o warp e a cena do Hall (bilhetes, registro)
 
 MULTICHOICE_TASK = "Task_MultichoiceMenu_HandleInput"
 TIER_LABELS = ("Normal", "Nível 60", "Nível 70", "Nível 80", "Nível 90", "Nível 100")
 TEXT_ASK, TEXT_SET = "Que bom ver você de volta à Liga!", "Combinado!"
+TEXT_KEEP = "Tudo bem, fica como está."
+
+# Prêmio em dinheiro (Cmd_getmoneyreward, src/battle_script_commands.c): 4 × nível do último Pokémon × multiplicador
+# (Moeda Amuleto) × 2 se dupla × valor da classe em gTrainerMoneyTable (src/battle_main.c)
+BATTLE_MAIN = REPO_ROOT / "src" / "battle_main.c"
+BATTLE_H = REPO_ROOT / "include" / "constants" / "battle.h"
+MAX_MONEY = 999999
+# Os tipos que GetCurrentBattleRematchTier (src/rematch_tier.c) olha: só TRAINER ligado = vale o degrau aplicado
+TIER_BATTLE_TYPES = ("BATTLE_TYPE_TRAINER", "BATTLE_TYPE_LINK", "BATTLE_TYPE_BATTLE_TOWER",
+                     "BATTLE_TYPE_EREADER_TRAINER", "BATTLE_TYPE_TRAINER_TOWER")
+STATE_TIER_MASK = 0x07                # sRematchTierState: bits 0-2 = o degrau aplicado
 BUTTON_WAIT_STATES = {1, 2, 3}        # RENDER_STATE_WAIT/CLEAR/SCROLL_START: o texto espera um botão
 
 TEAM = "SPECIES_MEWTWO"
@@ -95,6 +119,33 @@ def _gerar():
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)
     return mod
+
+
+@cache
+def _battle_types() -> dict[str, int]:
+    """BATTLE_TYPE_* -> bit, de include/constants/battle.h (`(1 << n)`)."""
+    texto = BATTLE_H.read_text(encoding="utf-8")
+    return {m.group(1): 1 << int(m.group(2))
+            for m in re.finditer(r"^#define (BATTLE_TYPE_\w+)\s+\(1 << (\d+)\)", texto, re.M)}
+
+
+@cache
+def _money_table() -> tuple[list[tuple[str, int]], int]:
+    """gTrainerMoneyTable (src/battle_main.c): ([(TRAINER_CLASS_*, valor)], valor do fim {0xFF, n}, que vale para
+    a classe que não está na tabela)."""
+    texto = BATTLE_MAIN.read_text(encoding="utf-8")
+    corpo = texto[texto.index("gTrainerMoneyTable[] ="):]
+    corpo = corpo[:corpo.index("\n};")]
+    classes = [(c, int(v)) for c, v in re.findall(r"\{\s*(TRAINER_CLASS_\w+),\s*(\d+)\s*\}", corpo)]
+    fim = re.search(r"\{\s*0xFF,\s*(\d+)\s*\}", corpo)
+    assert classes and fim, "gTrainerMoneyTable não encontrada em battle_main.c"
+    return classes, int(fim.group(1))
+
+
+def _class_money(trainer_class: str) -> int:
+    """O valor da classe como Cmd_getmoneyreward acha: a 1ª linha da classe, senão a do 0xFF."""
+    classes, padrao = _money_table()
+    return next((v for c, v in classes if c == trainer_class), padrao)
 
 
 def _ivs(raw: bytes) -> tuple[int, ...]:
@@ -265,8 +316,8 @@ class RevanchesScenario(CatchSaveScenario):
         self.ctl.restore("revanches_base")
         self.emu.frames(12)
 
-    def _choice(self) -> str:
-        self._restore()
+    def _step_to_guard(self) -> None:
+        """No Centro da Liga, um passo até (4,2): a guarda dispara e a pergunta fica esperando um botão."""
         # Liga aberta (como depois das Ilhas Sevii): a guarda fica fora da porta mesmo com a Dex Nacional
         self._flag("FLAG_SYS_CAN_LINK_WITH_RS")
         self._teleport(CENTER, BELOW_TRIGGER)
@@ -277,10 +328,19 @@ class RevanchesScenario(CatchSaveScenario):
         self.ctl.wait_until(lambda: self._text_waiting() and TEXT_ASK in self._message(), 600,
                             "pergunta da guarda")
         self.emu.frames(6)
-        shots = [self._shot("revanche_pergunta")]
+
+    def _open_list(self, tier: int) -> int:
+        """A da pergunta até a lista abrir; confere o degrau citado e devolve &sMenu.cursorPos."""
         self.ctl.press_until(KEY_A, lambda: MULTICHOICE_TASK in self._tasks(), "lista dos degraus", tries=8, wait=40)
-        assert f"Hoje está em {TIER_LABELS[0]}." in self._message(), self._message()
-        cursor = self._menu_cursor(len(TIER_LABELS))
+        assert f"Hoje está em {TIER_LABELS[tier]}." in self._message(), self._message()
+        return self._menu_cursor(len(TIER_LABELS))
+
+    def _choice(self) -> str:
+        self._restore()
+        self._step_to_guard()
+        shots = [self._shot("revanche_pergunta")]
+        cursor = self._open_list(0)
+        assert self.emu.read_u8(cursor) == 0, f"degrau 0: a lista abriu em {self.emu.read_u8(cursor)}"
         target = TIER_LABELS.index("Nível 90")
         for _ in range(len(TIER_LABELS)):
             cur = self.emu.read_u8(cursor)
@@ -300,6 +360,37 @@ class RevanchesScenario(CatchSaveScenario):
         assert self._var("VAR_TEMP_1") == 1, "VAR_TEMP_1 não marcou a visita"
         self.measures["choice_shots"] = shots
         return f"passo até (4,2) → pergunta, lista, cursor em Nível 90, A → VAR_REMATCH_TIER = {tier}"
+
+    def _choice_current(self) -> str:
+        # Nível 90 salvo: a lista abre com o cursor nele; A sem mexer confirma o mesmo degrau
+        self._restore()
+        self._set_tier(4)
+        self._step_to_guard()
+        cursor = self._open_list(4)
+        aberto_a = self.emu.read_u8(cursor)
+        assert aberto_a == 4, f"degrau 4 salvo: a lista abriu com o cursor em {aberto_a} ({TIER_LABELS[aberto_a]})"
+        self.emu.frames(8)
+        self.ctl.press_until(KEY_A, lambda: MULTICHOICE_TASK not in self._tasks(), "A na lista sem mexer")
+        self.ctl.wait_until(lambda: TEXT_SET in self._message(), 300, "confirmação da guarda")
+        assert f"{TIER_LABELS[4]}." in self._message(), self._message()
+        self._finish_script("confirmação do degrau atual")
+        depois_a = self._var("VAR_REMATCH_TIER")
+        assert depois_a == 4, f"A sem mexer: VAR_REMATCH_TIER = {depois_a}, esperava 4"
+        # Nível 70 salvo: a lista abre nele; B cancela e o degrau fica
+        self._restore()
+        self._set_tier(2)
+        self._step_to_guard()
+        cursor = self._open_list(2)
+        aberto_b = self.emu.read_u8(cursor)
+        assert aberto_b == 2, f"degrau 2 salvo: a lista abriu com o cursor em {aberto_b} ({TIER_LABELS[aberto_b]})"
+        self.emu.frames(8)
+        self.ctl.press_until(KEY_B, lambda: MULTICHOICE_TASK not in self._tasks(), "B na lista")
+        self.ctl.wait_until(lambda: TEXT_KEEP in self._message(), 300, "resposta da guarda ao B")
+        self._finish_script("degrau mantido")
+        depois_b = self._var("VAR_REMATCH_TIER")
+        assert depois_b == 2, f"B: VAR_REMATCH_TIER = {depois_b}, esperava 2"
+        return (f"Nível 90 salvo → lista com o cursor em {TIER_LABELS[aberto_a]}, A → var {depois_a}; "
+                f"Nível 70 salvo → cursor em {TIER_LABELS[aberto_b]}, B (\"{TEXT_KEEP}\") → var {depois_b}")
 
     def _menu_cursor(self, options: int) -> int:
         """&sMenu.cursorPos (src/menu.c) do menu aberto: há outro `sMenu` estático no ELF."""
@@ -397,10 +488,11 @@ class RevanchesScenario(CatchSaveScenario):
         assert self.game.location() == self.consts.map(LORELEI_ROOM), self.game.location()
         for _ in range(NO_BATTLE_FRAMES // 2):
             assert not self.game.in_battle(), "outra batalha abriu depois da vitória"
+            assert not self.ctl.script_active(), "um script rodou depois da vitória (outra batalha a caminho?)"
             self.emu.frames(2)
         team = ", ".join(f"{sp.removeprefix('SPECIES_')} {lvl}" for sp, lvl, _, _ in expected)
         return (f"LORELEI_2 com liga.json degrau 2 ({team}; itens, golpes, IV 31); vencida ({result}): "
-                f"FLAG_DEFEATED_LORELEI ligada, sem outra batalha em {NO_BATTLE_FRAMES} quadros")
+                f"FLAG_DEFEATED_LORELEI ligada, sem outra batalha nem script em {NO_BATTLE_FRAMES} quadros")
 
     def _tier_zero_league(self) -> str:
         self._restore()
@@ -420,20 +512,80 @@ class RevanchesScenario(CatchSaveScenario):
         self.box.conq_reset(True)                   # marcador e tudo pendente
         assert self.box.conq_estado(num)[0] == cq.CONQ_PENDENTE, self.box.conq_estado(num)
         self._set_tier(5)
+        amulet = self.consts.item("ITEM_AMULET_COIN")
+        assert all(m.held_item != amulet for m in self.game.party()), "Moeda Amuleto no time (dobra o prêmio)"
+        money_before = self.game.money()
         self._ben_rematch()
         self.driver.move_policy = "best"
         result = self.driver.fight_to_end(timeout=BATTLE_TIMEOUT)
         assert self.driver.outcome() == B_OUTCOME_WON, f"a revanche terminou em {result}"
+        # o prêmio: o nível do ás do degrau 5 (não o do time de trainers.h) e o valor da classe do Ben
+        ace_level = self.g.time_vs(self._ben_row(), 5)[-1][1]
+        trainer_class = self.g.classe("TRAINER_YOUNGSTER_BEN")
+        double = 2 if self.driver.battle_type_flags() & _battle_types()["BATTLE_TYPE_DOUBLE"] else 1
+        prize = 4 * ace_level * double * _class_money(trainer_class)
+        money_after = self.game.money()
+        assert money_after == min(money_before + prize, MAX_MONEY), \
+            (f"dinheiro {money_before} → {money_after} (+{money_after - money_before}), esperava +{prize} "
+             f"(4 × {ace_level} × {double} × {_class_money(trainer_class)})")
         self._finish_script("fim da revanche do Ben", POST_BATTLE_TIMEOUT * 4)
         estado = self.box.conq_estado(num)
         assert estado[0] == cq.CONQ_FEITA, f"revanche_max {estado}, esperava feita"
-        return f"revanche do Ben no degrau 5 vencida ({result}): revanche_max (num {num}) feita {estado}"
+        return (f"revanche do Ben no degrau 5 vencida ({result}): revanche_max (num {num}) feita {estado}; "
+                f"prêmio ¥{money_after - money_before} = 4 × nv {ace_level} × {double} × {_class_money(trainer_class)} "
+                f"({trainer_class})")
+
+    def _league_max(self) -> str:
+        self._restore()
+        num = cq.num("e4_degrau100")
+        self.box.conq_reset(True)                   # marcador e tudo pendente
+        assert self.box.conq_estado(num)[0] == cq.CONQ_PENDENTE, self.box.conq_estado(num)
+        self._set_tier(5)
+        ids = {self._trainer(f"TRAINER_CHAMPION_REMATCH_{v}"): v for v in CHAMPION_VARIANTS}
+        for v in CHAMPION_VARIANTS:                 # vencido, o OnResume da sala desliga a cena de entrada
+            self._flag_trainer(f"TRAINER_CHAMPION_REMATCH_{v}", False)
+        # a sala de verdade: a cena de entrada anda o jogador até o rival, a fala da revanche e a batalha
+        self._teleport(CHAMPIONS_ROOM, CHAMPION_ENTRY)
+        self.ctl.press_until(KEY_A, self.game.in_battle, "batalha do Campeão", tries=80, wait=30)
+        self.driver.wait_action_menu()
+        opponent = self._opponent()
+        assert opponent in ids, f"oponente {opponent}, esperava um TRAINER_CHAMPION_REMATCH_*"
+        variant = ids[opponent]
+        expected = self.g.time_liga("CAMPEAO", 5, variant)
+        got = [(self.consts.species_name(m.species), m.level, m.held_item) for m in self.game.enemy_party()]
+        want = [(sp, lvl, self.consts.item(it)) for sp, lvl, it, _ in expected]
+        assert got == want, f"Campeão ({variant}) no degrau 5: {got}, esperava {want}"
+        self.driver.move_policy = "best"
+        result = self.driver.fight_to_end(timeout=BATTLE_TIMEOUT)
+        assert self.driver.outcome() == B_OUTCOME_WON, f"a batalha do Campeão terminou em {result}"
+        # GetCurrentBattleRematchTier() lido da RAM, ainda na sala: o degrau da batalha chega ao Hall
+        types = _battle_types()
+        flags = self.driver.battle_type_flags()
+        mask = sum(types[t] for t in TIER_BATTLE_TYPES)
+        state = self.emu.read_u8(self.game.syms.addr("sRematchTierState"))
+        assert flags & mask == types["BATTLE_TYPE_TRAINER"], f"gBattleTypeFlags 0x{flags:x}"
+        assert state & STATE_TIER_MASK == 5, f"sRematchTierState 0x{state:02x}: o degrau aplicado não é 5"
+        # as falas do rival e do Carvalho, o warp para o Hall e a cena dele até o EnterHallOfFame
+        spent = 0
+        while self.game.callback2() != HALL_SCREEN:
+            assert spent < HALL_TIMEOUT, (f"não cheguei à tela do Hall (callback2 {self.game.callback2()}, "
+                                          f"mapa {self.game.location()})")
+            self._press(KEY_A)
+            spent += TEXT_PERIOD
+        estado = self.box.conq_estado(num)
+        assert estado[0] == cq.CONQ_FEITA, f"e4_degrau100 {estado}, esperava feita"
+        team = ", ".join(f"{sp.removeprefix('SPECIES_')} {lvl}" for sp, lvl, _, _ in expected)
+        return (f"degrau 5: CHAMPION_REMATCH_{variant} com liga.json ({team}) vencido ({result}); antes do Hall: "
+                f"sRematchTierState 0x{state:02x}, gBattleTypeFlags 0x{flags:x} (degrau 5); EnterHallOfFame → "
+                f"e4_degrau100 (num {num}) feita {estado}")
 
     def run(self) -> None:
         try:
             self._flow("revanches: CONTINUAR e preparação", self._start)
             res = self.suite.run("revanches/escolha: guarda da Liga, lista e Nível 90 → degrau 4", self._choice)
             res.images.extend(self.measures.get("choice_shots", []))
+            self.suite.run("revanches/escolha_atual: a lista abre no degrau salvo (A mantém, B cancela)",
+                           self._choice_current)
             res = self.suite.run("revanches/vs_seeker: revanche do Ben no degrau 4 e a IA dos chefes", self._vs_seeker)
             if "battle_shot" in self.measures:
                 res.images.append(self.measures["battle_shot"])
@@ -442,7 +594,10 @@ class RevanchesScenario(CatchSaveScenario):
             self.suite.run("revanches/var_lixo: var com lixo vale degrau 0", self._junk_var)
             self.suite.run("revanches/lorelei: Lorelei no degrau 2, uma batalha só", self._lorelei)
             self.suite.run("revanches/degrau_zero_liga: degrau 0 mantém a Lorelei de hoje", self._tier_zero_league)
-            self.suite.run("revanches/conquista_max: revanche no degrau 5 marca revanche_max", self._achievement)
+            self.suite.run("revanches/conquista_max: revanche no degrau 5 marca revanche_max e paga o prêmio do degrau",
+                           self._achievement)
+            # por último: a tela do Hall grava o save
+            self.suite.run("revanches/e4_degrau100: Campeão no degrau 5 e o Hall marcam e4_degrau100", self._league_max)
         except Abort:
             pass
 

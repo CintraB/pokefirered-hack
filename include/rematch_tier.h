@@ -42,5 +42,7 @@ void RematchTier_OnLeagueCleared(u8 tier);
 bool8 ShouldUseLeagueRematchTeams(void);
 // Special da guarda da Liga: põe em gStringVar1 o rótulo do degrau atual (Normal, Nível 60 ... Nível 100).
 void BufferRematchTierName(void);
+// Special da guarda da Liga: abre a lista dos 6 degraus com o cursor no degrau atual (o script segue com waitstate).
+void ShowRematchTierMenu(void);
 
 #endif // GUARD_REMATCH_TIER_H
