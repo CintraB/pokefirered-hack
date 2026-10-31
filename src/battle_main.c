@@ -11,6 +11,7 @@
 #include "battle_setup.h"
 #include "battle_weather_visual.h"
 #include "berry.h"
+#include "conquistas.h"
 #include "data.h"
 #include "decompress.h"
 #include "event_data.h"
@@ -3865,6 +3866,7 @@ static void HandleEndTurn_FinishBattle(void)
                 }
             }
         }
+        Conquistas_OnFimDeBatalha();
         TrySetQuestLogBattleEvent();
         if (gBattleTypeFlags & BATTLE_TYPE_TRAINER)
             ClearRematchStateByTrainerId();

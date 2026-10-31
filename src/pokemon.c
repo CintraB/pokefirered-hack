@@ -3,6 +3,7 @@
 #include "global.h"
 #include "gflib.h"
 #include "random.h"
+#include "conquistas.h"
 #include "text.h"
 #include "data.h"
 #include "battle.h"
@@ -3769,6 +3770,7 @@ u8 GiveMonToPlayer(struct Pokemon *mon)
     SetMonData(mon, MON_DATA_OT_NAME, gSaveBlock2Ptr->playerName);
     SetMonData(mon, MON_DATA_OT_GENDER, &gSaveBlock2Ptr->playerGender);
     SetMonData(mon, MON_DATA_OT_ID, gSaveBlock2Ptr->playerTrainerId);
+    Conquistas_OnPokemonRecebido(mon);
 
     for (i = 0; i < PARTY_SIZE; i++)
     {

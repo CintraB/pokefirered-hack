@@ -2,6 +2,7 @@
 #include "gflib.h"
 #include "data.h"
 #include "battle.h"
+#include "conquistas.h"
 #include "constants/items.h"
 #include "mail_data.h"
 #include "pokemon_storage_system.h"
@@ -1723,6 +1724,7 @@ static void AddHatchedMonToParty(u8 id)
 
     MonRestorePP(mon);
     CalculateMonStats(mon);
+    Conquistas_OnOvoChocado(mon);
 }
 
 void ScriptHatchMon(void)

@@ -243,6 +243,30 @@ class Mailbox:
         assert lida == species, f"conq_pc_mon recusado/errado: caixa {box}, pos {pos}, lida {lida:#x}"
         return lida
 
+    def start_trainer_battle(self, trainer: int) -> int:
+        """Começa uma batalha contra `trainer` (sem a fala de abertura; a de derrota é "…")."""
+        result = self.call(CMD_START_TRAINER_BATTLE, trainer)
+        assert result == 1, f"START_TRAINER_BATTLE recusado: treinador {trainer}"
+        return result
+
+    def set_party_move(self, slot: int, index: int, move: int) -> int:
+        """Põe `move` (com o PP cheio) no golpe `index` (0-3) de gPlayerParty[slot]; devolve o golpe lido."""
+        lido = self.call(CMD_SET_PARTY_MOVE, slot | index << 8, move)
+        assert lido == move, f"SET_PARTY_MOVE recusado: slot {slot}, golpe {index}, {move} (lido {lido:#x})"
+        return lido
+
+    def party_size(self, n: int) -> int:
+        """Fica só com os `n` primeiros Pokémon do time; devolve gPlayerPartyCount."""
+        count = self.call(CMD_PARTY_SIZE, n)
+        assert count != NO_RESULT, f"PARTY_SIZE recusado: {n}"
+        return count
+
+    def conq_captura(self, species: int, ball: int) -> int:
+        """Conquistas_OnCaptura de um `species` nv 30 (em gEnemyParty[0]) capturado com `ball`."""
+        result = self.call(CMD_CONQ_CAPTURA, species, ball)
+        assert result == 1, f"CONQ_CAPTURA recusado: espécie {species}, bola {ball}"
+        return result
+
 # --- Hack 6: breeding genético (enum à parte em include/test_hooks.h, a partir de 0x60; ------
 # o uso fica em esteira/breeding.py e scenarios/full_breeding.py / full_egg.py)
 CMD_BREED_SETUP = 0x60      # gTestBreedSetup -> creche (arg0 = 1: ovo pendente) -> compatibilidade (0xFFFFFFFF = pai inválido)
@@ -301,3 +325,8 @@ CMD_CONQ_APLICAR = 0xB4     # arg0 = num, arg1 = op | degrau << 8 (0 Marcar, 1 P
                             # 3 SetDegrauEntregue) -> o mesmo de CMD_CONQ_ESTADO depois
 CMD_CONQ_PC_MON = 0xB5      # arg0 = caixa | posição << 8 | opções << 16 (1 shiny, 2 chocado pelo jogador: MET_LEVEL 0
                             # e 6 IVs 31), arg1 = espécie | nível << 16 (espécie 0 esvazia) -> espécie lida na caixa
+CMD_START_TRAINER_BATTLE = 0xB6  # arg0 = treinador (TRAINER_*) -> 1: batalha sem fala de abertura por script de campo
+                                 # em RAM (trainerbattle_no_intro); derrota volta ao Centro como de costume
+CMD_SET_PARTY_MOVE = 0xB7   # arg0 = slot | golpe (0-3) << 8, arg1 = golpe (PP cheio) -> golpe lido
+CMD_PARTY_SIZE = 0xB8       # arg0 = n -> fica só com os n primeiros do time -> gPlayerPartyCount
+CMD_CONQ_CAPTURA = 0xB9     # arg0 = espécie, arg1 = bola -> gEnemyParty[0] nv 30 e Conquistas_OnCaptura -> 1

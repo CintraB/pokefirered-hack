@@ -26,6 +26,7 @@
 #include "reshow_battle_screen.h"
 #include "battle_controllers.h"
 #include "battle_interface.h"
+#include "conquistas.h"
 #include "constants/battle_anim.h"
 #include "constants/battle_move_effects.h"
 #include "constants/battle_script_commands.h"
@@ -1273,6 +1274,7 @@ static void Cmd_typecalc(void)
 {
     s32 i = 0;
     u8 moveType;
+    u16 multX10 = 10; // POK-44: eficácia total x 10 (40 = x4)
 
     if (gCurrentMove == MOVE_STRUGGLE)
     {
@@ -1313,11 +1315,17 @@ static void Cmd_typecalc(void)
             {
                 // check type1
                 if (TYPE_EFFECT_DEF_TYPE(i) == gBattleMons[gBattlerTarget].type1)
+                {
                     ModulateDmgByType(TYPE_EFFECT_MULTIPLIER(i));
+                    multX10 = multX10 * TYPE_EFFECT_MULTIPLIER(i) / 10;
+                }
                 // check type2
                 if (TYPE_EFFECT_DEF_TYPE(i) == gBattleMons[gBattlerTarget].type2 &&
                     gBattleMons[gBattlerTarget].type1 != gBattleMons[gBattlerTarget].type2)
+                {
                     ModulateDmgByType(TYPE_EFFECT_MULTIPLIER(i));
+                    multX10 = multX10 * TYPE_EFFECT_MULTIPLIER(i) / 10;
+                }
             }
             i += 3;
         }
@@ -1336,6 +1344,8 @@ static void Cmd_typecalc(void)
     }
     if (gMoveResultFlags & MOVE_RESULT_DOESNT_AFFECT_FOE)
         gProtectStructs[gBattlerAttacker].targetNotAffected = 1;
+    if (GetBattlerSide(gBattlerAttacker) == B_SIDE_PLAYER)
+        Conquistas_OnEficacia(gBattlerAttacker, multX10);
 
     gBattlescriptCurrInstr++;
 }
@@ -2873,6 +2883,7 @@ static void Cmd_tryfaintmon(void)
                     gBattleResults.opponentFaintCounter++;
                 gBattleResults.lastOpponentSpecies = GetMonData(&gEnemyParty[gBattlerPartyIndexes[gActiveBattler]], MON_DATA_SPECIES);
                 *(u8 *)(&gBattleStruct->lastAttackerToFaintOpponent) = gBattlerAttacker;
+                Conquistas_OnNocaute(gBattlerAttacker);
             }
             if ((gHitMarker & HITMARKER_DESTINYBOND) && gBattleMons[gBattlerAttacker].hp != 0)
             {
@@ -9627,6 +9638,7 @@ static void Cmd_handleballthrow(void)
 
 static void Cmd_givecaughtmon(void)
 {
+    Conquistas_OnCaptura(&gEnemyParty[gBattlerPartyIndexes[gBattlerAttacker ^ BIT_SIDE]], gLastUsedItem);
     if (GiveMonToPlayer(&gEnemyParty[gBattlerPartyIndexes[gBattlerAttacker ^ BIT_SIDE]]) != MON_GIVEN_TO_PARTY)
     {
         if (!ShouldShowBoxWasFullMessage())

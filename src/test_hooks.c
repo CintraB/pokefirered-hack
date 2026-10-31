@@ -726,6 +726,8 @@ static u32 TypeEffectiveness(u8 moveType, u8 type1, u8 type2)
 // POK-44: achievements and battle journal state in the save
 #include "conquistas.h"
 #include "data/conquistas_ids.h"
+#include "constants/battle_setup.h"
+#include "constants/opponents.h"
 
 static u32 ConqEstado(u8 num)
 {
@@ -812,6 +814,73 @@ static u32 ConqPcMon(u32 arg0, u32 arg1)
         SetMonData(&mon, MON_DATA_MET_LEVEL, &metLevel);
     *GetBoxedMonPtr(box, pos) = mon.box;
     return GetBoxMonDataAt(box, pos, MON_DATA_SPECIES);
+}
+
+// trainerbattle_no_intro <trainer>, <defeat text> run from a field script in gTestText, as the wild battle hook does;
+// the defeat text ("…") sits in gTestText too, after the script. sTrainerObjectEventLocalId = 0 and
+// VAR_LAST_TALKED = 0: the reveal movement of EventScript_DoNoIntroTrainerBattle finds no object and is skipped.
+#define TEST_TRAINER_DEFEAT_TEXT 32  // offset of the defeat text in gTestText
+
+static u32 StartTrainerBattle(u32 trainer)
+{
+    u8 *s = gTestText;
+    u32 texto = (u32)&gTestText[TEST_TRAINER_DEFEAT_TEXT];
+
+    if (trainer == 0 || trainer >= NUM_TRAINERS)
+        return 0xFFFFFFFF;
+    gTestText[TEST_TRAINER_DEFEAT_TEXT] = CHAR_ELLIPSIS;
+    gTestText[TEST_TRAINER_DEFEAT_TEXT + 1] = EOS;
+    gSpecialVar_LastTalked = 0;
+    *s++ = 0x69;                                // lockall
+    *s++ = 0x5C;                                // trainerbattle
+    *s++ = TRAINER_BATTLE_SINGLE_NO_INTRO_TEXT;
+    *s++ = trainer & 0xFF;
+    *s++ = trainer >> 8;
+    *s++ = 0;                                   // local id
+    *s++ = 0;
+    *s++ = texto & 0xFF;                        // defeat text
+    *s++ = (texto >> 8) & 0xFF;
+    *s++ = (texto >> 16) & 0xFF;
+    *s++ = texto >> 24;
+    *s++ = 0x6B;                                // releaseall (the battle returns here: gotopostbattlescript)
+    *s++ = 0x02;                                // end
+    ScriptContext_SetupScript(gTestText);
+    return 1;
+}
+
+static u32 SetPartyMove(u32 arg0, u16 move)
+{
+    u8 slot = arg0 & 0xFF, index = (arg0 >> 8) & 0xFF;
+    u8 pp;
+
+    if (slot >= PARTY_SIZE || index >= MAX_MON_MOVES || move == MOVE_NONE || move >= MOVES_COUNT
+     || GetMonData(&gPlayerParty[slot], MON_DATA_SPECIES) == SPECIES_NONE)
+        return 0xFFFFFFFF;
+    pp = gBattleMoves[move].pp;
+    SetMonData(&gPlayerParty[slot], MON_DATA_MOVE1 + index, &move);
+    SetMonData(&gPlayerParty[slot], MON_DATA_PP1 + index, &pp);
+    return GetMonData(&gPlayerParty[slot], MON_DATA_MOVE1 + index);
+}
+
+static u32 PartySize(u32 n)
+{
+    u8 i;
+
+    if (n == 0 || n > PARTY_SIZE)
+        return 0xFFFFFFFF;
+    for (i = n; i < PARTY_SIZE; i++)
+        ZeroMonData(&gPlayerParty[i]);
+    gPlayerPartyCount = CalculatePlayerPartyCount();
+    return gPlayerPartyCount;
+}
+
+static u32 ConqCaptura(u16 species, u16 ball)
+{
+    if (!IsValidTestMon(species, 30))
+        return 0xFFFFFFFF;
+    CreateTestMon(&gEnemyParty[0], species, 30, ITEM_NONE);
+    Conquistas_OnCaptura(&gEnemyParty[0], ball);
+    return 1;
 }
 // --- end of POK-44 --------------------------------------------------------------------------
 
@@ -938,6 +1007,10 @@ void TestHooks_Run(void)
     case TEST_CMD_CONQ_CHECAR:      Conquistas_ChecarEstado(); result = Conquistas_AvisosPendentes(); break;
     case TEST_CMD_CONQ_APLICAR:     result = ConqAplicar(gTestMailbox.arg0, gTestMailbox.arg1); break;
     case TEST_CMD_CONQ_PC_MON:      result = ConqPcMon(gTestMailbox.arg0, gTestMailbox.arg1); break;
+    case TEST_CMD_START_TRAINER_BATTLE: result = StartTrainerBattle(gTestMailbox.arg0); break;
+    case TEST_CMD_SET_PARTY_MOVE:   result = SetPartyMove(gTestMailbox.arg0, gTestMailbox.arg1); break;
+    case TEST_CMD_PARTY_SIZE:       result = PartySize(gTestMailbox.arg0); break;
+    case TEST_CMD_CONQ_CAPTURA:     result = ConqCaptura(gTestMailbox.arg0, gTestMailbox.arg1); break;
     // POK-44: end
     default:
         result = 0xFFFFFFFF;

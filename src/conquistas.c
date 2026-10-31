@@ -1,5 +1,7 @@
 #include "global.h"
 #include "conquistas.h"
+#include "battle.h"
+#include "battle_anim.h"
 #include "event_data.h"
 #include "field_specials.h"
 #include "money.h"
@@ -8,6 +10,7 @@
 #include "pokemon.h"
 #include "pokemon_storage_system.h"
 #include "constants/flags.h"
+#include "constants/items.h"
 #include "constants/opponents.h"
 #include "data/conquistas_ids.h"
 
@@ -552,4 +555,178 @@ void Conquistas_ContarAba(u8 aba, u8 *feitas, u8 *validas)
         if (estado == CONQ_FEITA)
             (*feitas)++;
     }
+}
+
+// --- Gatilhos de evento (Task 4) ----------------------------------------------------------------------------
+// Os ganchos de uma linha no motor (battle_main.c, battle_script_commands.c, pokemon.c, daycare.c) chegam aqui.
+// Num save ainda sem marcador eles não fazem nada: a varredura do save antigo (que a checagem cadenciada roda logo
+// depois de carregar) reconhece o que o save prova, e assim nada conta duas vezes nem some no memset dela.
+
+void Conquistas_Evento(u8 evento)
+{
+    AplicarEvento(evento, FALSE);
+}
+
+void Conquistas_PerderEvento(u8 evento)
+{
+    AplicarEvento(evento, TRUE);
+}
+
+static bool8 ComMarcador(void)
+{
+    return sConq->magic == CONQ_MAGIC;
+}
+
+// Batalhas que não são do jogador nesta jornada (o FRLG não tem BATTLE_TYPE_RECORDED, que é do Emerald).
+static bool8 BatalhaIgnorada(void)
+{
+    return (gBattleTypeFlags & (BATTLE_TYPE_LINK | BATTLE_TYPE_POKEDUDE | BATTLE_TYPE_OLD_MAN_TUTORIAL
+                              | BATTLE_TYPE_TRAINER_TOWER | BATTLE_TYPE_EREADER_TRAINER | BATTLE_TYPE_BATTLE_TOWER)) != 0;
+}
+
+static bool8 TreinadorDoEvento(u8 evt, u16 treinador)
+{
+    const u16 *t = gDiarioEventos[evt].treinadores;
+
+    if (t == NULL)
+        return FALSE;
+    for (; *t != 0xFFFF; t++)
+    {
+        if (*t == treinador)
+            return TRUE;
+    }
+    return FALSE;
+}
+
+// O treinador é um líder (lider = TRUE) ou o rival (lider = FALSE) de algum evento do diário.
+static bool8 TreinadorMarcante(u16 treinador, bool8 lider)
+{
+    u8 evt;
+
+    for (evt = 0; evt < DIARIO_EVT_COUNT; evt++)
+    {
+        if ((lider ? gDiarioEventos[evt].lider : gDiarioEventos[evt].rival) && TreinadorDoEvento(evt, treinador))
+            return TRUE;
+    }
+    return FALSE;
+}
+
+// Pokémon no time, sem contar ovos.
+static u8 TimeSemOvos(void)
+{
+    u8 i, n = 0;
+
+    for (i = 0; i < PARTY_SIZE; i++)
+    {
+        if (GetMonData(&gPlayerParty[i], MON_DATA_SPECIES) != SPECIES_NONE
+         && !GetMonData(&gPlayerParty[i], MON_DATA_IS_EGG))
+            n++;
+    }
+    return n;
+}
+
+void Conquistas_OnNocaute(u8 battlerAtacante)
+{
+    u32 personalidade;
+    u8 i;
+
+    if (GetBattlerSide(battlerAtacante) != B_SIDE_PLAYER || BatalhaIgnorada())
+        return;
+    personalidade = GetMonData(&gPlayerParty[gBattlerPartyIndexes[battlerAtacante]], MON_DATA_PERSONALITY);
+    // vaga com nocautes = vaga usada; a primeira livre ou a do mesmo Pokémon recebe o nocaute
+    for (i = 0; i < PARTY_SIZE; i++)
+    {
+        if (gBattleStruct->conqNocautes[i] == 0 || gBattleStruct->conqPersonalidade[i] == personalidade)
+        {
+            gBattleStruct->conqPersonalidade[i] = personalidade;
+            if (gBattleStruct->conqNocautes[i] < 0xFF)
+                gBattleStruct->conqNocautes[i]++;
+            return;
+        }
+    }
+}
+
+void Conquistas_OnEficacia(u8 battlerAtacante, u16 multX10)
+{
+    if (!ComMarcador() || GetBattlerSide(battlerAtacante) != B_SIDE_PLAYER || BatalhaIgnorada())
+        return;
+    if (multX10 == 40 && gBattleMoves[gCurrentMove].power > 0 && !(gMoveResultFlags & MOVE_RESULT_NO_EFFECT))
+        Conquistas_Evento(CONQ_EVT_GOLPE_X4);
+}
+
+// Roda no fim da batalha, antes de voltar ao campo: o script do Ginásio só liga a insígnia (setflag) depois. Por
+// isso "líder com um Pokémon só" já está feita quando a 8ª insígnia faz a checagem perder a pendente.
+void Conquistas_OnFimDeBatalha(void)
+{
+    u16 treinador = gTrainerBattleOpponent_A;
+
+    if (BatalhaIgnorada())
+        return;
+    if (ComMarcador() && (gBattleTypeFlags & BATTLE_TYPE_TRAINER))
+    {
+        if (gBattleOutcome == B_OUTCOME_WON)
+        {
+            if (sConq->vitoriasTreinador < 0xFFFF)
+                sConq->vitoriasTreinador++;
+            if (gBattleResults.playerFaintCounter == 0)
+                Conquistas_Evento(CONQ_EVT_SEM_DESMAIO);
+            if (TreinadorMarcante(treinador, TRUE) && TimeSemOvos() == 1)
+                Conquistas_Evento(CONQ_EVT_LIDER_UM_POKEMON);
+            if (TreinadorDoEvento(DIARIO_EVT_LANCE, treinador))
+                Conquistas_Evento(CONQ_EVT_ELITE4);
+            if (TreinadorDoEvento(DIARIO_EVT_CAMPEAO, treinador))
+                Conquistas_Evento(CONQ_EVT_RIVAL_TODAS);
+        }
+        else if (TreinadorMarcante(treinador, FALSE))
+        {
+            Conquistas_PerderEvento(CONQ_EVT_RIVAL_TODAS);
+        }
+    }
+    Diario_OnFimDeBatalha();
+}
+
+void Conquistas_OnCaptura(struct Pokemon *mon, u16 bola)
+{
+    u16 especie = GetMonData(mon, MON_DATA_SPECIES);
+
+    if (!ComMarcador() || BatalhaIgnorada())
+        return;
+    // o shiny capturado soma no GiveMonToPlayer (Conquistas_OnPokemonRecebido), não aqui
+    if (bola == ITEM_POKE_BALL && gSpeciesInfo[especie].catchRate <= CONQ_TAXA_DIFICIL)
+        Conquistas_Evento(CONQ_EVT_POKE_BALL_DIFICIL);
+}
+
+void Conquistas_OnPokemonRecebido(struct Pokemon *mon)
+{
+    if (!ComMarcador() || GetMonData(mon, MON_DATA_IS_EGG))
+        return;
+    if (IsMonShiny(mon) && sConq->shiniesObtidos < 0xFFFF)
+        sConq->shiniesObtidos++;
+}
+
+void Conquistas_OnOvoChocado(struct Pokemon *mon)
+{
+    u32 campo;
+    bool8 ivs31 = TRUE;
+
+    if (!ComMarcador())
+        return;
+    if (IsMonShiny(mon))
+    {
+        if (sConq->shiniesObtidos < 0xFFFF)
+            sConq->shiniesObtidos++;
+        Conquistas_Evento(CONQ_EVT_OVO_SHINY);
+    }
+    for (campo = MON_DATA_HP_IV; campo <= MON_DATA_SPDEF_IV; campo++)
+    {
+        if (GetMonData(mon, campo) != MAX_PER_STAT_IVS)
+            ivs31 = FALSE;
+    }
+    if (ivs31)
+        Conquistas_Evento(CONQ_EVT_OVO_6IVS);
+}
+
+// Stub até a Task 5 (src/diario.c).
+void Diario_OnFimDeBatalha(void)
+{
 }

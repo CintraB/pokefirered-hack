@@ -16,20 +16,31 @@ Sessão própria da ROM de teste a partir do .sav do `captura` (`save_from="capt
 - `retro/*` (Task 3): um save sem marcador passa pela varredura uma vez (origem save antigo, resumo
   pendente; insígnias, Campeão, Elite 4 e nível feitos, vitórias = flags de treinador ligadas,
   `lider_um_pokemon` e `rival_todas` perdidas), e a varredura não roda de novo.
+- `evento/*` (Task 4): os gatilhos em batalhas de verdade (`start_trainer_battle`, `CMD_START_WILD_BATTLE`, lutando
+  com o 1º golpe): líder vencido com um Pokémon só e sem desmaio, golpe x4, derrota para o rival (perde
+  `rival_todas`, não conta vitória), Poké Ball numa espécie difícil (`conq_captura`) e o caso real do 8º líder no
+  Ginásio de Viridian (a marca vem antes do `setflag FLAG_BADGE08_GET` do script).
 
 Uso, a partir de test/ (a pasta OUT precisa do captura.sav de um `rapido`/`completo`):
     python3 -m esteira completo --rom R --elf E --out OUT --only conquistas
 Numa janela, em tempo real: `make test-watch CENARIO=conquistas`.
 """
 
+import re
 import sys
 
 from .. import conquistas as cq
+from ..emu import KEY_A, KEY_UP
 from ..game import SB1_MONEY
-from ..hooks import CMD_CONQ_ESTADO, NO_RESULT, Mailbox
-from . import ScenarioContext
+from ..hooks import CMD_CONQ_ESTADO, CMD_START_WILD_BATTLE, CMD_WARP, NO_RESULT, Mailbox
+from . import REPO_ROOT, ScenarioContext
 from .base import Abort
-from .quick_catch_save import CatchSaveScenario
+from .quick_catch_save import WHITEOUT_TIMEOUT, CatchSaveScenario
+from .quick_route1 import POST_BATTLE_TIMEOUT
+
+MOVES = {m.group(1): int(m.group(2)) for m in re.finditer(
+    r"^#define (MOVE_\w+)\s+(\d+)\b", (REPO_ROOT / "include/constants/moves.h").read_text(encoding="utf-8"), re.M)}
+GIOVANNI_FRENTE = (2, 3)   # o Giovanni fica em (2, 2), virado para baixo (data/maps/ViridianCity_Gym/map.json)
 
 SB1_CONQUISTAS, SB2_DIARIO = 0x348C, 0xB20
 CONQ_SAVE_SIZE, DIARIO_SAVE_SIZE = 400, 0x400
@@ -302,6 +313,101 @@ class ConquistasScenario(CatchSaveScenario):
             self.box.conq_pc_mon(caixa, pos, 0)
         return f"PC: shinies {antes} → {depois}; nivel_100, ovo_shiny e ovo_6ivs feitas só pelo PC"
 
+    # --- Task 4: gatilhos de evento ------------------------------------------------------
+    def _time_de_um(self, species: str, level: int, move: str) -> None:
+        """Time = só `species` nv `level`, com `move` no 1º golpe (o que o BattleDriver usa)."""
+        self.box.set_party_mon(0, self.consts.species(species), level)
+        assert self.box.party_size(1) == 1, "time de um só"
+        self.box.set_party_move(0, 0, MOVES[move])
+
+    def _lutar(self, what: str, esperado: str) -> None:
+        resultado = self.driver.fight_to_end()
+        assert resultado == esperado, f"{what}: batalha terminou em {resultado}, esperava {esperado}"
+        if resultado == "lose":
+            self._finish_script(f"{what}: desmaio, volta ao Centro", WHITEOUT_TIMEOUT)
+        else:
+            self.ctl.wait_overworld_idle(POST_BATTLE_TIMEOUT)
+
+    def _lider_e_sem_desmaio(self) -> str:
+        self.box.conq_reset(True)
+        self._time_de_um("MEWTWO", 100, "MOVE_PSYCHIC")
+        self.box.start_trainer_battle(self._trainer_const("TRAINER_LEADER_BROCK"))
+        self._lutar("Brock", "win")
+        for cid in ("lider_um_pokemon", "sem_desmaio"):
+            assert self._estado(cid)[0] == FEITA, (cid, self._estado(cid))
+        assert self._estado("rival_todas")[0] == PENDENTE, self._estado("rival_todas")
+        assert self.box.conq_contador(0) == 1, f"vitórias = {self.box.conq_contador(0)}"
+        return "Mewtwo sozinho vence o Brock: lider_um_pokemon e sem_desmaio feitas, vitórias 0 → 1"
+
+    def _golpe_x4(self) -> str:
+        self.box.conq_reset(True)
+        geodude = self.consts.species("GEODUDE")
+        self._time_de_um("BLASTOISE", 100, "MOVE_PSYCHIC")
+        assert self.box.call(CMD_START_WILD_BATTLE, geodude, 5) == 1, "START_WILD_BATTLE"
+        self._lutar("Psychic no Geodude", "win")
+        assert self._estado("golpe_x4")[0] == PENDENTE, ("Psychic (x1)", self._estado("golpe_x4"))
+        self.box.set_party_move(0, 0, MOVES["MOVE_SURF"])
+        assert self.box.call(CMD_START_WILD_BATTLE, geodude, 5) == 1, "START_WILD_BATTLE"
+        self._lutar("Surf no Geodude", "win")
+        assert self._estado("golpe_x4")[0] == FEITA, ("Surf (x4)", self._estado("golpe_x4"))
+        assert self.box.conq_contador(0) == 0, "batalha selvagem não é vitória de treinador"
+        return "Blastoise contra Geodude selvagem: Psychic (x1) pendente, Surf (x4) feita"
+
+    def _derrota_nao_conta(self) -> str:
+        self.box.conq_reset(True)
+        self._time_de_um("MAGIKARP", 2, "MOVE_SPLASH")
+        self.box.start_trainer_battle(self._trainer_const("TRAINER_RIVAL_OAKS_LAB_SQUIRTLE"))
+        self._lutar("rival do laboratório", "lose")
+        assert self._estado("rival_todas")[0] == PERDIDA, self._estado("rival_todas")
+        for cid in ("sem_desmaio", "lider_um_pokemon", "golpe_x4"):
+            assert self._estado(cid)[0] == PENDENTE, (cid, self._estado(cid))
+        assert self.box.conq_contador(0) == 0, f"vitórias = {self.box.conq_contador(0)}"
+        return "Magikarp perde para o rival: rival_todas perdida, vitórias 0, nada de batalha feito"
+
+    def _captura_poke_ball(self) -> str:
+        self.box.conq_reset(True)
+        pidgey, snorlax = self.consts.species("PIDGEY"), self.consts.species("SNORLAX")
+        poke, ultra = self.consts.item("ITEM_POKE_BALL"), self.consts.item("ITEM_ULTRA_BALL")
+        self.box.conq_captura(pidgey, poke)
+        assert self._estado("poke_ball_dificil")[0] == PENDENTE, "Pidgey (taxa 255)"
+        self.box.conq_captura(snorlax, ultra)
+        assert self._estado("poke_ball_dificil")[0] == PENDENTE, "Snorlax com Ultra Ball"
+        self.box.conq_captura(snorlax, poke)
+        assert self._estado("poke_ball_dificil")[0] == FEITA, ("Snorlax com Poké Ball", self._estado("poke_ball_dificil"))
+        assert self.box.conq_contador(1) == 0, "a captura não soma shiny (é o GiveMonToPlayer que soma)"
+        return "Pidgey/Poké Ball e Snorlax/Ultra Ball pendentes; Snorlax (taxa 25)/Poké Ball feita"
+
+    def _lider_antes_da_insignia(self) -> str:
+        """Caso real, o 8º líder: com 7 insígnias, vencer o Giovanni com um Pokémon só no Ginásio de verdade. A marca
+        vem no fim da batalha, antes do `setflag FLAG_BADGE08_GET` do script; a checagem seguinte, já com as 8
+        insígnias (que perderia a pendente), encontra a conquista feita."""
+        self.box.conq_reset(True)
+        for i, flag in enumerate(BADGES):
+            self._flag(flag, i < 7)
+        inicio = self._trainer_const("TRAINER_FLAGS_START")
+        assert not self.box.set_flag(inicio + self._trainer_const("TRAINER_LEADER_GIOVANNI"), False)
+        for t in cq.treinadores_do_ginasio()[7]:     # ninguém no caminho do olhar
+            assert self.box.set_flag(inicio + self._trainer_const(t))
+        self._time_de_um("MEWTWO", 100, "MOVE_PSYCHIC")
+        group, num = self.consts.map("MAP_VIRIDIAN_CITY_GYM")
+        self.box.call(CMD_WARP, group | num << 8, GIOVANNI_FRENTE[0] | GIOVANNI_FRENTE[1] << 16)
+        self.ctl.wait_until(lambda: self.game.location() == (group, num), 600, "warp para o Ginásio de Viridian")
+        self.ctl.wait_overworld_idle(600)
+        self.emu.hold(KEY_UP, 4)
+        self.ctl.wait_until(self.nav._player_still, 60, "jogador parado diante do Giovanni")
+        self._press(KEY_A)
+        self.ctl.wait_until(self.ctl.script_active, 120, "fala do Giovanni")
+        resultado = self.driver.fight_to_end()
+        assert resultado == "win", f"Giovanni: batalha terminou em {resultado}"
+        assert self._estado("lider_um_pokemon")[0] == FEITA, ("fim da batalha", self._estado("lider_um_pokemon"))
+        self._finish_script("Giovanni entrega a Insígnia Terra e a MT26")
+        assert self.game.flag(self.consts.flag("FLAG_BADGE08_GET")), "o script não ligou a 8ª insígnia"
+        self.box.conq_checar()
+        assert self._estado("lider_um_pokemon")[0] == FEITA, ("depois da checagem", self._estado("lider_um_pokemon"))
+        assert self._estado("insignia_terra")[0] == FEITA, self._estado("insignia_terra")
+        return ("Giovanni vencido com o Mewtwo sozinho: feita no fim da batalha; o script liga FLAG_BADGE08_GET "
+                "depois e a checagem com 8 insígnias mantém lider_um_pokemon feita")
+
     def run(self) -> None:
         try:
             self._flow("conquistas: CONTINUAR com o save do modo rápido", self._start)
@@ -318,6 +424,11 @@ class ConquistasScenario(CatchSaveScenario):
             self.suite.run("retro/roda_uma_vez", self._roda_uma_vez)
             self.suite.run("retro/ginasio_desconta", self._ginasio_desconta)
             self.suite.run("retro/pc", self._pc)
+            self.suite.run("evento/lider_e_sem_desmaio", self._lider_e_sem_desmaio)
+            self.suite.run("evento/golpe_x4", self._golpe_x4)
+            self.suite.run("evento/derrota_nao_conta", self._derrota_nao_conta)
+            self.suite.run("evento/captura_poke_ball", self._captura_poke_ball)
+            self.suite.run("evento/lider_antes_da_insignia", self._lider_antes_da_insignia)
         except Abort:
             pass
 

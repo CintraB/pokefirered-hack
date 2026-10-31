@@ -95,4 +95,23 @@ bool8 Conquistas_Progresso(u8 num, u32 *atual, u32 *meta); // FALSE nas de sim/n
 u8 Conquistas_AvisosPendentes(void);             // feitas não entregues + degraus não entregues (1 com o resumo pendente)
 void Conquistas_ContarAba(u8 aba, u8 *feitas, u8 *validas); // válidas = ativas e não perdidas
 
+struct Pokemon;
+
+// Gatilhos de evento (Task 4). Os arquivos do motor só chamam estes ganchos de uma linha; a regra fica em
+// src/conquistas.c. Num save ainda sem marcador (antes da primeira checagem) eles não fazem nada: a varredura do
+// save antigo reconhece depois o que o save prova (shinies, ovos, Elite 4).
+// Ignoram link, Pokédude, tutorial do velho, Trainer Tower, e-Reader e Battle Tower (o FRLG não tem "recorded").
+void Conquistas_Evento(u8 evento);               // marca as conquistas ativas de tipo EVENTO com param = evento
+void Conquistas_PerderEvento(u8 evento);         // perde as mesmas (só as pendentes)
+void Conquistas_OnNocaute(u8 battlerAtacante);   // Cmd_tryfaintmon, oponente desmaiou: soma ao Pokémon do jogador
+                                                 // (gBattleStruct->conq*, pela personalidade)
+void Conquistas_OnEficacia(u8 battlerAtacante, u16 multX10); // Cmd_typecalc: 40 (x4) com dano -> CONQ_EVT_GOLPE_X4
+void Conquistas_OnFimDeBatalha(void);            // HandleEndTurn_FinishBattle, antes do script do campo (insígnia)
+void Conquistas_OnCaptura(struct Pokemon *mon, u16 bola); // Cmd_givecaughtmon, antes do GiveMonToPlayer
+void Conquistas_OnPokemonRecebido(struct Pokemon *mon);   // GiveMonToPlayer: não-ovo shiny soma shiniesObtidos
+void Conquistas_OnOvoChocado(struct Pokemon *mon);        // AddHatchedMonToParty: shiny, 6 IVs 31
+
+// Diário (Task 5 move para src/diario.c; até lá, stub vazio em src/conquistas.c).
+void Diario_OnFimDeBatalha(void);
+
 #endif // GUARD_CONQUISTAS_H

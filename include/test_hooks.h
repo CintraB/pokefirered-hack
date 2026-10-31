@@ -127,6 +127,10 @@ enum
     TEST_CMD_CONQ_CHECAR,        // Conquistas_ChecarEstado() now (an old save is scanned first); result = Conquistas_AvisosPendentes()
     TEST_CMD_CONQ_APLICAR,       // arg0 = num, arg1 = op | tier << 8: 0 Conquistas_Marcar, 1 Conquistas_Perder, 2 Conquistas_SetEntregue, 3 Conquistas_SetDegrauEntregue(num, tier); result = as TEST_CMD_CONQ_ESTADO afterwards (0xFFFFFFFF = invalid num or op)
     TEST_CMD_CONQ_PC_MON,        // arg0 = box | position << 8 | options << 16 (bit 0 shiny, bit 1 hatched by the player: MET_LEVEL 0 and 6 IVs 31), arg1 = species | level << 16 (species 0 empties the slot); the player is the OT; result = species read back from the box (0xFFFFFFFF = invalid)
+    TEST_CMD_START_TRAINER_BATTLE, // arg0 = trainer (TRAINER_*): battle with no intro speech through a field script in RAM (trainerbattle_no_intro, as TEST_CMD_START_WILD_BATTLE); a loss whites out as usual; result = 1 (0xFFFFFFFF = invalid trainer)
+    TEST_CMD_SET_PARTY_MOVE,     // arg0 = party slot | move index (0-3) << 8, arg1 = move (PP full, no PP Ups); result = the move read back (0xFFFFFFFF = invalid)
+    TEST_CMD_PARTY_SIZE,         // arg0 = n (1-6): keeps only the first n party mons (slots n-5 zeroed); result = gPlayerPartyCount
+    TEST_CMD_CONQ_CAPTURA,       // arg0 = species, arg1 = ball (ITEM_*): gEnemyParty[0] built at level 30, then Conquistas_OnCaptura(&gEnemyParty[0], ball); result = 1 (0xFFFFFFFF = invalid species)
 };
 // --- end of POK-44 -------------------------------------------------------------------------
 
