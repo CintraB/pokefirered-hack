@@ -456,7 +456,12 @@ struct BattleStruct
         struct MultiBattlePokemonTx multiBattleMons[3];
     } multiBuffer;
     u8 padding_1E4[0x1C];
-}; // size == 0x200 bytes
+    // POK-44: nocautes desta batalha por Pokémon do jogador (pela personalidade, não pelo slot; Conquistas_OnNocaute)
+    u32 conqPersonalidade[PARTY_SIZE];
+    u8 conqNocautes[PARTY_SIZE];
+    // POK-44: a batida tardia de Future Sight/Doom Desire está rodando (o nocaute não é de quem está na posição)
+    u8 conqGolpeTardio;
+}; // size == 0x220 bytes (0x200 do jogo + POK-44; mora no heap, AllocZeroed no início da batalha)
 
 extern struct BattleStruct *gBattleStruct;
 

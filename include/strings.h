@@ -1601,4 +1601,38 @@ extern const u8 gText_PokeSum_EggOrigin_Trade[];
 extern const u8 *const gText_DayNight_PeriodName[TIME_PERIOD_COUNT];
 extern const u8 *const gText_DayNight_PeriodStart[TIME_PERIOD_COUNT];
 
+// POK-44: aviso de conquista
+extern const u8 gText_ConqAviso_Titulo[];
+extern const u8 gText_ConqAviso_Premio[];
+extern const u8 gText_ConqAviso_NaBolsa[];
+extern const u8 gText_ConqAviso_NoPc[];
+extern const u8 gText_ConqAviso_Cheios[];
+extern const u8 gText_ConqAviso_ResumoAntes[];
+extern const u8 gText_ConqAviso_ResumoUma[];
+extern const u8 gText_ConqAviso_ResumoVarias[];
+extern const u8 gText_ConqAviso_Premios[];
+extern const u8 gText_ConqAviso_Separador[];
+extern const u8 gText_ConqAviso_Depois[];
+extern const u8 gText_ConqAviso_PluralPokeBall[];
+extern const u8 gText_ConqAviso_PluralGreatBall[];
+extern const u8 gText_ConqAviso_PluralUltraBall[];
+extern const u8 gText_ConqAviso_PluralSuperPotion[];
+extern const u8 gText_ConqAviso_PluralHyperPotion[];
+extern const u8 gText_ConqAviso_PluralMaxRepel[];
+extern const u8 gText_ConqAviso_PluralPpMax[];
+extern const u8 gText_ConqAviso_PluralRareCandy[];
+extern const u8 gText_ConqTela_Rodape[];
+extern const u8 gText_ConqTela_DicaCartao[];
+extern const u8 gText_Diario_Titulo[];
+extern const u8 gText_Diario_Vazio[];
+extern const u8 gText_Diario_Venceu[];
+extern const u8 gText_Diario_Capturado[];
+extern const u8 gText_Diario_Derrotou[];
+extern const u8 gText_Diario_Separador[];
+extern const u8 gText_Diario_TempoTurnos[];
+extern const u8 gText_Diario_Time[];
+extern const u8 gText_Diario_Nivel[];
+extern const u8 gText_Diario_MvpUm[];
+extern const u8 gText_Diario_MvpVarios[];
+
 #endif //GUARD_STRINGS_H

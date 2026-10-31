@@ -1431,3 +1431,44 @@ const u8 *const gText_DayNight_PeriodStart[TIME_PERIOD_COUNT] = {
     [TIME_EVENING]   = sPeriodStart_Evening,
     [TIME_NIGHT]     = sPeriodStart_Night,
 };
+
+// POK-44: o aviso de conquista (src/conquistas_aviso.c). Cada linha é montada de pedaços, sem {STR_VAR}: a largura de
+// cada linha montada (título + nome, prêmio + destino, resumo) é medida em test/tests/test_conquistas_aviso.py.
+const u8 gText_ConqAviso_Titulo[] = _("Conquista! ");
+const u8 gText_ConqAviso_Premio[] = _("Prêmio: ");
+const u8 gText_ConqAviso_NaBolsa[] = _(" na bolsa");
+const u8 gText_ConqAviso_NoPc[] = _(" no PC");
+const u8 gText_ConqAviso_Cheios[] = _("Bolsa e PC cheios: fica para depois");
+const u8 gText_ConqAviso_ResumoAntes[] = _("Você já tinha ");
+const u8 gText_ConqAviso_ResumoUma[] = _(" conquista!");
+const u8 gText_ConqAviso_ResumoVarias[] = _(" conquistas!");
+const u8 gText_ConqAviso_Premios[] = _("Prêmios: ");
+const u8 gText_ConqAviso_Separador[] = _(", ");
+const u8 gText_ConqAviso_Depois[] = _(" depois");
+// O plural do prêmio com 2 ou mais (sPluraisDoPremio, src/conquistas_aviso.c). Reviver Máx. e Superrepel. são
+// abreviados e ficam iguais no plural; cada prêmio da tabela é conferido em test/tests/test_conquistas_aviso.py.
+const u8 gText_ConqAviso_PluralPokeBall[] = _("Poké Bolas");
+const u8 gText_ConqAviso_PluralGreatBall[] = _("Grandes Bolas");
+const u8 gText_ConqAviso_PluralUltraBall[] = _("Ultra Bolas");
+const u8 gText_ConqAviso_PluralSuperPotion[] = _("Superpoções");
+const u8 gText_ConqAviso_PluralHyperPotion[] = _("Hiperpoções");
+const u8 gText_ConqAviso_PluralMaxRepel[] = _("Repel. Máximos");
+const u8 gText_ConqAviso_PluralPpMax[] = _("PP Máximos");
+const u8 gText_ConqAviso_PluralRareCandy[] = _("Doces Raros");
+
+// POK-44: a tela de conquistas (src/conquistas_tela.c) e a dica na frente do cartão de treinador (src/trainer_card.c).
+// O rodapé leva a aba em {STR_VAR_1} e "feitas de válidas" em {STR_VAR_2}/{STR_VAR_3}.
+const u8 gText_ConqTela_Rodape[] = _("{STR_VAR_1}: {STR_VAR_2} de {STR_VAR_3}");
+const u8 gText_ConqTela_DicaCartao[] = _("{SELECT_BUTTON}Conquistas");
+// Diário da jornada (modo diário da tela de conquistas, src/conquistas_tela.c)
+const u8 gText_Diario_Titulo[] = _("DIÁRIO DA JORNADA");
+const u8 gText_Diario_Vazio[] = _("Nenhuma batalha marcante ainda.");
+const u8 gText_Diario_Venceu[] = _("VENCEU");
+const u8 gText_Diario_Capturado[] = _("CAPTURADO");
+const u8 gText_Diario_Derrotou[] = _("DERROTOU");
+const u8 gText_Diario_Separador[] = _(" - ");
+const u8 gText_Diario_TempoTurnos[] = _("Tempo: {STR_VAR_1}   Turnos: {STR_VAR_2}");
+const u8 gText_Diario_Time[] = _("Time:");
+const u8 gText_Diario_Nivel[] = _(" nv");
+const u8 gText_Diario_MvpUm[] = _("MVP: {STR_VAR_1} ({STR_VAR_2} nocaute)");
+const u8 gText_Diario_MvpVarios[] = _("MVP: {STR_VAR_1} ({STR_VAR_2} nocautes)");

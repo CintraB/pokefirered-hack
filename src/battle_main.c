@@ -11,6 +11,7 @@
 #include "battle_setup.h"
 #include "battle_weather_visual.h"
 #include "berry.h"
+#include "conquistas.h"
 #include "data.h"
 #include "decompress.h"
 #include "event_data.h"
@@ -2973,7 +2974,9 @@ void BattleTurnPassed(void)
 {
     s32 i;
 
+    // POK-44: a batida tardia (battle_util.c, conqGolpeTardio) volta aqui com end2; toda passada desliga a marca
     TurnValuesCleanUp(TRUE);
+    gBattleStruct->conqGolpeTardio = FALSE;
     if (gBattleOutcome == 0)
     {
         if (DoFieldEndTurnEffects())
@@ -3865,6 +3868,7 @@ static void HandleEndTurn_FinishBattle(void)
                 }
             }
         }
+        Conquistas_OnFimDeBatalha();
         TrySetQuestLogBattleEvent();
         if (gBattleTypeFlags & BATTLE_TYPE_TRAINER)
             ClearRematchStateByTrainerId();

@@ -59,3 +59,17 @@ $(DATA_SRC_SUBDIR)/novidades_cartoes.h: $(DATA_SRC_SUBDIR)/novidades/cartoes.jso
 	python3 tools/novidades/gen_cartoes.py $< $@
 
 $(C_BUILDDIR)/novidades_data.o: c_dep += $(DATA_SRC_SUBDIR)/novidades_cartoes.h
+
+# Achievements and battle journal: ids header and tables generated from conquistas/conquistas.json
+# (any .o that includes data/conquistas_ids.h must list it in c_dep, like conquistas_data.o below)
+AUTO_GEN_TARGETS += $(DATA_SRC_SUBDIR)/conquistas_ids.h $(DATA_SRC_SUBDIR)/conquistas_tabela.h
+$(DATA_SRC_SUBDIR)/conquistas_ids.h: $(DATA_SRC_SUBDIR)/conquistas/conquistas.json tools/conquistas/gen_conquistas.py
+	python3 tools/conquistas/gen_conquistas.py $< $@ $(DATA_SRC_SUBDIR)/conquistas_tabela.h
+
+$(DATA_SRC_SUBDIR)/conquistas_tabela.h: $(DATA_SRC_SUBDIR)/conquistas_ids.h ;
+
+$(C_BUILDDIR)/conquistas_data.o: c_dep += $(DATA_SRC_SUBDIR)/conquistas_ids.h $(DATA_SRC_SUBDIR)/conquistas_tabela.h
+$(C_BUILDDIR)/conquistas.o: c_dep += $(DATA_SRC_SUBDIR)/conquistas_ids.h
+$(C_BUILDDIR)/test_hooks.o: c_dep += $(DATA_SRC_SUBDIR)/conquistas_ids.h
+$(C_BUILDDIR)/diario.o: c_dep += $(DATA_SRC_SUBDIR)/conquistas_ids.h
+$(C_BUILDDIR)/conquistas_tela.o: c_dep += $(DATA_SRC_SUBDIR)/conquistas_ids.h

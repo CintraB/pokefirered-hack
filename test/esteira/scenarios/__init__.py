@@ -37,6 +37,8 @@ class ScenarioContext:
     part: int = 0
     parts: int = 1
     seed: int = 0   # sal das sementes das partes nesta execução (paralelo.run_salt)
+    # POK-44: sessão de cenários da ROM de teste: o aviso das conquistas fica em silêncio (base.silenciar_avisos)
+    conq_silencio: bool = False
 
 
 @contextmanager

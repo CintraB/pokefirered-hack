@@ -69,9 +69,21 @@ def _cartoes():
 
 # --- tópicos e cartões ------------------------------------------------------------------------
 
-def test_onze_topicos_na_ordem_do_spec():
+def test_doze_topicos_na_ordem_do_spec():
     assert [t["name"] for t in _topicos()] == TOPICOS_DO_SPEC
     assert _constantes()["TOPIC_COUNT"] == 12 == len(_topicos())
+
+
+def test_conquistas_e_diario_no_fim_de_melhorias_modernas():
+    """POK-44: a grade 4x3 já está cheia (12 tópicos); os dois cartões entram no fim de "Melhorias modernas",
+    como os do POK-43/45, e citam o caminho (SELECT no cartão do menu START; SELECT de novo para o diário)."""
+    cartoes = _topico("Melhorias modernas")["cards"]
+    assert [c["title"] for c in cartoes[-2:]] == ["Conquistas e prêmios", "Diário da jornada"]
+    conquistas, diario = (_plano(c["body"]) for c in cartoes[-2:])
+    ativas = sum(1 for c in json.loads((REPO_ROOT / "src/data/conquistas/conquistas.json").read_text(encoding="utf-8"))
+                 ["conquistas"] if c.get("ativa", True))
+    assert "cartão" in conquistas and "SELECT" in conquistas and f"{ativas} conquistas" in conquistas
+    assert "SELECT" in diario and "MVP" in diario
 
 
 def test_cada_topico_tem_cartao():

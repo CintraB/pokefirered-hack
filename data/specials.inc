@@ -473,4 +473,7 @@ gSpecials::
 	def_special UseRepelFromField
 	@ PC Portátil (POK-36)
 	def_special StartPortablePc
+	@ Conquistas (POK-44)
+	def_special Conquistas_MostrarAviso
+	def_special Conquistas_AbrirTelaDoScript
 gSpecialsEnd::

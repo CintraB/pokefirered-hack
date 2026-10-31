@@ -723,6 +723,274 @@ static u32 TypeEffectiveness(u8 moveType, u8 type1, u8 type2)
 }
 // --- end of POK-43 --------------------------------------------------------------------------
 
+// POK-44: achievements and battle journal state in the save
+#include "conquistas.h"
+#include "data/conquistas_ids.h"
+extern u8 gConquistasSilencio; // src/conquistas_aviso.c (only in TESTBUILD)
+#include "constants/battle_setup.h"
+#include "constants/opponents.h"
+
+static u32 ConqEstado(u8 num)
+{
+    if (!Conquistas_NumValido(num))
+        return 0xFFFFFFFF;
+    return Conquistas_GetEstado(num) | Conquistas_Entregue(num) << 8 | Conquistas_DegrauEntregue(num) << 16
+         | Conquistas_DegrauAtual(num) << 24;
+}
+
+static u32 ConqContador(u32 which)
+{
+    const struct ConquistasSave *conq = &gSaveBlock1Ptr->conquistas;
+
+    switch (which)
+    {
+    case 0: return conq->vitoriasTreinador;
+    case 1: return conq->shiniesObtidos;
+    case 2: return conq->origem | conq->resumoPendente << 8;
+    case 3: return conq->magic;
+    }
+    if (which - 4 < CONQ_ABAS_COUNT)
+    {
+        u8 feitas, validas;
+
+        Conquistas_ContarAba(which - 4, &feitas, &validas);
+        return feitas | validas << 8;
+    }
+    return 0xFFFFFFFF;
+}
+
+static u32 ConqReset(u32 jogoNovo)
+{
+    if (jogoNovo)
+    {
+        Conquistas_IniciarJogoNovo();
+    }
+    else
+    {
+        // a save from before the achievements: both areas were unused and zeroed
+        memset(&gSaveBlock1Ptr->conquistas, 0, sizeof(gSaveBlock1Ptr->conquistas));
+        memset(&gSaveBlock2Ptr->diario, 0, sizeof(gSaveBlock2Ptr->diario));
+    }
+    return gSaveBlock1Ptr->conquistas.magic;
+}
+
+static u32 ConqAplicar(u32 num, u32 opDegrau)
+{
+    if (num >= 0x100 || !Conquistas_NumValido(num))
+        return 0xFFFFFFFF;
+    switch (opDegrau & 0xFF)
+    {
+    case 0: Conquistas_Marcar(num); break;
+    case 1: Conquistas_Perder(num); break;
+    case 2: Conquistas_SetEntregue(num); break;
+    case 3: Conquistas_SetDegrauEntregue(num, opDegrau >> 8); break;
+    default: return 0xFFFFFFFF;
+    }
+    return ConqEstado(num);
+}
+
+// A mon of the player (OT) in a PC slot, for the old-save scan: shiny PID and/or hatched (MET_LEVEL 0, 6 IVs 31).
+static u32 ConqPcMon(u32 arg0, u32 arg1)
+{
+    u8 box = arg0 & 0xFF, pos = (arg0 >> 8) & 0xFF, opcoes = (arg0 >> 16) & 0xFF;
+    u16 species = arg1 & 0xFFFF;
+    u8 level = (arg1 >> 16) & 0xFF, metLevel = 0;
+    u32 otId = GetPlayerTrainerId();
+    // shiny value = hi(ot) ^ lo(ot) ^ hi(pid) ^ lo(pid): 0 (shiny) or 0x100 (far from the shiny range)
+    u32 personality = (((otId >> 16) ^ (otId & 0xFFFF) ^ ((opcoes & 1) ? 0 : 0x100)) & 0xFFFF) << 16;
+    struct Pokemon mon;
+
+    if (box >= TOTAL_BOXES_COUNT || pos >= IN_BOX_COUNT)
+        return 0xFFFFFFFF;
+    if (species == SPECIES_NONE)
+    {
+        ZeroBoxMonData(GetBoxedMonPtr(box, pos));
+        return GetBoxMonDataAt(box, pos, MON_DATA_SPECIES);
+    }
+    if (!IsValidTestMon(species, level))
+        return 0xFFFFFFFF;
+    CreateMon(&mon, species, level, (opcoes & 2) ? MAX_PER_STAT_IVS : TEST_MON_FIXED_IV, TRUE, personality,
+              OT_ID_PLAYER_ID, 0);
+    if (opcoes & 2)
+        SetMonData(&mon, MON_DATA_MET_LEVEL, &metLevel);
+    *GetBoxedMonPtr(box, pos) = mon.box;
+    return GetBoxMonDataAt(box, pos, MON_DATA_SPECIES);
+}
+
+// trainerbattle_no_intro <trainer>, <defeat text> run from a field script in gTestText, as the wild battle hook does;
+// the defeat text ("…") sits in gTestText too, after the script. sTrainerObjectEventLocalId = 0 and
+// VAR_LAST_TALKED = 0: the reveal movement of EventScript_DoNoIntroTrainerBattle finds no object and is skipped.
+#define TEST_TRAINER_DEFEAT_TEXT 32  // offset of the defeat text in gTestText
+
+static u32 StartTrainerBattle(u32 trainer)
+{
+    u8 *s = gTestText;
+    u32 texto = (u32)&gTestText[TEST_TRAINER_DEFEAT_TEXT];
+
+    if (trainer == 0 || trainer >= NUM_TRAINERS)
+        return 0xFFFFFFFF;
+    gTestText[TEST_TRAINER_DEFEAT_TEXT] = CHAR_ELLIPSIS;
+    gTestText[TEST_TRAINER_DEFEAT_TEXT + 1] = EOS;
+    gSpecialVar_LastTalked = 0;
+    *s++ = 0x69;                                // lockall
+    *s++ = 0x5C;                                // trainerbattle
+    *s++ = TRAINER_BATTLE_SINGLE_NO_INTRO_TEXT;
+    *s++ = trainer & 0xFF;
+    *s++ = trainer >> 8;
+    *s++ = 0;                                   // local id
+    *s++ = 0;
+    *s++ = texto & 0xFF;                        // defeat text
+    *s++ = (texto >> 8) & 0xFF;
+    *s++ = (texto >> 16) & 0xFF;
+    *s++ = texto >> 24;
+    *s++ = 0x6B;                                // releaseall (the battle returns here: gotopostbattlescript)
+    *s++ = 0x02;                                // end
+    ScriptContext_SetupScript(gTestText);
+    return 1;
+}
+
+static u32 SetPartyMove(u32 arg0, u16 move)
+{
+    u8 slot = arg0 & 0xFF, index = (arg0 >> 8) & 0xFF;
+    u8 pp;
+
+    if (slot >= PARTY_SIZE || index >= MAX_MON_MOVES || move == MOVE_NONE || move >= MOVES_COUNT
+     || GetMonData(&gPlayerParty[slot], MON_DATA_SPECIES) == SPECIES_NONE)
+        return 0xFFFFFFFF;
+    pp = gBattleMoves[move].pp;
+    SetMonData(&gPlayerParty[slot], MON_DATA_MOVE1 + index, &move);
+    SetMonData(&gPlayerParty[slot], MON_DATA_PP1 + index, &pp);
+    return GetMonData(&gPlayerParty[slot], MON_DATA_MOVE1 + index);
+}
+
+static u32 PartySize(u32 n)
+{
+    u8 i;
+
+    if (n == 0 || n > PARTY_SIZE)
+        return 0xFFFFFFFF;
+    for (i = n; i < PARTY_SIZE; i++)
+        ZeroMonData(&gPlayerParty[i]);
+    gPlayerPartyCount = CalculatePlayerPartyCount();
+    return gPlayerPartyCount;
+}
+
+static u32 ConqCaptura(u16 species, u16 ball)
+{
+    if (!IsValidTestMon(species, 30))
+        return 0xFFFFFFFF;
+    CreateTestMon(&gEnemyParty[0], species, 30, ITEM_NONE);
+    Conquistas_OnCaptura(&gEnemyParty[0], ball);
+    return 1;
+}
+
+// The raw journal slot of an event (also an empty one) into gTestText.
+static u32 DiarioEntrada(u32 evt)
+{
+    const struct DiarioEntrada *e;
+
+    if (evt >= DIARIO_EVT_COUNT)
+        return 0xFFFFFFFF;
+    e = &gSaveBlock2Ptr->diario.entradas[evt];
+    memcpy(gTestText, e, sizeof(*e));
+    return e->ordem;
+}
+
+// Task 6: a full bag pocket (and PC) for the prize that does not fit. The item itself first, at 999 (FRLG keeps one
+// stack per item, so that alone already refuses it), then distinct items of the same pocket, 999 each.
+static u32 EncherBolso(u16 item, bool8 pc)
+{
+    u8 pocket, i, ocupados = 0;
+    u16 id, q, n;
+
+    pocket = ItemId_GetPocket(item);
+    if (item == ITEM_NONE || item >= ITEMS_COUNT || pocket == 0)
+        return 0xFFFFFFFF;
+    for (n = 0, id = item; n < ITEMS_COUNT; n++, id = id + 1 < ITEMS_COUNT ? id + 1 : 1)
+    {
+        if (ItemId_GetPocket(id) != pocket)
+            continue;
+        q = BagGetQuantityByItemId(id);
+        if (q < 999 && !AddBagItem(id, 999 - q))
+            break;
+    }
+    for (i = 0; i < gBagPockets[pocket - 1].capacity; i++)
+    {
+        if (gBagPockets[pocket - 1].itemSlots[i].itemId != ITEM_NONE)
+            ocupados++;
+    }
+    if (!pc)
+        return ocupados;
+    for (n = 0, id = item; n < ITEMS_COUNT && CountItemsInPC() < PC_ITEMS_COUNT; n++, id = id + 1 < ITEMS_COUNT ? id + 1 : 1)
+    {
+        if (ItemId_GetPocket(id) == 0)
+            continue;
+        for (i = 0; i < PC_ITEMS_COUNT && gSaveBlock1Ptr->pcItems[i].itemId != id; i++)
+            ;
+        for (q = 0; i == PC_ITEMS_COUNT && q < PC_ITEMS_COUNT; q++)
+        {
+            if (gSaveBlock1Ptr->pcItems[q].itemId == ITEM_NONE)
+                i = q;
+        }
+        gSaveBlock1Ptr->pcItems[i].itemId = id;
+        gSaveBlock1Ptr->pcItems[i].quantity = 999;   // the PC quantity has no key (GetPcItemQuantity)
+    }
+    return ocupados + CountItemsInPC();
+}
+
+// An egg of the player (shiny PID and/or 6 IVs 31 as asked) in a party slot, hatched through the real special.
+static u32 ConqChocar(u32 arg0, u16 species)
+{
+    u8 slot = arg0 & 0xFF, opcoes = (arg0 >> 8) & 0xFF;
+    u32 otId = GetPlayerTrainerId();
+    // shiny value = hi(ot) ^ lo(ot) ^ hi(pid) ^ lo(pid): 0 (shiny) or 0x100 (far from the shiny range)
+    u32 personality = (((otId >> 16) ^ (otId & 0xFFFF) ^ ((opcoes & 1) ? 0 : 0x100)) & 0xFFFF) << 16;
+    bool8 ovo = TRUE;
+    struct Pokemon *mon;
+
+    if (slot >= PARTY_SIZE || slot > CalculatePlayerPartyCount() || !IsValidTestMon(species, EGG_HATCH_LEVEL))
+        return 0xFFFFFFFF;
+    mon = &gPlayerParty[slot];
+    CreateMon(mon, species, EGG_HATCH_LEVEL, (opcoes & 2) ? MAX_PER_STAT_IVS : TEST_MON_FIXED_IV, TRUE, personality,
+              OT_ID_PLAYER_ID, 0);
+    SetMonData(mon, MON_DATA_IS_EGG, &ovo);
+    gPlayerPartyCount = CalculatePlayerPartyCount();
+    gSpecialVar_0x8004 = slot;
+    ScriptHatchMon();
+    return GetMonData(mon, MON_DATA_SPECIES) | GetMonData(mon, MON_DATA_IS_EGG) << 16;
+}
+
+// Task 7: the achievements screen through the real special, from a field script built in gTestText
+static u32 OpenConquistas(u8 modo)
+{
+    u32 special;
+
+    for (special = 0; &gSpecials[special] < gSpecialsEnd; special++)
+    {
+        if ((void *)gSpecials[special] == (void *)Conquistas_AbrirTelaDoScript)
+            break;
+    }
+    if (&gSpecials[special] >= gSpecialsEnd)
+        return 0xFFFFFFFF;
+    gTestText[0] = 0x69;            // lockall
+    gTestText[1] = 0x16;            // setvar VAR_0x8004, modo
+    gTestText[2] = 0x04;
+    gTestText[3] = 0x80;
+    gTestText[4] = modo;
+    gTestText[5] = 0;
+    gTestText[6] = 0x97;            // fadescreen FADE_TO_BLACK
+    gTestText[7] = 1;
+    gTestText[8] = 0x25;            // special Conquistas_AbrirTelaDoScript
+    gTestText[9] = special & 0xFF;
+    gTestText[10] = special >> 8;
+    gTestText[11] = 0x27;           // waitstate
+    gTestText[12] = 0x6B;           // releaseall
+    gTestText[13] = 0x02;           // end
+    ScriptContext_SetupScript(gTestText);
+    return special;
+}
+// --- end of POK-44 --------------------------------------------------------------------------
+
 void TestHooks_Run(void)
 {
     u32 result = 0;
@@ -839,6 +1107,24 @@ void TestHooks_Run(void)
         result = TypeEffectiveness(gTestMailbox.arg0, gTestMailbox.arg1 & 0xFF, (gTestMailbox.arg1 >> 8) & 0xFF);
         break;
     // POK-43: end
+    // POK-44: start
+    case TEST_CMD_CONQ_ESTADO:      result = ConqEstado(gTestMailbox.arg0 < 0x100 ? gTestMailbox.arg0 : 0xFF); break;
+    case TEST_CMD_CONQ_CONTADOR:    result = ConqContador(gTestMailbox.arg0); break;
+    case TEST_CMD_CONQ_RESET:       result = ConqReset(gTestMailbox.arg0); break;
+    case TEST_CMD_CONQ_CHECAR:      Conquistas_ChecarEstado(); result = Conquistas_AvisosPendentes(); break;
+    case TEST_CMD_CONQ_APLICAR:     result = ConqAplicar(gTestMailbox.arg0, gTestMailbox.arg1); break;
+    case TEST_CMD_CONQ_PC_MON:      result = ConqPcMon(gTestMailbox.arg0, gTestMailbox.arg1); break;
+    case TEST_CMD_START_TRAINER_BATTLE: result = StartTrainerBattle(gTestMailbox.arg0); break;
+    case TEST_CMD_SET_PARTY_MOVE:   result = SetPartyMove(gTestMailbox.arg0, gTestMailbox.arg1); break;
+    case TEST_CMD_PARTY_SIZE:       result = PartySize(gTestMailbox.arg0); break;
+    case TEST_CMD_CONQ_CAPTURA:     result = ConqCaptura(gTestMailbox.arg0, gTestMailbox.arg1); break;
+    case TEST_CMD_CONQ_CHOCAR:      result = ConqChocar(gTestMailbox.arg0, gTestMailbox.arg1); break;
+    case TEST_CMD_DIARIO_ENTRADA:   result = DiarioEntrada(gTestMailbox.arg0); break;
+    case TEST_CMD_CONQ_SILENCIO:    gConquistasSilencio = gTestMailbox.arg0 != 0; result = gConquistasSilencio; break;
+    case TEST_CMD_ENCHER_BOLSO:     result = EncherBolso(gTestMailbox.arg0, gTestMailbox.arg1); break;
+    case TEST_CMD_OPEN_CONQUISTAS:  result = OpenConquistas(gTestMailbox.arg0 != 0); break;
+    case TEST_CMD_CONQ_TELA:        result = gTestMailbox.arg0 ? Conquistas_TestGetDiario() : Conquistas_TestGetState(); break;
+    // POK-44: end
     default:
         result = 0xFFFFFFFF;
         break;

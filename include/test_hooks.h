@@ -118,6 +118,28 @@ enum
 };
 // --- end of POK-43 -------------------------------------------------------------------------
 
+// --- POK-44: achievements and battle journal ------------------------------------------------
+enum
+{
+    TEST_CMD_CONQ_ESTADO = 0xB0, // arg0 = num (CONQ_*); result = state | delivered << 8 | delivered tier << 16 | current tier (Conquistas_DegrauAtual) << 24 (0xFFFFFFFF = invalid num)
+    TEST_CMD_CONQ_CONTADOR,      // arg0 = 0 trainer wins, 1 shinies, 2 origem | resumoPendente << 8, 3 magic, 4 + tab: done | valid << 8 of that tab (Conquistas_ContarAba); result = that value (0xFFFFFFFF = invalid arg0)
+    TEST_CMD_CONQ_RESET,         // arg0 = 0: zero both save areas (an old save, no marker), 1: Conquistas_IniciarJogoNovo(); result = magic
+    TEST_CMD_CONQ_CHECAR,        // Conquistas_ChecarEstado() now (an old save is scanned first); result = Conquistas_AvisosPendentes()
+    TEST_CMD_CONQ_APLICAR,       // arg0 = num, arg1 = op | tier << 8: 0 Conquistas_Marcar, 1 Conquistas_Perder, 2 Conquistas_SetEntregue, 3 Conquistas_SetDegrauEntregue(num, tier); result = as TEST_CMD_CONQ_ESTADO afterwards (0xFFFFFFFF = invalid num or op)
+    TEST_CMD_CONQ_PC_MON,        // arg0 = box | position << 8 | options << 16 (bit 0 shiny, bit 1 hatched by the player: MET_LEVEL 0 and 6 IVs 31), arg1 = species | level << 16 (species 0 empties the slot); the player is the OT; result = species read back from the box (0xFFFFFFFF = invalid)
+    TEST_CMD_START_TRAINER_BATTLE, // arg0 = trainer (TRAINER_*): battle with no intro speech through a field script in RAM (trainerbattle_no_intro, as TEST_CMD_START_WILD_BATTLE); a loss whites out as usual; result = 1 (0xFFFFFFFF = invalid trainer)
+    TEST_CMD_SET_PARTY_MOVE,     // arg0 = party slot | move index (0-3) << 8, arg1 = move (PP full, no PP Ups); result = the move read back (0xFFFFFFFF = invalid)
+    TEST_CMD_PARTY_SIZE,         // arg0 = n (1-6): keeps only the first n party mons (slots n-5 zeroed); result = gPlayerPartyCount
+    TEST_CMD_CONQ_CAPTURA,       // arg0 = species, arg1 = ball (ITEM_*): gEnemyParty[0] built at level 30, then Conquistas_OnCaptura(&gEnemyParty[0], ball); result = 1 (0xFFFFFFFF = invalid species)
+    TEST_CMD_CONQ_CHOCAR,        // arg0 = party slot (<= party count) | options << 8 (bit 0 shiny, bit 1 6 IVs 31), arg1 = species: an egg of the player in that slot, hatched by ScriptHatchMon (AddHatchedMonToParty); result = species | isEgg << 16 read back (0xFFFFFFFF = invalid)
+    TEST_CMD_DIARIO_ENTRADA,     // arg0 = journal event (DIARIO_EVT_*): its 20-byte struct DiarioEntrada copied into gTestText; result = its ordem (0 = empty slot, 0xFFFFFFFF = invalid event)
+    TEST_CMD_CONQ_SILENCIO,      // arg0 = 1 silences the achievement notice (the field does not even check), 0 restores it; result = arg0 (gConquistasSilencio)
+    TEST_CMD_ENCHER_BOLSO,       // arg0 = item: fills the free slots of its bag pocket with distinct items of that pocket, 999 each, starting with the item itself; arg1 = 1 also fills the 30 PC item slots the same way (the item first, then distinct items); result = slots taken (pocket + PC) (0xFFFFFFFF = invalid item)
+    TEST_CMD_OPEN_CONQUISTAS,    // arg0 = modo (0 conquistas, 1 diário): field script lockall, setvar VAR_0x8004, fadescreen, special Conquistas_AbrirTelaDoScript, waitstate, releaseall; result = special number (0xFFFFFFFF = not in gSpecials)
+    TEST_CMD_CONQ_TELA,          // result = Conquistas_TestGetState(): modo | tab << 8 | cursor << 16 | input ready << 24 (cursor = first visible row in the achievements mode, selected row in the journal mode; 0xFFFFFFFF = screen closed); arg0 = 1: Conquistas_TestGetDiario(): entries | selected DIARIO_EVT_* << 8 | first visible row << 16 (0xFFFFFFFF = closed or not the journal)
+};
+// --- end of POK-44 -------------------------------------------------------------------------
+
 extern struct TestMailbox gTestMailbox;
 extern u8 gTestText[TEST_TEXT_SIZE];
 

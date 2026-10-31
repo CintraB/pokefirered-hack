@@ -32,6 +32,7 @@
 #include "pokemon_jump.h"
 #include "event_scripts.h"
 #include "day_night.h"
+#include "conquistas.h"
 
 // this file's functions
 static void ResetMiniGamesResults(void);
@@ -118,6 +119,7 @@ void NewGameInitData(void)
     ZeroEnemyPartyMons();
     ClearBattleTower();
     ClearSav1();
+    Conquistas_IniciarJogoNovo();
     ClearMailData();
     gSaveBlock2Ptr->specialSaveWarpFlags = 0;
     gSaveBlock2Ptr->gcnLinkFlags = 0;

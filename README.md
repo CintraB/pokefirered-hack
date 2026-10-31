@@ -9,9 +9,9 @@ a Pokédex inteira obtível e uma esteira de testes automática no emulador.**
 ![Idioma](https://img.shields.io/badge/idioma-PT--BR-009c3b?style=flat-square)
 ![Base](https://img.shields.io/badge/base-pret%2Fpokefirered-e3350d?style=flat-square)
 ![Linguagem](https://img.shields.io/badge/C-agbcc-555555?style=flat-square)
-![Testes](https://img.shields.io/badge/pytest-4507%20testes-2ea44f?style=flat-square)
+![Testes](https://img.shields.io/badge/pytest-4660%20testes-2ea44f?style=flat-square)
 ![Esteira](https://img.shields.io/badge/esteira-363%20checagens-2ea44f?style=flat-square)
-![Versão](https://img.shields.io/badge/ROM-v46-informational?style=flat-square)
+![Versão](https://img.shields.io/badge/ROM-v49-informational?style=flat-square)
 
 <img src="docs/readme/inicial.png" width="240" alt="Escolha do inicial em português">
 <img src="docs/readme/chuva.png" width="240" alt="Batalha com chuva contínua">
@@ -59,6 +59,7 @@ perder o jeito do FireRed.
 | 🧚 | **Tipos e golpes modernos** | Físico ou especial por golpe e o tipo Fada, como em Pokémon X e Y. |
 | 📖 | **Pokédex completa** | Exclusivos do LeafGreen, os dois fósseis, lendários e míticos obtíveis. |
 | 🛠️ | **Melhorias modernas** | Exp. Share para todos, PC Portátil, HMs sem ensinar, status com L/R… |
+| 🏆 | **Conquistas e diário** | 39 conquistas com prêmio na bolsa e o diário das batalhas marcantes, no Cartão de Treinador. |
 | 🗞️ | **Tela de novidades** | O Prof. Carvalho apresenta cada mudança em cartões ilustrados. |
 | 🧪 | **Esteira de testes** | Toda ROM é jogada no emulador e testada antes de existir. |
 
@@ -99,6 +100,24 @@ perder o jeito do FireRed.
 <p align="center">
 <img src="docs/readme/resumo_fada.png" width="240" alt="Resumo do Gardevoir, Psíquico e Fada">
 <img src="docs/readme/golpe_fada.png" width="240" alt="Expl. Lunar no resumo, Fada e especial">
+</p>
+</details>
+
+<details open>
+<summary><b>🏆 Conquistas e diário</b></summary>
+
+| | |
+|---|---|
+| **Conquistas** | 39 conquistas em 5 abas (História, Batalha, Captura, Treino e Exploração): as 8 insígnias, Elite 4 e Campeão, treinadores vencidos de 10 em 10, shinies, lendários, Pokédex, nível 100, ovo perfeito, ₽999.999, horas de jogo… Cada linha mostra ✓ ou o progresso (`87/100`), e o rodapé, o total da aba. |
+| **Prêmio na hora** | Ao conquistar, o jogo pausa com um aviso animado e a fanfarra, e o prêmio cai na bolsa (bolsa cheia: no PC). Prêmios maiores para as conquistas mais difíceis, até a Master Ball. |
+| **Save antigo reconhecido** | Na primeira vez que um save de antes abre nesta versão, o jogo confere o que já foi feito e entrega tudo num aviso só. O que não dá mais para provar (vencer um líder com um Pokémon só, vencer o rival em todas) fica riscado e fora do total. |
+| **Diário da jornada** | A primeira vitória contra cada líder, o rival, a Elite 4 e o Campeão, e cada lendário capturado ou derrotado: tempo de jogo, turnos, time usado e o MVP (quem mais nocauteou). |
+| **Onde fica** | No Cartão de Treinador (menu START), o **SELECT** abre as conquistas; na tela, **L/R** trocam a aba e o **SELECT** alterna para o diário. |
+
+<p align="center">
+<img src="docs/readme/conquistas.png" width="240" alt="Tela de conquistas, aba História">
+<img src="docs/readme/diario.png" width="240" alt="Diário da jornada">
+<img src="docs/readme/conquista_aviso.png" width="240" alt="Aviso de conquista com o prêmio">
 </p>
 </details>
 
@@ -219,6 +238,7 @@ perder o jeito do FireRed.
 | **Melhorias modernas** | Repelente, PE, IA, barra de PS, PC Portátil, Incubadora, HMs, viagem, status com L/R, chefes com clima. |
 | **Clima na batalha** | Clima sempre visível e o sol forte consertado. |
 | **Físico/especial e Fada** (30/10) | Categoria por golpe, tipo Fada com a tabela de X e Y, 18 espécies e 6 golpes novos. |
+| **Conquistas e diário** (31/10) | 39 conquistas com prêmio e aviso, save antigo reconhecido e o diário das batalhas marcantes. |
 
 ## Esteira de testes
 
@@ -234,7 +254,7 @@ flowchart LR
     C -->|erro| F[roms/ultima-falha/<br>relatório + savestates]
     D -->|vermelho| F
     E --> G[make test-full:<br>ROM de teste com atalhos]
-    G --> H[cenários longos:<br>clima, creche, shiny,<br>evoluções, novidades…]
+    G --> H[cenários longos:<br>clima, creche, shiny,<br>evoluções, conquistas…]
     H --> I[telas comparadas<br>com as referências]
 ```
 
@@ -244,7 +264,7 @@ flowchart LR
   comparadas pixel a pixel com as referências aprovadas de cada um.
 - **Checagem de texto**: mede a largura de cada frase traduzida na janela onde ela aparece e o
   tamanho dos buffers, para nada estourar.
-- **4507 testes em pytest** cobrem a própria esteira e as regras de cada hack.
+- **4660 testes em pytest** cobrem a própria esteira e as regras de cada hack.
 
 <details>
 <summary>Comandos (WSL)</summary>

@@ -19,6 +19,7 @@
 #include "constants/songs.h"
 #include "constants/game_stat.h"
 #include "constants/trainers.h"
+#include "conquistas.h" // POK-44: SELECT abre as conquistas
 
 // Trainer Card Strings
 enum
@@ -115,6 +116,7 @@ static u16 GetCaughtMonsCount(void);
 static void PrintPokedexOnCard(void);
 static void PrintTimeOnCard(void);
 static void PrintProfilePhraseOnCard(void);
+static void PrintConquistasHintOnCard(void); // POK-44: dica do SELECT (conquistas)
 static void BufferNameForCardBack(void);
 static void PrintNameOnCardBack(void);
 static void BufferHofDebutTime(void);
@@ -575,6 +577,14 @@ static void Task_TrainerCard(u8 taskId)
                 BeginNormalPaletteFade(PALETTES_ALL, 0, 0, 16, RGB_BLACK);
                 sTrainerCardDataPtr->mainState = STATE_CLOSE_CARD;
             }
+        }
+        else if (JOY_NEW(SELECT_BUTTON) && !sTrainerCardDataPtr->isLink && !gReceivedRemoteLinkPlayers)
+        {
+            // POK-44: SELECT abre as conquistas (só fora de link); a tela volta ao cartão
+            PlaySE(SE_SELECT);
+            BeginNormalPaletteFade(PALETTES_ALL, 0, 0, 16, RGB_BLACK);
+            sTrainerCardDataPtr->callback2 = CB2_AbrirConquistasDoCartao;
+            sTrainerCardDataPtr->mainState = STATE_CLOSE_CARD;
         }
         break;
     case STATE_WAIT_FLIP_TO_BACK:
@@ -1065,6 +1075,9 @@ static bool8 PrintAllOnCardFront(void)
     case 5:
         PrintProfilePhraseOnCard();
         break;
+    case 6: // POK-44: dica do SELECT (conquistas)
+        PrintConquistasHintOnCard();
+        break;
     default:
         sTrainerCardDataPtr->printState = 0;
         return TRUE;
@@ -1249,6 +1262,14 @@ static void PrintProfilePhraseOnCard(void)
         AddTextPrinterParameterized3(1, FONT_NORMAL, GetStringWidth(FONT_NORMAL, sTrainerCardDataPtr->easyChatProfile[2], 0) + 16, sTrainerCardProfilePhraseYPositions[sTrainerCardDataPtr->cardType],
             sTrainerCardTextColors, TEXT_SKIP_DRAW, sTrainerCardDataPtr->easyChatProfile[3]);    
     }
+}
+
+// POK-44: "SELECT Conquistas" na faixa das insígnias, à direita (só onde o SELECT vale: a mesma condição do botão)
+static void PrintConquistasHintOnCard(void)
+{
+    if (!sTrainerCardDataPtr->isLink && !gReceivedRemoteLinkPlayers)
+        AddTextPrinterParameterized3(1, FONT_SMALL, 212 - GetStringWidth(FONT_SMALL, gText_ConqTela_DicaCartao, 0), 109,
+            sTrainerCardTextColors, TEXT_SKIP_DRAW, gText_ConqTela_DicaCartao);
 }
 
 static void BufferNameForCardBack(void)

@@ -1,6 +1,7 @@
 #include "global.h"
 #include "gflib.h"
 #include "bike.h"
+#include "conquistas.h"
 #include "coord_event_weather.h"
 #include "daycare.h"
 #include "event_data.h"
@@ -210,6 +211,10 @@ int ProcessPlayerFieldInput(struct FieldInput *input)
         return TRUE;
 
     if (TryRunOnFrameMapScript() == TRUE)
+        return TRUE;
+    // POK-44: o aviso de conquista pausa o jogo; no quadro em que o passo termina (tookStep) o passo roda antes
+    // (gatilho de chão, warp de piso, encontro, GAME_STAT_STEPS) e o aviso sai no quadro seguinte, já parado
+    if (!input->tookStep && Conquistas_TentarAviso() == TRUE)
         return TRUE;
 
     if (input->tookStep)

@@ -349,3 +349,41 @@ def test_overlapping_var_contents_are_an_error(monkeypatch):
     with _pytest.raises(ValueError, match="sobrep"):
         var_sizes("src/x.c", "gText_A")
     assert var_sizes("src/x.c", "gText_B")["STR_VAR_1"].chars == 5
+
+
+# ---- citações de tamanho de buffer em include/ ---------------------------------------------
+
+_HEADER_CITE = re.compile(r"include/[\w/.-]+\.h:(\d+)(?:-(\d+))?")
+_BUFFER_NAME = re.compile(r"\b([A-Z][A-Z0-9_]{3,}|[a-z]\w*(?=\[))")
+_CITING_FILES = ("janelas_uso.py", "check_text.py", "buffers.py")
+
+
+def _header_citations(text):
+    """Cada `include/x.h:N` com os nomes de buffer ou constante (`nome[`, `NOME_EM_CAIXA_ALTA`) que o texto cita nos
+    160 caracteres antes dele: é isso que a linha citada tem de declarar."""
+    for m in _HEADER_CITE.finditer(text):
+        names = set(_BUFFER_NAME.findall(text[max(0, m.start() - 160):m.start()]))
+        yield m.group(0).split(":")[0], int(m.group(1)), int(m.group(2) or m.group(1)), names
+
+
+def test_header_citation_checker_catches_a_stale_line():
+    # registeredTexts mudou de linha quando o POK-44 pôs a ConquistasSave no SaveBlock1 (era a 817)
+    stale = '"copiada para registeredTexts[][21] do save (include/global.h:817)"'
+    ((path, first, last, names),) = _header_citations(stale)
+    assert "registeredTexts" in names
+    assert not any(n in _cited_text(path, first, last) for n in names)
+
+
+def test_header_citations_point_at_the_declaration():
+    """Toda citação `include/...h:N` das regras de texto cai numa linha que declara um nome citado antes dela
+    (o `registeredTexts[][21]` do chat do Union Room, o `ITEM_NAME_LENGTH`...): linha velha reprova."""
+    checked = []
+    for name in _CITING_FILES:
+        text = (REPO_ROOT / "test" / "esteira" / name).read_text(encoding="utf-8")
+        for path, first, last, names in _header_citations(text):
+            if not names:
+                continue
+            cited = _cited_text(path, first, last)
+            assert any(re.search(rf"\b{re.escape(n)}\b", cited) for n in names), (name, f"{path}:{first}", names, cited)
+            checked.append(f"{path}:{first}")
+    assert "include/global.h:858" in checked, checked

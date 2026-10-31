@@ -56,6 +56,8 @@ NUMERIC_PLACEHOLDERS = {
     "gText_Coins": "moedas, 4 algarismos em FONT_SMALL (src/coins.c)",
     "gText_MenuSafariStats": "passos e bolas da Safári (src/start_menu.c)",
     "gText_PokedollarVar1": "dinheiro (src/money.c)",
+    "gText_ConqTela_Rodape": "nome da aba (até 10 letras) e feitas/válidas com 2 algarismos (src/conquistas_tela.c); "
+                             "medido em test_conquistas_tela.py::test_textos_da_tela_e_regra",
 }
 WIDE_PLACEHOLDER = "MMMMMMMMMM"
 
@@ -461,7 +463,20 @@ E2_NEW_LABELS = {"PokedexRating_Text_OnlyMewMissing", "PokedexRating_EventScript
                  "Text_BootedUpPortablePC", "EventScript_PortablePC"}
 
 
-@pytest.mark.parametrize("rel", E2_FILES)
+# Arquivos de script criados pelos nossos hacks depois da base inglesa: não há base para comparar os rótulos (as
+# outras regras da E2 continuam valendo para eles)
+E2_NEW_FILES = {"data/scripts/conquistas.inc"}   # POK-44: o aviso de conquista
+
+
+def test_e2_arquivos_novos_nao_existem_na_base():
+    if shutil.which("git") is None:
+        pytest.skip("precisa do git")
+    assert E2_NEW_FILES <= set(E2_FILES)
+    assert _e2_base("data/event_scripts.s") is not None, "commit base da tradução indisponível"
+    assert [f for f in sorted(E2_NEW_FILES) if _e2_base(f) is not None] == []
+
+
+@pytest.mark.parametrize("rel", [f for f in E2_FILES if f not in E2_NEW_FILES])
 def test_e2_rotulos_e_fim_de_arquivo_iguais_aos_da_base(rel):
     base = _e2_base(rel)
     if base is None:

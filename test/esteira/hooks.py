@@ -201,6 +201,124 @@ class Mailbox:
         defensor `type1`/`type2`, como o Cmd_typecalc aplica, sem Foresight (400 = x4, 25 = x0,25)."""
         return self.call(CMD_TYPE_EFFECTIVENESS, move_type, type1 | type2 << 8)
 
+    # --- POK-44: conquistas e diário ----------------------------------------------------
+    def conq_estado(self, num: int) -> tuple[int, int, int, int]:
+        """(estado, entregue, degrau entregue, degrau atual) da conquista `num` (CONQ_*): estado
+        0 pendente, 1 feita, 2 perdida; o degrau atual é 0 até as regras de estado (Task 3)."""
+        packed = self.call(CMD_CONQ_ESTADO, num)
+        assert packed != NO_RESULT, f"conquista inválida: {num}"
+        return packed & 0xFF, packed >> 8 & 0xFF, packed >> 16 & 0xFF, packed >> 24 & 0xFF
+
+    def conq_contador(self, k: int) -> int:
+        """0 vitórias, 1 shinies, 2 origem | resumoPendente << 8, 3 magic, 4 + aba: feitas |
+        válidas << 8 daquela aba (0 até a Task 3)."""
+        value = self.call(CMD_CONQ_CONTADOR, k)
+        assert value != NO_RESULT, f"contador inválido: {k}"
+        return value
+
+    def conq_reset(self, jogo_novo: bool) -> int:
+        """jogo_novo: Conquistas_IniciarJogoNovo(); senão zera as duas áreas (save antigo, sem
+        marcador). Devolve o magic."""
+        return self.call(CMD_CONQ_RESET, int(jogo_novo))
+
+    def conq_checar(self) -> int:
+        """Conquistas_ChecarEstado() agora (num save sem marcador, a varredura antes); devolve
+        Conquistas_AvisosPendentes()."""
+        return self.call(CMD_CONQ_CHECAR)
+
+    def conq_aplicar(self, num: int, op: int, degrau: int = 0) -> tuple[int, int, int, int]:
+        """Acessor do núcleo na conquista `num`: op 0 Conquistas_Marcar, 1 Conquistas_Perder,
+        2 Conquistas_SetEntregue, 3 Conquistas_SetDegrauEntregue(num, degrau). Devolve o
+        conq_estado(num) depois."""
+        packed = self.call(CMD_CONQ_APLICAR, num, op | degrau << 8)
+        assert packed != NO_RESULT, f"conq_aplicar recusado: num {num}, op {op}"
+        return packed & 0xFF, packed >> 8 & 0xFF, packed >> 16 & 0xFF, packed >> 24 & 0xFF
+
+    def conq_pc_mon(self, box: int, pos: int, species: int, level: int = 5, shiny: bool = False,
+                    chocado: bool = False) -> int:
+        """Grava um Pokémon do jogador (OT) na caixa `box`, posição `pos` do PC; `chocado` = MET_LEVEL 0
+        e 6 IVs 31. Espécie 0 esvazia a vaga. Devolve a espécie lida de volta."""
+        opcoes = int(shiny) | int(chocado) << 1
+        lida = self.call(CMD_CONQ_PC_MON, box | pos << 8 | opcoes << 16, species | level << 16)
+        assert lida == species, f"conq_pc_mon recusado/errado: caixa {box}, pos {pos}, lida {lida:#x}"
+        return lida
+
+    def start_trainer_battle(self, trainer: int) -> int:
+        """Começa uma batalha contra `trainer` (sem a fala de abertura; a de derrota é "…")."""
+        result = self.call(CMD_START_TRAINER_BATTLE, trainer)
+        assert result == 1, f"START_TRAINER_BATTLE recusado: treinador {trainer}"
+        return result
+
+    def set_party_move(self, slot: int, index: int, move: int) -> int:
+        """Põe `move` (com o PP cheio) no golpe `index` (0-3) de gPlayerParty[slot]; devolve o golpe lido."""
+        lido = self.call(CMD_SET_PARTY_MOVE, slot | index << 8, move)
+        assert lido == move, f"SET_PARTY_MOVE recusado: slot {slot}, golpe {index}, {move} (lido {lido:#x})"
+        return lido
+
+    def party_size(self, n: int) -> int:
+        """Fica só com os `n` primeiros Pokémon do time; devolve gPlayerPartyCount."""
+        count = self.call(CMD_PARTY_SIZE, n)
+        assert count != NO_RESULT, f"PARTY_SIZE recusado: {n}"
+        return count
+
+    def conq_captura(self, species: int, ball: int) -> int:
+        """Conquistas_OnCaptura de um `species` nv 30 (em gEnemyParty[0]) capturado com `ball`."""
+        result = self.call(CMD_CONQ_CAPTURA, species, ball)
+        assert result == 1, f"CONQ_CAPTURA recusado: espécie {species}, bola {ball}"
+        return result
+
+    def conq_chocar(self, slot: int, species: int, shiny: bool = False, ivs31: bool = False) -> None:
+        """Choca, pelo special de verdade, um ovo do jogador de `species` posto em gPlayerParty[slot]."""
+        lido = self.call(CMD_CONQ_CHOCAR, slot | (int(shiny) | int(ivs31) << 1) << 8, species)
+        assert lido == species, f"CONQ_CHOCAR recusado/errado: slot {slot}, espécie {species} (lido {lido:#x})"
+
+    def diario_entrada(self, evt: int) -> dict | None:
+        """A entrada do diário do evento `evt` (DIARIO_EVT_*), decodificada por conquistas.parse_entrada;
+        None se o slot está vazio (ordem 0)."""
+        from .conquistas import DIARIO_ENTRADA_SIZE, parse_entrada
+        ordem = self.call(CMD_DIARIO_ENTRADA, evt)
+        assert ordem != NO_RESULT, f"DIARIO_ENTRADA recusado: evento {evt}"
+        if ordem == 0:
+            return None
+        entrada = parse_entrada(self.emu.read(self.ctl.game.syms.addr(TEXT_SYMBOL), DIARIO_ENTRADA_SIZE))
+        assert entrada["ordem"] == ordem, (entrada, ordem)
+        return entrada
+
+    def conq_silencio(self, on: bool) -> int:
+        """Liga (True) ou desliga o silêncio do aviso das conquistas: em silêncio, o campo nem checa o estado."""
+        result = self.call(CMD_CONQ_SILENCIO, int(on))
+        assert result == int(on), f"CONQ_SILENCIO recusado: {result:#x}"
+        return result
+
+    def encher_bolso(self, item: int, pc: bool = False) -> int:
+        """Enche o bolso de `item` (o próprio item e outros do mesmo bolso, 999 cada); com `pc`, também os 30
+        espaços do PC de itens. Devolve os espaços ocupados (bolso + PC)."""
+        result = self.call(CMD_ENCHER_BOLSO, item, int(pc))
+        assert result != NO_RESULT, f"ENCHER_BOLSO recusado: item {item}"
+        return result
+
+    def open_conquistas(self, diario: bool = False) -> int:
+        """Abre a tela de conquistas (ou o diário) pelo special, de um script de campo; devolve o número do
+        special. A tela monta nos quadros seguintes: espere `conq_tela()` com a entrada pronta."""
+        result = self.call(CMD_OPEN_CONQUISTAS, int(diario))
+        assert result != NO_RESULT, "Conquistas_AbrirTelaDoScript fora de gSpecials"
+        return result
+
+    def conq_tela(self) -> tuple[int, int, int, bool] | None:
+        """(modo, aba, topo da lista, entrada pronta) da tela de conquistas; None com a tela fechada."""
+        raw = self.call(CMD_CONQ_TELA)
+        if raw == NO_RESULT:
+            return None
+        return raw & 0xFF, raw >> 8 & 0xFF, raw >> 16 & 0xFF, bool(raw >> 24 & 0xFF)
+
+    def conq_tela_diario(self) -> tuple[int, int, int] | None:
+        """(quantas entradas, DIARIO_EVT_* da linha selecionada, primeira linha visível) do modo diário; None com a
+        tela fechada ou no modo conquistas. A linha selecionada é o `cursor` de `conq_tela()[2]`."""
+        raw = self.call(CMD_CONQ_TELA, 1)
+        if raw == NO_RESULT:
+            return None
+        return raw & 0xFF, raw >> 8 & 0xFF, raw >> 16 & 0xFF
+
 # --- Hack 6: breeding genético (enum à parte em include/test_hooks.h, a partir de 0x60; ------
 # o uso fica em esteira/breeding.py e scenarios/full_breeding.py / full_egg.py)
 CMD_BREED_SETUP = 0x60      # gTestBreedSetup -> creche (arg0 = 1: ovo pendente) -> compatibilidade (0xFFFFFFFF = pai inválido)
@@ -247,3 +365,32 @@ CMD_CALC_DAMAGE = 0xA0      # arg0 = golpe, arg1 = 0 -> CalculateBaseDamage: gPl
                             # (BattlePokemon montados na hora; sem crítico, clima, tela, insígnia nem efeito de campo)
 CMD_TYPE_EFFECTIVENESS = 0xA1  # arg0 = tipo do golpe, arg1 = tipo1 | tipo2 << 8 do defensor -> multiplicador x 100
                               # (gTypeEffectiveness como no Cmd_typecalc, sem Foresight; POK-45)
+
+# --- POK-44: conquistas e diário de batalhas (enum à parte, a partir de 0xB0) ---
+CMD_CONQ_ESTADO = 0xB0      # arg0 = num -> estado | entregue << 8 | degrau entregue << 16 | degrau atual << 24
+                            # (0xFFFFFFFF = num inválido)
+CMD_CONQ_CONTADOR = 0xB1    # arg0 = 0 vitórias, 1 shinies, 2 origem | resumoPendente << 8, 3 magic,
+                            # 4 + aba -> feitas | válidas << 8 (Conquistas_ContarAba)
+CMD_CONQ_RESET = 0xB2       # arg0 = 0 zera as duas áreas (save antigo), 1 Conquistas_IniciarJogoNovo -> magic
+CMD_CONQ_CHECAR = 0xB3      # Conquistas_ChecarEstado() -> Conquistas_AvisosPendentes()
+CMD_CONQ_APLICAR = 0xB4     # arg0 = num, arg1 = op | degrau << 8 (0 Marcar, 1 Perder, 2 SetEntregue,
+                            # 3 SetDegrauEntregue) -> o mesmo de CMD_CONQ_ESTADO depois
+CMD_CONQ_PC_MON = 0xB5      # arg0 = caixa | posição << 8 | opções << 16 (1 shiny, 2 chocado pelo jogador: MET_LEVEL 0
+                            # e 6 IVs 31), arg1 = espécie | nível << 16 (espécie 0 esvazia) -> espécie lida na caixa
+CMD_START_TRAINER_BATTLE = 0xB6  # arg0 = treinador (TRAINER_*) -> 1: batalha sem fala de abertura por script de campo
+                                 # em RAM (trainerbattle_no_intro); derrota volta ao Centro como de costume
+CMD_SET_PARTY_MOVE = 0xB7   # arg0 = slot | golpe (0-3) << 8, arg1 = golpe (PP cheio) -> golpe lido
+CMD_PARTY_SIZE = 0xB8       # arg0 = n -> fica só com os n primeiros do time -> gPlayerPartyCount
+CMD_CONQ_CAPTURA = 0xB9     # arg0 = espécie, arg1 = bola -> gEnemyParty[0] nv 30 e Conquistas_OnCaptura -> 1
+CMD_CONQ_CHOCAR = 0xBA      # arg0 = slot | opções << 8 (1 shiny, 2 seis IVs 31), arg1 = espécie -> ovo do jogador no slot,
+                            # chocado pelo ScriptHatchMon (AddHatchedMonToParty) -> espécie | ovo << 16 lidos
+CMD_DIARIO_ENTRADA = 0xBB   # arg0 = evento (DIARIO_EVT_*) -> ordem (0 = vazia; 0xFFFFFFFF = evento inválido);
+                            # os 20 bytes da struct DiarioEntrada em gTestText
+CMD_CONQ_SILENCIO = 0xBC    # arg0 = 1 silencia o aviso das conquistas (nem checa), 0 volta -> arg0 (só na ROM de teste)
+CMD_ENCHER_BOLSO = 0xBD     # arg0 = item: os espaços livres do bolso dele com itens distintos do mesmo bolso, 999 cada,
+                            # a começar pelo próprio item; arg1 = 1 enche também os 30 do PC de itens -> espaços ocupados
+                            # (bolso + PC)
+CMD_OPEN_CONQUISTAS = 0xBE  # arg0 = modo (0 conquistas, 1 diário): script de campo com setvar VAR_0x8004 e `special
+                            # Conquistas_AbrirTelaDoScript` -> número do special (0xFFFFFFFF = fora de gSpecials)
+CMD_CONQ_TELA = 0xBF        # -> modo | aba << 8 | topo da lista (conquistas) ou cursor (diário) << 16 | entrada pronta << 24
+                            # (0xFFFFFFFF = fechada); arg0 = 1: no diário, n | evento selecionado << 8 | topo << 16

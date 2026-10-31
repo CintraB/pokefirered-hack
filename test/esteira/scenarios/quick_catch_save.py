@@ -29,7 +29,7 @@ from ..field_menu import SAVE_STATUS_OK, FieldMenu
 from ..naming import NamingScreen
 from ..rotation import STARTERS
 from . import REPO_ROOT, ScenarioContext, open_context
-from .base import TEXT_PERIOD, Abort, print_summary
+from .base import TEXT_PERIOD, Abort, dispensar_avisos, print_summary, silenciar_avisos
 from .quick_opening import run_opening
 from .quick_route1 import (HEAL_BELOW, LAB_EXIT, MART_EXIT, MAX_RUN_TRIES, POST_BATTLE_TIMEOUT,
                            ROUTE1_NORTH_EDGE, VIRIDIAN_SOUTH_EDGE,
@@ -286,6 +286,7 @@ class CatchSaveScenario(Route1Scenario):
                         log.append(f"{wild}: capturado na {thrown}ª bola")
                         self.measures["caught"] = (species, wild)
                         self._give_nickname()
+                        dispensar_avisos(self.ctx)   # a 1ª captura: o aviso da conquista
                         return f"{n} encontro(s): " + "; ".join(log)
                 outcome = OUTCOME_NAMES.get(self.driver.outcome(), str(self.driver.outcome()))
                 log.append(f"{wild}: {thrown} bola(s), batalha terminou em {outcome}")
@@ -457,6 +458,7 @@ class CatchSaveScenario(Route1Scenario):
         ponto-chave do modo rápido comparado com a referência)."""
         game, syms = self.game, self.game.syms
         self.ctl.wait_until(lambda: "TitleScreen" in game.callback2(), TITLE_TIMEOUT, what)
+        silenciar_avisos(self.ctx)   # sessão da ROM de teste: logo depois do boot (e de cada reset)
         self.ctl.press_until(KEY_START, lambda: MAIN_MENU_TASK in self._tasks(),
                              "menu principal", tries=20, wait=60)
         status = self.emu.read_u16(syms.addr("gSaveFileStatus"))

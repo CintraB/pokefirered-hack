@@ -36,6 +36,12 @@ STARTER_DEPENDENT_POINTS = ("relogio_menu", "relogio_aviso_noite",   # Hack 7 �
                             "batalha_clima_chuva", "batalha_clima_granizo", "batalha_clima_areia", "batalha_clima_sol")
 KEY_POINTS = (("nome", "inicial", "batalha_rival", "captura", "save_continue") + TOUR_POINTS
               + STARTER_DEPENDENT_POINTS)
+# POK-44, Task 7: a tela de conquistas (aba História e a Batalha com a perdida riscada) e o cartão com a dica do SELECT
+# (só a faixa da dica: o relógio do cartão varia). Task 8: o diário (vazio; lista com VENCEU/CAPTURADO/DERROTOU;
+# rolado; o detalhe com e sem MVP; um time de 6)
+CONQUISTAS_TELA_POINTS = ("conquistas_historia", "conquistas_batalha", "cartao_dica", "diario_lista", "diario_detalhe",
+                          "diario_vazio", "diario_varias", "diario_rolado", "diario_detalhe_mvp",
+                          "diario_detalhe_sem_mvp", "diario_time6")
 # Pontos cuja tela não depende do inicial (cena de evolução do cenário `evolucoes`, página
 # EVOLUTION do resumo do cenário `resumo_evolucao`): uma referência só, em
 # test/referencias/COMUM/<ponto>.png, vale para os três.
@@ -44,7 +50,8 @@ SHARED_POINTS = (EVOLUTION_POINTS + EVOLUTION_PAGE_POINTS + SUMMARY_PAGE_POINTS 
                  + SHOP_SCREEN_POINTS
                  + FRIENDSHIP_SCREEN_POINTS  # Hack 7 - frente D
                  + NOVIDADES_POINTS  # tela de novidades do Carvalho
-                 + FISICO_FADA_POINTS)  # POK-43, 45: resumo com FADA e ícones de categoria
+                 + FISICO_FADA_POINTS  # POK-43, 45: resumo com FADA e ícones de categoria
+                 + CONQUISTAS_TELA_POINTS)  # POK-44: tela de conquistas e a dica no cartão (cenário `conquistas`)
 DIFF_RED = (255, 0, 0)
 # O Pillow acusa PNG quebrado com OSError (UnidentifiedImageError é subclasse, "image file is
 # truncated"), SyntaxError ("broken PNG file") ou ValueError, conforme onde o arquivo está estragado.

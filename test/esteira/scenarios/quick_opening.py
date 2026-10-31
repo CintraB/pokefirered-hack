@@ -21,7 +21,7 @@ from ..emu import KEY_A, KEY_B, KEY_DOWN, KEY_START, KEY_UP
 from ..naming import NamingScreen
 from ..rotation import STARTERS
 from . import REPO_ROOT, ScenarioContext, open_context
-from .base import SCENE_TIMEOUT, TEXT_PERIOD, Abort, Scenario, print_summary
+from .base import SCENE_TIMEOUT, TEXT_PERIOD, Abort, Scenario, dispensar_avisos, print_summary
 
 PLAYER_NAME = "TESTE"
 TITLE_TIMEOUT = 6000
@@ -307,6 +307,7 @@ class OpeningScenario(Scenario):
         outcome = driver.fight_to_end()
         self.measures["rival_outcome"] = outcome
         self._finish_script("volta ao overworld depois do rival")
+        dispensar_avisos(self.ctx)   # vitória sem desmaio: o aviso da conquista
         return outcome
 
     def phase_rival(self) -> None:
