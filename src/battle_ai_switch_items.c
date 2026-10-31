@@ -347,17 +347,18 @@ static bool8 ShouldSwitch(void)
      || FindMonThatAbsorbsOpponentsMove()
      || ShouldSwitchIfNaturalCure())
         return TRUE;
-    if (AI_IsSmartTrainer() && !(gBattleTypeFlags & BATTLE_TYPE_DOUBLE))
+    if (AI_IsSmartTrainer())
     {
-        // POK-46: no chefe em batalha simples, a troca preditiva substitui a troca por sorteio do original (golpe que
-        // não pega); em dupla (sem troca preditiva) o chefe segue o original.
+        // POK-46: o chefe tenta a troca preditiva (só batalha simples) depois das reações originais; se ela não
+        // acontece, segue o resto do original (troca por golpe que não pega), como todo treinador.
         struct SmartAiDecision decision;
 
-        if (!SmartAI_ChoosePredictiveSwitch(gActiveBattler, &decision))
-            return FALSE;
-        *(gBattleStruct->AI_monToSwitchIntoId + (GetBattlerPosition(gActiveBattler) >> 1)) = decision.partySlot;
-        BtlController_EmitTwoReturnValues(1, B_ACTION_SWITCH, 0);
-        return TRUE;
+        if (SmartAI_ChoosePredictiveSwitch(gActiveBattler, &decision))
+        {
+            *(gBattleStruct->AI_monToSwitchIntoId + (GetBattlerPosition(gActiveBattler) >> 1)) = decision.partySlot;
+            BtlController_EmitTwoReturnValues(1, B_ACTION_SWITCH, 0);
+            return TRUE;
+        }
     }
     if (HasSuperEffectiveMoveAgainstOpponents(FALSE)
      || AreStatsRaised())

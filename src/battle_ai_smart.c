@@ -204,7 +204,8 @@ u8 SmartAI_ThreatTypes(u8 opponentBattler, u8 *types, u8 max)
 
 // --- Derruba neste turno sendo mais rápido -------------------------------------------------------------------------
 
-// Golpes que não derrubam neste turno: carregam um turno, dependem de estado ou vão por último.
+// Golpes que não derrubam neste turno: carregam um turno (inclusive os de ficar fora de alcance), acertam depois
+// (Future Sight), deixam 1 PS (False Swipe), dependem de estado ou vão por último.
 static const u16 sNoKoThisTurnEffects[] =
 {
     EFFECT_DREAM_EATER,
@@ -212,6 +213,9 @@ static const u16 sNoKoThisTurnEffects[] =
     EFFECT_SKY_ATTACK,
     EFFECT_SKULL_BASH,
     EFFECT_SOLAR_BEAM,
+    EFFECT_SEMI_INVULNERABLE,
+    EFFECT_FUTURE_SIGHT,
+    EFFECT_FALSE_SWIPE,
     EFFECT_SPIT_UP,
     EFFECT_FOCUS_PUNCH,
     0xFFFF
@@ -262,7 +266,8 @@ bool8 SmartAI_CanKoFirst(u8 battler, u8 target)
         if (CantKoThisTurn(battler, i))
             continue;
         move = gBattleMons[battler].moves[i];
-        // Como Cmd_if_can_faint: sem dano dinâmico, sem crítico; o dano é o menor do sorteio (85%).
+        // Como Cmd_if_can_faint: sem dano dinâmico, sem crítico; o dano é o menor do sorteio (85%). É uma estimativa:
+        // ignora precisão, golpes de vários acertos e o poder variável (Eruption, Flail etc.).
         gDynamicBasePower = 0;
         gBattleStruct->dynamicMoveType = 0;
         gBattleScripting.dmgMultiplier = 1;
@@ -463,7 +468,7 @@ u8 SmartAI_ChooseReplacement(u8 battler)
 {
     u8 battlerIn1 = battler, battlerIn2 = battler;
     u8 opponents[2], nOpponents = 0;
-    u8 threats[MAX_THREATS], count;
+    u8 threats[2][MAX_THREATS], counts[2];
     u8 best = PARTY_SIZE, bestWeak = PARTY_SIZE;
     s32 bestScore = -1, bestWeakScore = -1, score;
     bool8 weak;
@@ -488,6 +493,9 @@ u8 SmartAI_ChooseReplacement(u8 battler)
     }
     if (nOpponents == 0)
         opponents[nOpponents++] = GetBattlerAtPosition(B_POSITION_PLAYER_LEFT);
+    // As ameaças de cada Pokémon do jogador, uma vez só (não dependem do candidato).
+    for (j = 0; j < nOpponents; j++)
+        counts[j] = SmartAI_ThreatTypes(opponents[j], threats[j], MAX_THREATS);
 
     for (i = 0; i < PARTY_SIZE; i++)
     {
@@ -503,8 +511,7 @@ u8 SmartAI_ChooseReplacement(u8 battler)
         for (j = 0; j < nOpponents; j++)
         {
             score += SmartAI_ScoreBench(i, opponents[j]);
-            count = SmartAI_ThreatTypes(opponents[j], threats, MAX_THREATS);
-            if (WorstThreatMult(threats, count, gSpeciesInfo[species].types[0], gSpeciesInfo[species].types[1],
+            if (WorstThreatMult(threats[j], counts[j], gSpeciesInfo[species].types[0], gSpeciesInfo[species].types[1],
                                 ability) >= 20)
                 weak = TRUE;
         }

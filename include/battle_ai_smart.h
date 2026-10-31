@@ -54,7 +54,8 @@ bool8 SmartAI_ChoosePredictiveSwitch(u8 battler, struct SmartAiDecision *out);
 // Quem entra (troca sem destino escolhido e substituto depois de desmaio): a melhor pontuação; quem leva >= 2x de uma
 // ameaça conhecida só se não houver outro. PARTY_SIZE = nenhum.
 u8 SmartAI_ChooseReplacement(u8 battler);
-// A decisão completa do chefe (troca preditiva → item → ataque) sem emitir nada; noStayRoll = TRUE tira o sorteio
+// A decisão nova do chefe (troca preditiva → item → ataque) sem emitir nada; as trocas por reação e o resto do
+// original de ShouldSwitch não entram (no jogo eles vêm antes/depois da preditiva). noStayRoll = TRUE tira o sorteio
 // "1 em 5 fica e ataca" (atalho de teste TEST_CMD_AI_SMART_DECIDE).
 void SmartAI_Decide(u8 battler, bool8 noStayRoll, struct SmartAiDecision *out);
 

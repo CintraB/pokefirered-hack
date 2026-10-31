@@ -236,13 +236,15 @@ def test_reacao_original_primeiro():
                  "ShouldSwitchIfPerishSong()", "ShouldSwitchIfWonderGuard()", "FindMonThatAbsorbsOpponentsMove()",
                  "ShouldSwitchIfNaturalCure()"):
         assert corpo.index(nome) < pred, nome
-    # o chefe não cai no sorteio do original: o bloco dele sempre retorna
-    bloco = corpo[corpo.index("if (AI_IsSmartTrainer()"):corpo.index("HasSuperEffectiveMoveAgainstOpponents(FALSE)")]
-    # em dupla (sem troca preditiva) o chefe segue o original
-    assert "if (AI_IsSmartTrainer() && !(gBattleTypeFlags & BATTLE_TYPE_DOUBLE))" in bloco
-    assert "return FALSE;" in bloco and "return TRUE;" in bloco
+    # o chefe tenta a preditiva e, se ela não acontece, segue o resto do original (troca por golpe que não pega)
+    inicio = corpo.index("if (AI_IsSmartTrainer())")
+    resto = corpo.index("if (HasSuperEffectiveMoveAgainstOpponents(FALSE)")
+    bloco = corpo[inicio:resto]
+    assert "return FALSE;" not in bloco and "return TRUE;" in bloco
     assert "AI_monToSwitchIntoId" in bloco and "decision.partySlot" in bloco and "B_ACTION_SWITCH" in bloco
-    assert pred < corpo.index("FindMonWithFlagsAndSuperEffective(MOVE_RESULT_DOESNT_AFFECT_FOE, 2)")
+    assert pred < resto < corpo.index("AreStatsRaised()")         < corpo.index("FindMonWithFlagsAndSuperEffective(MOVE_RESULT_DOESNT_AFFECT_FOE, 2)")         < corpo.index("FindMonWithFlagsAndSuperEffective(MOVE_RESULT_NOT_VERY_EFFECTIVE, 3)")
+    # nenhum return entre a preditiva e o resto: o resto é alcançável quando a preditiva não troca
+    assert bloco.rstrip().endswith("}") and bloco.count("return") == 1
     # a troca voluntária é marcada uma vez só (no ramo ShouldSwitch de AI_TrySwitchOrUseItem)
     assert "SmartAI_NoteVoluntarySwitch" not in corpo
     assert _ler(SWITCH_C).count("SmartAI_NoteVoluntarySwitch(") == 1
@@ -266,6 +268,9 @@ def test_substituto_evita_fraco():
     # quem leva >= 2x de alguma ameaça conhecida só entra se não houver outro
     assert ">= 20" in corpo and "bestWeak" in corpo
     assert "return best != PARTY_SIZE ? best : bestWeak;" in corpo
+    # as ameaças são calculadas uma vez por Pokémon do jogador, fora do laço dos candidatos
+    assert corpo.count("SmartAI_ThreatTypes(") == 1
+    assert corpo.index("SmartAI_ThreatTypes(") < corpo.index("for (i = 0; i < PARTY_SIZE; i++)")
 
 
 def test_ameacas():
@@ -276,7 +281,13 @@ def test_ameacas():
 
 
 def test_derruba_primeiro_salva_globais():
-    corpo = _corpo(_ler(SMART_C), "SmartAI_CanKoFirst")
+    fonte = _ler(SMART_C)
+    tabela = fonte[fonte.index("sNoKoThisTurnEffects[] ="):]
+    tabela = tabela[:tabela.index("};")]
+    for efeito in ("EFFECT_FUTURE_SIGHT", "EFFECT_SEMI_INVULNERABLE", "EFFECT_FALSE_SWIPE", "EFFECT_FOCUS_PUNCH",
+                   "EFFECT_SOLAR_BEAM", "EFFECT_DREAM_EATER"):
+        assert efeito in tabela, efeito
+    corpo = _corpo(fonte, "SmartAI_CanKoFirst")
     for nome in ("AI_CalcDmg(battler, target);", "TypeCalc(move, battler, target)",
                  "GetWhoStrikesFirst(battler, target, TRUE)", "gCurrentMove = move;"):
         assert nome in corpo, nome

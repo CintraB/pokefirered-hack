@@ -1036,7 +1036,8 @@ static u32 AiSmartState(void)
 #include "battle_ai_smart.h"
 
 // The boss decision for the opponent on the left (predictive switch -> item -> attack), with nothing emitted and no
-// battle state changed: action | partySlot << 8 | item << 16. 0xFFFFFFFF outside a battle, 0xFFFFFFFE when the
+// battle state changed: action | partySlot << 8 | item << 16. Only the new boss decision: the original reactive
+// switches of ShouldSwitch (before it) and its original tail (after it) are not reported. 0xFFFFFFFF outside a battle, 0xFFFFFFFE when the
 // opponent is not a boss (its decision is the original one, not this). forceNoStay = 1 skips the "1 in 5 stays" roll.
 static u32 AiSmartDecide(u32 forceNoStay)
 {
