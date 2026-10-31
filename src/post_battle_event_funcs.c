@@ -8,6 +8,7 @@
 #include "item.h"
 #include "pokedex.h"
 #include "pokemon.h"
+#include "rematch_tier.h"
 #include "constants/heal_locations.h"
 #include "constants/items.h"
 
@@ -69,6 +70,11 @@ bool8 EnterHallOfFame(void)
         }
 #endif
     }
+    // POK-42: o degrau ainda é o da batalha do Campeão. Do fim dela até aqui (falas, warp para o Hall, este special)
+    // não há outra batalha nem CreateNPCTrainerParty, então gBattleTypeFlags (só BATTLE_TYPE_TRAINER) e o estado do
+    // degrau continuam os dela. Antes da tela do Hall, que grava o save: a conquista feita sobrevive aos créditos e
+    // ao reset, e o aviso sai no próximo momento livre no campo.
+    RematchTier_OnLeagueCleared(GetCurrentBattleRematchTier());
     SetMainCallback2(CB2_DoHallOfFameScreen);
     return FALSE;
 }

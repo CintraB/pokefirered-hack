@@ -52,8 +52,8 @@
 #define CONQ_EVT_OVO_SHINY          5
 #define CONQ_EVT_OVO_6IVS           6
 #define CONQ_EVT_ELITE4             7
-#define CONQ_EVT_REVANCHE_MAX       8   // POK-42 (conquista inativa por ora)
-#define CONQ_EVT_E4_DEGRAU100       9   // POK-42 (conquista inativa por ora)
+#define CONQ_EVT_REVANCHE_MAX       8   // POK-42: RematchTier_OnRematchWon (src/rematch_tier.c)
+#define CONQ_EVT_E4_DEGRAU100       9   // POK-42: RematchTier_OnLeagueCleared (src/rematch_tier.c)
 
 // Tipos de evento do diário (struct DiarioEvento.tipo).
 #define DIARIO_TIPO_TREINADOR  0

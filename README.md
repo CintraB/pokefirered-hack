@@ -59,7 +59,7 @@ perder o jeito do FireRed.
 | 🧚 | **Tipos e golpes modernos** | Físico ou especial por golpe e o tipo Fada, como em Pokémon X e Y. |
 | 📖 | **Pokédex completa** | Exclusivos do LeafGreen, os dois fósseis, lendários e míticos obtíveis. |
 | 🛠️ | **Melhorias modernas** | Exp. Share para todos, PC Portátil, HMs sem ensinar, status com L/R… |
-| 🏆 | **Conquistas e diário** | 39 conquistas com prêmio na bolsa e o diário das batalhas marcantes, no Cartão de Treinador. |
+| 🏆 | **Conquistas e diário** | 41 conquistas com prêmio na bolsa e o diário das batalhas marcantes, no Cartão de Treinador. |
 | 🗞️ | **Tela de novidades** | O Prof. Carvalho apresenta cada mudança em cartões ilustrados. |
 | 🧪 | **Esteira de testes** | Toda ROM é jogada no emulador e testada antes de existir. |
 
@@ -108,7 +108,7 @@ perder o jeito do FireRed.
 
 | | |
 |---|---|
-| **Conquistas** | 39 conquistas em 5 abas (História, Batalha, Captura, Treino e Exploração): as 8 insígnias, Elite 4 e Campeão, treinadores vencidos de 10 em 10, shinies, lendários, Pokédex, nível 100, ovo perfeito, ₽999.999, horas de jogo… Cada linha mostra ✓ ou o progresso (`87/100`), e o rodapé, o total da aba. |
+| **Conquistas** | 41 conquistas em 5 abas (História, Batalha, Captura, Treino e Exploração): as 8 insígnias, Elite 4 e Campeão, treinadores vencidos de 10 em 10, shinies, lendários, Pokédex, nível 100, ovo perfeito, ₽999.999, horas de jogo… Cada linha mostra ✓ ou o progresso (`87/100`), e o rodapé, o total da aba. |
 | **Prêmio na hora** | Ao conquistar, o jogo pausa com um aviso animado e a fanfarra, e o prêmio cai na bolsa (bolsa cheia: no PC). Prêmios maiores para as conquistas mais difíceis, até a Master Ball. |
 | **Save antigo reconhecido** | Na primeira vez que um save de antes abre nesta versão, o jogo confere o que já foi feito e entrega tudo num aviso só. O que não dá mais para provar (vencer um líder com um Pokémon só, vencer o rival em todas) fica riscado e fora do total. |
 | **Diário da jornada** | A primeira vitória contra cada líder, o rival, a Elite 4 e o Campeão, e cada lendário capturado ou derrotado: tempo de jogo, turnos, time usado e o MVP (quem mais nocauteou). |
@@ -238,7 +238,7 @@ perder o jeito do FireRed.
 | **Melhorias modernas** | Repelente, PE, IA, barra de PS, PC Portátil, Incubadora, HMs, viagem, status com L/R, chefes com clima. |
 | **Clima na batalha** | Clima sempre visível e o sol forte consertado. |
 | **Físico/especial e Fada** (30/10) | Categoria por golpe, tipo Fada com a tabela de X e Y, 18 espécies e 6 golpes novos. |
-| **Conquistas e diário** (31/10) | 39 conquistas com prêmio e aviso, save antigo reconhecido e o diário das batalhas marcantes. |
+| **Conquistas e diário** (31/10) | 41 conquistas com prêmio e aviso, save antigo reconhecido e o diário das batalhas marcantes. |
 
 ## Esteira de testes
 

@@ -972,6 +972,7 @@ static void CB2_EndRematchBattle(void)
     {
         SetMainCallback2(CB2_ReturnToFieldContinueScriptPlayMapMusic);
         SetBattledTrainerFlag();
+        RematchTier_OnRematchWon(GetCurrentBattleRematchTier());
         ClearRematchStateOfLastTalked();
         ResetDeferredLinkEvent();
     }

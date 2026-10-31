@@ -2,6 +2,7 @@
 #include "rematch_tier.h"
 #include "battle.h"
 #include "characters.h"
+#include "conquistas.h"
 #include "data.h"
 #include "event_data.h"
 #include "pokemon.h"
@@ -9,6 +10,7 @@
 #include "strings.h"
 #include "vs_seeker.h"
 #include "constants/battle.h"
+#include "constants/battle_ai.h"
 #include "constants/flags.h"
 #include "constants/items.h"
 #include "constants/moves.h"
@@ -140,6 +142,28 @@ u8 GetCurrentBattleRematchTier(void)
                            | BATTLE_TYPE_EREADER_TRAINER | BATTLE_TYPE_TRAINER_TOWER)) != BATTLE_TYPE_TRAINER)
         return 0;
     return sRematchTierState & STATE_TIER_MASK;
+}
+
+u32 RematchTier_GetAiFlags(void)
+{
+    // Revanche do Vs. Seeker no degrau 80 ou mais: a IA dos chefes do POK-32 (líderes, Elite 4, Campeão). A Elite 4
+    // e o Campeão já têm esse conjunto em trainers.h.
+    if ((sRematchTierState & STATE_VS_SEEKER) && GetCurrentBattleRematchTier() >= 3)
+        return AI_SCRIPT_CHECK_BAD_MOVE | AI_SCRIPT_TRY_TO_FAINT | AI_SCRIPT_CHECK_VIABILITY | AI_SCRIPT_SETUP_FIRST_TURN | AI_SCRIPT_HP_AWARE;
+    return 0;
+}
+
+// Ganchos das conquistas do POK-44 (a regra de marcar fica em src/conquistas.c).
+void RematchTier_OnRematchWon(u8 tier)
+{
+    if (tier == REMATCH_TIER_MAX)
+        Conquistas_Evento(CONQ_EVT_REVANCHE_MAX);
+}
+
+void RematchTier_OnLeagueCleared(u8 tier)
+{
+    if (tier == REMATCH_TIER_MAX)
+        Conquistas_Evento(CONQ_EVT_E4_DEGRAU100);
 }
 
 // Os mesmos rótulos da lista da guarda da Liga (sMultichoiceList_RematchTier, src/script_menu.c), por degrau.

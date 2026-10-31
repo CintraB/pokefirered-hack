@@ -147,3 +147,67 @@ def test_interface():
     assert "s32 GetVsSeekerRematchRow(u16 trainerId);" in _ler(REPO_ROOT / "include" / "vs_seeker.h")
     assert re.search(r"^#define VAR_REMATCH_TIER\s+0x40BD\b", _ler(REPO_ROOT / "include" / "constants" / "vars.h"),
                      re.M)
+
+
+# --- Task 5: a IA dos chefes no degrau 3+ e os ganchos das conquistas (POK-44) ---
+
+CHEFES = ("AI_SCRIPT_CHECK_BAD_MOVE | AI_SCRIPT_TRY_TO_FAINT | AI_SCRIPT_CHECK_VIABILITY | AI_SCRIPT_SETUP_FIRST_TURN"
+          " | AI_SCRIPT_HP_AWARE")
+
+
+def test_ia_do_degrau():
+    """Revanche do Vs. Seeker com o degrau aplicado >= 3: a IA dos chefes do POK-32 soma-se à do treinador."""
+    ai = _ler(SRC / "battle_ai_script_commands.c")
+    assert '#include "rematch_tier.h"' in ai
+    corpo = _corpo(ai, "BattleAI_SetupAIData")
+    assert corpo.rstrip().endswith("AI_THINKING_STRUCT->aiFlags = gTrainers[gTrainerBattleOpponent_A].aiFlags"
+                                   " | RematchTier_GetAiFlags();")
+    assert ai.count("RematchTier_GetAiFlags()") == 1
+    fonte = _ler(SRC / "rematch_tier.c")
+    ia = _corpo(fonte, "RematchTier_GetAiFlags")
+    assert re.search(r"if \(\(sRematchTierState & STATE_VS_SEEKER\) && GetCurrentBattleRematchTier\(\) >= 3\)\s*"
+                     rf"return {re.escape(CHEFES)};\s*return 0;", ia), ia
+    # o mesmo conjunto dos chefes em trainers.h (líderes, Elite 4, Campeão)
+    assert CHEFES in _ler(SRC / "data" / "trainers.h")
+
+
+def test_ganchos_conquistas():
+    setup = _corpo(_ler(SRC / "battle_setup.c"), "CB2_EndRematchBattle")
+    ganho = "RematchTier_OnRematchWon(GetCurrentBattleRematchTier());"
+    assert setup.count(ganho) == 1
+    # só no ramo da vitória (o último else), depois de marcar o treinador
+    assert setup.index("IsPlayerDefeated(gBattleOutcome)") < setup.index("SetBattledTrainerFlag();") \
+        < setup.index(ganho)
+    assert "else\n    {" in setup[setup.index("CB2_WhiteOut"):setup.index(ganho)]
+
+    hof = _corpo(_ler(SRC / "post_battle_event_funcs.c"), "EnterHallOfFame")
+    liga = "RematchTier_OnLeagueCleared(GetCurrentBattleRematchTier());"
+    assert hof.count(liga) == 1
+    # antes da tela do Hall da Fama, que grava o save (a conquista feita sobrevive aos créditos e ao reset)
+    assert hof.index(liga) < hof.index("SetMainCallback2(CB2_DoHallOfFameScreen);")
+    assert '#include "rematch_tier.h"' in _ler(SRC / "post_battle_event_funcs.c")
+
+    fonte = _ler(SRC / "rematch_tier.c")
+    assert '#include "conquistas.h"' in fonte
+    assert re.search(r"if \(tier == REMATCH_TIER_MAX\)\s*Conquistas_Evento\(CONQ_EVT_REVANCHE_MAX\);",
+                     _corpo(fonte, "RematchTier_OnRematchWon"))
+    assert re.search(r"if \(tier == REMATCH_TIER_MAX\)\s*Conquistas_Evento\(CONQ_EVT_E4_DEGRAU100\);",
+                     _corpo(fonte, "RematchTier_OnLeagueCleared"))
+    assert fonte.count("Conquistas_Evento(") == 2
+
+    h = _ler(REPO_ROOT / "include" / "rematch_tier.h")
+    for linha in ("u32 RematchTier_GetAiFlags(void);", "void RematchTier_OnRematchWon(u8 tier);",
+                  "void RematchTier_OnLeagueCleared(u8 tier);"):
+        assert linha in h, linha
+
+
+def test_conquistas_do_degrau_ativas():
+    """As duas conquistas do POK-44 que esperavam o POK-42 ficam ativas (o JSON é a fonte única)."""
+    import json
+
+    dados = json.loads(_ler(SRC / "data" / "conquistas" / "conquistas.json"))
+    c = {x["id"]: x for x in dados["conquistas"]}
+    for cid, evt in (("revanche_max", "CONQ_EVT_REVANCHE_MAX"), ("e4_degrau100", "CONQ_EVT_E4_DEGRAU100")):
+        assert c[cid]["ativa"] is True and c[cid]["param"] == evt, cid
+        assert "inativa" not in c[cid]["condicao"], cid
+    assert sum(1 for x in dados["conquistas"] if x.get("ativa", True)) == 41

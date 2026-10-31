@@ -30,6 +30,13 @@ void RematchTier_SetVsSeekerBattle(bool8 isRematch);
 u8 RematchTier_CreateParty(struct Pokemon *party, u16 trainerNum);
 // O degrau aplicado na última CreateNPCTrainerParty; 0 = nenhum.
 u8 GetCurrentBattleRematchTier(void);
+// Somado às aiFlags do treinador (BattleAI_SetupAIData): o conjunto dos chefes do POK-32 numa revanche do Vs. Seeker
+// com o degrau aplicado >= 3; senão 0.
+u32 RematchTier_GetAiFlags(void);
+// Ganchos das conquistas (POK-44), com o degrau da batalha (GetCurrentBattleRematchTier): vitória numa revanche do
+// Vs. Seeker (CB2_EndRematchBattle) e a Liga vencida (EnterHallOfFame). Só o degrau máximo marca a conquista.
+void RematchTier_OnRematchWon(u8 tier);
+void RematchTier_OnLeagueCleared(u8 tier);
 // Special das salas da Liga: TRUE = usar os ids _2/REMATCH (depois das Sevii, ou com degrau >= 1). Com degrau
 // >= 1, RematchTier_CreateParty troca o time desses ids pelo da tabela sLeagueTierParties.
 bool8 ShouldUseLeagueRematchTeams(void);

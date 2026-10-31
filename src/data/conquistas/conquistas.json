@@ -270,9 +270,9 @@
       "aba": "batalha",
       "nome": "Revanche no degrau máximo",
       "tipo": "EVENTO",
-      "condicao": "Vencer uma revanche no degrau máximo (POK-42; inativa até lá)",
+      "condicao": "Vencer uma revanche do Vs. Seeker no degrau máximo (Nível 100)",
       "param": "CONQ_EVT_REVANCHE_MAX",
-      "ativa": false,
+      "ativa": true,
       "premios": [
         {"item": "ITEM_MASTER_BALL", "qtd": 1}
       ]
@@ -283,9 +283,9 @@
       "aba": "batalha",
       "nome": "Elite 4 no degrau 100",
       "tipo": "EVENTO",
-      "condicao": "Vencer a Elite 4 no degrau 100 (POK-42; inativa até lá)",
+      "condicao": "Vencer a Elite 4 e o Campeão no degrau 100",
       "param": "CONQ_EVT_E4_DEGRAU100",
-      "ativa": false,
+      "ativa": true,
       "premios": [
         {"item": "ITEM_MASTER_BALL", "qtd": 1}
       ]
