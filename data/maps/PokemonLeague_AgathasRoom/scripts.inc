@@ -54,8 +54,7 @@ PokemonLeague_AgathasRoom_EventScript_Agatha::
 	call_if_set FLAG_SYS_GAME_CLEAR, PokemonLeague_AgathasRoom_EventScript_RematchIntro
 	setflag FLAG_TEMP_3
 	setflag FLAG_TEMP_5
-	call_if_unset FLAG_SYS_CAN_LINK_WITH_RS, PokemonLeague_AgathasRoom_EventScript_Battle
-	call_if_set FLAG_SYS_CAN_LINK_WITH_RS, PokemonLeague_AgathasRoom_EventScript_Rematch
+	call PokemonLeague_AgathasRoom_EventScript_ChooseBattle
 	clearflag FLAG_TEMP_5
 	goto PokemonLeague_AgathasRoom_EventScript_DefeatedAgatha
 	end
@@ -67,6 +66,11 @@ PokemonLeague_AgathasRoom_EventScript_Intro::
 PokemonLeague_AgathasRoom_EventScript_RematchIntro::
 	msgbox PokemonLeague_AgathasRoom_Text_RematchIntro
 	return
+
+PokemonLeague_AgathasRoom_EventScript_ChooseBattle::
+	specialvar VAR_RESULT, ShouldUseLeagueRematchTeams
+	goto_if_eq VAR_RESULT, TRUE, PokemonLeague_AgathasRoom_EventScript_Rematch
+	goto PokemonLeague_AgathasRoom_EventScript_Battle
 
 PokemonLeague_AgathasRoom_EventScript_Battle::
 	trainerbattle_no_intro TRAINER_ELITE_FOUR_AGATHA, PokemonLeague_AgathasRoom_Text_Defeat

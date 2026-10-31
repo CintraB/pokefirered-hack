@@ -1634,5 +1634,11 @@ extern const u8 gText_Diario_Time[];
 extern const u8 gText_Diario_Nivel[];
 extern const u8 gText_Diario_MvpUm[];
 extern const u8 gText_Diario_MvpVarios[];
+extern const u8 gText_RematchTier_Normal[];
+extern const u8 gText_RematchTier_60[];
+extern const u8 gText_RematchTier_70[];
+extern const u8 gText_RematchTier_80[];
+extern const u8 gText_RematchTier_90[];
+extern const u8 gText_RematchTier_100[];
 
 #endif //GUARD_STRINGS_H

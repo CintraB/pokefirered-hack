@@ -318,7 +318,10 @@ def test_icones():
 
 def test_special_e_atalhos():
     specials = re.findall(r"def_special (\w+)", _ler(SPECIALS).split("gSpecialsEnd::")[0])
-    assert specials[-2:] == ["Conquistas_MostrarAviso", "Conquistas_AbrirTelaDoScript"], specials[-2:]
+    # no fim (o POK-42 acrescentou o da Liga depois)
+    finais = specials[specials.index("Conquistas_MostrarAviso"):]
+    assert finais == ["Conquistas_MostrarAviso", "Conquistas_AbrirTelaDoScript", "ShouldUseLeagueRematchTeams",
+                      "BufferRematchTierName", "ShowRematchTierMenu"], finais
     assert hooks.CMD_OPEN_CONQUISTAS == 0xBE and hooks.CMD_CONQ_TELA == 0xBF
     assert callable(hooks.Mailbox.open_conquistas) and callable(hooks.Mailbox.conq_tela)
     corpo = _ler(SRC / "test_hooks.c")
@@ -519,7 +522,8 @@ def test_cenario_do_diario():
     pontos = refs.CONQUISTAS_TELA_POINTS
     assert pontos[:3] == ("conquistas_historia", "conquistas_batalha", "cartao_dica"), pontos
     assert set(pontos[3:]) == set(fotos), pontos
-    assert refs.SHARED_POINTS[-len(pontos):] == pontos
+    fim = len(refs.SHARED_POINTS) - len(refs.REVANCHES_POINTS)   # depois deles, só os das revanches (POK-42)
+    assert refs.SHARED_POINTS[fim - len(pontos):fim] == pontos
 
 
 def test_foto_do_cartao_nao_varia_com_o_relogio():

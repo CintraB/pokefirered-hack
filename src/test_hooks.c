@@ -991,6 +991,27 @@ static u32 OpenConquistas(u8 modo)
 }
 // --- end of POK-44 --------------------------------------------------------------------------
 
+// --- POK-42: rematch tiers ------------------------------------------------------------------
+#include "rematch_tier.h"
+
+// The enemy party CreateNPCTrainerParty would build for `trainer` (as a Vs. Seeker rematch or not), in gEnemyParty.
+static u32 BuildTrainerParty(u32 trainer, bool8 isRematch)
+{
+    u32 savedFlags = gBattleTypeFlags;
+    u32 result;
+
+    if (trainer == 0 || trainer >= NUM_TRAINERS)
+        return 0xFFFFFFFF;
+    RematchTier_SetVsSeekerBattle(isRematch);
+    gBattleTypeFlags = BATTLE_TYPE_TRAINER;
+    result = CreateNPCTrainerPartyForTest(trainer);
+    result |= GetCurrentBattleRematchTier() << 8 | ((gBattleTypeFlags & BATTLE_TYPE_DOUBLE) ? 1 : 0) << 16;
+    RematchTier_SetVsSeekerBattle(FALSE);  // não deixa o bit nem o degrau aplicado para a próxima batalha
+    gBattleTypeFlags = savedFlags;
+    return result;
+}
+// --- end of POK-42 --------------------------------------------------------------------------
+
 void TestHooks_Run(void)
 {
     u32 result = 0;
@@ -1125,6 +1146,7 @@ void TestHooks_Run(void)
     case TEST_CMD_OPEN_CONQUISTAS:  result = OpenConquistas(gTestMailbox.arg0 != 0); break;
     case TEST_CMD_CONQ_TELA:        result = gTestMailbox.arg0 ? Conquistas_TestGetDiario() : Conquistas_TestGetState(); break;
     // POK-44: end
+    case TEST_CMD_BUILD_TRAINER_PARTY: result = BuildTrainerParty(gTestMailbox.arg0, gTestMailbox.arg1 != 0); break;
     default:
         result = 0xFFFFFFFF;
         break;

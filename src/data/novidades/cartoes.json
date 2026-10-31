@@ -393,13 +393,18 @@
         },
         {
           "title": "Conquistas e prêmios",
-          "body": "No menu START, abra o seu cartão e aperte\nSELECT: são 39 conquistas em 5 abas. Cada\numa dá um prêmio, que cai na bolsa com um\naviso e a fanfarra. Um save antigo recebe de\numa vez o que já tinha feito.",
+          "body": "No menu START, abra o seu cartão e aperte\nSELECT: são 41 conquistas em 5 abas. Cada\numa dá um prêmio, que cai na bolsa com um\naviso e a fanfarra. Um save antigo recebe de\numa vez o que já tinha feito.",
           "itemId": "ITEM_NUGGET"
         },
         {
           "title": "Diário da jornada",
           "body": "Na tela de conquistas, o SELECT abre o\ndiário: a 1ª vitória contra cada líder, o\nrival, a Elite 4 e a final da Liga, e cada\nlendário, com tempo, turnos, time e o MVP da\nbatalha.",
           "itemId": "ITEM_FAME_CHECKER"
+        },
+        {
+          "title": "Revanches por degrau",
+          "body": "Depois do Hall da Fama, a guarda da Liga\npergunta o nível a cada visita, de Normal a\nNível 100. Vale para a Elite 4, a final da\nLiga e as revanches do Explorador VS: times\nde 6, mais fortes, com item e IVs altos.",
+          "itemId": "ITEM_VS_SEEKER"
         }
       ]
     },

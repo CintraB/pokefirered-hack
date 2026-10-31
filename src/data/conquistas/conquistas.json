@@ -1,5 +1,5 @@
 {
-  "_comentario": "Fonte única das conquistas e do diário de batalhas (POK-44). tools/conquistas/gen_conquistas.py gera src/data/conquistas_ids.h (CONQ_<ID> = num, DIARIO_EVT_<ID> = posição em `diario`) e src/data/conquistas_tabela.h; as estruturas e as larguras estão em include/conquistas.h. NÃO renumere `num` nem reordene `diario`: ambos viram posições no save (só acrescente num número livre / no fim). `{N}` no nome vira {STR_VAR_1} (a tela escreve o degrau atual) e a esteira mede com 300. `param`/`param2`/`lista`/`degraus` por tipo: ver include/conquistas.h; `param` pode ser número ou constante (FLAG_*, GAME_STAT_*, CONQ_EVT_*); `paramFim` (FLAGS_TODAS) confere na compilação que há param2 flags consecutivas. `premios` tem 1 entrada (vale para todos os degraus) ou uma por degrau. `slot` (só nas com degraus, 0 a 7, único) é a posição do progresso no save (degrauEntregue[slot]): NÃO mude o de uma conquista que já existe; uma nova pega um slot livre. `ativa: false` = existe mas não aparece, não conta e não dispara (POK-42). `perdivel: true` = pode virar 'perdida' num save antigo. `condicao` é só para a tabela do Cintra (--tabela). `faixas` agrupa os itens de prêmio em fácil/média/difícil (só para a tabela). N da Pokédex (dex_obtivel) = 245: espécies obtíveis num save, contadas em 31/10/2026 com .superpowers/sdd/2026-10-31-conquistas-e-diario/contar_dex_atual.py (rodar: python3 -I <esse arquivo>, da raiz do repo), que é o contar_dex.py do levantamento de 24/10 (.superpowers/sdd/levantamento-dex/, 202 com os padrões) atualizado para o estado de hoje: exclusivos do LeafGreen (18), Caverna Mutante em 9 conjuntos, Mew/Celebi/Jirachi, os 3 cães, os iniciais do Safari, os dois fósseis, a Pedra do Sol dupla, os 3 ovos raros e Feebas. Faltam só Johto (18) e Hoenn (123). Confere com o Brain: 386 - 18 - 125 = 243, mais Feebas e Milotic.",
+  "_comentario": "Fonte única das conquistas e do diário de batalhas (POK-44). tools/conquistas/gen_conquistas.py gera src/data/conquistas_ids.h (CONQ_<ID> = num, DIARIO_EVT_<ID> = posição em `diario`) e src/data/conquistas_tabela.h; as estruturas e as larguras estão em include/conquistas.h. NÃO renumere `num` nem reordene `diario`: ambos viram posições no save (só acrescente num número livre / no fim). `{N}` no nome vira {STR_VAR_1} (a tela escreve o degrau atual) e a esteira mede com 300. `param`/`param2`/`lista`/`degraus` por tipo: ver include/conquistas.h; `param` pode ser número ou constante (FLAG_*, GAME_STAT_*, CONQ_EVT_*); `paramFim` (FLAGS_TODAS) confere na compilação que há param2 flags consecutivas. `premios` tem 1 entrada (vale para todos os degraus) ou uma por degrau. `slot` (só nas com degraus, 0 a 7, único) é a posição do progresso no save (degrauEntregue[slot]): NÃO mude o de uma conquista que já existe; uma nova pega um slot livre. `ativa: false` = existe mas não aparece, não conta e não dispara (POK-42). `perdivel: true` = pode virar 'perdida' num save antigo. `condicao` é só para a tabela do Cintra (--tabela). `faixas` agrupa os itens de prêmio em fácil/média/difícil (só para a tabela). N da Pokédex (dex_obtivel) = 245: espécies obtíveis num save, contadas em 31/10/2026 com .superpowers/sdd/levantamento-dex/contar_dex_atual.py (rodar: python3 -I <esse arquivo>, da raiz do repo), que é o contar_dex.py do levantamento de 24/10 (.superpowers/sdd/levantamento-dex/, 202 com os padrões) atualizado para o estado de hoje: exclusivos do LeafGreen (18), Caverna Mutante em 9 conjuntos, Mew/Celebi/Jirachi, os 3 cães, os iniciais do Safari, os dois fósseis, a Pedra do Sol dupla, os 3 ovos raros e Feebas. Faltam só Johto (18) e Hoenn (123). Confere com o Brain: 386 - 18 - 125 = 243, mais Feebas e Milotic.",
   "abas": [
     {
       "id": "historia",
@@ -270,9 +270,9 @@
       "aba": "batalha",
       "nome": "Revanche no degrau máximo",
       "tipo": "EVENTO",
-      "condicao": "Vencer uma revanche no degrau máximo (POK-42; inativa até lá)",
+      "condicao": "Vencer uma revanche do Vs. Seeker no degrau máximo (Nível 100)",
       "param": "CONQ_EVT_REVANCHE_MAX",
-      "ativa": false,
+      "ativa": true,
       "premios": [
         {"item": "ITEM_MASTER_BALL", "qtd": 1}
       ]
@@ -283,9 +283,9 @@
       "aba": "batalha",
       "nome": "Elite 4 no degrau 100",
       "tipo": "EVENTO",
-      "condicao": "Vencer a Elite 4 no degrau 100 (POK-42; inativa até lá)",
+      "condicao": "Vencer a Elite 4 e o Campeão no degrau 100",
       "param": "CONQ_EVT_E4_DEGRAU100",
-      "ativa": false,
+      "ativa": true,
       "premios": [
         {"item": "ITEM_MASTER_BALL", "qtd": 1}
       ]

@@ -140,6 +140,13 @@ enum
 };
 // --- end of POK-44 -------------------------------------------------------------------------
 
+// --- POK-42: rematch tiers ----------------------------------------------------------------
+enum
+{
+    TEST_CMD_BUILD_TRAINER_PARTY = 0xC0, // arg0 = trainer (TRAINER_*), arg1 = 1 built as a Vs. Seeker rematch, 0 as a normal battle: gBattleTypeFlags = BATTLE_TYPE_TRAINER, CreateNPCTrainerPartyForTest into gEnemyParty, flags restored; result = party size | GetCurrentBattleRematchTier() << 8 | double << 16 (read before the restore; 0xFFFFFFFF = invalid trainer)
+};
+// --- end of POK-42 -------------------------------------------------------------------------
+
 extern struct TestMailbox gTestMailbox;
 extern u8 gTestText[TEST_TEXT_SIZE];
 

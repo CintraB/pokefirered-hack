@@ -319,6 +319,15 @@ class Mailbox:
             return None
         return raw & 0xFF, raw >> 8 & 0xFF, raw >> 16 & 0xFF
 
+    # --- atalhos das revanches por degrau (POK-42) -------------------------------------
+    def build_trainer_party(self, trainer: int, rematch: bool) -> tuple[int, int, bool]:
+        """Monta em gEnemyParty o time que CreateNPCTrainerParty faria para `trainer` (como revanche do Vs. Seeker
+        ou não), sem começar a batalha; devolve (tamanho do time, degrau aplicado, dupla). O time sai em
+        `Game.enemy_party()`."""
+        raw = self.call(CMD_BUILD_TRAINER_PARTY, trainer, int(rematch))
+        assert raw != NO_RESULT, f"BUILD_TRAINER_PARTY recusado: treinador {trainer}"
+        return raw & 0xFF, raw >> 8 & 0xFF, bool(raw >> 16 & 1)
+
 # --- Hack 6: breeding genético (enum à parte em include/test_hooks.h, a partir de 0x60; ------
 # o uso fica em esteira/breeding.py e scenarios/full_breeding.py / full_egg.py)
 CMD_BREED_SETUP = 0x60      # gTestBreedSetup -> creche (arg0 = 1: ovo pendente) -> compatibilidade (0xFFFFFFFF = pai inválido)
@@ -394,3 +403,8 @@ CMD_OPEN_CONQUISTAS = 0xBE  # arg0 = modo (0 conquistas, 1 diário): script de c
                             # Conquistas_AbrirTelaDoScript` -> número do special (0xFFFFFFFF = fora de gSpecials)
 CMD_CONQ_TELA = 0xBF        # -> modo | aba << 8 | topo da lista (conquistas) ou cursor (diário) << 16 | entrada pronta << 24
                             # (0xFFFFFFFF = fechada); arg0 = 1: no diário, n | evento selecionado << 8 | topo << 16
+
+# --- POK-42: revanches por degrau (enum à parte, a partir de 0xC0) ---
+CMD_BUILD_TRAINER_PARTY = 0xC0  # arg0 = treinador (TRAINER_*), arg1 = 1 revanche do Vs. Seeker / 0 combate normal ->
+                                # tamanho do time | degrau aplicado << 8 | dupla << 16 (time em gEnemyParty;
+                                # 0xFFFFFFFF = treinador inválido)

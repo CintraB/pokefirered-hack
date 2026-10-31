@@ -179,6 +179,18 @@ class Game:
         return [decode_mon(raw[i * POKEMON_SIZE:(i + 1) * POKEMON_SIZE], self.charmap)
                 for i in range(count)]
 
+    def enemy_party(self) -> list[Mon]:
+        """Os Pokémon de gEnemyParty até a 1ª vaga vazia (espécie 0). Não usa gEnemyPartyCount: o time montado
+        por CreateNPCTrainerParty fora da batalha (Mailbox.build_trainer_party) ainda não tem a contagem."""
+        raw = self.emu.read(self.syms.addr("gEnemyParty"), POKEMON_SIZE * PARTY_SIZE)
+        mons = []
+        for i in range(PARTY_SIZE):
+            mon = decode_mon(raw[i * POKEMON_SIZE:(i + 1) * POKEMON_SIZE], self.charmap)
+            if mon.species == 0:
+                break
+            mons.append(mon)
+        return mons
+
     def box_mons(self, box: int) -> list[Mon | None]:
         """Os IN_BOX_COUNT slots da caixa `box` do PC (0 = CAIXA 1); None = slot vazio. Só os
         campos da BoxPokemon valem (nível/HP ficam 0: o PC não guarda a parte de batalha)."""

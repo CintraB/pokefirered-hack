@@ -78,12 +78,23 @@ def test_conquistas_e_diario_no_fim_de_melhorias_modernas():
     """POK-44: a grade 4x3 já está cheia (12 tópicos); os dois cartões entram no fim de "Melhorias modernas",
     como os do POK-43/45, e citam o caminho (SELECT no cartão do menu START; SELECT de novo para o diário)."""
     cartoes = _topico("Melhorias modernas")["cards"]
-    assert [c["title"] for c in cartoes[-2:]] == ["Conquistas e prêmios", "Diário da jornada"]
-    conquistas, diario = (_plano(c["body"]) for c in cartoes[-2:])
+    assert [c["title"] for c in cartoes[-3:-1]] == ["Conquistas e prêmios", "Diário da jornada"]   # POK-42 depois
+    conquistas, diario = (_plano(c["body"]) for c in cartoes[-3:-1])
     ativas = sum(1 for c in json.loads((REPO_ROOT / "src/data/conquistas/conquistas.json").read_text(encoding="utf-8"))
                  ["conquistas"] if c.get("ativa", True))
     assert "cartão" in conquistas and "SELECT" in conquistas and f"{ativas} conquistas" in conquistas
     assert "SELECT" in diario and "MVP" in diario
+
+
+def test_revanches_por_degrau_no_fim_de_melhorias_modernas():
+    """POK-42: como os do POK-43/45 e do POK-44, o cartão entra no fim de "Melhorias modernas" (grade cheia) e cita a
+    guarda da Liga, os níveis de Normal a 100 e o que vale para o Explorador VS."""
+    cartao = _topico("Melhorias modernas")["cards"][-1]
+    assert cartao["title"] == "Revanches por degrau" and cartao["itemId"] == "ITEM_VS_SEEKER"
+    corpo = _plano(cartao["body"])
+    for trecho in ("Hall da Fama", "guarda da Liga", "Normal", "Nível 100", "Elite 4", "Explorador VS", "times de 6",
+                   "IVs altos"):
+        assert trecho in corpo, trecho
 
 
 def test_cada_topico_tem_cartao():

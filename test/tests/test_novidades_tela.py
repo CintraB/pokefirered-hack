@@ -51,7 +51,10 @@ def test_special_registrado_no_fim_da_tabela():
         "def_special GetRepelToReuse", "def_special UseRepelFromField",   # POK-31, depois dele
         "def_special StartPortablePc",                                      # POK-36
         "def_special Conquistas_MostrarAviso",                              # POK-44
-        "def_special Conquistas_AbrirTelaDoScript"]                         # POK-44, Task 7
+        "def_special Conquistas_AbrirTelaDoScript",                         # POK-44, Task 7
+        "def_special ShouldUseLeagueRematchTeams",                          # POK-42, Task 3
+        "def_special BufferRematchTierName",                                # POK-42, Task 4
+        "def_special ShowRematchTierMenu"]                                  # POK-42, onda final
 
 
 def test_special_declarado_e_definido():

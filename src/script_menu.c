@@ -498,6 +498,16 @@ static const struct MenuAction sMultichoiceList_TrainerTowerMode[] = {
     { gOtherText_Exit }
 };
 
+// POK-42: os degraus da Liga, na ordem de VAR_REMATCH_TIER (os mesmos rótulos de BufferRematchTierName)
+static const struct MenuAction sMultichoiceList_RematchTier[] = {
+    { gText_RematchTier_Normal },
+    { gText_RematchTier_60 },
+    { gText_RematchTier_70 },
+    { gText_RematchTier_80 },
+    { gText_RematchTier_90 },
+    { gText_RematchTier_100 }
+};
+
 static const struct MenuAction sMultichoiceList_Exit[] = {
     { gOtherText_Exit }
 };
@@ -568,6 +578,7 @@ static const struct MultichoiceListStruct sMultichoiceLists[] = {
     [MULTICHOICE_62]                                         = MULTICHOICE(sMultichoiceList_62),
     [MULTICHOICE_JOIN_OR_LEAD]                               = MULTICHOICE(sMultichoiceList_JoinOrLead),
     [MULTICHOICE_TRAINER_TOWER_MODE]                         = MULTICHOICE(sMultichoiceList_TrainerTowerMode),
+    [MULTICHOICE_REMATCH_TIER]                               = MULTICHOICE(sMultichoiceList_RematchTier),
 };
 
 // From Cool to Berries goes unused

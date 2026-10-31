@@ -562,6 +562,9 @@ static const struct RematchData sRematches[] = {
       MAP(MAP_SEVEN_ISLAND_TANOBY_RUINS) },
 };
 
+// POK-42: a tabela gerada de revanches por degrau (src/data/rematch_tiers.h) tem uma linha por linha daqui.
+STATIC_ASSERT(NELEMS(sRematches) == VS_SEEKER_REMATCH_ROWS, VsSeekerRematchRowsIgualASRematches);
+
 static const u8 sMovementScript_Wait48[] = {
     MOVEMENT_ACTION_DELAY_16,
     MOVEMENT_ACTION_DELAY_16,
@@ -1081,6 +1084,12 @@ int GetRematchTrainerId(u16 trainerId)
         return 0;
     TryGetRematchTrainerIdGivenGameState(sRematches[i].trainerIdxs, &j);
     return sRematches[i].trainerIdxs[j];
+}
+
+// POK-42: a linha de sRematches que tem o id (-1 se não houver); é o índice de src/data/rematch_tiers.h.
+s32 GetVsSeekerRematchRow(u16 trainerId)
+{
+    return LookupVsSeekerOpponentInArray(sRematches, trainerId);
 }
 
 u8 IsTrainerReadyForRematch(void)

@@ -142,7 +142,7 @@ def test_cobre_o_spec():
     c = _conquistas()
     assert set(IDS_DO_SPEC) <= set(c)
     assert len(c) == len(IDS_DO_SPEC)
-    assert {i for i, x in c.items() if x.get("ativa") is False} == {"revanche_max", "e4_degrau100"}
+    assert {i for i, x in c.items() if x.get("ativa") is False} == set()   # o POK-42 ligou as duas do degrau
     assert {i for i, x in c.items() if x.get("perdivel")} == {"lider_um_pokemon", "rival_todas"}
     assert c["dex_obtivel"]["param"] == 245
     assert "contar_dex" in _dados()["_comentario"]
@@ -219,7 +219,7 @@ def test_ids_gerados(tmp_path):
     assert "#define CONQ_ABAS_COUNT 5\n" in ids and "#define CONQ_ABA_EXPLORACAO 4\n" in ids
     assert "#define DIARIO_EVT_BROCK 0\n" in ids and "#define DIARIO_EVT_COUNT 33\n" in ids
     assert "{STR_VAR_1}" in tabela and "{N}" not in tabela      # o {N} do JSON vira o placeholder do jogo
-    assert ".slotDegrau = 0xFF," in tabela and ".ativa = FALSE," in tabela and ".perdivel = TRUE," in tabela
+    assert ".slotDegrau = 0xFF," in tabela and ".ativa = TRUE," in tabela and ".perdivel = TRUE," in tabela
     assert "sConqPremios_treinadores[] =" in tabela
 
 

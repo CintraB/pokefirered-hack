@@ -19,6 +19,7 @@ from esteira.breeding import SHOP_SCREEN_POINTS   # Hack 6
 from esteira.evolution_page import FRIENDSHIP_SCREEN_POINTS   # Hack 7 - frente D
 from esteira.scenarios.full_novidades import SCREEN_POINTS as NOVIDADES_POINTS   # tela de novidades
 from esteira.scenarios.full_fisico_fada import SCREEN_POINTS as FISICO_FADA_POINTS   # POK-43, 45
+from esteira.scenarios.full_revanches import SCREEN_POINTS as REVANCHES_POINTS   # POK-42
 from esteira.result import Result
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -51,7 +52,8 @@ SHARED_POINTS = (EVOLUTION_POINTS + EVOLUTION_PAGE_POINTS + SUMMARY_PAGE_POINTS 
                  + FRIENDSHIP_SCREEN_POINTS  # Hack 7 - frente D
                  + NOVIDADES_POINTS  # tela de novidades do Carvalho
                  + FISICO_FADA_POINTS  # POK-43, 45: resumo com FADA e ícones de categoria
-                 + CONQUISTAS_TELA_POINTS)  # POK-44: tela de conquistas e a dica no cartão (cenário `conquistas`)
+                 + CONQUISTAS_TELA_POINTS  # POK-44: tela de conquistas e a dica no cartão (cenário `conquistas`)
+                 + REVANCHES_POINTS)  # POK-42: a guarda da Liga (pergunta e lista) e a revanche do Ben no degrau 4
 DIFF_RED = (255, 0, 0)
 # O Pillow acusa PNG quebrado com OSError (UnidentifiedImageError é subclasse, "image file is
 # truncated"), SyntaxError ("broken PNG file") ou ValueError, conforme onde o arquivo está estragado.

@@ -9,9 +9,9 @@ a Pokédex inteira obtível e uma esteira de testes automática no emulador.**
 ![Idioma](https://img.shields.io/badge/idioma-PT--BR-009c3b?style=flat-square)
 ![Base](https://img.shields.io/badge/base-pret%2Fpokefirered-e3350d?style=flat-square)
 ![Linguagem](https://img.shields.io/badge/C-agbcc-555555?style=flat-square)
-![Testes](https://img.shields.io/badge/pytest-4660%20testes-2ea44f?style=flat-square)
-![Esteira](https://img.shields.io/badge/esteira-363%20checagens-2ea44f?style=flat-square)
-![Versão](https://img.shields.io/badge/ROM-v49-informational?style=flat-square)
+![Testes](https://img.shields.io/badge/pytest-4709%20testes-2ea44f?style=flat-square)
+![Esteira](https://img.shields.io/badge/esteira-456%20checagens-2ea44f?style=flat-square)
+![Versão](https://img.shields.io/badge/ROM-v50-informational?style=flat-square)
 
 <img src="docs/readme/inicial.png" width="240" alt="Escolha do inicial em português">
 <img src="docs/readme/chuva.png" width="240" alt="Batalha com chuva contínua">
@@ -59,7 +59,8 @@ perder o jeito do FireRed.
 | 🧚 | **Tipos e golpes modernos** | Físico ou especial por golpe e o tipo Fada, como em Pokémon X e Y. |
 | 📖 | **Pokédex completa** | Exclusivos do LeafGreen, os dois fósseis, lendários e míticos obtíveis. |
 | 🛠️ | **Melhorias modernas** | Exp. Share para todos, PC Portátil, HMs sem ensinar, status com L/R… |
-| 🏆 | **Conquistas e diário** | 39 conquistas com prêmio na bolsa e o diário das batalhas marcantes, no Cartão de Treinador. |
+| 🏆 | **Conquistas e diário** | 41 conquistas com prêmio na bolsa e o diário das batalhas marcantes, no Cartão de Treinador. |
+| 🔝 | **Revanches por degrau** | Depois do Hall da Fama, a Elite 4 e as revanches do Explorador VS sobem até o nível 100. |
 | 🗞️ | **Tela de novidades** | O Prof. Carvalho apresenta cada mudança em cartões ilustrados. |
 | 🧪 | **Esteira de testes** | Toda ROM é jogada no emulador e testada antes de existir. |
 
@@ -108,7 +109,7 @@ perder o jeito do FireRed.
 
 | | |
 |---|---|
-| **Conquistas** | 39 conquistas em 5 abas (História, Batalha, Captura, Treino e Exploração): as 8 insígnias, Elite 4 e Campeão, treinadores vencidos de 10 em 10, shinies, lendários, Pokédex, nível 100, ovo perfeito, ₽999.999, horas de jogo… Cada linha mostra ✓ ou o progresso (`87/100`), e o rodapé, o total da aba. |
+| **Conquistas** | 41 conquistas em 5 abas (História, Batalha, Captura, Treino e Exploração): as 8 insígnias, Elite 4 e Campeão, treinadores vencidos de 10 em 10, shinies, lendários, Pokédex, nível 100, ovo perfeito, ₽999.999, horas de jogo… Cada linha mostra ✓ ou o progresso (`87/100`), e o rodapé, o total da aba. |
 | **Prêmio na hora** | Ao conquistar, o jogo pausa com um aviso animado e a fanfarra, e o prêmio cai na bolsa (bolsa cheia: no PC). Prêmios maiores para as conquistas mais difíceis, até a Master Ball. |
 | **Save antigo reconhecido** | Na primeira vez que um save de antes abre nesta versão, o jogo confere o que já foi feito e entrega tudo num aviso só. O que não dá mais para provar (vencer um líder com um Pokémon só, vencer o rival em todas) fica riscado e fora do total. |
 | **Diário da jornada** | A primeira vitória contra cada líder, o rival, a Elite 4 e o Campeão, e cada lendário capturado ou derrotado: tempo de jogo, turnos, time usado e o MVP (quem mais nocauteou). |
@@ -118,6 +119,22 @@ perder o jeito do FireRed.
 <img src="docs/readme/conquistas.png" width="240" alt="Tela de conquistas, aba História">
 <img src="docs/readme/diario.png" width="240" alt="Diário da jornada">
 <img src="docs/readme/conquista_aviso.png" width="240" alt="Aviso de conquista com o prêmio">
+</p>
+</details>
+
+<details open>
+<summary><b>🔝 Revanches por degrau</b></summary>
+
+| | |
+|---|---|
+| **A guarda da Liga pergunta** | Depois do Hall da Fama, a guarda na porta da Elite 4 (Platô Índigo) pergunta o nível das batalhas a cada visita: **Normal** (o jogo de sempre) ou **Nível 60, 70, 80, 90 e 100**, em escolha livre. Enquanto a Lorelei está ausente (a Liga fecha até o fim das Ilhas Sevii), a escolha vale só para o Explorador VS. |
+| **Para quem vale** | Elite 4, Campeão e todas as revanches do **Explorador VS**. O primeiro combate de cada treinador não muda. |
+| **Times mais fortes** | 6 Pokémon em volta do nível escolhido (o ás um pouco acima), espécies evoluídas e mais fortes do tema de cada classe, inclusive de Johto e Hoenn, com item segurado e IVs que sobem com o degrau (até 31). A Elite 4 e o Campeão têm times feitos à mão para cada degrau. |
+| **IA dos chefes** | Do Nível 80 para cima, as revanches do Explorador VS usam a IA dos líderes e da Elite 4. |
+| **Conquistas** | Vencer uma revanche no Nível 100 e a Liga no Nível 100 são duas das 41 conquistas. |
+
+<p align="center">
+<img src="docs/readme/revanche_lista.png" width="240" alt="A guarda da Liga com a lista de níveis">
 </p>
 </details>
 
@@ -238,7 +255,8 @@ perder o jeito do FireRed.
 | **Melhorias modernas** | Repelente, PE, IA, barra de PS, PC Portátil, Incubadora, HMs, viagem, status com L/R, chefes com clima. |
 | **Clima na batalha** | Clima sempre visível e o sol forte consertado. |
 | **Físico/especial e Fada** (30/10) | Categoria por golpe, tipo Fada com a tabela de X e Y, 18 espécies e 6 golpes novos. |
-| **Conquistas e diário** (31/10) | 39 conquistas com prêmio e aviso, save antigo reconhecido e o diário das batalhas marcantes. |
+| **Conquistas e diário** (31/10) | 41 conquistas com prêmio e aviso, save antigo reconhecido e o diário das batalhas marcantes. |
+| **Revanches por degrau** (31/10) | A guarda da Liga escolhe o nível (Normal a 100) da Elite 4, do Campeão e das revanches do Explorador VS: times de 6, item, IVs altos e a IA dos chefes. |
 
 ## Esteira de testes
 
@@ -264,7 +282,7 @@ flowchart LR
   comparadas pixel a pixel com as referências aprovadas de cada um.
 - **Checagem de texto**: mede a largura de cada frase traduzida na janela onde ela aparece e o
   tamanho dos buffers, para nada estourar.
-- **4660 testes em pytest** cobrem a própria esteira e as regras de cada hack.
+- **4709 testes em pytest** cobrem a própria esteira e as regras de cada hack.
 
 <details>
 <summary>Comandos (WSL)</summary>
