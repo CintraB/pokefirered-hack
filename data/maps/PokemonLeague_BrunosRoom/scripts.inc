@@ -53,8 +53,7 @@ PokemonLeague_BrunosRoom_EventScript_Bruno::
 	call_if_set FLAG_SYS_GAME_CLEAR, PokemonLeague_BrunosRoom_EventScript_RematchIntro
 	setflag FLAG_TEMP_3
 	setflag FLAG_TEMP_5
-	call_if_unset FLAG_SYS_CAN_LINK_WITH_RS, PokemonLeague_BrunosRoom_EventScript_Battle
-	call_if_set FLAG_SYS_CAN_LINK_WITH_RS, PokemonLeague_BrunosRoom_EventScript_Rematch
+	call PokemonLeague_BrunosRoom_EventScript_ChooseBattle
 	clearflag FLAG_TEMP_5
 	goto PokemonLeague_BrunosRoom_EventScript_DefeatedBruno
 	end
@@ -66,6 +65,11 @@ PokemonLeague_BrunosRoom_EventScript_Intro::
 PokemonLeague_BrunosRoom_EventScript_RematchIntro::
 	msgbox PokemonLeague_BrunosRoom_Text_RematchIntro
 	return
+
+PokemonLeague_BrunosRoom_EventScript_ChooseBattle::
+	specialvar VAR_RESULT, ShouldUseLeagueRematchTeams
+	goto_if_eq VAR_RESULT, TRUE, PokemonLeague_BrunosRoom_EventScript_Rematch
+	goto PokemonLeague_BrunosRoom_EventScript_Battle
 
 PokemonLeague_BrunosRoom_EventScript_Battle::
 	trainerbattle_no_intro TRAINER_ELITE_FOUR_BRUNO, PokemonLeague_BrunosRoom_Text_Defeat

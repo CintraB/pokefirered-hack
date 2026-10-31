@@ -60,8 +60,9 @@ def test_tabela_completa(g):
     esperado = [(e, it, str(n), str(v)) for i in range(len(linhas)) for d in range(1, 6)
                 for e, n, it, v in g.time_vs(i, d)]
     assert entradas == esperado
-    # um comentário com o 1º treinador antes de cada linha, na ordem de sRematches
-    assert re.findall(r"^    // (TRAINER_\w+)$", texto, re.M) == [linha[0] for linha in linhas]
+    # um comentário com o 1º treinador antes de cada linha, na ordem de sRematches (a Liga vem depois, Task 3)
+    vs = texto[:texto.index("sLeagueTierParties")] if "sLeagueTierParties" in texto else texto
+    assert re.findall(r"^    // (TRAINER_\w+)$", vs, re.M) == [linha[0] for linha in linhas]
 
 
 def test_linha_unica_por_treinador(g):
@@ -104,17 +105,35 @@ def test_dupla_continua_dupla():
 
 def test_degrau_invalido_vira_zero():
     corpo = _corpo(_ler(SRC / "rematch_tier.c"), "GetRematchTier")
-    assert "VAR_REMATCH_TIER" in corpo
-    assert "FLAG_SYS_GAME_CLEAR" in corpo
-    assert "> REMATCH_TIER_MAX" in corpo
+    assert re.search(r"u16 tier = VarGet\(VAR_REMATCH_TIER\);", corpo)
+    assert re.search(r"if \(!FlagGet\(FLAG_SYS_GAME_CLEAR\) \|\| tier > REMATCH_TIER_MAX\)\s*return 0;\s*return tier;",
+                     corpo)
 
 
 def test_dinheiro_do_degrau():
     corpo = _corpo(_ler(SRC / "battle_script_commands.c"), "Cmd_getmoneyreward")
     assert re.search(r"if \(GetCurrentBattleRematchTier\(\) != 0\)\s*"
                      r"lastMonLevel = GetMonData\(&gEnemyParty\[PARTY_SIZE - 1\], MON_DATA_LEVEL\);", corpo)
-    # depois do switch dos times originais, para valer sobre ele
+    # depois do switch dos times originais, para valer sobre ele, e antes da conta do prêmio
     assert corpo.index("GetCurrentBattleRematchTier()") > corpo.index("switch (gTrainers[gTrainerBattleOpponent_A]")
+    assert corpo.index("GetCurrentBattleRematchTier()") < corpo.index("moneyReward = 4 *")
+
+
+def test_linhas_iguais_a_srematches():
+    """A tabela gerada e sRematches têm o mesmo número de linhas, garantido na compilação."""
+    vs = _ler(SRC / "vs_seeker.c")
+    assert re.search(r"^STATIC_ASSERT\(NELEMS\(sRematches\) == VS_SEEKER_REMATCH_ROWS, \w+\);", vs, re.M)
+    assert re.search(r"^#define VS_SEEKER_REMATCH_ROWS 221\b", _ler(REPO_ROOT / "include" / "vs_seeker.h"), re.M)
+    assert re.search(r"^STATIC_ASSERT\(REMATCH_TIER_ROWS == VS_SEEKER_REMATCH_ROWS, \w+\);",
+                     _ler(SRC / "rematch_tier.c"), re.M)
+
+
+def test_atalho_nao_deixa_estado():
+    """O atalho de teste BuildTrainerParty desliga o bit do Vs. Seeker depois de montar o resultado."""
+    corpo = _corpo(_ler(SRC / "test_hooks.c"), "BuildTrainerParty")
+    montar = corpo.index("result |= GetCurrentBattleRematchTier()")
+    limpar = corpo.index("RematchTier_SetVsSeekerBattle(FALSE);")
+    assert montar < limpar < corpo.index("return result;")
 
 
 def test_interface():

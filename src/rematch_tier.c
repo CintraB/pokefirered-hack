@@ -9,6 +9,8 @@
 #include "constants/battle.h"
 #include "constants/flags.h"
 #include "constants/items.h"
+#include "constants/moves.h"
+#include "constants/opponents.h"
 #include "constants/pokemon.h"
 #include "constants/species.h"
 #include "constants/trainers.h"
@@ -17,6 +19,10 @@
 // Revanches por degrau de dificuldade (POK-42): o degrau nas revanches do Vs. Seeker.
 
 #include "data/rematch_tiers.h"
+
+STATIC_ASSERT(REMATCH_TIER_ROWS == VS_SEEKER_REMATCH_ROWS, RematchTierRowsIgualASRematches);
+STATIC_ASSERT(NELEMS(sLeagueTierParties) == TRAINER_CHAMPION_REMATCH_CHARMANDER - TRAINER_ELITE_FOUR_LORELEI_2 + 1,
+              LeagueTierPartiesCobreOsIdsDaLiga);
 
 // Um byte só (a EWRAM está quase cheia): bit 7 = a batalha de treinador atual é revanche do Vs. Seeker
 // (BattleSetup_ConfigureTrainerBattle); bits 0-2 = o degrau aplicado no time (0 = nenhum).
@@ -41,18 +47,65 @@ void RematchTier_SetVsSeekerBattle(bool8 isRematch)
     sRematchTierState = isRematch ? STATE_VS_SEEKER : 0;
 }
 
+// A mesma personalidade do laço original de CreateNPCTrainerParty (o hash acumula de um Pokémon para o outro,
+// como lá).
+static u32 TrainerMonPersonality(u16 trainerNum, u16 species, u32 *nameHash)
+{
+    u32 personalityValue;
+    s32 j;
+
+    if (gTrainers[trainerNum].doubleBattle == TRUE)
+        personalityValue = 0x80;
+    else if (gTrainers[trainerNum].encounterMusic_gender & F_TRAINER_FEMALE)
+        personalityValue = 0x78;
+    else
+        personalityValue = 0x88;
+
+    for (j = 0; gTrainers[trainerNum].trainerName[j] != EOS; j++)
+        *nameHash += gTrainers[trainerNum].trainerName[j];
+    for (j = 0; gSpeciesNames[species][j] != EOS; j++)
+        *nameHash += gSpeciesNames[species][j];
+
+    return personalityValue + (*nameHash << 8);
+}
+
 u8 RematchTier_CreateParty(struct Pokemon *party, u16 trainerNum)
 {
     const struct RematchTierMon *mons;
+    const struct TrainerMonItemCustomMoves *league;
     u32 nameHash = 0;
-    u32 personalityValue;
     s32 row;
     u8 tier;
     s32 i, j;
 
     sRematchTierState &= ~STATE_TIER_MASK;
     tier = GetRematchTier();
-    if (tier == 0 || !(sRematchTierState & STATE_VS_SEEKER))
+    if (tier == 0)
+        return 0;
+
+    // Elite 4 e Campeão (_2 e REMATCH): os times à mão do degrau, sem o Vs. Seeker. A sala só chama esses ids
+    // com ShouldUseLeagueRematchTeams; com degrau 0, seguem os times _2 de hoje.
+    if (trainerNum >= TRAINER_ELITE_FOUR_LORELEI_2 && trainerNum <= TRAINER_CHAMPION_REMATCH_CHARMANDER)
+    {
+        league = sLeagueTierParties[trainerNum - TRAINER_ELITE_FOUR_LORELEI_2][tier - 1];
+        ZeroEnemyPartyMons();
+        for (i = 0; i < PARTY_SIZE; i++)
+        {
+            // Como F_TRAINER_PARTY_CUSTOM_MOVESET | F_TRAINER_PARTY_HELD_ITEM: IV na escala 0-255, golpes com PP.
+            CreateMon(&party[i], league[i].species, league[i].lvl, league[i].iv * MAX_PER_STAT_IVS / 255, TRUE,
+                      TrainerMonPersonality(trainerNum, league[i].species, &nameHash), OT_ID_RANDOM_NO_SHINY, 0);
+            SetMonData(&party[i], MON_DATA_HELD_ITEM, &league[i].heldItem);
+            for (j = 0; j < MAX_MON_MOVES; j++)
+            {
+                SetMonData(&party[i], MON_DATA_MOVE1 + j, &league[i].moves[j]);
+                SetMonData(&party[i], MON_DATA_PP1 + j, &gBattleMoves[league[i].moves[j]].pp);
+            }
+        }
+        sRematchTierState |= tier;
+        return PARTY_SIZE;
+    }
+
+    if (!(sRematchTierState & STATE_VS_SEEKER))
         return 0;
     row = GetVsSeekerRematchRow(trainerNum);
     if (row < 0 || row >= REMATCH_TIER_ROWS)
@@ -62,26 +115,19 @@ u8 RematchTier_CreateParty(struct Pokemon *party, u16 trainerNum)
     ZeroEnemyPartyMons();
     for (i = 0; i < PARTY_SIZE; i++)
     {
-        // A mesma personalidade do laço original de CreateNPCTrainerParty (o hash acumula de um Pokémon
-        // para o outro, como lá).
-        if (gTrainers[trainerNum].doubleBattle == TRUE)
-            personalityValue = 0x80;
-        else if (gTrainers[trainerNum].encounterMusic_gender & F_TRAINER_FEMALE)
-            personalityValue = 0x78;
-        else
-            personalityValue = 0x88;
-
-        for (j = 0; gTrainers[trainerNum].trainerName[j] != EOS; j++)
-            nameHash += gTrainers[trainerNum].trainerName[j];
-        for (j = 0; gSpeciesNames[mons[i].species][j] != EOS; j++)
-            nameHash += gSpeciesNames[mons[i].species][j];
-
-        personalityValue += nameHash << 8;
-        CreateMon(&party[i], mons[i].species, mons[i].lvl, mons[i].iv, TRUE, personalityValue, OT_ID_RANDOM_NO_SHINY, 0);
+        CreateMon(&party[i], mons[i].species, mons[i].lvl, mons[i].iv, TRUE,
+                  TrainerMonPersonality(trainerNum, mons[i].species, &nameHash), OT_ID_RANDOM_NO_SHINY, 0);
         SetMonData(&party[i], MON_DATA_HELD_ITEM, &mons[i].heldItem);
     }
     sRematchTierState |= tier;
     return PARTY_SIZE;
+}
+
+bool8 ShouldUseLeagueRematchTeams(void)
+{
+    // As salas da Liga usam os ids _2/REMATCH depois das Ilhas Sevii (como hoje) ou, com degrau >= 1, logo
+    // depois do Hall da Fama.
+    return FlagGet(FLAG_SYS_CAN_LINK_WITH_RS) || GetRematchTier() >= 1;
 }
 
 u8 GetCurrentBattleRematchTier(void)

@@ -26,9 +26,12 @@ u8 GetRematchTier(void);
 // Marca (TRUE) ou desmarca a batalha de treinador que vai começar como revanche do Vs. Seeker.
 void RematchTier_SetVsSeekerBattle(bool8 isRematch);
 // Chamada por CreateNPCTrainerParty: 0 = não se aplica (segue o caminho original); senão monta o time do degrau
-// em `party` e devolve PARTY_SIZE.
+// em `party` e devolve PARTY_SIZE. Vale para a revanche do Vs. Seeker e para a Elite 4/Campeão (ids 735-741).
 u8 RematchTier_CreateParty(struct Pokemon *party, u16 trainerNum);
 // O degrau aplicado na última CreateNPCTrainerParty; 0 = nenhum.
 u8 GetCurrentBattleRematchTier(void);
+// Special das salas da Liga: TRUE = usar os ids _2/REMATCH (depois das Sevii, ou com degrau >= 1). Com degrau
+// >= 1, RematchTier_CreateParty troca o time desses ids pelo da tabela sLeagueTierParties.
+bool8 ShouldUseLeagueRematchTeams(void);
 
 #endif // GUARD_REMATCH_TIER_H

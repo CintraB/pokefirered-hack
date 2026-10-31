@@ -1006,6 +1006,7 @@ static u32 BuildTrainerParty(u32 trainer, bool8 isRematch)
     gBattleTypeFlags = BATTLE_TYPE_TRAINER;
     result = CreateNPCTrainerPartyForTest(trainer);
     result |= GetCurrentBattleRematchTier() << 8 | ((gBattleTypeFlags & BATTLE_TYPE_DOUBLE) ? 1 : 0) << 16;
+    RematchTier_SetVsSeekerBattle(FALSE);  // não deixa o bit nem o degrau aplicado para a próxima batalha
     gBattleTypeFlags = savedFlags;
     return result;
 }

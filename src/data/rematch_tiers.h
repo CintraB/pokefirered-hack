@@ -1776,3 +1776,347 @@ static const struct RematchTierMon sRematchTierParties[REMATCH_TIER_ROWS][REMATC
         {{SPECIES_VAPOREON, ITEM_MYSTIC_WATER, 97, 31}, {SPECIES_FLAREON, ITEM_LEFTOVERS, 97, 31}, {SPECIES_UMBREON, ITEM_BLACK_GLASSES, 98, 31}, {SPECIES_JOLTEON, ITEM_LUM_BERRY, 98, 31}, {SPECIES_MAROWAK, ITEM_SOFT_SAND, 99, 31}, {SPECIES_GOLDUCK, ITEM_LEFTOVERS, 100, 31}},
     },
 };
+
+// Elite 4 e Campeão por degrau (tools/revanches/liga.json, times à mão), lidos por src/rematch_tier.c:
+// [trainerNum - TRAINER_ELITE_FOUR_LORELEI_2][degrau - 1][posição]; ids 735-741 = Lorelei, Bruno, Agatha,
+// Lance _2 e TRAINER_CHAMPION_REMATCH_SQUIRTLE/BULBASAUR/CHARMANDER (a inicial do rival). IV 31 = 255.
+
+static const struct TrainerMonItemCustomMoves sLeagueTierParties[7][REMATCH_TIER_COUNT][PARTY_SIZE] =
+{
+    // TRAINER_ELITE_FOUR_LORELEI_2
+    {
+        // degrau 1
+        {
+            {.iv = 255, .lvl = 58, .species = SPECIES_DEWGONG, .heldItem = ITEM_RAWST_BERRY, .moves = {MOVE_SURF, MOVE_ICE_BEAM, MOVE_SIGNAL_BEAM, MOVE_FAKE_OUT}},
+            {.iv = 255, .lvl = 58, .species = SPECIES_SLOWBRO, .heldItem = ITEM_ASPEAR_BERRY, .moves = {MOVE_SURF, MOVE_PSYCHIC, MOVE_ICE_BEAM, MOVE_THUNDER_WAVE}},
+            {.iv = 255, .lvl = 59, .species = SPECIES_PILOSWINE, .heldItem = ITEM_PERSIM_BERRY, .moves = {MOVE_EARTHQUAKE, MOVE_ICICLE_SPEAR, MOVE_ROCK_SLIDE, MOVE_DOUBLE_EDGE}},
+            {.iv = 255, .lvl = 59, .species = SPECIES_JYNX, .heldItem = ITEM_CHERI_BERRY, .moves = {MOVE_ICE_BEAM, MOVE_PSYCHIC, MOVE_LOVELY_KISS, MOVE_CALM_MIND}},
+            {.iv = 255, .lvl = 60, .species = SPECIES_CLOYSTER, .heldItem = ITEM_CHESTO_BERRY, .moves = {MOVE_SURF, MOVE_ICE_BEAM, MOVE_SPIKES, MOVE_EXPLOSION}},
+            {.iv = 255, .lvl = 62, .species = SPECIES_LAPRAS, .heldItem = ITEM_SITRUS_BERRY, .moves = {MOVE_SURF, MOVE_ICE_BEAM, MOVE_THUNDERBOLT, MOVE_PSYCHIC}},
+        },
+        // degrau 2
+        {
+            {.iv = 255, .lvl = 68, .species = SPECIES_WALREIN, .heldItem = ITEM_SITRUS_BERRY, .moves = {MOVE_SURF, MOVE_ICE_BEAM, MOVE_EARTHQUAKE, MOVE_BODY_SLAM}},
+            {.iv = 255, .lvl = 68, .species = SPECIES_SLOWBRO, .heldItem = ITEM_LUM_BERRY, .moves = {MOVE_SURF, MOVE_PSYCHIC, MOVE_ICE_BEAM, MOVE_THUNDER_WAVE}},
+            {.iv = 255, .lvl = 69, .species = SPECIES_PILOSWINE, .heldItem = ITEM_SITRUS_BERRY, .moves = {MOVE_EARTHQUAKE, MOVE_ICICLE_SPEAR, MOVE_ROCK_SLIDE, MOVE_DOUBLE_EDGE}},
+            {.iv = 255, .lvl = 69, .species = SPECIES_JYNX, .heldItem = ITEM_LUM_BERRY, .moves = {MOVE_ICE_BEAM, MOVE_PSYCHIC, MOVE_LOVELY_KISS, MOVE_CALM_MIND}},
+            {.iv = 255, .lvl = 70, .species = SPECIES_CLOYSTER, .heldItem = ITEM_SITRUS_BERRY, .moves = {MOVE_SURF, MOVE_ICE_BEAM, MOVE_SPIKES, MOVE_EXPLOSION}},
+            {.iv = 255, .lvl = 72, .species = SPECIES_LAPRAS, .heldItem = ITEM_LEFTOVERS, .moves = {MOVE_SURF, MOVE_ICE_BEAM, MOVE_THUNDERBOLT, MOVE_PSYCHIC}},
+        },
+        // degrau 3
+        {
+            {.iv = 255, .lvl = 78, .species = SPECIES_WALREIN, .heldItem = ITEM_SHELL_BELL, .moves = {MOVE_SURF, MOVE_ICE_BEAM, MOVE_EARTHQUAKE, MOVE_BODY_SLAM}},
+            {.iv = 255, .lvl = 78, .species = SPECIES_STARMIE, .heldItem = ITEM_LUM_BERRY, .moves = {MOVE_SURF, MOVE_THUNDERBOLT, MOVE_PSYCHIC, MOVE_RECOVER}},
+            {.iv = 255, .lvl = 79, .species = SPECIES_PILOSWINE, .heldItem = ITEM_SOFT_SAND, .moves = {MOVE_EARTHQUAKE, MOVE_ICICLE_SPEAR, MOVE_ROCK_SLIDE, MOVE_DOUBLE_EDGE}},
+            {.iv = 255, .lvl = 79, .species = SPECIES_JYNX, .heldItem = ITEM_NEVER_MELT_ICE, .moves = {MOVE_ICE_BEAM, MOVE_PSYCHIC, MOVE_LOVELY_KISS, MOVE_CALM_MIND}},
+            {.iv = 255, .lvl = 80, .species = SPECIES_CLOYSTER, .heldItem = ITEM_MYSTIC_WATER, .moves = {MOVE_SURF, MOVE_ICE_BEAM, MOVE_SPIKES, MOVE_EXPLOSION}},
+            {.iv = 255, .lvl = 82, .species = SPECIES_LAPRAS, .heldItem = ITEM_LEFTOVERS, .moves = {MOVE_SURF, MOVE_ICE_BEAM, MOVE_THUNDERBOLT, MOVE_PSYCHIC}},
+        },
+        // degrau 4
+        {
+            {.iv = 255, .lvl = 88, .species = SPECIES_WALREIN, .heldItem = ITEM_SHELL_BELL, .moves = {MOVE_SURF, MOVE_ICE_BEAM, MOVE_EARTHQUAKE, MOVE_BODY_SLAM}},
+            {.iv = 255, .lvl = 88, .species = SPECIES_STARMIE, .heldItem = ITEM_LUM_BERRY, .moves = {MOVE_SURF, MOVE_THUNDERBOLT, MOVE_PSYCHIC, MOVE_RECOVER}},
+            {.iv = 255, .lvl = 89, .species = SPECIES_MILOTIC, .heldItem = ITEM_SITRUS_BERRY, .moves = {MOVE_SURF, MOVE_ICE_BEAM, MOVE_RECOVER, MOVE_MIRROR_COAT}},
+            {.iv = 255, .lvl = 89, .species = SPECIES_JYNX, .heldItem = ITEM_NEVER_MELT_ICE, .moves = {MOVE_ICE_BEAM, MOVE_PSYCHIC, MOVE_LOVELY_KISS, MOVE_CALM_MIND}},
+            {.iv = 255, .lvl = 90, .species = SPECIES_CLOYSTER, .heldItem = ITEM_MYSTIC_WATER, .moves = {MOVE_SURF, MOVE_ICE_BEAM, MOVE_SPIKES, MOVE_EXPLOSION}},
+            {.iv = 255, .lvl = 92, .species = SPECIES_LAPRAS, .heldItem = ITEM_LEFTOVERS, .moves = {MOVE_SURF, MOVE_ICE_BEAM, MOVE_THUNDERBOLT, MOVE_PSYCHIC}},
+        },
+        // degrau 5
+        {
+            {.iv = 255, .lvl = 98, .species = SPECIES_WALREIN, .heldItem = ITEM_SHELL_BELL, .moves = {MOVE_SURF, MOVE_ICE_BEAM, MOVE_EARTHQUAKE, MOVE_BODY_SLAM}},
+            {.iv = 255, .lvl = 98, .species = SPECIES_STARMIE, .heldItem = ITEM_LUM_BERRY, .moves = {MOVE_SURF, MOVE_THUNDERBOLT, MOVE_PSYCHIC, MOVE_RECOVER}},
+            {.iv = 255, .lvl = 99, .species = SPECIES_MILOTIC, .heldItem = ITEM_SITRUS_BERRY, .moves = {MOVE_SURF, MOVE_ICE_BEAM, MOVE_RECOVER, MOVE_MIRROR_COAT}},
+            {.iv = 255, .lvl = 99, .species = SPECIES_KINGDRA, .heldItem = ITEM_DRAGON_FANG, .moves = {MOVE_HYDRO_PUMP, MOVE_DRAGON_BREATH, MOVE_ICE_BEAM, MOVE_RAIN_DANCE}},
+            {.iv = 255, .lvl = 100, .species = SPECIES_CLOYSTER, .heldItem = ITEM_MYSTIC_WATER, .moves = {MOVE_SURF, MOVE_ICE_BEAM, MOVE_SPIKES, MOVE_EXPLOSION}},
+            {.iv = 255, .lvl = 100, .species = SPECIES_LAPRAS, .heldItem = ITEM_LEFTOVERS, .moves = {MOVE_SURF, MOVE_ICE_BEAM, MOVE_THUNDERBOLT, MOVE_PSYCHIC}},
+        },
+    },
+    // TRAINER_ELITE_FOUR_BRUNO_2
+    {
+        // degrau 1
+        {
+            {.iv = 255, .lvl = 58, .species = SPECIES_HITMONTOP, .heldItem = ITEM_ASPEAR_BERRY, .moves = {MOVE_TRIPLE_KICK, MOVE_MACH_PUNCH, MOVE_ROCK_SLIDE, MOVE_DETECT}},
+            {.iv = 255, .lvl = 58, .species = SPECIES_HITMONCHAN, .heldItem = ITEM_PERSIM_BERRY, .moves = {MOVE_SKY_UPPERCUT, MOVE_MACH_PUNCH, MOVE_THUNDER_PUNCH, MOVE_ICE_PUNCH}},
+            {.iv = 255, .lvl = 59, .species = SPECIES_GOLEM, .heldItem = ITEM_CHERI_BERRY, .moves = {MOVE_EARTHQUAKE, MOVE_ROCK_SLIDE, MOVE_EXPLOSION, MOVE_BRICK_BREAK}},
+            {.iv = 255, .lvl = 59, .species = SPECIES_HITMONLEE, .heldItem = ITEM_CHESTO_BERRY, .moves = {MOVE_HI_JUMP_KICK, MOVE_MACH_PUNCH, MOVE_ROCK_SLIDE, MOVE_EARTHQUAKE}},
+            {.iv = 255, .lvl = 60, .species = SPECIES_STEELIX, .heldItem = ITEM_PECHA_BERRY, .moves = {MOVE_EARTHQUAKE, MOVE_IRON_TAIL, MOVE_CRUNCH, MOVE_ROCK_SLIDE}},
+            {.iv = 255, .lvl = 62, .species = SPECIES_MACHAMP, .heldItem = ITEM_SITRUS_BERRY, .moves = {MOVE_CROSS_CHOP, MOVE_EARTHQUAKE, MOVE_ROCK_SLIDE, MOVE_BULK_UP}},
+        },
+        // degrau 2
+        {
+            {.iv = 255, .lvl = 68, .species = SPECIES_HARIYAMA, .heldItem = ITEM_SITRUS_BERRY, .moves = {MOVE_CROSS_CHOP, MOVE_FAKE_OUT, MOVE_ROCK_SLIDE, MOVE_KNOCK_OFF}},
+            {.iv = 255, .lvl = 68, .species = SPECIES_HITMONCHAN, .heldItem = ITEM_LUM_BERRY, .moves = {MOVE_SKY_UPPERCUT, MOVE_MACH_PUNCH, MOVE_THUNDER_PUNCH, MOVE_ICE_PUNCH}},
+            {.iv = 255, .lvl = 69, .species = SPECIES_GOLEM, .heldItem = ITEM_SITRUS_BERRY, .moves = {MOVE_EARTHQUAKE, MOVE_ROCK_SLIDE, MOVE_EXPLOSION, MOVE_BRICK_BREAK}},
+            {.iv = 255, .lvl = 69, .species = SPECIES_HITMONLEE, .heldItem = ITEM_LUM_BERRY, .moves = {MOVE_HI_JUMP_KICK, MOVE_MACH_PUNCH, MOVE_ROCK_SLIDE, MOVE_EARTHQUAKE}},
+            {.iv = 255, .lvl = 70, .species = SPECIES_STEELIX, .heldItem = ITEM_SITRUS_BERRY, .moves = {MOVE_EARTHQUAKE, MOVE_IRON_TAIL, MOVE_CRUNCH, MOVE_ROCK_SLIDE}},
+            {.iv = 255, .lvl = 72, .species = SPECIES_MACHAMP, .heldItem = ITEM_BLACK_BELT, .moves = {MOVE_CROSS_CHOP, MOVE_EARTHQUAKE, MOVE_ROCK_SLIDE, MOVE_BULK_UP}},
+        },
+        // degrau 3
+        {
+            {.iv = 255, .lvl = 78, .species = SPECIES_HARIYAMA, .heldItem = ITEM_LEFTOVERS, .moves = {MOVE_CROSS_CHOP, MOVE_FAKE_OUT, MOVE_ROCK_SLIDE, MOVE_KNOCK_OFF}},
+            {.iv = 255, .lvl = 78, .species = SPECIES_HITMONCHAN, .heldItem = ITEM_SCOPE_LENS, .moves = {MOVE_SKY_UPPERCUT, MOVE_MACH_PUNCH, MOVE_THUNDER_PUNCH, MOVE_ICE_PUNCH}},
+            {.iv = 255, .lvl = 79, .species = SPECIES_AGGRON, .heldItem = ITEM_HARD_STONE, .moves = {MOVE_IRON_TAIL, MOVE_ROCK_SLIDE, MOVE_EARTHQUAKE, MOVE_DOUBLE_EDGE}},
+            {.iv = 255, .lvl = 79, .species = SPECIES_HITMONLEE, .heldItem = ITEM_LUM_BERRY, .moves = {MOVE_HI_JUMP_KICK, MOVE_MACH_PUNCH, MOVE_ROCK_SLIDE, MOVE_EARTHQUAKE}},
+            {.iv = 255, .lvl = 80, .species = SPECIES_STEELIX, .heldItem = ITEM_SOFT_SAND, .moves = {MOVE_EARTHQUAKE, MOVE_IRON_TAIL, MOVE_CRUNCH, MOVE_ROCK_SLIDE}},
+            {.iv = 255, .lvl = 82, .species = SPECIES_MACHAMP, .heldItem = ITEM_BLACK_BELT, .moves = {MOVE_CROSS_CHOP, MOVE_EARTHQUAKE, MOVE_ROCK_SLIDE, MOVE_BULK_UP}},
+        },
+        // degrau 4
+        {
+            {.iv = 255, .lvl = 88, .species = SPECIES_HARIYAMA, .heldItem = ITEM_LEFTOVERS, .moves = {MOVE_CROSS_CHOP, MOVE_FAKE_OUT, MOVE_ROCK_SLIDE, MOVE_KNOCK_OFF}},
+            {.iv = 255, .lvl = 88, .species = SPECIES_SWAMPERT, .heldItem = ITEM_SITRUS_BERRY, .moves = {MOVE_EARTHQUAKE, MOVE_WATERFALL, MOVE_ROCK_SLIDE, MOVE_ICE_BEAM}},
+            {.iv = 255, .lvl = 89, .species = SPECIES_AGGRON, .heldItem = ITEM_HARD_STONE, .moves = {MOVE_IRON_TAIL, MOVE_ROCK_SLIDE, MOVE_EARTHQUAKE, MOVE_DOUBLE_EDGE}},
+            {.iv = 255, .lvl = 89, .species = SPECIES_HITMONLEE, .heldItem = ITEM_LUM_BERRY, .moves = {MOVE_HI_JUMP_KICK, MOVE_MACH_PUNCH, MOVE_ROCK_SLIDE, MOVE_EARTHQUAKE}},
+            {.iv = 255, .lvl = 90, .species = SPECIES_STEELIX, .heldItem = ITEM_SOFT_SAND, .moves = {MOVE_EARTHQUAKE, MOVE_IRON_TAIL, MOVE_CRUNCH, MOVE_ROCK_SLIDE}},
+            {.iv = 255, .lvl = 92, .species = SPECIES_MACHAMP, .heldItem = ITEM_BLACK_BELT, .moves = {MOVE_CROSS_CHOP, MOVE_EARTHQUAKE, MOVE_ROCK_SLIDE, MOVE_BULK_UP}},
+        },
+        // degrau 5
+        {
+            {.iv = 255, .lvl = 98, .species = SPECIES_HARIYAMA, .heldItem = ITEM_LEFTOVERS, .moves = {MOVE_CROSS_CHOP, MOVE_FAKE_OUT, MOVE_ROCK_SLIDE, MOVE_KNOCK_OFF}},
+            {.iv = 255, .lvl = 98, .species = SPECIES_SWAMPERT, .heldItem = ITEM_SITRUS_BERRY, .moves = {MOVE_EARTHQUAKE, MOVE_WATERFALL, MOVE_ROCK_SLIDE, MOVE_ICE_BEAM}},
+            {.iv = 255, .lvl = 99, .species = SPECIES_AGGRON, .heldItem = ITEM_HARD_STONE, .moves = {MOVE_IRON_TAIL, MOVE_ROCK_SLIDE, MOVE_EARTHQUAKE, MOVE_DOUBLE_EDGE}},
+            {.iv = 255, .lvl = 99, .species = SPECIES_TYRANITAR, .heldItem = ITEM_LUM_BERRY, .moves = {MOVE_DRAGON_DANCE, MOVE_CRUNCH, MOVE_ROCK_SLIDE, MOVE_EARTHQUAKE}},
+            {.iv = 255, .lvl = 100, .species = SPECIES_STEELIX, .heldItem = ITEM_SOFT_SAND, .moves = {MOVE_EARTHQUAKE, MOVE_IRON_TAIL, MOVE_CRUNCH, MOVE_ROCK_SLIDE}},
+            {.iv = 255, .lvl = 100, .species = SPECIES_MACHAMP, .heldItem = ITEM_BLACK_BELT, .moves = {MOVE_CROSS_CHOP, MOVE_EARTHQUAKE, MOVE_ROCK_SLIDE, MOVE_BULK_UP}},
+        },
+    },
+    // TRAINER_ELITE_FOUR_AGATHA_2
+    {
+        // degrau 1
+        {
+            {.iv = 255, .lvl = 58, .species = SPECIES_MISDREAVUS, .heldItem = ITEM_PERSIM_BERRY, .moves = {MOVE_SHADOW_BALL, MOVE_THUNDERBOLT, MOVE_PSYCHIC, MOVE_CALM_MIND}},
+            {.iv = 255, .lvl = 58, .species = SPECIES_HAUNTER, .heldItem = ITEM_CHERI_BERRY, .moves = {MOVE_SHADOW_BALL, MOVE_SLUDGE_BOMB, MOVE_HYPNOSIS, MOVE_DREAM_EATER}},
+            {.iv = 255, .lvl = 59, .species = SPECIES_ARBOK, .heldItem = ITEM_CHESTO_BERRY, .moves = {MOVE_POISON_FANG, MOVE_EARTHQUAKE, MOVE_ROCK_SLIDE, MOVE_GLARE}},
+            {.iv = 255, .lvl = 59, .species = SPECIES_WEEZING, .heldItem = ITEM_PECHA_BERRY, .moves = {MOVE_SLUDGE_BOMB, MOVE_FLAMETHROWER, MOVE_THUNDERBOLT, MOVE_WILL_O_WISP}},
+            {.iv = 255, .lvl = 60, .species = SPECIES_CROBAT, .heldItem = ITEM_RAWST_BERRY, .moves = {MOVE_SLUDGE_BOMB, MOVE_AERIAL_ACE, MOVE_SHADOW_BALL, MOVE_CONFUSE_RAY}},
+            {.iv = 255, .lvl = 62, .species = SPECIES_GENGAR, .heldItem = ITEM_SITRUS_BERRY, .moves = {MOVE_SHADOW_BALL, MOVE_SLUDGE_BOMB, MOVE_THUNDERBOLT, MOVE_HYPNOSIS}},
+        },
+        // degrau 2
+        {
+            {.iv = 255, .lvl = 68, .species = SPECIES_MISDREAVUS, .heldItem = ITEM_SITRUS_BERRY, .moves = {MOVE_SHADOW_BALL, MOVE_THUNDERBOLT, MOVE_PSYCHIC, MOVE_CALM_MIND}},
+            {.iv = 255, .lvl = 68, .species = SPECIES_DUSCLOPS, .heldItem = ITEM_LUM_BERRY, .moves = {MOVE_NIGHT_SHADE, MOVE_WILL_O_WISP, MOVE_PAIN_SPLIT, MOVE_CONFUSE_RAY}},
+            {.iv = 255, .lvl = 69, .species = SPECIES_ARBOK, .heldItem = ITEM_SITRUS_BERRY, .moves = {MOVE_POISON_FANG, MOVE_EARTHQUAKE, MOVE_ROCK_SLIDE, MOVE_GLARE}},
+            {.iv = 255, .lvl = 69, .species = SPECIES_WEEZING, .heldItem = ITEM_LUM_BERRY, .moves = {MOVE_SLUDGE_BOMB, MOVE_FLAMETHROWER, MOVE_THUNDERBOLT, MOVE_WILL_O_WISP}},
+            {.iv = 255, .lvl = 70, .species = SPECIES_CROBAT, .heldItem = ITEM_SITRUS_BERRY, .moves = {MOVE_SLUDGE_BOMB, MOVE_AERIAL_ACE, MOVE_SHADOW_BALL, MOVE_CONFUSE_RAY}},
+            {.iv = 255, .lvl = 72, .species = SPECIES_GENGAR, .heldItem = ITEM_SPELL_TAG, .moves = {MOVE_SHADOW_BALL, MOVE_SLUDGE_BOMB, MOVE_THUNDERBOLT, MOVE_HYPNOSIS}},
+        },
+        // degrau 3
+        {
+            {.iv = 255, .lvl = 78, .species = SPECIES_MISDREAVUS, .heldItem = ITEM_BRIGHT_POWDER, .moves = {MOVE_SHADOW_BALL, MOVE_THUNDERBOLT, MOVE_PSYCHIC, MOVE_CALM_MIND}},
+            {.iv = 255, .lvl = 78, .species = SPECIES_DUSCLOPS, .heldItem = ITEM_LEFTOVERS, .moves = {MOVE_NIGHT_SHADE, MOVE_WILL_O_WISP, MOVE_PAIN_SPLIT, MOVE_CONFUSE_RAY}},
+            {.iv = 255, .lvl = 79, .species = SPECIES_NIDOKING, .heldItem = ITEM_SOFT_SAND, .moves = {MOVE_EARTHQUAKE, MOVE_SLUDGE_BOMB, MOVE_MEGAHORN, MOVE_THUNDERBOLT}},
+            {.iv = 255, .lvl = 79, .species = SPECIES_WEEZING, .heldItem = ITEM_POISON_BARB, .moves = {MOVE_SLUDGE_BOMB, MOVE_FLAMETHROWER, MOVE_THUNDERBOLT, MOVE_WILL_O_WISP}},
+            {.iv = 255, .lvl = 80, .species = SPECIES_CROBAT, .heldItem = ITEM_SHARP_BEAK, .moves = {MOVE_SLUDGE_BOMB, MOVE_AERIAL_ACE, MOVE_SHADOW_BALL, MOVE_CONFUSE_RAY}},
+            {.iv = 255, .lvl = 82, .species = SPECIES_GENGAR, .heldItem = ITEM_SPELL_TAG, .moves = {MOVE_SHADOW_BALL, MOVE_SLUDGE_BOMB, MOVE_THUNDERBOLT, MOVE_HYPNOSIS}},
+        },
+        // degrau 4
+        {
+            {.iv = 255, .lvl = 88, .species = SPECIES_BANETTE, .heldItem = ITEM_LUM_BERRY, .moves = {MOVE_SHADOW_BALL, MOVE_KNOCK_OFF, MOVE_WILL_O_WISP, MOVE_THUNDERBOLT}},
+            {.iv = 255, .lvl = 88, .species = SPECIES_DUSCLOPS, .heldItem = ITEM_LEFTOVERS, .moves = {MOVE_NIGHT_SHADE, MOVE_WILL_O_WISP, MOVE_PAIN_SPLIT, MOVE_CONFUSE_RAY}},
+            {.iv = 255, .lvl = 89, .species = SPECIES_NIDOKING, .heldItem = ITEM_SOFT_SAND, .moves = {MOVE_EARTHQUAKE, MOVE_SLUDGE_BOMB, MOVE_MEGAHORN, MOVE_THUNDERBOLT}},
+            {.iv = 255, .lvl = 89, .species = SPECIES_TENTACRUEL, .heldItem = ITEM_SITRUS_BERRY, .moves = {MOVE_SURF, MOVE_SLUDGE_BOMB, MOVE_ICE_BEAM, MOVE_GIGA_DRAIN}},
+            {.iv = 255, .lvl = 90, .species = SPECIES_CROBAT, .heldItem = ITEM_SHARP_BEAK, .moves = {MOVE_SLUDGE_BOMB, MOVE_AERIAL_ACE, MOVE_SHADOW_BALL, MOVE_CONFUSE_RAY}},
+            {.iv = 255, .lvl = 92, .species = SPECIES_GENGAR, .heldItem = ITEM_SPELL_TAG, .moves = {MOVE_SHADOW_BALL, MOVE_SLUDGE_BOMB, MOVE_THUNDERBOLT, MOVE_HYPNOSIS}},
+        },
+        // degrau 5
+        {
+            {.iv = 255, .lvl = 98, .species = SPECIES_BANETTE, .heldItem = ITEM_LUM_BERRY, .moves = {MOVE_SHADOW_BALL, MOVE_KNOCK_OFF, MOVE_WILL_O_WISP, MOVE_THUNDERBOLT}},
+            {.iv = 255, .lvl = 98, .species = SPECIES_DUSCLOPS, .heldItem = ITEM_LEFTOVERS, .moves = {MOVE_NIGHT_SHADE, MOVE_WILL_O_WISP, MOVE_PAIN_SPLIT, MOVE_CONFUSE_RAY}},
+            {.iv = 255, .lvl = 99, .species = SPECIES_NIDOKING, .heldItem = ITEM_SOFT_SAND, .moves = {MOVE_EARTHQUAKE, MOVE_SLUDGE_BOMB, MOVE_MEGAHORN, MOVE_THUNDERBOLT}},
+            {.iv = 255, .lvl = 99, .species = SPECIES_SABLEYE, .heldItem = ITEM_BRIGHT_POWDER, .moves = {MOVE_SHADOW_BALL, MOVE_KNOCK_OFF, MOVE_RECOVER, MOVE_CONFUSE_RAY}},
+            {.iv = 255, .lvl = 100, .species = SPECIES_CROBAT, .heldItem = ITEM_SHARP_BEAK, .moves = {MOVE_SLUDGE_BOMB, MOVE_AERIAL_ACE, MOVE_SHADOW_BALL, MOVE_CONFUSE_RAY}},
+            {.iv = 255, .lvl = 100, .species = SPECIES_GENGAR, .heldItem = ITEM_SPELL_TAG, .moves = {MOVE_SHADOW_BALL, MOVE_SLUDGE_BOMB, MOVE_THUNDERBOLT, MOVE_HYPNOSIS}},
+        },
+    },
+    // TRAINER_ELITE_FOUR_LANCE_2
+    {
+        // degrau 1
+        {
+            {.iv = 255, .lvl = 58, .species = SPECIES_DRAGONAIR, .heldItem = ITEM_CHERI_BERRY, .moves = {MOVE_DRAGON_BREATH, MOVE_ICE_BEAM, MOVE_THUNDERBOLT, MOVE_THUNDER_WAVE}},
+            {.iv = 255, .lvl = 58, .species = SPECIES_ALTARIA, .heldItem = ITEM_CHESTO_BERRY, .moves = {MOVE_DRAGON_DANCE, MOVE_DRAGON_CLAW, MOVE_EARTHQUAKE, MOVE_MOONBLAST}},
+            {.iv = 255, .lvl = 59, .species = SPECIES_AERODACTYL, .heldItem = ITEM_PECHA_BERRY, .moves = {MOVE_ROCK_SLIDE, MOVE_EARTHQUAKE, MOVE_AERIAL_ACE, MOVE_DRAGON_CLAW}},
+            {.iv = 255, .lvl = 59, .species = SPECIES_GYARADOS, .heldItem = ITEM_RAWST_BERRY, .moves = {MOVE_DRAGON_DANCE, MOVE_WATERFALL, MOVE_EARTHQUAKE, MOVE_THUNDER_WAVE}},
+            {.iv = 255, .lvl = 60, .species = SPECIES_KINGDRA, .heldItem = ITEM_ASPEAR_BERRY, .moves = {MOVE_HYDRO_PUMP, MOVE_DRAGON_BREATH, MOVE_ICE_BEAM, MOVE_RAIN_DANCE}},
+            {.iv = 255, .lvl = 62, .species = SPECIES_DRAGONITE, .heldItem = ITEM_SITRUS_BERRY, .moves = {MOVE_DRAGON_DANCE, MOVE_OUTRAGE, MOVE_EARTHQUAKE, MOVE_HYPER_BEAM}},
+        },
+        // degrau 2
+        {
+            {.iv = 255, .lvl = 68, .species = SPECIES_FLYGON, .heldItem = ITEM_SITRUS_BERRY, .moves = {MOVE_EARTHQUAKE, MOVE_DRAGON_CLAW, MOVE_ROCK_SLIDE, MOVE_FIRE_BLAST}},
+            {.iv = 255, .lvl = 68, .species = SPECIES_ALTARIA, .heldItem = ITEM_LUM_BERRY, .moves = {MOVE_DRAGON_DANCE, MOVE_DRAGON_CLAW, MOVE_EARTHQUAKE, MOVE_MOONBLAST}},
+            {.iv = 255, .lvl = 69, .species = SPECIES_AERODACTYL, .heldItem = ITEM_SITRUS_BERRY, .moves = {MOVE_ROCK_SLIDE, MOVE_EARTHQUAKE, MOVE_AERIAL_ACE, MOVE_DRAGON_CLAW}},
+            {.iv = 255, .lvl = 69, .species = SPECIES_GYARADOS, .heldItem = ITEM_LUM_BERRY, .moves = {MOVE_DRAGON_DANCE, MOVE_WATERFALL, MOVE_EARTHQUAKE, MOVE_THUNDER_WAVE}},
+            {.iv = 255, .lvl = 70, .species = SPECIES_KINGDRA, .heldItem = ITEM_SITRUS_BERRY, .moves = {MOVE_HYDRO_PUMP, MOVE_DRAGON_BREATH, MOVE_ICE_BEAM, MOVE_RAIN_DANCE}},
+            {.iv = 255, .lvl = 72, .species = SPECIES_DRAGONITE, .heldItem = ITEM_DRAGON_FANG, .moves = {MOVE_DRAGON_DANCE, MOVE_OUTRAGE, MOVE_EARTHQUAKE, MOVE_HYPER_BEAM}},
+        },
+        // degrau 3
+        {
+            {.iv = 255, .lvl = 78, .species = SPECIES_FLYGON, .heldItem = ITEM_SOFT_SAND, .moves = {MOVE_EARTHQUAKE, MOVE_DRAGON_CLAW, MOVE_ROCK_SLIDE, MOVE_FIRE_BLAST}},
+            {.iv = 255, .lvl = 78, .species = SPECIES_ALTARIA, .heldItem = ITEM_LUM_BERRY, .moves = {MOVE_DRAGON_DANCE, MOVE_DRAGON_CLAW, MOVE_EARTHQUAKE, MOVE_MOONBLAST}},
+            {.iv = 255, .lvl = 79, .species = SPECIES_AERODACTYL, .heldItem = ITEM_KINGS_ROCK, .moves = {MOVE_ROCK_SLIDE, MOVE_EARTHQUAKE, MOVE_AERIAL_ACE, MOVE_DRAGON_CLAW}},
+            {.iv = 255, .lvl = 79, .species = SPECIES_GYARADOS, .heldItem = ITEM_LEFTOVERS, .moves = {MOVE_DRAGON_DANCE, MOVE_WATERFALL, MOVE_EARTHQUAKE, MOVE_THUNDER_WAVE}},
+            {.iv = 255, .lvl = 80, .species = SPECIES_KINGDRA, .heldItem = ITEM_MYSTIC_WATER, .moves = {MOVE_HYDRO_PUMP, MOVE_DRAGON_BREATH, MOVE_ICE_BEAM, MOVE_RAIN_DANCE}},
+            {.iv = 255, .lvl = 82, .species = SPECIES_DRAGONITE, .heldItem = ITEM_DRAGON_FANG, .moves = {MOVE_DRAGON_DANCE, MOVE_OUTRAGE, MOVE_EARTHQUAKE, MOVE_HYPER_BEAM}},
+        },
+        // degrau 4
+        {
+            {.iv = 255, .lvl = 88, .species = SPECIES_FLYGON, .heldItem = ITEM_SOFT_SAND, .moves = {MOVE_EARTHQUAKE, MOVE_DRAGON_CLAW, MOVE_ROCK_SLIDE, MOVE_FIRE_BLAST}},
+            {.iv = 255, .lvl = 88, .species = SPECIES_SALAMENCE, .heldItem = ITEM_LUM_BERRY, .moves = {MOVE_DRAGON_DANCE, MOVE_DRAGON_CLAW, MOVE_EARTHQUAKE, MOVE_AERIAL_ACE}},
+            {.iv = 255, .lvl = 89, .species = SPECIES_AERODACTYL, .heldItem = ITEM_KINGS_ROCK, .moves = {MOVE_ROCK_SLIDE, MOVE_EARTHQUAKE, MOVE_AERIAL_ACE, MOVE_DRAGON_CLAW}},
+            {.iv = 255, .lvl = 89, .species = SPECIES_GYARADOS, .heldItem = ITEM_LEFTOVERS, .moves = {MOVE_DRAGON_DANCE, MOVE_WATERFALL, MOVE_EARTHQUAKE, MOVE_THUNDER_WAVE}},
+            {.iv = 255, .lvl = 90, .species = SPECIES_KINGDRA, .heldItem = ITEM_MYSTIC_WATER, .moves = {MOVE_HYDRO_PUMP, MOVE_DRAGON_BREATH, MOVE_ICE_BEAM, MOVE_RAIN_DANCE}},
+            {.iv = 255, .lvl = 92, .species = SPECIES_DRAGONITE, .heldItem = ITEM_DRAGON_FANG, .moves = {MOVE_DRAGON_DANCE, MOVE_OUTRAGE, MOVE_EARTHQUAKE, MOVE_HYPER_BEAM}},
+        },
+        // degrau 5
+        {
+            {.iv = 255, .lvl = 98, .species = SPECIES_FLYGON, .heldItem = ITEM_SOFT_SAND, .moves = {MOVE_EARTHQUAKE, MOVE_DRAGON_CLAW, MOVE_ROCK_SLIDE, MOVE_FIRE_BLAST}},
+            {.iv = 255, .lvl = 98, .species = SPECIES_SALAMENCE, .heldItem = ITEM_LUM_BERRY, .moves = {MOVE_DRAGON_DANCE, MOVE_DRAGON_CLAW, MOVE_EARTHQUAKE, MOVE_AERIAL_ACE}},
+            {.iv = 255, .lvl = 99, .species = SPECIES_CHARIZARD, .heldItem = ITEM_CHARCOAL, .moves = {MOVE_FIRE_BLAST, MOVE_DRAGON_CLAW, MOVE_AERIAL_ACE, MOVE_EARTHQUAKE}},
+            {.iv = 255, .lvl = 99, .species = SPECIES_GYARADOS, .heldItem = ITEM_LEFTOVERS, .moves = {MOVE_DRAGON_DANCE, MOVE_WATERFALL, MOVE_EARTHQUAKE, MOVE_THUNDER_WAVE}},
+            {.iv = 255, .lvl = 100, .species = SPECIES_KINGDRA, .heldItem = ITEM_MYSTIC_WATER, .moves = {MOVE_HYDRO_PUMP, MOVE_DRAGON_BREATH, MOVE_ICE_BEAM, MOVE_RAIN_DANCE}},
+            {.iv = 255, .lvl = 100, .species = SPECIES_DRAGONITE, .heldItem = ITEM_DRAGON_FANG, .moves = {MOVE_DRAGON_DANCE, MOVE_OUTRAGE, MOVE_EARTHQUAKE, MOVE_HYPER_BEAM}},
+        },
+    },
+    // TRAINER_CHAMPION_REMATCH_SQUIRTLE
+    {
+        // degrau 1
+        {
+            {.iv = 255, .lvl = 59, .species = SPECIES_PIDGEOT, .heldItem = ITEM_CHESTO_BERRY, .moves = {MOVE_AERIAL_ACE, MOVE_DOUBLE_EDGE, MOVE_QUICK_ATTACK, MOVE_FEATHER_DANCE}},
+            {.iv = 255, .lvl = 59, .species = SPECIES_ALAKAZAM, .heldItem = ITEM_PECHA_BERRY, .moves = {MOVE_PSYCHIC, MOVE_SHADOW_BALL, MOVE_CALM_MIND, MOVE_RECOVER}},
+            {.iv = 255, .lvl = 60, .species = SPECIES_RHYDON, .heldItem = ITEM_RAWST_BERRY, .moves = {MOVE_EARTHQUAKE, MOVE_ROCK_SLIDE, MOVE_MEGAHORN, MOVE_SWORDS_DANCE}},
+            {.iv = 255, .lvl = 60, .species = SPECIES_HERACROSS, .heldItem = ITEM_ASPEAR_BERRY, .moves = {MOVE_MEGAHORN, MOVE_BRICK_BREAK, MOVE_ROCK_SLIDE, MOVE_EARTHQUAKE}},
+            {.iv = 255, .lvl = 61, .species = SPECIES_ARCANINE, .heldItem = ITEM_PERSIM_BERRY, .moves = {MOVE_FLAMETHROWER, MOVE_EXTREME_SPEED, MOVE_CRUNCH, MOVE_AERIAL_ACE}},
+            {.iv = 255, .lvl = 63, .species = SPECIES_BLASTOISE, .heldItem = ITEM_SITRUS_BERRY, .moves = {MOVE_HYDRO_PUMP, MOVE_ICE_BEAM, MOVE_EARTHQUAKE, MOVE_RAIN_DANCE}},
+        },
+        // degrau 2
+        {
+            {.iv = 255, .lvl = 69, .species = SPECIES_PIDGEOT, .heldItem = ITEM_SITRUS_BERRY, .moves = {MOVE_AERIAL_ACE, MOVE_DOUBLE_EDGE, MOVE_QUICK_ATTACK, MOVE_FEATHER_DANCE}},
+            {.iv = 255, .lvl = 69, .species = SPECIES_ALAKAZAM, .heldItem = ITEM_LUM_BERRY, .moves = {MOVE_PSYCHIC, MOVE_SHADOW_BALL, MOVE_CALM_MIND, MOVE_RECOVER}},
+            {.iv = 255, .lvl = 70, .species = SPECIES_TYRANITAR, .heldItem = ITEM_SITRUS_BERRY, .moves = {MOVE_DRAGON_DANCE, MOVE_CRUNCH, MOVE_ROCK_SLIDE, MOVE_EARTHQUAKE}},
+            {.iv = 255, .lvl = 70, .species = SPECIES_HERACROSS, .heldItem = ITEM_LUM_BERRY, .moves = {MOVE_MEGAHORN, MOVE_BRICK_BREAK, MOVE_ROCK_SLIDE, MOVE_EARTHQUAKE}},
+            {.iv = 255, .lvl = 71, .species = SPECIES_ARCANINE, .heldItem = ITEM_SITRUS_BERRY, .moves = {MOVE_FLAMETHROWER, MOVE_EXTREME_SPEED, MOVE_CRUNCH, MOVE_AERIAL_ACE}},
+            {.iv = 255, .lvl = 73, .species = SPECIES_BLASTOISE, .heldItem = ITEM_MYSTIC_WATER, .moves = {MOVE_HYDRO_PUMP, MOVE_ICE_BEAM, MOVE_EARTHQUAKE, MOVE_RAIN_DANCE}},
+        },
+        // degrau 3
+        {
+            {.iv = 255, .lvl = 79, .species = SPECIES_SNORLAX, .heldItem = ITEM_LEFTOVERS, .moves = {MOVE_BODY_SLAM, MOVE_EARTHQUAKE, MOVE_CURSE, MOVE_ROCK_SLIDE}},
+            {.iv = 255, .lvl = 79, .species = SPECIES_ALAKAZAM, .heldItem = ITEM_TWISTED_SPOON, .moves = {MOVE_PSYCHIC, MOVE_SHADOW_BALL, MOVE_CALM_MIND, MOVE_RECOVER}},
+            {.iv = 255, .lvl = 80, .species = SPECIES_TYRANITAR, .heldItem = ITEM_LUM_BERRY, .moves = {MOVE_DRAGON_DANCE, MOVE_CRUNCH, MOVE_ROCK_SLIDE, MOVE_EARTHQUAKE}},
+            {.iv = 255, .lvl = 80, .species = SPECIES_HERACROSS, .heldItem = ITEM_CHOICE_BAND, .moves = {MOVE_MEGAHORN, MOVE_BRICK_BREAK, MOVE_ROCK_SLIDE, MOVE_EARTHQUAKE}},
+            {.iv = 255, .lvl = 81, .species = SPECIES_ARCANINE, .heldItem = ITEM_CHARCOAL, .moves = {MOVE_FLAMETHROWER, MOVE_EXTREME_SPEED, MOVE_CRUNCH, MOVE_AERIAL_ACE}},
+            {.iv = 255, .lvl = 83, .species = SPECIES_BLASTOISE, .heldItem = ITEM_MYSTIC_WATER, .moves = {MOVE_HYDRO_PUMP, MOVE_ICE_BEAM, MOVE_EARTHQUAKE, MOVE_RAIN_DANCE}},
+        },
+        // degrau 4
+        {
+            {.iv = 255, .lvl = 89, .species = SPECIES_METAGROSS, .heldItem = ITEM_METAL_COAT, .moves = {MOVE_METEOR_MASH, MOVE_EARTHQUAKE, MOVE_ROCK_SLIDE, MOVE_AGILITY}},
+            {.iv = 255, .lvl = 89, .species = SPECIES_ALAKAZAM, .heldItem = ITEM_TWISTED_SPOON, .moves = {MOVE_PSYCHIC, MOVE_SHADOW_BALL, MOVE_CALM_MIND, MOVE_RECOVER}},
+            {.iv = 255, .lvl = 90, .species = SPECIES_TYRANITAR, .heldItem = ITEM_LUM_BERRY, .moves = {MOVE_DRAGON_DANCE, MOVE_CRUNCH, MOVE_ROCK_SLIDE, MOVE_EARTHQUAKE}},
+            {.iv = 255, .lvl = 90, .species = SPECIES_HERACROSS, .heldItem = ITEM_CHOICE_BAND, .moves = {MOVE_MEGAHORN, MOVE_BRICK_BREAK, MOVE_ROCK_SLIDE, MOVE_EARTHQUAKE}},
+            {.iv = 255, .lvl = 91, .species = SPECIES_ARCANINE, .heldItem = ITEM_CHARCOAL, .moves = {MOVE_FLAMETHROWER, MOVE_EXTREME_SPEED, MOVE_CRUNCH, MOVE_AERIAL_ACE}},
+            {.iv = 255, .lvl = 93, .species = SPECIES_BLASTOISE, .heldItem = ITEM_MYSTIC_WATER, .moves = {MOVE_HYDRO_PUMP, MOVE_ICE_BEAM, MOVE_EARTHQUAKE, MOVE_RAIN_DANCE}},
+        },
+        // degrau 5
+        {
+            {.iv = 255, .lvl = 99, .species = SPECIES_METAGROSS, .heldItem = ITEM_METAL_COAT, .moves = {MOVE_METEOR_MASH, MOVE_EARTHQUAKE, MOVE_ROCK_SLIDE, MOVE_AGILITY}},
+            {.iv = 255, .lvl = 99, .species = SPECIES_ALAKAZAM, .heldItem = ITEM_TWISTED_SPOON, .moves = {MOVE_PSYCHIC, MOVE_SHADOW_BALL, MOVE_CALM_MIND, MOVE_RECOVER}},
+            {.iv = 255, .lvl = 100, .species = SPECIES_TYRANITAR, .heldItem = ITEM_LUM_BERRY, .moves = {MOVE_DRAGON_DANCE, MOVE_CRUNCH, MOVE_ROCK_SLIDE, MOVE_EARTHQUAKE}},
+            {.iv = 255, .lvl = 100, .species = SPECIES_SALAMENCE, .heldItem = ITEM_DRAGON_FANG, .moves = {MOVE_DRAGON_DANCE, MOVE_DRAGON_CLAW, MOVE_EARTHQUAKE, MOVE_AERIAL_ACE}},
+            {.iv = 255, .lvl = 100, .species = SPECIES_ARCANINE, .heldItem = ITEM_CHARCOAL, .moves = {MOVE_FLAMETHROWER, MOVE_EXTREME_SPEED, MOVE_CRUNCH, MOVE_AERIAL_ACE}},
+            {.iv = 255, .lvl = 100, .species = SPECIES_BLASTOISE, .heldItem = ITEM_MYSTIC_WATER, .moves = {MOVE_HYDRO_PUMP, MOVE_ICE_BEAM, MOVE_EARTHQUAKE, MOVE_RAIN_DANCE}},
+        },
+    },
+    // TRAINER_CHAMPION_REMATCH_BULBASAUR
+    {
+        // degrau 1
+        {
+            {.iv = 255, .lvl = 59, .species = SPECIES_PIDGEOT, .heldItem = ITEM_CHESTO_BERRY, .moves = {MOVE_AERIAL_ACE, MOVE_DOUBLE_EDGE, MOVE_QUICK_ATTACK, MOVE_FEATHER_DANCE}},
+            {.iv = 255, .lvl = 59, .species = SPECIES_ALAKAZAM, .heldItem = ITEM_PECHA_BERRY, .moves = {MOVE_PSYCHIC, MOVE_SHADOW_BALL, MOVE_CALM_MIND, MOVE_RECOVER}},
+            {.iv = 255, .lvl = 60, .species = SPECIES_RHYDON, .heldItem = ITEM_RAWST_BERRY, .moves = {MOVE_EARTHQUAKE, MOVE_ROCK_SLIDE, MOVE_MEGAHORN, MOVE_SWORDS_DANCE}},
+            {.iv = 255, .lvl = 60, .species = SPECIES_HERACROSS, .heldItem = ITEM_ASPEAR_BERRY, .moves = {MOVE_MEGAHORN, MOVE_BRICK_BREAK, MOVE_ROCK_SLIDE, MOVE_EARTHQUAKE}},
+            {.iv = 255, .lvl = 61, .species = SPECIES_GYARADOS, .heldItem = ITEM_PERSIM_BERRY, .moves = {MOVE_DRAGON_DANCE, MOVE_WATERFALL, MOVE_EARTHQUAKE, MOVE_HYPER_BEAM}},
+            {.iv = 255, .lvl = 63, .species = SPECIES_VENUSAUR, .heldItem = ITEM_SITRUS_BERRY, .moves = {MOVE_SOLAR_BEAM, MOVE_SLUDGE_BOMB, MOVE_SUNNY_DAY, MOVE_SLEEP_POWDER}},
+        },
+        // degrau 2
+        {
+            {.iv = 255, .lvl = 69, .species = SPECIES_PIDGEOT, .heldItem = ITEM_SITRUS_BERRY, .moves = {MOVE_AERIAL_ACE, MOVE_DOUBLE_EDGE, MOVE_QUICK_ATTACK, MOVE_FEATHER_DANCE}},
+            {.iv = 255, .lvl = 69, .species = SPECIES_ALAKAZAM, .heldItem = ITEM_LUM_BERRY, .moves = {MOVE_PSYCHIC, MOVE_SHADOW_BALL, MOVE_CALM_MIND, MOVE_RECOVER}},
+            {.iv = 255, .lvl = 70, .species = SPECIES_TYRANITAR, .heldItem = ITEM_SITRUS_BERRY, .moves = {MOVE_DRAGON_DANCE, MOVE_CRUNCH, MOVE_ROCK_SLIDE, MOVE_EARTHQUAKE}},
+            {.iv = 255, .lvl = 70, .species = SPECIES_HERACROSS, .heldItem = ITEM_LUM_BERRY, .moves = {MOVE_MEGAHORN, MOVE_BRICK_BREAK, MOVE_ROCK_SLIDE, MOVE_EARTHQUAKE}},
+            {.iv = 255, .lvl = 71, .species = SPECIES_GYARADOS, .heldItem = ITEM_SITRUS_BERRY, .moves = {MOVE_DRAGON_DANCE, MOVE_WATERFALL, MOVE_EARTHQUAKE, MOVE_HYPER_BEAM}},
+            {.iv = 255, .lvl = 73, .species = SPECIES_VENUSAUR, .heldItem = ITEM_MIRACLE_SEED, .moves = {MOVE_SOLAR_BEAM, MOVE_SLUDGE_BOMB, MOVE_SUNNY_DAY, MOVE_SLEEP_POWDER}},
+        },
+        // degrau 3
+        {
+            {.iv = 255, .lvl = 79, .species = SPECIES_SNORLAX, .heldItem = ITEM_LEFTOVERS, .moves = {MOVE_BODY_SLAM, MOVE_EARTHQUAKE, MOVE_CURSE, MOVE_ROCK_SLIDE}},
+            {.iv = 255, .lvl = 79, .species = SPECIES_ALAKAZAM, .heldItem = ITEM_TWISTED_SPOON, .moves = {MOVE_PSYCHIC, MOVE_SHADOW_BALL, MOVE_CALM_MIND, MOVE_RECOVER}},
+            {.iv = 255, .lvl = 80, .species = SPECIES_TYRANITAR, .heldItem = ITEM_LUM_BERRY, .moves = {MOVE_DRAGON_DANCE, MOVE_CRUNCH, MOVE_ROCK_SLIDE, MOVE_EARTHQUAKE}},
+            {.iv = 255, .lvl = 80, .species = SPECIES_HERACROSS, .heldItem = ITEM_CHOICE_BAND, .moves = {MOVE_MEGAHORN, MOVE_BRICK_BREAK, MOVE_ROCK_SLIDE, MOVE_EARTHQUAKE}},
+            {.iv = 255, .lvl = 81, .species = SPECIES_GYARADOS, .heldItem = ITEM_SITRUS_BERRY, .moves = {MOVE_DRAGON_DANCE, MOVE_WATERFALL, MOVE_EARTHQUAKE, MOVE_HYPER_BEAM}},
+            {.iv = 255, .lvl = 83, .species = SPECIES_VENUSAUR, .heldItem = ITEM_MIRACLE_SEED, .moves = {MOVE_SOLAR_BEAM, MOVE_SLUDGE_BOMB, MOVE_SUNNY_DAY, MOVE_SLEEP_POWDER}},
+        },
+        // degrau 4
+        {
+            {.iv = 255, .lvl = 89, .species = SPECIES_METAGROSS, .heldItem = ITEM_METAL_COAT, .moves = {MOVE_METEOR_MASH, MOVE_EARTHQUAKE, MOVE_ROCK_SLIDE, MOVE_AGILITY}},
+            {.iv = 255, .lvl = 89, .species = SPECIES_ALAKAZAM, .heldItem = ITEM_TWISTED_SPOON, .moves = {MOVE_PSYCHIC, MOVE_SHADOW_BALL, MOVE_CALM_MIND, MOVE_RECOVER}},
+            {.iv = 255, .lvl = 90, .species = SPECIES_TYRANITAR, .heldItem = ITEM_LUM_BERRY, .moves = {MOVE_DRAGON_DANCE, MOVE_CRUNCH, MOVE_ROCK_SLIDE, MOVE_EARTHQUAKE}},
+            {.iv = 255, .lvl = 90, .species = SPECIES_HERACROSS, .heldItem = ITEM_CHOICE_BAND, .moves = {MOVE_MEGAHORN, MOVE_BRICK_BREAK, MOVE_ROCK_SLIDE, MOVE_EARTHQUAKE}},
+            {.iv = 255, .lvl = 91, .species = SPECIES_GYARADOS, .heldItem = ITEM_SITRUS_BERRY, .moves = {MOVE_DRAGON_DANCE, MOVE_WATERFALL, MOVE_EARTHQUAKE, MOVE_HYPER_BEAM}},
+            {.iv = 255, .lvl = 93, .species = SPECIES_VENUSAUR, .heldItem = ITEM_MIRACLE_SEED, .moves = {MOVE_SOLAR_BEAM, MOVE_SLUDGE_BOMB, MOVE_SUNNY_DAY, MOVE_SLEEP_POWDER}},
+        },
+        // degrau 5
+        {
+            {.iv = 255, .lvl = 99, .species = SPECIES_METAGROSS, .heldItem = ITEM_METAL_COAT, .moves = {MOVE_METEOR_MASH, MOVE_EARTHQUAKE, MOVE_ROCK_SLIDE, MOVE_AGILITY}},
+            {.iv = 255, .lvl = 99, .species = SPECIES_ALAKAZAM, .heldItem = ITEM_TWISTED_SPOON, .moves = {MOVE_PSYCHIC, MOVE_SHADOW_BALL, MOVE_CALM_MIND, MOVE_RECOVER}},
+            {.iv = 255, .lvl = 100, .species = SPECIES_TYRANITAR, .heldItem = ITEM_LUM_BERRY, .moves = {MOVE_DRAGON_DANCE, MOVE_CRUNCH, MOVE_ROCK_SLIDE, MOVE_EARTHQUAKE}},
+            {.iv = 255, .lvl = 100, .species = SPECIES_SALAMENCE, .heldItem = ITEM_DRAGON_FANG, .moves = {MOVE_DRAGON_DANCE, MOVE_DRAGON_CLAW, MOVE_EARTHQUAKE, MOVE_AERIAL_ACE}},
+            {.iv = 255, .lvl = 100, .species = SPECIES_GYARADOS, .heldItem = ITEM_SITRUS_BERRY, .moves = {MOVE_DRAGON_DANCE, MOVE_WATERFALL, MOVE_EARTHQUAKE, MOVE_HYPER_BEAM}},
+            {.iv = 255, .lvl = 100, .species = SPECIES_VENUSAUR, .heldItem = ITEM_MIRACLE_SEED, .moves = {MOVE_SOLAR_BEAM, MOVE_SLUDGE_BOMB, MOVE_SUNNY_DAY, MOVE_SLEEP_POWDER}},
+        },
+    },
+    // TRAINER_CHAMPION_REMATCH_CHARMANDER
+    {
+        // degrau 1
+        {
+            {.iv = 255, .lvl = 59, .species = SPECIES_PIDGEOT, .heldItem = ITEM_CHESTO_BERRY, .moves = {MOVE_AERIAL_ACE, MOVE_DOUBLE_EDGE, MOVE_QUICK_ATTACK, MOVE_FEATHER_DANCE}},
+            {.iv = 255, .lvl = 59, .species = SPECIES_ALAKAZAM, .heldItem = ITEM_PECHA_BERRY, .moves = {MOVE_PSYCHIC, MOVE_SHADOW_BALL, MOVE_CALM_MIND, MOVE_RECOVER}},
+            {.iv = 255, .lvl = 60, .species = SPECIES_RHYDON, .heldItem = ITEM_RAWST_BERRY, .moves = {MOVE_EARTHQUAKE, MOVE_ROCK_SLIDE, MOVE_MEGAHORN, MOVE_SWORDS_DANCE}},
+            {.iv = 255, .lvl = 60, .species = SPECIES_HERACROSS, .heldItem = ITEM_ASPEAR_BERRY, .moves = {MOVE_MEGAHORN, MOVE_BRICK_BREAK, MOVE_ROCK_SLIDE, MOVE_EARTHQUAKE}},
+            {.iv = 255, .lvl = 61, .species = SPECIES_EXEGGUTOR, .heldItem = ITEM_PERSIM_BERRY, .moves = {MOVE_PSYCHIC, MOVE_GIGA_DRAIN, MOVE_SLEEP_POWDER, MOVE_SLUDGE_BOMB}},
+            {.iv = 255, .lvl = 63, .species = SPECIES_CHARIZARD, .heldItem = ITEM_SITRUS_BERRY, .moves = {MOVE_FIRE_BLAST, MOVE_DRAGON_CLAW, MOVE_AERIAL_ACE, MOVE_EARTHQUAKE}},
+        },
+        // degrau 2
+        {
+            {.iv = 255, .lvl = 69, .species = SPECIES_PIDGEOT, .heldItem = ITEM_SITRUS_BERRY, .moves = {MOVE_AERIAL_ACE, MOVE_DOUBLE_EDGE, MOVE_QUICK_ATTACK, MOVE_FEATHER_DANCE}},
+            {.iv = 255, .lvl = 69, .species = SPECIES_ALAKAZAM, .heldItem = ITEM_LUM_BERRY, .moves = {MOVE_PSYCHIC, MOVE_SHADOW_BALL, MOVE_CALM_MIND, MOVE_RECOVER}},
+            {.iv = 255, .lvl = 70, .species = SPECIES_TYRANITAR, .heldItem = ITEM_SITRUS_BERRY, .moves = {MOVE_DRAGON_DANCE, MOVE_CRUNCH, MOVE_ROCK_SLIDE, MOVE_EARTHQUAKE}},
+            {.iv = 255, .lvl = 70, .species = SPECIES_HERACROSS, .heldItem = ITEM_LUM_BERRY, .moves = {MOVE_MEGAHORN, MOVE_BRICK_BREAK, MOVE_ROCK_SLIDE, MOVE_EARTHQUAKE}},
+            {.iv = 255, .lvl = 71, .species = SPECIES_EXEGGUTOR, .heldItem = ITEM_SITRUS_BERRY, .moves = {MOVE_PSYCHIC, MOVE_GIGA_DRAIN, MOVE_SLEEP_POWDER, MOVE_SLUDGE_BOMB}},
+            {.iv = 255, .lvl = 73, .species = SPECIES_CHARIZARD, .heldItem = ITEM_CHARCOAL, .moves = {MOVE_FIRE_BLAST, MOVE_DRAGON_CLAW, MOVE_AERIAL_ACE, MOVE_EARTHQUAKE}},
+        },
+        // degrau 3
+        {
+            {.iv = 255, .lvl = 79, .species = SPECIES_SNORLAX, .heldItem = ITEM_LEFTOVERS, .moves = {MOVE_BODY_SLAM, MOVE_EARTHQUAKE, MOVE_CURSE, MOVE_ROCK_SLIDE}},
+            {.iv = 255, .lvl = 79, .species = SPECIES_ALAKAZAM, .heldItem = ITEM_TWISTED_SPOON, .moves = {MOVE_PSYCHIC, MOVE_SHADOW_BALL, MOVE_CALM_MIND, MOVE_RECOVER}},
+            {.iv = 255, .lvl = 80, .species = SPECIES_TYRANITAR, .heldItem = ITEM_LUM_BERRY, .moves = {MOVE_DRAGON_DANCE, MOVE_CRUNCH, MOVE_ROCK_SLIDE, MOVE_EARTHQUAKE}},
+            {.iv = 255, .lvl = 80, .species = SPECIES_HERACROSS, .heldItem = ITEM_CHOICE_BAND, .moves = {MOVE_MEGAHORN, MOVE_BRICK_BREAK, MOVE_ROCK_SLIDE, MOVE_EARTHQUAKE}},
+            {.iv = 255, .lvl = 81, .species = SPECIES_EXEGGUTOR, .heldItem = ITEM_MIRACLE_SEED, .moves = {MOVE_PSYCHIC, MOVE_GIGA_DRAIN, MOVE_SLEEP_POWDER, MOVE_SLUDGE_BOMB}},
+            {.iv = 255, .lvl = 83, .species = SPECIES_CHARIZARD, .heldItem = ITEM_CHARCOAL, .moves = {MOVE_FIRE_BLAST, MOVE_DRAGON_CLAW, MOVE_AERIAL_ACE, MOVE_EARTHQUAKE}},
+        },
+        // degrau 4
+        {
+            {.iv = 255, .lvl = 89, .species = SPECIES_METAGROSS, .heldItem = ITEM_METAL_COAT, .moves = {MOVE_METEOR_MASH, MOVE_EARTHQUAKE, MOVE_ROCK_SLIDE, MOVE_AGILITY}},
+            {.iv = 255, .lvl = 89, .species = SPECIES_ALAKAZAM, .heldItem = ITEM_TWISTED_SPOON, .moves = {MOVE_PSYCHIC, MOVE_SHADOW_BALL, MOVE_CALM_MIND, MOVE_RECOVER}},
+            {.iv = 255, .lvl = 90, .species = SPECIES_TYRANITAR, .heldItem = ITEM_LUM_BERRY, .moves = {MOVE_DRAGON_DANCE, MOVE_CRUNCH, MOVE_ROCK_SLIDE, MOVE_EARTHQUAKE}},
+            {.iv = 255, .lvl = 90, .species = SPECIES_HERACROSS, .heldItem = ITEM_CHOICE_BAND, .moves = {MOVE_MEGAHORN, MOVE_BRICK_BREAK, MOVE_ROCK_SLIDE, MOVE_EARTHQUAKE}},
+            {.iv = 255, .lvl = 91, .species = SPECIES_EXEGGUTOR, .heldItem = ITEM_MIRACLE_SEED, .moves = {MOVE_PSYCHIC, MOVE_GIGA_DRAIN, MOVE_SLEEP_POWDER, MOVE_SLUDGE_BOMB}},
+            {.iv = 255, .lvl = 93, .species = SPECIES_CHARIZARD, .heldItem = ITEM_CHARCOAL, .moves = {MOVE_FIRE_BLAST, MOVE_DRAGON_CLAW, MOVE_AERIAL_ACE, MOVE_EARTHQUAKE}},
+        },
+        // degrau 5
+        {
+            {.iv = 255, .lvl = 99, .species = SPECIES_METAGROSS, .heldItem = ITEM_METAL_COAT, .moves = {MOVE_METEOR_MASH, MOVE_EARTHQUAKE, MOVE_ROCK_SLIDE, MOVE_AGILITY}},
+            {.iv = 255, .lvl = 99, .species = SPECIES_ALAKAZAM, .heldItem = ITEM_TWISTED_SPOON, .moves = {MOVE_PSYCHIC, MOVE_SHADOW_BALL, MOVE_CALM_MIND, MOVE_RECOVER}},
+            {.iv = 255, .lvl = 100, .species = SPECIES_TYRANITAR, .heldItem = ITEM_LUM_BERRY, .moves = {MOVE_DRAGON_DANCE, MOVE_CRUNCH, MOVE_ROCK_SLIDE, MOVE_EARTHQUAKE}},
+            {.iv = 255, .lvl = 100, .species = SPECIES_SALAMENCE, .heldItem = ITEM_DRAGON_FANG, .moves = {MOVE_DRAGON_DANCE, MOVE_DRAGON_CLAW, MOVE_EARTHQUAKE, MOVE_AERIAL_ACE}},
+            {.iv = 255, .lvl = 100, .species = SPECIES_EXEGGUTOR, .heldItem = ITEM_MIRACLE_SEED, .moves = {MOVE_PSYCHIC, MOVE_GIGA_DRAIN, MOVE_SLEEP_POWDER, MOVE_SLUDGE_BOMB}},
+            {.iv = 255, .lvl = 100, .species = SPECIES_CHARIZARD, .heldItem = ITEM_CHARCOAL, .moves = {MOVE_FIRE_BLAST, MOVE_DRAGON_CLAW, MOVE_AERIAL_ACE, MOVE_EARTHQUAKE}},
+        },
+    },
+};

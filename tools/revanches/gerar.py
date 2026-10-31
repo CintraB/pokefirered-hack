@@ -3,9 +3,12 @@
     python3 -I tools/revanches/gerar.py             # grava src/data/rematch_tiers.h
     python3 -I tools/revanches/gerar.py --conferir  # sai com 1 se o header commitado divergir
     python3 -I tools/revanches/gerar.py --amostra   # imprime a amostra (times, temas e itens) em Markdown
+    python3 -I tools/revanches/gerar.py --amostra-liga  # imprime os times da Elite 4 e do Campeão em Markdown
 
 Lê o C como texto (sRematches, times atuais, classes, evoluções, tipos e atributos base) e junta com
 regras.json e temas.json, nesta pasta. Determinístico: o sorteio usa sementes fixas por linha e degrau.
+A Elite 4 e o Campeão vêm de liga.json (times à mão) e vão para sLeagueTierParties, no mesmo header; os golpes
+são conferidos contra os learnsets (golpe_aprendivel / problemas_liga).
 Só a biblioteca padrão é usada.
 """
 
@@ -339,6 +342,179 @@ def time_vs(linha: int, degrau: int) -> list[tuple[str, int, str, int]]:
     return time
 
 
+# ---------------------------------------------------------------- Liga (Elite 4 e Campeão, times à mão)
+
+MEMBROS_LIGA = ("LORELEI", "BRUNO", "AGATHA", "LANCE")
+VARIANTES_CAMPEAO = ("SQUIRTLE", "BULBASAUR", "CHARMANDER")  # a inicial do rival, como nos _2
+TAMANHO_BASE_CAMPEAO = 4
+# O id de revanche de cada um (ordem de sLeagueTierParties = ids 735–741); o do Campeão gira as frutas da base.
+ID_LIGA = {**{m: f"TRAINER_ELITE_FOUR_{m}_2" for m in MEMBROS_LIGA}, "CAMPEAO": "TRAINER_CHAMPION_REMATCH_SQUIRTLE"}
+IV_LIGA = 255  # IV 31 na escala 0–255 de TrainerMonItemCustomMoves (fixedIV = iv * 31 / 255)
+
+
+def item_fruta_liga(membro: str, degrau: int, posicao: int) -> str:
+    """Nos degraus 1–2, a fruta de quem não é o ás: a mesma regra do Vs. Seeker (regras.json), com o ciclo
+    girado pelo id de revanche do membro (o do Campeão vale para a base e o parceiro das 3 variantes)."""
+    if degrau not in (1, 2) or not 0 <= posicao < TAMANHO_TIME - 1:
+        raise ValueError(f"fruta da Liga só nos degraus 1–2 e posições 0–4 (degrau {degrau}, posição {posicao})")
+    # A espécie só importa nas escolhas TIPO/FISICO_OU_ESPECIAL, que os degraus 1–2 não usam (conferido abaixo).
+    escolha = item("SPECIES_BULBASAUR", degrau, posicao, _id_treinador()[ID_LIGA[membro]])
+    if not escolha.endswith("_BERRY"):
+        falha(f"regras.json: o degrau {degrau} não é só de frutas ({escolha})")
+    return escolha
+
+
+@functools.cache
+def liga() -> dict:
+    """tools/revanches/liga.json: os times à mão da Elite 4 e do Campeão por degrau."""
+    return json.loads((PASTA / "liga.json").read_text(encoding="utf-8"))
+
+
+def time_liga(membro: str, degrau: int, variante: str | None = None) -> list[tuple[str, int, str, list[str]]]:
+    """(espécie, nível, item, golpes) das 6 posições do membro (ou do Campeão na variante) no degrau.
+
+    O Campeão é a base (4) + as 2 vagas da variante; o nível vem de niveis() com o perfil do membro."""
+    if membro == "CAMPEAO":
+        bloco = liga()["CAMPEAO"][str(degrau)]
+        mons = bloco["base"] + bloco[variante]
+        perfil = "campeao"
+    else:
+        mons = liga()[membro][str(degrau)]
+        perfil = "elite"
+    if len(mons) != TAMANHO_TIME:
+        falha(f"liga.json: {membro} {variante or ''} degrau {degrau} com {len(mons)} Pokémon")
+    return [(m["species"], n, m["item"], list(m["moves"])) for m, n in zip(mons, niveis(degrau, perfil))]
+
+
+def times_liga():
+    """Todos os times da Liga: ((rótulo, membro, degrau, variante), time) em ordem fixa."""
+    for membro in MEMBROS_LIGA:
+        for d in DEGRAUS:
+            yield (membro, membro, d, None), time_liga(membro, d)
+    for v in VARIANTES_CAMPEAO:
+        for d in DEGRAUS:
+            yield (f"CAMPEAO_{v}", "CAMPEAO", d, v), time_liga("CAMPEAO", d, v)
+
+
+@functools.cache
+def golpes_do_jogo() -> dict[str, int]:
+    """MOVE_* -> id, de include/constants/moves.h (sem MOVES_COUNT/MOVE_UNAVAILABLE)."""
+    texto = _ler("include/constants/moves.h")
+    return {m.group(1): int(m.group(2)) for m in re.finditer(r"^#define (MOVE_\w+)\s+(\d+)\b", texto, re.M)
+            if m.group(1) not in ("MOVE_UNAVAILABLE",)}
+
+
+@functools.cache
+def _golpes_por_nivel() -> dict[str, tuple[tuple[int, str], ...]]:
+    """SPECIES_* -> ((nível, MOVE_*), ...), de level_up_learnsets.h + level_up_learnset_pointers.h."""
+    texto = _ler("src/data/pokemon/level_up_learnsets.h")
+    tabelas = {}
+    for m in re.finditer(r"static const u16 (s\w+LevelUpLearnset)\[\] = \{(.*?)\};", texto, re.S):
+        tabelas[m.group(1)] = tuple((int(n), g) for n, g in
+                                    re.findall(r"LEVEL_UP_MOVE\(\s*(\d+),\s*(MOVE_\w+)\)", m.group(2)))
+    ponteiros = _ler("src/data/pokemon/level_up_learnset_pointers.h")
+    out = {}
+    for esp, nome in re.findall(r"\[(SPECIES_\w+)\] = (s\w+LevelUpLearnset)", ponteiros):
+        if nome not in tabelas:
+            falha(f"level_up_learnset_pointers.h: {esp} aponta para {nome}, que não existe")
+        out[esp] = tabelas[nome]
+    return out
+
+
+@functools.cache
+def _golpes_mt() -> dict[str, frozenset[str]]:
+    """SPECIES_* -> golpes de MT/MO, de tmhm_learnsets.h; a ordem das máquinas é sTMHMMoves (party_menu.h)."""
+    ordem = re.findall(r"MOVE_\w+", _bloco(_ler("src/data/party_menu.h"), "sTMHMMoves[] =", "party_menu.h"))
+    texto = _ler("src/data/pokemon/tmhm_learnsets.h")
+    out = {}
+    for m in re.finditer(r"\[(SPECIES_\w+)\]\s*=\s*TMHM_LEARNSET\((.*?)\),\n", texto, re.S):
+        golpes = set()
+        for tipo, num in re.findall(r"TMHM\((TM|HM)(\d+)_\w+\)", m.group(2)):
+            golpes.add(ordem[int(num) - 1 + (50 if tipo == "HM" else 0)])
+        out[m.group(1)] = frozenset(golpes)
+    return out
+
+
+@functools.cache
+def _golpes_ovo() -> dict[str, frozenset[str]]:
+    """SPECIES_* (a forma que choca) -> golpes de ovo, de egg_moves.h."""
+    texto = _ler("src/data/pokemon/egg_moves.h")
+    return {"SPECIES_" + m.group(1): frozenset(re.findall(r"MOVE_\w+", m.group(2)))
+            for m in re.finditer(r"egg_moves\((\w+),(.*?)\)", texto, re.S)}
+
+
+@functools.cache
+def _golpes_tutor() -> dict[str, frozenset[str]]:
+    """SPECIES_* -> golpes de tutor: sTutorLearnsets (tutor_learnsets.h) e os golpes finais das iniciais
+    (CanLearnTutorMove/GetTutorMove em src/party_menu.c)."""
+    texto = _ler("src/data/pokemon/tutor_learnsets.h")
+    out: dict[str, set[str]] = {}
+    for m in re.finditer(r"\[(SPECIES_\w+)\] = (.*?),\n", _bloco(texto, "sTutorLearnsets[] =", "tutor_learnsets.h"),
+                         re.S):
+        out[m.group(1)] = set(re.findall(r"TUTOR\((MOVE_\w+)\)", m.group(2)))
+    pm = _ler("src/party_menu.c")
+    golpe = dict(re.findall(r"case (TUTOR_MOVE_\w+):\s*return (MOVE_\w+);", pm))
+    for tutor, esp in re.findall(r"case (TUTOR_MOVE_\w+):\s*if \(species == (SPECIES_\w+)\)", pm):
+        if tutor not in golpe:
+            falha(f"party_menu.c: {tutor} sem golpe em GetTutorMove")
+        out.setdefault(esp, set()).add(golpe[tutor])
+    return {e: frozenset(g) for e, g in out.items()}
+
+
+@functools.cache
+def _pre_evolucao() -> dict[str, str]:
+    """SPECIES_* -> a espécie da qual ela evolui (gEvolutionTable invertida)."""
+    out = {}
+    for origem, entradas in evolucoes().items():
+        for _, _, alvo in entradas:
+            out.setdefault(alvo, origem)
+    return out
+
+
+def linhagem(especie: str) -> list[str]:
+    """A espécie e as pré-evoluções dela, da própria até a forma que choca."""
+    cadeia = [especie]
+    while cadeia[-1] in _pre_evolucao() and _pre_evolucao()[cadeia[-1]] not in cadeia:
+        cadeia.append(_pre_evolucao()[cadeia[-1]])
+    return cadeia
+
+
+def golpe_aprendivel(especie: str, golpe: str, nivel: int) -> bool:
+    """Se a espécie (ou uma pré-evolução dela) aprende o golpe por nível ≤ `nivel`, MT/MO, ovo ou tutor."""
+    for e in linhagem(especie):
+        if any(n <= nivel and g == golpe for n, g in _golpes_por_nivel().get(e, ())):
+            return True
+        if golpe in _golpes_mt().get(e, ()) or golpe in _golpes_tutor().get(e, ()) or golpe in _golpes_ovo().get(e, ()):
+            return True
+    return False
+
+
+def problemas_liga() -> list[str]:
+    """Tudo o que está fora da regra nos times da Liga (golpes, itens, espécies); vazio = limpo."""
+    out = []
+    for (rotulo, _, d, _), time in times_liga():
+        for pos, (esp, nivel, it, golpes) in enumerate(time, 1):
+            onde = f"{rotulo} degrau {d} pos. {pos} ({_sem('SPECIES_', esp)} nv {nivel})"
+            if esp not in especies():
+                out.append(f"{onde}: espécie desconhecida")
+                continue
+            if it not in itens_do_jogo():
+                out.append(f"{onde}: item {it} não existe")
+            if it == "ITEM_NONE":
+                out.append(f"{onde}: sem item")
+            elif d <= 2 and pos < TAMANHO_TIME and it != item_fruta_liga("CAMPEAO" if rotulo.startswith("CAMPEAO")
+                                                                         else rotulo, d, pos - 1):
+                out.append(f"{onde}: nos degraus 1–2 leva a fruta do Vs. Seeker, não {it}")
+            if len(golpes) != 4 or len(set(golpes)) != 4 or "MOVE_NONE" in golpes:
+                out.append(f"{onde}: precisa de 4 golpes distintos sem MOVE_NONE: {golpes}")
+            for g in golpes:
+                if g not in golpes_do_jogo():
+                    out.append(f"{onde}: {g} não existe")
+                elif not golpe_aprendivel(esp, g, nivel):
+                    out.append(f"{onde}: não aprende {g}")
+    return out
+
+
 # ---------------------------------------------------------------- amostra
 
 def _sem(prefixo: str, nome: str) -> str:
@@ -403,6 +579,77 @@ def amostra() -> str:
     return "\n".join(out)
 
 
+@functools.cache
+def _nomes_golpes() -> dict[str, str]:
+    """MOVE_* -> nome no jogo (src/data/text/move_names.h, já em PT-BR)."""
+    return dict(re.findall(r"\[(MOVE_\w+)\]\s*=\s*_\(\"(.*?)\"\)", _ler("src/data/text/move_names.h")))
+
+
+@functools.cache
+def _nomes_especies() -> dict[str, str]:
+    """SPECIES_* -> nome no jogo, só com a inicial maiúscula (src/data/text/species_names.h)."""
+    return {e: n.title() for e, n in re.findall(r"\[(SPECIES_\w+)\]\s*=\s*_\(\"(.*?)\"\)",
+                                                 _ler("src/data/text/species_names.h"))}
+
+
+NOMES_MEMBROS = {"LORELEI": "Lorelei (Gelo/Água)", "BRUNO": "Bruno (Lutador/Pedra/Terra)",
+                 "AGATHA": "Agatha (Fantasma/Veneno)", "LANCE": "Lance (Dragão/Voador)"}
+
+
+def _linha_mon(pos: int, esp: str, nivel: int, it: str, golpes: list[str]) -> str:
+    nome_it = "—" if it == "ITEM_NONE" else _nome_item(it)
+    gs = ", ".join(_nomes_golpes().get(g, _sem("MOVE_", g)) for g in golpes)
+    return f"| {pos} | {_nomes_especies().get(esp, _sem('SPECIES_', esp))} | {nivel} | {nome_it} | {gs} |"
+
+
+def amostra_liga() -> str:
+    """A tabela dos times à mão da Liga por degrau, para o Cintra aprovar (Markdown)."""
+    cab = ["| Pos. | Espécie | Nível | Item | Golpes |", "|---|---|---|---|---|"]
+    out = ["# Elite 4 e Campeão por degrau (POK-42, Task 3)", "",
+           "- **Nível:** alvo L = 50 + 10 × degrau (60/70/80/90/100). Elite 4: L−2, L−2, L−1, L−1, L e o ás "
+           "(posição 6) L+2; Campeão: L−1, L−1, L, L, L+1 e o ás L+3; teto 100 em todas. IV 31 em todos.",
+           "- **Espécies melhores por degrau:** a assinatura de cada um fica (Lapras, Cloyster e Jynx; Machamp, "
+           "Steelix e Hitmonlee; Gengar, Crobat e Dusclops; Dragonite, Gyarados, Kingdra e Aerodactyl; Alakazam, "
+           "Heracross e a inicial do rival); as outras vagas trocam por espécies mais fortes do tema conforme o "
+           "degrau sobe, com finais fortes e pseudolendários (Salamence, Metagross, Tyranitar) nos degraus 4–5. "
+           "O degrau 5 tem uma troca a mais que o 4 em cada um, sempre fora o ás: Kingdra no lugar da Jynx, "
+           "Tyranitar no do Hitmonlee, Sableye no do Tentacruel, Charizard no do Aerodactyl e Salamence no do "
+           "Heracross.",
+           "- **Itens:** todos têm item em todos os degraus. O ás: Fruta Sitrus no 1, item do tipo/Sobras do 2 em "
+           "diante. Os outros: nos degraus 1–2 as frutas do Vs. Seeker (1: rodízio das frutas de status; "
+           "2: Sitrus/Lum), girando pelo id do treinador; do 3 em diante, item escolhido por papel. Golpes: 4 por "
+           "Pokémon, todos aprendíveis (nível ≤ o do time, MT/MO, ovo ou tutor), conferidos por `gerar.py`.", ""]
+    for membro in MEMBROS_LIGA:
+        out += [f"## {NOMES_MEMBROS[membro]}", ""]
+        for d in DEGRAUS:
+            out += [f"**Degrau {d}**", ""] + cab
+            out += [_linha_mon(p, *mon) for p, mon in enumerate(time_liga(membro, d), 1)]
+            out.append("")
+    out += ["## Campeão (rival)", "",
+            "Time = base (posições 1–4, igual nas 3 variantes) + 2 vagas da inicial do rival (posições 5–6): "
+            "o parceiro do triângulo que cobre a fraqueza da inicial e a inicial final como ás. "
+            "Variante = a inicial **do rival**, como nos times `_2` de hoje (o rival pega a inicial que vence a "
+            "do jogador).", "",
+            "| Variante (inicial do rival) | Posição 5 | Posição 6 (ás) |", "|---|---|---|"]
+    for v in VARIANTES_CAMPEAO:
+        par = [_nomes_especies()[m["species"]] for m in liga()["CAMPEAO"]["1"][v]]
+        out.append(f"| {v.title()} | {par[0]} | {par[1]} |")
+    out.append("")
+    for d in DEGRAUS:
+        out += [f"**Degrau {d}**", ""] + cab
+        nivs = niveis(d, "campeao")
+        bloco = liga()["CAMPEAO"][str(d)]
+        for p, m in enumerate(bloco["base"], 1):
+            out.append(_linha_mon(p, m["species"], nivs[p - 1], m["item"], m["moves"]))
+        for v in VARIANTES_CAMPEAO:
+            for k, m in enumerate(bloco[v]):
+                p = TAMANHO_BASE_CAMPEAO + k + 1
+                out.append(_linha_mon(p, m["species"], nivs[p - 1], m["item"], m["moves"])
+                           .replace(f"| {p} |", f"| {p} ({v.title()}) |", 1))
+        out.append("")
+    return "\n".join(out)
+
+
 # ---------------------------------------------------------------- header C
 
 HEADER = REPO / "src" / "data" / "rematch_tiers.h"
@@ -427,14 +674,48 @@ def header() -> str:
             out.append(f"        {{{mons}}},")
         out.append("    },")
     out += ["};", ""]
+    out += header_liga()
     return "\n".join(out)
+
+
+def header_liga() -> list[str]:
+    """As linhas de sLeagueTierParties (tools/revanches/liga.json), no fim de src/data/rematch_tiers.h."""
+    out = ["// Elite 4 e Campeão por degrau (tools/revanches/liga.json, times à mão), lidos por src/rematch_tier.c:",
+           "// [trainerNum - TRAINER_ELITE_FOUR_LORELEI_2][degrau - 1][posição]; ids 735-741 = Lorelei, Bruno, Agatha,",
+           "// Lance _2 e TRAINER_CHAMPION_REMATCH_SQUIRTLE/BULBASAUR/CHARMANDER (a inicial do rival). IV 31 = 255.",
+           "",
+           "static const struct TrainerMonItemCustomMoves sLeagueTierParties[7][REMATCH_TIER_COUNT][PARTY_SIZE] =",
+           "{"]
+    por_id: dict[str, list] = {}
+    for (rotulo, membro, d, v), time in times_liga():
+        trainer = f"TRAINER_CHAMPION_REMATCH_{v}" if membro == "CAMPEAO" else ID_LIGA[membro]
+        por_id.setdefault(trainer, []).append((d, time))
+    ordem = [ID_LIGA[m] for m in MEMBROS_LIGA] + [f"TRAINER_CHAMPION_REMATCH_{v}" for v in VARIANTES_CAMPEAO]
+    ids = [_id_treinador()[t] for t in ordem]
+    if ids != list(range(ids[0], ids[0] + len(ids))):
+        falha(f"opponents.h: os ids da Liga não são seguidos na ordem {ordem}: {ids}")
+    for trainer in ordem:
+        out += [f"    // {trainer}", "    {"]
+        for d, time in por_id[trainer]:
+            out += [f"        // degrau {d}", "        {"]
+            for e, n, it, golpes in time:
+                out.append(f"            {{.iv = {IV_LIGA}, .lvl = {n}, .species = {e}, .heldItem = {it}, "
+                           f".moves = {{{', '.join(golpes)}}}}},")
+            out.append("        },")
+        out.append("    },")
+    out += ["};", ""]
+    return out
 
 
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--conferir", action="store_true", help="sai com 1 se o header commitado divergir")
     ap.add_argument("--amostra", action="store_true", help="imprime a amostra em Markdown")
+    ap.add_argument("--amostra-liga", action="store_true", help="imprime os times da Liga por degrau em Markdown")
     args = ap.parse_args()
+    if args.amostra_liga:
+        sys.stdout.write(amostra_liga())
+        return
     if args.amostra:
         sys.stdout.write(amostra())
         return

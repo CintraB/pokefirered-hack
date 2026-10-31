@@ -562,6 +562,9 @@ static const struct RematchData sRematches[] = {
       MAP(MAP_SEVEN_ISLAND_TANOBY_RUINS) },
 };
 
+// POK-42: a tabela gerada de revanches por degrau (src/data/rematch_tiers.h) tem uma linha por linha daqui.
+STATIC_ASSERT(NELEMS(sRematches) == VS_SEEKER_REMATCH_ROWS, VsSeekerRematchRowsIgualASRematches);
+
 static const u8 sMovementScript_Wait48[] = {
     MOVEMENT_ACTION_DELAY_16,
     MOVEMENT_ACTION_DELAY_16,

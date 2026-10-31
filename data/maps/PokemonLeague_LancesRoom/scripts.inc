@@ -107,8 +107,7 @@ PokemonLeague_LancesRoom_EventScript_Lance::
 	call_if_set FLAG_SYS_GAME_CLEAR, PokemonLeague_LancesRoom_EventScript_RematchIntro
 	setflag FLAG_TEMP_3
 	setflag FLAG_TEMP_5
-	call_if_unset FLAG_SYS_CAN_LINK_WITH_RS, PokemonLeague_LancesRoom_EventScript_Battle
-	call_if_set FLAG_SYS_CAN_LINK_WITH_RS, PokemonLeague_LancesRoom_EventScript_Rematch
+	call PokemonLeague_LancesRoom_EventScript_ChooseBattle
 	clearflag FLAG_TEMP_5
 	goto PokemonLeague_LancesRoom_EventScript_DefeatedLance
 	end
@@ -120,6 +119,11 @@ PokemonLeague_LancesRoom_EventScript_Intro::
 PokemonLeague_LancesRoom_EventScript_RematchIntro::
 	msgbox PokemonLeague_LancesRoom_Text_RematchIntro
 	return
+
+PokemonLeague_LancesRoom_EventScript_ChooseBattle::
+	specialvar VAR_RESULT, ShouldUseLeagueRematchTeams
+	goto_if_eq VAR_RESULT, TRUE, PokemonLeague_LancesRoom_EventScript_Rematch
+	goto PokemonLeague_LancesRoom_EventScript_Battle
 
 PokemonLeague_LancesRoom_EventScript_Battle::
 	trainerbattle_no_intro TRAINER_ELITE_FOUR_LANCE, PokemonLeague_LancesRoom_Text_Defeat

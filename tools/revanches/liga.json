@@ -1,0 +1,1803 @@
+{
+  "_comentario": "Times à mão da Elite 4 e do Campeão por degrau (POK-42, Task 3). Nível = niveis(degrau, 'elite'|'campeao') em gerar.py; IV sempre 31. Campeão: base (posições 1–4) + a variante da inicial do rival (posições 5–6: parceiro do triângulo e a inicial final, que é o ás). Degraus 1–2: quem não é o ás leva a fruta do Vs. Seeker (gerar.item_fruta_liga).",
+  "LORELEI": {
+    "1": [
+      {
+        "species": "SPECIES_DEWGONG",
+        "item": "ITEM_RAWST_BERRY",
+        "moves": [
+          "MOVE_SURF",
+          "MOVE_ICE_BEAM",
+          "MOVE_SIGNAL_BEAM",
+          "MOVE_FAKE_OUT"
+        ]
+      },
+      {
+        "species": "SPECIES_SLOWBRO",
+        "item": "ITEM_ASPEAR_BERRY",
+        "moves": [
+          "MOVE_SURF",
+          "MOVE_PSYCHIC",
+          "MOVE_ICE_BEAM",
+          "MOVE_THUNDER_WAVE"
+        ]
+      },
+      {
+        "species": "SPECIES_PILOSWINE",
+        "item": "ITEM_PERSIM_BERRY",
+        "moves": [
+          "MOVE_EARTHQUAKE",
+          "MOVE_ICICLE_SPEAR",
+          "MOVE_ROCK_SLIDE",
+          "MOVE_DOUBLE_EDGE"
+        ]
+      },
+      {
+        "species": "SPECIES_JYNX",
+        "item": "ITEM_CHERI_BERRY",
+        "moves": [
+          "MOVE_ICE_BEAM",
+          "MOVE_PSYCHIC",
+          "MOVE_LOVELY_KISS",
+          "MOVE_CALM_MIND"
+        ]
+      },
+      {
+        "species": "SPECIES_CLOYSTER",
+        "item": "ITEM_CHESTO_BERRY",
+        "moves": [
+          "MOVE_SURF",
+          "MOVE_ICE_BEAM",
+          "MOVE_SPIKES",
+          "MOVE_EXPLOSION"
+        ]
+      },
+      {
+        "species": "SPECIES_LAPRAS",
+        "item": "ITEM_SITRUS_BERRY",
+        "moves": [
+          "MOVE_SURF",
+          "MOVE_ICE_BEAM",
+          "MOVE_THUNDERBOLT",
+          "MOVE_PSYCHIC"
+        ]
+      }
+    ],
+    "2": [
+      {
+        "species": "SPECIES_WALREIN",
+        "item": "ITEM_SITRUS_BERRY",
+        "moves": [
+          "MOVE_SURF",
+          "MOVE_ICE_BEAM",
+          "MOVE_EARTHQUAKE",
+          "MOVE_BODY_SLAM"
+        ]
+      },
+      {
+        "species": "SPECIES_SLOWBRO",
+        "item": "ITEM_LUM_BERRY",
+        "moves": [
+          "MOVE_SURF",
+          "MOVE_PSYCHIC",
+          "MOVE_ICE_BEAM",
+          "MOVE_THUNDER_WAVE"
+        ]
+      },
+      {
+        "species": "SPECIES_PILOSWINE",
+        "item": "ITEM_SITRUS_BERRY",
+        "moves": [
+          "MOVE_EARTHQUAKE",
+          "MOVE_ICICLE_SPEAR",
+          "MOVE_ROCK_SLIDE",
+          "MOVE_DOUBLE_EDGE"
+        ]
+      },
+      {
+        "species": "SPECIES_JYNX",
+        "item": "ITEM_LUM_BERRY",
+        "moves": [
+          "MOVE_ICE_BEAM",
+          "MOVE_PSYCHIC",
+          "MOVE_LOVELY_KISS",
+          "MOVE_CALM_MIND"
+        ]
+      },
+      {
+        "species": "SPECIES_CLOYSTER",
+        "item": "ITEM_SITRUS_BERRY",
+        "moves": [
+          "MOVE_SURF",
+          "MOVE_ICE_BEAM",
+          "MOVE_SPIKES",
+          "MOVE_EXPLOSION"
+        ]
+      },
+      {
+        "species": "SPECIES_LAPRAS",
+        "item": "ITEM_LEFTOVERS",
+        "moves": [
+          "MOVE_SURF",
+          "MOVE_ICE_BEAM",
+          "MOVE_THUNDERBOLT",
+          "MOVE_PSYCHIC"
+        ]
+      }
+    ],
+    "3": [
+      {
+        "species": "SPECIES_WALREIN",
+        "item": "ITEM_SHELL_BELL",
+        "moves": [
+          "MOVE_SURF",
+          "MOVE_ICE_BEAM",
+          "MOVE_EARTHQUAKE",
+          "MOVE_BODY_SLAM"
+        ]
+      },
+      {
+        "species": "SPECIES_STARMIE",
+        "item": "ITEM_LUM_BERRY",
+        "moves": [
+          "MOVE_SURF",
+          "MOVE_THUNDERBOLT",
+          "MOVE_PSYCHIC",
+          "MOVE_RECOVER"
+        ]
+      },
+      {
+        "species": "SPECIES_PILOSWINE",
+        "item": "ITEM_SOFT_SAND",
+        "moves": [
+          "MOVE_EARTHQUAKE",
+          "MOVE_ICICLE_SPEAR",
+          "MOVE_ROCK_SLIDE",
+          "MOVE_DOUBLE_EDGE"
+        ]
+      },
+      {
+        "species": "SPECIES_JYNX",
+        "item": "ITEM_NEVER_MELT_ICE",
+        "moves": [
+          "MOVE_ICE_BEAM",
+          "MOVE_PSYCHIC",
+          "MOVE_LOVELY_KISS",
+          "MOVE_CALM_MIND"
+        ]
+      },
+      {
+        "species": "SPECIES_CLOYSTER",
+        "item": "ITEM_MYSTIC_WATER",
+        "moves": [
+          "MOVE_SURF",
+          "MOVE_ICE_BEAM",
+          "MOVE_SPIKES",
+          "MOVE_EXPLOSION"
+        ]
+      },
+      {
+        "species": "SPECIES_LAPRAS",
+        "item": "ITEM_LEFTOVERS",
+        "moves": [
+          "MOVE_SURF",
+          "MOVE_ICE_BEAM",
+          "MOVE_THUNDERBOLT",
+          "MOVE_PSYCHIC"
+        ]
+      }
+    ],
+    "4": [
+      {
+        "species": "SPECIES_WALREIN",
+        "item": "ITEM_SHELL_BELL",
+        "moves": [
+          "MOVE_SURF",
+          "MOVE_ICE_BEAM",
+          "MOVE_EARTHQUAKE",
+          "MOVE_BODY_SLAM"
+        ]
+      },
+      {
+        "species": "SPECIES_STARMIE",
+        "item": "ITEM_LUM_BERRY",
+        "moves": [
+          "MOVE_SURF",
+          "MOVE_THUNDERBOLT",
+          "MOVE_PSYCHIC",
+          "MOVE_RECOVER"
+        ]
+      },
+      {
+        "species": "SPECIES_MILOTIC",
+        "item": "ITEM_SITRUS_BERRY",
+        "moves": [
+          "MOVE_SURF",
+          "MOVE_ICE_BEAM",
+          "MOVE_RECOVER",
+          "MOVE_MIRROR_COAT"
+        ]
+      },
+      {
+        "species": "SPECIES_JYNX",
+        "item": "ITEM_NEVER_MELT_ICE",
+        "moves": [
+          "MOVE_ICE_BEAM",
+          "MOVE_PSYCHIC",
+          "MOVE_LOVELY_KISS",
+          "MOVE_CALM_MIND"
+        ]
+      },
+      {
+        "species": "SPECIES_CLOYSTER",
+        "item": "ITEM_MYSTIC_WATER",
+        "moves": [
+          "MOVE_SURF",
+          "MOVE_ICE_BEAM",
+          "MOVE_SPIKES",
+          "MOVE_EXPLOSION"
+        ]
+      },
+      {
+        "species": "SPECIES_LAPRAS",
+        "item": "ITEM_LEFTOVERS",
+        "moves": [
+          "MOVE_SURF",
+          "MOVE_ICE_BEAM",
+          "MOVE_THUNDERBOLT",
+          "MOVE_PSYCHIC"
+        ]
+      }
+    ],
+    "5": [
+      {
+        "species": "SPECIES_WALREIN",
+        "item": "ITEM_SHELL_BELL",
+        "moves": [
+          "MOVE_SURF",
+          "MOVE_ICE_BEAM",
+          "MOVE_EARTHQUAKE",
+          "MOVE_BODY_SLAM"
+        ]
+      },
+      {
+        "species": "SPECIES_STARMIE",
+        "item": "ITEM_LUM_BERRY",
+        "moves": [
+          "MOVE_SURF",
+          "MOVE_THUNDERBOLT",
+          "MOVE_PSYCHIC",
+          "MOVE_RECOVER"
+        ]
+      },
+      {
+        "species": "SPECIES_MILOTIC",
+        "item": "ITEM_SITRUS_BERRY",
+        "moves": [
+          "MOVE_SURF",
+          "MOVE_ICE_BEAM",
+          "MOVE_RECOVER",
+          "MOVE_MIRROR_COAT"
+        ]
+      },
+      {
+        "species": "SPECIES_KINGDRA",
+        "item": "ITEM_DRAGON_FANG",
+        "moves": [
+          "MOVE_HYDRO_PUMP",
+          "MOVE_DRAGON_BREATH",
+          "MOVE_ICE_BEAM",
+          "MOVE_RAIN_DANCE"
+        ]
+      },
+      {
+        "species": "SPECIES_CLOYSTER",
+        "item": "ITEM_MYSTIC_WATER",
+        "moves": [
+          "MOVE_SURF",
+          "MOVE_ICE_BEAM",
+          "MOVE_SPIKES",
+          "MOVE_EXPLOSION"
+        ]
+      },
+      {
+        "species": "SPECIES_LAPRAS",
+        "item": "ITEM_LEFTOVERS",
+        "moves": [
+          "MOVE_SURF",
+          "MOVE_ICE_BEAM",
+          "MOVE_THUNDERBOLT",
+          "MOVE_PSYCHIC"
+        ]
+      }
+    ]
+  },
+  "BRUNO": {
+    "1": [
+      {
+        "species": "SPECIES_HITMONTOP",
+        "item": "ITEM_ASPEAR_BERRY",
+        "moves": [
+          "MOVE_TRIPLE_KICK",
+          "MOVE_MACH_PUNCH",
+          "MOVE_ROCK_SLIDE",
+          "MOVE_DETECT"
+        ]
+      },
+      {
+        "species": "SPECIES_HITMONCHAN",
+        "item": "ITEM_PERSIM_BERRY",
+        "moves": [
+          "MOVE_SKY_UPPERCUT",
+          "MOVE_MACH_PUNCH",
+          "MOVE_THUNDER_PUNCH",
+          "MOVE_ICE_PUNCH"
+        ]
+      },
+      {
+        "species": "SPECIES_GOLEM",
+        "item": "ITEM_CHERI_BERRY",
+        "moves": [
+          "MOVE_EARTHQUAKE",
+          "MOVE_ROCK_SLIDE",
+          "MOVE_EXPLOSION",
+          "MOVE_BRICK_BREAK"
+        ]
+      },
+      {
+        "species": "SPECIES_HITMONLEE",
+        "item": "ITEM_CHESTO_BERRY",
+        "moves": [
+          "MOVE_HI_JUMP_KICK",
+          "MOVE_MACH_PUNCH",
+          "MOVE_ROCK_SLIDE",
+          "MOVE_EARTHQUAKE"
+        ]
+      },
+      {
+        "species": "SPECIES_STEELIX",
+        "item": "ITEM_PECHA_BERRY",
+        "moves": [
+          "MOVE_EARTHQUAKE",
+          "MOVE_IRON_TAIL",
+          "MOVE_CRUNCH",
+          "MOVE_ROCK_SLIDE"
+        ]
+      },
+      {
+        "species": "SPECIES_MACHAMP",
+        "item": "ITEM_SITRUS_BERRY",
+        "moves": [
+          "MOVE_CROSS_CHOP",
+          "MOVE_EARTHQUAKE",
+          "MOVE_ROCK_SLIDE",
+          "MOVE_BULK_UP"
+        ]
+      }
+    ],
+    "2": [
+      {
+        "species": "SPECIES_HARIYAMA",
+        "item": "ITEM_SITRUS_BERRY",
+        "moves": [
+          "MOVE_CROSS_CHOP",
+          "MOVE_FAKE_OUT",
+          "MOVE_ROCK_SLIDE",
+          "MOVE_KNOCK_OFF"
+        ]
+      },
+      {
+        "species": "SPECIES_HITMONCHAN",
+        "item": "ITEM_LUM_BERRY",
+        "moves": [
+          "MOVE_SKY_UPPERCUT",
+          "MOVE_MACH_PUNCH",
+          "MOVE_THUNDER_PUNCH",
+          "MOVE_ICE_PUNCH"
+        ]
+      },
+      {
+        "species": "SPECIES_GOLEM",
+        "item": "ITEM_SITRUS_BERRY",
+        "moves": [
+          "MOVE_EARTHQUAKE",
+          "MOVE_ROCK_SLIDE",
+          "MOVE_EXPLOSION",
+          "MOVE_BRICK_BREAK"
+        ]
+      },
+      {
+        "species": "SPECIES_HITMONLEE",
+        "item": "ITEM_LUM_BERRY",
+        "moves": [
+          "MOVE_HI_JUMP_KICK",
+          "MOVE_MACH_PUNCH",
+          "MOVE_ROCK_SLIDE",
+          "MOVE_EARTHQUAKE"
+        ]
+      },
+      {
+        "species": "SPECIES_STEELIX",
+        "item": "ITEM_SITRUS_BERRY",
+        "moves": [
+          "MOVE_EARTHQUAKE",
+          "MOVE_IRON_TAIL",
+          "MOVE_CRUNCH",
+          "MOVE_ROCK_SLIDE"
+        ]
+      },
+      {
+        "species": "SPECIES_MACHAMP",
+        "item": "ITEM_BLACK_BELT",
+        "moves": [
+          "MOVE_CROSS_CHOP",
+          "MOVE_EARTHQUAKE",
+          "MOVE_ROCK_SLIDE",
+          "MOVE_BULK_UP"
+        ]
+      }
+    ],
+    "3": [
+      {
+        "species": "SPECIES_HARIYAMA",
+        "item": "ITEM_LEFTOVERS",
+        "moves": [
+          "MOVE_CROSS_CHOP",
+          "MOVE_FAKE_OUT",
+          "MOVE_ROCK_SLIDE",
+          "MOVE_KNOCK_OFF"
+        ]
+      },
+      {
+        "species": "SPECIES_HITMONCHAN",
+        "item": "ITEM_SCOPE_LENS",
+        "moves": [
+          "MOVE_SKY_UPPERCUT",
+          "MOVE_MACH_PUNCH",
+          "MOVE_THUNDER_PUNCH",
+          "MOVE_ICE_PUNCH"
+        ]
+      },
+      {
+        "species": "SPECIES_AGGRON",
+        "item": "ITEM_HARD_STONE",
+        "moves": [
+          "MOVE_IRON_TAIL",
+          "MOVE_ROCK_SLIDE",
+          "MOVE_EARTHQUAKE",
+          "MOVE_DOUBLE_EDGE"
+        ]
+      },
+      {
+        "species": "SPECIES_HITMONLEE",
+        "item": "ITEM_LUM_BERRY",
+        "moves": [
+          "MOVE_HI_JUMP_KICK",
+          "MOVE_MACH_PUNCH",
+          "MOVE_ROCK_SLIDE",
+          "MOVE_EARTHQUAKE"
+        ]
+      },
+      {
+        "species": "SPECIES_STEELIX",
+        "item": "ITEM_SOFT_SAND",
+        "moves": [
+          "MOVE_EARTHQUAKE",
+          "MOVE_IRON_TAIL",
+          "MOVE_CRUNCH",
+          "MOVE_ROCK_SLIDE"
+        ]
+      },
+      {
+        "species": "SPECIES_MACHAMP",
+        "item": "ITEM_BLACK_BELT",
+        "moves": [
+          "MOVE_CROSS_CHOP",
+          "MOVE_EARTHQUAKE",
+          "MOVE_ROCK_SLIDE",
+          "MOVE_BULK_UP"
+        ]
+      }
+    ],
+    "4": [
+      {
+        "species": "SPECIES_HARIYAMA",
+        "item": "ITEM_LEFTOVERS",
+        "moves": [
+          "MOVE_CROSS_CHOP",
+          "MOVE_FAKE_OUT",
+          "MOVE_ROCK_SLIDE",
+          "MOVE_KNOCK_OFF"
+        ]
+      },
+      {
+        "species": "SPECIES_SWAMPERT",
+        "item": "ITEM_SITRUS_BERRY",
+        "moves": [
+          "MOVE_EARTHQUAKE",
+          "MOVE_WATERFALL",
+          "MOVE_ROCK_SLIDE",
+          "MOVE_ICE_BEAM"
+        ]
+      },
+      {
+        "species": "SPECIES_AGGRON",
+        "item": "ITEM_HARD_STONE",
+        "moves": [
+          "MOVE_IRON_TAIL",
+          "MOVE_ROCK_SLIDE",
+          "MOVE_EARTHQUAKE",
+          "MOVE_DOUBLE_EDGE"
+        ]
+      },
+      {
+        "species": "SPECIES_HITMONLEE",
+        "item": "ITEM_LUM_BERRY",
+        "moves": [
+          "MOVE_HI_JUMP_KICK",
+          "MOVE_MACH_PUNCH",
+          "MOVE_ROCK_SLIDE",
+          "MOVE_EARTHQUAKE"
+        ]
+      },
+      {
+        "species": "SPECIES_STEELIX",
+        "item": "ITEM_SOFT_SAND",
+        "moves": [
+          "MOVE_EARTHQUAKE",
+          "MOVE_IRON_TAIL",
+          "MOVE_CRUNCH",
+          "MOVE_ROCK_SLIDE"
+        ]
+      },
+      {
+        "species": "SPECIES_MACHAMP",
+        "item": "ITEM_BLACK_BELT",
+        "moves": [
+          "MOVE_CROSS_CHOP",
+          "MOVE_EARTHQUAKE",
+          "MOVE_ROCK_SLIDE",
+          "MOVE_BULK_UP"
+        ]
+      }
+    ],
+    "5": [
+      {
+        "species": "SPECIES_HARIYAMA",
+        "item": "ITEM_LEFTOVERS",
+        "moves": [
+          "MOVE_CROSS_CHOP",
+          "MOVE_FAKE_OUT",
+          "MOVE_ROCK_SLIDE",
+          "MOVE_KNOCK_OFF"
+        ]
+      },
+      {
+        "species": "SPECIES_SWAMPERT",
+        "item": "ITEM_SITRUS_BERRY",
+        "moves": [
+          "MOVE_EARTHQUAKE",
+          "MOVE_WATERFALL",
+          "MOVE_ROCK_SLIDE",
+          "MOVE_ICE_BEAM"
+        ]
+      },
+      {
+        "species": "SPECIES_AGGRON",
+        "item": "ITEM_HARD_STONE",
+        "moves": [
+          "MOVE_IRON_TAIL",
+          "MOVE_ROCK_SLIDE",
+          "MOVE_EARTHQUAKE",
+          "MOVE_DOUBLE_EDGE"
+        ]
+      },
+      {
+        "species": "SPECIES_TYRANITAR",
+        "item": "ITEM_LUM_BERRY",
+        "moves": [
+          "MOVE_DRAGON_DANCE",
+          "MOVE_CRUNCH",
+          "MOVE_ROCK_SLIDE",
+          "MOVE_EARTHQUAKE"
+        ]
+      },
+      {
+        "species": "SPECIES_STEELIX",
+        "item": "ITEM_SOFT_SAND",
+        "moves": [
+          "MOVE_EARTHQUAKE",
+          "MOVE_IRON_TAIL",
+          "MOVE_CRUNCH",
+          "MOVE_ROCK_SLIDE"
+        ]
+      },
+      {
+        "species": "SPECIES_MACHAMP",
+        "item": "ITEM_BLACK_BELT",
+        "moves": [
+          "MOVE_CROSS_CHOP",
+          "MOVE_EARTHQUAKE",
+          "MOVE_ROCK_SLIDE",
+          "MOVE_BULK_UP"
+        ]
+      }
+    ]
+  },
+  "AGATHA": {
+    "1": [
+      {
+        "species": "SPECIES_MISDREAVUS",
+        "item": "ITEM_PERSIM_BERRY",
+        "moves": [
+          "MOVE_SHADOW_BALL",
+          "MOVE_THUNDERBOLT",
+          "MOVE_PSYCHIC",
+          "MOVE_CALM_MIND"
+        ]
+      },
+      {
+        "species": "SPECIES_HAUNTER",
+        "item": "ITEM_CHERI_BERRY",
+        "moves": [
+          "MOVE_SHADOW_BALL",
+          "MOVE_SLUDGE_BOMB",
+          "MOVE_HYPNOSIS",
+          "MOVE_DREAM_EATER"
+        ]
+      },
+      {
+        "species": "SPECIES_ARBOK",
+        "item": "ITEM_CHESTO_BERRY",
+        "moves": [
+          "MOVE_POISON_FANG",
+          "MOVE_EARTHQUAKE",
+          "MOVE_ROCK_SLIDE",
+          "MOVE_GLARE"
+        ]
+      },
+      {
+        "species": "SPECIES_WEEZING",
+        "item": "ITEM_PECHA_BERRY",
+        "moves": [
+          "MOVE_SLUDGE_BOMB",
+          "MOVE_FLAMETHROWER",
+          "MOVE_THUNDERBOLT",
+          "MOVE_WILL_O_WISP"
+        ]
+      },
+      {
+        "species": "SPECIES_CROBAT",
+        "item": "ITEM_RAWST_BERRY",
+        "moves": [
+          "MOVE_SLUDGE_BOMB",
+          "MOVE_AERIAL_ACE",
+          "MOVE_SHADOW_BALL",
+          "MOVE_CONFUSE_RAY"
+        ]
+      },
+      {
+        "species": "SPECIES_GENGAR",
+        "item": "ITEM_SITRUS_BERRY",
+        "moves": [
+          "MOVE_SHADOW_BALL",
+          "MOVE_SLUDGE_BOMB",
+          "MOVE_THUNDERBOLT",
+          "MOVE_HYPNOSIS"
+        ]
+      }
+    ],
+    "2": [
+      {
+        "species": "SPECIES_MISDREAVUS",
+        "item": "ITEM_SITRUS_BERRY",
+        "moves": [
+          "MOVE_SHADOW_BALL",
+          "MOVE_THUNDERBOLT",
+          "MOVE_PSYCHIC",
+          "MOVE_CALM_MIND"
+        ]
+      },
+      {
+        "species": "SPECIES_DUSCLOPS",
+        "item": "ITEM_LUM_BERRY",
+        "moves": [
+          "MOVE_NIGHT_SHADE",
+          "MOVE_WILL_O_WISP",
+          "MOVE_PAIN_SPLIT",
+          "MOVE_CONFUSE_RAY"
+        ]
+      },
+      {
+        "species": "SPECIES_ARBOK",
+        "item": "ITEM_SITRUS_BERRY",
+        "moves": [
+          "MOVE_POISON_FANG",
+          "MOVE_EARTHQUAKE",
+          "MOVE_ROCK_SLIDE",
+          "MOVE_GLARE"
+        ]
+      },
+      {
+        "species": "SPECIES_WEEZING",
+        "item": "ITEM_LUM_BERRY",
+        "moves": [
+          "MOVE_SLUDGE_BOMB",
+          "MOVE_FLAMETHROWER",
+          "MOVE_THUNDERBOLT",
+          "MOVE_WILL_O_WISP"
+        ]
+      },
+      {
+        "species": "SPECIES_CROBAT",
+        "item": "ITEM_SITRUS_BERRY",
+        "moves": [
+          "MOVE_SLUDGE_BOMB",
+          "MOVE_AERIAL_ACE",
+          "MOVE_SHADOW_BALL",
+          "MOVE_CONFUSE_RAY"
+        ]
+      },
+      {
+        "species": "SPECIES_GENGAR",
+        "item": "ITEM_SPELL_TAG",
+        "moves": [
+          "MOVE_SHADOW_BALL",
+          "MOVE_SLUDGE_BOMB",
+          "MOVE_THUNDERBOLT",
+          "MOVE_HYPNOSIS"
+        ]
+      }
+    ],
+    "3": [
+      {
+        "species": "SPECIES_MISDREAVUS",
+        "item": "ITEM_BRIGHT_POWDER",
+        "moves": [
+          "MOVE_SHADOW_BALL",
+          "MOVE_THUNDERBOLT",
+          "MOVE_PSYCHIC",
+          "MOVE_CALM_MIND"
+        ]
+      },
+      {
+        "species": "SPECIES_DUSCLOPS",
+        "item": "ITEM_LEFTOVERS",
+        "moves": [
+          "MOVE_NIGHT_SHADE",
+          "MOVE_WILL_O_WISP",
+          "MOVE_PAIN_SPLIT",
+          "MOVE_CONFUSE_RAY"
+        ]
+      },
+      {
+        "species": "SPECIES_NIDOKING",
+        "item": "ITEM_SOFT_SAND",
+        "moves": [
+          "MOVE_EARTHQUAKE",
+          "MOVE_SLUDGE_BOMB",
+          "MOVE_MEGAHORN",
+          "MOVE_THUNDERBOLT"
+        ]
+      },
+      {
+        "species": "SPECIES_WEEZING",
+        "item": "ITEM_POISON_BARB",
+        "moves": [
+          "MOVE_SLUDGE_BOMB",
+          "MOVE_FLAMETHROWER",
+          "MOVE_THUNDERBOLT",
+          "MOVE_WILL_O_WISP"
+        ]
+      },
+      {
+        "species": "SPECIES_CROBAT",
+        "item": "ITEM_SHARP_BEAK",
+        "moves": [
+          "MOVE_SLUDGE_BOMB",
+          "MOVE_AERIAL_ACE",
+          "MOVE_SHADOW_BALL",
+          "MOVE_CONFUSE_RAY"
+        ]
+      },
+      {
+        "species": "SPECIES_GENGAR",
+        "item": "ITEM_SPELL_TAG",
+        "moves": [
+          "MOVE_SHADOW_BALL",
+          "MOVE_SLUDGE_BOMB",
+          "MOVE_THUNDERBOLT",
+          "MOVE_HYPNOSIS"
+        ]
+      }
+    ],
+    "4": [
+      {
+        "species": "SPECIES_BANETTE",
+        "item": "ITEM_LUM_BERRY",
+        "moves": [
+          "MOVE_SHADOW_BALL",
+          "MOVE_KNOCK_OFF",
+          "MOVE_WILL_O_WISP",
+          "MOVE_THUNDERBOLT"
+        ]
+      },
+      {
+        "species": "SPECIES_DUSCLOPS",
+        "item": "ITEM_LEFTOVERS",
+        "moves": [
+          "MOVE_NIGHT_SHADE",
+          "MOVE_WILL_O_WISP",
+          "MOVE_PAIN_SPLIT",
+          "MOVE_CONFUSE_RAY"
+        ]
+      },
+      {
+        "species": "SPECIES_NIDOKING",
+        "item": "ITEM_SOFT_SAND",
+        "moves": [
+          "MOVE_EARTHQUAKE",
+          "MOVE_SLUDGE_BOMB",
+          "MOVE_MEGAHORN",
+          "MOVE_THUNDERBOLT"
+        ]
+      },
+      {
+        "species": "SPECIES_TENTACRUEL",
+        "item": "ITEM_SITRUS_BERRY",
+        "moves": [
+          "MOVE_SURF",
+          "MOVE_SLUDGE_BOMB",
+          "MOVE_ICE_BEAM",
+          "MOVE_GIGA_DRAIN"
+        ]
+      },
+      {
+        "species": "SPECIES_CROBAT",
+        "item": "ITEM_SHARP_BEAK",
+        "moves": [
+          "MOVE_SLUDGE_BOMB",
+          "MOVE_AERIAL_ACE",
+          "MOVE_SHADOW_BALL",
+          "MOVE_CONFUSE_RAY"
+        ]
+      },
+      {
+        "species": "SPECIES_GENGAR",
+        "item": "ITEM_SPELL_TAG",
+        "moves": [
+          "MOVE_SHADOW_BALL",
+          "MOVE_SLUDGE_BOMB",
+          "MOVE_THUNDERBOLT",
+          "MOVE_HYPNOSIS"
+        ]
+      }
+    ],
+    "5": [
+      {
+        "species": "SPECIES_BANETTE",
+        "item": "ITEM_LUM_BERRY",
+        "moves": [
+          "MOVE_SHADOW_BALL",
+          "MOVE_KNOCK_OFF",
+          "MOVE_WILL_O_WISP",
+          "MOVE_THUNDERBOLT"
+        ]
+      },
+      {
+        "species": "SPECIES_DUSCLOPS",
+        "item": "ITEM_LEFTOVERS",
+        "moves": [
+          "MOVE_NIGHT_SHADE",
+          "MOVE_WILL_O_WISP",
+          "MOVE_PAIN_SPLIT",
+          "MOVE_CONFUSE_RAY"
+        ]
+      },
+      {
+        "species": "SPECIES_NIDOKING",
+        "item": "ITEM_SOFT_SAND",
+        "moves": [
+          "MOVE_EARTHQUAKE",
+          "MOVE_SLUDGE_BOMB",
+          "MOVE_MEGAHORN",
+          "MOVE_THUNDERBOLT"
+        ]
+      },
+      {
+        "species": "SPECIES_SABLEYE",
+        "item": "ITEM_BRIGHT_POWDER",
+        "moves": [
+          "MOVE_SHADOW_BALL",
+          "MOVE_KNOCK_OFF",
+          "MOVE_RECOVER",
+          "MOVE_CONFUSE_RAY"
+        ]
+      },
+      {
+        "species": "SPECIES_CROBAT",
+        "item": "ITEM_SHARP_BEAK",
+        "moves": [
+          "MOVE_SLUDGE_BOMB",
+          "MOVE_AERIAL_ACE",
+          "MOVE_SHADOW_BALL",
+          "MOVE_CONFUSE_RAY"
+        ]
+      },
+      {
+        "species": "SPECIES_GENGAR",
+        "item": "ITEM_SPELL_TAG",
+        "moves": [
+          "MOVE_SHADOW_BALL",
+          "MOVE_SLUDGE_BOMB",
+          "MOVE_THUNDERBOLT",
+          "MOVE_HYPNOSIS"
+        ]
+      }
+    ]
+  },
+  "LANCE": {
+    "1": [
+      {
+        "species": "SPECIES_DRAGONAIR",
+        "item": "ITEM_CHERI_BERRY",
+        "moves": [
+          "MOVE_DRAGON_BREATH",
+          "MOVE_ICE_BEAM",
+          "MOVE_THUNDERBOLT",
+          "MOVE_THUNDER_WAVE"
+        ]
+      },
+      {
+        "species": "SPECIES_ALTARIA",
+        "item": "ITEM_CHESTO_BERRY",
+        "moves": [
+          "MOVE_DRAGON_DANCE",
+          "MOVE_DRAGON_CLAW",
+          "MOVE_EARTHQUAKE",
+          "MOVE_MOONBLAST"
+        ]
+      },
+      {
+        "species": "SPECIES_AERODACTYL",
+        "item": "ITEM_PECHA_BERRY",
+        "moves": [
+          "MOVE_ROCK_SLIDE",
+          "MOVE_EARTHQUAKE",
+          "MOVE_AERIAL_ACE",
+          "MOVE_DRAGON_CLAW"
+        ]
+      },
+      {
+        "species": "SPECIES_GYARADOS",
+        "item": "ITEM_RAWST_BERRY",
+        "moves": [
+          "MOVE_DRAGON_DANCE",
+          "MOVE_WATERFALL",
+          "MOVE_EARTHQUAKE",
+          "MOVE_THUNDER_WAVE"
+        ]
+      },
+      {
+        "species": "SPECIES_KINGDRA",
+        "item": "ITEM_ASPEAR_BERRY",
+        "moves": [
+          "MOVE_HYDRO_PUMP",
+          "MOVE_DRAGON_BREATH",
+          "MOVE_ICE_BEAM",
+          "MOVE_RAIN_DANCE"
+        ]
+      },
+      {
+        "species": "SPECIES_DRAGONITE",
+        "item": "ITEM_SITRUS_BERRY",
+        "moves": [
+          "MOVE_DRAGON_DANCE",
+          "MOVE_OUTRAGE",
+          "MOVE_EARTHQUAKE",
+          "MOVE_HYPER_BEAM"
+        ]
+      }
+    ],
+    "2": [
+      {
+        "species": "SPECIES_FLYGON",
+        "item": "ITEM_SITRUS_BERRY",
+        "moves": [
+          "MOVE_EARTHQUAKE",
+          "MOVE_DRAGON_CLAW",
+          "MOVE_ROCK_SLIDE",
+          "MOVE_FIRE_BLAST"
+        ]
+      },
+      {
+        "species": "SPECIES_ALTARIA",
+        "item": "ITEM_LUM_BERRY",
+        "moves": [
+          "MOVE_DRAGON_DANCE",
+          "MOVE_DRAGON_CLAW",
+          "MOVE_EARTHQUAKE",
+          "MOVE_MOONBLAST"
+        ]
+      },
+      {
+        "species": "SPECIES_AERODACTYL",
+        "item": "ITEM_SITRUS_BERRY",
+        "moves": [
+          "MOVE_ROCK_SLIDE",
+          "MOVE_EARTHQUAKE",
+          "MOVE_AERIAL_ACE",
+          "MOVE_DRAGON_CLAW"
+        ]
+      },
+      {
+        "species": "SPECIES_GYARADOS",
+        "item": "ITEM_LUM_BERRY",
+        "moves": [
+          "MOVE_DRAGON_DANCE",
+          "MOVE_WATERFALL",
+          "MOVE_EARTHQUAKE",
+          "MOVE_THUNDER_WAVE"
+        ]
+      },
+      {
+        "species": "SPECIES_KINGDRA",
+        "item": "ITEM_SITRUS_BERRY",
+        "moves": [
+          "MOVE_HYDRO_PUMP",
+          "MOVE_DRAGON_BREATH",
+          "MOVE_ICE_BEAM",
+          "MOVE_RAIN_DANCE"
+        ]
+      },
+      {
+        "species": "SPECIES_DRAGONITE",
+        "item": "ITEM_DRAGON_FANG",
+        "moves": [
+          "MOVE_DRAGON_DANCE",
+          "MOVE_OUTRAGE",
+          "MOVE_EARTHQUAKE",
+          "MOVE_HYPER_BEAM"
+        ]
+      }
+    ],
+    "3": [
+      {
+        "species": "SPECIES_FLYGON",
+        "item": "ITEM_SOFT_SAND",
+        "moves": [
+          "MOVE_EARTHQUAKE",
+          "MOVE_DRAGON_CLAW",
+          "MOVE_ROCK_SLIDE",
+          "MOVE_FIRE_BLAST"
+        ]
+      },
+      {
+        "species": "SPECIES_ALTARIA",
+        "item": "ITEM_LUM_BERRY",
+        "moves": [
+          "MOVE_DRAGON_DANCE",
+          "MOVE_DRAGON_CLAW",
+          "MOVE_EARTHQUAKE",
+          "MOVE_MOONBLAST"
+        ]
+      },
+      {
+        "species": "SPECIES_AERODACTYL",
+        "item": "ITEM_KINGS_ROCK",
+        "moves": [
+          "MOVE_ROCK_SLIDE",
+          "MOVE_EARTHQUAKE",
+          "MOVE_AERIAL_ACE",
+          "MOVE_DRAGON_CLAW"
+        ]
+      },
+      {
+        "species": "SPECIES_GYARADOS",
+        "item": "ITEM_LEFTOVERS",
+        "moves": [
+          "MOVE_DRAGON_DANCE",
+          "MOVE_WATERFALL",
+          "MOVE_EARTHQUAKE",
+          "MOVE_THUNDER_WAVE"
+        ]
+      },
+      {
+        "species": "SPECIES_KINGDRA",
+        "item": "ITEM_MYSTIC_WATER",
+        "moves": [
+          "MOVE_HYDRO_PUMP",
+          "MOVE_DRAGON_BREATH",
+          "MOVE_ICE_BEAM",
+          "MOVE_RAIN_DANCE"
+        ]
+      },
+      {
+        "species": "SPECIES_DRAGONITE",
+        "item": "ITEM_DRAGON_FANG",
+        "moves": [
+          "MOVE_DRAGON_DANCE",
+          "MOVE_OUTRAGE",
+          "MOVE_EARTHQUAKE",
+          "MOVE_HYPER_BEAM"
+        ]
+      }
+    ],
+    "4": [
+      {
+        "species": "SPECIES_FLYGON",
+        "item": "ITEM_SOFT_SAND",
+        "moves": [
+          "MOVE_EARTHQUAKE",
+          "MOVE_DRAGON_CLAW",
+          "MOVE_ROCK_SLIDE",
+          "MOVE_FIRE_BLAST"
+        ]
+      },
+      {
+        "species": "SPECIES_SALAMENCE",
+        "item": "ITEM_LUM_BERRY",
+        "moves": [
+          "MOVE_DRAGON_DANCE",
+          "MOVE_DRAGON_CLAW",
+          "MOVE_EARTHQUAKE",
+          "MOVE_AERIAL_ACE"
+        ]
+      },
+      {
+        "species": "SPECIES_AERODACTYL",
+        "item": "ITEM_KINGS_ROCK",
+        "moves": [
+          "MOVE_ROCK_SLIDE",
+          "MOVE_EARTHQUAKE",
+          "MOVE_AERIAL_ACE",
+          "MOVE_DRAGON_CLAW"
+        ]
+      },
+      {
+        "species": "SPECIES_GYARADOS",
+        "item": "ITEM_LEFTOVERS",
+        "moves": [
+          "MOVE_DRAGON_DANCE",
+          "MOVE_WATERFALL",
+          "MOVE_EARTHQUAKE",
+          "MOVE_THUNDER_WAVE"
+        ]
+      },
+      {
+        "species": "SPECIES_KINGDRA",
+        "item": "ITEM_MYSTIC_WATER",
+        "moves": [
+          "MOVE_HYDRO_PUMP",
+          "MOVE_DRAGON_BREATH",
+          "MOVE_ICE_BEAM",
+          "MOVE_RAIN_DANCE"
+        ]
+      },
+      {
+        "species": "SPECIES_DRAGONITE",
+        "item": "ITEM_DRAGON_FANG",
+        "moves": [
+          "MOVE_DRAGON_DANCE",
+          "MOVE_OUTRAGE",
+          "MOVE_EARTHQUAKE",
+          "MOVE_HYPER_BEAM"
+        ]
+      }
+    ],
+    "5": [
+      {
+        "species": "SPECIES_FLYGON",
+        "item": "ITEM_SOFT_SAND",
+        "moves": [
+          "MOVE_EARTHQUAKE",
+          "MOVE_DRAGON_CLAW",
+          "MOVE_ROCK_SLIDE",
+          "MOVE_FIRE_BLAST"
+        ]
+      },
+      {
+        "species": "SPECIES_SALAMENCE",
+        "item": "ITEM_LUM_BERRY",
+        "moves": [
+          "MOVE_DRAGON_DANCE",
+          "MOVE_DRAGON_CLAW",
+          "MOVE_EARTHQUAKE",
+          "MOVE_AERIAL_ACE"
+        ]
+      },
+      {
+        "species": "SPECIES_CHARIZARD",
+        "item": "ITEM_CHARCOAL",
+        "moves": [
+          "MOVE_FIRE_BLAST",
+          "MOVE_DRAGON_CLAW",
+          "MOVE_AERIAL_ACE",
+          "MOVE_EARTHQUAKE"
+        ]
+      },
+      {
+        "species": "SPECIES_GYARADOS",
+        "item": "ITEM_LEFTOVERS",
+        "moves": [
+          "MOVE_DRAGON_DANCE",
+          "MOVE_WATERFALL",
+          "MOVE_EARTHQUAKE",
+          "MOVE_THUNDER_WAVE"
+        ]
+      },
+      {
+        "species": "SPECIES_KINGDRA",
+        "item": "ITEM_MYSTIC_WATER",
+        "moves": [
+          "MOVE_HYDRO_PUMP",
+          "MOVE_DRAGON_BREATH",
+          "MOVE_ICE_BEAM",
+          "MOVE_RAIN_DANCE"
+        ]
+      },
+      {
+        "species": "SPECIES_DRAGONITE",
+        "item": "ITEM_DRAGON_FANG",
+        "moves": [
+          "MOVE_DRAGON_DANCE",
+          "MOVE_OUTRAGE",
+          "MOVE_EARTHQUAKE",
+          "MOVE_HYPER_BEAM"
+        ]
+      }
+    ]
+  },
+  "CAMPEAO": {
+    "1": {
+      "base": [
+        {
+          "species": "SPECIES_PIDGEOT",
+          "item": "ITEM_CHESTO_BERRY",
+          "moves": [
+            "MOVE_AERIAL_ACE",
+            "MOVE_DOUBLE_EDGE",
+            "MOVE_QUICK_ATTACK",
+            "MOVE_FEATHER_DANCE"
+          ]
+        },
+        {
+          "species": "SPECIES_ALAKAZAM",
+          "item": "ITEM_PECHA_BERRY",
+          "moves": [
+            "MOVE_PSYCHIC",
+            "MOVE_SHADOW_BALL",
+            "MOVE_CALM_MIND",
+            "MOVE_RECOVER"
+          ]
+        },
+        {
+          "species": "SPECIES_RHYDON",
+          "item": "ITEM_RAWST_BERRY",
+          "moves": [
+            "MOVE_EARTHQUAKE",
+            "MOVE_ROCK_SLIDE",
+            "MOVE_MEGAHORN",
+            "MOVE_SWORDS_DANCE"
+          ]
+        },
+        {
+          "species": "SPECIES_HERACROSS",
+          "item": "ITEM_ASPEAR_BERRY",
+          "moves": [
+            "MOVE_MEGAHORN",
+            "MOVE_BRICK_BREAK",
+            "MOVE_ROCK_SLIDE",
+            "MOVE_EARTHQUAKE"
+          ]
+        }
+      ],
+      "SQUIRTLE": [
+        {
+          "species": "SPECIES_ARCANINE",
+          "item": "ITEM_PERSIM_BERRY",
+          "moves": [
+            "MOVE_FLAMETHROWER",
+            "MOVE_EXTREME_SPEED",
+            "MOVE_CRUNCH",
+            "MOVE_AERIAL_ACE"
+          ]
+        },
+        {
+          "species": "SPECIES_BLASTOISE",
+          "item": "ITEM_SITRUS_BERRY",
+          "moves": [
+            "MOVE_HYDRO_PUMP",
+            "MOVE_ICE_BEAM",
+            "MOVE_EARTHQUAKE",
+            "MOVE_RAIN_DANCE"
+          ]
+        }
+      ],
+      "BULBASAUR": [
+        {
+          "species": "SPECIES_GYARADOS",
+          "item": "ITEM_PERSIM_BERRY",
+          "moves": [
+            "MOVE_DRAGON_DANCE",
+            "MOVE_WATERFALL",
+            "MOVE_EARTHQUAKE",
+            "MOVE_HYPER_BEAM"
+          ]
+        },
+        {
+          "species": "SPECIES_VENUSAUR",
+          "item": "ITEM_SITRUS_BERRY",
+          "moves": [
+            "MOVE_SOLAR_BEAM",
+            "MOVE_SLUDGE_BOMB",
+            "MOVE_SUNNY_DAY",
+            "MOVE_SLEEP_POWDER"
+          ]
+        }
+      ],
+      "CHARMANDER": [
+        {
+          "species": "SPECIES_EXEGGUTOR",
+          "item": "ITEM_PERSIM_BERRY",
+          "moves": [
+            "MOVE_PSYCHIC",
+            "MOVE_GIGA_DRAIN",
+            "MOVE_SLEEP_POWDER",
+            "MOVE_SLUDGE_BOMB"
+          ]
+        },
+        {
+          "species": "SPECIES_CHARIZARD",
+          "item": "ITEM_SITRUS_BERRY",
+          "moves": [
+            "MOVE_FIRE_BLAST",
+            "MOVE_DRAGON_CLAW",
+            "MOVE_AERIAL_ACE",
+            "MOVE_EARTHQUAKE"
+          ]
+        }
+      ]
+    },
+    "2": {
+      "base": [
+        {
+          "species": "SPECIES_PIDGEOT",
+          "item": "ITEM_SITRUS_BERRY",
+          "moves": [
+            "MOVE_AERIAL_ACE",
+            "MOVE_DOUBLE_EDGE",
+            "MOVE_QUICK_ATTACK",
+            "MOVE_FEATHER_DANCE"
+          ]
+        },
+        {
+          "species": "SPECIES_ALAKAZAM",
+          "item": "ITEM_LUM_BERRY",
+          "moves": [
+            "MOVE_PSYCHIC",
+            "MOVE_SHADOW_BALL",
+            "MOVE_CALM_MIND",
+            "MOVE_RECOVER"
+          ]
+        },
+        {
+          "species": "SPECIES_TYRANITAR",
+          "item": "ITEM_SITRUS_BERRY",
+          "moves": [
+            "MOVE_DRAGON_DANCE",
+            "MOVE_CRUNCH",
+            "MOVE_ROCK_SLIDE",
+            "MOVE_EARTHQUAKE"
+          ]
+        },
+        {
+          "species": "SPECIES_HERACROSS",
+          "item": "ITEM_LUM_BERRY",
+          "moves": [
+            "MOVE_MEGAHORN",
+            "MOVE_BRICK_BREAK",
+            "MOVE_ROCK_SLIDE",
+            "MOVE_EARTHQUAKE"
+          ]
+        }
+      ],
+      "SQUIRTLE": [
+        {
+          "species": "SPECIES_ARCANINE",
+          "item": "ITEM_SITRUS_BERRY",
+          "moves": [
+            "MOVE_FLAMETHROWER",
+            "MOVE_EXTREME_SPEED",
+            "MOVE_CRUNCH",
+            "MOVE_AERIAL_ACE"
+          ]
+        },
+        {
+          "species": "SPECIES_BLASTOISE",
+          "item": "ITEM_MYSTIC_WATER",
+          "moves": [
+            "MOVE_HYDRO_PUMP",
+            "MOVE_ICE_BEAM",
+            "MOVE_EARTHQUAKE",
+            "MOVE_RAIN_DANCE"
+          ]
+        }
+      ],
+      "BULBASAUR": [
+        {
+          "species": "SPECIES_GYARADOS",
+          "item": "ITEM_SITRUS_BERRY",
+          "moves": [
+            "MOVE_DRAGON_DANCE",
+            "MOVE_WATERFALL",
+            "MOVE_EARTHQUAKE",
+            "MOVE_HYPER_BEAM"
+          ]
+        },
+        {
+          "species": "SPECIES_VENUSAUR",
+          "item": "ITEM_MIRACLE_SEED",
+          "moves": [
+            "MOVE_SOLAR_BEAM",
+            "MOVE_SLUDGE_BOMB",
+            "MOVE_SUNNY_DAY",
+            "MOVE_SLEEP_POWDER"
+          ]
+        }
+      ],
+      "CHARMANDER": [
+        {
+          "species": "SPECIES_EXEGGUTOR",
+          "item": "ITEM_SITRUS_BERRY",
+          "moves": [
+            "MOVE_PSYCHIC",
+            "MOVE_GIGA_DRAIN",
+            "MOVE_SLEEP_POWDER",
+            "MOVE_SLUDGE_BOMB"
+          ]
+        },
+        {
+          "species": "SPECIES_CHARIZARD",
+          "item": "ITEM_CHARCOAL",
+          "moves": [
+            "MOVE_FIRE_BLAST",
+            "MOVE_DRAGON_CLAW",
+            "MOVE_AERIAL_ACE",
+            "MOVE_EARTHQUAKE"
+          ]
+        }
+      ]
+    },
+    "3": {
+      "base": [
+        {
+          "species": "SPECIES_SNORLAX",
+          "item": "ITEM_LEFTOVERS",
+          "moves": [
+            "MOVE_BODY_SLAM",
+            "MOVE_EARTHQUAKE",
+            "MOVE_CURSE",
+            "MOVE_ROCK_SLIDE"
+          ]
+        },
+        {
+          "species": "SPECIES_ALAKAZAM",
+          "item": "ITEM_TWISTED_SPOON",
+          "moves": [
+            "MOVE_PSYCHIC",
+            "MOVE_SHADOW_BALL",
+            "MOVE_CALM_MIND",
+            "MOVE_RECOVER"
+          ]
+        },
+        {
+          "species": "SPECIES_TYRANITAR",
+          "item": "ITEM_LUM_BERRY",
+          "moves": [
+            "MOVE_DRAGON_DANCE",
+            "MOVE_CRUNCH",
+            "MOVE_ROCK_SLIDE",
+            "MOVE_EARTHQUAKE"
+          ]
+        },
+        {
+          "species": "SPECIES_HERACROSS",
+          "item": "ITEM_CHOICE_BAND",
+          "moves": [
+            "MOVE_MEGAHORN",
+            "MOVE_BRICK_BREAK",
+            "MOVE_ROCK_SLIDE",
+            "MOVE_EARTHQUAKE"
+          ]
+        }
+      ],
+      "SQUIRTLE": [
+        {
+          "species": "SPECIES_ARCANINE",
+          "item": "ITEM_CHARCOAL",
+          "moves": [
+            "MOVE_FLAMETHROWER",
+            "MOVE_EXTREME_SPEED",
+            "MOVE_CRUNCH",
+            "MOVE_AERIAL_ACE"
+          ]
+        },
+        {
+          "species": "SPECIES_BLASTOISE",
+          "item": "ITEM_MYSTIC_WATER",
+          "moves": [
+            "MOVE_HYDRO_PUMP",
+            "MOVE_ICE_BEAM",
+            "MOVE_EARTHQUAKE",
+            "MOVE_RAIN_DANCE"
+          ]
+        }
+      ],
+      "BULBASAUR": [
+        {
+          "species": "SPECIES_GYARADOS",
+          "item": "ITEM_SITRUS_BERRY",
+          "moves": [
+            "MOVE_DRAGON_DANCE",
+            "MOVE_WATERFALL",
+            "MOVE_EARTHQUAKE",
+            "MOVE_HYPER_BEAM"
+          ]
+        },
+        {
+          "species": "SPECIES_VENUSAUR",
+          "item": "ITEM_MIRACLE_SEED",
+          "moves": [
+            "MOVE_SOLAR_BEAM",
+            "MOVE_SLUDGE_BOMB",
+            "MOVE_SUNNY_DAY",
+            "MOVE_SLEEP_POWDER"
+          ]
+        }
+      ],
+      "CHARMANDER": [
+        {
+          "species": "SPECIES_EXEGGUTOR",
+          "item": "ITEM_MIRACLE_SEED",
+          "moves": [
+            "MOVE_PSYCHIC",
+            "MOVE_GIGA_DRAIN",
+            "MOVE_SLEEP_POWDER",
+            "MOVE_SLUDGE_BOMB"
+          ]
+        },
+        {
+          "species": "SPECIES_CHARIZARD",
+          "item": "ITEM_CHARCOAL",
+          "moves": [
+            "MOVE_FIRE_BLAST",
+            "MOVE_DRAGON_CLAW",
+            "MOVE_AERIAL_ACE",
+            "MOVE_EARTHQUAKE"
+          ]
+        }
+      ]
+    },
+    "4": {
+      "base": [
+        {
+          "species": "SPECIES_METAGROSS",
+          "item": "ITEM_METAL_COAT",
+          "moves": [
+            "MOVE_METEOR_MASH",
+            "MOVE_EARTHQUAKE",
+            "MOVE_ROCK_SLIDE",
+            "MOVE_AGILITY"
+          ]
+        },
+        {
+          "species": "SPECIES_ALAKAZAM",
+          "item": "ITEM_TWISTED_SPOON",
+          "moves": [
+            "MOVE_PSYCHIC",
+            "MOVE_SHADOW_BALL",
+            "MOVE_CALM_MIND",
+            "MOVE_RECOVER"
+          ]
+        },
+        {
+          "species": "SPECIES_TYRANITAR",
+          "item": "ITEM_LUM_BERRY",
+          "moves": [
+            "MOVE_DRAGON_DANCE",
+            "MOVE_CRUNCH",
+            "MOVE_ROCK_SLIDE",
+            "MOVE_EARTHQUAKE"
+          ]
+        },
+        {
+          "species": "SPECIES_HERACROSS",
+          "item": "ITEM_CHOICE_BAND",
+          "moves": [
+            "MOVE_MEGAHORN",
+            "MOVE_BRICK_BREAK",
+            "MOVE_ROCK_SLIDE",
+            "MOVE_EARTHQUAKE"
+          ]
+        }
+      ],
+      "SQUIRTLE": [
+        {
+          "species": "SPECIES_ARCANINE",
+          "item": "ITEM_CHARCOAL",
+          "moves": [
+            "MOVE_FLAMETHROWER",
+            "MOVE_EXTREME_SPEED",
+            "MOVE_CRUNCH",
+            "MOVE_AERIAL_ACE"
+          ]
+        },
+        {
+          "species": "SPECIES_BLASTOISE",
+          "item": "ITEM_MYSTIC_WATER",
+          "moves": [
+            "MOVE_HYDRO_PUMP",
+            "MOVE_ICE_BEAM",
+            "MOVE_EARTHQUAKE",
+            "MOVE_RAIN_DANCE"
+          ]
+        }
+      ],
+      "BULBASAUR": [
+        {
+          "species": "SPECIES_GYARADOS",
+          "item": "ITEM_SITRUS_BERRY",
+          "moves": [
+            "MOVE_DRAGON_DANCE",
+            "MOVE_WATERFALL",
+            "MOVE_EARTHQUAKE",
+            "MOVE_HYPER_BEAM"
+          ]
+        },
+        {
+          "species": "SPECIES_VENUSAUR",
+          "item": "ITEM_MIRACLE_SEED",
+          "moves": [
+            "MOVE_SOLAR_BEAM",
+            "MOVE_SLUDGE_BOMB",
+            "MOVE_SUNNY_DAY",
+            "MOVE_SLEEP_POWDER"
+          ]
+        }
+      ],
+      "CHARMANDER": [
+        {
+          "species": "SPECIES_EXEGGUTOR",
+          "item": "ITEM_MIRACLE_SEED",
+          "moves": [
+            "MOVE_PSYCHIC",
+            "MOVE_GIGA_DRAIN",
+            "MOVE_SLEEP_POWDER",
+            "MOVE_SLUDGE_BOMB"
+          ]
+        },
+        {
+          "species": "SPECIES_CHARIZARD",
+          "item": "ITEM_CHARCOAL",
+          "moves": [
+            "MOVE_FIRE_BLAST",
+            "MOVE_DRAGON_CLAW",
+            "MOVE_AERIAL_ACE",
+            "MOVE_EARTHQUAKE"
+          ]
+        }
+      ]
+    },
+    "5": {
+      "base": [
+        {
+          "species": "SPECIES_METAGROSS",
+          "item": "ITEM_METAL_COAT",
+          "moves": [
+            "MOVE_METEOR_MASH",
+            "MOVE_EARTHQUAKE",
+            "MOVE_ROCK_SLIDE",
+            "MOVE_AGILITY"
+          ]
+        },
+        {
+          "species": "SPECIES_ALAKAZAM",
+          "item": "ITEM_TWISTED_SPOON",
+          "moves": [
+            "MOVE_PSYCHIC",
+            "MOVE_SHADOW_BALL",
+            "MOVE_CALM_MIND",
+            "MOVE_RECOVER"
+          ]
+        },
+        {
+          "species": "SPECIES_TYRANITAR",
+          "item": "ITEM_LUM_BERRY",
+          "moves": [
+            "MOVE_DRAGON_DANCE",
+            "MOVE_CRUNCH",
+            "MOVE_ROCK_SLIDE",
+            "MOVE_EARTHQUAKE"
+          ]
+        },
+        {
+          "species": "SPECIES_SALAMENCE",
+          "item": "ITEM_DRAGON_FANG",
+          "moves": [
+            "MOVE_DRAGON_DANCE",
+            "MOVE_DRAGON_CLAW",
+            "MOVE_EARTHQUAKE",
+            "MOVE_AERIAL_ACE"
+          ]
+        }
+      ],
+      "SQUIRTLE": [
+        {
+          "species": "SPECIES_ARCANINE",
+          "item": "ITEM_CHARCOAL",
+          "moves": [
+            "MOVE_FLAMETHROWER",
+            "MOVE_EXTREME_SPEED",
+            "MOVE_CRUNCH",
+            "MOVE_AERIAL_ACE"
+          ]
+        },
+        {
+          "species": "SPECIES_BLASTOISE",
+          "item": "ITEM_MYSTIC_WATER",
+          "moves": [
+            "MOVE_HYDRO_PUMP",
+            "MOVE_ICE_BEAM",
+            "MOVE_EARTHQUAKE",
+            "MOVE_RAIN_DANCE"
+          ]
+        }
+      ],
+      "BULBASAUR": [
+        {
+          "species": "SPECIES_GYARADOS",
+          "item": "ITEM_SITRUS_BERRY",
+          "moves": [
+            "MOVE_DRAGON_DANCE",
+            "MOVE_WATERFALL",
+            "MOVE_EARTHQUAKE",
+            "MOVE_HYPER_BEAM"
+          ]
+        },
+        {
+          "species": "SPECIES_VENUSAUR",
+          "item": "ITEM_MIRACLE_SEED",
+          "moves": [
+            "MOVE_SOLAR_BEAM",
+            "MOVE_SLUDGE_BOMB",
+            "MOVE_SUNNY_DAY",
+            "MOVE_SLEEP_POWDER"
+          ]
+        }
+      ],
+      "CHARMANDER": [
+        {
+          "species": "SPECIES_EXEGGUTOR",
+          "item": "ITEM_MIRACLE_SEED",
+          "moves": [
+            "MOVE_PSYCHIC",
+            "MOVE_GIGA_DRAIN",
+            "MOVE_SLEEP_POWDER",
+            "MOVE_SLUDGE_BOMB"
+          ]
+        },
+        {
+          "species": "SPECIES_CHARIZARD",
+          "item": "ITEM_CHARCOAL",
+          "moves": [
+            "MOVE_FIRE_BLAST",
+            "MOVE_DRAGON_CLAW",
+            "MOVE_AERIAL_ACE",
+            "MOVE_EARTHQUAKE"
+          ]
+        }
+      ]
+    }
+  }
+}
