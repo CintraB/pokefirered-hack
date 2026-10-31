@@ -147,3 +147,44 @@ def test_atalho_calc_damage():
     assert hooks.CMD_CALC_DAMAGE == 0xA0
     assert callable(getattr(hooks.Mailbox, "calc_damage", None))
     assert "case TEST_CMD_CALC_DAMAGE:" in TEST_HOOKS_C
+
+
+# --- Task 6: clima nos dois ramos e o cenário fisico_fada ----------------------------------
+
+def test_clima_e_flash_fire_nos_dois_ramos():
+    """Gen 4+: Soco de Fogo (físico) também ganha o sol e o Flash Fire. O atalho CALC_DAMAGE
+    zera gBattleWeather de propósito, então o clima fica coberto aqui, no estático."""
+    corpo = _funcao(POKEMON_C, "s32 CalculateBaseDamage(")
+    inicio_fis = corpo.index("\n    if (IS_MOVE_PHYSICAL(move))\n    {\n        if (gCritMultiplier == 2)")
+    inicio_esp = corpo.index("\n    if (IS_MOVE_SPECIAL(move))\n    {\n        if (gCritMultiplier == 2)")
+    fisico = corpo[inicio_fis:corpo.index("\n    if (type == TYPE_MYSTERY)", inicio_fis)]
+    especial = corpo[inicio_esp:corpo.index("\n    return damage + 2;", inicio_esp)]
+    chamada = "damage = ApplyWeatherAndFlashFire(damage, type, battlerIdAtk);"
+    assert fisico.count(chamada) == 1, "ramo físico sem clima/Flash Fire"
+    assert especial.count(chamada) == 1, "ramo especial sem clima/Flash Fire"
+    # no físico, antes do mínimo de 1 de dano (como no especial, depois de Reflect/Light Screen)
+    assert fisico.index(chamada) < fisico.index("if (damage == 0)\n            damage = 1;")
+    # o clima só é lido dentro da função auxiliar
+    assert "gBattleWeather" not in corpo and "RESOURCE_FLAG_FLASH_FIRE" not in corpo
+    aux = _funcao(POKEMON_C, "static s32 ApplyWeatherAndFlashFire(")
+    for trecho in ("WEATHER_HAS_EFFECT2", "B_WEATHER_RAIN_TEMPORARY", "B_WEATHER_SUN",
+                   "RESOURCE_FLAG_FLASH_FIRE) && type == TYPE_FIRE"):
+        assert trecho in aux, trecho
+
+
+def test_cenario_fisico_fada_registrado_com_as_telas():
+    from esteira import refs
+    from esteira.__main__ import FULL_SCENARIOS, WATCH_FULL_SCENARIOS
+    from esteira.scenarios import full_fisico_fada as cen
+    spec = next(s for s in FULL_SCENARIOS if s.name == "fisico_fada")
+    assert spec.run is cen.run_full_fisico_fada and spec.save_from == "captura"
+    assert "fisico_fada" in WATCH_FULL_SCENARIOS
+    assert cen.SCREEN_POINTS == ("fada_resumo_tipos", "fada_resumo_golpe_fisico",
+                                 "fada_resumo_golpe_especial", "fada_resumo_golpe_estado",
+                                 "fada_golpe_novo")
+    # no fim de SHARED_POINTS (test_evolucoes_cenario exige a ordem antiga no começo)
+    assert refs.SHARED_POINTS[-len(cen.SCREEN_POINTS):] == cen.SCREEN_POINTS
+    texto = (REPO_ROOT / "test" / "esteira" / "scenarios" / "full_fisico_fada.py").read_text(encoding="utf-8")
+    for caso in ("categoria/soco_de_fogo_fisico", "categoria/thick_fat", "fada/tabela", "fada/especie",
+                 "counter/fogo"):
+        assert f'"{caso}' in texto, caso

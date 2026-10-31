@@ -378,6 +378,18 @@
           "title": "Clima na batalha",
           "body": "Chuva, granizo, areia e sol aparecem a\nbatalha toda e somem durante os golpes.\nCinnabar e o Monte Ember agora têm\ndias de sol forte.",
           "itemId": "ITEM_TM18"
+        },
+        {
+          "title": "Físico ou especial por golpe",
+          "before": "ANTES: pelo tipo",
+          "after": "AGORA: por golpe",
+          "body": "Cada golpe agora é Físico, Especial ou de\nEstado, como nos jogos novos. Soco de Fogo\nusa o Ataque, não mais o Atq. Esp. O ícone\nao lado do PODER, no resumo, mostra a\ncategoria.",
+          "speciesBefore": "SPECIES_HITMONCHAN"
+        },
+        {
+          "title": "Tipo Fada",
+          "body": "Novo tipo, como em Pokémon X e Y: forte\ncontra Dragão, Lutador e Sombrio, e imune a\nDragão. Clefairy, Marill, Ralts, Mawile e\noutros viraram Fada, e há seis golpes novos.\nAço não resiste mais a Fantasma e Sombrio.",
+          "speciesBefore": "SPECIES_CLEFAIRY"
         }
       ]
     },
