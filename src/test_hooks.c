@@ -1012,6 +1012,28 @@ static u32 BuildTrainerParty(u32 trainer, bool8 isRematch)
 }
 // --- end of POK-42 --------------------------------------------------------------------------
 
+// --- POK-46: smart AI for the bosses ---------------------------------------------------------
+#include "battle_anim.h"
+
+// aiSmart | moves revealed by the player mon in the left position << 8; 0xFFFFFFFF outside a battle.
+static u32 AiSmartState(void)
+{
+    u32 count = 0;
+    s32 i;
+    u8 battler;
+
+    if (!gMain.inBattle || gBattleStruct == NULL)
+        return 0xFFFFFFFF;
+    battler = GetBattlerAtPosition(B_POSITION_PLAYER_LEFT);
+    for (i = 0; i < MAX_MON_MOVES; i++)
+    {
+        if (gBattleStruct->aiRevealedMoves[gBattlerPartyIndexes[battler] % PARTY_SIZE][i] != MOVE_NONE)
+            count++;
+    }
+    return gBattleStruct->aiSmart | count << 8;
+}
+// --- end of POK-46 --------------------------------------------------------------------------
+
 void TestHooks_Run(void)
 {
     u32 result = 0;
@@ -1147,6 +1169,7 @@ void TestHooks_Run(void)
     case TEST_CMD_CONQ_TELA:        result = gTestMailbox.arg0 ? Conquistas_TestGetDiario() : Conquistas_TestGetState(); break;
     // POK-44: end
     case TEST_CMD_BUILD_TRAINER_PARTY: result = BuildTrainerParty(gTestMailbox.arg0, gTestMailbox.arg1 != 0); break;
+    case TEST_CMD_AI_SMART_STATE:   result = AiSmartState(); break;
     default:
         result = 0xFFFFFFFF;
         break;

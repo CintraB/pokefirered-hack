@@ -328,6 +328,13 @@ class Mailbox:
         assert raw != NO_RESULT, f"BUILD_TRAINER_PARTY recusado: treinador {trainer}"
         return raw & 0xFF, raw >> 8 & 0xFF, bool(raw >> 16 & 1)
 
+    # --- atalhos da IA dos chefes (POK-46) ----------------------------------------------
+    def ai_smart_state(self) -> tuple[bool, int]:
+        """(o oponente é chefe, nº de golpes já mostrados pelo Pokémon do jogador em campo); só em batalha."""
+        raw = self.call(CMD_AI_SMART_STATE)
+        assert raw != NO_RESULT, "AI_SMART_STATE fora de batalha"
+        return bool(raw & 0xFF), raw >> 8 & 0xFF
+
 # --- Hack 6: breeding genético (enum à parte em include/test_hooks.h, a partir de 0x60; ------
 # o uso fica em esteira/breeding.py e scenarios/full_breeding.py / full_egg.py)
 CMD_BREED_SETUP = 0x60      # gTestBreedSetup -> creche (arg0 = 1: ovo pendente) -> compatibilidade (0xFFFFFFFF = pai inválido)
@@ -408,3 +415,7 @@ CMD_CONQ_TELA = 0xBF        # -> modo | aba << 8 | topo da lista (conquistas) ou
 CMD_BUILD_TRAINER_PARTY = 0xC0  # arg0 = treinador (TRAINER_*), arg1 = 1 revanche do Vs. Seeker / 0 combate normal ->
                                 # tamanho do time | degrau aplicado << 8 | dupla << 16 (time em gEnemyParty;
                                 # 0xFFFFFFFF = treinador inválido)
+
+# --- POK-46: IA dos chefes, troca e itens (enum à parte, a partir de 0xD0) ---
+CMD_AI_SMART_STATE = 0xD0   # -> gBattleStruct->aiSmart | golpes já mostrados pelo Pokémon do jogador em campo (posição
+                            # esquerda) << 8 (0xFFFFFFFF = fora de batalha)

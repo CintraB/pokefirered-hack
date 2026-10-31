@@ -147,6 +147,13 @@ enum
 };
 // --- end of POK-42 -------------------------------------------------------------------------
 
+// --- POK-46: smart AI for the bosses (switching and items) ---------------------------------
+enum
+{
+    TEST_CMD_AI_SMART_STATE = 0xD0, // result = gBattleStruct->aiSmart | moves revealed so far by the player mon at B_POSITION_PLAYER_LEFT (aiRevealedMoves of its party slot) << 8 (0xFFFFFFFF = not in battle)
+};
+// --- end of POK-46 -------------------------------------------------------------------------
+
 extern struct TestMailbox gTestMailbox;
 extern u8 gTestText[TEST_TEXT_SIZE];
 

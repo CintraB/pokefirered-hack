@@ -22,6 +22,7 @@
 #include "battle_message.h"
 #include "battle_anim.h"
 #include "battle_ai_script_commands.h"
+#include "battle_ai_smart.h"
 #include "battle_scripts.h"
 #include "reshow_battle_screen.h"
 #include "battle_controllers.h"
@@ -1114,6 +1115,7 @@ static void Cmd_attackstring(void)
     {
         PrepareStringBattle(STRINGID_USEDMOVE, gBattlerAttacker);
         gHitMarker |= HITMARKER_ATTACKSTRING_PRINTED;
+        SmartAI_RecordPlayerMove(gBattlerAttacker, gCurrentMove); // POK-46: golpe mostrado ao chefe
     }
     gBattlescriptCurrInstr++;
     gBattleCommunication[MSG_DISPLAY] = 0;

@@ -1,6 +1,7 @@
 #include "global.h"
 #include "battle.h"
 #include "battle_anim.h"
+#include "battle_ai_smart.h"
 #include "battle_controllers.h"
 #include "random.h"
 #include "util.h"
@@ -391,6 +392,7 @@ void AI_TrySwitchOrUseItem(void)
                 *(gBattleStruct->AI_monToSwitchIntoId + (GetBattlerPosition(gActiveBattler) >> 1)) = monToSwitchId;
             }
             *(gBattleStruct->monToSwitchIntoId + gActiveBattler) = *(gBattleStruct->AI_monToSwitchIntoId + (GetBattlerPosition(gActiveBattler) >> 1));
+            SmartAI_NoteVoluntarySwitch(gActiveBattler); // POK-46: troca por vontade da IA (só marca num chefe)
             return;
         }
         else if (ShouldUseItem())

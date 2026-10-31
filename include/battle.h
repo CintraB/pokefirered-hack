@@ -461,7 +461,16 @@ struct BattleStruct
     u8 conqNocautes[PARTY_SIZE];
     // POK-44: a batida tardia de Future Sight/Doom Desire está rodando (o nocaute não é de quem está na posição)
     u8 conqGolpeTardio;
-}; // size == 0x220 bytes (0x200 do jogo + POK-44; mora no heap, AllocZeroed no início da batalha)
+    // POK-46 (src/battle_ai_smart.c, SmartAI_InitBattle): o oponente é um chefe (flags efetivas com AI_SCRIPT_HP_AWARE)
+    u8 aiSmart;
+    // POK-46: golpes que cada Pokémon do jogador (pela posição no time) já mostrou nesta batalha; MOVE_NONE = vazio
+    u16 aiRevealedMoves[PARTY_SIZE][MAX_MON_MOVES];
+    // POK-46: por posição do oponente (GetBattlerPosition >> 1): turno (gBattleResults.battleTurnCounter, 0xFFFF =
+    // nunca) da última troca voluntária e da última cura, e o PS logo depois dessa cura
+    u16 aiVoluntarySwitchTurn[2];
+    u16 aiHealTurn[2];
+    u16 aiHealHp[2];
+}; // size == 0x25C bytes (0x200 do jogo + POK-44 até 0x21F + POK-46; mora no heap, AllocZeroed no início da batalha)
 
 extern struct BattleStruct *gBattleStruct;
 
