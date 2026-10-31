@@ -90,11 +90,14 @@ def test_special_no_fim_e_script():
     m = re.search(r"^EventScript_AvisoConquista::\n(.*?)\n\n", script + "\n\n", re.S | re.M)
     assert m, "EventScript_AvisoConquista não encontrado"
     comandos = [linha.strip() for linha in m.group(1).splitlines() if linha.strip()]
-    # sem task livre o special devolve FALSE e o script não espera (senão o waitstate travaria)
+    # sem task livre o special devolve FALSE e o script não espera (senão o waitstate travaria); com a janela, o
+    # waitfanfare depois do waitstate (como no Std_ObtainItem): o aviso fecha com a fanfarra ainda tocando, e um
+    # menu ou uma porta nesse meio (ResetTasks) mataria o Task_Fanfare com a música do mapa pausada
     assert comandos == ["goto_if_questlog EventScript_ReleaseEnd", "lockall",
                         "specialvar VAR_RESULT, Conquistas_MostrarAviso",
                         "goto_if_eq VAR_RESULT, FALSE, EventScript_AvisoConquistaSemTask",
-                        "waitstate", "releaseall", "end"], comandos
+                        "waitstate", "waitfanfare", "releaseall", "end"], comandos
+    assert comandos.index("waitfanfare") == comandos.index("waitstate") + 1
     corpo = _corpo(_ler(AVISO_C), "Conquistas_MostrarAviso")
     assert corpo.index("TASK_NONE") < corpo.index("AllocZeroed"), "confere a task antes de alocar e entregar"
     assert '.include "data/scripts/conquistas.inc"' in _ler(EVENT_SCRIPTS)
@@ -193,6 +196,60 @@ def test_textos_do_aviso_existem_e_tem_regra():
         assert f"extern const u8 {nome}[];" in h, nome
 
 
+# O plural de cada prêmio da tabela que sai com 2 ou mais, conferido um a um (src/conquistas_aviso.c, NomeDoPremio).
+PLURAIS = {
+    "ITEM_POKE_BALL": "Poké Bolas",
+    "ITEM_GREAT_BALL": "Grandes Bolas",
+    "ITEM_ULTRA_BALL": "Ultra Bolas",
+    "ITEM_SUPER_POTION": "Superpoções",
+    "ITEM_HYPER_POTION": "Hiperpoções",
+    "ITEM_MAX_REPEL": "Repel. Máximos",
+    "ITEM_PP_MAX": "PP Máximos",
+    "ITEM_RARE_CANDY": "Doces Raros",
+}
+# abreviados: o mesmo no singular e no plural ("3 Reviver Máx.", "3 Superrepel.")
+INVARIAVEIS = {"ITEM_MAX_REVIVE", "ITEM_SUPER_REPEL"}
+
+
+def _tabela_de_plurais() -> dict[str, str]:
+    """sPluraisDoPremio do C, com o texto de cada rótulo (strings.c): item -> plural."""
+    fonte = _ler(AVISO_C)
+    corpo = re.search(r"sPluraisDoPremio\[\]\s*=\s*\{(.*?)\n\};", fonte, re.S).group(1)
+    t = _textos()
+    return {item: t[rotulo] for item, rotulo in re.findall(r"\{\s*(ITEM_\w+),\s*(gText_ConqAviso_Plural\w+)\s*\}", corpo)}
+
+
+def _nome_do_premio(p: dict, itens: dict[str, str], t: dict[str, str]) -> str:
+    """O nome que o aviso mostra: o plural da tabela com 2 ou mais, senão o nome do item (como NomeDoPremio)."""
+    if p["qtd"] >= 2:
+        return _tabela_de_plurais().get(p["item"], itens[p["item"]])
+    return itens[p["item"]]
+
+
+def test_plural_do_premio():
+    """Todo prêmio com 2 ou mais sai no plural ("5 Poké Bolas", "3 Superpoções"); os abreviados ficam iguais.
+    A tabela do C é exatamente a conferida aqui, sem sobra."""
+    fonte = _ler(AVISO_C)
+    corpo = _corpo(fonte, "NomeDoPremio")
+    assert "qtd >= 2" in corpo and "ItemId_GetName(item)" in corpo
+    assert "NomeDoPremio(p->item, p->qtd)" in _corpo(fonte, "MontarConquista")
+    tabela = _tabela_de_plurais()
+    assert tabela == PLURAIS, tabela
+    itens = {i["itemId"]: i["english"] for i in json.loads(_ler(ITEMS_JSON))["items"]}
+    vistos = {}
+    for c in json.loads(_ler(JSON_PATH))["conquistas"]:
+        for p in c["premios"]:
+            if p["qtd"] >= 2:
+                assert p["item"] in PLURAIS or p["item"] in INVARIAVEIS, f"{c['id']}: {p['item']} sem plural conferido"
+                vistos[p["item"]] = _nome_do_premio(p, itens, _textos())
+    assert set(vistos) == set(PLURAIS) | INVARIAVEIS, sorted(vistos)   # nenhuma entrada morta na tabela
+    for item in INVARIAVEIS:
+        assert vistos[item] == itens[item] and itens[item].endswith("."), (item, vistos[item])
+    assert vistos["ITEM_POKE_BALL"] == "Poké Bolas" and vistos["ITEM_SUPER_POTION"] == "Superpoções"
+    # o plural fica no texto do aviso (linha2[64]): o maior prêmio montado cabe no buffer
+    assert max(len(n) for n in PLURAIS.values()) <= 14
+
+
 def test_larguras_montadas():
     """Cada linha que o aviso monta cabe nos 208 px: título + nome (com cada degrau), prêmio + destino de cada prêmio
     e as linhas do resumo com 2 algarismos."""
@@ -206,7 +263,8 @@ def test_larguras_montadas():
             largas.append(t["gText_ConqAviso_Titulo"] + nome)
         for p in c["premios"]:
             for destino in ("NaBolsa", "NoPc"):
-                largas.append(f"{t['gText_ConqAviso_Premio']}{p['qtd']} {itens[p['item']]}{t[f'gText_ConqAviso_{destino}']}")
+                largas.append(f"{t['gText_ConqAviso_Premio']}{p['qtd']} {_nome_do_premio(p, itens, t)}"
+                              f"{t[f'gText_ConqAviso_{destino}']}")
     largas.append(t["gText_ConqAviso_Cheios"])
     largas.append(t["gText_ConqAviso_ResumoAntes"] + "99" + t["gText_ConqAviso_ResumoVarias"])
     largas.append(t["gText_ConqAviso_ResumoAntes"] + "1" + t["gText_ConqAviso_ResumoUma"])
@@ -254,7 +312,7 @@ def test_esteira_convive_com_o_aviso():
         assert m and "dispensar_avisos(" in m.group(0), (arq, onde)
     cenario = _ler(CENARIO)
     assert "conq_silencio(False)" in cenario
-    for grupo in ("aviso/aparece_e_entrega", "aviso/espera_fim_da_batalha", "aviso/fila", "aviso/degrau",
+    for grupo in ("aviso/aparece_e_entrega", "aviso/fanfarra_devolve_bgm", "aviso/espera_fim_da_batalha", "aviso/fila", "aviso/degrau",
                   "premio/bolsa_cheia_vai_ao_pc", "premio/tudo_cheio_fica_pendente", "premio/fila_nao_trava",
                   "aviso/passo_antes", "aviso/resumo_retro"):
         assert f'"{grupo}"' in cenario, grupo

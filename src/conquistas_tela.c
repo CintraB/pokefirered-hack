@@ -311,9 +311,11 @@ static struct ConquistasTela *GetTela(u8 *taskId)
 // (o script do campo ou o cartão de treinador). Sem memória ou sem task, volta direto.
 void Conquistas_AbrirTela(void (*voltar)(void), u8 modo)
 {
-    struct ConquistasTela *t = AllocZeroed(sizeof(*t));
+    struct ConquistasTela *t;
     u8 taskId;
 
+    Conquistas_ChecarEstado(); // a checagem do campo é a cada 32 quadros: uma conquista recém-ganha não sai pendente
+    t = AllocZeroed(sizeof(*t));
     if (t == NULL)
     {
         SetMainCallback2(voltar);

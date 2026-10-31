@@ -167,6 +167,40 @@ static u8 *AnexarNumero(u8 *s, u16 n)
     return ConvertIntToDecimalStringN(s, n, STR_CONV_MODE_LEFT_ALIGN, n >= 100 ? 3 : (n >= 10 ? 2 : 1));
 }
 
+// O plural dos prêmios que saem com 2 ou mais ("5 Poké Bolas", "3 Superpoções"). O jogo só sabe o plural da Poké
+// Bola e das frutas (ScrCmd_bufferitemnameplural, src/scrcmd.c), e "Grande Bola" e "-ção" não seguem regra de
+// letra: a tabela é explícita. Item fora dela fica no singular (Reviver Máx. e Superrepel., abreviados).
+static const struct
+{
+    u16 item;
+    const u8 *plural;
+} sPluraisDoPremio[] =
+{
+    { ITEM_POKE_BALL,    gText_ConqAviso_PluralPokeBall },
+    { ITEM_GREAT_BALL,   gText_ConqAviso_PluralGreatBall },
+    { ITEM_ULTRA_BALL,   gText_ConqAviso_PluralUltraBall },
+    { ITEM_SUPER_POTION, gText_ConqAviso_PluralSuperPotion },
+    { ITEM_HYPER_POTION, gText_ConqAviso_PluralHyperPotion },
+    { ITEM_MAX_REPEL,    gText_ConqAviso_PluralMaxRepel },
+    { ITEM_PP_MAX,       gText_ConqAviso_PluralPpMax },
+    { ITEM_RARE_CANDY,   gText_ConqAviso_PluralRareCandy },
+};
+
+static const u8 *NomeDoPremio(u16 item, u16 qtd)
+{
+    u8 i;
+
+    if (qtd >= 2)
+    {
+        for (i = 0; i < ARRAY_COUNT(sPluraisDoPremio); i++)
+        {
+            if (sPluraisDoPremio[i].item == item)
+                return sPluraisDoPremio[i].plural;
+        }
+    }
+    return ItemId_GetName(item);
+}
+
 // A conquista `num` (degrau `degrau`): entrega o prêmio e monta as duas linhas.
 static void MontarConquista(struct Aviso *a, u8 num, u8 degrau)
 {
@@ -188,7 +222,7 @@ static void MontarConquista(struct Aviso *a, u8 num, u8 degrau)
         s = StringCopy(a->linha2, gText_ConqAviso_Premio);
         s = AnexarNumero(s, p->qtd);
         *s++ = CHAR_SPACE;
-        s = StringCopy(s, ItemId_GetName(p->item));
+        s = StringCopy(s, NomeDoPremio(p->item, p->qtd));
         StringCopy(s, onde == CONQ_ENTREGA_BOLSA ? gText_ConqAviso_NaBolsa : gText_ConqAviso_NoPc);
         a->item = p->item;
     }

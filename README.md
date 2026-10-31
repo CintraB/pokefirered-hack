@@ -9,7 +9,7 @@ a Pokédex inteira obtível e uma esteira de testes automática no emulador.**
 ![Idioma](https://img.shields.io/badge/idioma-PT--BR-009c3b?style=flat-square)
 ![Base](https://img.shields.io/badge/base-pret%2Fpokefirered-e3350d?style=flat-square)
 ![Linguagem](https://img.shields.io/badge/C-agbcc-555555?style=flat-square)
-![Testes](https://img.shields.io/badge/pytest-4507%20testes-2ea44f?style=flat-square)
+![Testes](https://img.shields.io/badge/pytest-4660%20testes-2ea44f?style=flat-square)
 ![Esteira](https://img.shields.io/badge/esteira-363%20checagens-2ea44f?style=flat-square)
 ![Versão](https://img.shields.io/badge/ROM-v46-informational?style=flat-square)
 
@@ -111,7 +111,7 @@ perder o jeito do FireRed.
 | **Conquistas** | 39 conquistas em 5 abas (História, Batalha, Captura, Treino e Exploração): as 8 insígnias, Elite 4 e Campeão, treinadores vencidos de 10 em 10, shinies, lendários, Pokédex, nível 100, ovo perfeito, ₽999.999, horas de jogo… Cada linha mostra ✓ ou o progresso (`87/100`), e o rodapé, o total da aba. |
 | **Prêmio na hora** | Ao conquistar, o jogo pausa com um aviso animado e a fanfarra, e o prêmio cai na bolsa (bolsa cheia: no PC). Prêmios maiores para as conquistas mais difíceis, até a Master Ball. |
 | **Save antigo reconhecido** | Na primeira vez que um save de antes abre nesta versão, o jogo confere o que já foi feito e entrega tudo num aviso só. O que não dá mais para provar (vencer um líder com um Pokémon só, vencer o rival em todas) fica riscado e fora do total. |
-| **Diário da jornada** | A primeira vitória contra cada líder, o rival, a Elite 4 e o Campeão, e cada lendário capturado: tempo de jogo, turnos, time usado e o MVP (quem mais nocauteou). |
+| **Diário da jornada** | A primeira vitória contra cada líder, o rival, a Elite 4 e o Campeão, e cada lendário capturado ou derrotado: tempo de jogo, turnos, time usado e o MVP (quem mais nocauteou). |
 | **Onde fica** | No Cartão de Treinador (menu START), o **SELECT** abre as conquistas; na tela, **L/R** trocam a aba e o **SELECT** alterna para o diário. |
 
 <p align="center">
@@ -264,7 +264,7 @@ flowchart LR
   comparadas pixel a pixel com as referências aprovadas de cada um.
 - **Checagem de texto**: mede a largura de cada frase traduzida na janela onde ela aparece e o
   tamanho dos buffers, para nada estourar.
-- **4507 testes em pytest** cobrem a própria esteira e as regras de cada hack.
+- **4660 testes em pytest** cobrem a própria esteira e as regras de cada hack.
 
 <details>
 <summary>Comandos (WSL)</summary>

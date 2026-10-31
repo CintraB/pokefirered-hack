@@ -58,8 +58,8 @@ from PIL import Image
 from .. import conquistas as cq
 from ..battle import (ACTION_FIGHT, B_OUTCOME_CAUGHT, MOVE_FUNC_SUFFIX, NICKNAME_COMMAND, PARTY_CHOOSE_TASK,
                       PARTY_MENU_SLOT_ID, PARTY_SELECTION_TASK)
-from ..emu import KEY_A, KEY_B, KEY_DOWN, KEY_L, KEY_R, KEY_RIGHT, KEY_SELECT, KEY_UP
-from ..field_menu import STARTMENU_PLAYER, FieldMenu
+from ..emu import KEY_A, KEY_B, KEY_DOWN, KEY_L, KEY_R, KEY_RIGHT, KEY_SELECT, KEY_START, KEY_UP
+from ..field_menu import MENU_TIMEOUT, STARTMENU_BAG, STARTMENU_PLAYER, FieldMenu
 from ..game import SB1_MONEY
 from ..hooks import CMD_CONQ_ESTADO, CMD_GIVE_ITEM, CMD_START_WILD_BATTLE, CMD_WARP, NO_RESULT, Mailbox
 from . import REPO_ROOT, ScenarioContext
@@ -94,6 +94,8 @@ CARTAO_ASSENTA = 90      # o cartão clareia e toca o som de abrir antes de ler 
 AVISO_ATIVO = "gConquistasAvisoAtivo"   # u8: 1 enquanto o aviso está na tela (src/conquistas_aviso.c)
 AVISO_TIMEOUT = 300      # a checagem de estado roda a cada 32 quadros; o aviso aparece logo depois
 AVISO_ENTRADA = 24       # quadros da entrada animada (a foto sai com a janela parada)
+BGM_PLAYER = "gMPlayInfo_BGM"   # struct MusicPlayerInfo: status (u32) em +4 (include/gba/m4a_internal.h)
+MPLAY_TRACK, MPLAY_PAUSE = 0x0000FFFF, 0x80000000   # MUSICPLAYER_STATUS_TRACK / _PAUSE
 CONQ_VITORIAS = 0x08     # u16 vitoriasTreinador em struct ConquistasSave
 SB1_PC_ITEMS, PC_ITEMS_COUNT = 0x298, 30          # struct ItemSlot pcItems[30] (quantidade sem chave)
 SB1_BALLS, BALLS_COUNT = 0x430, 13                # bagPocket_PokeBalls (quantidade XOR chave)
@@ -752,9 +754,16 @@ class ConquistasScenario(CatchSaveScenario):
         raw = self.emu.read_u32(self._sb(1) + SB1_GAME_STATS + 4 * 5)   # GAME_STAT_STEPS
         return raw ^ self.emu.read_u32(self._sb(2) + 0xF20)              # encryptionKey
 
-    def _fechar_aviso(self, what: str) -> None:
+    def _fechar_aviso(self, what: str, assentar: bool = True) -> None:
+        """Fecha com A e espera o campo livre (o script segura o campo até a fanfarra acabar: waitfanfare).
+        `assentar=False` com outro aviso na fila: o próximo abre no quadro seguinte ao release, e o campo livre ficaria
+        visível ou não pela paridade do quadro; espera o campo livre ou o próximo aviso, o que vier antes."""
         self.ctl.press_until(KEY_A, lambda: not self._aviso_ativo(), what, tries=15, wait=20)
-        self.ctl.wait_overworld_idle(300)
+        if assentar:
+            self.ctl.wait_overworld_idle(300)
+        else:
+            self.ctl.wait_until(lambda: self.ctl.overworld_idle() or self._aviso_ativo(), 300,
+                                f"{what}: campo livre ou o próximo aviso")
 
     def _ir(self, mapa: str, xy: tuple[int, int], assentar: bool = True) -> None:
         """Warp pelo atalho. `assentar=False` volta assim que o mapa muda: com um aviso pendente, esperar o campo livre
@@ -818,6 +827,46 @@ class ConquistasScenario(CatchSaveScenario):
         self.nav.step("right", 1)       # o jogo voltou: anda de novo
         return f"aviso: {texto!r}; Moeda Amuleto {antes} → {antes + 1}; dinheiro entregue"
 
+    def _bgm_status(self) -> int:
+        return self.emu.read_u32(self.game.syms.addr(BGM_PLAYER) + 4)
+
+    def _bgm_tocando(self) -> bool:
+        status = self._bgm_status()
+        return bool(status & MPLAY_TRACK) and not status & MPLAY_PAUSE
+
+    def _fanfarra_devolve_bgm(self) -> str:
+        """O aviso fecha com a fanfarra ainda tocando. O script segura o campo (waitfanfare) até a música do mapa
+        voltar: o jogador que abre a bolsa logo depois (o ResetTasks mataria o Task_Fanfare) não deixa o mapa mudo."""
+        self._flag("FLAG_BADGE01_GET", False)
+        self._sem_pendentes()
+        self._ir("MAP_PALLET_TOWN", PALLET_LIVRE)
+        assert self._bgm_tocando(), f"música do mapa antes do aviso: status {self._bgm_status():#x}"
+        self._flag("FLAG_BADGE01_GET")
+        texto = self._esperar_aviso("aviso antes da bolsa")
+        assert not self._bgm_tocando(), "a fanfarra pausa a música do mapa"
+        self.ctl.press_until(KEY_A, lambda: not self._aviso_ativo(), "fecha o aviso logo", tries=15, wait=20)
+        fechou = self.emu.frames(0)
+        menu = FieldMenu(self.ctl)
+        # START a cada 10 quadros desde o fechamento: o menu só abre quando o script solta o campo
+        self.ctl.press_until(KEY_START, menu.start_menu_open, "menu START logo depois do aviso", tries=60, wait=10)
+        espera, no_menu = self.emu.frames(0) - fechou, self._bgm_status()
+        self.ctl.wait_until(menu.accepting_input, MENU_TIMEOUT, "menu START pronto")
+        menu.choose(STARTMENU_BAG)
+        menu.bag.wait_ready()
+        na_bolsa = self._bgm_status()
+        self.ctl.press_until(KEY_B, lambda: not menu.bag.ready(), "bolsa fechada")
+        self.ctl.wait_until(menu.start_menu_open, MENU_TIMEOUT, "menu START depois da bolsa")
+        menu.close_start_menu()
+        self.emu.frames(30)
+        status = self._bgm_status()
+        detalhe = (f"START aceito {espera} quadros depois de fechar o aviso; BGM status no menu {no_menu:#x}, "
+                   f"na bolsa {na_bolsa:#x}, no campo {status:#x}")
+        # as asserções só no fim, de volta ao campo: um grupo que falha não deixa menu nem bolsa abertos
+        assert self._bgm_tocando(), f"música do mapa muda depois da bolsa: {detalhe}"
+        assert not no_menu & MPLAY_PAUSE, f"o menu abriu com a fanfarra tocando: {detalhe}"
+        self.nav.step("left", 1)
+        return f"{texto!r}; {detalhe} (tocando)"
+
     def _espera_fim_da_batalha(self) -> str:
         self.box.conq_silencio(True)
         self._time_de_um("BLASTOISE", 100, "MOVE_SURF")   # nível 100 já entregue pelo _sem_pendentes
@@ -842,12 +891,13 @@ class ConquistasScenario(CatchSaveScenario):
             self._flag(flag)
         textos = []
         for i, item in enumerate(("ITEM_POKE_BALL", "ITEM_SUPER_POTION")):
-            textos.append(self._esperar_aviso(f"aviso {i + 1} da fila"))
+            textos.append(self._esperar_aviso(f"aviso {i + 1} da fila", foto="conquista_aviso_plural" if i else None))
             self._icone_e(item)    # dois avisos seguidos no mesmo mapa: cada um com o seu ícone
             entregues = [self._estado(c)[1] for c in ("insignia_rocha", "insignia_cascata")]
             assert sum(entregues) == i + 1, f"aviso {i + 1}: entregues {entregues} (um por vez)"
-            self._fechar_aviso(f"fecha o aviso {i + 1}")
+            self._fechar_aviso(f"fecha o aviso {i + 1}", assentar=i == 1)   # o 2º abre logo depois do 1º
         assert "Rocha" in textos[0] and "Cascata" in textos[1], textos
+        assert "5 Poké Bolas na bolsa" in textos[0] and "3 Superpoções na bolsa" in textos[1], textos   # plural
         return f"dois avisos seguidos: {textos}"
 
     def _degrau(self) -> str:
@@ -856,7 +906,7 @@ class ConquistasScenario(CatchSaveScenario):
         great = self.consts.item("ITEM_GREAT_BALL")
         antes = self.game.bag_quantity(great)
         texto = self._esperar_aviso("aviso do degrau de treinadores", foto="conquista_aviso_degrau")
-        assert "Vencer 10 treinadores" in texto, texto
+        assert "Vencer 10 treinadores" in texto and "3 Grandes Bolas" in texto, texto
         self._icone_e("ITEM_GREAT_BALL")
         self._fechar_aviso("fecha o aviso do degrau")
         assert self._estado("treinadores")[2] == 1, self._estado("treinadores")
@@ -872,7 +922,7 @@ class ConquistasScenario(CatchSaveScenario):
         pc = self._pc_qtd(poke)
         self._flag("FLAG_BADGE01_GET")
         texto = self._esperar_aviso("aviso da Insígnia Rocha com a bolsa cheia", foto="conquista_aviso_pc")
-        assert "no PC" in texto, texto
+        assert "5 Poké Bolas no PC" in texto, texto
         self._icone_e("ITEM_POKE_BALL")
         assert self._pc_qtd(poke) == pc + 5, f"PC: {pc} → {self._pc_qtd(poke)}"
         assert self._estado("insignia_rocha")[1] == 1
@@ -920,7 +970,7 @@ class ConquistasScenario(CatchSaveScenario):
             self._flag(flag)
         primeiro = self._esperar_aviso("1º aviso: o que cabe")
         assert "Cascata" in primeiro and "na bolsa" in primeiro, primeiro
-        self._fechar_aviso("fecha a Cascata")
+        self._fechar_aviso("fecha a Cascata", assentar=False)   # o "fica para depois" abre logo em seguida
         segundo = self._esperar_aviso("2º aviso: o que não cabe")
         assert "Rocha" in segundo and "fica para depois" in segundo, segundo
         self._fechar_aviso("fecha o fica para depois")
@@ -1038,6 +1088,24 @@ class ConquistasScenario(CatchSaveScenario):
         self._trocar_aba(KEY_L, 4, "L de novo: dá a volta para Exploração")
         self._fechar_tela()
         return "aba 0; R → 1; L L → 4 (dá a volta); fotos conquistas_historia e conquistas_batalha"
+
+    def _checa_ao_abrir(self) -> str:
+        """A checagem do campo é cadenciada (a cada 32 quadros): a tela roda a sua ao abrir, e uma conquista ganha há
+        poucos quadros já aparece feita. Em silêncio a checagem do campo nem roda; a 4ª insígnia só vira feita na tela."""
+        self._ir("MAP_PALLET_TOWN", PALLET_LIVRE)
+        self._estado_da_tela()
+        self._flag("FLAG_BADGE04_GET")
+        self.emu.frames(64)
+        antes = self._estado("insignia_arcoiris")
+        assert antes[0] == PENDENTE, f"em silêncio a checagem do campo não roda: {antes}"
+        self._abrir_tela()
+        depois = self._estado("insignia_arcoiris")
+        historia = self.box.conq_contador(4 + ABA_HISTORIA)
+        self._fechar_tela()
+        self._estado_da_tela()     # volta às 3 insígnias dos grupos seguintes (o rodapé conta 3 de 12)
+        assert depois[0] == FEITA, f"a tela abriu sem checar: {depois}"
+        assert historia == 4 | 12 << 8, f"história = {historia & 0xFF} de {historia >> 8}"
+        return f"Insígnia Arco-íris: {antes[0]} (pendente) no campo → {depois[0]} (feita) com a tela aberta; História 4 de 12"
 
     def _lr_sem_ajuda(self) -> str:
         self._ir("MAP_PALLET_TOWN", PALLET_LIVRE)
@@ -1300,6 +1368,7 @@ class ConquistasScenario(CatchSaveScenario):
             self.suite.run("diario/jogo_novo_zera", self._diario_jogo_novo_zera)
             self._flow("aviso: ponto de partida dos grupos de aviso", self._preparar_avisos)
             for nome, fn in (("aviso/aparece_e_entrega", self._aparece_e_entrega),
+                             ("aviso/fanfarra_devolve_bgm", self._fanfarra_devolve_bgm),
                              ("aviso/espera_fim_da_batalha", self._espera_fim_da_batalha),
                              ("aviso/fila", self._fila),
                              ("aviso/degrau", self._degrau),
@@ -1317,6 +1386,7 @@ class ConquistasScenario(CatchSaveScenario):
                              ("tela/rodape", self._rodape),
                              ("tela/cartao", self._cartao),
                              ("tela/ajuda_anterior", self._ajuda_anterior),
+                             ("tela/checa_ao_abrir", self._checa_ao_abrir),
                              ("diario_tela/lista_em_ordem", self._diario_lista_em_ordem),
                              ("diario_tela/vazio", self._diario_vazio),
                              ("diario_tela/select_alterna", self._diario_select_alterna),

@@ -104,19 +104,19 @@ VAR_CONTENTS: list[VarContent] = [
                "moedas: ConvertIntToDecimalStringN(gStringVar1, coinAmount, ..., 4) (src/coins.c:54, :72)", digits=True),
     *(VarContent("src/strings.c", "gText_ConqTela_Rodape", var, 2,
                  "rodapé da tela de conquistas: feitas e válidas da aba com 2 algarismos (CONQ_COUNT = 41) "
-                 "(src/conquistas_tela.c:775-776)", digits=True)
+                 "(src/conquistas_tela.c:777-778)", digits=True)
       for var in ("STR_VAR_2", "STR_VAR_3")),
     # diário (Task 8): "hh:mm" (o save guarda até 65535 minutos = "1092:15": 6 algarismos medem mais que o texto, o
     # ":" é mais estreito), turnos até 255 e nocautes até 255
     VarContent("src/strings.c", "gText_Diario_TempoTurnos", "STR_VAR_1", 6,
                "tempo do diário: FormatarTempo(gStringVar1, e->minutos) = 4 algarismos de horas e 2 de minutos, com o ':' "
-               "(src/conquistas_tela.c:970)", digits=True),
+               "(src/conquistas_tela.c:972)", digits=True),
     VarContent("src/strings.c", "gText_Diario_TempoTurnos", "STR_VAR_2", 3,
-               "turnos do diário: ConvertIntToDecimalStringN(gStringVar2, e->turnos, ..., 3) (src/conquistas_tela.c:971)",
+               "turnos do diário: ConvertIntToDecimalStringN(gStringVar2, e->turnos, ..., 3) (src/conquistas_tela.c:973)",
                digits=True),
     *(VarContent("src/strings.c", label, "STR_VAR_2", 3,
                  "nocautes do MVP: ConvertIntToDecimalStringN(gStringVar2, e->mvpNocautes, ..., 3) "
-                 "(src/conquistas_tela.c:978)", digits=True)
+                 "(src/conquistas_tela.c:980)", digits=True)
       for label in ("gText_Diario_MvpUm", "gText_Diario_MvpVarios")),
     *(VarContent("src/strings.c", "gText_MenuSafariStats", var, n,
                  "Safari: passos (3), limite 600 (3) e bolas (2) (src/start_menu.c:275-277)", digits=True)
@@ -574,7 +574,7 @@ USAGE_RULES: list[UsageRule] = [
       "x = 4 + 35 (src/union_room_chat_display.c:1132-1150)", font="small", label="gText_Ellipsis"),
     U("src/union_room_chat.c", "call:StringCopy", None,
       "frase registrada padrão do chat: copiada para registeredTexts[][21] do save (src/union_room_chat.c:1432-1441, "
-      "include/global.h:817): 20 letras", chars=20),
+      "include/global.h:858): 20 letras", chars=20),
     U("src/union_room_chat.c", "call:DynamicPlaceholderTextUtil_ExpandPlaceholders", 21 * 8,
       "entrou/saiu do chat: registro na janela 0 de 21 tiles (src/union_room_chat_display.c:163-168), x = 0 "
       "(src/union_room_chat_display.c:1217); expandido em src/union_room_chat.c:1298, :1318"),

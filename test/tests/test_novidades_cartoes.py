@@ -69,7 +69,7 @@ def _cartoes():
 
 # --- tópicos e cartões ------------------------------------------------------------------------
 
-def test_onze_topicos_na_ordem_do_spec():
+def test_doze_topicos_na_ordem_do_spec():
     assert [t["name"] for t in _topicos()] == TOPICOS_DO_SPEC
     assert _constantes()["TOPIC_COUNT"] == 12 == len(_topicos())
 

@@ -1445,6 +1445,16 @@ const u8 gText_ConqAviso_ResumoVarias[] = _(" conquistas!");
 const u8 gText_ConqAviso_Premios[] = _("Prêmios: ");
 const u8 gText_ConqAviso_Separador[] = _(", ");
 const u8 gText_ConqAviso_Depois[] = _(" depois");
+// O plural do prêmio com 2 ou mais (sPluraisDoPremio, src/conquistas_aviso.c). Reviver Máx. e Superrepel. são
+// abreviados e ficam iguais no plural; cada prêmio da tabela é conferido em test/tests/test_conquistas_aviso.py.
+const u8 gText_ConqAviso_PluralPokeBall[] = _("Poké Bolas");
+const u8 gText_ConqAviso_PluralGreatBall[] = _("Grandes Bolas");
+const u8 gText_ConqAviso_PluralUltraBall[] = _("Ultra Bolas");
+const u8 gText_ConqAviso_PluralSuperPotion[] = _("Superpoções");
+const u8 gText_ConqAviso_PluralHyperPotion[] = _("Hiperpoções");
+const u8 gText_ConqAviso_PluralMaxRepel[] = _("Repel. Máximos");
+const u8 gText_ConqAviso_PluralPpMax[] = _("PP Máximos");
+const u8 gText_ConqAviso_PluralRareCandy[] = _("Doces Raros");
 
 // POK-44: a tela de conquistas (src/conquistas_tela.c) e a dica na frente do cartão de treinador (src/trainer_card.c).
 // O rodapé leva a aba em {STR_VAR_1} e "feitas de válidas" em {STR_VAR_2}/{STR_VAR_3}.

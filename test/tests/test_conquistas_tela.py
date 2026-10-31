@@ -533,3 +533,13 @@ def test_foto_do_cartao_nao_varia_com_o_relogio():
     esq, topo, dir_, base = map(int, m.groups())
     # abaixo do tempo de jogo (a linha "Tempo" fica acima de y = 112) e dentro da tela
     assert 0 <= esq < dir_ <= LARGURA_TELA and 112 < topo < base <= 160, (esq, topo, dir_, base)
+
+
+def test_tela_checa_o_estado_ao_abrir():
+    """A checagem do campo é a cada 32 quadros: a tela roda a dela antes de montar a lista, senão uma conquista ganha
+    há poucos quadros apareceria pendente (o cenário confere no grupo tela/checa_ao_abrir)."""
+    corpo = _corpo(_ler(TELA_C), "Conquistas_AbrirTela")
+    assert "Conquistas_ChecarEstado();" in corpo
+    assert corpo.index("Conquistas_ChecarEstado();") < corpo.index("SetMainCallback2(CB2_ConquistasTela_Montar)")
+    assert corpo.index("Conquistas_ChecarEstado();") < corpo.index("CreateTask(Task_ConquistasTela")
+    assert '"tela/checa_ao_abrir"' in _ler(REPO_ROOT / "test" / "esteira" / "scenarios" / "full_conquistas.py")
