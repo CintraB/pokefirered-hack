@@ -288,6 +288,11 @@ WIDTH_RULES: list[Rule] = [
     *[Rule("src/strings.c", prefix, 28 * 8 - 2, "página IVs/EVs do resumo: sWindowTemplates_Ivs[0] .width = 28 tiles (src/pokemon_summary_screen.c:966), texto em x = IVEV_PAGE_TEXT_X = 2 (src/pokemon_summary_screen.c:957); as linhas montadas são medidas em _ivev_page_results")
       for prefix in ("gText_PokeSum_Iv", "gText_PokeSum_Stat", "gText_PokeSum_HiddenPower",
                      "gText_PokeSum_Ev")],
+    # POK-44: os pedaços do aviso de conquista (as linhas montadas, com nome e item, são medidas em
+    # test/tests/test_conquistas_aviso.py::test_larguras_montadas)
+    Rule("src/strings.c", "gText_ConqAviso_", 26 * 8,
+         "aviso de conquista: sAvisoWindowTemplate .width = 26 tiles (src/conquistas_aviso.c:53), FONT_NORMAL em "
+         "x = 0, 1 linha por pedaço", lines=1),
     Rule("src/strings.c", None, None, "menus e janelas de dezenas de telas: a janela sai de onde cada rótulo "
          "é usado (esteira/janelas_uso.py, USAGE_RULES); texto sem uso no código fica sem medida", by_usage=True),
     # -- tabelas de texto --

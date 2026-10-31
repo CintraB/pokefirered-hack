@@ -334,6 +334,8 @@ def _run_scenarios(group: list[ScenarioSpec], ctx: ScenarioContext, only: str | 
     ponte não puder ser gravada, ele vira `falha`. `on_bridge(nome)`: chamado logo que a ponte
     fica pronta (modo paralelo: libera as sessões da ROM de teste)."""
     chain = _chain(group, only, ctx)
+    # POK-44: sessão da ROM de teste = aviso das conquistas em silêncio (scenarios/base.silenciar_avisos)
+    ctx.conq_silencio = any(spec.rom == TEST for spec in group)
     suite = ctx.suite
     out = Path(ctx.out_dir)
     for spec in chain:   # produtor na cadeia que vai rodar: o .sav antigo não vale mais,
@@ -986,6 +988,7 @@ def run_watch(args: argparse.Namespace) -> int:
                 ctx.starter = found
             print(f"[assistindo] inicial {ctx.starter}; feche a janela (ou Esc) para encerrar",
                   flush=True)
+            ctx.conq_silencio = any(spec.rom == TEST for spec in chain)   # POK-44, como em _run_scenarios
             for spec in chain:
                 print(f"[assistindo] {spec.name}...", flush=True)
                 try:

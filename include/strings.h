@@ -1601,4 +1601,17 @@ extern const u8 gText_PokeSum_EggOrigin_Trade[];
 extern const u8 *const gText_DayNight_PeriodName[TIME_PERIOD_COUNT];
 extern const u8 *const gText_DayNight_PeriodStart[TIME_PERIOD_COUNT];
 
+// POK-44: aviso de conquista
+extern const u8 gText_ConqAviso_Titulo[];
+extern const u8 gText_ConqAviso_Premio[];
+extern const u8 gText_ConqAviso_NaBolsa[];
+extern const u8 gText_ConqAviso_NoPc[];
+extern const u8 gText_ConqAviso_Cheios[];
+extern const u8 gText_ConqAviso_ResumoAntes[];
+extern const u8 gText_ConqAviso_ResumoUma[];
+extern const u8 gText_ConqAviso_ResumoVarias[];
+extern const u8 gText_ConqAviso_Premios[];
+extern const u8 gText_ConqAviso_Separador[];
+extern const u8 gText_ConqAviso_Depois[];
+
 #endif //GUARD_STRINGS_H

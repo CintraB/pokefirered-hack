@@ -4,6 +4,7 @@
 #include "battle_anim.h"
 #include "event_data.h"
 #include "field_specials.h"
+#include "item.h"
 #include "money.h"
 #include "overworld.h"
 #include "pokedex.h"
@@ -125,7 +126,10 @@ static bool8 Ativa(u8 num)
 
 // `daEquipe`: o Pokémon do time (o nível vem do campo próprio) ou NULL no PC (o nível vem da EXP). Os filtros de
 // vaga vazia, ovo e Bad Egg vêm antes de qualquer leitura que use a espécie (a de um Bad Egg é lixo).
-static void LerMon(struct BoxPokemon *boxMon, struct Pokemon *daEquipe, u32 otJogador, struct ConqLeituraMons *l)
+// `comOvos`: lê também o ovo chocado (shiny, 6 IVs), que só a varredura usa; a checagem cadenciada pula essas
+// decifrações (cada GetBoxMonData de IV decifra a struct inteira).
+static void LerMon(struct BoxPokemon *boxMon, struct Pokemon *daEquipe, u32 otJogador, bool8 comOvos,
+                   struct ConqLeituraMons *l)
 {
     u32 otId, personalidade, campo;
     u8 nivel, amizade;
@@ -146,7 +150,7 @@ static void LerMon(struct BoxPokemon *boxMon, struct Pokemon *daEquipe, u32 otJo
     if (shiny && l->shinies < 0xFFFF)
         l->shinies++;
     // chocado de um ovo do próprio jogador
-    if (GetBoxMonData(boxMon, MON_DATA_MET_LEVEL) != 0 || otId != otJogador)
+    if (!comOvos || GetBoxMonData(boxMon, MON_DATA_MET_LEVEL) != 0 || otId != otJogador)
         return;
     if (shiny)
         l->ovoShiny = TRUE;
@@ -160,12 +164,12 @@ static void LerMon(struct BoxPokemon *boxMon, struct Pokemon *daEquipe, u32 otJo
         l->ovo6Ivs = TRUE;
 }
 
-static void LerTime(struct ConqLeituraMons *l, u32 otJogador)
+static void LerTime(struct ConqLeituraMons *l, u32 otJogador, bool8 comOvos)
 {
     u8 i;
 
     for (i = 0; i < PARTY_SIZE; i++)
-        LerMon(&gPlayerParty[i].box, &gPlayerParty[i], otJogador, l);
+        LerMon(&gPlayerParty[i].box, &gPlayerParty[i], otJogador, comOvos, l);
 }
 
 // Só a varredura do save antigo chama isto: o PC tem TOTAL_BOXES_COUNT * IN_BOX_COUNT Pokémon a decifrar.
@@ -174,12 +178,12 @@ static void VarrerTimeEPC(struct ConqLeituraMons *l)
     u32 otJogador = GetPlayerTrainerId();
     u8 caixa, pos;
 
-    LerTime(l, otJogador);
+    LerTime(l, otJogador, TRUE);
     for (caixa = 0; caixa < TOTAL_BOXES_COUNT; caixa++)
     {
         for (pos = 0; pos < IN_BOX_COUNT; pos++)
         {
-            LerMon(GetBoxedMonPtr(caixa, pos), NULL, otJogador, l);
+            LerMon(GetBoxedMonPtr(caixa, pos), NULL, otJogador, TRUE, l);
         }
     }
 }
@@ -381,7 +385,7 @@ void Conquistas_ChecarEstado(void)
 
     if (sConq->magic != CONQ_MAGIC)
         Conquistas_VarrerSaveAntigo();
-    LerTime(&time, GetPlayerTrainerId());
+    LerTime(&time, GetPlayerTrainerId(), FALSE); // a cada 32 quadros no campo: sem os ovos
     for (num = 0; num < CONQ_COUNT; num++)
     {
         if (Ativa(num) && Conquistas_GetEstado(num) == CONQ_PENDENTE && CumpreEstado(num, &time))
@@ -556,6 +560,119 @@ void Conquistas_ContarAba(u8 aba, u8 *feitas, u8 *validas)
         if (estado == CONQ_FEITA)
             (*feitas)++;
     }
+}
+
+// --- Prêmio (Task 6) ---------------------------------------------------------------------------------------------
+// A ordem é a da tabela; numa conquista com degraus, o primeiro degrau alcançado e ainda não entregue (cada degrau é
+// um aviso, com o prêmio dele).
+
+bool8 Conquistas_ProximoPendente(u8 *num, u8 *degrau)
+{
+    u8 n, entregue;
+
+    if (sConq->magic != CONQ_MAGIC)
+        return FALSE;
+    for (n = 0; n < CONQ_COUNT; n++)
+    {
+        if (!Ativa(n))
+            continue;
+        if (gConquistas[n].numDegraus > 0)
+        {
+            entregue = Conquistas_DegrauEntregue(n);
+            if (Conquistas_DegrauAtual(n) > entregue)
+            {
+                *num = n;
+                *degrau = entregue;
+                return TRUE;
+            }
+        }
+        else if (Conquistas_GetEstado(n) == CONQ_FEITA && !Conquistas_Entregue(n))
+        {
+            *num = n;
+            *degrau = 0;
+            return TRUE;
+        }
+    }
+    return FALSE;
+}
+
+// `premios` tem um prêmio por degrau (o gerador repete o único quando o JSON dá um só).
+const struct ConquistaPremio *Conquistas_Premio(u8 num, u8 degrau)
+{
+    if (!Conquistas_NumValido(num))
+        return NULL;
+    if (degrau >= gConquistas[num].numDegraus)
+        degrau = 0;
+    return &gConquistas[num].premios[degrau];
+}
+
+u8 Conquistas_EntregarPremio(u8 num, u8 degrau)
+{
+    const struct ConquistaPremio *p = Conquistas_Premio(num, degrau);
+    u8 onde;
+
+    if (p == NULL)
+        return CONQ_ENTREGA_PENDENTE;
+    if (AddBagItem(p->item, p->qtd))
+        onde = CONQ_ENTREGA_BOLSA;
+    else if (AddPCItem(p->item, p->qtd))
+        onde = CONQ_ENTREGA_PC;
+    else
+        return CONQ_ENTREGA_PENDENTE;
+    if (gConquistas[num].numDegraus > 0)
+        Conquistas_SetDegrauEntregue(num, degrau + 1);
+    else
+        Conquistas_SetEntregue(num);
+    return onde;
+}
+
+static void Contar(u8 *contador)
+{
+    if (*contador < 0xFF)
+        (*contador)++;
+}
+
+// O aviso-resumo do save antigo: todos os prêmios pendentes de uma vez. O que não cabe fica pendente (numa com
+// degraus, do primeiro degrau que não coube em diante) e vira aviso comum depois.
+void Conquistas_EntregarTudo(u8 *naBolsa, u8 *noPc, u8 *pendentes)
+{
+    u8 num, degrau, ate;
+
+    *naBolsa = *noPc = *pendentes = 0;
+    for (num = 0; num < CONQ_COUNT; num++)
+    {
+        if (!Ativa(num))
+            continue;
+        if (gConquistas[num].numDegraus > 0)
+        {
+            degrau = Conquistas_DegrauEntregue(num);
+            ate = Conquistas_DegrauAtual(num);
+        }
+        else
+        {
+            degrau = 0;
+            ate = (Conquistas_GetEstado(num) == CONQ_FEITA && !Conquistas_Entregue(num)) ? 1 : 0;
+        }
+        for (; degrau < ate; degrau++)
+        {
+            u8 onde = Conquistas_EntregarPremio(num, degrau);
+
+            if (onde == CONQ_ENTREGA_BOLSA)
+            {
+                Contar(naBolsa);
+            }
+            else if (onde == CONQ_ENTREGA_PC)
+            {
+                Contar(noPc);
+            }
+            else
+            {
+                for (; degrau < ate; degrau++)
+                    Contar(pendentes);
+            }
+        }
+    }
+    sConq->resumoPendente = FALSE;
 }
 
 // --- Gatilhos de evento (Task 4) ----------------------------------------------------------------------------

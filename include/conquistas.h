@@ -115,7 +115,22 @@ void Conquistas_OnOvoChocado(struct Pokemon *mon);        // AddHatchedMonToPart
 // depois de um DERROTOU troca a entrada, com ordem nova.
 void Diario_OnFimDeBatalha(void);                   // chamado por Conquistas_OnFimDeBatalha (já sem as batalhas ignoradas)
 const struct DiarioEntrada *Diario_GetEntrada(u8 evt); // NULL com o slot vazio (ordem 0) ou evt fora da tabela
-u8 Diario_ListarEmOrdem(u8 *evts);
-bool8 Diario_TreinadorDoEvento(u8 evt, u16 treinador); // `treinador` está em gDiarioEventos[evt].treinadores                  // DIARIO_EVT_* preenchidos, em ordem crescente de `ordem`; devolve quantos
+u8 Diario_ListarEmOrdem(u8 *evts);                  // DIARIO_EVT_* preenchidos, em ordem crescente de `ordem`; devolve quantos
+bool8 Diario_TreinadorDoEvento(u8 evt, u16 treinador); // `treinador` está em gDiarioEventos[evt].treinadores
+
+// Prêmio (src/conquistas.c, Task 6): bolsa, senão PC de itens; sem espaço nos dois fica pendente.
+#define CONQ_ENTREGA_PENDENTE 0
+#define CONQ_ENTREGA_BOLSA    1
+#define CONQ_ENTREGA_PC       2
+bool8 Conquistas_ProximoPendente(u8 *num, u8 *degrau); // o próximo prêmio a entregar (degrau = índice; 0 sem degraus)
+const struct ConquistaPremio *Conquistas_Premio(u8 num, u8 degrau);
+u8 Conquistas_EntregarPremio(u8 num, u8 degrau);    // CONQ_ENTREGA_*; marca entregue/degrau só se entregou
+void Conquistas_EntregarTudo(u8 *naBolsa, u8 *noPc, u8 *pendentes); // o resumo do save antigo; desliga resumoPendente
+
+// Aviso que pausa o jogo (src/conquistas_aviso.c, Task 6). Um ponto só de chamada: ProcessPlayerFieldInput, logo
+// depois de TryRunOnFrameMapScript. Fecha com A/B depois de 30 quadros ou sozinho em 180.
+extern u8 gConquistasAvisoAtivo;                     // 1 enquanto o aviso está na tela (a esteira lê)
+bool8 Conquistas_TentarAviso(void);                  // TRUE = começou o script do aviso (EventScript_AvisoConquista)
+void Conquistas_MostrarAviso(void);                  // special: entrega o próximo prêmio (ou o resumo) e mostra a janela
 
 #endif // GUARD_CONQUISTAS_H

@@ -726,6 +726,7 @@ static u32 TypeEffectiveness(u8 moveType, u8 type1, u8 type2)
 // POK-44: achievements and battle journal state in the save
 #include "conquistas.h"
 #include "data/conquistas_ids.h"
+extern u8 gConquistasSilencio; // src/conquistas_aviso.c (only in TESTBUILD)
 #include "constants/battle_setup.h"
 #include "constants/opponents.h"
 
@@ -895,6 +896,48 @@ static u32 DiarioEntrada(u32 evt)
     return e->ordem;
 }
 
+// Task 6: a full bag pocket (and PC) for the prize that does not fit. The item itself first, at 999 (FRLG keeps one
+// stack per item, so that alone already refuses it), then distinct items of the same pocket, 999 each.
+static u32 EncherBolso(u16 item, bool8 pc)
+{
+    u8 pocket, i, ocupados = 0;
+    u16 id, q, n;
+
+    pocket = ItemId_GetPocket(item);
+    if (item == ITEM_NONE || item >= ITEMS_COUNT || pocket == 0)
+        return 0xFFFFFFFF;
+    for (n = 0, id = item; n < ITEMS_COUNT; n++, id = id + 1 < ITEMS_COUNT ? id + 1 : 1)
+    {
+        if (ItemId_GetPocket(id) != pocket)
+            continue;
+        q = BagGetQuantityByItemId(id);
+        if (q < 999 && !AddBagItem(id, 999 - q))
+            break;
+    }
+    for (i = 0; i < gBagPockets[pocket - 1].capacity; i++)
+    {
+        if (gBagPockets[pocket - 1].itemSlots[i].itemId != ITEM_NONE)
+            ocupados++;
+    }
+    if (!pc)
+        return ocupados;
+    for (n = 0, id = item; n < ITEMS_COUNT && CountItemsInPC() < PC_ITEMS_COUNT; n++, id = id + 1 < ITEMS_COUNT ? id + 1 : 1)
+    {
+        if (ItemId_GetPocket(id) == 0)
+            continue;
+        for (i = 0; i < PC_ITEMS_COUNT && gSaveBlock1Ptr->pcItems[i].itemId != id; i++)
+            ;
+        for (q = 0; i == PC_ITEMS_COUNT && q < PC_ITEMS_COUNT; q++)
+        {
+            if (gSaveBlock1Ptr->pcItems[q].itemId == ITEM_NONE)
+                i = q;
+        }
+        gSaveBlock1Ptr->pcItems[i].itemId = id;
+        gSaveBlock1Ptr->pcItems[i].quantity = 999;   // the PC quantity has no key (GetPcItemQuantity)
+    }
+    return ocupados + CountItemsInPC();
+}
+
 // An egg of the player (shiny PID and/or 6 IVs 31 as asked) in a party slot, hatched through the real special.
 static u32 ConqChocar(u32 arg0, u16 species)
 {
@@ -1047,6 +1090,8 @@ void TestHooks_Run(void)
     case TEST_CMD_CONQ_CAPTURA:     result = ConqCaptura(gTestMailbox.arg0, gTestMailbox.arg1); break;
     case TEST_CMD_CONQ_CHOCAR:      result = ConqChocar(gTestMailbox.arg0, gTestMailbox.arg1); break;
     case TEST_CMD_DIARIO_ENTRADA:   result = DiarioEntrada(gTestMailbox.arg0); break;
+    case TEST_CMD_CONQ_SILENCIO:    gConquistasSilencio = gTestMailbox.arg0 != 0; result = gConquistasSilencio; break;
+    case TEST_CMD_ENCHER_BOLSO:     result = EncherBolso(gTestMailbox.arg0, gTestMailbox.arg1); break;
     // POK-44: end
     default:
         result = 0xFFFFFFFF;

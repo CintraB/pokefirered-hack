@@ -24,6 +24,12 @@ Sessão própria da ROM de teste a partir do .sav do `captura` (`save_from="capt
   1ª vitória entra, o Articuno derrotado (DERROTOU) e depois capturado com Master Ball (CAPTURADO, ordem nova), o
   MVP pela personalidade depois de uma troca, a 1ª Liga registrada e a revanche (FLAG_SYS_GAME_CLEAR) não, e o
   jogo novo zerando o diário (`diario_entrada`, CMD_DIARIO_ENTRADA).
+- `aviso/*` e `premio/*` (Task 6): a sessão da ROM de teste começa em silêncio (`conq_silencio(True)`, para os grupos
+  acima, que montam o estado sem o aviso entregar nada no meio); estes grupos desligam o silêncio. O aviso aparece no
+  campo e pausa o jogo (`gConquistasAvisoAtivo`), entrega o prêmio na bolsa, senão no PC de itens, e com a bolsa e o
+  PC cheios deixa o prêmio para depois (não volta no mesmo mapa); nunca em batalha; vários de uma vez saem um por
+  vez; num save antigo, um aviso-resumo só entrega tudo. Fotos em telas/conquista_*.png (sem referência: quem
+  aprova o visual é o Cintra).
 
 Uso, a partir de test/ (a pasta OUT precisa do captura.sav de um `rapido`/`completo`):
     python3 -m esteira completo --rom R --elf E --out OUT --only conquistas
@@ -31,6 +37,7 @@ Numa janela, em tempo real: `make test-watch CENARIO=conquistas`.
 """
 
 import re
+import struct
 import sys
 
 from .. import conquistas as cq
@@ -61,6 +68,20 @@ PENDENTE, FEITA, PERDIDA = cq.CONQ_PENDENTE, cq.CONQ_FEITA, cq.CONQ_PERDIDA
 ABA_HISTORIA, ABA_BATALHA = 0, 1
 APLICAR_MARCAR, APLICAR_PERDER, APLICAR_ENTREGUE, APLICAR_DEGRAU = 0, 1, 2, 3
 BADGES = [f"FLAG_BADGE0{i}_GET" for i in range(1, 9)]
+# Task 6: o aviso
+AVISO_ATIVO = "gConquistasAvisoAtivo"   # u8: 1 enquanto o aviso está na tela (src/conquistas_aviso.c)
+AVISO_TIMEOUT = 300      # a checagem de estado roda a cada 32 quadros; o aviso aparece logo depois
+AVISO_ENTRADA = 24       # quadros da entrada animada (a foto sai com a janela parada)
+CONQ_VITORIAS = 0x08     # u16 vitoriasTreinador em struct ConquistasSave
+SB1_PC_ITEMS, PC_ITEMS_COUNT = 0x298, 30          # struct ItemSlot pcItems[30] (quantidade sem chave)
+SB1_BALLS, BALLS_COUNT = 0x430, 13                # bagPocket_PokeBalls (quantidade XOR chave)
+PALLET_LIVRE = (15, 9)   # Pallet: linha 9 livre de x=2 a x=21 (quick_route1.PACE_START)
+VIRIDIAN_LIVRE = (26, 27)  # Viridian, diante do Centro
+
+
+def struct_unpack(raw: bytes, i: int) -> tuple[int, int]:
+    """(item, quantidade) do ItemSlot `i` de um bolso/PC lido cru."""
+    return struct.unpack_from("<HH", raw, i * 4)
 
 
 class ConquistasScenario(CatchSaveScenario):
@@ -372,6 +393,8 @@ class ConquistasScenario(CatchSaveScenario):
 
     def _derrota_nao_conta(self) -> str:
         self.box.conq_reset(True)
+        # o retro/* deixa o Hall ligado: com ele o slot do rival ficaria vazio também por ser "revanche"
+        self._flag("FLAG_SYS_GAME_CLEAR", False)
         self._time_de_um("MAGIKARP", 2, "MOVE_SPLASH")
         self.box.start_trainer_battle(self._trainer_const("TRAINER_RIVAL_OAKS_LAB_SQUIRTLE"))
         self._lutar("rival do laboratório", "lose")
@@ -659,6 +682,192 @@ class ConquistasScenario(CatchSaveScenario):
         assert self._diario_raw()[0] == 0, "proximaOrdem"
         return "jogo novo: entrada do Campeão vazia"
 
+    # --- Task 6: o aviso e o prêmio ------------------------------------------------------------
+    def _aviso_ativo(self) -> bool:
+        return self.emu.read_u8(self.game.syms.addr(AVISO_ATIVO)) == 1
+
+    def _esperar_aviso(self, what: str, foto: str | None = None) -> str:
+        """Espera o aviso aparecer; devolve o texto montado (gStringVar4) e grava a foto com a janela parada."""
+        self.ctl.wait_until(self._aviso_ativo, AVISO_TIMEOUT, what)
+        texto = self._field_message()
+        if foto:
+            self.emu.frames(AVISO_ENTRADA)
+            self.measures.setdefault("fotos_aviso", []).append(self._shot(foto))
+        return texto
+
+    def _fechar_aviso(self, what: str) -> None:
+        self.ctl.press_until(KEY_A, lambda: not self._aviso_ativo(), what, tries=15, wait=20)
+        self.ctl.wait_overworld_idle(300)
+
+    def _ir(self, mapa: str, xy: tuple[int, int]) -> None:
+        group, num = self.consts.map(mapa)
+        self.box.call(CMD_WARP, group | num << 8, xy[0] | xy[1] << 16)
+        self.ctl.wait_until(lambda: self.game.location() == (group, num), 600, f"warp para {mapa}")
+        self.ctl.wait_overworld_idle(600)
+
+    def _sem_pendentes(self) -> None:
+        """Jogo novo nas conquistas, com tudo o que o save já prova marcado como entregue: nenhum aviso pendente.
+        Monta em silêncio (senão o aviso entregaria no meio) e religa os avisos no fim."""
+        self.box.conq_silencio(True)
+        self.box.conq_reset(True)
+        self.box.conq_checar()
+        for c in cq.dados()["conquistas"]:
+            if not c.get("ativa", True):
+                continue
+            estado, entregue, deg_entregue, deg_atual = self.box.conq_estado(c["num"])
+            if c.get("degraus"):
+                if deg_atual > deg_entregue:
+                    self.box.conq_aplicar(c["num"], APLICAR_DEGRAU, deg_atual)
+            elif estado == FEITA and not entregue:
+                self.box.conq_aplicar(c["num"], APLICAR_ENTREGUE)
+        assert self.box.conq_checar() == 0, "sobrou aviso pendente"
+        self.box.conq_silencio(False)
+
+    def _pc_qtd(self, item: int) -> int:
+        raw = self.emu.read(self._sb(1) + SB1_PC_ITEMS, PC_ITEMS_COUNT * 4)
+        return sum(q for i in range(PC_ITEMS_COUNT) for it, q in [struct_unpack(raw, i)] if it == item)
+
+    def _poke_ball_na_bolsa(self, qtd: int) -> None:
+        """Muda a quantidade da Poké Ball no bolso de bolas (escrita na RAM, quantidade XOR chave)."""
+        poke = self.consts.item("ITEM_POKE_BALL")
+        base = self._sb(1) + SB1_BALLS
+        raw = self.emu.read(base, BALLS_COUNT * 4)
+        slot = next(i for i in range(BALLS_COUNT) if struct_unpack(raw, i)[0] == poke)
+        self.emu.write(base + slot * 4 + 2, (qtd ^ (self.game._key() & 0xFFFF)).to_bytes(2, "little"))
+
+    def _preparar_avisos(self) -> str:
+        """Ponto de volta dos grupos de aviso, ainda em silêncio (o `_sem_pendentes` de cada grupo desliga o silêncio
+        com nada pendente: os grupos anteriores deixam conquistas feitas e não entregues)."""
+        self.ctl.checkpoint("conquistas_avisos")
+        return "checkpoint conquistas_avisos (em silêncio)"
+
+    def _aparece_e_entrega(self) -> str:
+        self._ir("MAP_PALLET_TOWN", PALLET_LIVRE)
+        self._set_money(0)              # o estado/dinheiro deixou ₽999.999: sem isto o Milionário já viria entregue
+        self._sem_pendentes()
+        self._set_money(999999)
+        moeda = self.consts.item("ITEM_AMULET_COIN")
+        antes = self.game.bag_quantity(moeda)
+        self.nav.step("left", 1)
+        texto = self._esperar_aviso("aviso do Milionário", foto="conquista_aviso")
+        assert "Milionário" in texto and "na bolsa" in texto, texto
+        assert self._estado("dinheiro")[:2] == (FEITA, 1), self._estado("dinheiro")
+        assert self.game.bag_quantity(moeda) == antes + 1, "Moeda Amuleto não foi para a bolsa"
+        self._fechar_aviso("A fecha o aviso")
+        assert not self._aviso_ativo()
+        self.nav.step("right", 1)       # o jogo voltou: anda de novo
+        return f"aviso: {texto!r}; Moeda Amuleto {antes} → {antes + 1}; dinheiro entregue"
+
+    def _espera_fim_da_batalha(self) -> str:
+        self.box.conq_silencio(True)
+        self._time_de_um("BLASTOISE", 100, "MOVE_SURF")   # nível 100 já entregue pelo _sem_pendentes
+        self._sem_pendentes()
+        visto = []
+        assert self.box.call(CMD_START_WILD_BATTLE, self.consts.species("GEODUDE"), 5) == 1, "START_WILD_BATTLE"
+        resultado = self.driver.fight_to_end(on_step=lambda: visto.append(self._aviso_ativo()))
+        assert resultado == "win", resultado
+        assert visto and not any(visto), "aviso durante a batalha"
+        assert self._estado("golpe_x4")[:2] == (FEITA, 0), ("feita na batalha, entregue depois", self._estado("golpe_x4"))
+        texto = self._esperar_aviso("aviso do golpe x4 de volta ao campo")
+        assert "Golpe 4" in texto, texto
+        self._fechar_aviso("fecha o aviso do x4")
+        assert self._estado("golpe_x4")[:2] == (FEITA, 1), self._estado("golpe_x4")
+        return f"{len(visto)} leituras na batalha com o aviso fechado; no campo: {texto!r}"
+
+    def _fila(self) -> str:
+        for flag in ("FLAG_BADGE01_GET", "FLAG_BADGE02_GET"):
+            self._flag(flag, False)
+        self._sem_pendentes()
+        for flag in ("FLAG_BADGE01_GET", "FLAG_BADGE02_GET"):
+            self._flag(flag)
+        textos = []
+        for i in range(2):
+            textos.append(self._esperar_aviso(f"aviso {i + 1} da fila"))
+            entregues = [self._estado(c)[1] for c in ("insignia_rocha", "insignia_cascata")]
+            assert sum(entregues) == i + 1, f"aviso {i + 1}: entregues {entregues} (um por vez)"
+            self._fechar_aviso(f"fecha o aviso {i + 1}")
+        assert "Rocha" in textos[0] and "Cascata" in textos[1], textos
+        return f"dois avisos seguidos: {textos}"
+
+    def _degrau(self) -> str:
+        self._sem_pendentes()
+        self.emu.write(self._sb(1) + SB1_CONQUISTAS + CONQ_VITORIAS, (10).to_bytes(2, "little"))
+        great = self.consts.item("ITEM_GREAT_BALL")
+        antes = self.game.bag_quantity(great)
+        texto = self._esperar_aviso("aviso do degrau de treinadores", foto="conquista_aviso_degrau")
+        assert "Vencer 10 treinadores" in texto, texto
+        self._fechar_aviso("fecha o aviso do degrau")
+        assert self._estado("treinadores")[2] == 1, self._estado("treinadores")
+        assert self.game.bag_quantity(great) == antes + 3
+        return f"10 vitórias: {texto!r}, degrau entregue 1"
+
+    def _bolsa_cheia(self) -> str:
+        poke = self.consts.item("ITEM_POKE_BALL")
+        self._flag("FLAG_BADGE01_GET", False)
+        self._sem_pendentes()
+        ocupados = self.box.encher_bolso(poke)
+        assert ocupados >= 12, ocupados
+        pc = self._pc_qtd(poke)
+        self._flag("FLAG_BADGE01_GET")
+        texto = self._esperar_aviso("aviso da Insígnia Rocha com a bolsa cheia", foto="conquista_aviso_pc")
+        assert "no PC" in texto, texto
+        assert self._pc_qtd(poke) == pc + 5, f"PC: {pc} → {self._pc_qtd(poke)}"
+        assert self._estado("insignia_rocha")[1] == 1
+        self._fechar_aviso("fecha o aviso no PC")
+        return f"bolso de bolas com {ocupados} espaços cheios: {texto!r}; PC +5 Poké Ball"
+
+    def _tudo_cheio(self) -> str:
+        poke = self.consts.item("ITEM_POKE_BALL")
+        self._flag("FLAG_BADGE01_GET", False)
+        self._sem_pendentes()
+        self._ir("MAP_PALLET_TOWN", PALLET_LIVRE)
+        ocupados = self.box.encher_bolso(poke, pc=True)
+        self._flag("FLAG_BADGE01_GET")
+        texto = self._esperar_aviso("aviso com bolsa e PC cheios", foto="conquista_aviso_pendente")
+        assert "fica para depois" in texto, texto
+        assert self._estado("insignia_rocha")[:2] == (FEITA, 0), self._estado("insignia_rocha")
+        self._fechar_aviso("fecha o aviso pendente")
+        mapa = self.consts.map("MAP_PALLET_TOWN")
+        adiado = int.from_bytes(self._conq_raw()[ADIADO_NO_MAPA:ADIADO_NO_MAPA + 2], "little")
+        assert adiado == mapa[0] << 8 | mapa[1], f"adiadoNoMapa = {adiado:#x}"
+        for i in range(20):
+            self.nav.step("left" if i % 2 == 0 else "right", 1)
+            assert not self._aviso_ativo(), f"aviso de novo no mesmo mapa (passo {i + 1})"
+        self.emu.frames(64)
+        assert not self._aviso_ativo() and self._estado("insignia_rocha")[1] == 0
+        self._poke_ball_na_bolsa(1)
+        self._ir("MAP_VIRIDIAN_CITY", VIRIDIAN_LIVRE)
+        texto2 = self._esperar_aviso("aviso com entrega depois de trocar de mapa")
+        assert "na bolsa" in texto2, texto2
+        assert self._estado("insignia_rocha")[:2] == (FEITA, 1), self._estado("insignia_rocha")
+        self._fechar_aviso("fecha o aviso entregue")
+        return (f"{ocupados} espaços cheios: {texto!r}; 20 passos em Pallet sem aviso; espaço liberado e Viridian: "
+                f"{texto2!r}")
+
+    def _resumo_retro(self) -> str:
+        self.ctl.restore("conquistas_avisos")       # sem a bolsa e o PC cheios dos grupos premio/*
+        self.box.conq_silencio(True)
+        for i, flag in enumerate(BADGES):
+            self._flag(flag, i < 3)
+        self._flag("FLAG_SYS_GAME_CLEAR", False)
+        itens = {c["id"]: self.consts.item(c["premios"][0]["item"]) for c in cq.dados()["conquistas"][:3]}
+        antes = {k: self.game.bag_quantity(v) for k, v in itens.items()}
+        assert self.box.conq_reset(False) == 0
+        self.box.conq_silencio(False)
+        texto = self._esperar_aviso("aviso-resumo do save antigo", foto="conquista_resumo")
+        assert "Você já tinha" in texto and "conquista" in texto, texto
+        assert self.box.conq_contador(2) == cq.CONQ_ORIGEM_SAVE_ANTIGO, "resumoPendente desligado"
+        for cid, v in itens.items():
+            qtd = cq.dados()["conquistas"][cq.num(cid)]["premios"][0]["qtd"]
+            # outros prêmios do save (a 1ª captura também dá Poké Bolas) podem somar no mesmo item
+            assert self.game.bag_quantity(v) >= antes[cid] + qtd, (cid, antes[cid], self.game.bag_quantity(v))
+            assert self._estado(cid)[:2] == (FEITA, 1), (cid, self._estado(cid))
+        self._fechar_aviso("fecha o resumo")
+        self.emu.frames(AVISO_TIMEOUT)
+        assert not self._aviso_ativo(), "um segundo aviso depois do resumo"
+        assert self.box.conq_checar() == 0
+        return f"um aviso só: {texto!r}; os 3 prêmios das insígnias na bolsa"
+
     def run(self) -> None:
         try:
             self._flow("conquistas: CONTINUAR com o save do modo rápido", self._start)
@@ -688,6 +897,18 @@ class ConquistasScenario(CatchSaveScenario):
             self.suite.run("diario/mvp_depois_da_troca", self._diario_mvp_depois_da_troca)
             self.suite.run("diario/liga_e_revanche", self._diario_liga_e_revanche)
             self.suite.run("diario/jogo_novo_zera", self._diario_jogo_novo_zera)
+            self._flow("aviso: ponto de partida dos grupos de aviso", self._preparar_avisos)
+            for nome, fn in (("aviso/aparece_e_entrega", self._aparece_e_entrega),
+                             ("aviso/espera_fim_da_batalha", self._espera_fim_da_batalha),
+                             ("aviso/fila", self._fila),
+                             ("aviso/degrau", self._degrau),
+                             ("premio/bolsa_cheia_vai_ao_pc", self._bolsa_cheia),
+                             ("premio/tudo_cheio_fica_pendente", self._tudo_cheio),
+                             ("aviso/resumo_retro", self._resumo_retro)):
+                res = self.suite.run(nome, fn)
+                res.images += self.measures.pop("fotos_aviso", [])
+                if self._aviso_ativo():      # um grupo que falhou no meio não deixa o aviso para o próximo
+                    self._fechar_aviso(f"fecha o aviso que {nome} deixou")
         except Abort:
             pass
 

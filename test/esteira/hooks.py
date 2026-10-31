@@ -284,6 +284,19 @@ class Mailbox:
         assert entrada["ordem"] == ordem, (entrada, ordem)
         return entrada
 
+    def conq_silencio(self, on: bool) -> int:
+        """Liga (True) ou desliga o silêncio do aviso das conquistas: em silêncio, o campo nem checa o estado."""
+        result = self.call(CMD_CONQ_SILENCIO, int(on))
+        assert result == int(on), f"CONQ_SILENCIO recusado: {result:#x}"
+        return result
+
+    def encher_bolso(self, item: int, pc: bool = False) -> int:
+        """Enche o bolso de `item` (o próprio item e outros do mesmo bolso, 999 cada); com `pc`, também os 30
+        espaços do PC de itens. Devolve os espaços ocupados (bolso + PC)."""
+        result = self.call(CMD_ENCHER_BOLSO, item, int(pc))
+        assert result != NO_RESULT, f"ENCHER_BOLSO recusado: item {item}"
+        return result
+
 # --- Hack 6: breeding genético (enum à parte em include/test_hooks.h, a partir de 0x60; ------
 # o uso fica em esteira/breeding.py e scenarios/full_breeding.py / full_egg.py)
 CMD_BREED_SETUP = 0x60      # gTestBreedSetup -> creche (arg0 = 1: ovo pendente) -> compatibilidade (0xFFFFFFFF = pai inválido)
@@ -351,3 +364,7 @@ CMD_CONQ_CHOCAR = 0xBA      # arg0 = slot | opções << 8 (1 shiny, 2 seis IVs 3
                             # chocado pelo ScriptHatchMon (AddHatchedMonToParty) -> espécie | ovo << 16 lidos
 CMD_DIARIO_ENTRADA = 0xBB   # arg0 = evento (DIARIO_EVT_*) -> ordem (0 = vazia; 0xFFFFFFFF = evento inválido);
                             # os 20 bytes da struct DiarioEntrada em gTestText
+CMD_CONQ_SILENCIO = 0xBC    # arg0 = 1 silencia o aviso das conquistas (nem checa), 0 volta -> arg0 (só na ROM de teste)
+CMD_ENCHER_BOLSO = 0xBD     # arg0 = item: os espaços livres do bolso dele com itens distintos do mesmo bolso, 999 cada,
+                            # a começar pelo próprio item; arg1 = 1 enche também os 30 do PC de itens -> espaços ocupados
+                            # (bolso + PC)

@@ -49,7 +49,8 @@ def test_special_registrado_no_fim_da_tabela():
     # no fim: os números dos specials anteriores (usados pelos scripts já montados) não mudam
     assert defs[defs.index("def_special OpenNovidadesScreen") + 1:] == [
         "def_special GetRepelToReuse", "def_special UseRepelFromField",   # POK-31, depois dele
-        "def_special StartPortablePc"]                                      # POK-36
+        "def_special StartPortablePc",                                      # POK-36
+        "def_special Conquistas_MostrarAviso"]                              # POK-44
 
 
 def test_special_declarado_e_definido():

@@ -14,6 +14,54 @@ YESNO_TASK = "Task_YesNoMenu_HandleInput"
 # Text_OakOfferNovidadesFirst e Text_OakOfferNovidades). Os roteiros respondem NÃO.
 NOVIDADES_OFFER = "Quer ver as novidades"
 FIELD_MESSAGE_BYTES = 400   # a fala expandida fica em gStringVar4 (src/field_message_box.c)
+# POK-44: o aviso das conquistas pausa o jogo no campo (src/conquistas_aviso.c). A checagem de estado roda a cada 32
+# quadros de campo livre; o aviso de um gatilho de batalha aparece no 1º quadro livre.
+AVISO_SYMBOL = "gConquistasAvisoAtivo"   # u8: 1 enquanto o aviso está na tela
+AVISO_ESPERA = 48           # quadros de campo livre esperando um aviso que ainda vai aparecer
+AVISO_FECHAR_TIMEOUT = 600
+
+
+def dispensar_avisos(ctx: ScenarioContext, espera: int = AVISO_ESPERA) -> int:
+    """Fecha com A os avisos de conquista que aparecem agora ou nos próximos `espera` quadros de campo livre (a fila
+    sai um por vez) e devolve quantos fechou. ROM sem as conquistas (sem o símbolo): não faz nada."""
+    syms = getattr(ctx.game, "syms", None)   # os roteiros falsos do pytest não têm símbolos
+    try:
+        addr = syms.addr(AVISO_SYMBOL) if syms is not None else None
+    except KeyError:
+        addr = None
+    if addr is None:
+        return 0
+    emu, ctl = ctx.emu, ctx.controller
+    ativo = lambda: emu.read_u8(addr) == 1   # noqa: E731
+    fechados = 0
+    while True:
+        livre = gasto = 0
+        while not ativo():
+            if ctl.overworld_idle():
+                livre += 2
+                if livre >= espera:
+                    return fechados
+            elif gasto >= AVISO_FECHAR_TIMEOUT:
+                raise ctl.timeout_error("campo livre para o aviso de conquista")
+            emu.frames(2)
+            gasto += 2
+        ctl.press_until(KEY_A, lambda: not ativo(), "fechar o aviso de conquista", tries=AVISO_FECHAR_TIMEOUT // 20,
+                        wait=20)
+        fechados += 1
+
+
+def silenciar_avisos(ctx: ScenarioContext) -> bool:
+    """Numa sessão de cenários da ROM de teste (`ctx.conq_silencio`), cala o aviso das conquistas
+    (`conq_silencio(True)`): os cenários montam o estado com os atalhos e não esperam o aviso. Os roteiros da jogável
+    (e o `rapido` com a ROM de teste) ficam com o aviso e o dispensam (`dispensar_avisos`)."""
+    if not getattr(ctx, "conq_silencio", False):
+        return False
+    from ..hooks import Mailbox, NotATestBuild
+    try:
+        Mailbox(ctx.controller).conq_silencio(True)
+    except NotATestBuild:
+        return False
+    return True
 
 
 def print_summary(suite: Suite, seconds: float, frames: int) -> int:

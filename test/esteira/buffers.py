@@ -1631,6 +1631,11 @@ DECLARED: list[Declared] = [
              BufRef("str", "src/union_room_chat_display.c", "PrintCurrentKeyboardPage"),
              (Fixed(3, "espaçamento (FC 11 08)"), Text("gUnionRoomKeyboardText")),
              why="teclado do chat: str[45] = código de espaçamento + linha do teclado (src/union_room_chat_display.c:1113-1126)"),
+    # POK-44, Task 6
+    Declared("src/conquistas_aviso.c", r"Montar(Conquista|Resumo)", r".*", None,
+             why="aviso de conquista: as duas linhas em struct Aviso (linha1/linha2[64], no heap) e a cópia em "
+                 "gStringVar4[1000]; cada linha montada (nome com o degrau, prêmio + item + destino, resumo) é medida "
+                 "em test/tests/test_conquistas_aviso.py::test_larguras_montadas, todas abaixo de 208 px (< 45 letras)"),
 ]
 
 

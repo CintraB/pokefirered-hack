@@ -1,6 +1,7 @@
 #include "global.h"
 #include "gflib.h"
 #include "bike.h"
+#include "conquistas.h"
 #include "coord_event_weather.h"
 #include "daycare.h"
 #include "event_data.h"
@@ -210,6 +211,8 @@ int ProcessPlayerFieldInput(struct FieldInput *input)
         return TRUE;
 
     if (TryRunOnFrameMapScript() == TRUE)
+        return TRUE;
+    if (Conquistas_TentarAviso() == TRUE)   // POK-44: o aviso de conquista pausa o jogo
         return TRUE;
 
     if (input->tookStep)

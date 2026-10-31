@@ -36,7 +36,7 @@ import time
 from ..emu import KEY_A, KEY_LEFT, KEY_UP
 from ..result import Result
 from . import ScenarioContext
-from .base import Abort
+from .base import Abort, dispensar_avisos
 from .pace import RUN_FRAMES_PER_TILE, measure_run_frames_per_tile
 from .quick_catch_save import (BUY_MENU_TASK, MART_CLERK_FRONT, POTION_HEAL, SHOP_MENU_TASK,
                                SHOP_TIMEOUT, CatchSaveScenario)
@@ -227,6 +227,7 @@ class ForestBrockScenario(TravelMixin, CatchSaveScenario):
             self._resolve_interruption()
         finally:
             self.driver.heal = None
+        dispensar_avisos(self.ctx)   # a Insígnia Rocha (a checagem de estado vem depois do script do Brock)
         brock = [t for t in self.measures["trainers"] if t["name"] == "BROCK"]
         return brock[-1]["outcome"] if brock else "sem batalha"
 

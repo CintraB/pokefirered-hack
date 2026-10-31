@@ -19,7 +19,7 @@ from collections import deque
 
 from ..battle import BATTLE_TYPE_TRAINER, OUTCOME_NAMES
 from ..emu import KEY_A, KEY_UP
-from .base import TEXT_PERIOD
+from .base import TEXT_PERIOD, dispensar_avisos
 
 BATTLE_TYPE_DOUBLE = 1 << 0
 BATTLE_TYPE_OLD_MAN_TUTORIAL = 1 << 9          # include/constants/battle.h
@@ -278,6 +278,7 @@ class TravelMixin:
                 raise self.ctl.timeout_error(f"volta ao overworld depois de: {what}")
             self._press(KEY_A)
             spent += TEXT_PERIOD
+        dispensar_avisos(self.ctx)   # conquista da batalha (vitórias, sem desmaio, x4...)
 
     def _wild_fight(self) -> str:
         self.driver.move_policy = "best"

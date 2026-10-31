@@ -1431,3 +1431,17 @@ const u8 *const gText_DayNight_PeriodStart[TIME_PERIOD_COUNT] = {
     [TIME_EVENING]   = sPeriodStart_Evening,
     [TIME_NIGHT]     = sPeriodStart_Night,
 };
+
+// POK-44: o aviso de conquista (src/conquistas_aviso.c). Cada linha é montada de pedaços, sem {STR_VAR}: a largura de
+// cada linha montada (título + nome, prêmio + destino, resumo) é medida em test/tests/test_conquistas_aviso.py.
+const u8 gText_ConqAviso_Titulo[] = _("Conquista! ");
+const u8 gText_ConqAviso_Premio[] = _("Prêmio: ");
+const u8 gText_ConqAviso_NaBolsa[] = _(" na bolsa");
+const u8 gText_ConqAviso_NoPc[] = _(" no PC");
+const u8 gText_ConqAviso_Cheios[] = _("Bolsa e PC cheios: fica para depois");
+const u8 gText_ConqAviso_ResumoAntes[] = _("Você já tinha ");
+const u8 gText_ConqAviso_ResumoUma[] = _(" conquista!");
+const u8 gText_ConqAviso_ResumoVarias[] = _(" conquistas!");
+const u8 gText_ConqAviso_Premios[] = _("Prêmios: ");
+const u8 gText_ConqAviso_Separador[] = _(", ");
+const u8 gText_ConqAviso_Depois[] = _(" depois");
