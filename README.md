@@ -11,7 +11,7 @@ a Pokédex inteira obtível e uma esteira de testes automática no emulador.**
 ![Linguagem](https://img.shields.io/badge/C-agbcc-555555?style=flat-square)
 ![Testes](https://img.shields.io/badge/pytest-4660%20testes-2ea44f?style=flat-square)
 ![Esteira](https://img.shields.io/badge/esteira-363%20checagens-2ea44f?style=flat-square)
-![Versão](https://img.shields.io/badge/ROM-v46-informational?style=flat-square)
+![Versão](https://img.shields.io/badge/ROM-v49-informational?style=flat-square)
 
 <img src="docs/readme/inicial.png" width="240" alt="Escolha do inicial em português">
 <img src="docs/readme/chuva.png" width="240" alt="Batalha com chuva contínua">
