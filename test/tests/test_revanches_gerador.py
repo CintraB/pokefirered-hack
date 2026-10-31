@@ -81,10 +81,16 @@ def test_item_reserva_fada(g):
 
 
 def test_temas_validos(g):
-    temas = json.loads(TEMAS.read_text(encoding="utf-8"))
+    bruto = {c: v for c, v in json.loads(TEMAS.read_text(encoding="utf-8")).items() if not c.startswith("_")}
+    for c, v in bruto.items():  # apelido aponta para uma lista de verdade (um nível só)
+        if isinstance(v, str):
+            assert isinstance(bruto.get(v), list), (c, v)
+    temas = g.temas()
+    assert set(temas) == set(bruto)
     classes = {g.classe(linha[0]) for linha in g.ler_revanches()}
     assert len(classes) == 37
     assert classes <= set(temas), sorted(classes - set(temas))
+    assert classes <= set(g.nomes_das_classes()), sorted(classes - set(g.nomes_das_classes()))
     validas = _especies_validas()
     for classe, lista in temas.items():
         assert len(lista) >= 10, classe
@@ -108,8 +114,39 @@ def test_time_vs(g):
     for degrau in range(1, 6):
         especies = [e for e, _, _, _ in g.time_vs(ben, degrau)]
         nivel = g.niveis(degrau)[0]
-        for e in g.time_original("TRAINER_YOUNGSTER_BEN_4"):
+        for e in g.time_original("TRAINER_YOUNGSTER_BEN_4"):  # Ben tem 2 espécies: as duas ficam
             assert g.evoluir(e[1], nivel) in especies, (degrau, e)
+
+
+def _linha(g, primeiro: str) -> int:
+    return next(i for i, linha in enumerate(g.ler_revanches()) if linha[0] == primeiro)
+
+
+def test_assinatura_no_maximo_3(g):
+    """Leroy tem 5 espécies (Rhydon 52, Slowbro 54, Kangaskhan 52, Machamp 52, Ursaring 55): ficam o ás
+    (Ursaring) e as 2 de maior nível (Slowbro; no empate em 52, o Rhydon, que vem antes), na ordem original."""
+    leroy = _linha(g, "TRAINER_COOLTRAINER_LEROY")
+    for degrau in range(1, 6):
+        especies = [e for e, _, _, _ in g.time_vs(leroy, degrau)]
+        assert especies[3:] == ["SPECIES_RHYDON", "SPECIES_SLOWBRO", "SPECIES_URSARING"], (degrau, especies)
+
+
+def test_especies_melhores_por_degrau(g):
+    """Ben (assinatura pequena): o complemento sai da faixa do degrau e o ás evoluído fica na posição 6."""
+    ben = _linha(g, "TRAINER_YOUNGSTER_BEN")
+    faixas = g.faixas(g.classe("TRAINER_YOUNGSTER_BEN"))
+    for degrau in (1, 3, 5):
+        time = g.time_vs(ben, degrau)
+        faixa = faixas[g.regras()["faixa_por_degrau"][str(degrau)]]
+        assert len(faixa) >= 4  # a faixa tem espécies novas para as 4 vagas do complemento
+        assert all(e in faixa for e, _, _, _ in time[:4]), (degrau, time)
+        assert time[5][0] == g.evoluir("SPECIES_ARBOK", g.niveis(degrau)[5])
+
+
+def test_frutas_do_degrau_1_todas_aparecem(g):
+    vistas = {it for i in range(len(g.ler_revanches())) for _, _, it, _ in g.time_vs(i, 1)[:5]}
+    assert vistas == FRUTAS_DEGRAU_1 - {"ITEM_SITRUS_BERRY"}
+    assert all(g.time_vs(i, 1)[5][2] == "ITEM_SITRUS_BERRY" for i in range(len(g.ler_revanches())))
 
 
 def test_deterministico(g):

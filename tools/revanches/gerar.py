@@ -17,6 +17,7 @@ import re
 import sys
 import unicodedata
 from pathlib import Path
+from typing import NoReturn
 
 REPO = Path(__file__).resolve().parents[2]
 PASTA = Path(__file__).resolve().parent
@@ -34,7 +35,8 @@ POR_ITEM_SEGURADO = "EVO_LEVEL_HOLD_ITEM"  # nível fixo EVO_HOLD_ITEM_LEVEL (Ha
 
 # Linhas da amostra para o Cintra: o 1º treinador de cada linha de sRematches.
 AMOSTRA = ("TRAINER_YOUNGSTER_BEN", "TRAINER_FISHERMAN_ELLIOT", "TRAINER_HIKER_FRANKLIN",
-           "TRAINER_PSYCHIC_JACLYN", "TRAINER_TWINS_ELI_ANNE", "TRAINER_BIKER_JAXON")
+           "TRAINER_PSYCHIC_JACLYN", "TRAINER_TWINS_ELI_ANNE", "TRAINER_BIKER_JAXON",
+           "TRAINER_COOLTRAINER_LEROY")
 DEGRAUS_AMOSTRA = (1, 3, 5)
 # Nomes dos tipos por extenso, só para a amostra (o jogo abrevia em 6 letras).
 NOMES_TIPO = {"TYPE_NORMAL": "Normal", "TYPE_FIGHTING": "Lutador", "TYPE_FLYING": "Voador",
@@ -44,7 +46,7 @@ NOMES_TIPO = {"TYPE_NORMAL": "Normal", "TYPE_FIGHTING": "Lutador", "TYPE_FLYING"
               "TYPE_DRAGON": "Dragão", "TYPE_DARK": "Sombrio"}
 
 
-def falha(msg: str) -> None:
+def falha(msg: str) -> NoReturn:
     sys.exit(f"gerar.py: {msg}")
 
 
@@ -57,6 +59,8 @@ def _bloco(texto: str, inicio: str, arquivo: str) -> str:
     if inicio not in texto:
         falha(f"{arquivo}: não achei {inicio!r}")
     corpo = texto[texto.index(inicio):]
+    if "\n};" not in corpo:
+        falha(f"{arquivo}: {inicio!r} sem o '}};' que fecha a tabela")
     return corpo[:corpo.index("\n};")]
 
 
@@ -68,8 +72,28 @@ def regras() -> dict:
 
 
 @functools.cache
-def temas() -> dict[str, list[str]]:
+def _temas_json() -> dict:
     return json.loads((PASTA / "temas.json").read_text(encoding="utf-8"))
+
+
+@functools.cache
+def temas() -> dict[str, list[str]]:
+    """TRAINER_CLASS_* -> lista de espécies. Um valor texto é apelido: usa a lista de outra classe (um nível só)."""
+    bruto = {c: v for c, v in _temas_json().items() if not c.startswith("_")}
+    out = {}
+    for c, v in bruto.items():
+        if isinstance(v, str):
+            alvo = bruto.get(v)
+            if not isinstance(alvo, list):
+                falha(f"temas.json: {c} aponta para {v}, que não é uma lista")
+            v = alvo
+        out[c] = v
+    return out
+
+
+def nomes_das_classes() -> dict[str, list[str]]:
+    """TRAINER_CLASS_* -> [nome no jogo, rótulo do tema], só para a amostra (temas.json, chave "_nomes")."""
+    return _temas_json()["_nomes"]
 
 
 @functools.cache
@@ -115,6 +139,8 @@ def classe(treinador: str) -> str:
 
 def time_original(treinador: str) -> tuple[tuple[int, str], ...]:
     """O time atual do treinador: ((nível, SPECIES_*), ...)."""
+    if treinador not in _treinadores():
+        falha(f"trainers.h: {treinador} sem .trainerClass/.party")
     party = _treinadores()[treinador][1]
     time = _times().get(party)
     if not time:
@@ -157,7 +183,7 @@ def especies() -> dict[str, dict]:
         valores = {c: re.search(rf"\.{c} = (\d+)", bloco) for c in campos}
         tipos = re.search(r"\.types = \{(TYPE_\w+), (TYPE_\w+)\}", bloco)
         if not tipos or not all(valores.values()):
-            continue
+            falha(f"species_info.h: {m.group(1)} sem .types ou atributo base")
         v = {c: int(x.group(1)) for c, x in valores.items()}
         out[m.group(1)] = {"tipos": (tipos.group(1), tipos.group(2)), "atk": v["baseAttack"],
                            "spatk": v["baseSpAttack"], "total": sum(v.values())}
@@ -224,11 +250,15 @@ def iv(degrau: int) -> int:
     return regras()["iv"][str(degrau)]
 
 
-def item(especie: str, degrau: int, posicao: int) -> str:
-    """Item segurado da espécie na posição (0–5; a 5 é o ás) no degrau."""
+def item(especie: str, degrau: int, posicao: int, deslocamento: int = 0) -> str:
+    """Item segurado da espécie na posição (0–5; a 5 é o ás) no degrau.
+
+    `deslocamento` (o id do 1º treinador da linha) gira o ciclo do time nos degraus com "deslocar_por_linha",
+    para que todas as frutas do rodízio apareçam entre os treinadores."""
     r = regras()["itens"]
     d = r["por_degrau"][str(degrau)]
-    escolha = d["as"] if posicao == TAMANHO_TIME - 1 else d["time"][posicao % len(d["time"])]
+    giro = deslocamento if d.get("deslocar_por_linha") else 0
+    escolha = d["as"] if posicao == TAMANHO_TIME - 1 else d["time"][(posicao + giro) % len(d["time"])]
     dados = especies()[especie]
     if escolha == "TIPO":
         return r["item_do_tipo"].get(dados["tipos"][0], r["reserva_tipo"])
@@ -253,16 +283,21 @@ def time_vs(linha: int, degrau: int) -> list[tuple[str, int, str, int]]:
     primeiro, ultimo = treinadores[0], treinadores[-1]
     nivs = niveis(degrau)
 
-    # Assinatura: espécies distintas do time mais forte, evoluídas; o ás (maior nível, o último no empate) no fim.
+    # Assinatura: espécies distintas do time mais forte, evoluídas, no máximo regras["assinatura_max"]:
+    # o ás (maior nível, o último no empate) no fim e, antes dele, as outras mais fortes (maior nível;
+    # empate pela ordem original), na ordem original.
     original = time_original(ultimo)
     maior = max(n for n, _ in original)
     asso = evoluir([e for n, e in original if n == maior][-1], nivs[0])
-    assinatura = []
-    for _, e in original:
+    outras: dict[str, tuple[int, int]] = {}  # espécie evoluída -> (maior nível original, 1ª posição)
+    for k, (n, e) in enumerate(original):
         ev = evoluir(e, nivs[0])
-        if ev != asso and ev not in assinatura:
-            assinatura.append(ev)
-    assinatura = (assinatura + [asso])[-TAMANHO_TIME:]
+        if ev != asso:
+            nivel_ant, pos_ant = outras.get(ev, (0, k))
+            outras[ev] = (max(n, nivel_ant), pos_ant)
+    vagas = regras()["assinatura_max"] - 1
+    escolhidas = sorted(outras, key=lambda ev: (-outras[ev][0], outras[ev][1]))[:vagas]
+    assinatura = sorted(escolhidas, key=lambda ev: outras[ev][1]) + [asso]
 
     # Complemento: sorteio por degrau na faixa do degrau; se faltar, as faixas vizinhas.
     rng = random.Random(_id_treinador()[primeiro] * 10 + degrau)
@@ -286,7 +321,7 @@ def time_vs(linha: int, degrau: int) -> list[tuple[str, int, str, int]]:
     time = []
     for pos, e in enumerate(complemento + assinatura):
         ev = evoluir(e, nivs[pos])
-        time.append((ev, nivs[pos], item(ev, degrau, pos), iv(degrau)))
+        time.append((ev, nivs[pos], item(ev, degrau, pos, _id_treinador()[primeiro]), iv(degrau)))
     if len({e for e, _, _, _ in time}) != TAMANHO_TIME:
         falha(f"{primeiro}: espécie repetida no degrau {degrau}: {time}")
     return time
@@ -305,12 +340,13 @@ def _nome_item(it: str) -> str:
 def amostra() -> str:
     """A amostra para o Cintra aprovar: times de 6 linhas, temas por classe e itens por degrau (Markdown)."""
     linhas = ler_revanches()
-    nomes = regras()["nomes_das_classes"]
+    nomes = nomes_das_classes()
     out = ["# Revanches por degrau — amostra (POK-42)", "",
            "## Times de exemplo", "",
            "Níveis do Vs. Seeker: alvo 60/70/80/90/100 com variação pequena; o ás (posição 6) um pouco acima. "
            "As posições 1 a 6 vêm na ordem do time: primeiro o complemento sorteado do tema, "
-           "depois a assinatura do treinador (o time mais forte dele, evoluído) com o ás no fim.", ""]
+           "depois a assinatura do treinador (até 3 espécies do time mais forte dele, evoluídas: "
+           "o ás e as 2 de maior nível) com o ás no fim.", ""]
     for primeiro in AMOSTRA:
         i = next(k for k, linha in enumerate(linhas) if linha[0] == primeiro)
         cl = classe(primeiro)
@@ -338,6 +374,7 @@ def amostra() -> str:
     r = regras()["itens"]
     out += ["", "## Itens por degrau", "",
             "Posições 1 a 5 seguem o ciclo da coluna \"Time\"; a posição 6 é o ás. "
+            "No degrau 1 o rodízio começa num ponto diferente para cada treinador, então as 6 frutas aparecem. "
             "\"Item do tipo\" = item do 1º tipo da espécie (Fada e ??? levam "
             f"{_nome_item(r['reserva_tipo'])}).", "",
             "| Degrau | IV | Time (posições 1–5) | Ás (posição 6) |", "|---|---|---|---|"]
@@ -349,9 +386,7 @@ def amostra() -> str:
         time = ", ".join(rotulo.get(x, _nome_item(x)) for x in pd["time"])
         out.append(f"| {d} | {iv(d)} | {time} | {rotulo.get(pd['as'], _nome_item(pd['as']))} |")
     tipos = "; ".join(f"{NOMES_TIPO[t]} → {_nome_item(it)}" for t, it in r["item_do_tipo"].items())
-    out += ["", f"Item de cada tipo: {tipos}", "",
-            "Obs.: no degrau 1 só 5 posições usam o rodízio, então a 6ª fruta "
-            f"({_nome_item(r['por_degrau']['1']['time'][-1])}) não aparece.", ""]
+    out += ["", f"Item de cada tipo: {tipos}", ""]
     return "\n".join(out)
 
 
