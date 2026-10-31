@@ -27,6 +27,7 @@
 #include "battle_controllers.h"
 #include "battle_interface.h"
 #include "conquistas.h"
+#include "rematch_tier.h"
 #include "constants/battle_anim.h"
 #include "constants/battle_move_effects.h"
 #include "constants/battle_script_commands.h"
@@ -5357,6 +5358,9 @@ static void Cmd_getmoneyreward(void)
                 }
                 break;
             }
+            // POK-42: no degrau, o time é o da tabela gerada; o prêmio usa o nível do último Pokémon montado.
+            if (GetCurrentBattleRematchTier() != 0)
+                lastMonLevel = GetMonData(&gEnemyParty[PARTY_SIZE - 1], MON_DATA_LEVEL);
             for (; gTrainerMoneyTable[i].classId != 0xFF; i++)
             {
                 if (gTrainerMoneyTable[i].classId == gTrainers[gTrainerBattleOpponent_A].trainerClass)

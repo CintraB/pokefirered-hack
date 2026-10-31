@@ -28,6 +28,7 @@
 #include "pokedex.h"
 #include "quest_log.h"
 #include "random.h"
+#include "rematch_tier.h"
 #include "roamer.h"
 #include "safari_zone.h"
 #include "scanline_effect.h"
@@ -1560,6 +1561,7 @@ static u8 CreateNPCTrainerParty(struct Pokemon *party, u16 trainerNum)
     u32 personalityValue;
     u8 fixedIV;
     s32 i, j;
+    u8 tierPartySize;
 
     if (trainerNum == TRAINER_SECRET_BASE)
         return 0;
@@ -1567,6 +1569,14 @@ static u8 CreateNPCTrainerParty(struct Pokemon *party, u16 trainerNum)
     if (gBattleTypeFlags & BATTLE_TYPE_TRAINER
      && !(gBattleTypeFlags & (BATTLE_TYPE_BATTLE_TOWER | BATTLE_TYPE_EREADER_TRAINER | BATTLE_TYPE_TRAINER_TOWER)))
     {
+        // POK-42: revanche do Vs. Seeker com degrau >= 1 usa o time da tabela gerada (6 Pokémon); a dupla continua dupla.
+        tierPartySize = RematchTier_CreateParty(party, trainerNum);
+        if (tierPartySize != 0)
+        {
+            gBattleTypeFlags |= gTrainers[trainerNum].doubleBattle;
+            return tierPartySize;
+        }
+
         ZeroEnemyPartyMons();
         for (i = 0; i < gTrainers[trainerNum].partySize; i++)
         {
@@ -1654,6 +1664,14 @@ static u8 CreateNPCTrainerParty(struct Pokemon *party, u16 trainerNum)
 
     return gTrainers[trainerNum].partySize;
 }
+
+#if TESTBUILD
+// POK-42: o atalho TEST_CMD_BUILD_TRAINER_PARTY monta o time em gEnemyParty sem começar a batalha.
+u8 CreateNPCTrainerPartyForTest(u16 trainerNum)
+{
+    return CreateNPCTrainerParty(&gEnemyParty[0], trainerNum);
+}
+#endif
 
 // Unused
 static void HBlankCB_Battle(void)

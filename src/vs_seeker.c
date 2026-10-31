@@ -1083,6 +1083,12 @@ int GetRematchTrainerId(u16 trainerId)
     return sRematches[i].trainerIdxs[j];
 }
 
+// POK-42: a linha de sRematches que tem o id (-1 se não houver); é o índice de src/data/rematch_tiers.h.
+s32 GetVsSeekerRematchRow(u16 trainerId)
+{
+    return LookupVsSeekerOpponentInArray(sRematches, trainerId);
+}
+
 u8 IsTrainerReadyForRematch(void)
 {
     return IsTrainerReadyForRematchInternal(sRematches, gTrainerBattleOpponent_A);

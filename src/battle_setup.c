@@ -23,6 +23,7 @@
 #include "field_screen_effect.h"
 #include "field_message_box.h"
 #include "vs_seeker.h"
+#include "rematch_tier.h"
 #include "battle.h"
 #include "battle_transition.h"
 #include "battle_controllers.h"
@@ -791,6 +792,7 @@ const u8 *BattleSetup_ConfigureTrainerBattle(const u8 *data)
 {
     InitTrainerBattleVariables();
     sTrainerBattleMode = TrainerBattleLoadArg8(data);
+    RematchTier_SetVsSeekerBattle(FALSE); // POK-42: só as revanches do Vs. Seeker (abaixo) usam o degrau
     switch (sTrainerBattleMode)
     {
     case TRAINER_BATTLE_SINGLE_NO_INTRO_TEXT:
@@ -815,12 +817,14 @@ const u8 *BattleSetup_ConfigureTrainerBattle(const u8 *data)
         TrainerBattleLoadArgs(sDoubleBattleParams, data);
         SetMapVarsToTrainer();
         gTrainerBattleOpponent_A = GetRematchTrainerId(gTrainerBattleOpponent_A);
+        RematchTier_SetVsSeekerBattle(TRUE);
         return EventScript_TryDoDoubleRematchBattle;
     case TRAINER_BATTLE_REMATCH:
         QL_FinishRecordingScene();
         TrainerBattleLoadArgs(sOrdinaryBattleParams, data);
         SetMapVarsToTrainer();
         gTrainerBattleOpponent_A = GetRematchTrainerId(gTrainerBattleOpponent_A);
+        RematchTier_SetVsSeekerBattle(TRUE);
         return EventScript_TryDoRematchBattle;
     case TRAINER_BATTLE_EARLY_RIVAL:
         TrainerBattleLoadArgs(sEarlyRivalBattleParams, data);

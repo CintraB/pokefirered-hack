@@ -69,15 +69,31 @@ def test_iv_por_degrau(g):
 
 
 def test_item_reserva_fada(g):
-    assert g.item("SPECIES_CLEFABLE", 3, 0) == "ITEM_LEFTOVERS"
-    assert g.item("SPECIES_CHARIZARD", 3, 0) == "ITEM_CHARCOAL"
+    assert g.item("SPECIES_CLEFABLE", 3, 0, 0) == "ITEM_LEFTOVERS"
+    assert g.item("SPECIES_CHARIZARD", 3, 0, 0) == "ITEM_CHARCOAL"
     itens = _itens()
     for especie in sorted(_especies_validas()):
         for pos in range(6):
-            assert g.item(especie, 1, pos) in FRUTAS_DEGRAU_1, (especie, pos)
+            assert g.item(especie, 1, pos, 0) in FRUTAS_DEGRAU_1, (especie, pos)
             for degrau in range(1, 6):
-                it = g.item(especie, degrau, pos)
+                it = g.item(especie, degrau, pos, 0)
                 assert it in itens, (especie, degrau, pos, it)
+
+
+def test_item_exige_deslocamento(g):
+    """Sem o deslocamento da linha, o rodízio das frutas do degrau 1 se perderia calado."""
+    with pytest.raises(TypeError):
+        g.item("SPECIES_CHARIZARD", 1, 0)
+
+
+def test_nome_da_classe_falha_explicita(g, monkeypatch):
+    monkeypatch.setattr(g, "_temas_json", lambda: {"_nomes": {"TRAINER_CLASS_X": ["X", "x"]}})
+    assert g.nome_da_classe("TRAINER_CLASS_X") == ("X", "x")
+    with pytest.raises(SystemExit, match="TRAINER_CLASS_Y"):
+        g.nome_da_classe("TRAINER_CLASS_Y")
+    monkeypatch.setattr(g, "_temas_json", lambda: {})
+    with pytest.raises(SystemExit, match="_nomes"):
+        g.nomes_das_classes()
 
 
 def test_temas_validos(g):
@@ -138,7 +154,9 @@ def test_especies_melhores_por_degrau(g):
     for degrau in (1, 3, 5):
         time = g.time_vs(ben, degrau)
         faixa = faixas[g.regras()["faixa_por_degrau"][str(degrau)]]
-        assert len(faixa) >= 4  # a faixa tem espécies novas para as 4 vagas do complemento
+        # a faixa tem espécies novas (fora da assinatura, as posições 5 e 6) para as 4 vagas do complemento
+        assinatura = {e for e, _, _, _ in time[4:]}
+        assert len({g.evoluir(e, g.niveis(degrau)[0]) for e in faixa} - assinatura) >= 4, (degrau, faixa)
         assert all(e in faixa for e, _, _, _ in time[:4]), (degrau, time)
         assert time[5][0] == g.evoluir("SPECIES_ARBOK", g.niveis(degrau)[5])
 

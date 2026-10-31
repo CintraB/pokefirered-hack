@@ -1,3 +1,3 @@
 `gerar.py`: times das revanches do Vs. Seeker por degrau (POK-42), a partir de `sRematches`, dos times atuais e de `regras.json` (níveis, IVs, itens, ramos de evolução, tamanho da assinatura) e `temas.json` (espécies de cada classe; valor texto = apelido de outra classe).
-Regenerar (WSL): `python3 -I tools/revanches/gerar.py` grava `src/data/rematch_tiers.h` e `--conferir` sai com 1 se o header commitado divergir — os dois entram no Task 2 (por enquanto só saem com 1).
+Regenerar (WSL): `python3 -I tools/revanches/gerar.py` grava `src/data/rematch_tiers.h` e `--conferir` sai com 1 se o header commitado divergir (o pytest `test_revanches_degrau.py` confere). Mudou `regras.json`, `temas.json`, `sRematches` ou um time? Regenere e commite o header junto.
 Amostra para revisão: `python3 -I tools/revanches/gerar.py --amostra > amostra.md` (times de 7 linhas nos degraus 1, 3 e 5, temas por classe e itens por degrau).

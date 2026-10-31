@@ -1,7 +1,7 @@
 """Times das revanches do Vs. Seeker por degrau de dificuldade (POK-42).
 
-    python3 -I tools/revanches/gerar.py             # grava src/data/rematch_tiers.h (Task 2)
-    python3 -I tools/revanches/gerar.py --conferir  # sai com 1 se o header commitado divergir (Task 2)
+    python3 -I tools/revanches/gerar.py             # grava src/data/rematch_tiers.h
+    python3 -I tools/revanches/gerar.py --conferir  # sai com 1 se o header commitado divergir
     python3 -I tools/revanches/gerar.py --amostra   # imprime a amostra (times, temas e itens) em Markdown
 
 Lê o C como texto (sRematches, times atuais, classes, evoluções, tipos e atributos base) e junta com
@@ -93,7 +93,18 @@ def temas() -> dict[str, list[str]]:
 
 def nomes_das_classes() -> dict[str, list[str]]:
     """TRAINER_CLASS_* -> [nome no jogo, rótulo do tema], só para a amostra (temas.json, chave "_nomes")."""
-    return _temas_json()["_nomes"]
+    nomes = _temas_json().get("_nomes")
+    if not isinstance(nomes, dict):
+        falha('temas.json: falta a chave "_nomes"')
+    return nomes
+
+
+def nome_da_classe(classe_: str) -> tuple[str, str]:
+    """(nome no jogo, rótulo do tema) da classe, de temas.json["_nomes"]."""
+    nome = nomes_das_classes().get(classe_)
+    if not nome or len(nome) != 2:
+        falha(f'temas.json: {classe_} sem [nome, tema] em "_nomes"')
+    return nome[0], nome[1]
 
 
 @functools.cache
@@ -250,11 +261,12 @@ def iv(degrau: int) -> int:
     return regras()["iv"][str(degrau)]
 
 
-def item(especie: str, degrau: int, posicao: int, deslocamento: int = 0) -> str:
+def item(especie: str, degrau: int, posicao: int, deslocamento: int) -> str:
     """Item segurado da espécie na posição (0–5; a 5 é o ás) no degrau.
 
     `deslocamento` (o id do 1º treinador da linha) gira o ciclo do time nos degraus com "deslocar_por_linha",
-    para que todas as frutas do rodízio apareçam entre os treinadores."""
+    para que todas as frutas do rodízio apareçam entre os treinadores. É obrigatório: sem ele o rodízio se
+    perderia calado (quem monta o time é `time_vs`, que passa o id)."""
     r = regras()["itens"]
     d = r["por_degrau"][str(degrau)]
     giro = deslocamento if d.get("deslocar_por_linha") else 0
@@ -340,7 +352,6 @@ def _nome_item(it: str) -> str:
 def amostra() -> str:
     """A amostra para o Cintra aprovar: times de 6 linhas, temas por classe e itens por degrau (Markdown)."""
     linhas = ler_revanches()
-    nomes = nomes_das_classes()
     out = ["# Revanches por degrau — amostra (POK-42)", "",
            "## Times de exemplo", "",
            "Níveis do Vs. Seeker: alvo 60/70/80/90/100 com variação pequena; o ás (posição 6) um pouco acima. "
@@ -351,7 +362,8 @@ def amostra() -> str:
         i = next(k for k, linha in enumerate(linhas) if linha[0] == primeiro)
         cl = classe(primeiro)
         orig = ", ".join(f"{_sem('SPECIES_', e)} {n}" for n, e in time_original(linhas[i][-1]))
-        out += [f"### {_sem('TRAINER_', primeiro)} ({nomes[cl][0]}, tema {nomes[cl][1]})", "",
+        nome, tema = nome_da_classe(cl)
+        out += [f"### {_sem('TRAINER_', primeiro)} ({nome}, tema {tema})", "",
                 f"Time mais forte hoje ({_sem('TRAINER_', linhas[i][-1])}): {orig}.", "",
                 "| Degrau | Pos. | Espécie | Nível | Item | IV |", "|---|---|---|---|---|---|"]
         for d in DEGRAUS_AMOSTRA:
@@ -366,10 +378,11 @@ def amostra() -> str:
             "Se a faixa não tiver espécies novas suficientes, o sorteio completa com a faixa vizinha.", "",
             "| Classe | Tema | Comum (1–2) | Forte (3) | Mais forte (4–5) |", "|---|---|---|---|---|"]
     usadas = sorted({classe(linha[0]) for linha in linhas},
-                    key=lambda c: unicodedata.normalize("NFD", nomes[c][0]).encode("ascii", "ignore"))
+                    key=lambda c: unicodedata.normalize("NFD", nome_da_classe(c)[0]).encode("ascii", "ignore"))
     for cl in usadas:
         cols = [", ".join(_sem("SPECIES_", e) for e in f) for f in faixas(cl)]
-        out.append(f"| {nomes[cl][0]} | {nomes[cl][1]} | " + " | ".join(cols) + " |")
+        nome, tema = nome_da_classe(cl)
+        out.append(f"| {nome} | {tema} | " + " | ".join(cols) + " |")
 
     r = regras()["itens"]
     out += ["", "## Itens por degrau", "",
@@ -390,6 +403,33 @@ def amostra() -> str:
     return "\n".join(out)
 
 
+# ---------------------------------------------------------------- header C
+
+HEADER = REPO / "src" / "data" / "rematch_tiers.h"
+
+
+def header() -> str:
+    """O texto de src/data/rematch_tiers.h: sRematchTierParties[linha de sRematches][degrau - 1][posição]."""
+    linhas = ler_revanches()
+    out = ["// GERADO por tools/revanches/gerar.py; não editar (regenere com python3 -I tools/revanches/gerar.py).",
+           "// Times das revanches do Vs. Seeker por degrau (POK-42), lidos por src/rematch_tier.c:",
+           "// [linha de sRematches][degrau - 1][posição] = {espécie, item segurado, nível, IV (0-31)}.",
+           "// A posição 6 é o ás; os golpes são os padrão do nível.",
+           "",
+           f"#define REMATCH_TIER_ROWS {len(linhas)}",
+           "",
+           "static const struct RematchTierMon sRematchTierParties[REMATCH_TIER_ROWS][REMATCH_TIER_COUNT][PARTY_SIZE] =",
+           "{"]
+    for i, linha in enumerate(linhas):
+        out += [f"    // {linha[0]}", "    {"]
+        for d in DEGRAUS:
+            mons = ", ".join(f"{{{e}, {it}, {n}, {v}}}" for e, n, it, v in time_vs(i, d))
+            out.append(f"        {{{mons}}},")
+        out.append("    },")
+    out += ["};", ""]
+    return "\n".join(out)
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--conferir", action="store_true", help="sai com 1 se o header commitado divergir")
@@ -398,7 +438,16 @@ def main() -> None:
     if args.amostra:
         sys.stdout.write(amostra())
         return
-    falha("a gravação de src/data/rematch_tiers.h entra no Task 2")
+    novo = header()
+    if args.conferir:
+        atual = HEADER.read_text(encoding="utf-8", newline="") if HEADER.exists() else None
+        if atual != novo:
+            print(f"gerar.py: {HEADER.relative_to(REPO)} está fora de dia; rode python3 -I tools/revanches/gerar.py",
+                  file=sys.stderr)
+            sys.exit(1)
+        return
+    HEADER.write_text(novo, encoding="utf-8", newline="\n")
+    print(f"gravado {HEADER.relative_to(REPO)} ({len(ler_revanches())} linhas x {len(DEGRAUS)} degraus)")
 
 
 if __name__ == "__main__":

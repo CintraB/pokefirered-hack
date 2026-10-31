@@ -95,4 +95,8 @@ void RunBattleScriptCommands_PopCallbacksStack(void);
 void RunBattleScriptCommands(void);
 bool8 TryRunFromBattle(u8 battler);
 
+#if TESTBUILD
+u8 CreateNPCTrainerPartyForTest(u16 trainerNum);  // POK-42: só na ROM de teste
+#endif
+
 #endif // GUARD_BATTLE_MAIN_H
