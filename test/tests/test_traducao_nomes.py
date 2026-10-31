@@ -29,7 +29,13 @@ CLASS_OVERRIDES = {"TEAM ROCKET": "Recruta"}
 NEW_KEYS = {"src/data/text/trainer_class_names.h": {"TRAINER_CLASS_ROCKET_ADMIN": "Executivo",
                                                   "TRAINER_CLASS_ROCKET_ADMIN_F": "Executiva"},
             # itens novos em slots que eram "????????" na base (POK-36, POK-37)
-            "src/data/items.json": {"ITEM_PORTABLE_PC": "PC Portátil", "ITEM_INCUBATOR": "Incubadora"}}
+            "src/data/items.json": {"ITEM_PORTABLE_PC": "PC Portátil", "ITEM_INCUBATOR": "Incubadora"},
+            # tipo novo (POK-45)
+            "src/battle_main.c": {"TYPE_FAIRY": "Fada"},
+            # golpes novos de Fada (POK-45): nome oficial do GO, abreviado como no glossário
+            "src/data/text/move_names.h": {"MOVE_MOONBLAST": "Expl. Lunar", "MOVE_PLAY_ROUGH": "Jogo Duro",
+                                           "MOVE_DAZZLING_GLEAM": "Clarão Desl.", "MOVE_DRAINING_KISS": "Beijo Dren.",
+                                           "MOVE_FAIRY_WIND": "Vento Fada", "MOVE_DISARMING_VOICE": "Voz Desarm."}}
 BERRY_NAME_LENGTH = 6          # include/global.berry.h
 POPUP_PX = 112                 # aviso de nome do mapa: maxWidth (src/map_name_popup.c:195)
 

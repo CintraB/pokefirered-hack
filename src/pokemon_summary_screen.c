@@ -1013,12 +1013,12 @@ static const struct WindowTemplate sWindowTemplates_Dummy[] =
 
 static const u8 sLevelNickTextColors[][3] =
 {
-    {0, 14, 10},
+    {0, 14, 0}, // sombra transparente (era o creme 10; o índice 10 virou o rosa do ícone FADA)
     {0, 1, 2},
     {0, 9, 8},
     {0, 5, 4},
     {0, 2, 3},
-    {0, 11, 10},
+    {0, 11, 0}, // idem
 };
 
 static const u8 ALIGNED(4) sMultiBattlePartyOrder[] =
@@ -3361,6 +3361,11 @@ static void PokeSum_PrintSelectedMoveStats(void)
                                      0, 0,
                                      sLevelNickTextColors[0], TEXT_SKIP_DRAW,
                                      gMoveDescriptionPointers[sMonSummaryScreen->moveIds[sMoveSelectionCursorPos] - 1]);
+
+        // POK-43: categoria do golpe (FÍSICO/ESPEC./ESTADO) à direita da caixa do PODER
+        BlitMenuInfoIcon(sMonSummaryScreen->windowIds[POKESUM_WIN_TRAINER_MEMO],
+                         MENU_INFO_ICON_PHYSICAL + gBattleMoves[sMonSummaryScreen->moveIds[sMoveSelectionCursorPos]].category,
+                         84, 1);
     }
 }
 

@@ -100,6 +100,8 @@ AI_CheckBadMove_CheckSoundproof::
 	if_move MOVE_UPROAR, Score_Minus10
 	if_move MOVE_METAL_SOUND, Score_Minus10
 	if_move MOVE_GRASS_WHISTLE, Score_Minus10
+	if_move MOVE_HYPER_VOICE, Score_Minus10
+	if_move MOVE_DISARMING_VOICE, Score_Minus10
 
 AI_CheckBadMove_CheckEffect::
 	if_effect EFFECT_SLEEP, AI_CBM_Sleep
@@ -945,8 +947,8 @@ AI_CV_DefenseUp4::
 	get_move_power_from_result
 	if_equal 0, AI_CV_DefenseUp5
 	get_last_used_move AI_TARGET
-	get_move_type_from_result
-	if_not_in_bytes AI_CV_DefenseUp_PhysicalTypes, AI_CV_DefenseUp_ScoreDown2
+	get_move_category_from_result
+	if_not_equal MOVE_CATEGORY_PHYSICAL, AI_CV_DefenseUp_ScoreDown2
 	if_random_less_than 60, AI_CV_DefenseUp_End
 
 AI_CV_DefenseUp5::
@@ -957,18 +959,6 @@ AI_CV_DefenseUp_ScoreDown2::
 
 AI_CV_DefenseUp_End::
 	end
-
-AI_CV_DefenseUp_PhysicalTypes::
-	.byte TYPE_NORMAL
-	.byte TYPE_FIGHTING
-	.byte TYPE_POISON
-	.byte TYPE_GROUND
-	.byte TYPE_FLYING
-	.byte TYPE_ROCK
-	.byte TYPE_BUG
-	.byte TYPE_GHOST
-	.byte TYPE_STEEL
-	.byte -1
 
 AI_CV_SpeedUp::
 	if_target_faster AI_CV_SpeedUp2
@@ -1025,8 +1015,8 @@ AI_CV_SpDefUp4::
 	get_move_power_from_result
 	if_equal 0, AI_CV_SpDefUp5
 	get_last_used_move AI_TARGET
-	get_move_type_from_result
-	if_in_bytes AI_CV_SpDefUp_PhysicalTypes, AI_CV_SpDefUp_ScoreDown2
+	get_move_category_from_result
+	if_equal MOVE_CATEGORY_PHYSICAL, AI_CV_SpDefUp_ScoreDown2
 	if_random_less_than 60, AI_CV_SpDefUp_End
 
 AI_CV_SpDefUp5::
@@ -1037,18 +1027,6 @@ AI_CV_SpDefUp_ScoreDown2::
 
 AI_CV_SpDefUp_End::
 	end
-
-AI_CV_SpDefUp_PhysicalTypes::
-	.byte TYPE_NORMAL
-	.byte TYPE_FIGHTING
-	.byte TYPE_POISON
-	.byte TYPE_GROUND
-	.byte TYPE_FLYING
-	.byte TYPE_ROCK
-	.byte TYPE_BUG
-	.byte TYPE_GHOST
-	.byte TYPE_STEEL
-	.byte -1
 
 AI_CV_AccuracyUp::
 	if_stat_level_less_than AI_USER, STAT_ACC, 9, AI_CV_AccuracyUp2
@@ -1230,6 +1208,7 @@ AI_CV_SpAtkDown_SpecialTypeList::
 	.byte TYPE_ICE
 	.byte TYPE_DRAGON
 	.byte TYPE_DARK
+	.byte TYPE_FAIRY
 	.byte -1
 
 AI_CV_SpDefDown::
@@ -1471,6 +1450,7 @@ AI_CV_LightScreen_SpecialTypeList::
 	.byte TYPE_ICE
 	.byte TYPE_DRAGON
 	.byte TYPE_DARK
+	.byte TYPE_FAIRY
 	.byte -1
 
 AI_CV_Rest::
@@ -1746,8 +1726,8 @@ AI_CV_Counter3::
 
 AI_CV_Counter4::
 	get_last_used_move AI_TARGET
-	get_move_type_from_result
-	if_not_in_bytes AI_CV_Counter_PhysicalTypeList, AI_CV_Counter_ScoreDown1
+	get_move_category_from_result
+	if_not_equal MOVE_CATEGORY_PHYSICAL, AI_CV_Counter_ScoreDown1
 	if_random_less_than 100, AI_CV_Counter_End
 	score +1
 	goto AI_CV_Counter_End
@@ -2283,8 +2263,8 @@ AI_CV_MirrorCoat3::
 
 AI_CV_MirrorCoat4::
 	get_last_used_move AI_TARGET
-	get_move_type_from_result
-	if_not_in_bytes AI_CV_MirrorCoat_SpecialTypeList, AI_CV_MirrorCoat_ScoreDown1
+	get_move_category_from_result
+	if_not_equal MOVE_CATEGORY_SPECIAL, AI_CV_MirrorCoat_ScoreDown1
 	if_random_less_than 100, AI_CV_MirrorCoat_End
 	score +1
 	goto AI_CV_MirrorCoat_End
@@ -2324,6 +2304,7 @@ AI_CV_MirrorCoat_SpecialTypeList::
 	.byte TYPE_ICE
 	.byte TYPE_DRAGON
 	.byte TYPE_DARK
+	.byte TYPE_FAIRY
 	.byte -1
 
 AI_CV_ChargeUpMove::

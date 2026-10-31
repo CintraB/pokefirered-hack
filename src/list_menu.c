@@ -70,11 +70,15 @@ static const struct MoveMenuInfoIcon sMenuInfoIcons[] =
     [TYPE_ICE + 1]      = { 32, 12, 0x4C },
     [TYPE_DRAGON + 1]   = { 32, 12, 0xA0 },
     [TYPE_DARK + 1]     = { 32, 12, 0x8C },
+    [TYPE_FAIRY + 1]    = { 32, 12, 0x04 },
     [MENU_INFO_ICON_TYPE]      = { 40, 12, 0xA8 },
     [MENU_INFO_ICON_POWER]     = { 40, 12, 0xC0 },
-    [MENU_INFO_ICON_ACCURACY]  = { 40, 12, 0xC8 },
+    [MENU_INFO_ICON_ACCURACY]  = { 40, 12, 0xC5 }, // era 0xC8: andou 3 tiles para dar lugar a ESTADO
     [MENU_INFO_ICON_PP]        = { 40, 12, 0xE0 },
     [MENU_INFO_ICON_EFFECT]    = { 40, 12, 0xE8 },
+    [MENU_INFO_ICON_PHYSICAL]  = { 32, 12, 0x08 },
+    [MENU_INFO_ICON_SPECIAL]   = { 32, 12, 0x0C },
+    [MENU_INFO_ICON_STATUS]    = { 32, 12, 0xCB },
 };
 
 static void ListMenuDummyTask(u8 taskId)

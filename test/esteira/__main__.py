@@ -73,6 +73,7 @@ from esteira.scenarios.full_novidades import (run_full_novidades,   # tela de no
                                              run_full_novidades_first_offer)
 from esteira.scenarios.full_ritmo import run_full_pace             # Hack 2 (ritmo do jogo)
 from esteira.scenarios.full_battle_weather_visual import run_full_battle_weather_visual  # POK-15
+from esteira.scenarios.full_fisico_fada import run_full_fisico_fada  # POK-43, 45
 from esteira.scenarios.full_forest_brock import run_full_forest_brock
 from esteira.scenarios.full_master import run_full_master
 from esteira.scenarios.full_pc import run_full_pc
@@ -182,6 +183,7 @@ FULL_SCENARIOS: list[ScenarioSpec] = [
     ScenarioSpec("novidades", run_full_novidades, rom=TEST, save_from="captura"),
     ScenarioSpec("ritmo", run_full_pace, rom=TEST, save_from="captura"),       # Hack 2: andar e correr por input
     ScenarioSpec("clima_batalha", run_full_battle_weather_visual, rom=TEST, save_from="captura"),  # POK-15
+    ScenarioSpec("fisico_fada", run_full_fisico_fada, rom=TEST, save_from="captura"),  # POK-43, 45
     ScenarioSpec("novidades_inicial", run_full_novidades_first_offer, needs="abertura"),
 ]
 # Cenários do modo completo que o `assistir --cenario` mostra numa janela (ROM de teste, a
@@ -195,7 +197,8 @@ WATCH_FULL_SCENARIOS = ("evolucoes", "resumo_evolucao", "resumo_ivs", "ovo",
                         "clima",  # Hack 7 — frente A
                         "novidades",  # tela de novidades
                         "ritmo",  # Hack 2
-                        "clima_batalha")  # POK-15
+                        "clima_batalha",  # POK-15
+                        "fisico_fada")  # POK-43, 45
 
 
 def scenarios_for(mode: str) -> list[ScenarioSpec]:

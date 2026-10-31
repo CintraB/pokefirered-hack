@@ -56,6 +56,7 @@ perder o jeito do FireRed.
 | 🥚 | **Creche genética** | IVs, natureza e golpes de ovo passam dos pais, com itens de criação. |
 | 🌗 | **Dia e noite** | Um dia dura uma hora; o céu muda de cor e os encontros mudam com a hora. |
 | 🌦️ | **Clima** | Chuva, neve, areia, cinzas e sol forte por região, e visíveis na batalha. |
+| 🧚 | **Tipos e golpes modernos** | Físico ou especial por golpe e o tipo Fada, como em Pokémon X e Y. |
 | 📖 | **Pokédex completa** | Exclusivos do LeafGreen, os dois fósseis, lendários e míticos obtíveis. |
 | 🛠️ | **Melhorias modernas** | Exp. Share para todos, PC Portátil, HMs sem ensinar, status com L/R… |
 | 🗞️ | **Tela de novidades** | O Prof. Carvalho apresenta cada mudança em cartões ilustrados. |
@@ -83,6 +84,21 @@ perder o jeito do FireRed.
 <img src="docs/readme/granizo.png" width="200" alt="Granizo">
 <img src="docs/readme/areia.png" width="200" alt="Tempestade de areia">
 <img src="docs/readme/sol.png" width="200" alt="Sol">
+</p>
+</details>
+
+<details open>
+<summary><b>🧚 Tipos e golpes</b></summary>
+
+| | |
+|---|---|
+| **Físico ou especial por golpe** | Cada golpe é Físico, Especial ou de Estado, como desde a 4ª geração: Soco de Fogo usa o Ataque, e Thick Fat e queimadura seguem a categoria. No resumo, o detalhe do golpe mostra **FÍSICO**, **ESPEC.** ou **ESTADO** ao lado do PODER. |
+| **Tipo Fada** | A tabela de tipos de Pokémon X e Y: Fada vence Dragão, Lutador e Sombrio e é imune a Dragão; Aço não resiste mais a Fantasma e Sombrio. 18 espécies viraram Fada (Clefairy, Jigglypuff, Togepi, Marill, Ralts, Mawile…), e Encantar, Beijo Doce e Luar também. |
+| **Seis golpes de Fada** | Expl. Lunar, Jogo Duro, Clarão Desl., Beijo Dren., Vento Fada e Voz Desarm., com os dados de X e Y, nos níveis de X e Y. O Poder Oculto dos seus Pokémon não muda. |
+
+<p align="center">
+<img src="docs/readme/resumo_fada.png" width="240" alt="Resumo do Gardevoir, Psíquico e Fada">
+<img src="docs/readme/golpe_fada.png" width="240" alt="Expl. Lunar no resumo, Fada e especial">
 </p>
 </details>
 
@@ -185,6 +201,7 @@ perder o jeito do FireRed.
 | <img src="docs/readme/batalha_rival.png" width="240" alt="Batalha com o rival"><br>Batalha com o rival | <img src="docs/readme/status_lr.png" width="240" alt="Status com L/R"><br>Status com **R** (7 alterações) | <img src="docs/readme/sol_forte.png" width="240" alt="Sol forte em Cinnabar"><br>Sol forte em Cinnabar |
 | <img src="docs/readme/neve.png" width="240" alt="Neve na Ilha Quatro"><br>Neve na Ilha Quatro | <img src="docs/readme/novidades_cartao.png" width="240" alt="Cartão de novidade"><br>Cartão de novidade | <img src="docs/readme/loja_quatro.png" width="240" alt="Loja da Ilha Quatro"><br>Itens de criação |
 | <img src="docs/readme/pc.png" width="240" alt="PC"><br>PC | <img src="docs/readme/inicial.png" width="240" alt="Escolha do inicial"><br>Escolha do inicial | <img src="docs/readme/sol.png" width="240" alt="Sol na batalha"><br>Sol na batalha |
+| <img src="docs/readme/resumo_fada.png" width="240" alt="Gardevoir Psíquico e Fada"><br>Gardevoir agora é **Fada** | <img src="docs/readme/golpe_fisico.png" width="240" alt="M. Esmagador físico"><br>Categoria do golpe: **FÍSICO** | <img src="docs/readme/golpe_fada.png" width="240" alt="Expl. Lunar"><br>Golpe novo: **Expl. Lunar** |
 
 ## Linha do tempo
 
@@ -201,6 +218,7 @@ perder o jeito do FireRed.
 | **Novidades** | Tela do Prof. Carvalho com os cartões. |
 | **Melhorias modernas** | Repelente, PE, IA, barra de PS, PC Portátil, Incubadora, HMs, viagem, status com L/R, chefes com clima. |
 | **Clima na batalha** | Clima sempre visível e o sol forte consertado. |
+| **Físico/especial e Fada** (30/10) | Categoria por golpe, tipo Fada com a tabela de X e Y, 18 espécies e 6 golpes novos. |
 
 ## Esteira de testes
 

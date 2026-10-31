@@ -142,7 +142,7 @@ def test_hidden_power_da_pagina_e_do_golpe_e_a_mesma_funcao():
     calc = _function(BATTLE_C, "void CalcHiddenPower(")
     # a fórmula do Gen 3, a mesma que o Python usa
     assert "*power = (40 * powerBits) / 63 + 30;" in calc
-    assert "*type = ((NUMBER_OF_MON_TYPES - 3) * typeBits) / 63 + 1;" in calc
+    assert "*type = (15 * typeBits) / 63 + 1;" in calc   # fixo: a Fada não muda o Hidden Power
     assert "if (*type >= TYPE_MYSTERY)" in calc
     order = re.findall(r"\(\((\w+)IV & 1\) << (\d)\)", calc)
     assert order == [("hp", "0"), ("attack", "1"), ("defense", "2"), ("speed", "3"),

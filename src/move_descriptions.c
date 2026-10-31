@@ -355,6 +355,12 @@ const u8 gMoveDescription_ShockWave[] = _("Uma descarga rápida\nde eletricidade
 const u8 gMoveDescription_WaterPulse[] = _("Um ataque com um\njato pulsante de\nágua. Também pode\nconfundir o alvo.");
 const u8 gMoveDescription_DoomDesire[] = _("Dois turnos após o\nuso, o alvo é\natingido por uma\nexplosão de luz.");
 const u8 gMoveDescription_PsychoBoost[] = _("Um ataque intenso\nque também reduz\nmuito o Atq. Esp. do\nusuário.");
+const u8 gMoveDescription_Moonblast[] = _("Ataca com o poder\nda lua. Pode\nreduzir o Atq. Esp.\ndo alvo.");
+const u8 gMoveDescription_PlayRough[] = _("O usuário brinca\nde forma bruta.\nPode reduzir o\nAtaque do alvo.");
+const u8 gMoveDescription_DazzlingGleam[] = _("Uma luz forte e\nofuscante atinge\ntodos os oponentes.");
+const u8 gMoveDescription_DrainingKiss[] = _("Um beijo que drena\nPS do alvo e\nrestaura 3/4 do\ndano causado.");
+const u8 gMoveDescription_FairyWind[] = _("O usuário agita um\nvento de fada e\natinge o alvo.");
+const u8 gMoveDescription_DisarmingVoice[] = _("Um grito encantador\nque nunca erra\natinge todos os\noponentes.");
 
 const u8 *const gMoveDescriptionPointers[MOVES_COUNT - 1] = {
     [MOVE_POUND         - 1] = gMoveDescription_Pound,
@@ -711,4 +717,10 @@ const u8 *const gMoveDescriptionPointers[MOVES_COUNT - 1] = {
     [MOVE_WATER_PULSE   - 1] = gMoveDescription_WaterPulse,
     [MOVE_DOOM_DESIRE   - 1] = gMoveDescription_DoomDesire,
     [MOVE_PSYCHO_BOOST  - 1] = gMoveDescription_PsychoBoost,
+    [MOVE_MOONBLAST       - 1] = gMoveDescription_Moonblast,
+    [MOVE_PLAY_ROUGH      - 1] = gMoveDescription_PlayRough,
+    [MOVE_DAZZLING_GLEAM  - 1] = gMoveDescription_DazzlingGleam,
+    [MOVE_DRAINING_KISS   - 1] = gMoveDescription_DrainingKiss,
+    [MOVE_FAIRY_WIND      - 1] = gMoveDescription_FairyWind,
+    [MOVE_DISARMING_VOICE - 1] = gMoveDescription_DisarmingVoice,
 };

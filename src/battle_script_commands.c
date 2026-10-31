@@ -1028,14 +1028,12 @@ static void Cmd_accuracycheck(void)
     }
     else
     {
-        u8 type, moveAcc, holdEffect, param;
+        u8 moveAcc, holdEffect, param;
         s8 buff;
         u16 calc;
 
         if (move == ACC_CURR_MOVE)
             move = gCurrentMove;
-
-        GET_MOVE_TYPE(move, type);
 
         if (JumpIfMoveAffectedByProtect(move))
             return;
@@ -1070,7 +1068,7 @@ static void Cmd_accuracycheck(void)
             calc = (calc * 130) / 100; // 1.3 compound eyes boost
         if (WEATHER_HAS_EFFECT && gBattleMons[gBattlerTarget].ability == ABILITY_SAND_VEIL && gBattleWeather & B_WEATHER_SANDSTORM)
             calc = (calc * 80) / 100; // 1.2 sand veil loss
-        if (gBattleMons[gBattlerAttacker].ability == ABILITY_HUSTLE && IS_TYPE_PHYSICAL(type))
+        if (gBattleMons[gBattlerAttacker].ability == ABILITY_HUSTLE && IS_MOVE_PHYSICAL(move))
             calc = (calc * 80) / 100; // 1.2 hustle loss
 
         if (gBattleMons[gBattlerTarget].item == ITEM_ENIGMA_BERRY)
@@ -1743,17 +1741,9 @@ static void Cmd_healthbarupdate(void)
 
 static void Cmd_datahpupdate(void)
 {
-    u32 moveType;
-
+    // POK-43: Counter/Mirror Coat follow the category of gCurrentMove, not its (dynamic) type
     if (gBattleControllerExecFlags)
         return;
-
-    if (gBattleStruct->dynamicMoveType == 0)
-        moveType = gBattleMoves[gCurrentMove].type;
-    else if (!(gBattleStruct->dynamicMoveType & F_DYNAMIC_TYPE_1))
-        moveType = gBattleStruct->dynamicMoveType & DYNAMIC_TYPE_MASK;
-    else
-        moveType = gBattleMoves[gCurrentMove].type;
 
     if (!(gMoveResultFlags & MOVE_RESULT_NO_EFFECT))
     {
@@ -1822,7 +1812,7 @@ static void Cmd_datahpupdate(void)
                 if (!gSpecialStatuses[gActiveBattler].dmg && !(gHitMarker & HITMARKER_PASSIVE_DAMAGE))
                     gSpecialStatuses[gActiveBattler].dmg = gHpDealt;
 
-                if (IS_TYPE_PHYSICAL(moveType) && !(gHitMarker & HITMARKER_PASSIVE_DAMAGE) && gCurrentMove != MOVE_PAIN_SPLIT)
+                if (IS_MOVE_PHYSICAL(gCurrentMove) && !(gHitMarker & HITMARKER_PASSIVE_DAMAGE) && gCurrentMove != MOVE_PAIN_SPLIT)
                 {
                     gProtectStructs[gActiveBattler].physicalDmg = gHpDealt;
                     gSpecialStatuses[gActiveBattler].physicalDmg = gHpDealt;
@@ -1837,7 +1827,7 @@ static void Cmd_datahpupdate(void)
                         gSpecialStatuses[gActiveBattler].physicalBattlerId = gBattlerTarget;
                     }
                 }
-                else if (!IS_TYPE_PHYSICAL(moveType) && !(gHitMarker & HITMARKER_PASSIVE_DAMAGE))
+                else if (IS_MOVE_SPECIAL(gCurrentMove) && !(gHitMarker & HITMARKER_PASSIVE_DAMAGE))
                 {
                     gProtectStructs[gActiveBattler].specialDmg = gHpDealt;
                     gSpecialStatuses[gActiveBattler].specialDmg = gHpDealt;
@@ -6634,7 +6624,10 @@ static void Cmd_stockpiletohpheal(void)
 
 static void Cmd_negativedamage(void)
 {
-    gBattleMoveDamage = -(gHpDealt / 2);
+    if (gCurrentMove == MOVE_DRAINING_KISS)
+        gBattleMoveDamage = -(gHpDealt * 3 / 4);   // Gen 6: Draining Kiss recupera 75% do dano
+    else
+        gBattleMoveDamage = -(gHpDealt / 2);
     if (gBattleMoveDamage == 0)
         gBattleMoveDamage = -1;
 
@@ -8520,9 +8513,10 @@ void CalcHiddenPower(u8 hpIV, u8 attackIV, u8 defenseIV, u8 speedIV, u8 spAttack
 
     *power = (40 * powerBits) / 63 + 30;
 
-    // Subtract 3 instead of 1 below because 2 types are excluded (TYPE_NORMAL and TYPE_MYSTERY)
+    // 16 tipos possíveis (sem Normal, ??? e Fada, como na Gen 6): a constante fica em 15 para o
+    // tipo de quem já existe não mudar com o NUMBER_OF_MON_TYPES 19 (POK-45).
     // The final + 1 skips past Normal, and the following conditional skips TYPE_MYSTERY
-    *type = ((NUMBER_OF_MON_TYPES - 3) * typeBits) / 63 + 1;
+    *type = (15 * typeBits) / 63 + 1;
     if (*type >= TYPE_MYSTERY)
         (*type)++;
 }

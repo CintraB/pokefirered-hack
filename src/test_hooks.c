@@ -610,6 +610,119 @@ static u32 OpenNovidades(void)
 }
 // --- end of novidades -----------------------------------------------------------------------
 
+// POK-43: CalculateBaseDamage between two party mons, outside any real battle state
+#include "battle_util.h"
+
+// Same fill as CopyPlayerPartyMonToBattleData (src/pokemon.c), into a local struct
+static void PartyMonToBattleMon(struct Pokemon *mon, struct BattlePokemon *bmon)
+{
+    s32 i;
+    u8 nickname[POKEMON_NAME_LENGTH * 2];
+
+    memset(bmon, 0, sizeof(*bmon));
+    bmon->species = GetMonData(mon, MON_DATA_SPECIES, NULL);
+    bmon->item = GetMonData(mon, MON_DATA_HELD_ITEM, NULL);
+    for (i = 0; i < MAX_MON_MOVES; i++)
+    {
+        bmon->moves[i] = GetMonData(mon, MON_DATA_MOVE1 + i, NULL);
+        bmon->pp[i] = GetMonData(mon, MON_DATA_PP1 + i, NULL);
+    }
+    bmon->ppBonuses = GetMonData(mon, MON_DATA_PP_BONUSES, NULL);
+    bmon->friendship = GetMonData(mon, MON_DATA_FRIENDSHIP, NULL);
+    bmon->experience = GetMonData(mon, MON_DATA_EXP, NULL);
+    bmon->hpIV = GetMonData(mon, MON_DATA_HP_IV, NULL);
+    bmon->attackIV = GetMonData(mon, MON_DATA_ATK_IV, NULL);
+    bmon->defenseIV = GetMonData(mon, MON_DATA_DEF_IV, NULL);
+    bmon->speedIV = GetMonData(mon, MON_DATA_SPEED_IV, NULL);
+    bmon->spAttackIV = GetMonData(mon, MON_DATA_SPATK_IV, NULL);
+    bmon->spDefenseIV = GetMonData(mon, MON_DATA_SPDEF_IV, NULL);
+    bmon->personality = GetMonData(mon, MON_DATA_PERSONALITY, NULL);
+    bmon->status1 = GetMonData(mon, MON_DATA_STATUS, NULL);
+    bmon->level = GetMonData(mon, MON_DATA_LEVEL, NULL);
+    bmon->hp = GetMonData(mon, MON_DATA_HP, NULL);
+    bmon->maxHP = GetMonData(mon, MON_DATA_MAX_HP, NULL);
+    bmon->attack = GetMonData(mon, MON_DATA_ATK, NULL);
+    bmon->defense = GetMonData(mon, MON_DATA_DEF, NULL);
+    bmon->speed = GetMonData(mon, MON_DATA_SPEED, NULL);
+    bmon->spAttack = GetMonData(mon, MON_DATA_SPATK, NULL);
+    bmon->spDefense = GetMonData(mon, MON_DATA_SPDEF, NULL);
+    bmon->isEgg = GetMonData(mon, MON_DATA_IS_EGG, NULL);
+    bmon->abilityNum = GetMonData(mon, MON_DATA_ABILITY_NUM, NULL);
+    bmon->otId = GetMonData(mon, MON_DATA_OT_ID, NULL);
+    bmon->type1 = gSpeciesInfo[bmon->species].types[0];
+    bmon->type2 = gSpeciesInfo[bmon->species].types[1];
+    bmon->ability = GetAbilityBySpecies(bmon->species, bmon->abilityNum);
+    GetMonData(mon, MON_DATA_NICKNAME, nickname);
+    StringCopy_Nickname(bmon->nickname, nickname);
+    GetMonData(mon, MON_DATA_OT_NAME, bmon->otName);
+    for (i = 0; i < NUM_BATTLE_STATS; i++)
+        bmon->statStages[i] = DEFAULT_STAT_STAGE;
+}
+
+// Every global CalculateBaseDamage reads (or AbilityBattleEffects writes) is saved, pinned to a
+// neutral value and put back: no crit, no weather, no badge boost (link flag), no field ability
+// or sport (no battlers on the field), no Flash Fire (zeroed resource flags).
+static u32 CalcDamage(u16 move)
+{
+    struct BattlePokemon attacker, defender;
+    struct ResourceFlags flags;
+    struct BattleResources resources;
+    struct BattleResources *savedResources = gBattleResources;
+    u16 savedMove = gCurrentMove, savedPower = gBattleMovePower, savedWeather = gBattleWeather;
+    u32 savedTypeFlags = gBattleTypeFlags;
+    u8 savedCrit = gCritMultiplier, savedCount = gBattlersCount, savedAbility = gLastUsedAbility;
+    u8 savedAttacker = gBattlerAttacker, savedTarget = gBattlerTarget;
+    s32 damage;
+
+    if (move == MOVE_NONE || move >= MOVES_COUNT)
+        return 0xFFFFFFFF;
+    PartyMonToBattleMon(&gPlayerParty[0], &attacker);
+    PartyMonToBattleMon(&gPlayerParty[1], &defender);
+    memset(&flags, 0, sizeof(flags));
+    memset(&resources, 0, sizeof(resources));
+    resources.flags = &flags;
+
+    gBattleResources = &resources;
+    gCurrentMove = move;
+    gCritMultiplier = 1;
+    gBattleWeather = 0;
+    gBattleTypeFlags = BATTLE_TYPE_LINK;
+    gBattlersCount = 0;
+    damage = CalculateBaseDamage(&attacker, &defender, move, 0, 0, 0, 0, 1);
+
+    gBattleResources = savedResources;
+    gCurrentMove = savedMove;
+    gBattleMovePower = savedPower;
+    gBattleWeather = savedWeather;
+    gBattleTypeFlags = savedTypeFlags;
+    gCritMultiplier = savedCrit;
+    gBattlersCount = savedCount;
+    gLastUsedAbility = savedAbility;
+    gBattlerAttacker = savedAttacker;
+    gBattlerTarget = savedTarget;
+    return damage;
+}
+
+// gTypeEffectiveness the way Cmd_typecalc walks it, multiplier x 100; the Foresight marker is
+// skipped (not stopped at), so the Ghost immunities after it count.
+static u32 TypeEffectiveness(u8 moveType, u8 type1, u8 type2)
+{
+    u32 multiplier = 100;
+    s32 i;
+
+    for (i = 0; TYPE_EFFECT_ATK_TYPE(i) != TYPE_ENDTABLE; i += 3)
+    {
+        if (TYPE_EFFECT_ATK_TYPE(i) != moveType)
+            continue;
+        if (TYPE_EFFECT_DEF_TYPE(i) == type1)
+            multiplier = multiplier * TYPE_EFFECT_MULTIPLIER(i) / 10;
+        if (TYPE_EFFECT_DEF_TYPE(i) == type2 && type1 != type2)
+            multiplier = multiplier * TYPE_EFFECT_MULTIPLIER(i) / 10;
+    }
+    return multiplier;
+}
+// --- end of POK-43 --------------------------------------------------------------------------
+
 void TestHooks_Run(void)
 {
     u32 result = 0;
@@ -720,6 +833,12 @@ void TestHooks_Run(void)
     case TEST_CMD_NOVIDADES_STATE:  result = Novidades_TestGetState(); break;
     case TEST_CMD_NOVIDADES_CARD:   result = Novidades_TestGetCard(); break;
     // novidades: end
+    // POK-43: start
+    case TEST_CMD_CALC_DAMAGE:      result = CalcDamage(gTestMailbox.arg0); break;
+    case TEST_CMD_TYPE_EFFECTIVENESS:
+        result = TypeEffectiveness(gTestMailbox.arg0, gTestMailbox.arg1 & 0xFF, (gTestMailbox.arg1 >> 8) & 0xFF);
+        break;
+    // POK-43: end
     default:
         result = 0xFFFFFFFF;
         break;

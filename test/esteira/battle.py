@@ -76,7 +76,7 @@ BATTLE_MON_TYPES = 0x21        # struct BattlePokemon.type1, type2 (u8)
 BATTLE_MOVE_SIZE = 12          # struct BattleMove (include/pokemon.h), tabela gBattleMoves
 BATTLE_MOVE_POWER, BATTLE_MOVE_TYPE, BATTLE_MOVE_ACCURACY = 1, 2, 3
 TYPE_FORESIGHT, TYPE_ENDTABLE = 0xFE, 0xFF     # include/battle_main.h
-TYPE_TABLE_SIZE = 336                          # gTypeEffectiveness[336]
+TYPE_TABLE_SIZE = 366                          # gTypeEffectiveness[366] (Fada, POK-45)
 STAB = 1.5
 
 

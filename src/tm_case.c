@@ -238,7 +238,7 @@ static const u8 sTextColors[][3] = {
     [COLOR_LIGHT] = {0, 1, 2},
     [COLOR_DARK] = {0, 2, 3},
     [COLOR_CURSOR_SELECTED] = {0, 3, 6},
-    [COLOR_MOVE_INFO] = {0, 14, 10},
+    [COLOR_MOVE_INFO] = {0, 14, 0}, // sombra transparente (o índice 10 da paleta de tipos virou o rosa da Fada)
 };
 
 static const struct WindowTemplate sWindowTemplates[] = {
@@ -410,7 +410,8 @@ static const u16 sTMSpritePaletteOffsetByType[NUMBER_OF_MON_TYPES] = {
     [TYPE_PSYCHIC]  = 0x0d0,
     [TYPE_STEEL]    = 0x0e0,
     [TYPE_DARK]     = 0x0f0,
-    [TYPE_DRAGON]   = 0x100
+    [TYPE_DRAGON]   = 0x100,
+    [TYPE_FAIRY]    = 0x0d0, // POK-45: nenhuma MT/MO ensina golpe Fada, então não há disco Fada; fica o rosa do Psíquico
 };
 
 void InitTMCase(u8 type, void (* exitCallback)(void), bool8 allowSelectClose)
@@ -1721,8 +1722,8 @@ static void SpriteCB_SwapDisc(struct Sprite *sprite)
     }
 }
 
-// - 1 excludes TYPE_MYSTERY
-#define NUM_DISC_COLORS ((NUMBER_OF_MON_TYPES - 1) * 16)
+// 17 paletas, uma por tipo com MT: ficam de fora TYPE_MYSTERY e TYPE_FAIRY (sem MT Fada)
+#define NUM_DISC_COLORS (17 * 16)
 
 static void LoadDiscTypePalettes(void)
 {
