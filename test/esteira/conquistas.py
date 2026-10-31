@@ -5,6 +5,7 @@ Lê a tabela-fonte `src/data/conquistas/conquistas.json` (a mesma que o make con
 """
 
 import json
+import re
 import struct
 from functools import lru_cache
 from pathlib import Path
@@ -47,6 +48,23 @@ def evento(eid: str) -> int:
 def ativas() -> list[int]:
     """`num` das conquistas ativas, em ordem."""
     return sorted(c["num"] for c in dados()["conquistas"] if c.get("ativa", True))
+
+
+GYM_TRAINERS_INC = REPO_ROOT / "data" / "scripts" / "set_gym_trainers.inc"
+
+
+@lru_cache(maxsize=1)
+def treinadores_do_ginasio() -> list[list[str]]:
+    """Os TRAINER_* que o `set_gym_trainers N` liga (data/scripts/set_gym_trainers.inc), na ordem das
+    insígnias: o item i é o Ginásio da FLAG_BADGE0{i+1}_GET (o `case N` do switch, N = i + 1)."""
+    texto = GYM_TRAINERS_INC.read_text(encoding="utf-8")
+    casos = dict((int(n), rotulo) for n, rotulo in re.findall(r"case (\d+), (\w+)", texto))
+    assert sorted(casos) == list(range(1, 9)), casos
+    ginasios = []
+    for n in range(1, 9):
+        corpo = re.search(rf"^{casos[n]}::\n(.*?)^\treturn", texto, re.S | re.M).group(1)
+        ginasios.append(re.findall(r"settrainerflag (TRAINER_\w+)", corpo))
+    return ginasios
 
 
 def parse_entrada(raw: bytes) -> dict:

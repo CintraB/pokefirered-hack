@@ -201,9 +201,20 @@ class ConquistasScenario(CatchSaveScenario):
     def _trainer_const(self, name: str) -> int:
         return self.consts._eval(name)   # TRAINER_* e NUM_TRAINERS (opponents.h), TRAINER_FLAGS_START (flags.h)
 
-    def _flags_de_treinador(self) -> int:
+    def _do_ginasio(self) -> set[int]:
+        """Treinadores que o set_gym_trainers dos Ginásios com a insígnia ligou (não provam vitória)."""
+        return {self._trainer_const(t) for i, ginasio in enumerate(cq.treinadores_do_ginasio())
+                if self.game.flag(self.consts.flag(BADGES[i])) for t in ginasio}
+
+    def _flags_brutas(self) -> int:
         inicio = self._trainer_const("TRAINER_FLAGS_START")
         return sum(self.game.flag(inicio + t) for t in range(1, self._trainer_const("NUM_TRAINERS")))
+
+    def _flags_de_treinador(self) -> int:
+        """O espelho da varredura: flags de treinador ligadas, menos as dos Ginásios já vencidos."""
+        inicio, fora = self._trainer_const("TRAINER_FLAGS_START"), self._do_ginasio()
+        return sum(self.game.flag(inicio + t) for t in range(1, self._trainer_const("NUM_TRAINERS"))
+                   if t not in fora)
 
     def _save_antigo(self) -> str:
         assert self.box.conq_reset(False) == 0
@@ -233,12 +244,63 @@ class ConquistasScenario(CatchSaveScenario):
     def _roda_uma_vez(self) -> str:
         assert getattr(self, "_vitorias_retro", None) is not None, "depende de retro/save_antigo"
         inicio = self._trainer_const("TRAINER_FLAGS_START")
-        livre = next(t for t in range(1, self._trainer_const("NUM_TRAINERS")) if not self.game.flag(inicio + t))
+        fora = {self._trainer_const(t) for ginasio in cq.treinadores_do_ginasio() for t in ginasio}
+        livre = next(t for t in range(1, self._trainer_const("NUM_TRAINERS"))
+                     if not self.game.flag(inicio + t) and t not in fora)
         assert self.box.set_flag(inicio + livre)
         self.box.conq_checar()
         assert self.box.conq_contador(0) == self._vitorias_retro, "a varredura rodou de novo"
         assert self.box.conq_contador(2) & 0xFF == cq.CONQ_ORIGEM_SAVE_ANTIGO, "origem"
         return f"flag do treinador {livre} ligada depois: vitórias continuam {self._vitorias_retro}"
+
+    def _ginasio_desconta(self) -> str:
+        """O set_gym_trainers liga todos os treinadores do Ginásio ao vencer o líder: com a insígnia, as
+        flags deles não provam vitória e saem da conta (sem a insígnia, contam)."""
+        inicio = self._trainer_const("TRAINER_FLAGS_START")
+        cerulean = cq.treinadores_do_ginasio()[1]   # FLAG_BADGE02_GET
+        for flag in BADGES:
+            self._flag(flag, False)
+        for t in cerulean + ["TRAINER_LEADER_MISTY"]:
+            assert self.box.set_flag(inicio + self._trainer_const(t))
+        # sem a insígnia: as flags do Ginásio vieram de batalha e contam
+        assert self.box.conq_reset(False) == 0
+        self.box.conq_checar()
+        sem = self.box.conq_contador(0)
+        assert sem == self._flags_brutas() == self._flags_de_treinador(), (sem, self._flags_brutas())
+        # com a insígnia: o set_gym_trainers pode ter ligado as dos treinadores do Ginásio
+        self._flag("FLAG_BADGE02_GET")
+        assert self.box.conq_reset(False) == 0
+        self.box.conq_checar()
+        com, brutas = self.box.conq_contador(0), self._flags_brutas()
+        assert com == self._flags_de_treinador() == brutas - len(cerulean), (com, brutas, len(cerulean))
+        assert com != brutas, "a regra antiga (todas as flags) contaria os do Ginásio"
+        return (f"Ginásio de Cerulean com a insígnia: {com} vitórias (não {brutas}); "
+                f"sem a insígnia: {sem}; a Misty conta")
+
+    def _pc(self) -> str:
+        """Shiny chocado pelo jogador e um nível 100 só no PC (o time fica sem nível 100 nem shiny)."""
+        mewtwo, pidgey = self.consts.species("MEWTWO"), self.consts.species("PIDGEY")
+        for slot, _ in enumerate(self.game.party()):
+            self.box.set_party_mon(slot, pidgey, 5)   # personalidade fixa nunca shiny
+        caixa = 13                                    # a última caixa: o save do modo rápido não chega lá
+        for pos in (28, 29):
+            self.box.conq_pc_mon(caixa, pos, 0)
+        assert self.box.conq_reset(False) == 0
+        self.box.conq_checar()
+        antes = self.box.conq_contador(1)
+        for cid in ("nivel_100", "ovo_shiny", "ovo_6ivs"):
+            assert self._estado(cid)[0] == PENDENTE, (cid, self._estado(cid))
+        self.box.conq_pc_mon(caixa, 28, pidgey, 5, shiny=True, chocado=True)
+        self.box.conq_pc_mon(caixa, 29, mewtwo, 100)
+        assert self.box.conq_reset(False) == 0
+        self.box.conq_checar()
+        depois = self.box.conq_contador(1)
+        assert depois == antes + 1, f"shinies {antes} → {depois}"
+        for cid in ("nivel_100", "ovo_shiny", "ovo_6ivs"):
+            assert self._estado(cid)[0] == FEITA, (cid, self._estado(cid))
+        for pos in (28, 29):
+            self.box.conq_pc_mon(caixa, pos, 0)
+        return f"PC: shinies {antes} → {depois}; nivel_100, ovo_shiny e ovo_6ivs feitas só pelo PC"
 
     def run(self) -> None:
         try:
@@ -254,6 +316,8 @@ class ConquistasScenario(CatchSaveScenario):
             self.suite.run("estado/marcar_perder", self._marcar_perder)
             self.suite.run("retro/save_antigo", self._save_antigo)
             self.suite.run("retro/roda_uma_vez", self._roda_uma_vez)
+            self.suite.run("retro/ginasio_desconta", self._ginasio_desconta)
+            self.suite.run("retro/pc", self._pc)
         except Abort:
             pass
 

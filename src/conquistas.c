@@ -119,15 +119,18 @@ static bool8 Ativa(u8 num)
     return Conquistas_NumValido(num) && gConquistas[num].ativa;
 }
 
-static void LerMon(struct BoxPokemon *boxMon, u8 nivel, u32 otJogador, struct ConqLeituraMons *l)
+// `daEquipe`: o Pokémon do time (o nível vem do campo próprio) ou NULL no PC (o nível vem da EXP). Os filtros de
+// vaga vazia, ovo e Bad Egg vêm antes de qualquer leitura que use a espécie (a de um Bad Egg é lixo).
+static void LerMon(struct BoxPokemon *boxMon, struct Pokemon *daEquipe, u32 otJogador, struct ConqLeituraMons *l)
 {
     u32 otId, personalidade, campo;
-    u8 amizade;
+    u8 nivel, amizade;
     bool8 shiny, ivs31;
 
     if (!GetBoxMonData(boxMon, MON_DATA_SANITY_HAS_SPECIES) || GetBoxMonData(boxMon, MON_DATA_SANITY_IS_EGG)
      || GetBoxMonData(boxMon, MON_DATA_SANITY_IS_BAD_EGG))
         return;
+    nivel = daEquipe != NULL ? GetMonData(daEquipe, MON_DATA_LEVEL) : GetLevelFromBoxMonExp(boxMon);
     otId = GetBoxMonData(boxMon, MON_DATA_OT_ID);
     personalidade = GetBoxMonData(boxMon, MON_DATA_PERSONALITY);
     shiny = GET_SHINY_VALUE(otId, personalidade) < SHINY_ODDS;
@@ -158,7 +161,7 @@ static void LerTime(struct ConqLeituraMons *l, u32 otJogador)
     u8 i;
 
     for (i = 0; i < PARTY_SIZE; i++)
-        LerMon(&gPlayerParty[i].box, GetMonData(&gPlayerParty[i], MON_DATA_LEVEL), otJogador, l);
+        LerMon(&gPlayerParty[i].box, &gPlayerParty[i], otJogador, l);
 }
 
 // Só a varredura do save antigo chama isto: o PC tem TOTAL_BOXES_COUNT * IN_BOX_COUNT Pokémon a decifrar.
@@ -172,12 +175,49 @@ static void VarrerTimeEPC(struct ConqLeituraMons *l)
     {
         for (pos = 0; pos < IN_BOX_COUNT; pos++)
         {
-            struct BoxPokemon *boxMon = GetBoxedMonPtr(caixa, pos);
-
-            if (GetBoxMonData(boxMon, MON_DATA_SANITY_HAS_SPECIES))
-                LerMon(boxMon, GetLevelFromBoxMonExp(boxMon), otJogador, l);
+            LerMon(GetBoxedMonPtr(caixa, pos), NULL, otJogador, l);
         }
     }
+}
+
+// Os treinadores que o `set_gym_trainers N` (data/scripts/set_gym_trainers.inc) liga como derrotados ao vencer o
+// líder do Ginásio N, tenha o jogador lutado com eles ou não. Ordem = insígnia (FLAG_BADGE01_GET + N - 1); 0xFFFF
+// termina. test/tests/test_conquistas_regras.py confere esta tabela contra o .inc.
+#define CONQ_GINASIO_MAX_TREINADORES 8
+static const u16 sTreinadoresDoGinasio[NUM_BADGES][CONQ_GINASIO_MAX_TREINADORES + 1] =
+{
+    {TRAINER_CAMPER_LIAM, 0xFFFF},
+    {TRAINER_PICNICKER_DIANA, TRAINER_SWIMMER_MALE_LUIS, 0xFFFF},
+    {TRAINER_SAILOR_DWAYNE, TRAINER_ENGINEER_BAILY, TRAINER_GENTLEMAN_TUCKER, 0xFFFF},
+    {TRAINER_LASS_KAY, TRAINER_LASS_LISA, TRAINER_PICNICKER_TINA, TRAINER_BEAUTY_BRIDGET, TRAINER_BEAUTY_TAMIA,
+     TRAINER_BEAUTY_LORI, TRAINER_COOLTRAINER_MARY, 0xFFFF},
+    {TRAINER_TAMER_PHIL, TRAINER_TAMER_EDGAR, TRAINER_JUGGLER_KIRK, TRAINER_JUGGLER_SHAWN, TRAINER_JUGGLER_KAYDEN,
+     TRAINER_JUGGLER_NATE, 0xFFFF},
+    {TRAINER_PSYCHIC_JOHAN, TRAINER_PSYCHIC_TYRON, TRAINER_PSYCHIC_CAMERON, TRAINER_PSYCHIC_PRESTON,
+     TRAINER_CHANNELER_AMANDA, TRAINER_CHANNELER_STACY, TRAINER_CHANNELER_TASHA, 0xFFFF},
+    {TRAINER_SUPER_NERD_ERIK, TRAINER_SUPER_NERD_AVERY, TRAINER_SUPER_NERD_DEREK, TRAINER_SUPER_NERD_ZAC,
+     TRAINER_BURGLAR_QUINN, TRAINER_BURGLAR_RAMON, TRAINER_BURGLAR_DUSTY, 0xFFFF},
+    {TRAINER_TAMER_JASON, TRAINER_TAMER_COLE, TRAINER_BLACK_BELT_ATSUSHI, TRAINER_BLACK_BELT_KIYO,
+     TRAINER_BLACK_BELT_TAKASHI, TRAINER_COOLTRAINER_SAMUEL, TRAINER_COOLTRAINER_YUJI, TRAINER_COOLTRAINER_WARREN,
+     0xFFFF},
+};
+
+// A flag do treinador pode ter sido ligada pelo set_gym_trainers (Ginásio com a insígnia): não prova vitória.
+static bool8 LigadoPeloGinasio(u16 treinador)
+{
+    u8 ginasio, i;
+
+    for (ginasio = 0; ginasio < NUM_BADGES; ginasio++)
+    {
+        if (!FlagGet(FLAG_BADGE01_GET + ginasio))
+            continue;
+        for (i = 0; sTreinadoresDoGinasio[ginasio][i] != 0xFFFF; i++)
+        {
+            if (sTreinadoresDoGinasio[ginasio][i] == treinador)
+                return TRUE;
+        }
+    }
+    return FALSE;
 }
 
 static bool8 TemTodasInsignias(void)
@@ -367,10 +407,11 @@ void Conquistas_VarrerSaveAntigo(void)
     sConq->adiadoNoMapa = 0xFFFF;
     gSaveBlock2Ptr->diario.versao = CONQ_VERSAO;
 
-    // vitórias: os treinadores com a flag de derrotado ligada (GAME_STAT_TRAINER_BATTLES conta batalhas iniciadas)
+    // vitórias: os treinadores com a flag de derrotado ligada (GAME_STAT_TRAINER_BATTLES conta batalhas iniciadas),
+    // menos os de cada Ginásio já vencido, que o set_gym_trainers liga mesmo sem batalha (erra para menos)
     for (i = 1; i < NUM_TRAINERS; i++)
     {
-        if (FlagGet(TRAINER_FLAGS_START + i))
+        if (FlagGet(TRAINER_FLAGS_START + i) && !LigadoPeloGinasio(i))
             vitorias++;
     }
     sConq->vitoriasTreinador = vitorias;

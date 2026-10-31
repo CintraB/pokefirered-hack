@@ -785,6 +785,34 @@ static u32 ConqAplicar(u32 num, u32 opDegrau)
     }
     return ConqEstado(num);
 }
+
+// A mon of the player (OT) in a PC slot, for the old-save scan: shiny PID and/or hatched (MET_LEVEL 0, 6 IVs 31).
+static u32 ConqPcMon(u32 arg0, u32 arg1)
+{
+    u8 box = arg0 & 0xFF, pos = (arg0 >> 8) & 0xFF, opcoes = (arg0 >> 16) & 0xFF;
+    u16 species = arg1 & 0xFFFF;
+    u8 level = (arg1 >> 16) & 0xFF, metLevel = 0;
+    u32 otId = GetPlayerTrainerId();
+    // shiny value = hi(ot) ^ lo(ot) ^ hi(pid) ^ lo(pid): 0 (shiny) or 0x100 (far from the shiny range)
+    u32 personality = (((otId >> 16) ^ (otId & 0xFFFF) ^ ((opcoes & 1) ? 0 : 0x100)) & 0xFFFF) << 16;
+    struct Pokemon mon;
+
+    if (box >= TOTAL_BOXES_COUNT || pos >= IN_BOX_COUNT)
+        return 0xFFFFFFFF;
+    if (species == SPECIES_NONE)
+    {
+        ZeroBoxMonData(GetBoxedMonPtr(box, pos));
+        return GetBoxMonDataAt(box, pos, MON_DATA_SPECIES);
+    }
+    if (!IsValidTestMon(species, level))
+        return 0xFFFFFFFF;
+    CreateMon(&mon, species, level, (opcoes & 2) ? MAX_PER_STAT_IVS : TEST_MON_FIXED_IV, TRUE, personality,
+              OT_ID_PLAYER_ID, 0);
+    if (opcoes & 2)
+        SetMonData(&mon, MON_DATA_MET_LEVEL, &metLevel);
+    *GetBoxedMonPtr(box, pos) = mon.box;
+    return GetBoxMonDataAt(box, pos, MON_DATA_SPECIES);
+}
 // --- end of POK-44 --------------------------------------------------------------------------
 
 void TestHooks_Run(void)
@@ -909,6 +937,7 @@ void TestHooks_Run(void)
     case TEST_CMD_CONQ_RESET:       result = ConqReset(gTestMailbox.arg0); break;
     case TEST_CMD_CONQ_CHECAR:      Conquistas_ChecarEstado(); result = Conquistas_AvisosPendentes(); break;
     case TEST_CMD_CONQ_APLICAR:     result = ConqAplicar(gTestMailbox.arg0, gTestMailbox.arg1); break;
+    case TEST_CMD_CONQ_PC_MON:      result = ConqPcMon(gTestMailbox.arg0, gTestMailbox.arg1); break;
     // POK-44: end
     default:
         result = 0xFFFFFFFF;

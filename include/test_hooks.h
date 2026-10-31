@@ -126,6 +126,7 @@ enum
     TEST_CMD_CONQ_RESET,         // arg0 = 0: zero both save areas (an old save, no marker), 1: Conquistas_IniciarJogoNovo(); result = magic
     TEST_CMD_CONQ_CHECAR,        // Conquistas_ChecarEstado() now (an old save is scanned first); result = Conquistas_AvisosPendentes()
     TEST_CMD_CONQ_APLICAR,       // arg0 = num, arg1 = op | tier << 8: 0 Conquistas_Marcar, 1 Conquistas_Perder, 2 Conquistas_SetEntregue, 3 Conquistas_SetDegrauEntregue(num, tier); result = as TEST_CMD_CONQ_ESTADO afterwards (0xFFFFFFFF = invalid num or op)
+    TEST_CMD_CONQ_PC_MON,        // arg0 = box | position << 8 | options << 16 (bit 0 shiny, bit 1 hatched by the player: MET_LEVEL 0 and 6 IVs 31), arg1 = species | level << 16 (species 0 empties the slot); the player is the OT; result = species read back from the box (0xFFFFFFFF = invalid)
 };
 // --- end of POK-44 -------------------------------------------------------------------------
 

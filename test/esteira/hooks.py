@@ -234,6 +234,15 @@ class Mailbox:
         assert packed != NO_RESULT, f"conq_aplicar recusado: num {num}, op {op}"
         return packed & 0xFF, packed >> 8 & 0xFF, packed >> 16 & 0xFF, packed >> 24 & 0xFF
 
+    def conq_pc_mon(self, box: int, pos: int, species: int, level: int = 5, shiny: bool = False,
+                    chocado: bool = False) -> int:
+        """Grava um Pokémon do jogador (OT) na caixa `box`, posição `pos` do PC; `chocado` = MET_LEVEL 0
+        e 6 IVs 31. Espécie 0 esvazia a vaga. Devolve a espécie lida de volta."""
+        opcoes = int(shiny) | int(chocado) << 1
+        lida = self.call(CMD_CONQ_PC_MON, box | pos << 8 | opcoes << 16, species | level << 16)
+        assert lida == species, f"conq_pc_mon recusado/errado: caixa {box}, pos {pos}, lida {lida:#x}"
+        return lida
+
 # --- Hack 6: breeding genético (enum à parte em include/test_hooks.h, a partir de 0x60; ------
 # o uso fica em esteira/breeding.py e scenarios/full_breeding.py / full_egg.py)
 CMD_BREED_SETUP = 0x60      # gTestBreedSetup -> creche (arg0 = 1: ovo pendente) -> compatibilidade (0xFFFFFFFF = pai inválido)
@@ -290,3 +299,5 @@ CMD_CONQ_RESET = 0xB2       # arg0 = 0 zera as duas áreas (save antigo), 1 Conq
 CMD_CONQ_CHECAR = 0xB3      # Conquistas_ChecarEstado() -> Conquistas_AvisosPendentes()
 CMD_CONQ_APLICAR = 0xB4     # arg0 = num, arg1 = op | degrau << 8 (0 Marcar, 1 Perder, 2 SetEntregue,
                             # 3 SetDegrauEntregue) -> o mesmo de CMD_CONQ_ESTADO depois
+CMD_CONQ_PC_MON = 0xB5      # arg0 = caixa | posição << 8 | opções << 16 (1 shiny, 2 chocado pelo jogador: MET_LEVEL 0
+                            # e 6 IVs 31), arg1 = espécie | nível << 16 (espécie 0 esvazia) -> espécie lida na caixa

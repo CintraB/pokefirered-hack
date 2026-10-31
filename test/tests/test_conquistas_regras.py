@@ -75,6 +75,31 @@ def test_pc_so_na_varredura():
     assert chamadas == ["Conquistas_VarrerSaveAntigo"], chamadas
 
 
+def test_treinadores_do_ginasio_batem_com_o_inc():
+    """A tabela sTreinadoresDoGinasio (descontada das vitórias retroativas) é a do set_gym_trainers.inc."""
+    from esteira import conquistas as cq
+    corpo = re.search(r"sTreinadoresDoGinasio\[NUM_BADGES\]\[[^\]]+\] =\n\{\n(.*?)\n\};", _fonte(), re.S).group(1)
+    linhas = re.findall(r"\{([^{}]*)\}", corpo)
+    tabela = [re.findall(r"TRAINER_\w+", linha) for linha in linhas]
+    assert all(linha.rstrip().endswith("0xFFFF") for linha in linhas)
+    inc = cq.treinadores_do_ginasio()
+    assert tabela == inc
+    assert sum(map(len, inc)) == 41 and max(map(len, inc)) <= 8   # CONQ_GINASIO_MAX_TREINADORES
+
+
+def test_vitorias_descontam_o_ginasio():
+    varrer = _corpo(_fonte(), "Conquistas_VarrerSaveAntigo")
+    assert re.search(r"FlagGet\(TRAINER_FLAGS_START \+ i\) && !LigadoPeloGinasio\(i\)", varrer)
+    assert "FLAG_BADGE01_GET + ginasio" in _corpo(_fonte(), "LigadoPeloGinasio")
+
+
+def test_mon_filtrado_antes_do_nivel():
+    """Vaga vazia, ovo e Bad Egg saem antes de ler o nível (a espécie de um Bad Egg é lixo)."""
+    ler = _corpo(_fonte(), "LerMon")
+    assert ler.index("MON_DATA_SANITY_IS_BAD_EGG") < ler.index("GetLevelFromBoxMonExp")
+    assert _fonte().count("MON_DATA_SANITY_HAS_SPECIES") == 1
+
+
 def test_varredura_grava_marcador_e_resumo():
     varrer = _corpo(_fonte(), "Conquistas_VarrerSaveAntigo")
     for trecho in ("CONQ_MAGIC", "CONQ_ORIGEM_SAVE_ANTIGO", "resumoPendente = TRUE", "adiadoNoMapa = 0xFFFF",
@@ -99,12 +124,13 @@ def test_atalhos_ligados():
     hooks_c = HOOKS_C.read_text(encoding="utf-8")
     assert "Conquistas_DegrauAtual(num) << 24" in hooks_c
     assert "Conquistas_ContarAba(" in _corpo(hooks_c, "ConqContador")
-    assert hooks.CMD_CONQ_APLICAR == 0xB4
-    assert callable(hooks.Mailbox.conq_aplicar)
+    assert hooks.CMD_CONQ_APLICAR == 0xB4 and hooks.CMD_CONQ_PC_MON == 0xB5
+    assert callable(hooks.Mailbox.conq_aplicar) and callable(hooks.Mailbox.conq_pc_mon)
 
 
 def test_grupos_do_cenario():
     texto = CENARIO.read_text(encoding="utf-8")
     for grupo in ("estado/insignia", "estado/dinheiro", "estado/nivel", "estado/degraus_horas",
-                  "estado/conta_aba", "estado/marcar_perder", "retro/save_antigo", "retro/roda_uma_vez"):
+                  "estado/conta_aba", "estado/marcar_perder", "retro/save_antigo", "retro/roda_uma_vez",
+                  "retro/ginasio_desconta", "retro/pc"):
         assert f'"{grupo}"' in texto, grupo
