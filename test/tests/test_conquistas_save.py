@@ -165,11 +165,25 @@ def test_diario_sem_ovo():
     assert "void Diario_OnFimDeBatalha(void)" not in CONQ_C.read_text(encoding="utf-8"), "stub da Task 4 ficou"
 
 
+def test_diario_revanche_e_helper_unico():
+    """Depois do Hall da Fama (FLAG_SYS_GAME_CLEAR) os eventos de treinador não entram; o laço dos treinadores de um
+    evento existe uma vez só (Diario_TreinadorDoEvento, usado também por conquistas.c)."""
+    fonte = DIARIO_C.read_text(encoding="utf-8")
+    corpo = re.search(r"void Diario_OnFimDeBatalha\(void\)\n\{(.*?)\n\}", fonte, re.S).group(1)
+    treinador = corpo[corpo.index("BATTLE_TYPE_TRAINER"):corpo.index("EventoDoLendario")]
+    assert "FlagGet(FLAG_SYS_GAME_CLEAR)" in treinador, treinador
+    assert "FLAG_SYS_GAME_CLEAR" not in corpo[corpo.index("EventoDoLendario"):], "lendário depois do Hall também conta"
+    assert "bool8 Diario_TreinadorDoEvento(u8 evt, u16 treinador);" in CONQ_H.read_text(encoding="utf-8")
+    conq = CONQ_C.read_text(encoding="utf-8")
+    assert "static bool8 TreinadorDoEvento" not in conq and "Diario_TreinadorDoEvento(" in conq
+    assert fonte.count("*t != 0xFFFF") == 1
+
+
 def test_atalho_e_grupos_do_diario():
     from esteira import hooks
     assert hooks.CMD_DIARIO_ENTRADA == 0xBB
     assert callable(getattr(hooks.Mailbox, "diario_entrada", None))
     texto = (REPO_ROOT / "test" / "esteira" / "scenarios" / "full_conquistas.py").read_text(encoding="utf-8")
     for grupo in ("diario/brock", "diario/so_a_primeira", "diario/mvp_depois_da_troca", "diario/lendario",
-                  "diario/jogo_novo_zera"):
+                  "diario/liga_e_revanche", "diario/jogo_novo_zera"):
         assert f'"{grupo}"' in texto, grupo

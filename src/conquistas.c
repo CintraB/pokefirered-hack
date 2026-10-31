@@ -585,20 +585,6 @@ static bool8 BatalhaIgnorada(void)
                               | BATTLE_TYPE_TRAINER_TOWER | BATTLE_TYPE_EREADER_TRAINER | BATTLE_TYPE_BATTLE_TOWER)) != 0;
 }
 
-static bool8 TreinadorDoEvento(u8 evt, u16 treinador)
-{
-    const u16 *t = gDiarioEventos[evt].treinadores;
-
-    if (t == NULL)
-        return FALSE;
-    for (; *t != 0xFFFF; t++)
-    {
-        if (*t == treinador)
-            return TRUE;
-    }
-    return FALSE;
-}
-
 // O treinador é um líder (lider = TRUE) ou o rival (lider = FALSE) de algum evento do diário.
 static bool8 TreinadorMarcante(u16 treinador, bool8 lider)
 {
@@ -606,7 +592,7 @@ static bool8 TreinadorMarcante(u16 treinador, bool8 lider)
 
     for (evt = 0; evt < DIARIO_EVT_COUNT; evt++)
     {
-        if ((lider ? gDiarioEventos[evt].lider : gDiarioEventos[evt].rival) && TreinadorDoEvento(evt, treinador))
+        if ((lider ? gDiarioEventos[evt].lider : gDiarioEventos[evt].rival) && Diario_TreinadorDoEvento(evt, treinador))
             return TRUE;
     }
     return FALSE;
@@ -694,9 +680,9 @@ void Conquistas_OnFimDeBatalha(void)
                 Conquistas_Evento(CONQ_EVT_SEM_DESMAIO);
             if (TreinadorMarcante(treinador, TRUE) && TimeSemOvos() == 1)
                 Conquistas_Evento(CONQ_EVT_LIDER_UM_POKEMON);
-            if (TreinadorDoEvento(DIARIO_EVT_LANCE, treinador))
+            if (Diario_TreinadorDoEvento(DIARIO_EVT_LANCE, treinador))
                 Conquistas_Evento(CONQ_EVT_ELITE4);
-            if (TreinadorDoEvento(DIARIO_EVT_CAMPEAO, treinador))
+            if (Diario_TreinadorDoEvento(DIARIO_EVT_CAMPEAO, treinador))
                 Conquistas_Evento(CONQ_EVT_RIVAL_TODAS);
         }
         else if (TreinadorMarcante(treinador, FALSE))

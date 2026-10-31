@@ -22,7 +22,8 @@ Sessão própria da ROM de teste a partir do .sav do `captura` (`save_from="capt
   Ginásio de Viridian (a marca vem antes do `setflag FLAG_BADGE08_GET` do script).
 - `diario/*` (Task 5): a entrada do Brock (VENCEU, turnos, time, MVP, minutos; ordem 1 com proximaOrdem 0), só a
   1ª vitória entra, o Articuno derrotado (DERROTOU) e depois capturado com Master Ball (CAPTURADO, ordem nova), o
-  MVP pela personalidade depois de uma troca e o jogo novo zerando o diário (`diario_entrada`, CMD_DIARIO_ENTRADA).
+  MVP pela personalidade depois de uma troca, a 1ª Liga registrada e a revanche (FLAG_SYS_GAME_CLEAR) não, e o
+  jogo novo zerando o diário (`diario_entrada`, CMD_DIARIO_ENTRADA).
 
 Uso, a partir de test/ (a pasta OUT precisa do captura.sav de um `rapido`/`completo`):
     python3 -m esteira completo --rom R --elf E --out OUT --only conquistas
@@ -378,7 +379,8 @@ class ConquistasScenario(CatchSaveScenario):
         for cid in ("sem_desmaio", "lider_um_pokemon", "golpe_x4"):
             assert self._estado(cid)[0] == PENDENTE, (cid, self._estado(cid))
         assert self.box.conq_contador(0) == 0, f"vitórias = {self.box.conq_contador(0)}"
-        return "Magikarp perde para o rival: rival_todas perdida, vitórias 0, nada de batalha feito"
+        assert self.box.diario_entrada(cq.evento("rival_lab")) is None, "derrota entrou no diário"
+        return "Magikarp perde para o rival: rival_todas perdida, vitórias 0, nada de batalha feito, diário vazio"
 
     def _captura_poke_ball(self) -> str:
         self.box.conq_reset(True)
@@ -544,6 +546,7 @@ class ConquistasScenario(CatchSaveScenario):
         num diário recém-zerado (proximaOrdem 0 conta como 1)."""
         self.box.conq_reset(True)
         assert self._diario_raw()[0] == 0, "proximaOrdem do jogo novo"
+        self._flag("FLAG_SYS_GAME_CLEAR", False)    # o retro/* deixa ligada; com ela, treinador não entra (revanche)
         assert self._entrada("brock") is None, "diário de jogo novo com o Brock"
         self._time_de_um("MEWTWO", 100, "MOVE_PSYCHIC")
         self.box.start_trainer_battle(self._trainer_const("TRAINER_LEADER_BROCK"))
@@ -629,12 +632,32 @@ class ConquistasScenario(CatchSaveScenario):
         self.box.party_size(1)
         return f"troca no 1º turno: {e}"
 
-    def _diario_jogo_novo_zera(self) -> str:
-        assert self._entrada("brock") is not None, "nada para zerar"
+    def _diario_liga_e_revanche(self) -> str:
+        """Sem FLAG_SYS_GAME_CLEAR (a 1ª Liga, antes do Hall da Fama), o Campeão entra no diário; com ela ligada (o
+        save já passou pelo Hall), a vitória sobre a Lorelei com o slot vazio é revanche e não entra."""
         self.box.conq_reset(True)
-        assert self._entrada("brock") is None and self._entrada("articuno") is None
+        self._flag("FLAG_SYS_GAME_CLEAR", False)
+        self._time_de_um("MEWTWO", 100, "MOVE_PSYCHIC")
+        self.box.start_trainer_battle(self._trainer_const("TRAINER_CHAMPION_FIRST_SQUIRTLE"))
+        self._lutar("Campeão (1ª Liga)", "win")
+        campeao = self._entrada("campeao")
+        assert campeao is not None and campeao["resultado"] == cq.DIARIO_VENCEU and campeao["ordem"] == 1, campeao
+        self._flag("FLAG_SYS_GAME_CLEAR")
+        self._time_de_um("MEWTWO", 100, "MOVE_PSYCHIC")
+        assert self._entrada("lorelei") is None
+        self.box.start_trainer_battle(self._trainer_const("TRAINER_ELITE_FOUR_LORELEI"))
+        self._lutar("Lorelei (revanche)", "win")
+        assert self._entrada("lorelei") is None, self._entrada("lorelei")
+        assert self._diario_raw()[0] == 2, f"proximaOrdem = {self._diario_raw()[0]}"
+        self._flag("FLAG_SYS_GAME_CLEAR", False)
+        return f"Campeão sem a flag: entrada {campeao}; Lorelei com FLAG_SYS_GAME_CLEAR: slot vazio"
+
+    def _diario_jogo_novo_zera(self) -> str:
+        assert self._entrada("campeao") is not None, "nada para zerar"
+        self.box.conq_reset(True)
+        assert self._entrada("campeao") is None and self._entrada("brock") is None
         assert self._diario_raw()[0] == 0, "proximaOrdem"
-        return "jogo novo: entrada do Brock vazia"
+        return "jogo novo: entrada do Campeão vazia"
 
     def run(self) -> None:
         try:
@@ -663,6 +686,7 @@ class ConquistasScenario(CatchSaveScenario):
             self.suite.run("diario/so_a_primeira", self._diario_so_a_primeira)
             self.suite.run("diario/lendario", self._diario_lendario)
             self.suite.run("diario/mvp_depois_da_troca", self._diario_mvp_depois_da_troca)
+            self.suite.run("diario/liga_e_revanche", self._diario_liga_e_revanche)
             self.suite.run("diario/jogo_novo_zera", self._diario_jogo_novo_zera)
         except Abort:
             pass

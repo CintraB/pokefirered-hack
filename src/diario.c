@@ -1,6 +1,7 @@
 #include "global.h"
 #include "conquistas.h"
 #include "battle.h"
+#include "event_data.h"
 #include "pokemon.h"
 #include "constants/battle.h"
 #include "data/conquistas_ids.h"
@@ -12,20 +13,28 @@
 #define sDiario (&gSaveBlock2Ptr->diario)
 #define NENHUM_EVENTO 0xFF
 
+bool8 Diario_TreinadorDoEvento(u8 evt, u16 treinador)
+{
+    const u16 *t;
+
+    if (evt >= DIARIO_EVT_COUNT || (t = gDiarioEventos[evt].treinadores) == NULL)
+        return FALSE;
+    for (; *t != 0xFFFF; t++)
+    {
+        if (*t == treinador)
+            return TRUE;
+    }
+    return FALSE;
+}
+
 static u8 EventoDoTreinador(u16 treinador)
 {
     u8 evt;
-    const u16 *t;
 
     for (evt = 0; evt < DIARIO_EVT_COUNT; evt++)
     {
-        if (gDiarioEventos[evt].tipo != DIARIO_TIPO_TREINADOR || gDiarioEventos[evt].treinadores == NULL)
-            continue;
-        for (t = gDiarioEventos[evt].treinadores; *t != 0xFFFF; t++)
-        {
-            if (*t == treinador)
-                return evt;
-        }
+        if (gDiarioEventos[evt].tipo == DIARIO_TIPO_TREINADOR && Diario_TreinadorDoEvento(evt, treinador))
+            return evt;
     }
     return NENHUM_EVENTO;
 }
@@ -105,8 +114,10 @@ void Diario_OnFimDeBatalha(void)
         return;
     if (gBattleTypeFlags & BATTLE_TYPE_TRAINER)
     {
-        // derrota não registra nada; vitória só no slot vazio
-        if (gBattleOutcome != B_OUTCOME_WON)
+        // derrota não registra nada; vitória só no slot vazio. Depois do Hall da Fama só sobram revanches (a Liga
+        // antes de Sevii usa os mesmos TRAINER_* da 1ª vez; líderes e rival não se repetem): num save antigo, com o
+        // diário vazio, a revanche entraria como 1ª vitória
+        if (gBattleOutcome != B_OUTCOME_WON || FlagGet(FLAG_SYS_GAME_CLEAR))
             return;
         evt = EventoDoTreinador(gTrainerBattleOpponent_A);
         if (evt != NENHUM_EVENTO && sDiario->entradas[evt].ordem == 0)

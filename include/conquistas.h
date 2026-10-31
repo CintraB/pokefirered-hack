@@ -115,6 +115,7 @@ void Conquistas_OnOvoChocado(struct Pokemon *mon);        // AddHatchedMonToPart
 // depois de um DERROTOU troca a entrada, com ordem nova.
 void Diario_OnFimDeBatalha(void);                   // chamado por Conquistas_OnFimDeBatalha (já sem as batalhas ignoradas)
 const struct DiarioEntrada *Diario_GetEntrada(u8 evt); // NULL com o slot vazio (ordem 0) ou evt fora da tabela
-u8 Diario_ListarEmOrdem(u8 *evts);                  // DIARIO_EVT_* preenchidos, em ordem crescente de `ordem`; devolve quantos
+u8 Diario_ListarEmOrdem(u8 *evts);
+bool8 Diario_TreinadorDoEvento(u8 evt, u16 treinador); // `treinador` está em gDiarioEventos[evt].treinadores                  // DIARIO_EVT_* preenchidos, em ordem crescente de `ordem`; devolve quantos
 
 #endif // GUARD_CONQUISTAS_H
