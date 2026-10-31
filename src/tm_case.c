@@ -238,7 +238,7 @@ static const u8 sTextColors[][3] = {
     [COLOR_LIGHT] = {0, 1, 2},
     [COLOR_DARK] = {0, 2, 3},
     [COLOR_CURSOR_SELECTED] = {0, 3, 6},
-    [COLOR_MOVE_INFO] = {0, 14, 10},
+    [COLOR_MOVE_INFO] = {0, 14, 0}, // sombra transparente (o índice 10 da paleta de tipos virou o rosa da Fada)
 };
 
 static const struct WindowTemplate sWindowTemplates[] = {

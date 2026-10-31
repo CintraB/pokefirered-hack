@@ -1013,12 +1013,12 @@ static const struct WindowTemplate sWindowTemplates_Dummy[] =
 
 static const u8 sLevelNickTextColors[][3] =
 {
-    {0, 14, 10},
+    {0, 14, 0}, // sombra transparente (era o creme 10; o índice 10 virou o rosa do ícone FADA)
     {0, 1, 2},
     {0, 9, 8},
     {0, 5, 4},
     {0, 2, 3},
-    {0, 11, 10},
+    {0, 11, 0}, // idem
 };
 
 static const u8 ALIGNED(4) sMultiBattlePartyOrder[] =

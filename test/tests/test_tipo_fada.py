@@ -252,7 +252,10 @@ def test_icone_fada_e_categorias():
     img = Image.open(REPO_ROOT / MENU_INFO_PNG)
     base = _png_da_base(MENU_INFO_PNG)
     assert img.size[0] == 128 and img.mode == "P"
-    assert img.getpalette() == base.getpalette()
+    # a paleta embutida só muda na cor 26 (= índice 10 da 2ª fileira, espelho de pokemon_types.pal)
+    pal, pal_base = img.getpalette(), base.getpalette()
+    assert pal[:26 * 3] + pal[27 * 3:] == pal_base[:26 * 3] + pal_base[27 * 3:]
+    assert tuple(pal[26 * 3:27 * 3]) == ROSA_FADA_GEN6
 
     # retângulos de tiles: dentro da folha, sem passar da coluna 15 e sem sobrepor outro ícone
     ocupados = {}
@@ -288,6 +291,44 @@ def test_icone_fada_e_categorias():
     # o resumo usa o ícone de categoria no detalhe do golpe
     detalhe = _funcao(SUMMARY_C, "static void PokeSum_PrintSelectedMoveStats(")
     assert "MENU_INFO_ICON_PHYSICAL + gBattleMoves[" in detalhe and ".category" in detalhe
+
+
+ROSA_FADA_GEN6 = (232, 152, 168)   # #EE99AC (Fada na Gen 6) em 15 bits: (29, 19, 21) -> BGR555 0x567D
+TYPES_PAL = "graphics/interface/pokemon_types.pal"
+
+
+def _jasc(texto: str) -> list[tuple[int, int, int]]:
+    linhas = texto.splitlines()
+    assert linhas[:3] == ["JASC-PAL", "0100", "16"]
+    return [tuple(int(v) for v in l.split()) for l in linhas[3:19]]
+
+
+def test_icone_fada_rosa_gen6():
+    from PIL import Image
+    # o índice 10 de pokemon_types.pal (era o creme, sem pixel em menu_info.png) vira o rosa da Gen 6
+    nova, base = _jasc((REPO_ROOT / TYPES_PAL).read_text(encoding="utf-8")), _jasc(_git_show(TYPES_PAL))
+    assert nova[:10] + nova[11:] == base[:10] + base[11:]
+    assert base[10] == (222, 222, 197) and nova[10] == ROSA_FADA_GEN6
+    r, g, b = (c // 8 for c in nova[10])
+    assert b << 10 | g << 5 | r == 0x567D
+    assert (REPO_ROOT / TYPES_PAL).read_bytes().count(b"\r\n") == 19   # CRLF, como o resto
+    # o índice 10 só aparece no FADA, e o FADA é liso: rosa Gen 6 com letra branca e contorno cinza
+    img = Image.open(REPO_ROOT / MENU_INFO_PNG)
+    px = img.load()
+    icones = _icones_do_menu_info()
+    w, h, off = icones[TYPE_FAIRY + 1]
+    x0, y0 = off % 16 * 8, off // 16 * 8
+    no_icone = {px[x, y] & 15 for x in range(x0, x0 + w) for y in range(y0, y0 + h)}
+    assert no_icone == {0, 10, 14, 15}
+    fora = sum(1 for x in range(img.size[0]) for y in range(img.size[1])
+               if px[x, y] & 15 == 10 and not (x0 <= x < x0 + w and y0 <= y < y0 + h))
+    assert fora == 0
+    # a sombra creme do texto (índice 10) virou transparente nas janelas que usam essa paleta
+    cores = re.search(r"sLevelNickTextColors\[\]\[3\] =\s*\{(.*?)\};", SUMMARY_C, re.S).group(1)
+    linhas = re.findall(r"\{([^}]*)\}", cores)
+    assert linhas[0].replace(" ", "") == "0,14,0" and linhas[5].replace(" ", "") == "0,11,0"
+    assert not any(c.replace(" ", "").split(",")[2] == "10" for c in linhas)
+    assert re.search(r"\[COLOR_MOVE_INFO\] = \{0, 14, 0\},", TM_CASE_C)
 
 
 def test_estojo_de_mt_sem_paleta_de_fada():
