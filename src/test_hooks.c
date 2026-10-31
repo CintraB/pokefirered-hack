@@ -702,6 +702,25 @@ static u32 CalcDamage(u16 move)
     gBattlerTarget = savedTarget;
     return damage;
 }
+
+// gTypeEffectiveness the way Cmd_typecalc walks it, multiplier x 100; the Foresight marker is
+// skipped (not stopped at), so the Ghost immunities after it count.
+static u32 TypeEffectiveness(u8 moveType, u8 type1, u8 type2)
+{
+    u32 multiplier = 100;
+    s32 i;
+
+    for (i = 0; TYPE_EFFECT_ATK_TYPE(i) != TYPE_ENDTABLE; i += 3)
+    {
+        if (TYPE_EFFECT_ATK_TYPE(i) != moveType)
+            continue;
+        if (TYPE_EFFECT_DEF_TYPE(i) == type1)
+            multiplier = multiplier * TYPE_EFFECT_MULTIPLIER(i) / 10;
+        if (TYPE_EFFECT_DEF_TYPE(i) == type2 && type1 != type2)
+            multiplier = multiplier * TYPE_EFFECT_MULTIPLIER(i) / 10;
+    }
+    return multiplier;
+}
 // --- end of POK-43 --------------------------------------------------------------------------
 
 void TestHooks_Run(void)
@@ -816,6 +835,9 @@ void TestHooks_Run(void)
     // novidades: end
     // POK-43: start
     case TEST_CMD_CALC_DAMAGE:      result = CalcDamage(gTestMailbox.arg0); break;
+    case TEST_CMD_TYPE_EFFECTIVENESS:
+        result = TypeEffectiveness(gTestMailbox.arg0, gTestMailbox.arg1 & 0xFF, (gTestMailbox.arg1 >> 8) & 0xFF);
+        break;
     // POK-43: end
     default:
         result = 0xFFFFFFFF;

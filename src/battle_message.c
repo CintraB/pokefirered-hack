@@ -1351,6 +1351,7 @@ const u8 gText_APsychicMove[] = _("golpe Psíquico");
 const u8 gText_AnIceMove[] = _("golpe Gelo");
 const u8 gText_ADragonMove[] = _("golpe Dragão");
 const u8 gText_ADarkMove[] = _("golpe Sombrio");
+const u8 gText_AFairyMove[] = _("golpe Fada");
 const u8 gText_TimeBoard[] = _("Quadro de Tempos");
 const u8 gText_ClearTime[] = _("Tempo Final"); // Unused
 const u8 gText_XMinYZSec[] = _("{STR_VAR_1}min {STR_VAR_2},{STR_VAR_3}s");
@@ -1394,7 +1395,8 @@ static const u8 *const sATypeMove_Table[NUMBER_OF_MON_TYPES] =
     [TYPE_PSYCHIC]  = gText_APsychicMove,
     [TYPE_ICE]      = gText_AnIceMove,
     [TYPE_DRAGON]   = gText_ADragonMove,
-    [TYPE_DARK]     = gText_ADarkMove
+    [TYPE_DARK]     = gText_ADarkMove,
+    [TYPE_FAIRY]    = gText_AFairyMove
 };
 
 static const u16 sGrammarMoveUsedTable[] =

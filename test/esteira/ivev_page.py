@@ -40,7 +40,8 @@ LINE_WIDTH_PX = WINDOW_WIDTH_PX - TEXT_X
 LINES = 8
 
 # Ordem dos tipos de Hidden Power (TYPE_* de include/constants/pokemon.h)
-NUMBER_OF_MON_TYPES, TYPE_MYSTERY = 18, 9
+NUMBER_OF_MON_TYPES, TYPE_MYSTERY = 19, 9
+HIDDEN_POWER_TYPE_SPAN = 15   # CalcHiddenPower: 16 tipos possíveis (sem Normal, ??? e Fada), fixo desde o POK-45
 TYPE_NAMES_C = Path("src/battle_main.c")
 SOURCE_FILES = (TYPE_NAMES_C, Path("charmap.txt"), Path("src/text.c"))
 
@@ -81,7 +82,7 @@ def hidden_power(ivs: tuple[int, ...]) -> tuple[int, int]:
     power_bits = sum(((iv >> 1) & 1) << i for i, iv in enumerate(order))
     type_bits = sum((iv & 1) << i for i, iv in enumerate(order))
     power = 40 * power_bits // 63 + 30
-    type_ = (NUMBER_OF_MON_TYPES - 3) * type_bits // 63 + 1
+    type_ = HIDDEN_POWER_TYPE_SPAN * type_bits // 63 + 1
     if type_ >= TYPE_MYSTERY:
         type_ += 1
     return type_, power

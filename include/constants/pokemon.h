@@ -112,7 +112,8 @@
 #define TYPE_ICE            15
 #define TYPE_DRAGON         16
 #define TYPE_DARK           17
-#define NUMBER_OF_MON_TYPES 18
+#define TYPE_FAIRY          18
+#define NUMBER_OF_MON_TYPES 19
 
 // Categoria de cada golpe, como na Gen 4+ (gBattleMoves[move].category, POK-43)
 #define MOVE_CATEGORY_PHYSICAL 0

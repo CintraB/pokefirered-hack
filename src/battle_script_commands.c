@@ -8510,9 +8510,10 @@ void CalcHiddenPower(u8 hpIV, u8 attackIV, u8 defenseIV, u8 speedIV, u8 spAttack
 
     *power = (40 * powerBits) / 63 + 30;
 
-    // Subtract 3 instead of 1 below because 2 types are excluded (TYPE_NORMAL and TYPE_MYSTERY)
+    // 16 tipos possíveis (sem Normal, ??? e Fada, como na Gen 6): a constante fica em 15 para o
+    // tipo de quem já existe não mudar com o NUMBER_OF_MON_TYPES 19 (POK-45).
     // The final + 1 skips past Normal, and the following conditional skips TYPE_MYSTERY
-    *type = ((NUMBER_OF_MON_TYPES - 3) * typeBits) / 63 + 1;
+    *type = (15 * typeBits) / 63 + 1;
     if (*type >= TYPE_MYSTERY)
         (*type)++;
 }
