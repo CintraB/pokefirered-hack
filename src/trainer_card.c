@@ -1264,10 +1264,10 @@ static void PrintProfilePhraseOnCard(void)
     }
 }
 
-// POK-44: "SELECT Conquistas" na faixa das insígnias, à direita (só no cartão do próprio jogador, onde o SELECT vale)
+// POK-44: "SELECT Conquistas" na faixa das insígnias, à direita (só onde o SELECT vale: a mesma condição do botão)
 static void PrintConquistasHintOnCard(void)
 {
-    if (!sTrainerCardDataPtr->isLink)
+    if (!sTrainerCardDataPtr->isLink && !gReceivedRemoteLinkPlayers)
         AddTextPrinterParameterized3(1, FONT_SMALL, 212 - GetStringWidth(FONT_SMALL, gText_ConqTela_DicaCartao, 0), 109,
             sTrainerCardTextColors, TEXT_SKIP_DRAW, gText_ConqTela_DicaCartao);
 }

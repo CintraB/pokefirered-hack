@@ -1636,6 +1636,15 @@ DECLARED: list[Declared] = [
              why="aviso de conquista: as duas linhas em struct Aviso (linha1/linha2[64], no heap) e a cópia em "
                  "gStringVar4[1000]; cada linha montada (nome com o degrau, prêmio + item + destino, resumo) é medida "
                  "em test/tests/test_conquistas_aviso.py::test_larguras_montadas, todas abaixo de 208 px (< 45 letras)"),
+    # POK-44, Task 8
+    Declared("src/conquistas_tela.c", "DesenharDiarioTime", r"gText_Diario_Nivel", None,
+             why="time do diário: token[24] = espécie (10 letras) + gText_Diario_Nivel (3 bytes) + nível (3 algarismos) + "
+                 "vírgula + EOS = 18 bytes no máximo, e a linha [128]/[160] guarda no máximo 6 tokens (6 * 18 + 6 de rótulo "
+                 "+ espaços < 128); a largura montada é medida em test/tests/test_conquistas_tela.py::test_larguras_diario"),
+    Declared("src/conquistas_tela.c", "DesenharDiarioDetalhe", r".*", None,
+             why="detalhe do diário montado em gStringVar4[1000]: nome (até 11 bytes) + gText_Diario_Separador + local (até "
+                 "25 bytes), e gText_Diario_TempoTurnos com \"hh:mm\" (até 8 bytes) e turnos (3); as larguras são medidas em "
+                 "test/tests/test_conquistas_tela.py::test_larguras_diario"),
 ]
 
 

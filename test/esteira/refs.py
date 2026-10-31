@@ -37,7 +37,11 @@ STARTER_DEPENDENT_POINTS = ("relogio_menu", "relogio_aviso_noite",   # Hack 7 �
 KEY_POINTS = (("nome", "inicial", "batalha_rival", "captura", "save_continue") + TOUR_POINTS
               + STARTER_DEPENDENT_POINTS)
 # POK-44, Task 7: a tela de conquistas (aba História e a Batalha com a perdida riscada) e o cartão com a dica do SELECT
-CONQUISTAS_TELA_POINTS = ("conquistas_historia", "conquistas_batalha", "cartao_dica")
+# (só a faixa da dica: o relógio do cartão varia). Task 8: o diário (vazio; lista com VENCEU/CAPTURADO/DERROTOU;
+# rolado; o detalhe com e sem MVP; um time de 6)
+CONQUISTAS_TELA_POINTS = ("conquistas_historia", "conquistas_batalha", "cartao_dica", "diario_lista", "diario_detalhe",
+                          "diario_vazio", "diario_varias", "diario_rolado", "diario_detalhe_mvp",
+                          "diario_detalhe_sem_mvp", "diario_time6")
 # Pontos cuja tela não depende do inicial (cena de evolução do cenário `evolucoes`, página
 # EVOLUTION do resumo do cenário `resumo_evolucao`): uma referência só, em
 # test/referencias/COMUM/<ponto>.png, vale para os três.

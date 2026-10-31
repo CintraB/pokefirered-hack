@@ -104,8 +104,20 @@ VAR_CONTENTS: list[VarContent] = [
                "moedas: ConvertIntToDecimalStringN(gStringVar1, coinAmount, ..., 4) (src/coins.c:54, :72)", digits=True),
     *(VarContent("src/strings.c", "gText_ConqTela_Rodape", var, 2,
                  "rodapé da tela de conquistas: feitas e válidas da aba com 2 algarismos (CONQ_COUNT = 41) "
-                 "(src/conquistas_tela.c:588-589)", digits=True)
+                 "(src/conquistas_tela.c:763-764)", digits=True)
       for var in ("STR_VAR_2", "STR_VAR_3")),
+    # diário (Task 8): "hh:mm" (o save guarda até 65535 minutos = "1092:15": 6 algarismos medem mais que o texto, o
+    # ":" é mais estreito), turnos até 255 e nocautes até 255
+    VarContent("src/strings.c", "gText_Diario_TempoTurnos", "STR_VAR_1", 6,
+               "tempo do diário: FormatarTempo(gStringVar1, e->minutos) = 4 algarismos de horas e 2 de minutos, com o ':' "
+               "(src/conquistas_tela.c:958)", digits=True),
+    VarContent("src/strings.c", "gText_Diario_TempoTurnos", "STR_VAR_2", 3,
+               "turnos do diário: ConvertIntToDecimalStringN(gStringVar2, e->turnos, ..., 3) (src/conquistas_tela.c:959)",
+               digits=True),
+    *(VarContent("src/strings.c", label, "STR_VAR_2", 3,
+                 "nocautes do MVP: ConvertIntToDecimalStringN(gStringVar2, e->mvpNocautes, ..., 3) "
+                 "(src/conquistas_tela.c:966)", digits=True)
+      for label in ("gText_Diario_MvpUm", "gText_Diario_MvpVarios")),
     *(VarContent("src/strings.c", "gText_MenuSafariStats", var, n,
                  "Safari: passos (3), limite 600 (3) e bolas (2) (src/start_menu.c:275-277)", digits=True)
       for var, n in (("STR_VAR_1", 3), ("STR_VAR_2", 3), ("STR_VAR_3", 2))),
@@ -513,7 +525,7 @@ USAGE_RULES: list[UsageRule] = [
       "controles da tela de novidades: FONT_SMALL alinhado à direita em 236 na WIN_TITLE "
       "(src/novidades.c:829-830), de 156 em diante", font="small", label="sText_Controls"),
     U("src/conquistas_tela.c", "call:AddTextPrinterParameterized4", 240 - 228,
-      "setas de rolagem da tela de conquistas: FONT_NORMAL em SETA_ROLAGEM_X = 228 (src/conquistas_tela.c:47) da "
+      "setas de rolagem da tela de conquistas: FONT_NORMAL em SETA_ROLAGEM_X = 228 (src/conquistas_tela.c:55) da "
       "WIN_LISTA de 30 tiles", label="sText_Seta*"),
     U("src/credits.c", "*", 30 * 8, "créditos: janela de 30 tiles (src/credits.c:456-460), centralizados",
       unica=True),

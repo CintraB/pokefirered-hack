@@ -311,6 +311,14 @@ class Mailbox:
             return None
         return raw & 0xFF, raw >> 8 & 0xFF, raw >> 16 & 0xFF, bool(raw >> 24 & 0xFF)
 
+    def conq_tela_diario(self) -> tuple[int, int, int] | None:
+        """(quantas entradas, DIARIO_EVT_* da linha selecionada, primeira linha visível) do modo diário; None com a
+        tela fechada ou no modo conquistas. A linha selecionada é o `cursor` de `conq_tela()[2]`."""
+        raw = self.call(CMD_CONQ_TELA, 1)
+        if raw == NO_RESULT:
+            return None
+        return raw & 0xFF, raw >> 8 & 0xFF, raw >> 16 & 0xFF
+
 # --- Hack 6: breeding genético (enum à parte em include/test_hooks.h, a partir de 0x60; ------
 # o uso fica em esteira/breeding.py e scenarios/full_breeding.py / full_egg.py)
 CMD_BREED_SETUP = 0x60      # gTestBreedSetup -> creche (arg0 = 1: ovo pendente) -> compatibilidade (0xFFFFFFFF = pai inválido)
@@ -384,4 +392,5 @@ CMD_ENCHER_BOLSO = 0xBD     # arg0 = item: os espaços livres do bolso dele com 
                             # (bolso + PC)
 CMD_OPEN_CONQUISTAS = 0xBE  # arg0 = modo (0 conquistas, 1 diário): script de campo com setvar VAR_0x8004 e `special
                             # Conquistas_AbrirTelaDoScript` -> número do special (0xFFFFFFFF = fora de gSpecials)
-CMD_CONQ_TELA = 0xBF        # -> modo | aba << 8 | topo da lista << 16 | entrada pronta << 24 (0xFFFFFFFF = fechada)
+CMD_CONQ_TELA = 0xBF        # -> modo | aba << 8 | topo da lista (conquistas) ou cursor (diário) << 16 | entrada pronta << 24
+                            # (0xFFFFFFFF = fechada); arg0 = 1: no diário, n | evento selecionado << 8 | topo << 16

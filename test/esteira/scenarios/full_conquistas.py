@@ -34,7 +34,15 @@ Sessão própria da ROM de teste a partir do .sav do `captura` (`save_from="capt
   perdida: aba 0, R → 1, L L → 4 (dá a volta); a ajuda (`gHelpSystemEnabled`) desligada com a tela aberta e ligada
   de novo na saída; o rodapé "História: 3 de 12"; e o cartão de treinador pelo menu Start: SELECT abre a tela, B
   volta ao cartão, B volta ao campo. Fotos conquistas_historia, conquistas_batalha e cartao_dica (SHARED_POINTS:
-  sem referência até o OK do Cintra) e cartao_conquistas/cartao_volta.
+  sem referência até o OK do Cintra) e cartao_conquistas/cartao_volta. `cartao_dica` é só o recorte da faixa da dica
+  (o relógio do cartão e os dois-pontos piscando mudam a imagem a cada execução; o cartão inteiro, para os olhos, sai
+  em cartao_com_dica); `tela/ajuda_anterior`: a ajuda desligada antes de abrir continua desligada na saída.
+- `diario_tela/*` (Task 8): o modo diário da mesma tela. `lista_em_ordem`: Brock (VENCEU) e Articuno (DERROTOU) de
+  verdade (roteiro da Task 5), a tela abre com o cursor 0 = Brock e ▼ = Articuno; `vazio`: "Nenhuma batalha marcante
+  ainda."; `select_alterna`: SELECT troca conquistas <-> diário (cada modo guarda a sua posição) e B volta ao campo;
+  `varias_entradas`: 10 entradas escritas na RAM com a ordem diferente da dos eventos (VENCEU, CAPTURADO, DERROTOU; com
+  e sem MVP; times de 6), andadas uma a uma pela ordem. Fotos diario_* (SHARED_POINTS: sem referência até o OK do
+  Cintra) e conquistas_depois_do_diario.
 
 Uso, a partir de test/ (a pasta OUT precisa do captura.sav de um `rapido`/`completo`):
     python3 -m esteira completo --rom R --elf E --out OUT --only conquistas
@@ -44,6 +52,8 @@ Numa janela, em tempo real: `make test-watch CENARIO=conquistas`.
 import re
 import struct
 import sys
+
+from PIL import Image
 
 from .. import conquistas as cq
 from ..battle import (ACTION_FIGHT, B_OUTCOME_CAUGHT, MOVE_FUNC_SUFFIX, NICKNAME_COMMAND, PARTY_CHOOSE_TASK,
@@ -78,6 +88,7 @@ TELA_TIMEOUT = 300       # a tela de conquistas monta e clareia (fade) em menos 
 TELA_ASSENTA = 8         # quadros depois da entrada pronta, antes da foto
 TELA_CB2 = "CB2_ConquistasTela"
 CARTAO_CB2 = "CB2_TrainerCard"
+CARTAO_DICA_RECORTE = (140, 118, 228, 128)   # (esquerda, topo, direita, base) da faixa "SELECT Conquistas" do cartão
 CARTAO_ASSENTA = 90      # o cartão clareia e toca o som de abrir antes de ler os botões (STATE_HANDLE_INPUT_FRONT)
 # Task 6: o aviso
 AVISO_ATIVO = "gConquistasAvisoAtivo"   # u8: 1 enquanto o aviso está na tela (src/conquistas_aviso.c)
@@ -977,6 +988,14 @@ class ConquistasScenario(CatchSaveScenario):
         self.measures.setdefault("fotos_tela", []).append(foto)
         return foto
 
+    def _foto_recorte(self, nome: str, recorte: tuple[int, int, int, int]) -> str:
+        """Foto só de um recorte da tela (a imagem de referência sai do mesmo recorte)."""
+        foto = self._shot(nome)
+        with Image.open(foto) as img:
+            img.crop(recorte).save(foto)
+        self.measures.setdefault("fotos_tela", []).append(foto)
+        return foto
+
     def _trocar_aba(self, key: int, aba: int, what: str) -> None:
         self.ctl.press_until(key, lambda: self._tela()[1] == aba, what, tries=3, wait=10)
         assert self.game.callback2() == TELA_CB2, self.game.callback2()
@@ -1044,7 +1063,8 @@ class ConquistasScenario(CatchSaveScenario):
         menu.choose(STARTMENU_PLAYER)
         self.ctl.wait_until(lambda: self.game.callback2() == CARTAO_CB2, TELA_TIMEOUT, "cartão de treinador")
         self.emu.frames(CARTAO_ASSENTA)
-        self._foto_tela("cartao_dica")
+        self._foto_tela("cartao_com_dica")
+        self._foto_recorte("cartao_dica", CARTAO_DICA_RECORTE)
         self.ctl.press_until(KEY_SELECT, lambda: self._tela() is not None, "SELECT abre as conquistas", tries=3,
                              wait=60)
         estado = self._tela_pronta("tela de conquistas pelo cartão")
@@ -1058,7 +1078,193 @@ class ConquistasScenario(CatchSaveScenario):
         self.ctl.press_until(KEY_B, menu.start_menu_open, "B no cartão volta ao menu Start", tries=3, wait=90)
         menu.close_start_menu()
         assert self._ajuda() == 1, "a ajuda não voltou"
-        return "menu Start → cartão (foto cartao_dica) → SELECT → conquistas → B → cartão (cartao_volta) → B → campo"
+        return "menu Start → cartão (fotos cartao_com_dica e o recorte cartao_dica) → SELECT → conquistas → B → cartão (cartao_volta) → B → campo"
+
+    def _ajuda_anterior(self) -> str:
+        """A ajuda desligada antes de abrir a tela continua desligada na saída (a saída restaura o valor de antes)."""
+        self._ir("MAP_PALLET_TOWN", PALLET_LIVRE)
+        ajuda = self.game.syms.addr("gHelpSystemEnabled")
+        self.emu.write(ajuda, b"\x00")
+        try:
+            self._abrir_tela()
+            assert self._ajuda() == 0
+            self._fechar_tela()
+            assert self._ajuda() == 0, "a saída religou a ajuda que já estava desligada"
+        finally:
+            self.emu.write(ajuda, b"\x01")
+        return "gHelpSystemEnabled 0 antes → 0 com a tela aberta → 0 na saída (e 1 → 0 → 1 em tela/lr_sem_ajuda)"
+
+    # --- Task 8: o diário --------------------------------------------------------------------
+    def _diario_escrever(self, entradas: list[tuple[str, dict]]) -> None:
+        """Escreve entradas do diário direto na RAM (só na ROM de teste): [(id do evento, entrada)], sobre o diário
+        zerado; proximaOrdem = maior ordem + 1."""
+        base = self._sb(2) + SB2_DIARIO
+        raw = bytearray(self._diario_raw())
+        raw[4:4 + 20 * 48] = bytes(20 * 48)
+        for eid, e in entradas:
+            pos = 4 + cq.evento(eid) * cq.DIARIO_ENTRADA_SIZE
+            raw[pos:pos + cq.DIARIO_ENTRADA_SIZE] = cq.pack_entrada(e)
+        raw[0] = max(e["ordem"] for _, e in entradas) + 1
+        self.emu.write(base, bytes(raw))
+
+    def _abrir_diario(self) -> tuple[int, int, int, bool]:
+        self.box.open_conquistas(True)
+        return self._tela_pronta("tela do diário aberta pelo special")
+
+    def _mover(self, key: int, cursor: int, what: str) -> None:
+        self.ctl.press_until(key, lambda: self._tela()[2] == cursor, what, tries=3, wait=10)
+        assert self.game.callback2() == TELA_CB2, self.game.callback2()
+
+    def _diario_selecao(self) -> tuple[int, int, int]:
+        """(entradas, DIARIO_EVT_* da linha selecionada, primeira linha visível)."""
+        estado = self.box.conq_tela_diario()
+        assert estado is not None, "a tela não está no modo diário"
+        return estado
+
+    def _diario_lista_em_ordem(self) -> str:
+        """Brock vencido e Articuno derrotado de verdade (o roteiro da Task 5): a lista tem o Brock primeiro (cursor
+        0), o Articuno depois (▼); Diario_ListarEmOrdem e Diario_GetEntrada rodam aqui, em execução."""
+        self._ir("MAP_PALLET_TOWN", PALLET_LIVRE)
+        self.box.conq_silencio(True)
+        self.box.conq_reset(True)
+        self._flag("FLAG_SYS_GAME_CLEAR", False)
+        self._time_de_um("MEWTWO", 100, "MOVE_PSYCHIC")
+        self.box.start_trainer_battle(self._trainer_const("TRAINER_LEADER_BROCK"))
+        self._lutar("Brock", "win")
+        assert self.box.call(CMD_START_WILD_BATTLE, self.consts.species("ARTICUNO"), 50) == 1, "START_WILD_BATTLE"
+        self._lutar("Articuno (derrotado)", "win")
+        brock, articuno = self._entrada("brock"), self._entrada("articuno")
+        assert brock is not None and articuno is not None and brock["ordem"] < articuno["ordem"], (brock, articuno)
+        estado = self._abrir_diario()
+        assert estado[0] == 1 and estado[2] == 0 and estado[3], estado
+        assert self.game.callback2() == TELA_CB2
+        assert self._diario_selecao() == (2, cq.evento("brock"), 0), self._diario_selecao()
+        self._foto_tela("diario_lista")
+        self._mover(KEY_DOWN, 1, "▼: o Articuno")
+        assert self._diario_selecao() == (2, cq.evento("articuno"), 0), self._diario_selecao()
+        self._foto_tela("diario_detalhe")
+        self.emu.press(KEY_DOWN, hold=2, release=2)    # na última linha o cursor não anda
+        self.emu.frames(10)
+        assert self._tela()[2] == 1, self._tela()
+        self._mover(KEY_UP, 0, "▲: o Brock")
+        self.emu.press(KEY_UP, hold=2, release=2)      # na primeira linha também não
+        self.emu.frames(10)
+        assert self._tela()[2] == 0, self._tela()
+        self._fechar_tela()
+        self.box.party_size(1)
+        return (f"Brock (ordem {brock['ordem']}, VENCEU) e Articuno (ordem {articuno['ordem']}, DERROTOU): cursor 0 = "
+                "Brock, ▼ = Articuno; as pontas não dão a volta; fotos diario_lista e diario_detalhe")
+
+    def _diario_vazio(self) -> str:
+        self._ir("MAP_PALLET_TOWN", PALLET_LIVRE)
+        self.box.conq_silencio(True)
+        self.box.conq_reset(True)
+        estado = self._abrir_diario()
+        assert estado[0] == 1 and estado[2] == 0 and estado[3], estado
+        assert self._diario_selecao() == (0, 0xFF, 0), self._diario_selecao()
+        self._foto_tela("diario_vazio")
+        self.emu.press(KEY_DOWN, hold=2, release=2)
+        self.emu.frames(10)
+        assert self._tela()[2] == 0 and self._diario_selecao() == (0, 0xFF, 0), self._tela()
+        self._fechar_tela()
+        return "diário vazio: 0 entradas, cursor 0 parado, mensagem 'Nenhuma batalha marcante ainda.' (diario_vazio)"
+
+    def _diario_select_alterna(self) -> str:
+        self._ir("MAP_PALLET_TOWN", PALLET_LIVRE)
+        self.box.conq_silencio(True)
+        squirtle = self.consts.species("SQUIRTLE")
+        base = {"minutos": 90, "turnos": 7, "mvp": 0, "mvpNocautes": 2, "tamanhoTime": 1, "time": [(squirtle, 12)]}
+        self.box.conq_reset(True)
+        self._diario_escrever([
+            ("brock", {**base, "resultado": cq.DIARIO_VENCEU, "ordem": 1}),
+            ("misty", {**base, "resultado": cq.DIARIO_VENCEU, "ordem": 2, "minutos": 150}),
+            ("surge", {**base, "resultado": cq.DIARIO_VENCEU, "ordem": 3, "minutos": 210})])
+        self.box.open_conquistas(False)
+        assert self._tela_pronta("conquistas pelo special") == (0, 0, 0, True)
+        self._trocar_aba(KEY_R, 1, "R: aba Batalha")
+        ajuda = self._ajuda()
+        self.ctl.press_until(KEY_SELECT, lambda: self._tela()[0] == 1, "SELECT: conquistas -> diário", tries=3, wait=10)
+        self.emu.frames(TELA_ASSENTA)
+        assert self._tela() == (1, 1, 0, True), self._tela()      # a aba fica guardada no modo diário
+        assert self._diario_selecao() == (3, cq.evento("brock"), 0)
+        self._mover(KEY_DOWN, 1, "▼")
+        self._mover(KEY_DOWN, 2, "▼")
+        assert self._diario_selecao() == (3, cq.evento("surge"), 0)
+        self.ctl.press_until(KEY_SELECT, lambda: self._tela()[0] == 0, "SELECT: diário -> conquistas", tries=3, wait=10)
+        self.emu.frames(TELA_ASSENTA)
+        assert self._tela() == (0, 1, 0, True), self._tela()      # a aba voltou, o topo também
+        assert self.box.conq_tela_diario() is None, "no modo conquistas não há estado do diário"
+        self._foto_tela("conquistas_depois_do_diario")
+        self.ctl.press_until(KEY_SELECT, lambda: self._tela()[0] == 1, "SELECT: conquistas -> diário", tries=3, wait=10)
+        self.emu.frames(TELA_ASSENTA)
+        assert self._tela() == (1, 1, 2, True), self._tela()      # o cursor também voltou
+        assert self._diario_selecao() == (3, cq.evento("surge"), 0)
+        assert self._ajuda() == ajuda == 0, "a ajuda continua desligada com a tela aberta"
+        self._fechar_tela()
+        assert self._ajuda() == 1, "a ajuda não voltou na saída"
+        return "SELECT alterna conquistas <-> diário e guarda a aba (1) e o cursor (2); B no diário volta ao campo"
+
+    def _diario_varias_entradas(self) -> str:
+        """10 entradas com a ordem de registro diferente da ordem dos eventos: a lista sai pela `ordem`."""
+        self._ir("MAP_PALLET_TOWN", PALLET_LIVRE)
+        self.box.conq_silencio(True)
+        sp = self.consts.species
+        V, C, D = cq.DIARIO_VENCEU, cq.DIARIO_CAPTURADO, cq.DIARIO_DERROTOU
+
+        def entrada(ordem, resultado, minutos, turnos, time, mvp=None):
+            time = [(sp(nome), nivel) for nome, nivel in time]
+            return {"minutos": minutos, "turnos": turnos, "resultado": resultado, "ordem": ordem,
+                    "mvp": 0xFF if mvp is None else mvp[0], "mvpNocautes": 0 if mvp is None else mvp[1],
+                    "tamanhoTime": len(time), "time": time}
+        entradas = [
+            ("rival_lab", entrada(1, V, 23, 5, [("SQUIRTLE", 5)], (0, 2))),
+            ("brock", entrada(2, V, 71, 9, [("SQUIRTLE", 12), ("PIDGEY", 10)], (0, 2))),
+            ("misty", entrada(3, V, 138, 14, [("WARTORTLE", 21), ("PIDGEOTTO", 19), ("RATTATA", 18)], (0, 2))),
+            ("surge", entrada(4, V, 215, 11, [("WARTORTLE", 25), ("PIDGEOTTO", 23), ("RATTATA", 20),
+                                              ("PIKACHU", 21)], (1, 1))),
+            ("rival_ss_anne", entrada(5, V, 301, 16, [("BLASTOISE", 36), ("PIDGEOT", 31), ("RATICATE", 24),
+                                                      ("PIKACHU", 28), ("ABRA", 25)], (2, 3))),
+            ("articuno", entrada(6, D, 1844, 21, [("BLASTOISE", 50), ("PIDGEOT", 46), ("ALAKAZAM", 48),
+                                                  ("PIKACHU", 40), ("SNORLAX", 52), ("LAPRAS", 50)], (4, 5))),
+            ("zapdos", entrada(7, C, 7425, 4, [("BLASTOISE", 58), ("PIDGEOT", 55), ("ALAKAZAM", 57), ("PIKACHU", 51),
+                                               ("SNORLAX", 60), ("LAPRAS", 54)])),
+            ("campeao", entrada(8, V, 8999, 38, [("KANGASKHAN", 100), ("CHARMELEON", 100), ("CHARMANDER", 100),
+                                                 ("WEEPINBELL", 100), ("VICTREEBEL", 100), ("MISDREAVUS", 100)],
+                                (3, 12))),
+            ("mewtwo", entrada(9, C, 9940, 3, [("MEWTWO", 100)])),
+            ("lugia", entrada(10, C, 10200, 255, [("MEWTWO", 100), ("ARTICUNO", 99)])),
+        ]
+        # a ordem de registro não é a ordem dos eventos: embaralha a escrita e confere a lista pela `ordem`
+        self.box.conq_reset(True)
+        self._diario_escrever(list(reversed(entradas)))
+        esperado = [eid for eid, e in sorted(entradas, key=lambda x: x[1]["ordem"])]
+        assert [cq.evento(eid) for eid in esperado] != sorted(cq.evento(eid) for eid in esperado), "ordem trivial"
+        estado = self._abrir_diario()
+        assert estado[0] == 1 and estado[2] == 0 and estado[3], estado
+        assert self._diario_selecao() == (len(entradas), cq.evento(esperado[0]), 0), self._diario_selecao()
+        self._foto_tela("diario_varias")
+        fotos = {2: "diario_detalhe_mvp", 7: "diario_time6", 6: "diario_detalhe_sem_mvp", 5: "diario_rolado"}
+        visto = [self._diario_selecao()[1]]
+        for i in range(1, len(entradas)):
+            self._mover(KEY_DOWN, i, f"▼ até a linha {i}")
+            n, evt, topo = self._diario_selecao()
+            assert evt == cq.evento(esperado[i]), (i, evt, esperado[i])
+            assert topo == max(0, i - 3), (i, topo)        # a janela rola quando o cursor passa da 4ª linha
+            visto.append(evt)
+            if i in fotos:
+                self._foto_tela(fotos[i])
+        assert visto == [cq.evento(eid) for eid in esperado]
+        # de volta pelo ▲: o topo só desce quando o cursor sai pelo alto
+        topo_esperado = len(entradas) - 4
+        for i in range(len(entradas) - 2, -1, -1):
+            self._mover(KEY_UP, i, f"▲ até a linha {i}")
+            topo_esperado = min(topo_esperado, i)
+            n, evt, topo = self._diario_selecao()
+            assert evt == cq.evento(esperado[i]) and topo == topo_esperado, (i, evt, topo, topo_esperado)
+        self._fechar_tela()
+        assert [self._entrada(eid)["ordem"] for eid, _ in entradas] == [e["ordem"] for _, e in entradas]
+        return (f"{len(entradas)} entradas pela ordem de registro {esperado}; rola de 4 em 4 linhas; fotos diario_varias, "
+                "diario_rolado, diario_detalhe_mvp, diario_detalhe_sem_mvp e diario_time6")
 
     def run(self) -> None:
         try:
@@ -1106,7 +1312,12 @@ class ConquistasScenario(CatchSaveScenario):
             for nome, fn in (("tela/abre_e_abas", self._abre_e_abas),
                              ("tela/lr_sem_ajuda", self._lr_sem_ajuda),
                              ("tela/rodape", self._rodape),
-                             ("tela/cartao", self._cartao)):
+                             ("tela/cartao", self._cartao),
+                             ("tela/ajuda_anterior", self._ajuda_anterior),
+                             ("diario_tela/lista_em_ordem", self._diario_lista_em_ordem),
+                             ("diario_tela/vazio", self._diario_vazio),
+                             ("diario_tela/select_alterna", self._diario_select_alterna),
+                             ("diario_tela/varias_entradas", self._diario_varias_entradas)):
                 res = self.suite.run(nome, fn)
                 res.images += self.measures.pop("fotos_tela", [])
                 if self._tela() is not None:   # um grupo que falhou no meio não deixa a tela aberta para o próximo

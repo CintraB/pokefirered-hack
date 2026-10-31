@@ -1615,5 +1615,16 @@ extern const u8 gText_ConqAviso_Separador[];
 extern const u8 gText_ConqAviso_Depois[];
 extern const u8 gText_ConqTela_Rodape[];
 extern const u8 gText_ConqTela_DicaCartao[];
+extern const u8 gText_Diario_Titulo[];
+extern const u8 gText_Diario_Vazio[];
+extern const u8 gText_Diario_Venceu[];
+extern const u8 gText_Diario_Capturado[];
+extern const u8 gText_Diario_Derrotou[];
+extern const u8 gText_Diario_Separador[];
+extern const u8 gText_Diario_TempoTurnos[];
+extern const u8 gText_Diario_Time[];
+extern const u8 gText_Diario_Nivel[];
+extern const u8 gText_Diario_MvpUm[];
+extern const u8 gText_Diario_MvpVarios[];
 
 #endif //GUARD_STRINGS_H

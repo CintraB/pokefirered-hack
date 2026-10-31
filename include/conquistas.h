@@ -137,12 +137,20 @@ bool8 Conquistas_MostrarAviso(void);                 // special(var): entrega o 
                                                      // janela; FALSE = sem task, o script não espera
 
 // Tela de conquistas (src/conquistas_tela.c, Task 7): tela cheia, um bloco AllocZeroed (o ponteiro fica na task),
-// liberado na saída. L/R trocam de aba (dando a volta), ▲▼ rolam, SELECT alterna para o diário (Task 8), B volta.
-// A ajuda (L/R) fica desligada enquanto a tela está aberta.
+// liberado na saída. Modo conquistas: L/R trocam de aba (dando a volta), ▲▼ rolam. Modo diário (Task 8, "DIÁRIO DA
+// JORNADA"): ▲▼ movem a linha selecionada (cursor) pela lista em ordem de registro, e o detalhe mostra a entrada.
+// SELECT alterna os dois modos (cada um guarda a sua posição), B volta. A ajuda (L/R) fica desligada enquanto a
+// tela está aberta e volta ao valor de antes na saída.
 void Conquistas_AbrirTela(void (*voltar)(void), u8 modo); // modo 0 conquistas, 1 diário; `voltar` é o CB2 da saída
 void CB2_AbrirConquistasDoCartao(void);              // SELECT na frente do cartão; a tela volta ao cartão
 void Conquistas_AbrirTelaDoScript(void);             // special: modo em VAR_0x8004, volta continuando o script
-u32 Conquistas_TestGetState(void);                   // modo | aba << 8 | topo da lista << 16 | entrada pronta << 24
-                                                     // (0xFFFFFFFF = fechada)
+u32 Conquistas_TestGetState(void);                   // modo | aba << 8 | cursor << 16 | entrada pronta << 24
+                                                     // (0xFFFFFFFF = fechada). `cursor` (3º byte): no modo conquistas,
+                                                     // a primeira linha visível da lista (não há seleção); no modo
+                                                     // diário, a linha selecionada (índice na lista em ordem, 0 =
+                                                     // a primeira registrada). `aba` é sempre a aba das conquistas.
+u32 Conquistas_TestGetDiario(void);                  // só no modo diário: quantas entradas | DIARIO_EVT_* da linha
+                                                     // selecionada (0xFF = diário vazio) << 8 | primeira linha
+                                                     // visível << 16 (0xFFFFFFFF = fechada ou no modo conquistas)
 
 #endif // GUARD_CONQUISTAS_H

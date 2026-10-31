@@ -1,6 +1,7 @@
 #include "global.h"
 #include "gflib.h"
 #include "conquistas.h"
+#include "data.h"
 #include "event_data.h"
 #include "help_system.h"
 #include "menu.h"
@@ -16,12 +17,19 @@
 #include "trainer_card.h"
 #include "constants/conquistas.h"
 #include "constants/songs.h"
+#include "constants/species.h"
 #include "data/conquistas_ids.h"
 
-// Tela de conquistas (POK-44, Task 7; desenho em docs/superpowers/specs/2026-10-31-conquistas-e-diario-design.md).
+// Tela de conquistas e diário (POK-44, Tasks 7 e 8; desenho em docs/superpowers/specs/2026-10-31-conquistas-e-diario-design.md).
 // Modelo aprovado pelo Cintra: abas no alto (L/R, dando a volta), a lista da aba com ✓ (feita), ☐ (pendente, com o
 // progresso "87/100" à direita quando houver) ou o nome riscado em cinza (perdida, fora do total), e o rodapé com
-// "<Aba>: F de V" e uma barra. Conquista inativa (POK-42) não aparece.
+// "<Aba>: F de V" e uma barra. Conquista inativa (POK-42) não aparece. A pendente de sim/não mostra "──" onde ficaria
+// o progresso.
+//
+// Modo diário (Task 8, "DIÁRIO DA JORNADA"): a mesma tela, no mesmo bloco, alternada com SELECT (cada modo guarda a sua
+// posição). Lista das entradas em ordem de registro ("hh:mm", nome do evento, VENCEU/CAPTURADO/DERROTOU) com a linha
+// selecionada em amarelo e ▲▼ quando há mais linhas; embaixo, o detalhe da selecionada (local, tempo, turnos, time e
+// MVP). Troca de modo recria as 3 janelas com a outra geometria (RemoveWindow/AddWindow).
 //
 // Memória: um bloco AllocZeroed com tudo, apontado só pela task da tela (nenhuma EWRAM nova), liberado na saída. A
 // tela sai para o CB2 `voltar` que quem abriu passou (o cartão de treinador ou o campo continuando o script).
@@ -47,6 +55,11 @@ STATIC_ASSERT(RODAPE_TOPO + 2 == DISPLAY_HEIGHT / 8, ConqTelaOcupaATela);
 #define SETA_ROLAGEM_X  228
 STATIC_ASSERT(NOME_X + CONQ_NOME_LARGURA <= PROGRESSO_FIM, ConqNomeCabe);
 
+// Pendente de sim/não (sem progresso): "──" na coluna do progresso, a linha de TRACO_ALTURA px à direita até PROGRESSO_FIM.
+#define TRACO_LARGURA   14
+#define TRACO_ALTURA    2
+#define TRACO_Y         8
+
 // Abas: todas em FONT_SMALL entre as setas (ABAS_INICIO..ABAS_FIM, 216 px; a seta ◄ em x = 1 e a ► em x = 231),
 // com ABA_PAD px de cada lado; se não couberem, só a atual, no meio. test_abas_cabem_em_font_small mede as 5.
 #define ABA_PAD         3
@@ -64,6 +77,35 @@ STATIC_ASSERT(NOME_X + CONQ_NOME_LARGURA <= PROGRESSO_FIM, ConqNomeCabe);
 #define BARRA_ALTURA          6
 STATIC_ASSERT(RODAPE_TEXTO_X + RODAPE_TEXTO_LARGURA <= BARRA_X, ConqRodapeAntesDaBarra);
 STATIC_ASSERT(BARRA_X + BARRA_LARGURA <= DISPLAY_WIDTH - 4, ConqBarraCabe);
+
+// Diário: título (linhas 0-1), a lista de DIARIO_LINHAS linhas de LINHA_ALTURA px (linhas 2-9) e o detalhe (linhas
+// 10-19, DETALHE_ALTURA px). Texto útil: TELA_TEXTO_LARGURA px (4 px de margem de cada lado). Na lista: "hh:mm" em
+// DIARIO_HORA_X, o nome em DIARIO_NOME_X (até DIARIO_NOME_LARGURA) e o resultado alinhado à direita até PROGRESSO_FIM
+// (até RESULTADO_LARGURA px); a linha selecionada leva um fundo amarelo de SELECAO_X a SELECAO_FIM.
+#define DIARIO_LINHAS        4
+#define DIARIO_HORA_X        4
+#define DIARIO_NOME_X        50
+#define RESULTADO_LARGURA    60
+#define TELA_TEXTO_LARGURA   232
+#define SELECAO_X            1
+#define SELECAO_FIM          225
+#define DETALHE_X            4
+#define DETALHE_ALTURA       80
+#define DETALHE_TOPO_TILES   10
+STATIC_ASSERT(LISTA_TOPO + DIARIO_LINHAS * LINHA_ALTURA / 8 == DETALHE_TOPO_TILES, DiarioListaAteODetalhe);
+STATIC_ASSERT(DETALHE_TOPO_TILES * 8 + DETALHE_ALTURA == DISPLAY_HEIGHT, DiarioOcupaATela);
+STATIC_ASSERT(DIARIO_HORA_X + 41 < DIARIO_NOME_X, DiarioHoraAntesDoNome);   // "1092:15" (65535 min) mede 41 px
+STATIC_ASSERT(DIARIO_NOME_X + DIARIO_NOME_LARGURA + 8 <= PROGRESSO_FIM - RESULTADO_LARGURA, DiarioNomeAntesDoResultado);
+STATIC_ASSERT(SELECAO_FIM <= SETA_ROLAGEM_X, DiarioSelecaoAntesDasSetas);
+
+// Detalhe (janela WIN_RODAPE no modo diário): o fio no alto, o cabeçalho "NOME - local" em FONT_NORMAL em
+// DETALHE_CABECALHO_Y (16 px) e, abaixo, linhas de FONT_SMALL de DETALHE_PASSO px: "Tempo: ... Turnos: ...", o time
+// (quebrado por largura em até DETALHE_TIME_LINHAS linhas: o pior caso real, 6 x a espécie mais larga em nv100, não cabe
+// em 2) e o MVP. Cabe: 2 + 16 + 12 * (1 + 3 + 1) = 78 px de 80.
+#define DETALHE_CABECALHO_Y  2
+#define DETALHE_PASSO        12
+#define DETALHE_TIME_LINHAS  3
+STATIC_ASSERT(DETALHE_CABECALHO_Y + 16 + DETALHE_PASSO * (1 + DETALHE_TIME_LINHAS + 1) <= DETALHE_ALTURA, DetalheCabe);
 
 enum {
     WIN_ABAS,
@@ -100,6 +142,7 @@ enum {
 #define COR_BARRA_VAZIA  11
 #define COR_LINHA        12
 #define COR_PROGRESSO    14
+#define COR_VENCEU       5
 
 enum {
     FASE_ESPERA,     // criada no Conquistas_AbrirTela, até o CB2 montar a tela
@@ -113,11 +156,16 @@ struct ConquistasTela
     void (*voltar)(void);
     u8 modo;          // 0 conquistas, 1 diário (Task 8)
     u8 aba;
-    u8 topo;          // primeira linha visível da lista
+    u8 topo;          // primeira linha visível da lista de conquistas
     u8 n;             // conquistas da aba
     u8 fase;
     u8 passo;         // passo da montagem
     u8 inputReady;
+    u8 ajudaAntes;    // gHelpSystemEnabled de antes da tela (volta a ele na saída)
+    u8 dCursor;       // diário: linha selecionada (índice em evts)
+    u8 dTopo;         // diário: primeira linha visível
+    u8 dN;            // diário: entradas
+    u8 evts[DIARIO_EVT_COUNT];   // diário: DIARIO_EVT_* em ordem de registro (Diario_ListarEmOrdem)
     u8 itens[CONQ_COUNT];
 };
 
@@ -139,6 +187,13 @@ static void DesenharAbas(struct ConquistasTela *t);
 static void DesenharLista(struct ConquistasTela *t);
 static void DesenharLinha(struct ConquistasTela *t, u8 linha, u8 num);
 static void DesenharRodape(struct ConquistasTela *t);
+static void Input_Conquistas(struct ConquistasTela *t);
+static void Input_Diario(struct ConquistasTela *t);
+static void TrocarModo(struct ConquistasTela *t);
+static void Diario_Montar(struct ConquistasTela *t);
+static void DesenharDiarioTitulo(struct ConquistasTela *t);
+static void DesenharDiarioLista(struct ConquistasTela *t);
+static void DesenharDiarioDetalhe(struct ConquistasTela *t);
 
 static const u8 sIcones_Gfx[] = INCBIN_U8("graphics/conquistas/icones.4bpp");
 static const u16 sIcones_Pal[] = INCBIN_U16("graphics/conquistas/icones.gbapal");
@@ -150,6 +205,8 @@ static const u8 sCor_Texto[3] = {COR_FUNDO, COR_TEXTO, COR_SOMBRA};
 static const u8 sCor_Perdida[3] = {COR_FUNDO, COR_PERDIDA, COR_BARRA_VAZIA};
 static const u8 sCor_Progresso[3] = {COR_FUNDO, COR_PROGRESSO, COR_SOMBRA};
 static const u8 sCor_Seta[3] = {COR_FUNDO, COR_LINHA, COR_SOMBRA};
+static const u8 sCor_Venceu[3] = {COR_FUNDO, COR_VENCEU, COR_SOMBRA};
+static const u8 sCor_Derrotou[3] = {COR_FUNDO, COR_LINHA, COR_SOMBRA};
 
 static const u8 sText_SetaCima[] = _("{UP_ARROW}");
 static const u8 sText_SetaBaixo[] = _("{DOWN_ARROW}");
@@ -197,6 +254,48 @@ static const struct WindowTemplate sWindowTemplates[WIN_COUNT + 1] = {
     [WIN_COUNT] = DUMMY_WIN_TEMPLATE
 };
 
+// O diário usa os mesmos 3 ids (WIN_ABAS = título, WIN_LISTA, WIN_RODAPE = detalhe), cobrindo as 20 linhas.
+#define WIN_DIARIO_LISTA_BASE    (WIN_ABAS_BASE + TELA_TILES_X * 2)
+#define WIN_DIARIO_DETALHE_BASE  (WIN_DIARIO_LISTA_BASE + TELA_TILES_X * DIARIO_LINHAS * LINHA_ALTURA / 8)
+#define WIN_DIARIO_FIM           (WIN_DIARIO_DETALHE_BASE + TELA_TILES_X * DETALHE_ALTURA / 8)
+STATIC_ASSERT(WIN_DIARIO_FIM * TILE_SIZE_4BPP <= 31 * BG_SCREEN_SIZE, ConqDiarioJanelasAntesDoTilemap);
+
+static const struct WindowTemplate sWindowTemplatesDiario[WIN_COUNT + 1] = {
+    [WIN_ABAS] = {
+        .bg = 0,
+        .tilemapLeft = 0,
+        .tilemapTop = 0,
+        .width = TELA_TILES_X,
+        .height = 2,
+        .paletteNum = 0,
+        .baseBlock = WIN_ABAS_BASE,
+    },
+    [WIN_LISTA] = {
+        .bg = 0,
+        .tilemapLeft = 0,
+        .tilemapTop = LISTA_TOPO,
+        .width = TELA_TILES_X,
+        .height = DIARIO_LINHAS * LINHA_ALTURA / 8,
+        .paletteNum = 0,
+        .baseBlock = WIN_DIARIO_LISTA_BASE,
+    },
+    [WIN_RODAPE] = {
+        .bg = 0,
+        .tilemapLeft = 0,
+        .tilemapTop = DETALHE_TOPO_TILES,
+        .width = TELA_TILES_X,
+        .height = DETALHE_ALTURA / 8,
+        .paletteNum = 0,
+        .baseBlock = WIN_DIARIO_DETALHE_BASE,
+    },
+    [WIN_COUNT] = DUMMY_WIN_TEMPLATE
+};
+
+static const struct WindowTemplate *GetJanelas(u8 modo)
+{
+    return modo ? sWindowTemplatesDiario : sWindowTemplates;
+}
+
 static struct ConquistasTela *GetTela(u8 *taskId)
 {
     u8 id = FindTaskIdByFunc(Task_ConquistasTela);
@@ -227,6 +326,7 @@ void Conquistas_AbrirTela(void (*voltar)(void), u8 modo)
         SetMainCallback2(voltar);
         return;
     }
+    t->ajudaAntes = gHelpSystemEnabled;
     gHelpSystemEnabled = FALSE;
     t->voltar = voltar;
     t->modo = modo;
@@ -319,6 +419,7 @@ static void Task_ConquistasTela_Montar(u8 taskId, struct ConquistasTela *t)
     case 1:
         LoadPalette(sIcones_Pal, BG_PLTT_ID(0), PLTT_SIZE_4BPP);
         MontarLista(t);
+        Diario_Montar(t);
         DesenharTudo(t);
         break;
     case 2:
@@ -344,7 +445,20 @@ static void Task_ConquistasTela_Input(u8 taskId, struct ConquistasTela *t)
         BeginNormalPaletteFade(PALETTES_ALL, 0, 0, 16, RGB_BLACK);
         t->fase = FASE_SAIR;
     }
-    else if (JOY_NEW(L_BUTTON))
+    else if (JOY_NEW(SELECT_BUTTON))
+    {
+        PlaySE(SE_SELECT);
+        TrocarModo(t);
+    }
+    else if (t->modo)
+        Input_Diario(t);
+    else
+        Input_Conquistas(t);
+}
+
+static void Input_Conquistas(struct ConquistasTela *t)
+{
+    if (JOY_NEW(L_BUTTON))
     {
         PlaySE(SE_SELECT);
         TrocarAba(t, -1);
@@ -353,10 +467,6 @@ static void Task_ConquistasTela_Input(u8 taskId, struct ConquistasTela *t)
     {
         PlaySE(SE_SELECT);
         TrocarAba(t, 1);
-    }
-    else if (JOY_NEW(SELECT_BUTTON))
-    {
-        // o diário (Task 8) entra aqui; até lá, nada
     }
     else if (JOY_REPT(DPAD_UP))
     {
@@ -376,16 +486,45 @@ static void Task_ConquistasTela_Input(u8 taskId, struct ConquistasTela *t)
     }
 }
 
+// ▲▼ movem o cursor sem dar a volta; a lista rola quando ele sai da janela.
+static void Input_Diario(struct ConquistasTela *t)
+{
+    if (JOY_REPT(DPAD_UP))
+    {
+        if (t->dCursor > 0)
+        {
+            t->dCursor--;
+            if (t->dCursor < t->dTopo)
+                t->dTopo = t->dCursor;
+            DesenharDiarioLista(t);
+            DesenharDiarioDetalhe(t);
+        }
+    }
+    else if (JOY_REPT(DPAD_DOWN))
+    {
+        if (t->dCursor + 1 < t->dN)
+        {
+            t->dCursor++;
+            if (t->dCursor >= t->dTopo + DIARIO_LINHAS)
+                t->dTopo = t->dCursor - DIARIO_LINHAS + 1;
+            DesenharDiarioLista(t);
+            DesenharDiarioDetalhe(t);
+        }
+    }
+}
+
 static void Task_ConquistasTela_Sair(u8 taskId, struct ConquistasTela *t)
 {
     void (*voltar)(void) = t->voltar;
+    u8 ajudaAntes = t->ajudaAntes;
 
     if (gPaletteFade.active)
         return;
     FreeAllWindowBuffers();
     DestroyTask(taskId);
     Free(t);
-    HelpSystem_Enable();
+    if (ajudaAntes)
+        HelpSystem_Enable();
     SetMainCallback2(voltar);
 }
 
@@ -399,9 +538,15 @@ static void IniciarVideo(struct ConquistasTela *t)
     InitBgsFromTemplates(0, sBgTemplates, ARRAY_COUNT(sBgTemplates));
     ChangeBgX(0, 0, BG_COORD_SET);
     ChangeBgY(0, 0, BG_COORD_SET);
-    InitWindows(sWindowTemplates);
+    InitWindows(GetJanelas(t->modo));
     DeactivateAllTextPrinters();
     SetGpuReg(REG_OFFSET_DISPCNT, DISPCNT_OBJ_1D_MAP | DISPCNT_OBJ_ON);
+    // o cartão de treinador chega com o escurecimento (BLDCNT/BLDY) e janelas ligados: a tela começa limpa
+    SetGpuReg(REG_OFFSET_BLDCNT, 0);
+    SetGpuReg(REG_OFFSET_BLDALPHA, 0);
+    SetGpuReg(REG_OFFSET_BLDY, 0);
+    SetGpuReg(REG_OFFSET_WININ, 0);
+    SetGpuReg(REG_OFFSET_WINOUT, 0);
     ShowBg(0);
 }
 
@@ -429,9 +574,32 @@ static void MontarLista(struct ConquistasTela *t)
 
 static void DesenharTudo(struct ConquistasTela *t)
 {
+    if (t->modo)
+    {
+        DesenharDiarioTitulo(t);
+        DesenharDiarioLista(t);
+        DesenharDiarioDetalhe(t);
+        return;
+    }
     DesenharAbas(t);
     DesenharLista(t);
     DesenharRodape(t);
+}
+
+// SELECT: troca conquistas <-> diário. Cada modo guarda a sua posição (aba e topo; cursor e topo do diário). As 3
+// janelas são recriadas com a geometria do outro modo e cobrem as 20 linhas (nenhum tile do modo anterior sobra).
+static void TrocarModo(struct ConquistasTela *t)
+{
+    u8 i;
+
+    for (i = 0; i < WIN_COUNT; i++)
+        RemoveWindow(i);
+    t->modo ^= 1;
+    for (i = 0; i < WIN_COUNT; i++)
+        AddWindow(&GetJanelas(t->modo)[i]);
+    if (t->modo)
+        Diario_Montar(t);
+    DesenharTudo(t);
 }
 
 static void BlitIcone(u8 windowId, u8 icone, u16 x, u16 y)
@@ -530,8 +698,15 @@ static void DesenharLinha(struct ConquistasTela *t, u8 linha, u8 num)
     }
     BlitIcone(WIN_LISTA, estado == CONQ_FEITA ? ICONE_FEITA : ICONE_PENDENTE, ICONE_X, y + 4);
     AddTextPrinterParameterized4(WIN_LISTA, FONT_NORMAL, NOME_X, y + 1, 0, 0, sCor_Texto, TEXT_SKIP_DRAW, gStringVar4);
-    if (estado == CONQ_FEITA || !temProgresso)
+    if (estado == CONQ_FEITA)
         return;
+    if (!temProgresso)
+    {
+        // pendente de sim/não: "──" na coluna do progresso (o modelo aprovado)
+        FillWindowPixelRect(WIN_LISTA, PIXEL_FILL(COR_PROGRESSO), PROGRESSO_FIM - TRACO_LARGURA, y + TRACO_Y,
+                            TRACO_LARGURA, TRACO_ALTURA);
+        return;
+    }
 
     fim = progresso;
     if (c->tipo == CONQ_TIPO_DINHEIRO)
@@ -603,12 +778,222 @@ static void DesenharRodape(struct ConquistasTela *t)
     CopyWindowToVram(WIN_RODAPE, COPYWIN_FULL);
 }
 
-// Atalho da esteira (TEST_CMD_CONQ_TELA).
+// --- modo diário (Task 8) ---------------------------------------------------------------------------------------
+
+// As entradas do diário em ordem de registro. Chamada de novo a cada volta ao diário; o cursor e o topo ficam no
+// intervalo da lista.
+static void Diario_Montar(struct ConquistasTela *t)
+{
+    t->dN = Diario_ListarEmOrdem(t->evts);
+    if (t->dCursor >= t->dN)
+        t->dCursor = t->dN == 0 ? 0 : t->dN - 1;
+    if (t->dTopo > t->dCursor)
+        t->dTopo = t->dCursor;
+    if (t->dCursor >= t->dTopo + DIARIO_LINHAS)
+        t->dTopo = t->dCursor - DIARIO_LINHAS + 1;
+}
+
+// "hh:mm", horas sem teto (até "1092" = 65535 minutos), minutos com 2 dígitos; devolve o fim (EOS).
+static u8 *FormatarTempo(u8 *dest, u16 minutos)
+{
+    u16 horas = minutos / 60;
+
+    if (horas < 10)
+        *dest++ = CHAR_0;
+    dest = ConvertIntToDecimalStringN(dest, horas, STR_CONV_MODE_LEFT_ALIGN, 4);
+    *dest++ = CHAR_COLON;
+    return ConvertIntToDecimalStringN(dest, minutos % 60, STR_CONV_MODE_LEADING_ZEROS, 2);
+}
+
+// Nome da espécie de um item de `time[]` (espécie nos 9 bits de baixo); fora da tabela, "??????????".
+static const u8 *NomeDaEspecie(u16 item)
+{
+    u16 especie = item & 0x1FF;
+
+    return gSpeciesNames[especie < NUM_SPECIES ? especie : SPECIES_NONE];
+}
+
+static void DesenharDiarioTitulo(struct ConquistasTela *t)
+{
+    FillWindowPixelBuffer(WIN_ABAS, PIXEL_FILL(COR_BARRA_ABAS));
+    AddTextPrinterParameterized4(WIN_ABAS, FONT_NORMAL, (DISPLAY_WIDTH - GetStringWidth(FONT_NORMAL, gText_Diario_Titulo, 0)) / 2,
+                                 0, 0, 0, sCor_Aba, TEXT_SKIP_DRAW, gText_Diario_Titulo);
+    PutWindowTilemap(WIN_ABAS);
+    CopyWindowToVram(WIN_ABAS, COPYWIN_FULL);
+}
+
+// Uma linha da lista: "hh:mm", o nome do evento e o resultado à direita; a selecionada em amarelo.
+static void DesenharDiarioLinha(struct ConquistasTela *t, u8 linha, u8 idx)
+{
+    u8 evt = t->evts[idx];
+    const struct DiarioEntrada *e = Diario_GetEntrada(evt);
+    bool8 selecionada = idx == t->dCursor;
+    const u8 *resultado, *cor;
+    u8 hora[12];
+    u16 y = linha * LINHA_ALTURA;
+
+    if (e == NULL)
+        return;
+    switch (e->resultado)
+    {
+    case DIARIO_VENCEU:
+        resultado = gText_Diario_Venceu;
+        cor = sCor_Venceu;
+        break;
+    case DIARIO_CAPTURADO:
+        resultado = gText_Diario_Capturado;
+        cor = sCor_Progresso;
+        break;
+    case DIARIO_DERROTOU:
+    default:
+        resultado = gText_Diario_Derrotou;
+        cor = sCor_Derrotou;
+        break;
+    }
+    if (selecionada)
+    {
+        FillWindowPixelRect(WIN_LISTA, PIXEL_FILL(COR_ABA_ATUAL), SELECAO_X, y, SELECAO_FIM - SELECAO_X, LINHA_ALTURA);
+        cor = sCor_AbaAtual;
+    }
+    FormatarTempo(hora, e->minutos);
+    AddTextPrinterParameterized4(WIN_LISTA, FONT_NORMAL, DIARIO_HORA_X, y + 1, 0, 0,
+                                 selecionada ? sCor_AbaAtual : sCor_Progresso, TEXT_SKIP_DRAW, hora);
+    AddTextPrinterParameterized4(WIN_LISTA, FONT_NORMAL, DIARIO_NOME_X, y + 1, 0, 0,
+                                 selecionada ? sCor_AbaAtual : sCor_Texto, TEXT_SKIP_DRAW, gDiarioEventos[evt].nome);
+    AddTextPrinterParameterized4(WIN_LISTA, FONT_NORMAL, PROGRESSO_FIM - GetStringWidth(FONT_NORMAL, resultado, 0), y + 1,
+                                 0, 0, cor, TEXT_SKIP_DRAW, resultado);
+}
+
+static void DesenharDiarioLista(struct ConquistasTela *t)
+{
+    u8 i;
+
+    FillWindowPixelBuffer(WIN_LISTA, PIXEL_FILL(COR_FUNDO));
+    if (t->dN == 0)
+    {
+        AddTextPrinterParameterized4(WIN_LISTA, FONT_NORMAL, (DISPLAY_WIDTH - GetStringWidth(FONT_NORMAL, gText_Diario_Vazio, 0)) / 2,
+                                     (DIARIO_LINHAS * LINHA_ALTURA - LINHA_ALTURA) / 2, 0, 0, sCor_Texto, TEXT_SKIP_DRAW,
+                                     gText_Diario_Vazio);
+    }
+    for (i = 0; i < DIARIO_LINHAS && t->dTopo + i < t->dN; i++)
+        DesenharDiarioLinha(t, i, t->dTopo + i);
+    if (t->dTopo > 0)
+        AddTextPrinterParameterized4(WIN_LISTA, FONT_NORMAL, SETA_ROLAGEM_X, 1, 0, 0, sCor_Seta, TEXT_SKIP_DRAW,
+                                     sText_SetaCima);
+    if (t->dTopo + DIARIO_LINHAS < t->dN)
+        AddTextPrinterParameterized4(WIN_LISTA, FONT_NORMAL, SETA_ROLAGEM_X, (DIARIO_LINHAS - 1) * LINHA_ALTURA + 1, 0, 0,
+                                     sCor_Seta, TEXT_SKIP_DRAW, sText_SetaBaixo);
+    PutWindowTilemap(WIN_LISTA);
+    CopyWindowToVram(WIN_LISTA, COPYWIN_FULL);
+}
+
+static void ImprimirDetalhe(u16 y, const u8 *texto)
+{
+    AddTextPrinterParameterized4(WIN_RODAPE, FONT_SMALL, DETALHE_X, y, 0, 0, sCor_Texto, TEXT_SKIP_DRAW, texto);
+}
+
+// "Time: ESPÉCIE nvN, ESPÉCIE nvN, ..." quebrado por largura (a 1ª linha leva o rótulo); devolve o y da linha seguinte.
+// Nunca passa de DETALHE_TIME_LINHAS linhas (o resto do time é cortado; nos limites do jogo, 6 Pokémon cabem em 3).
+static u16 DesenharDiarioTime(const struct DiarioEntrada *e, u16 y)
+{
+    u8 linha[128], token[24], candidata[160];
+    u8 *fim;
+    u8 i, linhas = 0;
+
+    if (e->tamanhoTime == 0)
+        return y;
+    StringCopy(linha, gText_Diario_Time);
+    for (i = 0; i < e->tamanhoTime && i < PARTY_SIZE; i++)
+    {
+        fim = StringCopy(token, NomeDaEspecie(e->time[i]));
+        fim = StringCopy(fim, gText_Diario_Nivel);
+        fim = ConvertIntToDecimalStringN(fim, e->time[i] >> 9, STR_CONV_MODE_LEFT_ALIGN, 3);
+        if (i + 1 < e->tamanhoTime && i + 1 < PARTY_SIZE)
+        {
+            *fim++ = CHAR_COMMA;
+            *fim = EOS;
+        }
+        fim = StringCopy(candidata, linha);
+        *fim++ = CHAR_SPACE;
+        StringCopy(fim, token);
+        if (GetStringWidth(FONT_SMALL, candidata, 0) > TELA_TEXTO_LARGURA)
+        {
+            ImprimirDetalhe(y, linha);
+            y += DETALHE_PASSO;
+            if (++linhas >= DETALHE_TIME_LINHAS)
+                return y;
+            StringCopy(linha, token);
+        }
+        else
+        {
+            StringCopy(linha, candidata);
+        }
+    }
+    ImprimirDetalhe(y, linha);
+    return y + DETALHE_PASSO;
+}
+
+// O detalhe da linha selecionada: "NOME - local", tempo e turnos, o time e, só quando alguém nocauteou (mvp != 0xFF),
+// o MVP com os nocautes.
+static void DesenharDiarioDetalhe(struct ConquistasTela *t)
+{
+    u8 evt;
+    const struct DiarioEntrada *e;
+    u16 y;
+
+    FillWindowPixelBuffer(WIN_RODAPE, PIXEL_FILL(COR_FUNDO));
+    FillWindowPixelRect(WIN_RODAPE, PIXEL_FILL(COR_LINHA), 0, 0, DISPLAY_WIDTH, 1);
+    if (t->dN != 0)
+    {
+        evt = t->evts[t->dCursor];
+        e = Diario_GetEntrada(evt);
+        if (e != NULL)
+        {
+            StringCopy(gStringVar4, gDiarioEventos[evt].nome);
+            StringAppend(gStringVar4, gText_Diario_Separador);
+            StringAppend(gStringVar4, gDiarioEventos[evt].local);
+            AddTextPrinterParameterized4(WIN_RODAPE, FONT_NORMAL, DETALHE_X, DETALHE_CABECALHO_Y, 0, 0, sCor_Texto,
+                                         TEXT_SKIP_DRAW, gStringVar4);
+            y = DETALHE_CABECALHO_Y + 16;
+            FormatarTempo(gStringVar1, e->minutos);
+            ConvertIntToDecimalStringN(gStringVar2, e->turnos, STR_CONV_MODE_LEFT_ALIGN, 3);
+            StringExpandPlaceholders(gStringVar4, gText_Diario_TempoTurnos);
+            ImprimirDetalhe(y, gStringVar4);
+            y = DesenharDiarioTime(e, y + DETALHE_PASSO);
+            if (e->mvp != 0xFF && e->mvp < e->tamanhoTime)
+            {
+                StringCopy(gStringVar1, NomeDaEspecie(e->time[e->mvp]));
+                ConvertIntToDecimalStringN(gStringVar2, e->mvpNocautes, STR_CONV_MODE_LEFT_ALIGN, 3);
+                StringExpandPlaceholders(gStringVar4, e->mvpNocautes == 1 ? gText_Diario_MvpUm : gText_Diario_MvpVarios);
+                ImprimirDetalhe(y, gStringVar4);
+            }
+        }
+    }
+    PutWindowTilemap(WIN_RODAPE);
+    CopyWindowToVram(WIN_RODAPE, COPYWIN_FULL);
+}
+
+// Atalho da esteira (TEST_CMD_CONQ_TELA). O 3º byte é o `cursor`: no modo conquistas, a primeira linha visível da lista
+// (não há seleção); no modo diário, a linha selecionada (índice na lista em ordem de registro). `aba` é sempre a aba das
+// conquistas (o diário não tem aba).
 u32 Conquistas_TestGetState(void)
 {
     struct ConquistasTela *t = GetTela(NULL);
+    u8 cursor;
 
     if (t == NULL)
         return 0xFFFFFFFF;
-    return t->modo | t->aba << 8 | t->topo << 16 | t->inputReady << 24;
+    cursor = t->modo ? t->dCursor : t->topo;
+    return t->modo | t->aba << 8 | cursor << 16 | t->inputReady << 24;
+}
+
+// Só no modo diário (TEST_CMD_CONQ_TELA com arg0 = 1): entradas | DIARIO_EVT_* da selecionada (0xFF se vazio) << 8 |
+// primeira linha visível << 16.
+u32 Conquistas_TestGetDiario(void)
+{
+    struct ConquistasTela *t = GetTela(NULL);
+
+    if (t == NULL || !t->modo)
+        return 0xFFFFFFFF;
+    return t->dN | (t->dN == 0 ? 0xFF : t->evts[t->dCursor]) << 8 | t->dTopo << 16;
 }

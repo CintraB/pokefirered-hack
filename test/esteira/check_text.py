@@ -295,11 +295,27 @@ WIDTH_RULES: list[Rule] = [
          "x = 0, 1 linha por pedaço", lines=1),
     # POK-44, Task 7: o rodapé da tela de conquistas (até a barra) e a dica do SELECT no cartão de treinador
     Rule("src/strings.c", "gText_ConqTela_Rodape", 128,
-         "rodapé da tela de conquistas: RODAPE_TEXTO_LARGURA = 128 px antes da barra (src/conquistas_tela.c:60), "
+         "rodapé da tela de conquistas: RODAPE_TEXTO_LARGURA = 128 px antes da barra (src/conquistas_tela.c:73), "
          "FONT_NORMAL em x = 6", lines=1),
     Rule("src/strings.c", "gText_ConqTela_DicaCartao", 88,
          "dica do SELECT na faixa das insígnias do cartão (PrintConquistasHintOnCard, src/trainer_card.c:1271): FONT_SMALL "
          "alinhado à direita em x = 212 da janela 1, depois do rótulo INSÍGNIAS", font="small", lines=1),
+    # POK-44, Task 8: o diário (modo diário da tela de conquistas). Título e vazio na largura útil da tela
+    # (TELA_TEXTO_LARGURA, 4 px de margem de cada lado); o resultado, na coluna à direita da lista; o detalhe em FONT_SMALL
+    # (o cabeçalho "NOME - local" em FONT_NORMAL: o nome e o local são medidos no JSON)
+    *[Rule("src/strings.c", label, 232, "diário: " + what + ", FONT_NORMAL em 1 linha, TELA_TEXTO_LARGURA = 232 px "
+           "(src/conquistas_tela.c:89)", lines=1)
+      for label, what in (("gText_Diario_Titulo", "título centralizado na barra de 240 px"),
+                          ("gText_Diario_Vazio", "mensagem do diário vazio centralizada na lista"),
+                          ("gText_Diario_Separador", "separador entre o nome e o local no cabeçalho do detalhe"))],
+    *[Rule("src/strings.c", label, 60, "diário: resultado alinhado à direita na linha da lista, FONT_NORMAL em 1 linha, "
+           "RESULTADO_LARGURA = 60 px (src/conquistas_tela.c:88)", lines=1)
+      for label in ("gText_Diario_Venceu", "gText_Diario_Capturado", "gText_Diario_Derrotou")],
+    *[Rule("src/strings.c", label, 232, "diário: linha do detalhe em FONT_SMALL, x = DETALHE_X, TELA_TEXTO_LARGURA = 232 px "
+           "(src/conquistas_tela.c:89); o time montado com as espécies é medido em "
+           "test/tests/test_conquistas_tela.py::test_larguras_diario", font="small", lines=1)
+      for label in ("gText_Diario_TempoTurnos", "gText_Diario_Time", "gText_Diario_Nivel", "gText_Diario_MvpUm",
+                    "gText_Diario_MvpVarios")],
     Rule("src/strings.c", None, None, "menus e janelas de dezenas de telas: a janela sai de onde cada rótulo "
          "é usado (esteira/janelas_uso.py, USAGE_RULES); texto sem uso no código fica sem medida", by_usage=True),
     # -- tabelas de texto --

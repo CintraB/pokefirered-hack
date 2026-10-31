@@ -1123,7 +1123,7 @@ void TestHooks_Run(void)
     case TEST_CMD_CONQ_SILENCIO:    gConquistasSilencio = gTestMailbox.arg0 != 0; result = gConquistasSilencio; break;
     case TEST_CMD_ENCHER_BOLSO:     result = EncherBolso(gTestMailbox.arg0, gTestMailbox.arg1); break;
     case TEST_CMD_OPEN_CONQUISTAS:  result = OpenConquistas(gTestMailbox.arg0 != 0); break;
-    case TEST_CMD_CONQ_TELA:        result = Conquistas_TestGetState(); break;
+    case TEST_CMD_CONQ_TELA:        result = gTestMailbox.arg0 ? Conquistas_TestGetDiario() : Conquistas_TestGetState(); break;
     // POK-44: end
     default:
         result = 0xFFFFFFFF;

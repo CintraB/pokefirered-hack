@@ -75,3 +75,12 @@ def parse_entrada(raw: bytes) -> dict:
     return {"minutos": minutos, "turnos": turnos, "resultado": resultado, "ordem": ordem, "mvp": mvp,
             "mvpNocautes": nocautes, "tamanhoTime": tamanho,
             "time": [(t & 0x1FF, t >> 9) for t in time[:tamanho]]}
+
+
+def pack_entrada(e: dict) -> bytes:
+    """O inverso de parse_entrada: os 20 bytes de uma struct DiarioEntrada (os campos de `parse_entrada`;
+    `time` em (espécie, nível); o resto do time fica zerado)."""
+    time = [especie | nivel << 9 for especie, nivel in e["time"]]
+    time += [0] * (6 - len(time))
+    return struct.pack(DIARIO_ENTRADA_FORMAT, e["minutos"], e["turnos"], e["resultado"], e["ordem"], e["mvp"],
+                       e["mvpNocautes"], e["tamanhoTime"], *time)
