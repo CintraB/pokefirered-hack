@@ -882,6 +882,28 @@ static u32 ConqCaptura(u16 species, u16 ball)
     Conquistas_OnCaptura(&gEnemyParty[0], ball);
     return 1;
 }
+
+// An egg of the player (shiny PID and/or 6 IVs 31 as asked) in a party slot, hatched through the real special.
+static u32 ConqChocar(u32 arg0, u16 species)
+{
+    u8 slot = arg0 & 0xFF, opcoes = (arg0 >> 8) & 0xFF;
+    u32 otId = GetPlayerTrainerId();
+    // shiny value = hi(ot) ^ lo(ot) ^ hi(pid) ^ lo(pid): 0 (shiny) or 0x100 (far from the shiny range)
+    u32 personality = (((otId >> 16) ^ (otId & 0xFFFF) ^ ((opcoes & 1) ? 0 : 0x100)) & 0xFFFF) << 16;
+    bool8 ovo = TRUE;
+    struct Pokemon *mon;
+
+    if (slot >= PARTY_SIZE || slot > CalculatePlayerPartyCount() || !IsValidTestMon(species, EGG_HATCH_LEVEL))
+        return 0xFFFFFFFF;
+    mon = &gPlayerParty[slot];
+    CreateMon(mon, species, EGG_HATCH_LEVEL, (opcoes & 2) ? MAX_PER_STAT_IVS : TEST_MON_FIXED_IV, TRUE, personality,
+              OT_ID_PLAYER_ID, 0);
+    SetMonData(mon, MON_DATA_IS_EGG, &ovo);
+    gPlayerPartyCount = CalculatePlayerPartyCount();
+    gSpecialVar_0x8004 = slot;
+    ScriptHatchMon();
+    return GetMonData(mon, MON_DATA_SPECIES) | GetMonData(mon, MON_DATA_IS_EGG) << 16;
+}
 // --- end of POK-44 --------------------------------------------------------------------------
 
 void TestHooks_Run(void)
@@ -1011,6 +1033,7 @@ void TestHooks_Run(void)
     case TEST_CMD_SET_PARTY_MOVE:   result = SetPartyMove(gTestMailbox.arg0, gTestMailbox.arg1); break;
     case TEST_CMD_PARTY_SIZE:       result = PartySize(gTestMailbox.arg0); break;
     case TEST_CMD_CONQ_CAPTURA:     result = ConqCaptura(gTestMailbox.arg0, gTestMailbox.arg1); break;
+    case TEST_CMD_CONQ_CHOCAR:      result = ConqChocar(gTestMailbox.arg0, gTestMailbox.arg1); break;
     // POK-44: end
     default:
         result = 0xFFFFFFFF;

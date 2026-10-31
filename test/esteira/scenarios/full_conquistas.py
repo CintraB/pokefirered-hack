@@ -346,12 +346,18 @@ class ConquistasScenario(CatchSaveScenario):
         assert self.box.call(CMD_START_WILD_BATTLE, geodude, 5) == 1, "START_WILD_BATTLE"
         self._lutar("Psychic no Geodude", "win")
         assert self._estado("golpe_x4")[0] == PENDENTE, ("Psychic (x1)", self._estado("golpe_x4"))
+        # dano fixo: o typecalc vê x4 (Lutador contra Pedra/Noturno), mas o dano não depende do tipo
+        self.box.set_party_move(0, 0, MOVES["MOVE_SEISMIC_TOSS"])
+        assert self.box.call(CMD_START_WILD_BATTLE, self.consts.species("TYRANITAR"), 5) == 1, "START_WILD_BATTLE"
+        self._lutar("Seismic Toss no Tyranitar", "win")
+        assert self._estado("golpe_x4")[0] == PENDENTE, ("Seismic Toss (dano fixo)", self._estado("golpe_x4"))
         self.box.set_party_move(0, 0, MOVES["MOVE_SURF"])
         assert self.box.call(CMD_START_WILD_BATTLE, geodude, 5) == 1, "START_WILD_BATTLE"
         self._lutar("Surf no Geodude", "win")
         assert self._estado("golpe_x4")[0] == FEITA, ("Surf (x4)", self._estado("golpe_x4"))
         assert self.box.conq_contador(0) == 0, "batalha selvagem não é vitória de treinador"
-        return "Blastoise contra Geodude selvagem: Psychic (x1) pendente, Surf (x4) feita"
+        return ("Blastoise: Psychic (x1) no Geodude e Seismic Toss (dano fixo, x4 de tipo) no Tyranitar pendentes; "
+                "Surf (x4) no Geodude feita")
 
     def _derrota_nao_conta(self) -> str:
         self.box.conq_reset(True)
@@ -376,6 +382,26 @@ class ConquistasScenario(CatchSaveScenario):
         assert self._estado("poke_ball_dificil")[0] == FEITA, ("Snorlax com Poké Ball", self._estado("poke_ball_dificil"))
         assert self.box.conq_contador(1) == 0, "a captura não soma shiny (é o GiveMonToPlayer que soma)"
         return "Pidgey/Poké Ball e Snorlax/Ultra Ball pendentes; Snorlax (taxa 25)/Poké Ball feita"
+
+    def _ovo_chocado(self) -> str:
+        """Ovos do jogador chocados pelo special de verdade (AddHatchedMonToParty → Conquistas_OnOvoChocado)."""
+        self.box.conq_reset(True)
+        pidgey = self.consts.species("PIDGEY")
+        self.box.set_party_mon(0, pidgey, 5)
+        assert self.box.party_size(1) == 1
+        self.box.conq_chocar(1, pidgey)
+        assert self.box.conq_contador(1) == 0, "ovo comum não é shiny"
+        for cid in ("ovo_shiny", "ovo_6ivs"):
+            assert self._estado(cid)[0] == PENDENTE, (cid, self._estado(cid))
+        self.box.conq_chocar(2, pidgey, shiny=True)
+        assert self.box.conq_contador(1) == 1, f"shinies = {self.box.conq_contador(1)}"
+        assert self._estado("ovo_shiny")[0] == FEITA, self._estado("ovo_shiny")
+        assert self._estado("ovo_6ivs")[0] == PENDENTE, self._estado("ovo_6ivs")
+        self.box.conq_chocar(3, pidgey, ivs31=True)
+        assert self._estado("ovo_6ivs")[0] == FEITA, self._estado("ovo_6ivs")
+        assert self.box.conq_contador(1) == 1, "o ovo de 6 IVs não é shiny"
+        self.box.party_size(1)
+        return "ovo comum: nada; ovo shiny: shinies 0 → 1 e ovo_shiny feita; ovo com 6 IVs 31: ovo_6ivs feita"
 
     def _lider_antes_da_insignia(self) -> str:
         """Caso real, o 8º líder: com 7 insígnias, vencer o Giovanni com um Pokémon só no Ginásio de verdade. A marca
@@ -428,6 +454,7 @@ class ConquistasScenario(CatchSaveScenario):
             self.suite.run("evento/golpe_x4", self._golpe_x4)
             self.suite.run("evento/derrota_nao_conta", self._derrota_nao_conta)
             self.suite.run("evento/captura_poke_ball", self._captura_poke_ball)
+            self.suite.run("evento/ovo_chocado", self._ovo_chocado)
             self.suite.run("evento/lider_antes_da_insignia", self._lider_antes_da_insignia)
         except Abort:
             pass

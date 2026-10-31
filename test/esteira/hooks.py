@@ -267,6 +267,11 @@ class Mailbox:
         assert result == 1, f"CONQ_CAPTURA recusado: espécie {species}, bola {ball}"
         return result
 
+    def conq_chocar(self, slot: int, species: int, shiny: bool = False, ivs31: bool = False) -> None:
+        """Choca, pelo special de verdade, um ovo do jogador de `species` posto em gPlayerParty[slot]."""
+        lido = self.call(CMD_CONQ_CHOCAR, slot | (int(shiny) | int(ivs31) << 1) << 8, species)
+        assert lido == species, f"CONQ_CHOCAR recusado/errado: slot {slot}, espécie {species} (lido {lido:#x})"
+
 # --- Hack 6: breeding genético (enum à parte em include/test_hooks.h, a partir de 0x60; ------
 # o uso fica em esteira/breeding.py e scenarios/full_breeding.py / full_egg.py)
 CMD_BREED_SETUP = 0x60      # gTestBreedSetup -> creche (arg0 = 1: ovo pendente) -> compatibilidade (0xFFFFFFFF = pai inválido)
@@ -330,3 +335,5 @@ CMD_START_TRAINER_BATTLE = 0xB6  # arg0 = treinador (TRAINER_*) -> 1: batalha se
 CMD_SET_PARTY_MOVE = 0xB7   # arg0 = slot | golpe (0-3) << 8, arg1 = golpe (PP cheio) -> golpe lido
 CMD_PARTY_SIZE = 0xB8       # arg0 = n -> fica só com os n primeiros do time -> gPlayerPartyCount
 CMD_CONQ_CAPTURA = 0xB9     # arg0 = espécie, arg1 = bola -> gEnemyParty[0] nv 30 e Conquistas_OnCaptura -> 1
+CMD_CONQ_CHOCAR = 0xBA      # arg0 = slot | opções << 8 (1 shiny, 2 seis IVs 31), arg1 = espécie -> ovo do jogador no slot,
+                            # chocado pelo ScriptHatchMon (AddHatchedMonToParty) -> espécie | ovo << 16 lidos

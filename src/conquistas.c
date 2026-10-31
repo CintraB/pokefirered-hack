@@ -9,8 +9,10 @@
 #include "pokedex.h"
 #include "pokemon.h"
 #include "pokemon_storage_system.h"
+#include "constants/battle_move_effects.h"
 #include "constants/flags.h"
 #include "constants/items.h"
+#include "constants/moves.h"
 #include "constants/opponents.h"
 #include "data/conquistas_ids.h"
 
@@ -630,7 +632,9 @@ void Conquistas_OnNocaute(u8 battlerAtacante)
     u32 personalidade;
     u8 i;
 
-    if (GetBattlerSide(battlerAtacante) != B_SIDE_PLAYER || BatalhaIgnorada())
+    if (GetBattlerSide(battlerAtacante) != B_SIDE_PLAYER || BatalhaIgnorada()
+     // o golpe tardio acerta turnos depois: gBattlerAttacker é a posição, e o Pokémon ali pode ser outro
+     || gCurrentMove == MOVE_FUTURE_SIGHT || gCurrentMove == MOVE_DOOM_DESIRE)
         return;
     personalidade = GetMonData(&gPlayerParty[gBattlerPartyIndexes[battlerAtacante]], MON_DATA_PERSONALITY);
     // vaga com nocautes = vaga usada; a primeira livre ou a do mesmo Pokémon recebe o nocaute
@@ -646,9 +650,28 @@ void Conquistas_OnNocaute(u8 battlerAtacante)
     }
 }
 
+// Golpes cujo dano não depende do tipo (dano fixo, metade do HP, OHKO): passam pelo typecalc (o OHKO antes de
+// acertar), mas o script descarta a eficácia. ×4 neles não é "acertar um golpe ×4".
+static bool8 DanoSemTipo(u16 move)
+{
+    switch (gBattleMoves[move].effect)
+    {
+    case EFFECT_LEVEL_DAMAGE:
+    case EFFECT_DRAGON_RAGE:
+    case EFFECT_SONICBOOM:
+    case EFFECT_SUPER_FANG:
+    case EFFECT_PSYWAVE:
+    case EFFECT_OHKO:
+    case EFFECT_ENDEAVOR:
+        return TRUE;
+    }
+    return FALSE;
+}
+
 void Conquistas_OnEficacia(u8 battlerAtacante, u16 multX10)
 {
-    if (!ComMarcador() || GetBattlerSide(battlerAtacante) != B_SIDE_PLAYER || BatalhaIgnorada())
+    if (!ComMarcador() || GetBattlerSide(battlerAtacante) != B_SIDE_PLAYER || BatalhaIgnorada()
+     || DanoSemTipo(gCurrentMove))
         return;
     if (multX10 == 40 && gBattleMoves[gCurrentMove].power > 0 && !(gMoveResultFlags & MOVE_RESULT_NO_EFFECT))
         Conquistas_Evento(CONQ_EVT_GOLPE_X4);

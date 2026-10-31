@@ -150,15 +150,38 @@ def test_fim_de_batalha_regras():
     assert "BatalhaIgnorada()" in _corpo(fonte, "Conquistas_OnEficacia")
 
 
+def test_x4_ignora_dano_sem_tipo():
+    """Dano fixo, metade do HP e OHKO passam pelo typecalc (o OHKO antes de acertar) mas não causam dano de tipo:
+    ficam fora pelo efeito do golpe. `power > 1` não serve: Low Kick, Return, Flail e Hidden Power têm poder 1 e dano
+    de tipo de verdade."""
+    fonte = _ler(CONQ_C)
+    lista = _corpo(fonte, "DanoSemTipo")
+    efeitos = set(re.findall(r"case (EFFECT_\w+):", lista))
+    assert efeitos == {"EFFECT_LEVEL_DAMAGE", "EFFECT_DRAGON_RAGE", "EFFECT_SONICBOOM", "EFFECT_SUPER_FANG",
+                       "EFFECT_PSYWAVE", "EFFECT_OHKO", "EFFECT_ENDEAVOR"}, efeitos
+    assert "gBattleMoves[move].effect" in lista
+    eficacia = _corpo(fonte, "Conquistas_OnEficacia")
+    assert "DanoSemTipo(gCurrentMove)" in eficacia
+    assert "power > 1" not in eficacia
+
+
+def test_nocaute_ignora_golpe_tardio():
+    """Future Sight/Doom Desire acertam turnos depois: o Pokémon na posição do atacante pode ser outro."""
+    corpo = _corpo(_ler(CONQ_C), "Conquistas_OnNocaute")
+    for golpe in ("MOVE_FUTURE_SIGHT", "MOVE_DOOM_DESIRE"):
+        assert f"gCurrentMove == {golpe}" in corpo, golpe
+    assert corpo.index("MOVE_DOOM_DESIRE") < corpo.index("conqNocautes")
+
+
 def test_atalhos_novos():
     assert (hooks.CMD_START_TRAINER_BATTLE, hooks.CMD_SET_PARTY_MOVE, hooks.CMD_PARTY_SIZE,
-            hooks.CMD_CONQ_CAPTURA) == (0xB6, 0xB7, 0xB8, 0xB9)
-    for metodo in ("start_trainer_battle", "set_party_move", "party_size", "conq_captura"):
+            hooks.CMD_CONQ_CAPTURA, hooks.CMD_CONQ_CHOCAR) == (0xB6, 0xB7, 0xB8, 0xB9, 0xBA)
+    for metodo in ("start_trainer_battle", "set_party_move", "party_size", "conq_captura", "conq_chocar"):
         assert callable(getattr(hooks.Mailbox, metodo, None)), metodo
 
 
 def test_cenario_tem_os_grupos_de_evento():
     texto = _ler(CENARIO)
     for grupo in ("evento/lider_e_sem_desmaio", "evento/golpe_x4", "evento/derrota_nao_conta",
-                  "evento/captura_poke_ball", "evento/lider_antes_da_insignia"):
+                  "evento/captura_poke_ball", "evento/ovo_chocado", "evento/lider_antes_da_insignia"):
         assert f'"{grupo}"' in texto, grupo
