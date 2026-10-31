@@ -1474,7 +1474,7 @@ const u8 gText_Diario_MvpUm[] = _("MVP: {STR_VAR_1} ({STR_VAR_2} nocaute)");
 const u8 gText_Diario_MvpVarios[] = _("MVP: {STR_VAR_1} ({STR_VAR_2} nocautes)");
 
 // POK-42: os degraus das revanches (lista da guarda da Liga e BufferRematchTierName, src/rematch_tier.c); até 10
-// letras, porque vão para o gStringVar1.
+// letras, limite do plano para caber na fala (o gStringVar1, para onde vão, tem 32 bytes).
 const u8 gText_RematchTier_Normal[] = _("Normal");
 const u8 gText_RematchTier_60[] = _("Nível 60");
 const u8 gText_RematchTier_70[] = _("Nível 70");

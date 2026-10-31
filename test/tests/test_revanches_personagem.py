@@ -50,23 +50,32 @@ def test_script_do_degrau():
     desligado = [c for c in gatilho if c.startswith("goto_if_unset FLAG_SYS_GAME_CLEAR, ")]
     assert len(desligado) == 1, gatilho
     assert _bloco(texto, desligado[0].split(", ")[1]) == ["setvar VAR_TEMP_1, 1", "end"]
-    # com ele: a sub da pergunta, que também desliga o gatilho
-    assert f"call {P}_AskTier" in gatilho, gatilho
+    # com ele: a sub da pergunta (Liga aberta), entre lockall e releaseall
+    chamada = f"call {P}_AskTier"
+    assert chamada in gatilho, gatilho
+    assert gatilho.index("lockall") < gatilho.index(chamada) < gatilho.index("releaseall")
     assert gatilho[-1] == "end"
-    pergunta = _bloco(texto, f"{P}_AskTier")
-    assert "setvar VAR_TEMP_1, 1" in pergunta
-    assert pergunta.index("setvar VAR_TEMP_1, 1") < pergunta.index("special BufferRematchTierName")
-    assert any(re.fullmatch(r"multichoice \d+, \d+, MULTICHOICE_REMATCH_TIER, FALSE", c) for c in pergunta), pergunta
-    cancela = [c for c in pergunta if c.startswith("goto_if_eq VAR_RESULT, SCR_MENU_CANCEL, ")]
-    assert len(cancela) == 1, pergunta
+    # as duas subs (Liga aberta e fechada) só mudam a confirmação; a escolha fica numa sub só
+    for sub, confirma in ((f"{P}_AskTier", "Text_TierSet"), (f"{P}_AskTierLeagueClosed", "Text_TierSetLeagueClosed")):
+        bloco = _bloco(texto, sub)
+        assert bloco[0].startswith("goto_if_questlog "), bloco
+        assert bloco[1] == f"call {P}_ChooseTier", bloco
+        assert bloco[2] == "goto_if_eq VAR_RESULT, SCR_MENU_CANCEL, EventScript_Return", bloco
+        assert bloco[3] == f"msgbox IndigoPlateau_PokemonCenter_1F_{confirma}" and bloco[4:] == ["return"], bloco
+    escolha = _bloco(texto, f"{P}_ChooseTier")
+    assert escolha.index("setvar VAR_TEMP_1, 1") < escolha.index("special BufferRematchTierName")
+    assert any(re.fullmatch(r"multichoice \d+, \d+, MULTICHOICE_REMATCH_TIER, FALSE", c) for c in escolha), escolha
+    cancela = [c for c in escolha if c.startswith("goto_if_eq VAR_RESULT, SCR_MENU_CANCEL, ")]
+    assert len(cancela) == 1, escolha
     fica = _bloco(texto, cancela[0].split(", ")[2])
-    assert not any(c.startswith("copyvar") for c in fica), fica
-    assert any("Text_KeepTier" in c for c in fica) and fica[-1] == "return", fica
-    # a escolha grava o degrau e confirma com o rótulo novo
-    i = pergunta.index("copyvar VAR_REMATCH_TIER, VAR_RESULT")
-    assert i > pergunta.index(cancela[0])
-    assert "special BufferRematchTierName" in pergunta[i:]
-    assert any("Text_TierSet" in c for c in pergunta[i:]) and pergunta[-1] == "return", pergunta
+    # sem copyvar e sem mexer no VAR_RESULT (as subs de cima testam o SCR_MENU_CANCEL depois)
+    assert fica == ["msgbox IndigoPlateau_PokemonCenter_1F_Text_KeepTier", "return"], fica
+    # a escolha grava o degrau e põe o rótulo novo no gStringVar1 para a confirmação
+    i = escolha.index("copyvar VAR_REMATCH_TIER, VAR_RESULT")
+    assert i > escolha.index(cancela[0])
+    assert escolha[i + 1:] == ["special BufferRematchTierName", "return"], escolha
+    assert len(re.findall(r"^\tcopyvar VAR_REMATCH_TIER, VAR_RESULT$", texto, re.M)) == 1
+    assert len(re.findall(r"MULTICHOICE_REMATCH_TIER", texto)) == 1
 
 
 def test_guarda_oferece():
@@ -76,10 +85,13 @@ def test_guarda_oferece():
         chamada = f"call_if_set FLAG_SYS_GAME_CLEAR, {P}_AskTier"
         assert chamada in bloco, (rotulo, bloco)
         assert bloco.index(chamada) < bloco.index("msgbox IndigoPlateau_PokemonCenter_1F_Text_FaceEliteFourGoodLuck")
-    # o ramo "Lorelei ausente" e a porta bloqueada seguem os de hoje
+    # Liga fechada (Dex Nacional antes do fim das Sevii): depois do "Lorelei ausente", a lista com a confirmação
+    # sem a Elite Quatro
     assert _bloco(texto, f"{P}_CheckSeviiIslandComplete") == [
         f"goto_if_set FLAG_SYS_CAN_LINK_WITH_RS, {P}_SeviiIslandComplete",
-        "msgbox IndigoPlateau_PokemonCenter_1F_Text_LoreleiIsAbsentClosedForTimeBeing", "release", "end"]
+        "msgbox IndigoPlateau_PokemonCenter_1F_Text_LoreleiIsAbsentClosedForTimeBeing",
+        f"call_if_set FLAG_SYS_GAME_CLEAR, {P}_AskTierLeagueClosed", "release", "end"]
+    # a porta continua bloqueada
     assert _bloco(texto, f"{P}_CheckBlockDoor") == [
         "goto_if_set FLAG_SYS_CAN_LINK_WITH_RS, EventScript_Return",
         "setobjectxyperm LOCALID_LEAGUE_DOOR_GUARD, 4, 2", "return"]
@@ -130,3 +142,7 @@ def test_textos_aprovados():
     assert junto("TierSet") == ("Combinado! A Elite Quatro e as revanches do Explorador VS vão usar "
                                 "{STR_VAR_1}.")
     assert junto("KeepTier") == "Tudo bem, fica como está."
+    # com a Liga fechada (Lorelei ausente), a confirmação não fala da Elite Quatro
+    fechada = junto("TierSetLeagueClosed")
+    assert fechada == "Combinado! As revanches do Explorador VS vão usar {STR_VAR_1}."
+    assert "Elite" not in fechada

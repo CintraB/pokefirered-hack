@@ -27,6 +27,7 @@ IndigoPlateau_PokemonCenter_1F_EventScript_DoorGuard::
 IndigoPlateau_PokemonCenter_1F_EventScript_CheckSeviiIslandComplete::
 	goto_if_set FLAG_SYS_CAN_LINK_WITH_RS, IndigoPlateau_PokemonCenter_1F_EventScript_SeviiIslandComplete
 	msgbox IndigoPlateau_PokemonCenter_1F_Text_LoreleiIsAbsentClosedForTimeBeing
+	call_if_set FLAG_SYS_GAME_CLEAR, IndigoPlateau_PokemonCenter_1F_EventScript_AskTierLeagueClosed
 	release
 	end
 
@@ -51,7 +52,24 @@ IndigoPlateau_PokemonCenter_1F_EventScript_TierTriggerOff::
 	setvar VAR_TEMP_1, 1
 	end
 
+@ Liga aberta: a confirmação cita a Elite Quatro.
 IndigoPlateau_PokemonCenter_1F_EventScript_AskTier::
+	goto_if_questlog EventScript_Return
+	call IndigoPlateau_PokemonCenter_1F_EventScript_ChooseTier
+	goto_if_eq VAR_RESULT, SCR_MENU_CANCEL, EventScript_Return
+	msgbox IndigoPlateau_PokemonCenter_1F_Text_TierSet
+	return
+
+@ Liga fechada (Dex Nacional antes do fim das Ilhas Sevii, Lorelei ausente): o degrau vale só no Vs. Seeker.
+IndigoPlateau_PokemonCenter_1F_EventScript_AskTierLeagueClosed::
+	goto_if_questlog EventScript_Return
+	call IndigoPlateau_PokemonCenter_1F_EventScript_ChooseTier
+	goto_if_eq VAR_RESULT, SCR_MENU_CANCEL, EventScript_Return
+	msgbox IndigoPlateau_PokemonCenter_1F_Text_TierSetLeagueClosed
+	return
+
+@ A pergunta e a lista; com B, VAR_RESULT fica em SCR_MENU_CANCEL (o msgbox não mexe nele) e o degrau não muda.
+IndigoPlateau_PokemonCenter_1F_EventScript_ChooseTier::
 	setvar VAR_TEMP_1, 1
 	special BufferRematchTierName
 	message IndigoPlateau_PokemonCenter_1F_Text_AskTier
@@ -60,7 +78,6 @@ IndigoPlateau_PokemonCenter_1F_EventScript_AskTier::
 	goto_if_eq VAR_RESULT, SCR_MENU_CANCEL, IndigoPlateau_PokemonCenter_1F_EventScript_KeepTier
 	copyvar VAR_REMATCH_TIER, VAR_RESULT
 	special BufferRematchTierName
-	msgbox IndigoPlateau_PokemonCenter_1F_Text_TierSet
 	return
 
 IndigoPlateau_PokemonCenter_1F_EventScript_KeepTier::

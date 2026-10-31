@@ -53,6 +53,11 @@ IndigoPlateau_PokemonCenter_1F_Text_TierSet::
     .string "A Elite Quatro e as revanches do\n"
     .string "Explorador VS vão usar {STR_VAR_1}.$"
 
+IndigoPlateau_PokemonCenter_1F_Text_TierSetLeagueClosed::
+    .string "Combinado!\p"
+    .string "As revanches do Explorador VS vão\n"
+    .string "usar {STR_VAR_1}.$"
+
 IndigoPlateau_PokemonCenter_1F_Text_KeepTier::
     .string "Tudo bem, fica como está.$"
 
