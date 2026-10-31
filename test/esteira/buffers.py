@@ -1270,7 +1270,7 @@ _UR = "src/union_room.c"
 _NICK = Fixed("POKEMON_NAME_LENGTH", "apelido (POKEMON_NAME_LENGTH)")
 _PLAYER = Fixed("PLAYER_NAME_LENGTH", "nome do jogador (PLAYER_NAME_LENGTH)")
 # MO: sText_ClearTo18 + gText_NumberClear01 + 1 algarismo; MT: gText_NumberClear01 + 2 algarismos
-# (src/tm_case.c:680-692): o pior caso é o da MO
+# (src/tm_case.c:681-693): o pior caso é o da MO
 _TM_LIST = (Text("gText_FontSmall"), Text("sText_ClearTo18", file="src/tm_case.c"), Text("gText_NumberClear01"),
             Fixed(1, "nº da MO (a MT tem 2 algarismos e não tem o salto)"), Text("sText_SingleSpace", file="src/tm_case.c"),
             Text("gText_FontNormal"), Text("gMoveNames"))
@@ -1584,12 +1584,12 @@ DECLARED: list[Declared] = [
     Declared("src/tm_case.c", "GetTMNumberAndMoveString", r".*", BufRef("sListMenuStringsBuffer", "src/tm_case.c"),
              _TM_LIST,
              why="lista do estojo de MT: montada em gStringVar4 e copiada para sListMenuStringsBuffer[i] ([29]) "
-                 "(src/tm_case.c:651, :678-697)"),
+                 "(src/tm_case.c:652, :679-698)"),
     Declared("src/tm_case.c", "Task_SelectedTMHM_Field", r".*",
-             BufRef("strbuf", size="256", site="src/tm_case.c:979 (Alloc(256))"),
+             BufRef("strbuf", size="256", site="src/tm_case.c:980 (Alloc(256))"),
              _TM_LIST + (Text("gText_Var1IsSelected", offset=2),),
              why="MT selecionada: strbuf = GetTMNumberAndMoveString + gText_Var1IsSelected sem o {STR_VAR_1} "
-                 "(src/tm_case.c:979-981)"),
+                 "(src/tm_case.c:980-982)"),
     Declared("src/trade.c", "BufferMovesString", r".*", BufRef("movesString", "src/trade.c", "DrawSelectedMonScreen"),
              (Text("sText_Dummy", file="src/trade.c"), Text("gMoveNames", times=4),
               Text("sText_Newline", file="src/trade.c", times=4)),

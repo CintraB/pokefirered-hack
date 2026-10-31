@@ -273,7 +273,7 @@ WIDTH_RULES: list[Rule] = [
          "(src/battle_message.c:2442-2445)", font="small", chars=12),
     Rule("src/data/text/abilities.h", "s*Description", 29 * 8 - 2,
          "descrição de habilidade no resumo: [POKESUM_WIN_SKILLS_5] .width = 29 tiles "
-         "(src/pokemon_summary_screen.c:848-852), x = 2 (src/pokemon_summary_screen.c:3393); buffer "
+         "(src/pokemon_summary_screen.c:848-852), x = 2 (src/pokemon_summary_screen.c:3398); buffer "
          "abilityDescStrBuf[52] (src/pokemon_summary_screen.c:195)", chars=51),
     Rule("src/data/text/abilities.h", None, None,
          "nome de habilidade: ABILITY_NAME_LENGTH (include/battle_main.h:27)", chars=12),
@@ -331,7 +331,7 @@ WIDTH_RULES: list[Rule] = [
          "(src/learn_move.c:300-304) com x = 1 (src/learn_move.c:842); 4 linhas (13 tiles de altura a partir "
          "de y = 42 no resumo, 8 tiles no tutor); também é a descrição da MT/MO (src/data/items.json.txt:17-18) "
          "no estojo e na loja de MT: WIN_DESCRIPTION de 18 tiles (src/tm_case.c:254-261) com x = 2 "
-         "(src/tm_case.c:743), 142 px e 4 linhas, mais folgada", lines=4),
+         "(src/tm_case.c:744), 142 px e 4 linhas, mais folgada", lines=4),
     Rule("src/data/pokemon/pokedex_text_fr.h", None, 232,
          "entrada da Pokédex: sWindowTemplate_DexEntry_FlavorText .width = 30 tiles "
          "(src/pokedex_screen.c:618-623), centralizada em 240 px pela linha mais larga "

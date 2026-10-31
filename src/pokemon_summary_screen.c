@@ -3361,6 +3361,11 @@ static void PokeSum_PrintSelectedMoveStats(void)
                                      0, 0,
                                      sLevelNickTextColors[0], TEXT_SKIP_DRAW,
                                      gMoveDescriptionPointers[sMonSummaryScreen->moveIds[sMoveSelectionCursorPos] - 1]);
+
+        // POK-43: categoria do golpe (FÍSICO/ESPEC./ESTADO) à direita da caixa do PODER
+        BlitMenuInfoIcon(sMonSummaryScreen->windowIds[POKESUM_WIN_TRAINER_MEMO],
+                         MENU_INFO_ICON_PHYSICAL + gBattleMoves[sMonSummaryScreen->moveIds[sMoveSelectionCursorPos]].category,
+                         84, 1);
     }
 }
 
