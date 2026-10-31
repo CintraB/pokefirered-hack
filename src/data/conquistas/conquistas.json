@@ -1,0 +1,868 @@
+{
+  "_comentario": "Fonte única das conquistas e do diário de batalhas (POK-44). tools/conquistas/gen_conquistas.py gera src/data/conquistas_ids.h (CONQ_<ID> = num, DIARIO_EVT_<ID> = posição em `diario`) e src/data/conquistas_tabela.h; as estruturas e as larguras estão em include/conquistas.h. NÃO renumere `num` nem reordene `diario`: ambos viram posições no save (só acrescente num número livre / no fim). `{N}` no nome vira {STR_VAR_1} (a tela escreve o degrau atual) e a esteira mede com 300. `param`/`param2`/`lista`/`degraus` por tipo: ver include/conquistas.h; `param` pode ser número ou constante (FLAG_*, GAME_STAT_*, CONQ_EVT_*); `paramFim` (FLAGS_TODAS) confere na compilação que há param2 flags consecutivas. `premios` tem 1 entrada (vale para todos os degraus) ou uma por degrau. `ativa: false` = existe mas não aparece, não conta e não dispara (POK-42). `perdivel: true` = pode virar 'perdida' num save antigo. `condicao` é só para a tabela do Cintra (--tabela). `faixas` agrupa os itens de prêmio em fácil/média/difícil (só para a tabela). N da Pokédex (dex_obtivel) = 245: espécies obtíveis num save, contadas em 31/10/2026 com .superpowers/sdd/2026-10-31-conquistas-e-diario/contar_dex_atual.py (rodar: python3 -I <esse arquivo>, da raiz do repo), que é o contar_dex.py do levantamento de 24/10 (.superpowers/sdd/levantamento-dex/, 202 com os padrões) atualizado para o estado de hoje: exclusivos do LeafGreen (18), Caverna Mutante em 9 conjuntos, Mew/Celebi/Jirachi, os 3 cães, os iniciais do Safari, os dois fósseis, a Pedra do Sol dupla, os 3 ovos raros e Feebas. Faltam só Johto (18) e Hoenn (123). Confere com o Brain: 386 - 18 - 125 = 243, mais Feebas e Milotic.",
+  "abas": [
+    {
+      "id": "historia",
+      "nome": "HISTÓRIA"
+    },
+    {
+      "id": "batalha",
+      "nome": "BATALHA"
+    },
+    {
+      "id": "captura",
+      "nome": "CAPTURA"
+    },
+    {
+      "id": "treino",
+      "nome": "TREINO"
+    },
+    {
+      "id": "exploracao",
+      "nome": "EXPLORAÇÃO"
+    }
+  ],
+  "faixas": {
+    "fácil": ["POKE_BALL", "GREAT_BALL", "SUPER_POTION", "HYPER_POTION", "SUPER_REPEL", "MAX_REPEL"],
+    "média": ["ULTRA_BALL", "RARE_CANDY", "PP_UP", "MAX_REVIVE", "LUCKY_EGG", "AMULET_COIN", "LEFTOVERS"],
+    "difícil": ["MASTER_BALL", "PP_MAX"]
+  },
+  "conquistas": [
+    {
+      "num": 0,
+      "id": "insignia_rocha",
+      "aba": "historia",
+      "nome": "Insígnia Rocha",
+      "tipo": "FLAG",
+      "condicao": "Ganhar a Insígnia Rocha (Brock)",
+      "param": "FLAG_BADGE01_GET",
+      "premios": [
+        {"item": "ITEM_POKE_BALL", "qtd": 5}
+      ]
+    },
+    {
+      "num": 1,
+      "id": "insignia_cascata",
+      "aba": "historia",
+      "nome": "Insígnia Cascata",
+      "tipo": "FLAG",
+      "condicao": "Ganhar a Insígnia Cascata (Misty)",
+      "param": "FLAG_BADGE02_GET",
+      "premios": [
+        {"item": "ITEM_SUPER_POTION", "qtd": 3}
+      ]
+    },
+    {
+      "num": 2,
+      "id": "insignia_trovao",
+      "aba": "historia",
+      "nome": "Insígnia Trovão",
+      "tipo": "FLAG",
+      "condicao": "Ganhar a Insígnia Trovão (Ten. Surge)",
+      "param": "FLAG_BADGE03_GET",
+      "premios": [
+        {"item": "ITEM_GREAT_BALL", "qtd": 3}
+      ]
+    },
+    {
+      "num": 3,
+      "id": "insignia_arcoiris",
+      "aba": "historia",
+      "nome": "Insígnia Arco-íris",
+      "tipo": "FLAG",
+      "condicao": "Ganhar a Insígnia Arco-íris (Erika)",
+      "param": "FLAG_BADGE04_GET",
+      "premios": [
+        {"item": "ITEM_SUPER_REPEL", "qtd": 3}
+      ]
+    },
+    {
+      "num": 4,
+      "id": "insignia_alma",
+      "aba": "historia",
+      "nome": "Insígnia Alma",
+      "tipo": "FLAG",
+      "condicao": "Ganhar a Insígnia Alma (Koga)",
+      "param": "FLAG_BADGE05_GET",
+      "premios": [
+        {"item": "ITEM_ULTRA_BALL", "qtd": 3}
+      ]
+    },
+    {
+      "num": 5,
+      "id": "insignia_pantano",
+      "aba": "historia",
+      "nome": "Insígnia Pântano",
+      "tipo": "FLAG",
+      "condicao": "Ganhar a Insígnia Pântano (Sabrina)",
+      "param": "FLAG_BADGE06_GET",
+      "premios": [
+        {"item": "ITEM_RARE_CANDY", "qtd": 1}
+      ]
+    },
+    {
+      "num": 6,
+      "id": "insignia_vulcao",
+      "aba": "historia",
+      "nome": "Insígnia Vulcão",
+      "tipo": "FLAG",
+      "condicao": "Ganhar a Insígnia Vulcão (Blaine)",
+      "param": "FLAG_BADGE07_GET",
+      "premios": [
+        {"item": "ITEM_PP_UP", "qtd": 1}
+      ]
+    },
+    {
+      "num": 7,
+      "id": "insignia_terra",
+      "aba": "historia",
+      "nome": "Insígnia Terra",
+      "tipo": "FLAG",
+      "condicao": "Ganhar a Insígnia Terra (Giovanni)",
+      "param": "FLAG_BADGE08_GET",
+      "premios": [
+        {"item": "ITEM_MAX_REVIVE", "qtd": 1}
+      ]
+    },
+    {
+      "num": 8,
+      "id": "vencer_elite4",
+      "aba": "historia",
+      "nome": "Vencer a Elite 4",
+      "tipo": "EVENTO",
+      "condicao": "Derrotar o Lance (Elite 4) pela primeira vez",
+      "param": "CONQ_EVT_ELITE4",
+      "premios": [
+        {"item": "ITEM_PP_MAX", "qtd": 1}
+      ]
+    },
+    {
+      "num": 9,
+      "id": "campeao",
+      "aba": "historia",
+      "nome": "Campeão de Kanto",
+      "tipo": "FLAG",
+      "condicao": "Entrar no Hall da Fama como Campeão",
+      "param": "FLAG_SYS_GAME_CLEAR",
+      "premios": [
+        {"item": "ITEM_MASTER_BALL", "qtd": 1}
+      ]
+    },
+    {
+      "num": 10,
+      "id": "silph",
+      "aba": "historia",
+      "nome": "Libertar a Silph",
+      "tipo": "FLAG",
+      "condicao": "Expulsar a Equipe Rocket da Silph Co.",
+      "param": "FLAG_HIDE_SAFFRON_ROCKETS",
+      "premios": [
+        {"item": "ITEM_ULTRA_BALL", "qtd": 3}
+      ]
+    },
+    {
+      "num": 11,
+      "id": "sevii",
+      "aba": "historia",
+      "nome": "Heróis de Sevii",
+      "tipo": "FLAG",
+      "condicao": "Terminar a história das Ilhas Sevii (Rubi e Safira entregues)",
+      "param": "FLAG_SYS_CAN_LINK_WITH_RS",
+      "premios": [
+        {"item": "ITEM_LUCKY_EGG", "qtd": 1}
+      ]
+    },
+    {
+      "num": 12,
+      "id": "treinadores",
+      "aba": "batalha",
+      "nome": "Vencer {N} treinadores",
+      "tipo": "VITORIAS",
+      "condicao": "Vencer treinadores (degraus de 10 em 10, até 300)",
+      "degraus": [10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200, 210, 220, 230, 240, 250, 260, 270, 280, 290, 300],
+      "premios": [
+        {"item": "ITEM_GREAT_BALL", "qtd": 3},
+        {"item": "ITEM_GREAT_BALL", "qtd": 3},
+        {"item": "ITEM_GREAT_BALL", "qtd": 3},
+        {"item": "ITEM_GREAT_BALL", "qtd": 3},
+        {"item": "ITEM_RARE_CANDY", "qtd": 1},
+        {"item": "ITEM_GREAT_BALL", "qtd": 3},
+        {"item": "ITEM_GREAT_BALL", "qtd": 3},
+        {"item": "ITEM_GREAT_BALL", "qtd": 3},
+        {"item": "ITEM_GREAT_BALL", "qtd": 3},
+        {"item": "ITEM_RARE_CANDY", "qtd": 1},
+        {"item": "ITEM_GREAT_BALL", "qtd": 3},
+        {"item": "ITEM_GREAT_BALL", "qtd": 3},
+        {"item": "ITEM_GREAT_BALL", "qtd": 3},
+        {"item": "ITEM_GREAT_BALL", "qtd": 3},
+        {"item": "ITEM_RARE_CANDY", "qtd": 1},
+        {"item": "ITEM_GREAT_BALL", "qtd": 3},
+        {"item": "ITEM_GREAT_BALL", "qtd": 3},
+        {"item": "ITEM_GREAT_BALL", "qtd": 3},
+        {"item": "ITEM_GREAT_BALL", "qtd": 3},
+        {"item": "ITEM_RARE_CANDY", "qtd": 1},
+        {"item": "ITEM_GREAT_BALL", "qtd": 3},
+        {"item": "ITEM_GREAT_BALL", "qtd": 3},
+        {"item": "ITEM_GREAT_BALL", "qtd": 3},
+        {"item": "ITEM_GREAT_BALL", "qtd": 3},
+        {"item": "ITEM_RARE_CANDY", "qtd": 1},
+        {"item": "ITEM_GREAT_BALL", "qtd": 3},
+        {"item": "ITEM_GREAT_BALL", "qtd": 3},
+        {"item": "ITEM_GREAT_BALL", "qtd": 3},
+        {"item": "ITEM_GREAT_BALL", "qtd": 3},
+        {"item": "ITEM_RARE_CANDY", "qtd": 1}
+      ]
+    },
+    {
+      "num": 13,
+      "id": "lider_um_pokemon",
+      "aba": "batalha",
+      "nome": "Líder com um só Pokémon",
+      "tipo": "EVENTO",
+      "condicao": "Vencer um líder de Ginásio usando um Pokémon só",
+      "param": "CONQ_EVT_LIDER_UM_POKEMON",
+      "perdivel": true,
+      "premios": [
+        {"item": "ITEM_PP_MAX", "qtd": 1}
+      ]
+    },
+    {
+      "num": 14,
+      "id": "sem_desmaio",
+      "aba": "batalha",
+      "nome": "Vitória sem desmaios",
+      "tipo": "EVENTO",
+      "condicao": "Vencer uma batalha de treinador sem nenhum Pokémon seu desmaiar",
+      "param": "CONQ_EVT_SEM_DESMAIO",
+      "premios": [
+        {"item": "ITEM_SUPER_POTION", "qtd": 3}
+      ]
+    },
+    {
+      "num": 15,
+      "id": "golpe_x4",
+      "aba": "batalha",
+      "nome": "Golpe 4× eficaz",
+      "tipo": "EVENTO",
+      "condicao": "Acertar um golpe com dano 4× eficaz",
+      "param": "CONQ_EVT_GOLPE_X4",
+      "premios": [
+        {"item": "ITEM_HYPER_POTION", "qtd": 2}
+      ]
+    },
+    {
+      "num": 16,
+      "id": "rival_todas",
+      "aba": "batalha",
+      "nome": "Rival nunca venceu",
+      "tipo": "EVENTO",
+      "condicao": "Vencer o rival em todas as batalhas, sem perder nenhuma",
+      "param": "CONQ_EVT_RIVAL_TODAS",
+      "perdivel": true,
+      "premios": [
+        {"item": "ITEM_LEFTOVERS", "qtd": 1}
+      ]
+    },
+    {
+      "num": 17,
+      "id": "revanche_max",
+      "aba": "batalha",
+      "nome": "Revanche no degrau máximo",
+      "tipo": "EVENTO",
+      "condicao": "Vencer uma revanche no degrau máximo (POK-42; inativa até lá)",
+      "param": "CONQ_EVT_REVANCHE_MAX",
+      "ativa": false,
+      "premios": [
+        {"item": "ITEM_MASTER_BALL", "qtd": 1}
+      ]
+    },
+    {
+      "num": 18,
+      "id": "e4_degrau100",
+      "aba": "batalha",
+      "nome": "Elite 4 no degrau 100",
+      "tipo": "EVENTO",
+      "condicao": "Vencer a Elite 4 no degrau 100 (POK-42; inativa até lá)",
+      "param": "CONQ_EVT_E4_DEGRAU100",
+      "ativa": false,
+      "premios": [
+        {"item": "ITEM_MASTER_BALL", "qtd": 1}
+      ]
+    },
+    {
+      "num": 19,
+      "id": "primeira_captura",
+      "aba": "captura",
+      "nome": "Primeira captura",
+      "tipo": "GAME_STAT",
+      "condicao": "Capturar um Pokémon",
+      "param": "GAME_STAT_POKEMON_CAPTURES",
+      "param2": 1,
+      "premios": [
+        {"item": "ITEM_POKE_BALL", "qtd": 5}
+      ]
+    },
+    {
+      "num": 20,
+      "id": "shinies",
+      "aba": "captura",
+      "nome": "{N} shiny(s)",
+      "tipo": "SHINIES",
+      "condicao": "Capturar ou chocar shinies (1, 5, 10, 20, 30 e 50)",
+      "degraus": [1, 5, 10, 20, 30, 50],
+      "premios": [
+        {"item": "ITEM_ULTRA_BALL", "qtd": 5},
+        {"item": "ITEM_RARE_CANDY", "qtd": 2},
+        {"item": "ITEM_PP_MAX", "qtd": 1},
+        {"item": "ITEM_MASTER_BALL", "qtd": 1},
+        {"item": "ITEM_LUCKY_EGG", "qtd": 1},
+        {"item": "ITEM_MASTER_BALL", "qtd": 1}
+      ]
+    },
+    {
+      "num": 21,
+      "id": "aves",
+      "aba": "captura",
+      "nome": "Aves lendárias",
+      "tipo": "DEX_TODOS",
+      "condicao": "Capturar Articuno, Zapdos e Moltres",
+      "lista": ["SPECIES_ARTICUNO", "SPECIES_ZAPDOS", "SPECIES_MOLTRES"],
+      "premios": [
+        {"item": "ITEM_MAX_REVIVE", "qtd": 3}
+      ]
+    },
+    {
+      "num": 22,
+      "id": "caes",
+      "aba": "captura",
+      "nome": "Cães lendários",
+      "tipo": "DEX_TODOS",
+      "condicao": "Capturar Raikou, Entei e Suicune",
+      "lista": ["SPECIES_RAIKOU", "SPECIES_ENTEI", "SPECIES_SUICUNE"],
+      "premios": [
+        {"item": "ITEM_MAX_REVIVE", "qtd": 3}
+      ]
+    },
+    {
+      "num": 23,
+      "id": "mewtwo",
+      "aba": "captura",
+      "nome": "Mewtwo",
+      "tipo": "DEX_TODOS",
+      "condicao": "Capturar Mewtwo",
+      "lista": ["SPECIES_MEWTWO"],
+      "premios": [
+        {"item": "ITEM_PP_MAX", "qtd": 1}
+      ]
+    },
+    {
+      "num": 24,
+      "id": "lugia_hooh",
+      "aba": "captura",
+      "nome": "Lugia e Ho-Oh",
+      "tipo": "DEX_TODOS",
+      "condicao": "Capturar Lugia e Ho-Oh",
+      "lista": ["SPECIES_LUGIA", "SPECIES_HO_OH"],
+      "premios": [
+        {"item": "ITEM_PP_MAX", "qtd": 1}
+      ]
+    },
+    {
+      "num": 25,
+      "id": "miticos",
+      "aba": "captura",
+      "nome": "Míticos",
+      "tipo": "DEX_TODOS",
+      "condicao": "Capturar Mew, Celebi, Jirachi e Deoxys",
+      "lista": ["SPECIES_MEW", "SPECIES_CELEBI", "SPECIES_JIRACHI", "SPECIES_DEOXYS"],
+      "premios": [
+        {"item": "ITEM_MASTER_BALL", "qtd": 1}
+      ]
+    },
+    {
+      "num": 26,
+      "id": "kanto_151",
+      "aba": "captura",
+      "nome": "Os 151 de Kanto",
+      "tipo": "DEX_KANTO",
+      "condicao": "Capturar os 151 Pokémon de Kanto",
+      "param": 151,
+      "premios": [
+        {"item": "ITEM_MASTER_BALL", "qtd": 1}
+      ]
+    },
+    {
+      "num": 27,
+      "id": "dex_obtivel",
+      "aba": "captura",
+      "nome": "Pokédex completa",
+      "tipo": "DEX_NACIONAL",
+      "condicao": "Capturar todos os Pokémon obtíveis na hack (245 de 386)",
+      "param": 245,
+      "premios": [
+        {"item": "ITEM_MASTER_BALL", "qtd": 1}
+      ]
+    },
+    {
+      "num": 28,
+      "id": "poke_ball_dificil",
+      "aba": "captura",
+      "nome": "Na Poké Bola comum",
+      "tipo": "EVENTO",
+      "condicao": "Capturar, numa Poké Bola comum, um Pokémon de taxa de captura 45 ou menos",
+      "param": "CONQ_EVT_POKE_BALL_DIFICIL",
+      "premios": [
+        {"item": "ITEM_ULTRA_BALL", "qtd": 5}
+      ]
+    },
+    {
+      "num": 29,
+      "id": "fosseis",
+      "aba": "captura",
+      "nome": "Todos os fósseis",
+      "tipo": "DEX_TODOS",
+      "condicao": "Reviver Omanyte, Kabuto e Aerodactyl",
+      "lista": ["SPECIES_OMANYTE", "SPECIES_KABUTO", "SPECIES_AERODACTYL"],
+      "premios": [
+        {"item": "ITEM_RARE_CANDY", "qtd": 1}
+      ]
+    },
+    {
+      "num": 30,
+      "id": "nivel_50",
+      "aba": "treino",
+      "nome": "Nível 50",
+      "tipo": "NIVEL",
+      "condicao": "Ter um Pokémon no nível 50",
+      "param": 50,
+      "premios": [
+        {"item": "ITEM_RARE_CANDY", "qtd": 1}
+      ]
+    },
+    {
+      "num": 31,
+      "id": "nivel_100",
+      "aba": "treino",
+      "nome": "Nível 100",
+      "tipo": "NIVEL",
+      "condicao": "Ter um Pokémon no nível 100",
+      "param": 100,
+      "premios": [
+        {"item": "ITEM_PP_MAX", "qtd": 1}
+      ]
+    },
+    {
+      "num": 32,
+      "id": "primeiro_ovo",
+      "aba": "treino",
+      "nome": "Primeiro ovo",
+      "tipo": "GAME_STAT",
+      "condicao": "Chocar um ovo",
+      "param": "GAME_STAT_HATCHED_EGGS",
+      "param2": 1,
+      "premios": [
+        {"item": "ITEM_SUPER_POTION", "qtd": 3}
+      ]
+    },
+    {
+      "num": 33,
+      "id": "ovo_shiny",
+      "aba": "treino",
+      "nome": "Ovo shiny",
+      "tipo": "EVENTO",
+      "condicao": "Chocar um ovo que nasce shiny",
+      "param": "CONQ_EVT_OVO_SHINY",
+      "premios": [
+        {"item": "ITEM_MASTER_BALL", "qtd": 1}
+      ]
+    },
+    {
+      "num": 34,
+      "id": "ovo_6ivs",
+      "aba": "treino",
+      "nome": "Ovo perfeito",
+      "tipo": "EVENTO",
+      "condicao": "Chocar um ovo com os 6 IVs perfeitos (31)",
+      "param": "CONQ_EVT_OVO_6IVS",
+      "premios": [
+        {"item": "ITEM_PP_MAX", "qtd": 2}
+      ]
+    },
+    {
+      "num": 35,
+      "id": "amizade_max",
+      "aba": "treino",
+      "nome": "Melhores amigos",
+      "tipo": "AMIZADE_MAX",
+      "condicao": "Ter um Pokémon com amizade máxima (255)",
+      "param": 255,
+      "premios": [
+        {"item": "ITEM_RARE_CANDY", "qtd": 1}
+      ]
+    },
+    {
+      "num": 36,
+      "id": "espeon_umbreon",
+      "aba": "treino",
+      "nome": "Sol e Lua",
+      "tipo": "DEX_TODOS",
+      "condicao": "Capturar Espeon e Umbreon",
+      "lista": ["SPECIES_ESPEON", "SPECIES_UMBREON"],
+      "premios": [
+        {"item": "ITEM_RARE_CANDY", "qtd": 2}
+      ]
+    },
+    {
+      "num": 37,
+      "id": "cidades",
+      "aba": "exploracao",
+      "nome": "Viajante",
+      "tipo": "FLAGS_TODAS",
+      "condicao": "Visitar as 18 cidades e ilhas do mapa (de Pallet à Ilha Seis)",
+      "param": "FLAG_WORLD_MAP_PALLET_TOWN",
+      "paramFim": "FLAG_WORLD_MAP_SIX_ISLAND",
+      "param2": 18,
+      "premios": [
+        {"item": "ITEM_MAX_REPEL", "qtd": 3}
+      ]
+    },
+    {
+      "num": 38,
+      "id": "passos",
+      "aba": "exploracao",
+      "nome": "10.000 passos",
+      "tipo": "GAME_STAT",
+      "condicao": "Dar 10.000 passos",
+      "param": "GAME_STAT_STEPS",
+      "param2": 10000,
+      "premios": [
+        {"item": "ITEM_SUPER_REPEL", "qtd": 3}
+      ]
+    },
+    {
+      "num": 39,
+      "id": "dinheiro",
+      "aba": "exploracao",
+      "nome": "Milionário",
+      "tipo": "DINHEIRO",
+      "condicao": "Juntar ₽999.999",
+      "param": 999999,
+      "premios": [
+        {"item": "ITEM_AMULET_COIN", "qtd": 1}
+      ]
+    },
+    {
+      "num": 40,
+      "id": "horas",
+      "aba": "exploracao",
+      "nome": "{N} horas de jogo",
+      "tipo": "HORAS",
+      "condicao": "Tempo de jogo (10, 50 e 100 horas)",
+      "degraus": [10, 50, 100],
+      "premios": [
+        {"item": "ITEM_RARE_CANDY", "qtd": 1},
+        {"item": "ITEM_PP_UP", "qtd": 1},
+        {"item": "ITEM_MASTER_BALL", "qtd": 1}
+      ]
+    }
+  ],
+  "diario": [
+    {
+      "id": "brock",
+      "nome": "Brock",
+      "local": "Ginásio de Pewter",
+      "tipo": "treinador",
+      "lider": true,
+      "rival": false,
+      "treinadores": ["TRAINER_LEADER_BROCK"]
+    },
+    {
+      "id": "misty",
+      "nome": "Misty",
+      "local": "Ginásio de Cerulean",
+      "tipo": "treinador",
+      "lider": true,
+      "rival": false,
+      "treinadores": ["TRAINER_LEADER_MISTY"]
+    },
+    {
+      "id": "surge",
+      "nome": "Ten. Surge",
+      "local": "Ginásio de Vermilion",
+      "tipo": "treinador",
+      "lider": true,
+      "rival": false,
+      "treinadores": ["TRAINER_LEADER_LT_SURGE"]
+    },
+    {
+      "id": "erika",
+      "nome": "Erika",
+      "local": "Ginásio de Celadon",
+      "tipo": "treinador",
+      "lider": true,
+      "rival": false,
+      "treinadores": ["TRAINER_LEADER_ERIKA"]
+    },
+    {
+      "id": "koga",
+      "nome": "Koga",
+      "local": "Ginásio de Fuchsia",
+      "tipo": "treinador",
+      "lider": true,
+      "rival": false,
+      "treinadores": ["TRAINER_LEADER_KOGA"]
+    },
+    {
+      "id": "sabrina",
+      "nome": "Sabrina",
+      "local": "Ginásio de Saffron",
+      "tipo": "treinador",
+      "lider": true,
+      "rival": false,
+      "treinadores": ["TRAINER_LEADER_SABRINA"]
+    },
+    {
+      "id": "blaine",
+      "nome": "Blaine",
+      "local": "Ginásio de Cinnabar",
+      "tipo": "treinador",
+      "lider": true,
+      "rival": false,
+      "treinadores": ["TRAINER_LEADER_BLAINE"]
+    },
+    {
+      "id": "giovanni",
+      "nome": "Giovanni",
+      "local": "Ginásio de Viridian",
+      "tipo": "treinador",
+      "lider": true,
+      "rival": false,
+      "treinadores": ["TRAINER_LEADER_GIOVANNI"]
+    },
+    {
+      "id": "rival_lab",
+      "nome": "Rival",
+      "local": "Lab do Carvalho",
+      "tipo": "treinador",
+      "lider": false,
+      "rival": true,
+      "treinadores": ["TRAINER_RIVAL_OAKS_LAB_SQUIRTLE", "TRAINER_RIVAL_OAKS_LAB_BULBASAUR", "TRAINER_RIVAL_OAKS_LAB_CHARMANDER"]
+    },
+    {
+      "id": "rival_rota22",
+      "nome": "Rival",
+      "local": "Rota 22",
+      "tipo": "treinador",
+      "lider": false,
+      "rival": true,
+      "treinadores": ["TRAINER_RIVAL_ROUTE22_EARLY_SQUIRTLE", "TRAINER_RIVAL_ROUTE22_EARLY_BULBASAUR", "TRAINER_RIVAL_ROUTE22_EARLY_CHARMANDER"]
+    },
+    {
+      "id": "rival_cerulean",
+      "nome": "Rival",
+      "local": "Cidade de Cerulean",
+      "tipo": "treinador",
+      "lider": false,
+      "rival": true,
+      "treinadores": ["TRAINER_RIVAL_CERULEAN_SQUIRTLE", "TRAINER_RIVAL_CERULEAN_BULBASAUR", "TRAINER_RIVAL_CERULEAN_CHARMANDER"]
+    },
+    {
+      "id": "rival_ss_anne",
+      "nome": "Rival",
+      "local": "S.S. Anne",
+      "tipo": "treinador",
+      "lider": false,
+      "rival": true,
+      "treinadores": ["TRAINER_RIVAL_SS_ANNE_SQUIRTLE", "TRAINER_RIVAL_SS_ANNE_BULBASAUR", "TRAINER_RIVAL_SS_ANNE_CHARMANDER"]
+    },
+    {
+      "id": "rival_torre",
+      "nome": "Rival",
+      "local": "Torre Pokémon",
+      "tipo": "treinador",
+      "lider": false,
+      "rival": true,
+      "treinadores": ["TRAINER_RIVAL_POKEMON_TOWER_SQUIRTLE", "TRAINER_RIVAL_POKEMON_TOWER_BULBASAUR", "TRAINER_RIVAL_POKEMON_TOWER_CHARMANDER"]
+    },
+    {
+      "id": "rival_silph",
+      "nome": "Rival",
+      "local": "Silph Co.",
+      "tipo": "treinador",
+      "lider": false,
+      "rival": true,
+      "treinadores": ["TRAINER_RIVAL_SILPH_SQUIRTLE", "TRAINER_RIVAL_SILPH_BULBASAUR", "TRAINER_RIVAL_SILPH_CHARMANDER"]
+    },
+    {
+      "id": "rival_rota22_final",
+      "nome": "Rival",
+      "local": "Rota 22",
+      "tipo": "treinador",
+      "lider": false,
+      "rival": true,
+      "treinadores": ["TRAINER_RIVAL_ROUTE22_LATE_SQUIRTLE", "TRAINER_RIVAL_ROUTE22_LATE_BULBASAUR", "TRAINER_RIVAL_ROUTE22_LATE_CHARMANDER"]
+    },
+    {
+      "id": "lorelei",
+      "nome": "Lorelei",
+      "local": "Liga Pokémon",
+      "tipo": "treinador",
+      "lider": false,
+      "rival": false,
+      "treinadores": ["TRAINER_ELITE_FOUR_LORELEI"]
+    },
+    {
+      "id": "bruno",
+      "nome": "Bruno",
+      "local": "Liga Pokémon",
+      "tipo": "treinador",
+      "lider": false,
+      "rival": false,
+      "treinadores": ["TRAINER_ELITE_FOUR_BRUNO"]
+    },
+    {
+      "id": "agatha",
+      "nome": "Agatha",
+      "local": "Liga Pokémon",
+      "tipo": "treinador",
+      "lider": false,
+      "rival": false,
+      "treinadores": ["TRAINER_ELITE_FOUR_AGATHA"]
+    },
+    {
+      "id": "lance",
+      "nome": "Lance",
+      "local": "Liga Pokémon",
+      "tipo": "treinador",
+      "lider": false,
+      "rival": false,
+      "treinadores": ["TRAINER_ELITE_FOUR_LANCE", "TRAINER_ELITE_FOUR_LANCE_2"]
+    },
+    {
+      "id": "campeao",
+      "nome": "Campeão",
+      "local": "Liga Pokémon",
+      "tipo": "treinador",
+      "lider": false,
+      "rival": true,
+      "treinadores": ["TRAINER_CHAMPION_FIRST_SQUIRTLE", "TRAINER_CHAMPION_FIRST_BULBASAUR", "TRAINER_CHAMPION_FIRST_CHARMANDER"]
+    },
+    {
+      "id": "articuno",
+      "nome": "Articuno",
+      "local": "Ilhas Seafoam",
+      "tipo": "lendario",
+      "lider": false,
+      "rival": false,
+      "especie": "SPECIES_ARTICUNO"
+    },
+    {
+      "id": "zapdos",
+      "nome": "Zapdos",
+      "local": "Usina Elétrica",
+      "tipo": "lendario",
+      "lider": false,
+      "rival": false,
+      "especie": "SPECIES_ZAPDOS"
+    },
+    {
+      "id": "moltres",
+      "nome": "Moltres",
+      "local": "Monte Brasa",
+      "tipo": "lendario",
+      "lider": false,
+      "rival": false,
+      "especie": "SPECIES_MOLTRES"
+    },
+    {
+      "id": "mewtwo",
+      "nome": "Mewtwo",
+      "local": "Caverna de Cerulean",
+      "tipo": "lendario",
+      "lider": false,
+      "rival": false,
+      "especie": "SPECIES_MEWTWO"
+    },
+    {
+      "id": "raikou",
+      "nome": "Raikou",
+      "local": "Errante por Kanto",
+      "tipo": "lendario",
+      "lider": false,
+      "rival": false,
+      "especie": "SPECIES_RAIKOU"
+    },
+    {
+      "id": "entei",
+      "nome": "Entei",
+      "local": "Errante por Kanto",
+      "tipo": "lendario",
+      "lider": false,
+      "rival": false,
+      "especie": "SPECIES_ENTEI"
+    },
+    {
+      "id": "suicune",
+      "nome": "Suicune",
+      "local": "Errante por Kanto",
+      "tipo": "lendario",
+      "lider": false,
+      "rival": false,
+      "especie": "SPECIES_SUICUNE"
+    },
+    {
+      "id": "lugia",
+      "nome": "Lugia",
+      "local": "Rocha Umbigo",
+      "tipo": "lendario",
+      "lider": false,
+      "rival": false,
+      "especie": "SPECIES_LUGIA"
+    },
+    {
+      "id": "ho_oh",
+      "nome": "Ho-Oh",
+      "local": "Rocha Umbigo",
+      "tipo": "lendario",
+      "lider": false,
+      "rival": false,
+      "especie": "SPECIES_HO_OH"
+    },
+    {
+      "id": "mew",
+      "nome": "Mew",
+      "local": "Mansão Pokémon",
+      "tipo": "lendario",
+      "lider": false,
+      "rival": false,
+      "especie": "SPECIES_MEW"
+    },
+    {
+      "id": "celebi",
+      "nome": "Celebi",
+      "local": "Floresta das Frutas",
+      "tipo": "lendario",
+      "lider": false,
+      "rival": false,
+      "especie": "SPECIES_CELEBI"
+    },
+    {
+      "id": "jirachi",
+      "nome": "Jirachi",
+      "local": "Ruínas de Tanoby",
+      "tipo": "lendario",
+      "lider": false,
+      "rival": false,
+      "especie": "SPECIES_JIRACHI"
+    },
+    {
+      "id": "deoxys",
+      "nome": "Deoxys",
+      "local": "Ilha do Nascimento",
+      "tipo": "lendario",
+      "lider": false,
+      "rival": false,
+      "especie": "SPECIES_DEOXYS"
+    }
+  ]
+}

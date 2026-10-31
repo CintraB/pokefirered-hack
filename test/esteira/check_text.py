@@ -189,6 +189,33 @@ def _novidades_rules(repo: Path) -> list[Rule]:
     ]
 
 
+def _conquistas_rules(repo: Path) -> list[Rule]:
+    """Janelas das conquistas e do diário (POK-44), com as larguras de include/conquistas.h
+    (`CONQ_NOME_LARGURA`, `DIARIO_NOME_LARGURA`, `DIARIO_LOCAL_LARGURA`; FONT_NORMAL, 1 linha)."""
+    try:
+        header = (repo / "include" / "conquistas.h").read_text(encoding="utf-8")
+    except OSError:
+        return []
+    c: dict[str, int] = {}
+    at: dict[str, str] = {}   # constante -> "include/conquistas.h:<linha>"
+    for m in re.finditer(r"^#define (CONQ_NOME_LARGURA|DIARIO_NOME_LARGURA|DIARIO_LOCAL_LARGURA)\s+(\d+)",
+                         header, re.M):
+        c[m.group(1)] = int(m.group(2))
+        at[m.group(1)] = f"include/conquistas.h:{header.count(chr(10), 0, m.start()) + 1}"
+    if len(c) != 3:
+        return []
+    json_rel = "src/data/conquistas/conquistas.json"
+    where = "conquistas e diário: "
+    return [
+        Rule(json_rel, "c.*.nome", c["CONQ_NOME_LARGURA"], where + "nome da conquista na lista, FONT_NORMAL, "
+             f"1 linha, {{N}} medido como 300 (CONQ_NOME_LARGURA, {at['CONQ_NOME_LARGURA']})", lines=1),
+        Rule(json_rel, "d.*.nome", c["DIARIO_NOME_LARGURA"], where + "nome do evento na lista do diário, "
+             f"FONT_NORMAL, 1 linha (DIARIO_NOME_LARGURA, {at['DIARIO_NOME_LARGURA']})", lines=1),
+        Rule(json_rel, "d.*.local", c["DIARIO_LOCAL_LARGURA"], where + "local no detalhe do diário, "
+             f"FONT_NORMAL, 1 linha (DIARIO_LOCAL_LARGURA, {at['DIARIO_LOCAL_LARGURA']})", lines=1),
+    ]
+
+
 WIDTH_RULES: list[Rule] = [
     Rule("data/maps/*/text.inc", None, DIALOG_WIDTH_PX, _DIALOG, box_lines=DIALOG_BOX_LINES),
     *[Rule(f"data/text/{name}.inc", None, DIALOG_WIDTH_PX, _DIALOG + "; usado só via msgbox/message",
@@ -291,6 +318,7 @@ WIDTH_RULES: list[Rule] = [
          "(src/teachy_tv.c:679)"),
     Rule("src/data/text/*.h", None, None, "tabela de texto sem janela própria conhecida"),
     *_novidades_rules(Path(__file__).resolve().parents[2]),
+    *_conquistas_rules(Path(__file__).resolve().parents[2]),
     # -- batalha (dona: frente G) --
     *[Rule("src/battle_message.c", label, DIALOG_WIDTH_PX,
            _OAK_OLD_MAN + "; impresso em src/battle_controller_oak_old_man.c:652-844") for label in _OAK_TUTORIAL],
@@ -853,15 +881,27 @@ def _extract_novidades_text(rel: str, source: str) -> Iterator[_Entry]:
                     yield _Entry(rel, f"{topic['id']}.{n}.{field}", (card[field].replace("\n", "\\n"),), False)
 
 
+def _extract_conquistas_text(rel: str, source: str) -> Iterator[_Entry]:
+    """Conquistas e diário (conquistas.json): `c.<id>.nome` (com o {N} medido como 300, o maior degrau),
+    `d.<id>.nome` e `d.<id>.local` de cada evento do diário."""
+    data = json.loads(source)
+    for conq in data.get("conquistas", []):
+        yield _Entry(rel, f"c.{conq['id']}.nome", (conq["nome"].replace("{N}", "300"),), False)
+    for evento in data.get("diario", []):
+        yield _Entry(rel, f"d.{evento['id']}.nome", (evento["nome"],), False)
+        yield _Entry(rel, f"d.{evento['id']}.local", (evento["local"],), False)
+
+
 # Arquivos C fora da varredura: o que a build FireRed não compila (pokedex_text.h inclui o _fr
 # ou o _lg) e os .h gerados pelo build a partir dos JSON (.gitignore), que repetem o texto da fonte
 _C_EXCLUDED = {"src/data/pokemon/pokedex_text_lg.h", "src/data/items.h", "src/data/heal_locations.h",
                "src/data/region_map/region_map_entries.h", "src/data/region_map/region_map_entry_strings.h",
                "src/data/wild_encounters.h", "src/data/wild_encounters_time.h",
-               "src/data/novidades_cartoes.h"}
+               "src/data/novidades_cartoes.h", "src/data/conquistas_ids.h", "src/data/conquistas_tabela.h"}
 _ITEMS = "src/data/items.json"
 _REGION_MAP = "src/data/region_map/region_map_sections.json"
 _NOVIDADES = "src/data/novidades/cartoes.json"
+_CONQUISTAS = "src/data/conquistas/conquistas.json"
 
 
 def _source_files(repo: Path) -> list[tuple[str, str]]:
@@ -888,14 +928,16 @@ def _source_files(repo: Path) -> list[tuple[str, str]]:
         base = Path(top).relative_to(repo).as_posix()
         c_files += [f"{base}/{name}" for name in names if name.endswith((".c", ".h"))]
     files += [(rel, "c") for rel in sorted(c_files) if rel not in _C_EXCLUDED]
-    for rel, kind in ((_ITEMS, "items"), (_REGION_MAP, "region_map"), (_NOVIDADES, "novidades")):
+    for rel, kind in ((_ITEMS, "items"), (_REGION_MAP, "region_map"), (_NOVIDADES, "novidades"),
+                      (_CONQUISTAS, "conquistas")):
         if (repo / rel).is_file():
             files.append((rel, kind))
     return files
 
 
 _EXTRACTORS = {"inc": _extract_inc_text, "c": _extract_c_text, "items": _extract_items_text,
-               "region_map": _extract_region_map_text, "novidades": _extract_novidades_text}
+               "region_map": _extract_region_map_text, "novidades": _extract_novidades_text,
+               "conquistas": _extract_conquistas_text}
 
 
 def _extract(rel: str, kind: str, source: str) -> Iterator[_Entry | Result]:
