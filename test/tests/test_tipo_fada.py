@@ -1,7 +1,7 @@
 """POK-45 sem emulador: o tipo Fada no motor e nos dados, como na Gen 6.
 
 Lê o C como texto e o snapshot tools/gen6/gen6.json (PokéAPI). O que não é Fada tem que ficar
-igual ao da branch hack-switch (a base deste pacote), lida pelo `git show`.
+igual ao da base deste pacote (hack-switch 759447339, SHA fixo), lida pelo `git show`.
 """
 
 import json
@@ -27,7 +27,7 @@ BATTLE_MOVES = (SRC / "data" / "battle_moves.h").read_text(encoding="utf-8")
 UNION_ROOM_H = (SRC / "data" / "union_room.h").read_text(encoding="utf-8")
 TEST_HOOKS_C = (SRC / "test_hooks.c").read_text(encoding="utf-8")
 
-BASE = "hack-switch"
+BASE = "759447339662d5680268db3f3b38f44f44ecd88c"   # hack-switch na criação desta branch (SHA fixo: a hack-switch vai andar)
 TYPE_FAIRY = 18
 TYPE_MYSTERY = 9
 

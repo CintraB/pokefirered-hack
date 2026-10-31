@@ -1346,13 +1346,13 @@ DECLARED: list[Declared] = [
              BufRef("text", _BM, "BattleStringExpandPlaceholders"),
              (Text("sText_BerryPrefix", file=_BM), Fixed("BERRY_NAME_LENGTH", "nome da fruta Enigma (BERRY_NAME_LENGTH)")),
              why="item do último efeito: text[30] = sText_BerryPrefix + nome da fruta Enigma "
-                 "(src/battle_message.c:1992-1993, :2001-2002)"),
+                 "(src/battle_message.c:1992-1993, :2005-2006)"),
     Declared(_BM, r"", r"sText_(Foe|Wild)PkmnPrefix", BufRef("text", _BM, "BattleStringExpandPlaceholders"),
              (_NICK, Text("sText_FoePkmnPrefix", "sText_WildPkmnPrefix", file=_BM)),
              why="HANDLE_NICKNAME_STRING_CASE (macro, src/battle_message.c:1811-1824): text[30] = apelido + "
                  "\" selvagem\"/\" inimigo\" depois do nome"),
     Declared(_BM, "BattleStringExpandPlaceholders", r"", BufRef("text", _BM, "BattleStringExpandPlaceholders"),
-             why="item do último efeito: CopyItemName(gLastUsedItem, text) em text[30] (src/battle_message.c:2015, :2017)",
+             why="item do último efeito: CopyItemName(gLastUsedItem, text) em text[30] (src/battle_message.c:2015, :2021)",
              dest=r"text"),
     # gBattleTextBuffN -> gStringVarN (src/battle_message.c:1853-1875): o menor deles, gStringVar2/3 (20)
     Declared(_BM, "ExpandBattleTextBuffPlaceholders", r"gBattleStringsTable\[.*\]", BufRef("gStringVar2"),
@@ -1390,7 +1390,7 @@ DECLARED: list[Declared] = [
              why="tutorial do Carvalho: PrintOakTextWithMainBgDarkened(text) (src/battle_controller_oak_old_man.c:"
                  "721-741) expande em gDisplayedStringBattle[300] (:775)"),
     Declared(_BM, "ChooseMoveUsedParticle", r".*", BufRef("gBattleTextBuff1"),
-             why="partícula do golpe usado em gBattleTextBuff1 (src/battle_message.c:1689, :2341-2343)"),
+             why="partícula do golpe usado em gBattleTextBuff1 (src/battle_message.c:1689, :2343-2345)"),
     Declared(_BM, "ChooseTypeOfMoveUsedString", r".*", BufRef("gBattleTextBuff2"),
              (Text("gMoveNames", "sATypeMove_Table", file=_BM),
               Text(*[f"sText_ExclamationMark{n}" for n in ("", "2", "3", "4", "5")], file=_BM)),
