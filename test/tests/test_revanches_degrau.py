@@ -201,6 +201,17 @@ def test_ganchos_conquistas():
         assert linha in h, linha
 
 
+def test_ganchos_respeitam_o_marcador():
+    """Os ganchos de rematch_tier.c chamam Conquistas_Evento direto: a regra do POK-44 (save sem marcador = gatilho
+    não faz nada; a varredura do save antigo decide) fica na própria entrada pública, não em quem chama."""
+    fonte = _ler(SRC / "conquistas.c")
+    for nome, perder in (("Conquistas_Evento", "FALSE"), ("Conquistas_PerderEvento", "TRUE")):
+        corpo = _corpo(fonte, nome)
+        assert re.search(rf"if \(ComMarcador\(\)\)\s*AplicarEvento\(evento, {perder}\);", corpo), (nome, corpo)
+    # ComMarcador definida antes das entradas (sem protótipo solto)
+    assert fonte.index("static bool8 ComMarcador(void)\n{") < fonte.index("void Conquistas_Evento(u8 evento)\n{")
+
+
 def test_conquistas_do_degrau_ativas():
     """As duas conquistas do POK-44 que esperavam o POK-42 ficam ativas (o JSON é a fonte única)."""
     import json

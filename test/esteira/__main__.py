@@ -75,6 +75,7 @@ from esteira.scenarios.full_ritmo import run_full_pace             # Hack 2 (rit
 from esteira.scenarios.full_battle_weather_visual import run_full_battle_weather_visual  # POK-15
 from esteira.scenarios.full_fisico_fada import run_full_fisico_fada  # POK-43, 45
 from esteira.scenarios.full_conquistas import run_full_conquistas  # POK-44
+from esteira.scenarios.full_revanches import run_full_revanches  # POK-42
 from esteira.scenarios.full_forest_brock import run_full_forest_brock
 from esteira.scenarios.full_master import run_full_master
 from esteira.scenarios.full_pc import run_full_pc
@@ -186,6 +187,7 @@ FULL_SCENARIOS: list[ScenarioSpec] = [
     ScenarioSpec("clima_batalha", run_full_battle_weather_visual, rom=TEST, save_from="captura"),  # POK-15
     ScenarioSpec("fisico_fada", run_full_fisico_fada, rom=TEST, save_from="captura"),  # POK-43, 45
     ScenarioSpec("conquistas", run_full_conquistas, rom=TEST, save_from="captura"),  # POK-44
+    ScenarioSpec("revanches", run_full_revanches, rom=TEST, save_from="captura"),  # POK-42
     ScenarioSpec("novidades_inicial", run_full_novidades_first_offer, needs="abertura"),
 ]
 # Cenários do modo completo que o `assistir --cenario` mostra numa janela (ROM de teste, a
@@ -201,7 +203,8 @@ WATCH_FULL_SCENARIOS = ("evolucoes", "resumo_evolucao", "resumo_ivs", "ovo",
                         "ritmo",  # Hack 2
                         "clima_batalha",  # POK-15
                         "fisico_fada",  # POK-43, 45
-                        "conquistas")  # POK-44
+                        "conquistas",  # POK-44
+                        "revanches")  # POK-42
 
 
 def scenarios_for(mode: str) -> list[ScenarioSpec]:

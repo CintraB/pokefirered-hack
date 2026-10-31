@@ -400,6 +400,11 @@
           "title": "Diário da jornada",
           "body": "Na tela de conquistas, o SELECT abre o\ndiário: a 1ª vitória contra cada líder, o\nrival, a Elite 4 e a final da Liga, e cada\nlendário, com tempo, turnos, time e o MVP da\nbatalha.",
           "itemId": "ITEM_FAME_CHECKER"
+        },
+        {
+          "title": "Revanches por degrau",
+          "body": "Depois do Hall da Fama, a guarda da Liga\npergunta o nível a cada visita, de Normal a\nNível 100. Vale para a Elite 4, a final da\nLiga e as revanches do Explorador VS: times\nde 6, mais fortes, com item e IVs altos.",
+          "itemId": "ITEM_VS_SEEKER"
         }
       ]
     },

@@ -398,7 +398,7 @@ def times_liga():
 
 @functools.cache
 def golpes_do_jogo() -> dict[str, int]:
-    """MOVE_* -> id, de include/constants/moves.h (sem MOVES_COUNT/MOVE_UNAVAILABLE)."""
+    """MOVE_* -> id, de include/constants/moves.h, sem MOVE_UNAVAILABLE (MOVES_COUNT nem casa com o padrão)."""
     texto = _ler("include/constants/moves.h")
     return {m.group(1): int(m.group(2)) for m in re.finditer(r"^#define (MOVE_\w+)\s+(\d+)\b", texto, re.M)
             if m.group(1) not in ("MOVE_UNAVAILABLE",)}

@@ -522,7 +522,8 @@ def test_cenario_do_diario():
     pontos = refs.CONQUISTAS_TELA_POINTS
     assert pontos[:3] == ("conquistas_historia", "conquistas_batalha", "cartao_dica"), pontos
     assert set(pontos[3:]) == set(fotos), pontos
-    assert refs.SHARED_POINTS[-len(pontos):] == pontos
+    fim = len(refs.SHARED_POINTS) - len(refs.REVANCHES_POINTS)   # depois deles, só os das revanches (POK-42)
+    assert refs.SHARED_POINTS[fim - len(pontos):fim] == pontos
 
 
 def test_foto_do_cartao_nao_varia_com_o_relogio():

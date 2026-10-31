@@ -715,19 +715,22 @@ void Conquistas_EntregarTudo(u8 *naBolsa, u8 *noPc, u8 *pendentes)
 // Num save ainda sem marcador eles não fazem nada: a varredura do save antigo (que a checagem cadenciada roda logo
 // depois de carregar) reconhece o que o save prova, e assim nada conta duas vezes nem some no memset dela.
 
+static bool8 ComMarcador(void)
+{
+    return sConq->magic == CONQ_MAGIC;
+}
+
+// As duas entradas públicas também respeitam o marcador: os ganchos de fora (rematch_tier.c, POK-42) chamam direto.
 void Conquistas_Evento(u8 evento)
 {
-    AplicarEvento(evento, FALSE);
+    if (ComMarcador())
+        AplicarEvento(evento, FALSE);
 }
 
 void Conquistas_PerderEvento(u8 evento)
 {
-    AplicarEvento(evento, TRUE);
-}
-
-static bool8 ComMarcador(void)
-{
-    return sConq->magic == CONQ_MAGIC;
+    if (ComMarcador())
+        AplicarEvento(evento, TRUE);
 }
 
 // Batalhas que não são do jogador nesta jornada (o FRLG não tem BATTLE_TYPE_RECORDED, que é do Emerald).
