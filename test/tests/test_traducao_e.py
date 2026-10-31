@@ -56,6 +56,8 @@ NUMERIC_PLACEHOLDERS = {
     "gText_Coins": "moedas, 4 algarismos em FONT_SMALL (src/coins.c)",
     "gText_MenuSafariStats": "passos e bolas da Safári (src/start_menu.c)",
     "gText_PokedollarVar1": "dinheiro (src/money.c)",
+    "gText_ConqTela_Rodape": "nome da aba (até 10 letras) e feitas/válidas com 2 algarismos (src/conquistas_tela.c); "
+                             "medido em test_conquistas_tela.py::test_textos_da_tela_e_regra",
 }
 WIDE_PLACEHOLDER = "MMMMMMMMMM"
 

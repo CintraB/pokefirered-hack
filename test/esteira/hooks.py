@@ -297,6 +297,20 @@ class Mailbox:
         assert result != NO_RESULT, f"ENCHER_BOLSO recusado: item {item}"
         return result
 
+    def open_conquistas(self, diario: bool = False) -> int:
+        """Abre a tela de conquistas (ou o diário) pelo special, de um script de campo; devolve o número do
+        special. A tela monta nos quadros seguintes: espere `conq_tela()` com a entrada pronta."""
+        result = self.call(CMD_OPEN_CONQUISTAS, int(diario))
+        assert result != NO_RESULT, "Conquistas_AbrirTelaDoScript fora de gSpecials"
+        return result
+
+    def conq_tela(self) -> tuple[int, int, int, bool] | None:
+        """(modo, aba, topo da lista, entrada pronta) da tela de conquistas; None com a tela fechada."""
+        raw = self.call(CMD_CONQ_TELA)
+        if raw == NO_RESULT:
+            return None
+        return raw & 0xFF, raw >> 8 & 0xFF, raw >> 16 & 0xFF, bool(raw >> 24 & 0xFF)
+
 # --- Hack 6: breeding genético (enum à parte em include/test_hooks.h, a partir de 0x60; ------
 # o uso fica em esteira/breeding.py e scenarios/full_breeding.py / full_egg.py)
 CMD_BREED_SETUP = 0x60      # gTestBreedSetup -> creche (arg0 = 1: ovo pendente) -> compatibilidade (0xFFFFFFFF = pai inválido)
@@ -368,3 +382,6 @@ CMD_CONQ_SILENCIO = 0xBC    # arg0 = 1 silencia o aviso das conquistas (nem chec
 CMD_ENCHER_BOLSO = 0xBD     # arg0 = item: os espaços livres do bolso dele com itens distintos do mesmo bolso, 999 cada,
                             # a começar pelo próprio item; arg1 = 1 enche também os 30 do PC de itens -> espaços ocupados
                             # (bolso + PC)
+CMD_OPEN_CONQUISTAS = 0xBE  # arg0 = modo (0 conquistas, 1 diário): script de campo com setvar VAR_0x8004 e `special
+                            # Conquistas_AbrirTelaDoScript` -> número do special (0xFFFFFFFF = fora de gSpecials)
+CMD_CONQ_TELA = 0xBF        # -> modo | aba << 8 | topo da lista << 16 | entrada pronta << 24 (0xFFFFFFFF = fechada)

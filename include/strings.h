@@ -1613,5 +1613,7 @@ extern const u8 gText_ConqAviso_ResumoVarias[];
 extern const u8 gText_ConqAviso_Premios[];
 extern const u8 gText_ConqAviso_Separador[];
 extern const u8 gText_ConqAviso_Depois[];
+extern const u8 gText_ConqTela_Rodape[];
+extern const u8 gText_ConqTela_DicaCartao[];
 
 #endif //GUARD_STRINGS_H

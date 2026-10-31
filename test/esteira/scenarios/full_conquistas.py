@@ -30,6 +30,11 @@ Sessão própria da ROM de teste a partir do .sav do `captura` (`save_from="capt
   PC cheios deixa o prêmio para depois (não volta no mesmo mapa); nunca em batalha; vários de uma vez saem um por
   vez; num save antigo, um aviso-resumo só entrega tudo. Fotos em telas/conquista_*.png (sem referência: quem
   aprova o visual é o Cintra).
+- `tela/*` (Task 7): a tela de conquistas aberta pelo special (`open_conquistas`) com 3 insígnias e `rival_todas`
+  perdida: aba 0, R → 1, L L → 4 (dá a volta); a ajuda (`gHelpSystemEnabled`) desligada com a tela aberta e ligada
+  de novo na saída; o rodapé "História: 3 de 12"; e o cartão de treinador pelo menu Start: SELECT abre a tela, B
+  volta ao cartão, B volta ao campo. Fotos conquistas_historia, conquistas_batalha e cartao_dica (SHARED_POINTS:
+  sem referência até o OK do Cintra) e cartao_conquistas/cartao_volta.
 
 Uso, a partir de test/ (a pasta OUT precisa do captura.sav de um `rapido`/`completo`):
     python3 -m esteira completo --rom R --elf E --out OUT --only conquistas
@@ -43,7 +48,8 @@ import sys
 from .. import conquistas as cq
 from ..battle import (ACTION_FIGHT, B_OUTCOME_CAUGHT, MOVE_FUNC_SUFFIX, NICKNAME_COMMAND, PARTY_CHOOSE_TASK,
                       PARTY_MENU_SLOT_ID, PARTY_SELECTION_TASK)
-from ..emu import KEY_A, KEY_B, KEY_DOWN, KEY_RIGHT, KEY_UP
+from ..emu import KEY_A, KEY_B, KEY_DOWN, KEY_L, KEY_R, KEY_RIGHT, KEY_SELECT, KEY_UP
+from ..field_menu import STARTMENU_PLAYER, FieldMenu
 from ..game import SB1_MONEY
 from ..hooks import CMD_CONQ_ESTADO, CMD_GIVE_ITEM, CMD_START_WILD_BATTLE, CMD_WARP, NO_RESULT, Mailbox
 from . import REPO_ROOT, ScenarioContext
@@ -68,6 +74,11 @@ PENDENTE, FEITA, PERDIDA = cq.CONQ_PENDENTE, cq.CONQ_FEITA, cq.CONQ_PERDIDA
 ABA_HISTORIA, ABA_BATALHA = 0, 1
 APLICAR_MARCAR, APLICAR_PERDER, APLICAR_ENTREGUE, APLICAR_DEGRAU = 0, 1, 2, 3
 BADGES = [f"FLAG_BADGE0{i}_GET" for i in range(1, 9)]
+TELA_TIMEOUT = 300       # a tela de conquistas monta e clareia (fade) em menos que isso
+TELA_ASSENTA = 8         # quadros depois da entrada pronta, antes da foto
+TELA_CB2 = "CB2_ConquistasTela"
+CARTAO_CB2 = "CB2_TrainerCard"
+CARTAO_ASSENTA = 90      # o cartão clareia e toca o som de abrir antes de ler os botões (STATE_HANDLE_INPUT_FRONT)
 # Task 6: o aviso
 AVISO_ATIVO = "gConquistasAvisoAtivo"   # u8: 1 enquanto o aviso está na tela (src/conquistas_aviso.c)
 AVISO_TIMEOUT = 300      # a checagem de estado roda a cada 32 quadros; o aviso aparece logo depois
@@ -951,6 +962,104 @@ class ConquistasScenario(CatchSaveScenario):
         assert self.box.conq_checar() == 0
         return f"um aviso só: {texto!r}; os 3 prêmios das insígnias na bolsa"
 
+    # --- Task 7: a tela de conquistas e o cartão ----------------------------------------------
+    def _tela(self) -> tuple[int, int, int, bool] | None:
+        return self.box.conq_tela()
+
+    def _tela_pronta(self, what: str) -> tuple[int, int, int, bool]:
+        self.ctl.wait_until(lambda: (s := self._tela()) is not None and s[3], TELA_TIMEOUT, what)
+        self.emu.frames(TELA_ASSENTA)
+        return self._tela()
+
+    def _foto_tela(self, nome: str) -> str:
+        self.emu.frames(TELA_ASSENTA)   # as cópias das janelas para a VRAM saem em alguns VBlanks
+        foto = self._shot(nome)
+        self.measures.setdefault("fotos_tela", []).append(foto)
+        return foto
+
+    def _trocar_aba(self, key: int, aba: int, what: str) -> None:
+        self.ctl.press_until(key, lambda: self._tela()[1] == aba, what, tries=3, wait=10)
+        assert self.game.callback2() == TELA_CB2, self.game.callback2()
+
+    def _ajuda(self) -> int:
+        return self.emu.read_u8(self.game.syms.addr("gHelpSystemEnabled"))
+
+    def _estado_da_tela(self) -> None:
+        """O estado do estado/conta_aba: 3 insígnias (História 3 de 12) e `rival_todas` perdida (Batalha riscada)."""
+        self.box.conq_silencio(True)
+        self.box.conq_reset(True)
+        for i, flag in enumerate(BADGES):
+            self._flag(flag, i < 3)
+        for flag in ("FLAG_SYS_GAME_CLEAR", "FLAG_HIDE_SAFFRON_ROCKETS", "FLAG_SYS_CAN_LINK_WITH_RS"):
+            self._flag(flag, False)
+        self.box.conq_checar()
+        self.box.conq_aplicar(cq.num("rival_todas"), APLICAR_PERDER)
+
+    def _abrir_tela(self) -> tuple[int, int, int, bool]:
+        self.box.open_conquistas()
+        return self._tela_pronta("tela de conquistas aberta pelo special")
+
+    def _fechar_tela(self) -> None:
+        self.ctl.press_until(KEY_B, lambda: self._tela() is None, "B fecha a tela de conquistas", tries=3, wait=60)
+        self.ctl.wait_overworld_idle(600)
+
+    def _abre_e_abas(self) -> str:
+        self._ir("MAP_PALLET_TOWN", PALLET_LIVRE)
+        self._estado_da_tela()
+        estado = self._abrir_tela()
+        assert estado == (0, 0, 0, True), estado
+        assert self.game.callback2() == TELA_CB2, self.game.callback2()
+        self._foto_tela("conquistas_historia")
+        self._trocar_aba(KEY_R, 1, "R: aba Batalha")
+        self._foto_tela("conquistas_batalha")
+        self._trocar_aba(KEY_L, 0, "L: aba História")
+        self._trocar_aba(KEY_L, 4, "L de novo: dá a volta para Exploração")
+        self._fechar_tela()
+        return "aba 0; R → 1; L L → 4 (dá a volta); fotos conquistas_historia e conquistas_batalha"
+
+    def _lr_sem_ajuda(self) -> str:
+        self._ir("MAP_PALLET_TOWN", PALLET_LIVRE)
+        assert self._ajuda() == 1, "a ajuda já estava desligada no campo"
+        self._abrir_tela()
+        assert self._ajuda() == 0, "ajuda ligada com a tela aberta"
+        self._trocar_aba(KEY_R, 1, "R")
+        self._trocar_aba(KEY_R, 2, "R")
+        self._trocar_aba(KEY_L, 1, "L")
+        assert self._ajuda() == 0
+        self._fechar_tela()
+        assert self._ajuda() == 1, "a ajuda não voltou na saída"
+        return "gHelpSystemEnabled 1 → 0 com a tela aberta (L/R trocam a aba, o CB2 é o da tela) → 1 na saída"
+
+    def _rodape(self) -> str:
+        historia = self.box.conq_contador(4 + ABA_HISTORIA)
+        assert historia == 3 | 12 << 8, f"história = {historia & 0xFF} de {historia >> 8}"
+        foto = self.shots / "conquistas_historia.png"
+        assert foto.is_file(), "sem a foto da aba História (tela/abre_e_abas)"
+        return "Conquistas_ContarAba(História) = 3 de 12; o rodapé \"História: 3 de 12\" está na foto conquistas_historia"
+
+    def _cartao(self) -> str:
+        menu = FieldMenu(self.ctl)
+        self._ir("MAP_PALLET_TOWN", PALLET_LIVRE)
+        menu.open_start_menu()
+        menu.choose(STARTMENU_PLAYER)
+        self.ctl.wait_until(lambda: self.game.callback2() == CARTAO_CB2, TELA_TIMEOUT, "cartão de treinador")
+        self.emu.frames(CARTAO_ASSENTA)
+        self._foto_tela("cartao_dica")
+        self.ctl.press_until(KEY_SELECT, lambda: self._tela() is not None, "SELECT abre as conquistas", tries=3,
+                             wait=60)
+        estado = self._tela_pronta("tela de conquistas pelo cartão")
+        assert estado == (0, 0, 0, True), estado
+        assert self._ajuda() == 0
+        self._foto_tela("cartao_conquistas")
+        self.ctl.press_until(KEY_B, lambda: self._tela() is None, "B fecha a tela", tries=3, wait=60)
+        self.ctl.wait_until(lambda: self.game.callback2() == CARTAO_CB2, TELA_TIMEOUT, "de volta ao cartão")
+        self.emu.frames(CARTAO_ASSENTA)
+        self._foto_tela("cartao_volta")
+        self.ctl.press_until(KEY_B, menu.start_menu_open, "B no cartão volta ao menu Start", tries=3, wait=90)
+        menu.close_start_menu()
+        assert self._ajuda() == 1, "a ajuda não voltou"
+        return "menu Start → cartão (foto cartao_dica) → SELECT → conquistas → B → cartão (cartao_volta) → B → campo"
+
     def run(self) -> None:
         try:
             self._flow("conquistas: CONTINUAR com o save do modo rápido", self._start)
@@ -994,6 +1103,14 @@ class ConquistasScenario(CatchSaveScenario):
                 res.images += self.measures.pop("fotos_aviso", [])
                 if self._aviso_ativo():      # um grupo que falhou no meio não deixa o aviso para o próximo
                     self._fechar_aviso(f"fecha o aviso que {nome} deixou")
+            for nome, fn in (("tela/abre_e_abas", self._abre_e_abas),
+                             ("tela/lr_sem_ajuda", self._lr_sem_ajuda),
+                             ("tela/rodape", self._rodape),
+                             ("tela/cartao", self._cartao)):
+                res = self.suite.run(nome, fn)
+                res.images += self.measures.pop("fotos_tela", [])
+                if self._tela() is not None:   # um grupo que falhou no meio não deixa a tela aberta para o próximo
+                    self._fechar_tela()
         except Abort:
             pass
 

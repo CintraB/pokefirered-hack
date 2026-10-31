@@ -475,4 +475,5 @@ gSpecials::
 	def_special StartPortablePc
 	@ Conquistas (POK-44)
 	def_special Conquistas_MostrarAviso
+	def_special Conquistas_AbrirTelaDoScript
 gSpecialsEnd::

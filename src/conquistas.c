@@ -511,8 +511,12 @@ bool8 Conquistas_Progresso(u8 num, u32 *atual, u32 *meta)
         *atual = GetGameStat(c->param);
         *meta = c->param2;
         return c->param2 > 1;
+    case CONQ_TIPO_DINHEIRO:   // a tela mostra "¥123.456/999.999" (Task 7)
+        *atual = GetMoney(&gSaveBlock1Ptr->money);
+        *meta = c->param;
+        return TRUE;
     }
-    return FALSE; // sim/não: FLAG, EVENTO, NIVEL, AMIZADE_MAX, DINHEIRO, DEX_TODOS de uma espécie, GAME_STAT de 1
+    return FALSE; // sim/não: FLAG, EVENTO, NIVEL, AMIZADE_MAX, DEX_TODOS de uma espécie, GAME_STAT de 1
 }
 
 u8 Conquistas_AvisosPendentes(void)

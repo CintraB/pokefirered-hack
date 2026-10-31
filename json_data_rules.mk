@@ -72,3 +72,4 @@ $(C_BUILDDIR)/conquistas_data.o: c_dep += $(DATA_SRC_SUBDIR)/conquistas_ids.h $(
 $(C_BUILDDIR)/conquistas.o: c_dep += $(DATA_SRC_SUBDIR)/conquistas_ids.h
 $(C_BUILDDIR)/test_hooks.o: c_dep += $(DATA_SRC_SUBDIR)/conquistas_ids.h
 $(C_BUILDDIR)/diario.o: c_dep += $(DATA_SRC_SUBDIR)/conquistas_ids.h
+$(C_BUILDDIR)/conquistas_tela.o: c_dep += $(DATA_SRC_SUBDIR)/conquistas_ids.h

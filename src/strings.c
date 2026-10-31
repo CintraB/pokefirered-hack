@@ -1445,3 +1445,8 @@ const u8 gText_ConqAviso_ResumoVarias[] = _(" conquistas!");
 const u8 gText_ConqAviso_Premios[] = _("Prêmios: ");
 const u8 gText_ConqAviso_Separador[] = _(", ");
 const u8 gText_ConqAviso_Depois[] = _(" depois");
+
+// POK-44: a tela de conquistas (src/conquistas_tela.c) e a dica na frente do cartão de treinador (src/trainer_card.c).
+// O rodapé leva a aba em {STR_VAR_1} e "feitas de válidas" em {STR_VAR_2}/{STR_VAR_3}.
+const u8 gText_ConqTela_Rodape[] = _("{STR_VAR_1}: {STR_VAR_2} de {STR_VAR_3}");
+const u8 gText_ConqTela_DicaCartao[] = _("{SELECT_BUTTON}Conquistas");

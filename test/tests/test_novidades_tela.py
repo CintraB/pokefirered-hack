@@ -50,7 +50,8 @@ def test_special_registrado_no_fim_da_tabela():
     assert defs[defs.index("def_special OpenNovidadesScreen") + 1:] == [
         "def_special GetRepelToReuse", "def_special UseRepelFromField",   # POK-31, depois dele
         "def_special StartPortablePc",                                      # POK-36
-        "def_special Conquistas_MostrarAviso"]                              # POK-44
+        "def_special Conquistas_MostrarAviso",                              # POK-44
+        "def_special Conquistas_AbrirTelaDoScript"]                         # POK-44, Task 7
 
 
 def test_special_declarado_e_definido():

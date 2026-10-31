@@ -135,6 +135,8 @@ enum
     TEST_CMD_DIARIO_ENTRADA,     // arg0 = journal event (DIARIO_EVT_*): its 20-byte struct DiarioEntrada copied into gTestText; result = its ordem (0 = empty slot, 0xFFFFFFFF = invalid event)
     TEST_CMD_CONQ_SILENCIO,      // arg0 = 1 silences the achievement notice (the field does not even check), 0 restores it; result = arg0 (gConquistasSilencio)
     TEST_CMD_ENCHER_BOLSO,       // arg0 = item: fills the free slots of its bag pocket with distinct items of that pocket, 999 each, starting with the item itself; arg1 = 1 also fills the 30 PC item slots the same way (the item first, then distinct items); result = slots taken (pocket + PC) (0xFFFFFFFF = invalid item)
+    TEST_CMD_OPEN_CONQUISTAS,    // arg0 = modo (0 conquistas, 1 diário): field script lockall, setvar VAR_0x8004, fadescreen, special Conquistas_AbrirTelaDoScript, waitstate, releaseall; result = special number (0xFFFFFFFF = not in gSpecials)
+    TEST_CMD_CONQ_TELA,          // result = Conquistas_TestGetState(): modo | tab << 8 | first visible row << 16 | input ready << 24 (0xFFFFFFFF = screen closed)
 };
 // --- end of POK-44 -------------------------------------------------------------------------
 

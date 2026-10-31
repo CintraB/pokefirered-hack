@@ -91,7 +91,8 @@ void Conquistas_ChecarEstado(void);              // sem marcador, varre o save a
 void Conquistas_VarrerSaveAntigo(void);          // uma vez por save sem marcador: grava o marcador (origem save antigo,
                                                  // resumo pendente) e reconhece o que o save prova, inclusive no PC
 u8 Conquistas_DegrauAtual(u8 num);               // degraus alcançados (0 sem degraus); FEITA quando = numDegraus
-bool8 Conquistas_Progresso(u8 num, u32 *atual, u32 *meta); // FALSE nas de sim/não; com degraus, meta = próximo degrau
+bool8 Conquistas_Progresso(u8 num, u32 *atual, u32 *meta); // FALSE nas de sim/não; com degraus, meta = próximo degrau;
+                                                           // DINHEIRO: atual = dinheiro, meta = param
 u8 Conquistas_AvisosPendentes(void);             // feitas não entregues + degraus não entregues (1 com o resumo pendente)
 void Conquistas_ContarAba(u8 aba, u8 *feitas, u8 *validas); // válidas = ativas e não perdidas
 
@@ -134,5 +135,14 @@ extern u8 gConquistasAvisoAtivo;                     // 1 enquanto o aviso está
 bool8 Conquistas_TentarAviso(void);                  // TRUE = começou o script do aviso (EventScript_AvisoConquista)
 bool8 Conquistas_MostrarAviso(void);                 // special(var): entrega o próximo prêmio (ou o resumo) e mostra a
                                                      // janela; FALSE = sem task, o script não espera
+
+// Tela de conquistas (src/conquistas_tela.c, Task 7): tela cheia, um bloco AllocZeroed (o ponteiro fica na task),
+// liberado na saída. L/R trocam de aba (dando a volta), ▲▼ rolam, SELECT alterna para o diário (Task 8), B volta.
+// A ajuda (L/R) fica desligada enquanto a tela está aberta.
+void Conquistas_AbrirTela(void (*voltar)(void), u8 modo); // modo 0 conquistas, 1 diário; `voltar` é o CB2 da saída
+void CB2_AbrirConquistasDoCartao(void);              // SELECT na frente do cartão; a tela volta ao cartão
+void Conquistas_AbrirTelaDoScript(void);             // special: modo em VAR_0x8004, volta continuando o script
+u32 Conquistas_TestGetState(void);                   // modo | aba << 8 | topo da lista << 16 | entrada pronta << 24
+                                                     // (0xFFFFFFFF = fechada)
 
 #endif // GUARD_CONQUISTAS_H

@@ -83,8 +83,9 @@ def test_guardas_do_aviso():
 
 def test_special_no_fim_e_script():
     specials = _ler(SPECIALS)
-    ultimo = re.findall(r"def_special (\w+)", specials.split("gSpecialsEnd::")[0])[-1]
-    assert ultimo == "Conquistas_MostrarAviso"
+    # no fim, depois de todos os da base; a Task 7 acrescentou o da tela logo depois
+    finais = re.findall(r"def_special (\w+)", specials.split("gSpecialsEnd::")[0])[-2:]
+    assert finais == ["Conquistas_MostrarAviso", "Conquistas_AbrirTelaDoScript"], finais
     script = _ler(SCRIPT)
     m = re.search(r"^EventScript_AvisoConquista::\n(.*?)\n\n", script + "\n\n", re.S | re.M)
     assert m, "EventScript_AvisoConquista não encontrado"

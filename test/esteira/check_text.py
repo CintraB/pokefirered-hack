@@ -293,6 +293,13 @@ WIDTH_RULES: list[Rule] = [
     Rule("src/strings.c", "gText_ConqAviso_", 26 * 8,
          "aviso de conquista: sAvisoWindowTemplate .width = 26 tiles (src/conquistas_aviso.c:53), FONT_NORMAL em "
          "x = 0, 1 linha por pedaço", lines=1),
+    # POK-44, Task 7: o rodapé da tela de conquistas (até a barra) e a dica do SELECT no cartão de treinador
+    Rule("src/strings.c", "gText_ConqTela_Rodape", 128,
+         "rodapé da tela de conquistas: RODAPE_TEXTO_LARGURA = 128 px antes da barra (src/conquistas_tela.c:60), "
+         "FONT_NORMAL em x = 6", lines=1),
+    Rule("src/strings.c", "gText_ConqTela_DicaCartao", 88,
+         "dica do SELECT na faixa das insígnias do cartão (PrintConquistasHintOnCard, src/trainer_card.c:1271): FONT_SMALL "
+         "alinhado à direita em x = 212 da janela 1, depois do rótulo INSÍGNIAS", font="small", lines=1),
     Rule("src/strings.c", None, None, "menus e janelas de dezenas de telas: a janela sai de onde cada rótulo "
          "é usado (esteira/janelas_uso.py, USAGE_RULES); texto sem uso no código fica sem medida", by_usage=True),
     # -- tabelas de texto --

@@ -959,6 +959,36 @@ static u32 ConqChocar(u32 arg0, u16 species)
     ScriptHatchMon();
     return GetMonData(mon, MON_DATA_SPECIES) | GetMonData(mon, MON_DATA_IS_EGG) << 16;
 }
+
+// Task 7: the achievements screen through the real special, from a field script built in gTestText
+static u32 OpenConquistas(u8 modo)
+{
+    u32 special;
+
+    for (special = 0; &gSpecials[special] < gSpecialsEnd; special++)
+    {
+        if ((void *)gSpecials[special] == (void *)Conquistas_AbrirTelaDoScript)
+            break;
+    }
+    if (&gSpecials[special] >= gSpecialsEnd)
+        return 0xFFFFFFFF;
+    gTestText[0] = 0x69;            // lockall
+    gTestText[1] = 0x16;            // setvar VAR_0x8004, modo
+    gTestText[2] = 0x04;
+    gTestText[3] = 0x80;
+    gTestText[4] = modo;
+    gTestText[5] = 0;
+    gTestText[6] = 0x97;            // fadescreen FADE_TO_BLACK
+    gTestText[7] = 1;
+    gTestText[8] = 0x25;            // special Conquistas_AbrirTelaDoScript
+    gTestText[9] = special & 0xFF;
+    gTestText[10] = special >> 8;
+    gTestText[11] = 0x27;           // waitstate
+    gTestText[12] = 0x6B;           // releaseall
+    gTestText[13] = 0x02;           // end
+    ScriptContext_SetupScript(gTestText);
+    return special;
+}
 // --- end of POK-44 --------------------------------------------------------------------------
 
 void TestHooks_Run(void)
@@ -1092,6 +1122,8 @@ void TestHooks_Run(void)
     case TEST_CMD_DIARIO_ENTRADA:   result = DiarioEntrada(gTestMailbox.arg0); break;
     case TEST_CMD_CONQ_SILENCIO:    gConquistasSilencio = gTestMailbox.arg0 != 0; result = gConquistasSilencio; break;
     case TEST_CMD_ENCHER_BOLSO:     result = EncherBolso(gTestMailbox.arg0, gTestMailbox.arg1); break;
+    case TEST_CMD_OPEN_CONQUISTAS:  result = OpenConquistas(gTestMailbox.arg0 != 0); break;
+    case TEST_CMD_CONQ_TELA:        result = Conquistas_TestGetState(); break;
     // POK-44: end
     default:
         result = 0xFFFFFFFF;
