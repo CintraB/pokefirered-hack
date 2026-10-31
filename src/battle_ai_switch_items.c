@@ -347,6 +347,18 @@ static bool8 ShouldSwitch(void)
      || FindMonThatAbsorbsOpponentsMove()
      || ShouldSwitchIfNaturalCure())
         return TRUE;
+    if (AI_IsSmartTrainer() && !(gBattleTypeFlags & BATTLE_TYPE_DOUBLE))
+    {
+        // POK-46: no chefe em batalha simples, a troca preditiva substitui a troca por sorteio do original (golpe que
+        // não pega); em dupla (sem troca preditiva) o chefe segue o original.
+        struct SmartAiDecision decision;
+
+        if (!SmartAI_ChoosePredictiveSwitch(gActiveBattler, &decision))
+            return FALSE;
+        *(gBattleStruct->AI_monToSwitchIntoId + (GetBattlerPosition(gActiveBattler) >> 1)) = decision.partySlot;
+        BtlController_EmitTwoReturnValues(1, B_ACTION_SWITCH, 0);
+        return TRUE;
+    }
     if (HasSuperEffectiveMoveAgainstOpponents(FALSE)
      || AreStatsRaised())
         return FALSE;
@@ -392,7 +404,8 @@ void AI_TrySwitchOrUseItem(void)
                 *(gBattleStruct->AI_monToSwitchIntoId + (GetBattlerPosition(gActiveBattler) >> 1)) = monToSwitchId;
             }
             *(gBattleStruct->monToSwitchIntoId + gActiveBattler) = *(gBattleStruct->AI_monToSwitchIntoId + (GetBattlerPosition(gActiveBattler) >> 1));
-            SmartAI_NoteVoluntarySwitch(gActiveBattler); // POK-46: troca por vontade da IA (só marca num chefe)
+            if (AI_IsSmartTrainer())
+                SmartAI_NoteVoluntarySwitch(gActiveBattler); // POK-46: troca por vontade da IA (reação ou preditiva)
             return;
         }
         else if (ShouldUseItem())
@@ -439,6 +452,8 @@ u8 GetMostSuitableMonToSwitchInto(void)
 
     if (*(gBattleStruct->monToSwitchIntoId + gActiveBattler) != PARTY_SIZE)
         return *(gBattleStruct->monToSwitchIntoId + gActiveBattler);
+    if (AI_IsSmartTrainer())
+        return SmartAI_ChooseReplacement(gActiveBattler); // POK-46: pontuação por tipo (sem o bestDmg em u8)
     if (gBattleTypeFlags & BATTLE_TYPE_DOUBLE)
     {
         battlerIn1 = gActiveBattler;
