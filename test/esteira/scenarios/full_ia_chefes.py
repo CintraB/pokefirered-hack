@@ -19,11 +19,15 @@ quando há candidato, um Bulbasaur nv 60 com PS cheio no slot 2 (resiste Água).
   (quem entra continua ameaçado) e um Bulbasaur seguro no slot 0: no turno seguinte a decisão não é SWITCH e o
   chefe fica em campo; um turno depois a troca volta a valer (contraprova);
 - `ia/aumento_segura`: ameaça + Bulbasaur com +2 de Ataque no Onix (estágio na RAM) → não troca; com +1 troca;
-- `ia/derruba_primeiro`: Onix nv 100 (mais rápido, derruba o Squirtle) → ATTACK;
-- `ia/sem_candidato`: só o Onix de pé, Bulbasaur com 40% de PS, Charmander (fraco a Água) ou Bulbasaur desmaiado →
-  não troca;
-- `ia/substituto`: Charmander nv 30 (fraco a Água) no slot 0, Rattata nv 30 no 2 e Bulbasaur nv 30 no 3; o Onix com
-  1 PS cai com o Water Gun de verdade e entra o Bulbasaur (resiste a ameaça), não o 1º vivo.
+- `ia/derruba_primeiro`: Onix nv 100 (mais rápido, derruba o Squirtle) → ATTACK; com Substituto no Squirtle (RAM) o
+  golpe não derruba e a troca volta;
+- `ia/jogador_parado`: Squirtle recarregando, congelado ou com 3 turnos de sono → o chefe fica; com 1 turno de sono
+  (acorda e age) troca;
+- `ia/sem_candidato`: só o Onix de pé, Bulbasaur com 40% de PS, Charmander (fraco a Água), Bulbasaur desmaiado ou o
+  Onix preso (Wrap na RAM, Bulbasaur seguro no banco) → não troca;
+- `ia/substituto`: Charmander nv 30 (fraco a Água) no slot 0, Pikachu nv 30 (Thunderbolt) no 2 e Bulbasaur nv 30 no 3;
+  o Onix com 1 PS cai com o Water Gun de verdade e entra o Bulbasaur (resiste a ameaça), não o Pikachu que a regra
+  original mandaria (o mais atingido pelo tipo do Squirtle com golpe super efetivo).
 
 Erika (chefe): Magneton nv 55 do jogador com Growl e Night Shade (dano fixo 55); savestate `ia_erika` no menu do
 turno 0, Victreebel nv 29 no slot 0 em campo.
@@ -31,12 +35,14 @@ turno 0, Victreebel nv 29 no slot 0 em campo.
 - `ia/item_30`: Hiperpoção com PS 30% → ITEM; Poção (cura < 25% do PS máximo) → ATTACK;
 - `ia/item_60`: Hiperpoção com PS 60% e 35% → ATTACK;
 - `ia/cura_desfeita`: com 2 Superpoções e PS 30%, a Erika usa a 1ª de verdade; o Night Shade desfaz a cura no mesmo
-  turno, a marca fica gravada e a decisão seguinte não é ITEM (a 2ª Superpoção fica na lista);
+  turno, a marca fica gravada e a decisão seguinte não é ITEM; mais um turno só de Growl (a cura já não é do turno
+  anterior, só a marca segura) e continua sem ITEM, com a 2ª Superpoção na lista;
 - `ia/cura_total_sono`: Victreebel dormindo com Cura Total → ITEM; no jogo ela é usada e o Victreebel acorda.
 
 - `ia/comum_igual`: Ben (treinador comum, sem AI_SCRIPT_HP_AWARE) na montagem de `troca_preditiva`: aiSmart 0, golpe
   não gravado, AI_SMART_DECIDE = "não é chefe", e o Onix nv 45 fica em campo 3 turnos com o Bulbasaur seguro no banco
-  (o caminho original não troca: o último golpe que o atingiu, Growl, não tem poder);
+  (o caminho original não troca: o último golpe que o atingiu, Growl, não tem poder); depois, com PS 30% e uma Poção,
+  ele usa a Poção pela regra original (o chefe não usaria: cura < 25%);
 - `ia/dupla`: Gêmeas Eli & Anne (dupla) com aiSmart forçado a 1 na RAM (nenhum chefe luta em dupla): a ameaça com o
   Bulbasaur seguro não dá SWITCH (com a mesma montagem e o tipo de batalha simples por um instante, dá); a
   Hiperpoção com PS 30% é escolhida e usada de verdade no turno seguinte, que termina normalmente.
@@ -55,6 +61,7 @@ from ..breeding import header_defines
 from ..emu import KEY_A
 from ..game import POKEMON_SIZE
 from ..hooks import SMART_AI_ATTACK, SMART_AI_ITEM, SMART_AI_SWITCH, Mailbox
+from ..result import StepTimeout
 from . import REPO_ROOT, ScenarioContext
 from .base import Abort
 from .quick_catch_save import CatchSaveScenario
@@ -62,9 +69,10 @@ from .quick_catch_save import CatchSaveScenario
 ACTION_NAMES = {SMART_AI_ATTACK: "ATTACK", SMART_AI_SWITCH: "SWITCH", SMART_AI_ITEM: "ITEM"}
 NO_SLOT = 6                          # PARTY_SIZE: "nenhum" na decisão
 
-# struct BattleStruct (include/battle.h): aiSmart u8, aiRevealedMoves[6][4] u16, aiVoluntarySwitchTurn[2] u16,
-# aiHealTurn[2] u16, aiHealHp[2] u16 (posição do oponente: 0 = esquerda)
-BS_AI_SMART, BS_SWITCH_TURN, BS_HEAL_TURN, BS_HEAL_HP = 0x21F, 0x250, 0x254, 0x258
+# struct BattleStruct (include/battle.h): aiSmart u8, aiRevealedMoves[6][4] u16, aiVoluntarySwitchTurn[2] u16 (turno no
+# byte baixo, slot do time de quem entrou no alto), aiHealTurn[2] u16, aiHealHp[2] u16 (posição do oponente: 0 =
+# esquerda). Os deslocamentos são conferidos por STATIC_ASSERT em src/battle_ai_smart.c (e o pytest compara os dois).
+BS_AI_SMART, BS_REVEALED, BS_SWITCH_TURN, BS_HEAL_TURN, BS_HEAL_HP = 0x21F, 0x220, 0x250, 0x254, 0x258
 SMART_AI_NEVER = 0xFFFF
 HEAL_UNDONE_BIT = 1 << 10            # aiHealHp: marca "cura desfeita" (bit 10); PS antes nos bits 0-9
 RESULTS_TURN = 0x13                  # gBattleResults.battleTurnCounter (u8)
@@ -75,7 +83,8 @@ MON_SPEED, MON_STAT_STAGES, MON_MAX_HP, MON_STATUS1, MON_STATUS2 = 0x06, 0x18, 0
 STAT_ATK, DEFAULT_STAGE = 1, 6
 PARTY_HP = 0x56                      # struct Pokemon.hp (u16)
 BATTLE_TYPE_DOUBLE = 1 << 0
-STATUS1_SLEEP = 0x07
+STATUS1_SLEEP, STATUS1_FREEZE = 0x07, 1 << 5                       # include/constants/battle.h
+STATUS2_WRAPPED, STATUS2_RECHARGE, STATUS2_SUBSTITUTE = 7 << 13, 1 << 22, 1 << 24
 SLEEP5 = 5
 
 BROCK, ERIKA, BEN, TWINS = ("TRAINER_LEADER_BROCK", "TRAINER_LEADER_ERIKA", "TRAINER_YOUNGSTER_BEN",
@@ -86,7 +95,7 @@ THREAT_LEVEL = 45                    # Onix nv 45: Água 4x, não derruba o Squi
                                      # (um aumento de atributo nos turnos de espera seguraria a troca)
 SAFE_LEVEL = 60                      # Bulbasaur nv 60: resiste Água, golpe de Planta super efetivo
 TURN_TIMEOUT = 6000
-SWITCH_TRIES = 6                     # turnos até a troca preditiva sair (cada um 4 em 5)
+SWITCH_TRIES = 6                     # turnos até a troca preditiva sair (cada um 4 em 5: falha só com 0,2^6 ≈ 6e-5)
 STAY_SAMPLES = 60                    # decisões com o sorteio "1 em 5 fica"
 COMMON_TURNS = 3
 
@@ -169,6 +178,13 @@ class IaChefesScenario(CatchSaveScenario):
     def _set_stage(self, stat: int, stage: int, battler: int = 1) -> None:
         self.emu.write(self._mon(battler) + MON_STAT_STAGES + stat, bytes([stage]))
 
+    def _set_status(self, battler: int, status1: int | None = None, status2: int | None = None) -> None:
+        """status1/status2 de gBattleMons[battler] (só os que vierem)."""
+        if status1 is not None:
+            self.emu.write(self._mon(battler) + MON_STATUS1, struct.pack("<I", status1))
+        if status2 is not None:
+            self.emu.write(self._mon(battler) + MON_STATUS2, struct.pack("<I", status2))
+
     # --- batalha --------------------------------------------------------------------
     def _turn(self, watch=None) -> str:
         """Um turno de LUTAR com o 1º golpe com PP (como BattleDriver.fight_turn), com observador."""
@@ -178,7 +194,7 @@ class IaChefesScenario(CatchSaveScenario):
         in_moves = lambda: d.controller_func().endswith(MOVE_FUNC_SUFFIX)
         try:
             self.ctl.wait_until(in_moves, MENU_TIMEOUT, "menu de golpes")
-        except Exception:      # o A do LUTAR às vezes cai antes do menu aceitar: de novo
+        except StepTimeout:    # o A do LUTAR às vezes cai antes do menu aceitar: de novo
             d.wait_action_menu(TURN_TIMEOUT)
             d._choose_action(ACTION_FIGHT)
             self.ctl.wait_until(in_moves, MENU_TIMEOUT, "menu de golpes (2ª vez)")
@@ -256,7 +272,9 @@ class IaChefesScenario(CatchSaveScenario):
                 break
         assert self._species() == "ONIX", f"oponente {self._species()}, esperava o Onix"
         smart, revealed = self.box.ai_smart_state()
-        assert smart and revealed >= 1, f"golpe mostrado não gravado: {(smart, revealed)}"
+        first = self.emu.read_u16(self._bs() + BS_REVEALED)     # aiRevealedMoves[slot 0 do jogador][0]
+        assert smart and revealed >= 1 and first == self.moves["MOVE_WATER_GUN"], \
+            f"golpe mostrado não gravado: {(smart, revealed)}, 1º gravado {first}"
         self.onix_slot = self._enemy_slot()
         self.ctl.checkpoint("ia_brock")
         return f"Brock (chefe): Water Gun mostrado ({revealed}), Onix no slot {self.onix_slot}; savestate ia_brock"
@@ -271,15 +289,15 @@ class IaChefesScenario(CatchSaveScenario):
             species, level, hp = safe
             self.box.set_enemy_mon(2, self._sp(species), level, hp)
 
-    def _until_switch_chosen(self) -> tuple[int, int]:
+    def _until_switch_chosen(self) -> tuple[int, int, int]:
         """Turnos com Growl (PS do jogador refeito a cada um) até a IA escolher a troca no menu; devolve
-        (turnos jogados, contador do turno da troca)."""
+        (turnos jogados, contador do turno da troca, slot do time de quem vai entrar)."""
         for n in range(1, SWITCH_TRIES + 1):
             self._heal_player()
             assert self._turn() == "menu", "a batalha acabou antes da troca"
-            counter = self._turn_counter()
-            if self._switch_turn() == counter:
-                return n, counter
+            counter, mark = self._turn_counter(), self._switch_turn()
+            if mark & 0xFF == counter:
+                return n, counter, mark >> 8
         raise AssertionError(f"o chefe não escolheu trocar em {SWITCH_TRIES} turnos")
 
     # --- casos: troca --------------------------------------------------------------
@@ -289,7 +307,8 @@ class IaChefesScenario(CatchSaveScenario):
         got = self._decide()
         assert got == ("SWITCH", 2, 0), f"ameaça 4x + Bulbasaur seguro: {got}, esperava SWITCH para o slot 2"
         self._no_pp(0)                 # só Growl daqui em diante: o turno anda sem derrubar ninguém
-        turns, counter = self._until_switch_chosen()
+        turns, counter, incoming = self._until_switch_chosen()
+        assert incoming == 2, f"a troca gravou o slot {incoming} de quem entra, esperava o 2"
         self._heal_player()
         assert self._turn() == "menu"
         slot, onix_hp = self._enemy_slot(), self._enemy_hp(self.onix_slot)
@@ -311,7 +330,7 @@ class IaChefesScenario(CatchSaveScenario):
         self._restore("ia_brock")
         self._threat()
         self._no_pp(0)
-        _turns, counter = self._until_switch_chosen()
+        _turns, counter, _incoming = self._until_switch_chosen()
         # A troca para o slot 2 já foi escolhida: antes de o turno rodar, quem vai entrar vira um Onix nv 45 (continua
         # ameaçado e não derruba antes) e o slot 0 (Geodude caído) um Bulbasaur nv 60 seguro.
         self.box.set_enemy_mon(2, self._sp("ONIX"), THREAT_LEVEL, 100)
@@ -322,7 +341,7 @@ class IaChefesScenario(CatchSaveScenario):
             f"a troca voluntária não aconteceu: slot {self._enemy_slot()}"
         after = self._decide()
         assert after is not None and after[0] != "SWITCH", f"logo depois da troca voluntária: {after}"
-        chosen = self._switch_turn()
+        chosen = self._switch_turn() & 0xFF
         assert chosen == counter, f"o chefe escolheu outra troca no turno seguinte (turno {chosen}, a 1ª foi {counter})"
         self._heal_player()
         assert self._turn() == "menu"
@@ -350,7 +369,27 @@ class IaChefesScenario(CatchSaveScenario):
         got = self._decide()
         speeds = (self.emu.read_u16(self._mon(1) + MON_SPEED), self.emu.read_u16(self._mon(0) + MON_SPEED))
         assert got == ("ATTACK", NO_SLOT, 0), f"Onix nv 100 com o Bulbasaur seguro: {got}, esperava ATTACK"
-        return f"Onix nv 100 (velocidade {speeds[0]} contra {speeds[1]} do Squirtle) → {got}"
+        # Substituto no Squirtle: o golpe acerta o boneco, não derruba; a troca volta a valer
+        self._set_status(0, status2=STATUS2_SUBSTITUTE)
+        sub = self._decide()
+        self._set_status(0, status2=0)
+        assert sub == ("SWITCH", 2, 0), f"Onix nv 100 com Substituto no Squirtle: {sub}, esperava SWITCH"
+        return f"Onix nv 100 (velocidade {speeds[0]} contra {speeds[1]} do Squirtle) → {got}; com Substituto → {sub}"
+
+    def _player_cant_act(self) -> str:
+        self._restore("ia_brock")
+        self._threat()
+        seen = []
+        for what, status1, status2, want in (("recarregando", 0, STATUS2_RECHARGE, "ATTACK"),
+                                             ("congelado", STATUS1_FREEZE, 0, "ATTACK"),
+                                             ("dormindo 3 turnos", 3, 0, "ATTACK"),
+                                             ("dormindo 1 turno (acorda e age)", 1, 0, "SWITCH")):
+            self._set_status(0, status1, status2)
+            got = self._decide()
+            assert got is not None and got[0] == want, f"Squirtle {what}: {got}, esperava {want}"
+            seen.append(f"{what} → {got[0]}")
+        self._set_status(0, 0, 0)
+        return "ameaça + Bulbasaur seguro, Squirtle " + "; ".join(seen)
 
     def _no_candidate(self) -> str:
         self._restore("ia_brock")
@@ -364,13 +403,25 @@ class IaChefesScenario(CatchSaveScenario):
             got = self._decide()
             assert got == ("ATTACK", NO_SLOT, 0), f"{what}: {got}, esperava ATTACK"
             seen.append(f"{what} → {got[0]}")
+        # preso (Wrap no Onix) com o Bulbasaur seguro no banco
+        self._threat()
+        self._set_status(1, status2=STATUS2_WRAPPED)
+        trapped = self._decide()
+        self._set_status(1, status2=0)
+        free = self._decide()
+        assert trapped == ("ATTACK", NO_SLOT, 0), f"preso com o Bulbasaur seguro: {trapped}, esperava ATTACK"
+        assert free == ("SWITCH", 2, 0), f"contraprova solto: {free}"
+        seen.append(f"preso (Wrap) com o Bulbasaur seguro → {trapped[0]} (solto: {free[0]})")
         return "; ".join(seen)
 
     def _replacement(self) -> str:
+        # O original (GetMostSuitableMonToSwitchInto) pega o mais atingido pelo tipo do Squirtle que tenha golpe super
+        # efetivo: Charmander (Água 4x pelos dois tipos iguais) não tem, então o Pikachu (1x, Thunderbolt) entra. O chefe
+        # pontua: Charmander leva 2x (só se não houver outro), Pikachu 15 + 30 + 30 = 75, Bulbasaur 30 + 30 + 30 = 90.
         self._restore("ia_brock")
         self.box.set_enemy_mon(0, self._sp("CHARMANDER"), 30, 100)
-        self.box.set_enemy_mon(2, self._sp("RATTATA"), 30, 100)
-        self.box.set_enemy_mon(3, self._sp("BULBASAUR"), 30, 100)
+        self.box.set_enemy_mon(2, self._sp("PIKACHU"), 30, 100)       # nv 30: Thunderbolt entre os golpes padrão
+        self.box.set_enemy_mon(3, self._sp("BULBASAUR"), 30, 100)     # nv 30: Razor Leaf
         self._set_enemy_hp(1, self.onix_slot)
         self._heal_player()
         assert self._turn() == "menu", "a batalha acabou (o Brock tinha mais 3 Pokémon)"
@@ -378,7 +429,8 @@ class IaChefesScenario(CatchSaveScenario):
         slot = self._enemy_slot()
         assert (slot, self._species()) == (3, "BULBASAUR"), \
             f"entrou o slot {slot} ({self._species()}), esperava o Bulbasaur do slot 3"
-        return "Onix caiu com o Water Gun; no banco Charmander (fraco), Rattata e Bulbasaur: entrou o Bulbasaur (slot 3)"
+        return ("Onix caiu com o Water Gun; no banco Charmander (fraco), Pikachu (o que o original mandaria) e "
+                "Bulbasaur: entrou o Bulbasaur (slot 3)")
 
     # --- casos: itens --------------------------------------------------------------
     def _prepare_erika(self) -> str:
@@ -435,8 +487,18 @@ class IaChefesScenario(CatchSaveScenario):
             f"marca de cura desfeita {mark:#x}, itens {self._items()}"
         got = self._decide()
         assert got is not None and got[0] != "ITEM", f"PS {hp1}/{self._max_hp()} com Superpoção na mão: {got}"
+        # Mais um turno só de Growl: a cura já não é "do turno anterior"; só a marca persistente segura a Superpoção.
+        self.emu.write(self._mon(0) + BATTLE_MON_PP, bytes([10]))
+        assert self._turn() == "menu"
+        hp2, (heal_turn, _) = self.driver.battler_hp(1), self._heal_mark()
+        assert hp2 * 3 <= self._max_hp() and heal_turn & 0xFF != self._turn_counter() - 1, \
+            f"montagem: PS {hp2}/{self._max_hp()}, cura no turno {heal_turn & 0xFF}, contador {self._turn_counter()}"
+        later = self._decide()
+        assert later is not None and later[0] != "ITEM" and self._items()[0][1] == superp, \
+            f"dois turnos depois (só a marca): {later}, itens {self._items()}"
         return (f"Superpoção usada (PS {hp0} → {peak[0]}) e desfeita pelo Night Shade ({hp1}); marca {mark:#x}; "
-                f"decisão seguinte {got}, a 2ª Superpoção ficou na lista")
+                f"decisão seguinte {got}; um turno de Growl depois (PS {hp2}, só a marca) {later}, a 2ª Superpoção "
+                f"ficou na lista")
 
     def _full_heal_sleep(self) -> str:
         self._restore("ia_erika")
@@ -472,8 +534,22 @@ class IaChefesScenario(CatchSaveScenario):
             assert (self._enemy_slot(), self._species()) == (slot, "ONIX"), \
                 f"turno {n + 1}: o Ben trocou para o slot {self._enemy_slot()} ({self._species()})"
         assert self._decide() is None and self.emu.read_u8(self._bs() + BS_AI_SMART) == 0
+        # PS baixo e Poção na mão: a regra original usa (PS máximo - PS > 20); o chefe não (cura < 25%: ia/item_30).
+        self.box.set_enemy_mon(slot, self._sp("ONIX"), THREAT_LEVEL, 30)
+        potion = self._item("POTION")
+        self.box.set_trainer_items(potion)
+        hp0 = self.driver.battler_hp(1)
+        self._heal_player()
+        assert self._turn() == "menu"      # na escolha deste menu o Ben já decidiu com a Poção na mão
+        items, _ = self._items()
+        assert items[0] == 0, f"Ben com PS {hp0}/{self._max_hp()} e Poção: itens {items} (a Poção não foi escolhida)"
+        peak = [0]
+        self._heal_player()
+        assert self._turn(lambda: peak.__setitem__(0, max(peak[0], self.driver.battler_hp(1)))) == "menu"
+        assert peak[0] >= hp0 + 20, f"PS do Onix {hp0} → maior {peak[0]}: a Poção não curou"
         return (f"Ben: aiSmart 0, golpe não gravado, DECIDE = não é chefe; Onix nv {THREAT_LEVEL} (Água 4x) com "
-                f"Bulbasaur seguro no banco ficou {COMMON_TURNS} turnos (o chefe troca: ia/troca_preditiva)")
+                f"Bulbasaur seguro no banco ficou {COMMON_TURNS} turnos (o chefe troca: ia/troca_preditiva); com PS "
+                f"{hp0}/{self._max_hp()} usou a Poção (PS até {peak[0]}), como o original")
 
     def _double(self) -> str:
         self._restore("ia_base")
@@ -526,7 +602,10 @@ class IaChefesScenario(CatchSaveScenario):
                 self.suite.run("ia/sem_pingue_pongue: quem acabou de entrar por troca voluntária fica",
                                self._no_ping_pong)
                 self.suite.run("ia/aumento_segura: +2 de atributo segura o Pokémon em campo", self._boost)
-                self.suite.run("ia/derruba_primeiro: quem derruba antes ataca", self._ko_first)
+                self.suite.run("ia/derruba_primeiro: quem derruba antes ataca (Substituto no alvo não conta)",
+                               self._ko_first)
+                self.suite.run("ia/jogador_parado: com o Pokémon do jogador sem agir, o chefe fica",
+                               self._player_cant_act)
                 self.suite.run("ia/sem_candidato: sem candidato seguro não troca", self._no_candidate)
                 self.suite.run("ia/substituto: depois do desmaio entra quem resiste à ameaça", self._replacement)
             if self.suite.run("ia/preparo_erika: batalha da Erika", self._prepare_erika).status != "falha":

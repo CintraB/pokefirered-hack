@@ -467,3 +467,57 @@ def test_marca_cura_desfeita_antes_da_troca():
     padrao = escolha[escolha.index("default:"):]
     assert "return FALSE" in padrao.splitlines()[1] and "use = FALSE;" in padrao
     assert "*listIndex = i;" in escolha
+
+
+# --- Onda final (revisão da branch) -----------------------------------------------------------------------------------
+
+def test_pingue_pongue_por_pokemon():
+    """A trava da troca voluntária é do Pokémon que entrou (slot do time no byte alto), não da posição: quem entra
+    depois na mesma posição (substituto de um desmaio, Roar) pode trocar no turno seguinte."""
+    fonte = _ler(SMART_C)
+    nota = _corpo(fonte, "SmartAI_NoteVoluntarySwitch")
+    assert "monToSwitchIntoId[battler] << 8" in nota
+    trava = _corpo(fonte, "SmartAI_SwitchedLastTurn")
+    assert "(turn & 0xFF) == counter - 1" in trava and "(turn >> 8) == gBattlerPartyIndexes[battler]" in trava
+    # a nota vem depois de gravar quem entra
+    corpo = _corpo(_ler(SRC / "battle_ai_switch_items.c"), "AI_TrySwitchOrUseItem")
+    assert (corpo.index("*(gBattleStruct->monToSwitchIntoId + gActiveBattler) =")
+            < corpo.index("SmartAI_NoteVoluntarySwitch(gActiveBattler);"))
+
+
+def test_derruba_primeiro_habilidade_truant_substituto():
+    corpo = _corpo(_ler(SMART_C), "SmartAI_CanKoFirst")
+    assert "ABILITY_TRUANT" in corpo and "truantCounter" in corpo
+    assert "gBattleMons[target].status2 & STATUS2_SUBSTITUTE" in corpo
+    # absorção/anulação pela habilidade do alvo (Water/Volt Absorb, Flash Fire): o multiplicador com a habilidade
+    assert re.search(r"TypeMultX10\(gBattleMoves\[move\]\.type, gBattleMons\[target\]\.type1, "
+                     r"gBattleMons\[target\]\.type2,\s+gBattleMons\[target\]\.ability\) == 0\)\s+continue;", corpo)
+    absorve = _corpo(_ler(SMART_C), "TypeMultX10")
+    for habilidade in ("ABILITY_WATER_ABSORB", "ABILITY_VOLT_ABSORB", "ABILITY_FLASH_FIRE"):
+        assert habilidade in absorve, habilidade
+
+
+def test_preditiva_nao_troca_com_jogador_parado():
+    corpo = _corpo(_ler(SMART_C), "PredictiveSwitch")
+    trecho = corpo[corpo.index("SmartAI_SwitchedLastTurn(battler)"):corpo.index("SmartAI_ThreatTypes(")]
+    assert "gBattleMons[opponent].status2 & STATUS2_RECHARGE" in trecho
+    assert "gBattleMons[opponent].status1 & STATUS1_FREEZE" in trecho
+    assert "(gBattleMons[opponent].status1 & STATUS1_SLEEP) > 1" in trecho
+
+
+def test_deslocamentos_do_cenario_conferidos_no_c():
+    """O cenário ia_chefes lê os campos do BattleStruct pela RAM; o C confere os mesmos deslocamentos (STATIC_ASSERT)."""
+    fonte = _ler(SMART_C)
+    no_c = {campo: int(valor, 16) for campo, valor in
+            re.findall(r"STATIC_ASSERT\(offsetof\(struct BattleStruct, (\w+)\) == (0x[0-9A-Fa-f]+)", fonte)}
+    cenario = _ler(REPO_ROOT / "test" / "esteira" / "scenarios" / "full_ia_chefes.py")
+    m = re.search(r"^BS_AI_SMART, BS_REVEALED, BS_SWITCH_TURN, BS_HEAL_TURN, BS_HEAL_HP = (.+)$", cenario, re.M)
+    assert m, "constantes BS_* do cenário não encontradas"
+    valores = [int(v.strip(), 16) for v in m.group(1).split(",")]
+    assert no_c == dict(zip(("aiSmart", "aiRevealedMoves", "aiVoluntarySwitchTurn", "aiHealTurn", "aiHealHp"),
+                            valores))
+
+
+def test_comentario_do_sorteio():
+    assert "stays and attacks" not in _ler(TEST_HOOKS_H)
+    assert "fica e ataca" not in _ler(SMART_C) + _ler(SMART_H)

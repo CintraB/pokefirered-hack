@@ -20,10 +20,12 @@ bool8 AI_IsSmartTrainer(void);
 // Chamada quando o "X usou Y!" de um golpe aparece (Cmd_attackstring): grava o golpe entre os mostrados pelo Pokémon
 // do jogador nesta batalha (só num chefe, só do lado do jogador, só golpe que ele conhece; sem repetir).
 void SmartAI_RecordPlayerMove(u8 battler, u16 move);
-// A IA do chefe escolheu trocar por vontade própria (AI_TrySwitchOrUseItem): guarda o turno, por posição.
+// A IA do chefe escolheu trocar por vontade própria (AI_TrySwitchOrUseItem, depois de gravar monToSwitchIntoId):
+// guarda, por posição, o turno (byte baixo) e o slot do time de quem vai entrar (byte alto).
 void SmartAI_NoteVoluntarySwitch(u8 battler);
-// TRUE = o Pokémon do battler entrou por uma troca voluntária do chefe no turno anterior (sem pingue-pongue). No turno
-// 0 e com o contador parado em 0xFF é sempre FALSE.
+// TRUE = o Pokémon em campo do battler (o mesmo slot do time) entrou por uma troca voluntária do chefe no turno anterior
+// (sem pingue-pongue). Quem entrou depois na mesma posição (substituto de um desmaio, Roar) não fica preso. No turno 0
+// e com o contador parado em 0xFF é sempre FALSE.
 bool8 SmartAI_SwitchedLastTurn(u8 battler);
 
 // --- Decisões (Task 2+): funções puras, só lêem o estado da batalha; quem emite a ação é battle_ai_switch_items.c ---
@@ -42,7 +44,9 @@ struct SmartAiDecision
 // Tipos que o Pokémon do jogador em campo ameaça: os dos golpes que ele já mostrou nesta batalha (com poder > 0) e os
 // tipos dele, sem repetição. Devolve a quantidade (até `max`).
 u8 SmartAI_ThreatTypes(u8 opponentBattler, u8 *types, u8 max);
-// TRUE = algum golpe do battler derruba o target neste turno (dano mínimo da IA, 85%) e o battler age antes.
+// TRUE = algum golpe do battler derruba o target neste turno (dano mínimo da IA, 85%) e o battler age antes. Nunca com
+// o battler dormindo, congelado, recarregando ou no turno de folga do Truant, nem com Substituto no target; golpe que a
+// habilidade do target absorve ou anula não conta.
 // Mexe só em cópias: as variáveis globais de dano são salvas e restauradas.
 bool8 SmartAI_CanKoFirst(u8 battler, u8 target);
 // Pontuação (0-100) de um Pokémon do banco (gEnemyParty) contra o Pokémon do jogador: defesa (o pior multiplicador
@@ -50,7 +54,7 @@ bool8 SmartAI_CanKoFirst(u8 battler, u8 target);
 u8 SmartAI_ScoreBench(u8 partySlot, u8 opponentBattler);
 // Troca preditiva (só batalha simples): TRUE e `out` = SWITCH para o slot escolhido quando o Pokémon em campo leva
 // >= 2x de uma ameaça, não derruba antes e há no time quem resista (PS >= 50%, <= 0,5x de todas); 1 em 5 fica e segue
-// a regra original.
+// a regra original. Não troca se o Pokémon do jogador não age neste turno (recarga, congelado, sono de 2+ turnos).
 bool8 SmartAI_ChoosePredictiveSwitch(u8 battler, struct SmartAiDecision *out);
 // Quem entra (troca sem destino escolhido e substituto depois de desmaio): a melhor pontuação; quem leva >= 2x de uma
 // ameaça conhecida só se não houver outro. PARTY_SIZE = nenhum.

@@ -9,8 +9,8 @@ a Pokédex inteira obtível e uma esteira de testes automática no emulador.**
 ![Idioma](https://img.shields.io/badge/idioma-PT--BR-009c3b?style=flat-square)
 ![Base](https://img.shields.io/badge/base-pret%2Fpokefirered-e3350d?style=flat-square)
 ![Linguagem](https://img.shields.io/badge/C-agbcc-555555?style=flat-square)
-![Testes](https://img.shields.io/badge/pytest-4738%20testes-2ea44f?style=flat-square)
-![Esteira](https://img.shields.io/badge/esteira-472%20checagens-2ea44f?style=flat-square)
+![Testes](https://img.shields.io/badge/pytest-4743%20testes-2ea44f?style=flat-square)
+![Esteira](https://img.shields.io/badge/esteira-473%20checagens-2ea44f?style=flat-square)
 ![Versão](https://img.shields.io/badge/ROM-v51-informational?style=flat-square)
 
 <img src="docs/readme/inicial.png" width="240" alt="Escolha do inicial em português">
@@ -284,7 +284,7 @@ flowchart LR
   comparadas pixel a pixel com as referências aprovadas de cada um.
 - **Checagem de texto**: mede a largura de cada frase traduzida na janela onde ela aparece e o
   tamanho dos buffers, para nada estourar.
-- **4738 testes em pytest** cobrem a própria esteira e as regras de cada hack.
+- **4743 testes em pytest** cobrem a própria esteira e as regras de cada hack.
 
 <details>
 <summary>Comandos (WSL)</summary>

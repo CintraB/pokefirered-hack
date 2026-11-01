@@ -22,6 +22,13 @@
 // Ameaças de um Pokémon do jogador: até 4 golpes mostrados + os 2 tipos dele.
 #define MAX_THREATS (MAX_MON_MOVES + 2)
 
+// O cenário da esteira (test/esteira/scenarios/full_ia_chefes.py) lê estes campos direto da RAM.
+STATIC_ASSERT(offsetof(struct BattleStruct, aiSmart) == 0x21F, AiSmartNoOffsetDoCenario);
+STATIC_ASSERT(offsetof(struct BattleStruct, aiRevealedMoves) == 0x220, AiRevealedMovesNoOffsetDoCenario);
+STATIC_ASSERT(offsetof(struct BattleStruct, aiVoluntarySwitchTurn) == 0x250, AiVoluntarySwitchTurnNoOffsetDoCenario);
+STATIC_ASSERT(offsetof(struct BattleStruct, aiHealTurn) == 0x254, AiHealTurnNoOffsetDoCenario);
+STATIC_ASSERT(offsetof(struct BattleStruct, aiHealHp) == 0x258, AiHealHpNoOffsetDoCenario);
+
 void SmartAI_InitBattle(void)
 {
     u32 flags;
@@ -99,17 +106,20 @@ void SmartAI_NoteVoluntarySwitch(u8 battler)
     if (!gBattleStruct->aiSmart || GetBattlerSide(battler) != B_SIDE_OPPONENT)
         return;
     // battleTurnCounter: 0 no 1º turno, +1 em BattleTurnPassed (para em 0xFF); "trocou no turno anterior" na hora
-    // da escolha: SmartAI_SwitchedLastTurn.
-    gBattleStruct->aiVoluntarySwitchTurn[GetBattlerPosition(battler) >> 1] = gBattleResults.battleTurnCounter;
+    // da escolha: SmartAI_SwitchedLastTurn. O byte alto guarda quem entra (a trava é do Pokémon, não da posição).
+    gBattleStruct->aiVoluntarySwitchTurn[GetBattlerPosition(battler) >> 1]
+        = gBattleResults.battleTurnCounter | gBattleStruct->monToSwitchIntoId[battler] << 8;
 }
 
 bool8 SmartAI_SwitchedLastTurn(u8 battler)
 {
     u8 counter = gBattleResults.battleTurnCounter;
+    u16 turn = gBattleStruct->aiVoluntarySwitchTurn[GetBattlerPosition(battler) >> 1];
 
-    // Turno 0: ninguém trocou antes. 0xFF: o contador parou e o "turno anterior" não se distingue mais.
+    // Turno 0: ninguém trocou antes. 0xFF: o contador parou e o "turno anterior" não se distingue mais. SMART_AI_NEVER
+    // tem byte alto 0xFF, que nunca é um slot do time.
     if (counter != 0 && counter != 0xFF
-     && gBattleStruct->aiVoluntarySwitchTurn[GetBattlerPosition(battler) >> 1] == counter - 1)
+     && (turn & 0xFF) == counter - 1 && (turn >> 8) == gBattlerPartyIndexes[battler])
         return TRUE;
     return FALSE;
 }
@@ -262,11 +272,22 @@ bool8 SmartAI_CanKoFirst(u8 battler, u8 target)
     if ((gBattleMons[battler].status1 & (STATUS1_SLEEP | STATUS1_FREEZE))
      || (gBattleMons[battler].status2 & STATUS2_RECHARGE))
         return FALSE;
+    // Truant no turno de folga: não age neste turno.
+    if (gBattleMons[battler].ability == ABILITY_TRUANT && gDisableStructs[battler].truantCounter)
+        return FALSE;
+    // Substituto no alvo: o golpe acerta o boneco, não derruba.
+    if (gBattleMons[target].status2 & STATUS2_SUBSTITUTE)
+        return FALSE;
     for (i = 0; i < MAX_MON_MOVES && !ko; i++)
     {
         if (CantKoThisTurn(battler, i))
             continue;
         move = gBattleMons[battler].moves[i];
+        // Golpe que a habilidade do alvo absorve ou anula (Water/Volt Absorb, Flash Fire, Levitate, Wonder Guard): o
+        // TypeCalc não vê as absorções.
+        if (TypeMultX10(gBattleMoves[move].type, gBattleMons[target].type1, gBattleMons[target].type2,
+                        gBattleMons[target].ability) == 0)
+            continue;
         // Como Cmd_if_can_faint: sem dano dinâmico, sem crítico; o dano é o menor do sorteio (85%). É uma estimativa:
         // ignora precisão, golpes de vários acertos e o poder variável (Eruption, Flail etc.).
         gDynamicBasePower = 0;
@@ -402,6 +423,11 @@ static bool8 PredictiveSwitch(u8 battler, struct SmartAiDecision *out, bool8 sta
         return FALSE;
     // Sem pingue-pongue: quem acabou de entrar por troca voluntária fica.
     if (SmartAI_SwitchedLastTurn(battler))
+        return FALSE;
+    // O Pokémon do jogador não age neste turno (recarga, congelado, dormindo com mais de 1 turno de sono: com 1 ele
+    // acorda e age): o chefe fica e aproveita.
+    if ((gBattleMons[opponent].status2 & STATUS2_RECHARGE) || (gBattleMons[opponent].status1 & STATUS1_FREEZE)
+     || (gBattleMons[opponent].status1 & STATUS1_SLEEP) > 1)
         return FALSE;
     // Atributos aumentados (soma dos estágios positivos >= 2): jogar o aumento fora é pior.
     boosts = 0;
