@@ -318,25 +318,28 @@ WIDTH_RULES: list[Rule] = [
                     "gText_Diario_MvpVarios")],
     # POK-47: a tela do mapa do DexNav (src/dexnav.c), FONT_NORMAL em 1 linha; as larguras saem das colunas fixas
     *[Rule("src/strings.c", label, 38, "aba do DexNav: rótulo em x + ABA_TEXTO_DX até antes da coroa em x + "
-           "ABA_COROA_DX, menos 2 px (src/dexnav.c:107-108)", lines=1)
+           "ABA_COROA_DX, menos 2 px (src/dexnav.c:109-110)", lines=1)
       for label in ("gText_DexNav_AbaGrama", "gText_DexNav_AbaSurf", "gText_DexNav_AbaVaras", "gText_DexNav_AbaPedra")],
     *[Rule("src/strings.c", label, 218, "título de seção de VARAS no DexNav: x = SECAO_X até SELECAO_FIM, menos o fio "
-           "(src/dexnav.c:87-89)", lines=1)
+           "(src/dexnav.c:89-91)", lines=1)
       for label in ("gText_DexNav_VaraVelha", "gText_DexNav_VaraBoa", "gText_DexNav_Supervara")],
     Rule("src/strings.c", "gText_DexNav_Desconhecido$", 64, "nome do nunca visto na coluna do nome do DexNav: "
-         "COL_NOME_X, COL_NOME_LARGURA = 64 px (src/dexnav.c:70-71)", lines=1),
+         "COL_NOME_X, COL_NOME_LARGURA = 64 px (src/dexnav.c:71-72)", lines=1),
     Rule("src/strings.c", "gText_DexNav_Nivel$", 20, "\"Nv.\" do DexNav: de COL_NIVEL_X até o nível mínimo de 3 "
-         "algarismos (18 px) alinhado à direita em COL_NIVEL_MIN_FIM (src/dexnav.c:74-75)", lines=1),
+         "algarismos (18 px) alinhado à direita em COL_NIVEL_MIN_FIM (src/dexnav.c:75-76)", lines=1),
     Rule("src/strings.c", "gText_DexNav_Completo$", 32, "\"100%\" do mapa completo no topo do DexNav: alinhado à "
-         "direita em TOPO_CONTADOR_FIM, depois do período (TOPO_PERIODO_X + 56 + 4) (src/dexnav.c:95-97)", lines=1),
+         "direita em TOPO_CONTADOR_FIM, depois do período (TOPO_PERIODO_X + 56 + 4) (src/dexnav.c:97-99)", lines=1),
     *[Rule("src/strings.c", label, 184, "linha extra do DexNav: x = COL_NOME_X até as setas em COL_SETA_X "
-           "(src/dexnav.c:70, src/dexnav.c:78)", lines=1)
+           "(src/dexnav.c:71, src/dexnav.c:80)", lines=1)
       for label in ("gText_DexNav_MaisNoite", "gText_DexNav_MaisDia", "gText_DexNav_MaisManha", "gText_DexNav_MaisTarde",
                     "gText_DexNav_MaisOutros")],
     Rule("src/strings.c", "gText_DexNav_Nenhum$", 232, "lista vazia do DexNav, centralizada na janela de 240 px "
          "(src/dexnav.c:44)", lines=1),
-    Rule("src/strings.c", "gText_DexNav_Rodape$", 232, "rodapé do DexNav: x = RODAPE_X na janela de 240 px "
-         "(src/dexnav.c:44, src/dexnav.c:113)", lines=1),
+    *[Rule("src/strings.c", label + "$", 232, "rodapé do DexNav (com L/R só se o mapa tem mais de uma aba): x = RODAPE_X "
+           "na janela de 240 px (src/dexnav.c:44, src/dexnav.c:115)", lines=1)
+      for label in ("gText_DexNav_Rodape", "gText_DexNav_RodapeSair")],
+    Rule("src/strings.c", "gText_DexNav_NenhumAgora$", 184, "aba sem Pokémon no período de agora: x = COL_NOME_X até "
+         "as setas em COL_SETA_X (src/dexnav.c:71, src/dexnav.c:80)", lines=1),
     Rule("src/strings.c", None, None, "menus e janelas de dezenas de telas: a janela sai de onde cada rótulo "
          "é usado (esteira/janelas_uso.py, USAGE_RULES); texto sem uso no código fica sem medida", by_usage=True),
     # -- tabelas de texto --

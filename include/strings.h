@@ -1657,5 +1657,7 @@ extern const u8 gText_DexNav_MaisTarde[];
 extern const u8 gText_DexNav_MaisOutros[];
 extern const u8 gText_DexNav_Nenhum[];
 extern const u8 gText_DexNav_Rodape[];
+extern const u8 gText_DexNav_RodapeSair[];
+extern const u8 gText_DexNav_NenhumAgora[];
 
 #endif //GUARD_STRINGS_H

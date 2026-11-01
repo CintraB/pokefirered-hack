@@ -1502,3 +1502,5 @@ const u8 gText_DexNav_MaisTarde[] = _("+{STR_VAR_1} à tarde");
 const u8 gText_DexNav_MaisOutros[] = _("+{STR_VAR_1} em outros horários");
 const u8 gText_DexNav_Nenhum[] = _("Nenhum Pokémon por aqui.");
 const u8 gText_DexNav_Rodape[] = _("L/R: aba   B: sair");
+const u8 gText_DexNav_RodapeSair[] = _("B: sair");
+const u8 gText_DexNav_NenhumAgora[] = _("Nenhum agora");

@@ -372,6 +372,8 @@ class Mailbox:
     def dexnav_tela(self, what: int = 0) -> dict | None:
         """Estado da tela do DexNav (None = fechada). what 0: modo, aba, cursor, mapa; 1: pronta, abas (bits), mons,
         topo; 2: capturados/total do mapa e da aba; 3: extra ("+N"), períodos do extra, períodos de agora."""
+        if what not in (0, 1, 2, 3):
+            raise ValueError(f"dexnav_tela: what = {what!r} fora de 0..3 (DexNav_TestGetState, include/dexnav.h)")
         raw = self.call(CMD_DEXNAV_STATE, what)
         if raw == NO_RESULT:
             return None

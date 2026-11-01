@@ -62,8 +62,9 @@ STATIC_ASSERT(ICONES_MAX * LINHA_MON_ALTURA <= LISTA_ALTURA && (ICONES_MAX + 1) 
 // Colunas da linha de Pokémon, em px na janela da lista (240 px), as mesmas em todas as linhas (pedido do Cintra):
 //   ícone (sprite 32x32 de COL_ICONE_X a +32), marca (8x8), nome (até COL_NOME_LARGURA: a espécie mais larga mede 60),
 //   chance alinhada à direita até COL_CHANCE_FIM (até COL_CHANCE_LARGURA: "99,5%" mede 31), "Nv." em COL_NIVEL_X, o
-//   nível mínimo alinhado à direita até COL_NIVEL_MIN_FIM, o traço em COL_NIVEL_TRACO_X e o máximo alinhado à direita
-//   até COL_NIVEL_MAX_FIM (nível único: só o mínimo, na coluna dele). As setas de rolagem ficam em COL_SETA_X.
+//   nível mínimo alinhado à direita até COL_NIVEL_MIN_FIM, o traço em COL_NIVEL_TRACO_X e o máximo alinhado à esquerda
+//   em COL_NIVEL_MAX_X: "3 - 4" e "25 - 35" com o traço na mesma coluna e o mesmo respiro dos dois lados (nível único:
+//   só o mínimo, na coluna dele). As setas de rolagem ficam em COL_SETA_X.
 // test/tests/test_dexnav_tela.py::test_colunas_fixas confere que nenhuma coluna encosta na outra no pior caso.
 #define COL_ICONE_X         0
 #define COL_MARCA_X         32
@@ -72,12 +73,13 @@ STATIC_ASSERT(ICONES_MAX * LINHA_MON_ALTURA <= LISTA_ALTURA && (ICONES_MAX + 1) 
 #define COL_CHANCE_FIM      150
 #define COL_CHANCE_LARGURA  32
 #define COL_NIVEL_X         160
-#define COL_NIVEL_MIN_FIM   198
-#define COL_NIVEL_TRACO_X   202
-#define COL_NIVEL_MAX_FIM   226
+#define COL_NIVEL_MIN_FIM   196
+#define COL_NIVEL_TRACO_X   199
+#define COL_NIVEL_MAX_X     208
+#define COL_NIVEL_MAX_LARGURA 18  // "100"
 #define COL_SETA_X          228
 STATIC_ASSERT(COL_NOME_X + COL_NOME_LARGURA + 4 <= COL_CHANCE_FIM - COL_CHANCE_LARGURA, DexNavNomeAntesDaChance);
-STATIC_ASSERT(COL_NIVEL_MAX_FIM <= COL_SETA_X, DexNavNivelAntesDasSetas);
+STATIC_ASSERT(COL_NIVEL_MAX_X + COL_NIVEL_MAX_LARGURA <= COL_SETA_X, DexNavNivelAntesDasSetas);
 
 // Posições verticais dentro de cada linha (o texto FONT_NORMAL ocupa ~14 px)
 #define LINHA_TEXTO_DY      5   // texto da linha de Pokémon (24 px)
@@ -161,9 +163,11 @@ enum {
     LINHA_MON,      // idx = índice em entries
     LINHA_SECAO,    // idx = DEXNAV_METHOD_* (uma vara)
     LINHA_EXTRA,    // "+N à noite"
+    LINHA_VAZIA,    // "Nenhum agora": a aba não tem Pokémon no período de agora (vem antes da linha extra)
 };
 
-#define LINHAS_MAX (DEXNAV_MAX_ENTRIES + 3 + 1)   // Pokémon, os títulos das 3 varas e a linha extra
+#define LINHAS_MAX (DEXNAV_MAX_ENTRIES + 3 + 1)   // Pokémon, os títulos das 3 varas e a linha extra (ou vazia + extra)
+#define LINHA_NENHUMA 0xFF
 
 enum {
     FASE_ESPERA,    // criada no DexNav_Open, até o CB2 montar a tela
@@ -228,7 +232,7 @@ static void DesenharTudo(struct DexNavTela *t);
 static void DesenharTopo(struct DexNavTela *t);
 static void DesenharAbas(struct DexNavTela *t);
 static void DesenharLista(struct DexNavTela *t);
-static void DesenharRodape(void);
+static void DesenharRodape(struct DexNavTela *t);
 static void DestruirIcones(struct DexNavTela *t);
 
 static const u8 sIcones_Gfx[] = INCBIN_U8("graphics/dexnav/icones.4bpp");
@@ -661,6 +665,9 @@ static void MontarAba(struct DexNavTela *t)
         if (j == i)
             t->extraN++;
     }
+    // sem Pokémon agora (a aba existe, então todas as espécies dela são de outro período): a tela se explica
+    if (t->nMons == 0)
+        AdicionarLinha(t, LINHA_VAZIA, 0);
     if (t->extraN != 0)
         AdicionarLinha(t, LINHA_EXTRA, 0);
 
@@ -711,21 +718,51 @@ static u16 AlturaDasLinhas(struct DexNavTela *t, u8 de, u8 ate)
     return altura;
 }
 
-// Rola para mostrar a linha selecionada, o título da seção quando ela é a primeira da seção e, no último Pokémon,
-// o que vier depois dele (a linha extra).
+// O título da seção (VARAS) a que a linha pertence: a última LINHA_SECAO antes dela (LINHA_NENHUMA = sem seção)
+static u8 SecaoDaLinha(struct DexNavTela *t, u8 linha)
+{
+    while (linha > 0)
+    {
+        linha--;
+        if (t->linhas[linha].tipo == LINHA_SECAO)
+            return linha;
+    }
+    return LINHA_NENHUMA;
+}
+
+// Título fixo no alto da lista: quando a primeira linha visível é de uma seção cujo título já rolou para cima, o título
+// fica preso no alto (LINHA_SECAO_ALTURA px), e as linhas começam embaixo dele. Assim a vara da linha de cima nunca
+// some ao rolar (o título só "volta para o lugar" quando a lista sobe até ele).
+static u8 SecaoFixa(struct DexNavTela *t)
+{
+    if (t->topo >= t->nLinhas || t->linhas[t->topo].tipo == LINHA_SECAO)
+        return LINHA_NENHUMA;
+    return SecaoDaLinha(t, t->topo);
+}
+
+// Altura usada a partir de `topo` até `ate`, contando o título fixo
+static u16 AlturaVisivel(struct DexNavTela *t, u8 ate)
+{
+    return AlturaDasLinhas(t, t->topo, ate) + (SecaoFixa(t) != LINHA_NENHUMA ? LINHA_SECAO_ALTURA : 0);
+}
+
+// Rola para mostrar a linha selecionada e, no último Pokémon, o que vier depois dele (a linha extra). Subindo, o topo
+// vai até o título da seção da linha selecionada (se ela tiver); descendo, o título que sair de vista fica fixo no alto
+// (SecaoFixa): a seção da linha selecionada está sempre à vista.
 static void AjustarTopo(struct DexNavTela *t)
 {
-    u8 primeira = t->cursor, ultima = t->cursor, i;
+    u8 primeira = t->cursor, ultima = t->cursor, secao, i;
 
-    if (primeira > 0 && t->linhas[primeira - 1].tipo == LINHA_SECAO)
-        primeira--;
+    secao = SecaoDaLinha(t, t->cursor);
+    if (secao != LINHA_NENHUMA)
+        primeira = secao;
     for (i = t->cursor + 1; i < t->nLinhas && t->linhas[i].tipo != LINHA_MON; i++)
         ;
     if (i >= t->nLinhas)
         ultima = t->nLinhas - 1;
-    if (t->topo > primeira)
+    if (t->topo > t->cursor)
         t->topo = primeira;
-    while (t->topo < primeira && AlturaDasLinhas(t, t->topo, ultima) > LISTA_ALTURA)
+    while (t->topo < t->cursor && AlturaVisivel(t, ultima) > LISTA_ALTURA)
         t->topo++;
 }
 
@@ -758,7 +795,7 @@ static void DesenharTudo(struct DexNavTela *t)
     DesenharTopo(t);
     DesenharAbas(t);
     DesenharLista(t);
-    DesenharRodape();
+    DesenharRodape(t);
 }
 
 // Nome do mapa, período e "capturados/total" do mapa (ou "100%" e a coroa, com tudo capturado)
@@ -895,8 +932,8 @@ static void DesenharLinhaMon(struct DexNavTela *t, u8 linha, u16 y)
         AddTextPrinterParameterized4(WIN_LISTA, FONT_NORMAL, COL_NIVEL_TRACO_X, y + LINHA_TEXTO_DY, 0, 0, cor,
                                      TEXT_SKIP_DRAW, sText_Traco);
         ConvertIntToDecimalStringN(texto, e->maxLevel, STR_CONV_MODE_LEFT_ALIGN, 3);
-        AddTextPrinterParameterized4(WIN_LISTA, FONT_NORMAL, COL_NIVEL_MAX_FIM - GetStringWidth(FONT_NORMAL, texto, 0),
-                                     y + LINHA_TEXTO_DY, 0, 0, cor, TEXT_SKIP_DRAW, texto);
+        AddTextPrinterParameterized4(WIN_LISTA, FONT_NORMAL, COL_NIVEL_MAX_X, y + LINHA_TEXTO_DY, 0, 0, cor,
+                                     TEXT_SKIP_DRAW, texto);
     }
 }
 
@@ -941,10 +978,18 @@ static void DesenharLinhaExtra(struct DexNavTela *t, u16 y)
                                  TEXT_SKIP_DRAW, gStringVar4);
 }
 
-// As linhas visíveis a partir de `topo` (até LISTA_ALTURA), os ícones delas e as setas de rolagem
+// "Nenhum agora": a aba só tem espécies de outro período (a linha extra, logo abaixo, diz quantas e quando)
+static void DesenharLinhaVazia(u16 y)
+{
+    AddTextPrinterParameterized4(WIN_LISTA, FONT_NORMAL, COL_NOME_X, y + LINHA_CURTA_TEXTO_DY, 0, 0, sCor_Extra,
+                                 TEXT_SKIP_DRAW, gText_DexNav_NenhumAgora);
+}
+
+// As linhas visíveis a partir de `topo` (até LISTA_ALTURA), os ícones delas e as setas de rolagem; o título da seção
+// que rolou para cima fica fixo no alto (SecaoFixa)
 static void DesenharLista(struct DexNavTela *t)
 {
-    u8 i, slot = 0;
+    u8 i, slot = 0, fixa = SecaoFixa(t);
     u16 y = 0, altura;
 
     DestruirIcones(t);
@@ -954,6 +999,11 @@ static void DesenharLista(struct DexNavTela *t)
         AddTextPrinterParameterized4(WIN_LISTA, FONT_NORMAL,
                                      (DISPLAY_WIDTH - GetStringWidth(FONT_NORMAL, gText_DexNav_Nenhum, 0)) / 2,
                                      (LISTA_ALTURA - 16) / 2, 0, 0, sCor_Extra, TEXT_SKIP_DRAW, gText_DexNav_Nenhum);
+    }
+    if (fixa != LINHA_NENHUMA)
+    {
+        DesenharLinhaSecao(t, fixa, 0);
+        y = LINHA_SECAO_ALTURA;
     }
     for (i = t->topo; i < t->nLinhas; i++)
     {
@@ -969,6 +1019,9 @@ static void DesenharLista(struct DexNavTela *t)
             break;
         case LINHA_SECAO:
             DesenharLinhaSecao(t, i, y);
+            break;
+        case LINHA_VAZIA:
+            DesenharLinhaVazia(y);
             break;
         default:
             DesenharLinhaExtra(t, y);
@@ -986,11 +1039,12 @@ static void DesenharLista(struct DexNavTela *t)
     CopyWindowToVram(WIN_LISTA, COPYWIN_FULL);
 }
 
-static void DesenharRodape(void)
+// Os botões: "L/R: aba" só quando o mapa tem mais de uma aba
+static void DesenharRodape(struct DexNavTela *t)
 {
     FillWindowPixelBuffer(WIN_RODAPE, PIXEL_FILL(COR_SOMBRA_BARRA));
     AddTextPrinterParameterized4(WIN_RODAPE, FONT_NORMAL, RODAPE_X, RODAPE_Y, 0, 0, sCor_Rodape, TEXT_SKIP_DRAW,
-                                 gText_DexNav_Rodape);
+                                 t->nAbas >= 2 ? gText_DexNav_Rodape : gText_DexNav_RodapeSair);
     PutWindowTilemap(WIN_RODAPE);
     CopyWindowToVram(WIN_RODAPE, COPYWIN_FULL);
 }

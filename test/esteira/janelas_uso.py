@@ -108,7 +108,7 @@ VAR_CONTENTS: list[VarContent] = [
       for var in ("STR_VAR_2", "STR_VAR_3")),
     # DexNav (POK-47): quantas espécies da aba só aparecem em outro período (até DEXNAV_MAX_ENTRIES = 32)
     *(VarContent("src/strings.c", label, "STR_VAR_1", 2,
-                 "linha extra do DexNav: ConvertIntToDecimalStringN(gStringVar1, t->extraN, ..., 2) (src/dexnav.c:938)",
+                 "linha extra do DexNav: ConvertIntToDecimalStringN(gStringVar1, t->extraN, ..., 2) (src/dexnav.c:975)",
                  digits=True)
       for label in ("gText_DexNav_MaisNoite", "gText_DexNav_MaisDia", "gText_DexNav_MaisManha",
                     "gText_DexNav_MaisTarde", "gText_DexNav_MaisOutros")),
@@ -537,7 +537,7 @@ USAGE_RULES: list[UsageRule] = [
       "setas de rolagem da tela de conquistas: FONT_NORMAL em SETA_ROLAGEM_X = 228 (src/conquistas_tela.c:55) da "
       "WIN_LISTA de 30 tiles", label="sText_Seta*"),
     U("src/dexnav.c", "call:AddTextPrinterParameterized4", 240 - 228,
-      "setas de rolagem do DexNav: FONT_NORMAL em COL_SETA_X = 228 (src/dexnav.c:78) da WIN_LISTA de 30 tiles",
+      "setas de rolagem do DexNav: FONT_NORMAL em COL_SETA_X = 228 (src/dexnav.c:80) da WIN_LISTA de 30 tiles",
       label="sText_Seta*"),
     U("src/credits.c", "*", 30 * 8, "créditos: janela de 30 tiles (src/credits.c:456-460), centralizados",
       unica=True),

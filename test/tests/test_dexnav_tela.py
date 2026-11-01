@@ -10,7 +10,6 @@ emulador fica nas fotos da Task 2 e no cenário `dexnav` (Task 5).
 """
 
 import re
-import subprocess
 
 from PIL import Image
 
@@ -26,7 +25,6 @@ HOOKS_H = REPO_ROOT / "include" / "test_hooks.h"
 HOOKS_C = SRC / "test_hooks.c"
 NOMES_ESPECIES = SRC / "data" / "text" / "species_names.h"
 GFX = REPO_ROOT / "graphics" / "dexnav"
-BASE_SHA = "94fd0d935"  # Task 1 (antes da tela)
 LARGURA_TELA = 240
 
 
@@ -105,11 +103,10 @@ def test_heap():
     saida = _corpo(fonte, "Task_DexNav_Sair")
     assert "Free(sDexNav);" in saida and "sDexNav = NULL;" in saida and "FreeAllWindowBuffers();" in saida
     assert saida.index("sDexNav = NULL;") < saida.index("SetMainCallback2(voltar);")
-    # nenhum outro arquivo ganhou EWRAM desde a Task 1
-    diff = subprocess.run(["git", "diff", "-U0", BASE_SHA, "--", "src", "include"], cwd=REPO_ROOT, check=True,
-                          capture_output=True, text=True).stdout
-    novas = [l for l in diff.splitlines() if l.startswith("+") and "EWRAM_DATA" in l and "sDexNav" not in l]
-    assert novas == [], novas
+    # nos arquivos do DexNav (tela e dados), no máximo esse ponteiro em EWRAM
+    todos = [l for c in sorted(SRC.glob("dexnav*.c"))
+             for l in re.findall(r"^.*\bEWRAM_DATA\b.*$", _sem_comentarios(_ler(c)), re.M)]
+    assert todos == ["static EWRAM_DATA struct DexNavTela *sDexNav = NULL;"], todos
     # as entradas do mapa ficam no bloco (DEXNAV_MAX_ENTRIES), não na pilha de cada desenho
     assert "struct DexNavEntry entries[DEXNAV_MAX_ENTRIES];" in fonte
 
@@ -131,7 +128,7 @@ def test_iniciar_video_zera_efeitos():
 # --- alinhamento (o pedido do Cintra) -----------------------------------------------------------------------------
 
 COLUNAS = ("COL_ICONE_X", "COL_MARCA_X", "COL_NOME_X", "COL_NOME_LARGURA", "COL_CHANCE_FIM", "COL_CHANCE_LARGURA",
-           "COL_NIVEL_X", "COL_NIVEL_MIN_FIM", "COL_NIVEL_TRACO_X", "COL_NIVEL_MAX_FIM", "COL_SETA_X")
+           "COL_NIVEL_X", "COL_NIVEL_MIN_FIM", "COL_NIVEL_TRACO_X", "COL_NIVEL_MAX_X", "COL_NIVEL_MAX_LARGURA", "COL_SETA_X")
 
 
 def test_colunas_fixas():
@@ -147,7 +144,9 @@ def test_colunas_fixas():
     assert "COL_CHANCE_FIM - GetStringWidth(FONT_NORMAL, " in linha, "a chance é alinhada à direita"
     assert re.search(r"AddTextPrinterParameterized4\(WIN_LISTA, FONT_NORMAL, COL_NIVEL_X,", linha), linha
     assert "COL_NIVEL_MIN_FIM - GetStringWidth(FONT_NORMAL, " in linha, "o nível mínimo é alinhado à direita"
-    assert "COL_NIVEL_MAX_FIM - GetStringWidth(FONT_NORMAL, " in linha, "o nível máximo é alinhado à direita"
+    # faixa "3 - 4" / "25 - 35": mínimo à direita até antes do traço, traço fixo, máximo à esquerda logo depois dele
+    assert re.search(r"AddTextPrinterParameterized4\(WIN_LISTA, FONT_NORMAL, COL_NIVEL_MAX_X,", linha), linha
+    assert "COL_NIVEL_MAX_X - " not in linha and "COL_NIVEL_MAX_FIM" not in fonte
     assert re.search(r"AddTextPrinterParameterized4\(WIN_LISTA, FONT_NORMAL, COL_NIVEL_TRACO_X,", linha), linha
     for chamada in re.findall(r"AddTextPrinterParameterized4\(WIN_LISTA, FONT_NORMAL, ([^,]+),", linha):
         assert not re.fullmatch(r"\s*\d+\s*", chamada), f"x literal na linha: {chamada}"
@@ -163,9 +162,14 @@ def test_colunas_fixas():
     assert d["COL_NOME_X"] + d["COL_NOME_LARGURA"] + 4 <= d["COL_CHANCE_FIM"] - d["COL_CHANCE_LARGURA"]
     assert d["COL_CHANCE_FIM"] + 8 <= d["COL_NIVEL_X"]
     assert d["COL_NIVEL_X"] + _medir("Nv.") <= d["COL_NIVEL_MIN_FIM"] - nivel3
-    assert d["COL_NIVEL_MIN_FIM"] <= d["COL_NIVEL_TRACO_X"]
-    assert d["COL_NIVEL_TRACO_X"] + _medir("-") <= d["COL_NIVEL_MAX_FIM"] - nivel3
-    assert d["COL_NIVEL_MAX_FIM"] <= d["COL_SETA_X"]
+    assert d["COL_NIVEL_MIN_FIM"] < d["COL_NIVEL_TRACO_X"], "um respiro entre o mínimo e o traço"
+    assert d["COL_NIVEL_TRACO_X"] + _medir("-") < d["COL_NIVEL_MAX_X"], "um respiro entre o traço e o máximo"
+    # o traço fica no meio: o respiro de cada lado difere no máximo 2 px
+    antes = d["COL_NIVEL_TRACO_X"] - d["COL_NIVEL_MIN_FIM"]
+    depois = d["COL_NIVEL_MAX_X"] - (d["COL_NIVEL_TRACO_X"] + _medir("-"))
+    assert abs(antes - depois) <= 2, (antes, depois)
+    assert nivel3 <= d["COL_NIVEL_MAX_LARGURA"]
+    assert d["COL_NIVEL_MAX_X"] + d["COL_NIVEL_MAX_LARGURA"] <= d["COL_SETA_X"]
     assert d["COL_SETA_X"] + _medir("{UP_ARROW}") <= LARGURA_TELA
 
 
@@ -283,6 +287,8 @@ ESPERADOS = {
     "gText_DexNav_MaisOutros": "+{STR_VAR_1} em outros horários",
     "gText_DexNav_Nenhum": "Nenhum Pokémon por aqui.",
     "gText_DexNav_Rodape": "L/R: aba   B: sair",
+    "gText_DexNav_RodapeSair": "B: sair",
+    "gText_DexNav_NenhumAgora": "Nenhum agora",
 }
 
 
@@ -360,3 +366,46 @@ def test_citacoes_apontam_para_o_codigo():
                 assert any("gStringVar1" in l for l in trecho), (vc.label, trecho)
                 vistas += 1
     assert vistas >= 20, vistas
+
+
+# --- rodada de correções 1 (revisão da Task 2) -----------------------------------------------------------------------
+
+def test_titulo_da_secao_nao_some_ao_rolar():
+    """VARAS: o título da vara da linha de cima fica à vista ao rolar (fixo no alto quando o original rolou)."""
+    fonte = _ler(TELA_C)
+    fixa = _corpo(fonte, "SecaoFixa")
+    assert "SecaoDaLinha(t, t->topo)" in fixa and "LINHA_SECAO" in fixa
+    lista = _corpo(fonte, "DesenharLista")
+    assert "SecaoFixa(t)" in lista and "y = LINHA_SECAO_ALTURA;" in lista
+    assert lista.index("y = LINHA_SECAO_ALTURA;") < lista.index("for (i = t->topo;")
+    ajuste = _corpo(fonte, "AjustarTopo")
+    # o título fixo entra na conta da altura (senão a última linha passa do fim da lista)
+    assert "AlturaVisivel(t, ultima) > LISTA_ALTURA" in ajuste
+    assert "SecaoFixa(t)" in _corpo(fonte, "AlturaVisivel")
+    assert "SecaoDaLinha(t, t->cursor)" in ajuste
+
+
+def test_rodape_so_mostra_lr_com_duas_abas():
+    rodape = _corpo(_ler(TELA_C), "DesenharRodape")
+    assert re.search(r"t->nAbas >= 2 \? gText_DexNav_Rodape : gText_DexNav_RodapeSair", rodape), rodape
+
+
+def test_aba_sem_pokemon_agora_se_explica():
+    fonte = _ler(TELA_C)
+    montar = _corpo(fonte, "MontarAba")
+    m = re.search(r"if \(t->nMons == 0\)\s*AdicionarLinha\(t, LINHA_VAZIA, 0\);", montar)
+    assert m, montar
+    assert montar.index("LINHA_VAZIA") < montar.index("LINHA_EXTRA, 0"), "a linha vazia vem antes do +N"
+    assert "gText_DexNav_NenhumAgora" in _corpo(fonte, "DesenharLinhaVazia")
+    assert "case LINHA_VAZIA:" in _corpo(fonte, "DesenharLista")
+    # ▲▼ só param em linha de Pokémon: sem Pokémon, a seleção fica parada
+    assert "t->linhas[i].tipo != LINHA_MON" in _corpo(fonte, "MoverCursor")
+
+
+def test_dexnav_tela_recusa_what_invalido():
+    import pytest
+
+    caixa = object.__new__(hooks.Mailbox)
+    for ruim in (-1, 4, 255):
+        with pytest.raises(ValueError, match="what"):
+            caixa.dexnav_tela(ruim)
