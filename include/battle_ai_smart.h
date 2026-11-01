@@ -60,8 +60,14 @@ u8 SmartAI_ChooseReplacement(u8 battler);
 // (sono, congelamento, Tóxico, paralisia em quem é rápido, queimadura em atacante físico, veneno comum com PS <= 50%),
 // itens X e Guard Spec no 1º turno como o original. Nenhuma cura se ele derruba antes um Pokémon do jogador, nem cura de
 // PS no Pokémon cuja cura anterior foi desfeita (PS de volta a <= o PS de antes da cura na escolha do turno seguinte).
-// Grava aiHealTurn/aiHealHp ao escolher cura de PS e a marca de cura desfeita; quem emite é ShouldUseItem.
-bool8 SmartAI_ChooseItem(u8 battler, struct SmartAiDecision *out);
+// Grava aiHealTurn/aiHealHp ao escolher cura de PS; *listIndex = a posição do item na lista. Quem emite é ShouldUseItem.
+bool8 SmartAI_ChooseItem(u8 battler, struct SmartAiDecision *out, u8 *listIndex);
+// No começo da escolha do chefe (AI_TrySwitchOrUseItem, antes de ShouldSwitch): se a cura de PS do turno anterior foi
+// desfeita, marca o slot do time (esse Pokémon não cura PS de novo nesta batalha, mesmo se trocar agora ou voltar pela
+// outra posição em dupla). Não roda no atalho de teste (ele vê o mesmo bloqueio sem gravar).
+void SmartAI_NoteHealUndone(u8 battler);
+// Os efeitos do item da lista do treinador (NULL = fora de ITEM_POTION..LAST_BERRY_INDEX ou sem efeito).
+const u8 *SmartAI_ItemEffects(u16 item);
 // A decisão nova do chefe (troca preditiva → item → ataque) sem emitir nada nem gravar a cura (o item usa o núcleo puro
 // de SmartAI_ChooseItem); as trocas por reação e o resto do original de ShouldSwitch não entram (no jogo eles vêm
 // antes/depois da preditiva). noStayRoll = TRUE tira o sorteio "1 em 5 fica e ataca" (TEST_CMD_AI_SMART_DECIDE).

@@ -328,7 +328,8 @@ def test_hooks_d1_d2():
 
 def test_interface_task3():
     h = _ler(SMART_H)
-    assert "bool8 SmartAI_ChooseItem(u8 battler, struct SmartAiDecision *out);" in h
+    assert "bool8 SmartAI_ChooseItem(u8 battler, struct SmartAiDecision *out, u8 *listIndex);" in h
+    assert "void SmartAI_NoteHealUndone(u8 battler);" in h and "const u8 *SmartAI_ItemEffects(u16 item);" in h
     # GetAI_ItemType exportada: o chefe classifica o item como o original
     assert "u8 GetAI_ItemType(u8 itemId, const u8 *itemEffect);" in _ler(REPO_ROOT / "include" / "battle_ai_switch_items.h")
     assert "static u8 GetAI_ItemType" not in _ler(SWITCH_C)
@@ -367,17 +368,21 @@ def test_cura_desfeita_estatico():
     assert "gBattleMons[battler].hp <= (gBattleStruct->aiHealHp[pos] & HEAL_HP_MASK)" in desfeita
     bloqueio = _corpo(fonte, "HealBlocked")
     assert "HEAL_UNDONE_SHIFT" in bloqueio and "HealUndoneLastTurn(battler)" in bloqueio
+    # a marca vale nas duas posições (em dupla o Pokémon pode voltar pela outra)
+    assert "gBattleStruct->aiHealHp[0] | gBattleStruct->aiHealHp[1]" in bloqueio
     corpo = _corpo(fonte, "ChooseItem")
     assert "healBlocked = HealBlocked(battler);" in corpo
     assert corpo.count("!healBlocked") == 2                                  # Restaurar Tudo (PS) e poções
     # o núcleo é puro (atalho de teste): quem grava é SmartAI_ChooseItem
     assert not re.search(r"gBattleStruct->\w+(\[[^\]]*\])?\s*[|&]?=[^=]", corpo)
     grava = _corpo(fonte, "SmartAI_ChooseItem")
-    assert "ChooseItem(battler, out)" in grava
+    assert "ChooseItem(battler, out, listIndex)" in grava
+    assert "HealUndoneLastTurn" not in grava and "HEAL_UNDONE_SHIFT" not in grava  # a marca é gravada antes
     assert "gBattleStruct->aiHealTurn[pos] = gBattleResults.battleTurnCounter | slot << 8;" in grava
     assert "gBattleMons[battler].hp" in grava and "aiHealHp[pos]" in grava
-    assert grava.index("HealUndoneLastTurn(battler)") < grava.index("ChooseItem(battler, out)")
-    assert "1 << (HEAL_UNDONE_SHIFT + slot)" in grava
+    nota = _corpo(fonte, "SmartAI_NoteHealUndone")
+    assert "gBattleStruct->aiSmart" in nota and "B_SIDE_OPPONENT" in nota
+    assert nota.index("HealUndoneLastTurn(battler)") < nota.index("1 << (HEAL_UNDONE_SHIFT + slot)")
     assert re.search(r"#define HEAL_HP_MASK\s+0x3FF\b", fonte) and re.search(r"#define HEAL_UNDONE_SHIFT\s+10\b", fonte)
 
 
@@ -412,9 +417,10 @@ def test_item_comum_nao_muda():
 
 def test_item_do_chefe_emitido_como_original():
     corpo = _corpo(_ler(SWITCH_C), "ShouldUseItemSmart")
-    for nome in ("SmartAI_ChooseItem(gActiveBattler, &decision)", "B_ACTION_USE_ITEM",
+    for nome in ("SmartAI_ChooseItem(gActiveBattler, &decision, &listIndex)", "B_ACTION_USE_ITEM",
                  "*(gBattleStruct->chosenItem + (gActiveBattler / 2) * 2) = decision.item;",
-                 "gBattleResources->battleHistory->trainerItems[i] = 0;",
+                 "gBattleResources->battleHistory->trainerItems[listIndex] = 0;",
+                 "itemEffects = SmartAI_ItemEffects(decision.item);",
                  "*(gBattleStruct->AI_itemType + gActiveBattler / 2) = GetAI_ItemType(decision.item, itemEffects);",
                  "*(gBattleStruct->AI_itemFlags + gActiveBattler / 2)",
                  "AI_ITEM_CURE_CONDITION", "AI_ITEM_X_STAT"):
@@ -427,7 +433,7 @@ def test_item_do_chefe_emitido_como_original():
 def test_decide_com_item_e_hook_d3():
     fonte = _ler(SMART_C)
     decide = _corpo(fonte, "SmartAI_Decide")
-    assert decide.index("PredictiveSwitch(") < decide.index("ChooseItem(battler, out)") < decide.index("SMART_AI_ATTACK")
+    assert decide.index("PredictiveSwitch(") < decide.index("ChooseItem(battler, out, &listIndex)") < decide.index("SMART_AI_ATTACK")
     assert "SmartAI_ChooseItem" not in decide                  # o atalho não grava a cura
     h = _ler(TEST_HOOKS_H)
     assert re.search(r"TEST_CMD_SET_TRAINER_ITEMS\s*=\s*0xD3\b", h)
@@ -439,3 +445,23 @@ def test_decide_com_item_e_hook_d3():
     d = _corpo(c, "AiSmartDecide")
     for proibido in ("trainerItems", "aiHealTurn", "aiHealHp", "SmartAI_ChooseItem"):
         assert proibido not in d, proibido
+
+
+def test_marca_cura_desfeita_antes_da_troca():
+    # A marca de cura desfeita é gravada no começo da escolha do chefe, antes de ShouldSwitch: se ele trocar no turno
+    # seguinte à cura, o Pokémon sai já marcado e não cura de novo quando voltar.
+    corpo = _corpo(_ler(SWITCH_C), "AI_TrySwitchOrUseItem")
+    nota = corpo.index("SmartAI_NoteHealUndone(gActiveBattler);")
+    assert nota < corpo.index("if (ShouldSwitch())") and nota < corpo.index("ShouldUseItem()")
+    linhas = corpo.splitlines()
+    i = next(n for n, l in enumerate(linhas) if "SmartAI_NoteHealUndone(" in l)
+    assert linhas[i - 1].strip() == "if (AI_IsSmartTrainer())"           # só chefe
+    assert _ler(SWITCH_C).count("SmartAI_NoteHealUndone(") == 1
+    # o atalho de teste não grava a marca (ele vê o bloqueio por HealUndoneLastTurn, sem escrever)
+    assert "SmartAI_NoteHealUndone" not in _ler(SRC / "test_hooks.c")
+    assert "SmartAI_NoteHealUndone" not in _corpo(_ler(SMART_C), "SmartAI_Decide")
+    # item não reconhecido: pula (comentado), em vez do return FALSE do original
+    escolha = _corpo(_ler(SMART_C), "ChooseItem")
+    padrao = escolha[escolha.index("default:"):]
+    assert "return FALSE" in padrao.splitlines()[1] and "use = FALSE;" in padrao
+    assert "*listIndex = i;" in escolha

@@ -373,6 +373,8 @@ void AI_TrySwitchOrUseItem(void)
 {
     u8 battlerIn1, battlerIn2;
 
+    if (AI_IsSmartTrainer())
+        SmartAI_NoteHealUndone(gActiveBattler); // POK-46: antes de ShouldSwitch, para a marca valer mesmo se ele trocar
     if (gBattleTypeFlags & BATTLE_TYPE_TRAINER)
     {
         if (ShouldSwitch())
@@ -584,23 +586,11 @@ static bool8 ShouldUseItemSmart(void)
 {
     struct SmartAiDecision decision;
     const u8 *itemEffects;
-    s32 i;
+    u8 listIndex;
 
-    if (!SmartAI_ChooseItem(gActiveBattler, &decision))
+    if (!SmartAI_ChooseItem(gActiveBattler, &decision, &listIndex))
         return FALSE;
-    // A posição na lista: a 1ª com esse item, que é a que a escolha achou (ela percorre a lista na mesma ordem e um
-    // item igual mais cedo na lista passa pelas mesmas regras).
-    for (i = 0; i < MAX_TRAINER_ITEMS; ++i)
-    {
-        if (gBattleResources->battleHistory->trainerItems[i] == decision.item)
-            break;
-    }
-    if (i == MAX_TRAINER_ITEMS)
-        return FALSE;
-    if (decision.item == ITEM_ENIGMA_BERRY)
-        itemEffects = gSaveBlock1Ptr->enigmaBerry.itemEffect;
-    else
-        itemEffects = gItemEffectTable[decision.item - ITEM_POTION];
+    itemEffects = SmartAI_ItemEffects(decision.item);
     *(gBattleStruct->AI_itemType + gActiveBattler / 2) = GetAI_ItemType(decision.item, itemEffects);
     *(gBattleStruct->AI_itemFlags + gActiveBattler / 2) = 0;
     switch (*(gBattleStruct->AI_itemType + gActiveBattler / 2))
@@ -642,7 +632,7 @@ static bool8 ShouldUseItemSmart(void)
     }
     BtlController_EmitTwoReturnValues(1, B_ACTION_USE_ITEM, 0);
     *(gBattleStruct->chosenItem + (gActiveBattler / 2) * 2) = decision.item;
-    gBattleResources->battleHistory->trainerItems[i] = 0;
+    gBattleResources->battleHistory->trainerItems[listIndex] = 0;
     return TRUE;
 }
 

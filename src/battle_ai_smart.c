@@ -555,14 +555,29 @@ static bool8 HealUndoneLastTurn(u8 battler)
     return FALSE;
 }
 
-// TRUE = este Pokémon não cura PS: a cura dele já foi desfeita antes (marca do slot) ou acabou de ser.
+// TRUE = este Pokémon não cura PS: a cura dele já foi desfeita antes (marca do slot, vista nas duas posições: em dupla
+// ele pode voltar pela outra) ou acabou de ser (o atalho de teste vê isso sem gravar a marca).
 static bool8 HealBlocked(u8 battler)
 {
-    u8 pos = GetBattlerPosition(battler) >> 1;
-
-    if (gBattleStruct->aiHealHp[pos] & (1 << (HEAL_UNDONE_SHIFT + gBattlerPartyIndexes[battler])))
+    if ((gBattleStruct->aiHealHp[0] | gBattleStruct->aiHealHp[1])
+        & (1 << (HEAL_UNDONE_SHIFT + gBattlerPartyIndexes[battler])))
         return TRUE;
     return HealUndoneLastTurn(battler);
+}
+
+void SmartAI_NoteHealUndone(u8 battler)
+{
+    if (!gBattleStruct->aiSmart || GetBattlerSide(battler) != B_SIDE_OPPONENT)
+        return;
+    // A cura anterior foi desfeita: marca o slot, e ele não cura PS de novo nesta batalha (nem se trocar agora e
+    // voltar depois, nem se voltar pela outra posição em dupla).
+    if (HealUndoneLastTurn(battler))
+    {
+        u8 pos = GetBattlerPosition(battler) >> 1;
+        u8 slot = gBattlerPartyIndexes[battler];
+
+        gBattleStruct->aiHealHp[pos] |= 1 << (HEAL_UNDONE_SHIFT + slot);
+    }
 }
 
 // Os Pokémon do jogador em campo (1 em batalha simples, até 2 em dupla); devolve quantos.
@@ -616,7 +631,7 @@ static bool8 FasterThanFoes(u8 battler)
 }
 
 // Os efeitos do item (NULL = não é um item de usar: fora da tabela ou sem efeito), como em ShouldUseItem.
-static const u8 *ItemEffects(u16 item)
+const u8 *SmartAI_ItemEffects(u16 item)
 {
     if (item < ITEM_POTION || item > LAST_BERRY_INDEX)
         return NULL;
@@ -672,8 +687,9 @@ static bool8 CureWorthIt(u8 battler, const u8 *itemEffects)
     return FALSE;
 }
 
-// O núcleo da escolha do item, puro (o atalho de teste usa este): o 1º item da lista que vale agora.
-static bool8 ChooseItem(u8 battler, struct SmartAiDecision *out)
+// O núcleo da escolha do item, puro (o atalho de teste usa este): o 1º item da lista que vale agora, e a posição dele
+// na lista em *listIndex.
+static bool8 ChooseItem(u8 battler, struct SmartAiDecision *out, u8 *listIndex)
 {
     u32 hp = gBattleMons[battler].hp, maxHP = gBattleMons[battler].maxHP;
     u8 itemsNo = gBattleResources->battleHistory->itemsNo;
@@ -700,7 +716,7 @@ static bool8 ChooseItem(u8 battler, struct SmartAiDecision *out)
         if (i && validMons > (itemsNo - i) + 1)
             continue;
         item = gBattleResources->battleHistory->trainerItems[i];
-        itemEffects = ItemEffects(item);
+        itemEffects = SmartAI_ItemEffects(item);
         if (itemEffects == NULL)
             continue;
         type = GetAI_ItemType(item, itemEffects);
@@ -726,6 +742,7 @@ static bool8 ChooseItem(u8 battler, struct SmartAiDecision *out)
             use = gDisableStructs[battler].isFirstTurn && gSideTimers[GetBattlerSide(battler)].mistTimer == 0;
             break;
         default:
+            // Item não reconhecido: o original sai do laço (return FALSE) e perde os itens seguintes; aqui só pula.
             use = FALSE;
             break;
         }
@@ -742,23 +759,22 @@ static bool8 ChooseItem(u8 battler, struct SmartAiDecision *out)
         out->action = SMART_AI_ITEM;
         out->partySlot = PARTY_SIZE;
         out->item = item;
+        *listIndex = i;
         return TRUE;
     }
     return FALSE;
 }
 
-bool8 SmartAI_ChooseItem(u8 battler, struct SmartAiDecision *out)
+bool8 SmartAI_ChooseItem(u8 battler, struct SmartAiDecision *out, u8 *listIndex)
 {
     u8 pos = GetBattlerPosition(battler) >> 1;
     u8 slot = gBattlerPartyIndexes[battler];
     u8 type;
 
-    // A cura anterior foi desfeita: marca o slot, e ele não cura PS de novo nesta batalha (nem depois de sair e voltar).
-    if (HealUndoneLastTurn(battler))
-        gBattleStruct->aiHealHp[pos] |= 1 << (HEAL_UNDONE_SHIFT + slot);
-    if (!ChooseItem(battler, out))
+    // A marca de cura desfeita já foi gravada no começo da escolha (SmartAI_NoteHealUndone, antes de ShouldSwitch).
+    if (!ChooseItem(battler, out, listIndex))
         return FALSE;
-    type = GetAI_ItemType(out->item, ItemEffects(out->item));
+    type = GetAI_ItemType(out->item, SmartAI_ItemEffects(out->item));
     if (type == AI_ITEM_FULL_RESTORE || type == AI_ITEM_HEAL_HP)
     {
         // Guarda o turno, o Pokémon e o PS de antes, para ver no turno seguinte se a cura foi desfeita.
@@ -772,9 +788,11 @@ bool8 SmartAI_ChooseItem(u8 battler, struct SmartAiDecision *out)
 
 void SmartAI_Decide(u8 battler, bool8 noStayRoll, struct SmartAiDecision *out)
 {
+    u8 listIndex;
+
     if (PredictiveSwitch(battler, out, !noStayRoll))
         return;
-    if (ChooseItem(battler, out))
+    if (ChooseItem(battler, out, &listIndex))
         return;
     out->action = SMART_AI_ATTACK;
     out->partySlot = PARTY_SIZE;
