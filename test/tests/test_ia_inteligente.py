@@ -217,7 +217,7 @@ def test_limiares_troca():
     assert ">= 20" in corpo                                          # ameaça >= 2x no Pokémon em campo
     assert "GetMonData(mon, MON_DATA_HP) * 2 < GetMonData(mon, MON_DATA_MAX_HP)" in corpo  # candidato PS >= 50%
     assert "> 5" in corpo                                            # candidato leva <= 0,5x de todas as ameaças
-    assert "Random() % 5 == 0" in corpo                              # 1 em 5 fica e ataca
+    assert "Random() % 5 == 0" in corpo                              # 1 em 5 fica e segue a regra original
     assert "DEFAULT_STAT_STAGE" in corpo and re.search(r"boosts >= 2\b", corpo)  # aumento guardado
     assert "SmartAI_SwitchedLastTurn(battler)" in corpo              # sem pingue-pongue
     assert "SmartAI_CanKoFirst(battler, opponent)" in corpo
@@ -242,7 +242,9 @@ def test_reacao_original_primeiro():
     bloco = corpo[inicio:resto]
     assert "return FALSE;" not in bloco and "return TRUE;" in bloco
     assert "AI_monToSwitchIntoId" in bloco and "decision.partySlot" in bloco and "B_ACTION_SWITCH" in bloco
-    assert pred < resto < corpo.index("AreStatsRaised()")         < corpo.index("FindMonWithFlagsAndSuperEffective(MOVE_RESULT_DOESNT_AFFECT_FOE, 2)")         < corpo.index("FindMonWithFlagsAndSuperEffective(MOVE_RESULT_NOT_VERY_EFFECTIVE, 3)")
+    assert (pred < resto < corpo.index("AreStatsRaised()")
+            < corpo.index("FindMonWithFlagsAndSuperEffective(MOVE_RESULT_DOESNT_AFFECT_FOE, 2)")
+            < corpo.index("FindMonWithFlagsAndSuperEffective(MOVE_RESULT_NOT_VERY_EFFECTIVE, 3)"))
     # nenhum return entre a preditiva e o resto: o resto é alcançável quando a preditiva não troca
     assert bloco.rstrip().endswith("}") and bloco.count("return") == 1
     # a troca voluntária é marcada uma vez só (no ramo ShouldSwitch de AI_TrySwitchOrUseItem)

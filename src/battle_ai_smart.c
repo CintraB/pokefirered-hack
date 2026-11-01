@@ -451,7 +451,7 @@ static bool8 PredictiveSwitch(u8 battler, struct SmartAiDecision *out, bool8 sta
     }
     if (best == PARTY_SIZE)
         return FALSE;
-    // Para não ficar previsível demais: 1 em 5 fica e ataca mesmo assim.
+    // Para não ficar previsível demais: 1 em 5 fica e segue a regra original (ShouldSwitch continua no resto dela).
     if (stayRoll && Random() % 5 == 0)
         return FALSE;
     out->action = SMART_AI_SWITCH;

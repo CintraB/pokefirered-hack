@@ -9,9 +9,9 @@ a Pokédex inteira obtível e uma esteira de testes automática no emulador.**
 ![Idioma](https://img.shields.io/badge/idioma-PT--BR-009c3b?style=flat-square)
 ![Base](https://img.shields.io/badge/base-pret%2Fpokefirered-e3350d?style=flat-square)
 ![Linguagem](https://img.shields.io/badge/C-agbcc-555555?style=flat-square)
-![Testes](https://img.shields.io/badge/pytest-4709%20testes-2ea44f?style=flat-square)
-![Esteira](https://img.shields.io/badge/esteira-456%20checagens-2ea44f?style=flat-square)
-![Versão](https://img.shields.io/badge/ROM-v50-informational?style=flat-square)
+![Testes](https://img.shields.io/badge/pytest-4738%20testes-2ea44f?style=flat-square)
+![Esteira](https://img.shields.io/badge/esteira-472%20checagens-2ea44f?style=flat-square)
+![Versão](https://img.shields.io/badge/ROM-v51-informational?style=flat-square)
 
 <img src="docs/readme/inicial.png" width="240" alt="Escolha do inicial em português">
 <img src="docs/readme/chuva.png" width="240" alt="Batalha com chuva contínua">
@@ -150,6 +150,7 @@ perder o jeito do FireRed.
 | **Incubadora** | Dada pelo dono da creche da Ilha Quatro: Ovos chocam 2× mais rápido (4× com Corpo Chama ou Armadura Magma). |
 | **HMs sem ensinar** | Com a insígnia e a HM na bolsa, basta um Pokémon que possa aprender o golpe. Cavernas escuras já acendem. |
 | **Viagem pelo Mapa** | Com o Voar liberado, o Mapa da Cidade leva direto a uma cidade visitada. |
+| **Chefes mais espertos** | Líderes, Elite 4, rival e as revanches do Nível 80 para cima trocam de Pokémon antes do seu golpe super efetivo (lembrando dos golpes que você já mostrou), escolhem melhor quem entra e usam poções e curas de estado na hora certa, sem repetir uma cura que você desfez. Treinadores comuns não mudam. |
 </details>
 
 <details>
@@ -257,6 +258,7 @@ perder o jeito do FireRed.
 | **Físico/especial e Fada** (30/10) | Categoria por golpe, tipo Fada com a tabela de X e Y, 18 espécies e 6 golpes novos. |
 | **Conquistas e diário** (31/10) | 41 conquistas com prêmio e aviso, save antigo reconhecido e o diário das batalhas marcantes. |
 | **Revanches por degrau** (31/10) | A guarda da Liga escolhe o nível (Normal a 100) da Elite 4, do Campeão e das revanches do Explorador VS: times de 6, item, IVs altos e a IA dos chefes. |
+| **Chefes mais espertos** (31/10) | Os chefes trocam antes do golpe super efetivo, escolhem melhor quem entra e usam poções e curas na hora certa; treinador comum igual. |
 
 ## Esteira de testes
 
@@ -282,7 +284,7 @@ flowchart LR
   comparadas pixel a pixel com as referências aprovadas de cada um.
 - **Checagem de texto**: mede a largura de cada frase traduzida na janela onde ela aparece e o
   tamanho dos buffers, para nada estourar.
-- **4709 testes em pytest** cobrem a própria esteira e as regras de cada hack.
+- **4738 testes em pytest** cobrem a própria esteira e as regras de cada hack.
 
 <details>
 <summary>Comandos (WSL)</summary>

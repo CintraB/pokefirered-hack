@@ -49,7 +49,8 @@ bool8 SmartAI_CanKoFirst(u8 battler, u8 target);
 // das ameaças conhecidas) + ataque (golpe super efetivo nele) + PS atual. Só tipos: o banco não está em gBattleMons.
 u8 SmartAI_ScoreBench(u8 partySlot, u8 opponentBattler);
 // Troca preditiva (só batalha simples): TRUE e `out` = SWITCH para o slot escolhido quando o Pokémon em campo leva
-// >= 2x de uma ameaça, não derruba antes e há no time quem resista (PS >= 50%, <= 0,5x de todas); 1 em 5 fica.
+// >= 2x de uma ameaça, não derruba antes e há no time quem resista (PS >= 50%, <= 0,5x de todas); 1 em 5 fica e segue
+// a regra original.
 bool8 SmartAI_ChoosePredictiveSwitch(u8 battler, struct SmartAiDecision *out);
 // Quem entra (troca sem destino escolhido e substituto depois de desmaio): a melhor pontuação; quem leva >= 2x de uma
 // ameaça conhecida só se não houver outro. PARTY_SIZE = nenhum.
@@ -70,7 +71,8 @@ void SmartAI_NoteHealUndone(u8 battler);
 const u8 *SmartAI_ItemEffects(u16 item);
 // A decisão nova do chefe (troca preditiva → item → ataque) sem emitir nada nem gravar a cura (o item usa o núcleo puro
 // de SmartAI_ChooseItem); as trocas por reação e o resto do original de ShouldSwitch não entram (no jogo eles vêm
-// antes/depois da preditiva). noStayRoll = TRUE tira o sorteio "1 em 5 fica e ataca" (TEST_CMD_AI_SMART_DECIDE).
+// antes/depois da preditiva). noStayRoll = TRUE tira o sorteio "1 em 5 fica e segue a regra original"
+// (TEST_CMD_AI_SMART_DECIDE).
 void SmartAI_Decide(u8 battler, bool8 noStayRoll, struct SmartAiDecision *out);
 
 #endif // GUARD_BATTLE_AI_SMART_H

@@ -337,7 +337,8 @@ class Mailbox:
 
     def ai_smart_decide(self, sem_sorteio: bool = True) -> tuple[int, int, int] | None:
         """Decisão do chefe para o oponente da esquerda, sem emitir nada: (ação SMART_AI_*, slot, item);
-        None se o oponente não é chefe. `sem_sorteio` tira o "1 em 5 fica e ataca". Só a decisão nova do chefe:
+        None se o oponente não é chefe. `sem_sorteio` tira o "1 em 5 fica e segue a regra original". Só a decisão nova
+        do chefe:
         as trocas por reação originais de ShouldSwitch (antes) e o resto do original (troca por golpe que não pega,
         depois) não entram aqui; no jogo elas ainda podem trocar quando isto diz ATTACK."""
         raw = self.call(CMD_AI_SMART_DECIDE, int(sem_sorteio))

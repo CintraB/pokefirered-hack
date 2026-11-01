@@ -405,6 +405,11 @@
           "title": "Revanches por degrau",
           "body": "Depois do Hall da Fama, a guarda da Liga\npergunta o nível a cada visita, de Normal a\nNível 100. Vale para a Elite 4, a final da\nLiga e as revanches do Explorador VS: times\nde 6, mais fortes, com item e IVs altos.",
           "itemId": "ITEM_VS_SEEKER"
+        },
+        {
+          "title": "Chefes mais espertos",
+          "body": "Líderes, Elite 4, rival e as revanches do\nNível 80 para cima trocam de Pokémon antes\ndo seu golpe super efetivo, escolhem melhor\nquem entra e usam poções e curas na hora\ncerta.",
+          "itemId": "ITEM_FULL_RESTORE"
         }
       ]
     },
