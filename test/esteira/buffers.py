@@ -1645,6 +1645,11 @@ DECLARED: list[Declared] = [
              why="detalhe do diário montado em gStringVar4[1000]: nome (até 11 bytes) + gText_Diario_Separador + local (até "
                  "25 bytes), e gText_Diario_TempoTurnos com \"hh:mm\" (até 8 bytes) e turnos (3); as larguras são medidas em "
                  "test/tests/test_conquistas_tela.py::test_larguras_diario"),
+    # POK-47, Task 3
+    Declared("src/dexnav.c", "JuntarRodape", r".*", BufRef("gStringVar4"),
+             why="rodapé do DexNav montado por partes em gStringVar4[1000] (DesenharRodape passa gStringVar4): no "
+                 "máximo 4 partes curtas (\"SELECT mapas\"...) e 3 separadores, menos de 60 bytes; a largura montada é "
+                 "medida em test/tests/test_dexnav_tela.py::test_rodape_cabe"),
 ]
 
 

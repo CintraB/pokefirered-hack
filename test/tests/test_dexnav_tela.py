@@ -83,12 +83,12 @@ def test_interface():
     assert "QuestLog_CutRecording();" in script and "LockPlayerFieldControls();" in script
 
 
-def test_abre_no_mapa_atual_ou_volta():
-    """Mapa atual com encontro: abre no modo mapa dele; sem encontro, por ora volta direto (a Task 3 põe a lista)."""
+def test_abre_no_mapa_atual_ou_na_lista():
+    """Mapa atual com encontro: abre no modo mapa dele; sem encontro, na lista de mapas (Task 3)."""
     corpo = _corpo(_ler(TELA_C), "DexNav_Open")
     assert "DexNav_MapIndexOf(gSaveBlock1Ptr->location.mapGroup, gSaveBlock1Ptr->location.mapNum)" in corpo
-    assert "DEXNAV_MODE_MAP" in corpo
-    assert "SetMainCallback2(returnTo);" in corpo
+    assert "AbrirTela(returnTo, DEXNAV_MODE_MAP, mapIndex);" in corpo
+    assert "AbrirTela(returnTo, DEXNAV_MODE_LIST, MapaInicialDaLista());" in corpo
 
 
 def test_heap():
@@ -192,8 +192,9 @@ def test_topo_e_abas_alinhados():
     assert d["TOPO_PERIODO_X"] + d["TOPO_PERIODO_LARGURA"] + 4 <= d["TOPO_CONTADOR_FIM"] - contador
     assert d["TOPO_CONTADOR_FIM"] + 2 <= d["TOPO_COROA_X"] and d["TOPO_COROA_X"] + 8 <= LARGURA_TELA
 
-    abas = _sem_comentarios(_corpo(fonte, "DesenharAbas"))
+    abas = _sem_comentarios(_corpo(fonte, "DesenharAba"))
     assert "ABA_X0 + " in abas and "ABA_PASSO" in abas, "cada aba numa vaga fixa"
+    assert "DesenharAba(p, " in _corpo(fonte, "DesenharAbas")
     rotulos = [v for k, v in _textos_dexnav().items() if k.startswith("gText_DexNav_Aba")]
     assert len(rotulos) == 4
     assert max(_medir(r) for r in rotulos) + d["ABA_TEXTO_DX"] + 2 <= d["ABA_COROA_DX"]
@@ -260,9 +261,11 @@ def test_icones_do_dexnav():
 def test_controles():
     fonte = _ler(TELA_C)
     entrada = _corpo(fonte, "Task_DexNav_Input")
-    for trecho in ("JOY_NEW(B_BUTTON)", "JOY_NEW(L_BUTTON)", "JOY_NEW(R_BUTTON)", "JOY_REPT(DPAD_UP)",
-                   "JOY_REPT(DPAD_DOWN)"):
+    for trecho in ("JOY_NEW(B_BUTTON)", "JOY_REPT(DPAD_UP)", "JOY_REPT(DPAD_DOWN)", "InputMapa(t)", "InputLista(t)",
+                   "InputBusca(t)"):
         assert trecho in entrada, trecho
+    mapa = _corpo(fonte, "InputMapa")
+    assert "JOY_NEW(L_BUTTON)" in mapa and "JOY_NEW(R_BUTTON)" in mapa and "TrocarAba(t, " in mapa
     # L/R dão a volta entre as abas que o mapa tem
     assert "t->nAbas" in _corpo(fonte, "TrocarAba")
 
@@ -286,8 +289,36 @@ ESPERADOS = {
     "gText_DexNav_MaisTarde": "+{STR_VAR_1} à tarde",
     "gText_DexNav_MaisOutros": "+{STR_VAR_1} em outros horários",
     "gText_DexNav_Nenhum": "Nenhum Pokémon por aqui.",
-    "gText_DexNav_Rodape": "L/R: aba   B: sair",
-    "gText_DexNav_RodapeSair": "B: sair",
+    "gText_DexNav_RodapeSair": "B sair",
+    "gText_DexNav_RodapeVoltar": "B voltar",
+    "gText_DexNav_RodapeAba": "L/R aba",
+    "gText_DexNav_RodapeRegiao": "L/R região",
+    "gText_DexNav_RodapePagina": "L/R página",
+    "gText_DexNav_RodapeMapas": "SELECT mapas",
+    "gText_DexNav_RodapeBusca": "START busca",
+    "gText_DexNav_RodapeAbrir": "A abrir",
+    "gText_DexNav_RodapeBuscar": "A buscar",
+    "gText_DexNav_MetodoGrama": "Grama",
+    "gText_DexNav_MetodoSurfar": "Surfar",
+    "gText_DexNav_MetodoPedra": "Esmaga Pedra",
+    "gText_DexNav_Interrogacao": "?/?",
+    "gText_DexNav_BuscaTitulo": "Buscar Pokémon",
+    "gText_DexNav_Capturado": "capturado",
+    "gText_DexNav_Visto": "visto",
+    "gText_DexNav_ColPokemon": "Pokémon",
+    "gText_DexNav_ColMapas": "Mapas",
+    "gText_DexNav_ColMapa": "Mapa",
+    "gText_DexNav_ColChance": "Chance",
+    "gText_DexNav_ColHorario": "Horário",
+    "gText_DexNav_HorarioManha": "manhã",
+    "gText_DexNav_HorarioTarde": "tarde",
+    "gText_DexNav_HorarioNoite": "noite",
+    "gText_DexNav_HorarioDia": "dia",
+    "gText_DexNav_HorarioTardeNoite": "tarde/noite",
+    "gText_DexNav_HorarioManhaNoite": "manhã/noite",
+    "gText_DexNav_HorarioSempre": "dia/noite",
+    "gText_DexNav_BuscaVazia": "Nenhum Pokémon selvagem visto.",
+    "gText_DexNav_NenhumMapa": "Nenhum mapa.",
     "gText_DexNav_NenhumAgora": "Nenhum agora",
 }
 
@@ -387,7 +418,8 @@ def test_titulo_da_secao_nao_some_ao_rolar():
 
 def test_rodape_so_mostra_lr_com_duas_abas():
     rodape = _corpo(_ler(TELA_C), "DesenharRodape")
-    assert re.search(r"t->nAbas >= 2 \? gText_DexNav_Rodape : gText_DexNav_RodapeSair", rodape), rodape
+    assert re.search(r"if \(t->nAbas >= 2\)\s*s = JuntarRodape\(gStringVar4, s, gText_DexNav_RodapeAba\);",
+                     rodape), rodape
 
 
 def test_aba_sem_pokemon_agora_se_explica():
@@ -399,13 +431,263 @@ def test_aba_sem_pokemon_agora_se_explica():
     assert "gText_DexNav_NenhumAgora" in _corpo(fonte, "DesenharLinhaVazia")
     assert "case LINHA_VAZIA:" in _corpo(fonte, "DesenharLista")
     # ▲▼ só param em linha de Pokémon: sem Pokémon, a seleção fica parada
-    assert "t->linhas[i].tipo != LINHA_MON" in _corpo(fonte, "MoverCursor")
+    assert "!Selecionavel(t->linhas[i].tipo)" in _corpo(fonte, "AvancarCursor")
+    assert "LINHA_MON" in _corpo(fonte, "Selecionavel")
 
 
 def test_dexnav_tela_recusa_what_invalido():
     import pytest
 
     caixa = object.__new__(hooks.Mailbox)
-    for ruim in (-1, 4, 255):
+    for ruim in (-1, 8, 255):
         with pytest.raises(ValueError, match="what"):
             caixa.dexnav_tela(ruim)
+
+
+# --- Task 3: lista de mapas (SELECT) e busca (START) ---------------------------------------------------------------
+
+def _nomes_dos_mapas() -> list[str]:
+    return re.findall(r'sDexNavNome_\d+\[\] = _\("(.*?)"\);', _ler(SRC / "data" / "dexnav_mapas.h"))
+
+
+def test_nao_visitado_nao_abre():
+    """Sem estragar surpresa: mapa não visitado aparece na lista como "?/?" (barra vazia) e A não abre; na busca, o
+    mapa não visitado vira "??????" e A também não abre."""
+    fonte = _ler(TELA_C)
+    textos = _textos_dexnav()
+    assert textos.get("gText_DexNav_Interrogacao") == "?/?"
+    linha = _sem_comentarios(_corpo(fonte, "DesenharLinhaMapa"))
+    assert "DexNav_IsVisited(" in linha and "gText_DexNav_Interrogacao" in linha
+    # a barra só enche com o mapa visitado: o preenchimento depende de `visitado`
+    assert re.search(r"if \(visitado[^)]*\)\s*\{?[^}]*LST_BARRA_LARGURA \*", linha, re.S), linha
+    abrir = _sem_comentarios(_corpo(fonte, "InputLista"))
+    assert "JOY_NEW(A_BUTTON)" in abrir
+    m = re.search(r"if \(!DexNav_IsVisited\(([^)]*)\)\)\s*return;", abrir)
+    assert m, abrir
+    assert abrir.index(m.group(0)) < abrir.index("AbrirMapa(t, mapIndex"), "o teste de visitado vem antes de abrir"
+    busca = _sem_comentarios(_corpo(fonte, "InputBusca"))
+    m = re.search(r"if \(!DexNav_IsVisited\(([^)]*)\)\)\s*return;", busca)
+    assert m and busca.index(m.group(0)) < busca.index("AbrirMapa(t, r->mapIndex, t->species, r->method)"), busca
+    assert "t->modo = DEXNAV_MODE_MAP;" in _corpo(fonte, "AbrirMapa")
+    resultado = _sem_comentarios(_corpo(fonte, "DesenharLinhaResultado"))
+    assert "DexNav_IsVisited(" in resultado and "gText_DexNav_Desconhecido" in resultado
+
+
+def test_lista_regioes():
+    """L/R alterna Kanto ↔ Ilhas Sevii; o topo mostra "completos/total" da região e a coroa."""
+    fonte = _ler(TELA_C)
+    entrada = _sem_comentarios(_corpo(fonte, "InputLista"))
+    assert "JOY_NEW(L_BUTTON)" in entrada and "JOY_NEW(R_BUTTON)" in entrada and "TrocarRegiao(t)" in entrada
+    trocar = _sem_comentarios(_corpo(fonte, "TrocarRegiao"))
+    assert "DEXNAV_REGION_SEVII" in trocar and "DEXNAV_REGION_KANTO" in trocar
+    montar = _sem_comentarios(_corpo(fonte, "MontarLista"))
+    assert "gDexNavMaps[i].region == t->regiao" in montar and "LINHA_MAPA" in montar
+    topo = _sem_comentarios(_corpo(fonte, "DesenharTopoLista"))
+    assert "ContarRegiao(t, t->regiao, &completos, &total)" in topo
+    assert "TOPO_CONTADOR_FIM - GetStringWidth(FONT_NORMAL, " in topo
+    assert re.search(r"BlitIcone\(WIN_TOPO, ICONE_COROA, TOPO_COROA_X,", topo), topo
+    # completo = visitado e com tudo capturado (mapa não visitado não conta: não se sabe o que tem lá)
+    regiao = _sem_comentarios(_corpo(fonte, "ContarRegiao"))
+    assert "MapaCompleto(t, i)" in regiao
+    completo = _sem_comentarios(_corpo(fonte, "MapaCompleto"))
+    assert "DexNav_IsVisited(" in completo and "mapTotal[" in completo and "mapCapturados[" in completo
+    textos = _textos_dexnav()
+    assert textos.get("gText_DexNav_MapasKanto") == "Mapas de Kanto"
+    assert textos.get("gText_DexNav_MapasSevii") == "Mapas das Ilhas Sevii"
+    assert textos.get("gText_DexNav_RegiaoKanto") == "KANTO" and textos.get("gText_DexNav_RegiaoSevii") == "SEVII"
+    # as duas regiões como abas, na faixa das abas (as mesmas vagas fixas da tela do mapa)
+    assert "DesenharAba(" in _corpo(fonte, "DesenharAbasLista")
+
+
+def test_busca_so_vistos():
+    """A escolha da busca só tem espécies vistas na Pokédex (FLAG_GET_SEEN), em ordem da Pokédex Nacional, e só as que
+    aparecem em algum mapa (as outras não teriam resultado)."""
+    fonte = _ler(TELA_C)
+    escolha = _sem_comentarios(_corpo(fonte, "MontarEscolha"))
+    assert re.search(r"for \(dex = 1; dex <= NATIONAL_DEX_COUNT; dex\+\+\)", escolha), escolha
+    assert "GetSetPokedexFlag(dex, FLAG_GET_SEEN)" in escolha
+    assert "FLAG_GET_CAUGHT" not in escolha, "a escolha é por visto, não por capturado"
+    assert "t->especieMapas[dex]" in escolha
+    assert "NationalPokedexNumToSpecies(dex)" in escolha and "LINHA_ESPECIE" in escolha
+    # o resultado só tem mapas onde a espécie aparece
+    colher = _sem_comentarios(_corpo(fonte, "ColherResultados"))
+    assert "t->entries[i].species != t->species" in colher
+
+
+def test_abre_na_lista_sem_encontro():
+    """Mapa sem encontro (cidade, interior): abre na lista de mapas, no último mapa com encontro visitado (byte no
+    save), ou no primeiro visitado, ou na primeira linha."""
+    fonte = _ler(TELA_C)
+    abrir = _sem_comentarios(_corpo(fonte, "DexNav_Open"))
+    assert "DEXNAV_MODE_LIST" in abrir and "MapaInicialDaLista()" in abrir
+    inicial = _sem_comentarios(_corpo(fonte, "MapaInicialDaLista"))
+    assert "gSaveBlock1Ptr->dexNav.lastMapIndex" in inicial and "DexNav_IsVisited(" in inicial
+    dados = _ler(SRC / "dexnav_data.c")
+    marca = _corpo(dados, "DexNav_MarkVisited")
+    assert "gSaveBlock1Ptr->dexNav.lastMapIndex = index;" in marca
+    for funcao in ("DexNav_InitSave", "DexNav_UpgradeOldSave"):
+        assert "gSaveBlock1Ptr->dexNav.lastMapIndex = DEXNAV_LAST_MAP_NONE;" in _corpo(dados, funcao), funcao
+    assert _defines(_ler(DEXNAV_H))["DEXNAV_LAST_MAP_NONE"] == 0xFF
+
+
+def test_navegacao_entre_modos():
+    """SELECT e START dentro do DexNav; A abre o modo mapa (lista e resultado da busca); B volta uma tela (a pilha)."""
+    fonte = _ler(TELA_C)
+    entrada = _sem_comentarios(_corpo(fonte, "Task_DexNav_Input"))
+    assert "JOY_NEW(SELECT_BUTTON)" in entrada and "IrPara(t, DEXNAV_MODE_LIST)" in entrada
+    assert "JOY_NEW(START_BUTTON)" in entrada and "IrPara(t, DEXNAV_MODE_SEARCH)" in entrada
+    assert "Voltar(t)" in entrada
+    voltar = _sem_comentarios(_corpo(fonte, "Voltar"))
+    assert "t->nPilha == 0" in voltar and "FASE_SAIR" in voltar and "Desempilhar(t)" in voltar
+    assert "PILHA_MAX" in _corpo(fonte, "Empilhar")
+    # a aba do jeito de encontrar do resultado e a linha da espécie
+    assert "sAbaDoMetodo[t->alvoMetodo]" in _corpo(fonte, "MontarMapa")
+    # a varredura dos 124 mapas é feita em partes (sem travar um quadro inteiro) e guardada no bloco
+    varrer = _sem_comentarios(_corpo(fonte, "Varrer"))
+    assert "VARRER_POR_QUADRO" in varrer and "DexNav_GetMapEntries(" in varrer
+
+
+def test_resultados_cabem():
+    """O pior caso da busca (a espécie com mais pares mapa + jeito, pelo espelho Python) cabe em RESULTADOS_MAX, e as
+    linhas (títulos de seção incluídos) cabem em LINHAS_MAX."""
+    import importlib.util
+    spec = importlib.util.spec_from_file_location("dexnav_gerar_t3", REPO_ROOT / "tools" / "dexnav" / "gerar.py")
+    gerar = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(gerar)
+    fonte = _ler(TELA_C)
+    d = _defines(fonte)
+    pares: dict[str, int] = {}
+    especies: set[str] = set()
+    mutante_pior = 0
+    for mapa in gerar.mapas():
+        if mapa["id"] == gerar.MUTANTE:
+            continue
+        for e in gerar.enumerar(mapa["id"]):
+            pares[e["especie"]] = pares.get(e["especie"], 0) + 1
+            especies.add(e["especie"])
+    for conjunto in range(gerar.NUM_CONJUNTOS_MUTANTE):
+        mutante_pior = max(mutante_pior, len(gerar.enumerar(gerar.MUTANTE, conjunto)))
+        especies |= {e["especie"] for e in gerar.enumerar(gerar.MUTANTE, conjunto)}
+    pior = max(pares.values()) + mutante_pior
+    assert pior <= d["RESULTADOS_MAX"], pior
+    assert "STATIC_ASSERT(RESULTADOS_MAX + DEXNAV_METHOD_COUNT <= LINHAS_MAX" in fonte
+    assert "#define LINHAS_MAX          NATIONAL_DEX_COUNT" in fonte
+    assert len(especies) <= 386
+
+
+# --- alinhamento das telas novas ---------------------------------------------------------------------------------
+
+def test_colunas_lista_fixas():
+    fonte = _ler(TELA_C)
+    d = _defines(fonte)
+    h = _defines(_ler(DEXNAV_H))
+    linha = _sem_comentarios(_corpo(fonte, "DesenharLinhaMapa"))
+    assert re.search(r"AddTextPrinterParameterized4\(WIN_LISTA, FONT_NORMAL, LST_NOME_X,", linha), linha
+    assert "LST_CONTADOR_FIM - GetStringWidth(FONT_NORMAL, " in linha, "o contador é alinhado à direita"
+    assert re.search(r"FillWindowPixelRect\(WIN_LISTA, PIXEL_FILL\(COR_ABA\), LST_BARRA_X, y \+ LST_BARRA_DY, "
+                     r"LST_BARRA_LARGURA, LST_BARRA_ALTURA\)", linha), "trilho da barra: x e largura fixos"
+    assert re.search(r"BlitIcone\(WIN_LISTA, ICONE_COROA, LST_COROA_X,", linha), linha
+    for chamada in re.findall(r"AddTextPrinterParameterized4\(WIN_LISTA, FONT_NORMAL, ([^,]+),", linha):
+        assert not re.fullmatch(r"\s*\d+\s*", chamada), f"x literal na linha: {chamada}"
+    for nome in ("LST_NOME_X", "LST_BARRA_X", "LST_BARRA_LARGURA", "LST_BARRA_ALTURA", "LST_BARRA_DY", "LST_COROA_X",
+                 "LST_CONTADOR_FIM", "LST_CONTADOR_LARGURA", "LINHA_CURTA_ALTURA"):
+        assert nome in d, nome
+    for a in ("STATIC_ASSERT(LST_NOME_X + DEXNAV_NAME_WIDTH", "STATIC_ASSERT(LST_BARRA_X + LST_BARRA_LARGURA",
+              "STATIC_ASSERT(LST_COROA_X + 8", "STATIC_ASSERT(LST_CONTADOR_FIM"):
+        assert a in fonte, a
+    # pior caso de cada coluna
+    nome = max(_medir(n) for n in _nomes_dos_mapas())
+    contador = max(_medir(t) for t in ("99/99", "32/32", "100%", "?/?", "0/0"))
+    assert nome <= h["DEXNAV_NAME_WIDTH"], nome
+    assert d["LST_NOME_X"] + h["DEXNAV_NAME_WIDTH"] + 4 <= d["LST_BARRA_X"]
+    assert d["LST_BARRA_X"] + d["LST_BARRA_LARGURA"] + 4 <= d["LST_COROA_X"]
+    assert contador <= d["LST_CONTADOR_LARGURA"], contador
+    assert d["LST_COROA_X"] + 8 + 2 <= d["LST_CONTADOR_FIM"] - d["LST_CONTADOR_LARGURA"]
+    assert d["LST_CONTADOR_FIM"] + 2 <= d["COL_SETA_X"]
+    assert d["LST_BARRA_DY"] + d["LST_BARRA_ALTURA"] <= d["LINHA_CURTA_ALTURA"]
+    assert d["LISTA_ALTURA"] // d["LINHA_CURTA_ALTURA"] == 7
+
+
+def test_colunas_busca_fixas():
+    fonte = _ler(TELA_C)
+    d = _defines(fonte)
+    h = _defines(_ler(DEXNAV_H))
+    textos = _textos_dexnav()
+    # escolha: ícone, marca, número (à direita), nome, quantos mapas (à direita)
+    esc = _sem_comentarios(_corpo(fonte, "DesenharLinhaEspecie"))
+    assert re.search(r"BlitIcone\(WIN_LISTA, [^,]+, COL_MARCA_X,", esc), esc
+    assert "ESC_NUM_FIM - GetStringWidth(FONT_NORMAL, " in esc
+    assert re.search(r"AddTextPrinterParameterized4\(WIN_LISTA, FONT_NORMAL, ESC_NOME_X,", esc), esc
+    assert "ESC_MAPAS_FIM - GetStringWidth(FONT_NORMAL, " in esc
+    especie = _maior_especie()
+    assert d["COL_MARCA_X"] + 8 + 4 <= d["ESC_NUM_FIM"] - _medir("386")
+    assert d["ESC_NUM_FIM"] + 4 <= d["ESC_NOME_X"]
+    assert especie <= d["COL_NOME_LARGURA"]
+    assert d["ESC_NOME_X"] + d["COL_NOME_LARGURA"] + 4 <= d["ESC_MAPAS_FIM"] - d["ESC_MAPAS_LARGURA"]
+    assert max(_medir("124"), _medir(textos["gText_DexNav_ColMapas"])) <= d["ESC_MAPAS_LARGURA"]
+    assert d["ESC_MAPAS_FIM"] + 2 <= d["COL_SETA_X"]
+    # resultado: nome do mapa, chance (à direita), horário
+    res = _sem_comentarios(_corpo(fonte, "DesenharLinhaResultado"))
+    assert re.search(r"AddTextPrinterParameterized4\(WIN_LISTA, FONT_NORMAL, RES_NOME_X,", res), res
+    assert "RES_CHANCE_FIM - GetStringWidth(FONT_NORMAL, " in res
+    assert re.search(r"AddTextPrinterParameterized4\(WIN_LISTA, FONT_NORMAL, RES_HORARIO_X,", res), res
+    for chamada in re.findall(r"AddTextPrinterParameterized4\(WIN_LISTA, FONT_NORMAL, ([^,]+),", res + esc):
+        assert not re.fullmatch(r"\s*\d+\s*", chamada), f"x literal na linha: {chamada}"
+    chance = max(_medir(t) for t in ("100%", "99,5%", "88,8%", "0,5%"))
+    horarios = [v for k, v in textos.items() if k.startswith("gText_DexNav_Horario")]
+    assert len(horarios) == 7
+    horario = max(_medir(t) for t in horarios)
+    assert d["RES_NOME_X"] + h["DEXNAV_NAME_WIDTH"] + 2 <= d["RES_CHANCE_FIM"] - d["COL_CHANCE_LARGURA"]
+    assert chance <= d["COL_CHANCE_LARGURA"]
+    assert d["RES_CHANCE_FIM"] + 6 <= d["RES_HORARIO_X"]
+    assert horario <= d["RES_HORARIO_LARGURA"], horario
+    assert d["RES_HORARIO_X"] + d["RES_HORARIO_LARGURA"] <= d["COL_SETA_X"]
+    # os títulos das colunas (faixa das abas) usam as mesmas constantes das linhas
+    cab = _sem_comentarios(_corpo(fonte, "DesenharCabecalhoBusca"))
+    for trecho in ("ESC_NOME_X,", "ESC_MAPAS_FIM - GetStringWidth(FONT_NORMAL, ", "RES_NOME_X,",
+                   "RES_CHANCE_FIM - GetStringWidth(FONT_NORMAL, ", "RES_HORARIO_X,"):
+        assert trecho in cab, trecho
+    assert d["RES_NOME_X"] + _medir(textos["gText_DexNav_ColMapa"]) + 4 <= \
+        d["RES_CHANCE_FIM"] - _medir(textos["gText_DexNav_ColChance"])
+    assert d["ESC_NOME_X"] + _medir(textos["gText_DexNav_ColPokemon"]) + 4 <= \
+        d["ESC_MAPAS_FIM"] - _medir(textos["gText_DexNav_ColMapas"])
+
+
+def test_topo_das_telas_novas():
+    fonte = _ler(TELA_C)
+    d = _defines(fonte)
+    textos = _textos_dexnav()
+    titulo = max(_medir(textos[k]) for k in ("gText_DexNav_MapasKanto", "gText_DexNav_MapasSevii",
+                                              "gText_DexNav_BuscaTitulo"))
+    assert titulo <= d["TOPO_TITULO_LARGURA"], titulo
+    assert max(_medir("66/66"), _medir("58/58")) <= d["TOPO_CONTADOR_LARGURA"]
+    assert d["TOPO_NOME_X"] + d["TOPO_TITULO_LARGURA"] + 4 <= d["TOPO_CONTADOR_FIM"] - d["TOPO_CONTADOR_LARGURA"]
+    status = max(_medir(textos["gText_DexNav_Capturado"]), _medir(textos["gText_DexNav_Visto"]))
+    assert status <= d["TOPO_STATUS_LARGURA"]
+    assert d["TOPO_NOME_X"] + _maior_especie() + 4 <= d["TOPO_CONTADOR_FIM"] - d["TOPO_STATUS_LARGURA"]
+    busca = _sem_comentarios(_corpo(fonte, "DesenharTopoBusca"))
+    assert "TOPO_CONTADOR_FIM - GetStringWidth(FONT_NORMAL, " in busca and "TOPO_NOME_X" in busca
+
+
+RODAPES_PIORES = (
+    # cada modo com B "voltar" (o mais largo)
+    ("gText_DexNav_RodapeAba", "gText_DexNav_RodapeMapas", "gText_DexNav_RodapeBusca", "gText_DexNav_RodapeVoltar"),
+    ("gText_DexNav_RodapeAbrir", "gText_DexNav_RodapeRegiao", "gText_DexNav_RodapeBusca", "gText_DexNav_RodapeVoltar"),
+    ("gText_DexNav_RodapeBuscar", "gText_DexNav_RodapePagina", "gText_DexNav_RodapeMapas", "gText_DexNav_RodapeVoltar"),
+    ("gText_DexNav_RodapeAbrir", "gText_DexNav_RodapePagina", "gText_DexNav_RodapeMapas", "gText_DexNav_RodapeVoltar"),
+)
+
+
+def test_rodape_cabe():
+    """O rodapé é montado por partes (FONT_SMALL), conforme o modo; o pior caso de cada modo cabe em 232 px."""
+    fonte = _ler(TELA_C)
+    textos = _textos_dexnav()
+    rodape = _sem_comentarios(_corpo(fonte, "DesenharRodape"))
+    assert "FONT_SMALL" in rodape and "RODAPE_X" in rodape
+    assert "t->nPilha != 0 ? gText_DexNav_RodapeVoltar : gText_DexNav_RodapeSair" in rodape
+    sep = re.search(r'sText_SeparadorRodape\[\] = _\("(.*?)"\);', fonte).group(1)
+    for partes in RODAPES_PIORES:
+        for p in partes:
+            assert p in rodape, p
+        montado = sep.join(textos[p] for p in partes)
+        assert _medir(montado, "small") <= LARGURA_TELA - 2 * _defines(fonte)["RODAPE_X"], montado

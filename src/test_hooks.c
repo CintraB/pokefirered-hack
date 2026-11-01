@@ -1226,7 +1226,8 @@ static u32 DexNavRoll(u32 method, u32 n)
 }
 
 // Opens the DexNav from a field script, like a key item would: `callnative` (no new special), the screen comes back to
-// the script (waitstate). The map index of the current map, or 0xFFFFFFFF when it has no encounters (no screen).
+// the script (waitstate). The map index of the current map, or 0xFFFFFFFF when it has no encounters (the screen opens
+// in the map list then).
 static u32 OpenDexNav(void)
 {
     u32 func = (u32)DexNav_OpenFromScript;

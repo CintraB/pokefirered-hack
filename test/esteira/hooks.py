@@ -364,24 +364,36 @@ class Mailbox:
     # --- atalhos da tela do DexNav (POK-47) ---------------------------------------------
     def open_dexnav(self) -> int | None:
         """Abre o DexNav no mapa atual, de um script de campo (`callnative`); devolve o índice do mapa (None = mapa
-        sem encontro: o script só volta ao campo). A tela monta nos quadros seguintes: espere
+        sem encontro: a tela abre na lista de mapas). A tela monta nos quadros seguintes: espere
         `dexnav_tela(1)["pronta"]`."""
         raw = self.call(CMD_OPEN_DEXNAV)
         return None if raw == NO_RESULT else raw
 
     def dexnav_tela(self, what: int = 0) -> dict | None:
-        """Estado da tela do DexNav (None = fechada). what 0: modo, aba, cursor, mapa; 1: pronta, abas (bits), mons,
-        topo; 2: capturados/total do mapa e da aba; 3: extra ("+N"), períodos do extra, períodos de agora."""
-        if what not in (0, 1, 2, 3):
-            raise ValueError(f"dexnav_tela: what = {what!r} fora de 0..3 (DexNav_TestGetState, include/dexnav.h)")
+        """Estado da tela do DexNav (None = fechada). what 0: modo, aba (no modo mapa; a região na lista; o passo na
+        busca), cursor, mapa; 1: pronta, abas (bits), mons, topo; 2: capturados/total do mapa e da aba; 3: extra
+        ("+N"), períodos do extra, períodos de agora; 4: cursor e linhas que se escolhem (16 bits cada); 5: telas
+        empilhadas, completos e total da região (lista); 6: espécie da busca e resultados (16 bits cada); 7: a linha
+        selecionada (lista: mapa, visitado, capturados, total; escolha: espécie e mapas; resultado: mapa, método,
+        períodos, visitado)."""
+        if what not in range(8):
+            raise ValueError(f"dexnav_tela: what = {what!r} fora de 0..7 (DexNav_TestGetState, include/dexnav.h)")
         raw = self.call(CMD_DEXNAV_STATE, what)
         if raw == NO_RESULT:
             return None
         b = [raw & 0xFF, raw >> 8 & 0xFF, raw >> 16 & 0xFF, raw >> 24 & 0xFF]
         nomes = (("modo", "aba", "cursor", "mapa"), ("pronta", "abas", "mons", "topo"),
                  ("capturados_mapa", "total_mapa", "capturados_aba", "total_aba"),
-                 ("extra", "periodos_extra", "periodos", "_"))[what]
-        return dict(zip(nomes, b))
+                 ("extra", "periodos_extra", "periodos", "_"), None, ("pilha", "completos", "total", "_"), None,
+                 ("a", "b", "c", "d"))[what]
+        if what == 4:
+            return {"cursor": raw & 0xFFFF, "linhas": raw >> 16}
+        if what == 6:
+            return {"especie": raw & 0xFFFF, "resultados": raw >> 16}
+        d = dict(zip(nomes, b))
+        if what == 7:
+            d["baixo16"], d["alto16"] = raw & 0xFFFF, raw >> 16
+        return d
 
 # --- Hack 6: breeding genético (enum à parte em include/test_hooks.h, a partir de 0x60; ------
 # o uso fica em esteira/breeding.py e scenarios/full_breeding.py / full_egg.py)

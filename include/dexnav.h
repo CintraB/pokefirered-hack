@@ -41,6 +41,8 @@
 
 // Marcador do save (gSaveBlock1Ptr->dexNav.magic): "DNV1" em little-endian
 #define DEXNAV_MAGIC 0x31564E44
+// gSaveBlock1Ptr->dexNav.lastMapIndex sem mapa (jogo novo, save de antes do DexNav)
+#define DEXNAV_LAST_MAP_NONE 0xFF
 
 struct DexNavMap
 {
@@ -80,11 +82,14 @@ void DexNav_UpgradeOldSave(void);
 
 // --- A tela (src/dexnav.c) ---------------------------------------------------------------------------------------
 
-// Modos da tela (TEST_CMD_DEXNAV_STATE): o mapa (layout A, Task 2), a lista de mapas (SELECT) e a busca (START),
-// estes dois na Task 3
+// Modos da tela (TEST_CMD_DEXNAV_STATE): o mapa (layout A), a lista de mapas (SELECT dentro do DexNav) e a busca
+// (START dentro do DexNav; 2 passos: escolher a espécie, ver os mapas)
 #define DEXNAV_MODE_MAP    0
 #define DEXNAV_MODE_LIST   1
 #define DEXNAV_MODE_SEARCH 2
+
+#define DEXNAV_SEARCH_CHOOSE 0  // busca: a lista das espécies vistas
+#define DEXNAV_SEARCH_RESULT 1  // busca: os mapas da espécie escolhida
 
 // Abas da tela do mapa (só aparecem as que o mapa tem; L/R dão a volta). VARAS junta as três varas em seções.
 #define DEXNAV_TAB_LAND  0  // GRAMA (DEXNAV_METHOD_LAND)
@@ -93,18 +98,25 @@ void DexNav_UpgradeOldSave(void);
 #define DEXNAV_TAB_ROCK  3  // PEDRA (Quebra-Pedra)
 #define DEXNAV_TAB_COUNT 4
 
-// Abre o DexNav e, ao sair (B), vai para `returnTo`. Abre no modo mapa, no mapa atual; mapa sem encontro (cidade,
-// interior) por enquanto volta direto (a Task 3 abre a lista de mapas). Troca o CB2: chamar com a tela já escura.
+// Abre o DexNav e, ao sair (B na primeira tela), vai para `returnTo`. Abre no modo mapa, no mapa atual; num mapa sem
+// encontro (cidade, interior), abre a lista de mapas no último mapa com encontro visitado. Troca o CB2: chamar com a
+// tela já escura.
 void DexNav_Open(MainCallback returnTo);
 // O CB2 da tela aberta (tasks, sprites e fade)
 void CB2_DexNav(void);
 // Para script de campo (`callnative`, depois de `fadescreen`; o script espera com `waitstate`)
 void DexNav_OpenFromScript(void);
 // Atalho da esteira (TEST_CMD_DEXNAV_STATE; 0xFFFFFFFF = tela fechada). what = 0: modo | aba << 8 | cursor << 16 |
-// mapIndex << 24 (aba = DEXNAV_TAB_*; cursor = o Pokémon selecionado, contado na ordem da aba, sem as seções);
+// mapIndex << 24 (aba = DEXNAV_TAB_* no modo mapa, a região na lista, o passo DEXNAV_SEARCH_* na busca; cursor = a
+// linha selecionada contada só entre as que se escolhem (sem as seções), até 255; mapIndex = o mapa da tela, ou o da
+// linha selecionada na lista);
 // 1: entrada pronta | abas do mapa (bit por DEXNAV_TAB_*) << 8 | Pokémon na lista da aba << 16 | primeira linha
 // visível << 24; 2: capturados | total do mapa << 8 | capturados | total da aba << 16 e << 24; 3: espécies da
-// linha extra ("+N") | períodos delas (DEXNAV_PERIOD_*) << 8 | períodos de agora << 16
+// linha extra ("+N") | períodos delas (DEXNAV_PERIOD_*) << 8 | períodos de agora << 16;
+// 4: cursor (u16) | linhas que se escolhem (u16) << 16; 5: telas empilhadas (B volta a elas) | completos da região
+// << 8 | mapas da região << 16 (lista; 0 nos outros modos); 6: espécie da busca | resultados << 16;
+// 7: a linha selecionada: lista -> mapa | visitado << 8 | capturados << 16 | total << 24; escolha -> espécie |
+// mapas onde aparece << 16; resultado -> mapa | método << 8 | períodos << 16 | visitado << 24
 u32 DexNav_TestGetState(u8 what);
 
 #endif // GUARD_DEXNAV_H

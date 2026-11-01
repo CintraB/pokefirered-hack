@@ -371,7 +371,8 @@ struct DexNavSave
 {
     /*0x00*/ u32 magic;            // DEXNAV_MAGIC ("DNV1") depois do jogo novo ou do CONTINUAR de um save antigo
     /*0x04*/ u8 visitedMaps[16];   // 1 bit por índice de gDexNavMaps (DEXNAV_MAP_COUNT = 124)
-    /*0x14*/ u8 unused[44];
+    /*0x14*/ u8 lastMapIndex;      // último mapa com encontro visitado (gDexNavMaps); DEXNAV_LAST_MAP_NONE = nenhum
+    /*0x15*/ u8 unused[43];
 }; // size: 64
 
 struct SaveBlock2

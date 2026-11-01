@@ -50,8 +50,14 @@ NUM_CONJUNTOS_MUTANTE = 9  # NUM_ALTERING_CAVE_TABLES
 CAMARAS_TANOBY = {f"MAP_SEVEN_ISLAND_TANOBY_RUINS_{c}_CHAMBER"
                   for c in ("MONEAN", "LIPTOO", "WEEPTH", "DILFORD", "SCUFIB", "RIXY", "VIAPOIS")}
 
-# Nomes que o andar da constante não resolve (cabem em DEXNAV_NAME_WIDTH = 120 px, FONT_NORMAL)
+# Nomes que o andar da constante não resolve (cabem em DEXNAV_NAME_WIDTH = 120 px, FONT_NORMAL). Os lugares cujo nome
+# de mapa é a forma curta do glossário (sem a preposição: "Cidade Vermilion") usam aqui a forma cheia ("Cidade de
+# Vermilion"), como "Cidade de Pallet" ao lado (revisão R5); a Caverna Cerulean fica curta porque "Caverna de Cerulean
+# B1F" passa dos 120 px.
 NOMES_FIXOS = {
+    "MAP_VERMILION_CITY": "Cidade de Vermilion",
+    "MAP_VIRIDIAN_FOREST": "Floresta de Viridian",
+    "MAP_FIVE_ISLAND_MEADOW": "Prado da Ilha Cinco",
     "MAP_ROUTE21_NORTH": "Rota 21 Norte",
     "MAP_ROUTE21_SOUTH": "Rota 21 Sul",
     "MAP_SAFARI_ZONE_CENTER": "Zona Safári Centro",

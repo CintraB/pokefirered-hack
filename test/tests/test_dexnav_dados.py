@@ -211,7 +211,8 @@ def test_save_dexnav():
     corpo = re.search(r"struct DexNavSave\n\{(.*?)\n\};", texto, re.S).group(1)
     corpo = re.sub(r"//[^\n]*", "", corpo)
     assert re.findall(r"/\*(0x[0-9A-F]+)\*/\s*u(\d+) (\w+)(?:\[(\d+)\])?", corpo) == [
-        ("0x00", "32", "magic", ""), ("0x04", "8", "visitedMaps", "16"), ("0x14", "8", "unused", "44")]
+        ("0x00", "32", "magic", ""), ("0x04", "8", "visitedMaps", "16"), ("0x14", "8", "lastMapIndex", ""),
+        ("0x15", "8", "unused", "43")]
     fonte = _ler(DEXNAV_C)
     for esperado in ("sizeof(struct DexNavSave) == 64", "offsetof(struct SaveBlock1, dexNav) == 0x3A94",
                      "offsetof(struct SaveBlock1, registeredTexts) == 0x3AD4", "sizeof(struct SaveBlock1) == 0x3D68",

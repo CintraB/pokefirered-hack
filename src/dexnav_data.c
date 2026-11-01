@@ -18,6 +18,8 @@ STATIC_ASSERT(offsetof(struct SaveBlock1, registeredTexts) == 0x3AD4, Registered
 STATIC_ASSERT(sizeof(struct SaveBlock1) == 0x3D68, SaveBlock1NaoMudouDeTamanho);
 STATIC_ASSERT(DEXNAV_MAP_COUNT <= sizeof(((struct DexNavSave *)0)->visitedMaps) * 8, UmBitPorMapa);
 STATIC_ASSERT(DEXNAV_MAPAS_GERADOS == DEXNAV_MAP_COUNT, TabelaGeradaComOsMapasDoHeader);
+STATIC_ASSERT(offsetof(struct DexNavSave, lastMapIndex) == 0x14, LastMapIndexNoPrimeiroByteLivre);
+STATIC_ASSERT(DEXNAV_MAP_COUNT < DEXNAV_LAST_MAP_NONE, LastMapIndexCabeNumByte);
 
 // A tarde-noite (TIME_EVENING) sorteia 50/50 a tabela da tarde ou a da noite (GetTimeOfDayLandSpecies)
 u8 DexNav_CurrentPeriodBit(void)
@@ -67,13 +69,17 @@ s16 DexNav_MapIndexOf(u8 mapGroup, u8 mapNum)
     return -1;
 }
 
-// Chamada a cada mapa carregado (InitMapLayoutData, src/fieldmap.c); mapa sem encontro não tem bit
+// Chamada a cada mapa carregado (InitMapLayoutData, src/fieldmap.c); mapa sem encontro não tem bit. O último mapa com
+// encontro fica guardado: o DexNav aberto numa cidade ou interior abre a lista de mapas nele.
 void DexNav_MarkVisited(u8 mapGroup, u8 mapNum)
 {
     s16 index = DexNav_MapIndexOf(mapGroup, mapNum);
 
     if (index >= 0)
+    {
         gSaveBlock1Ptr->dexNav.visitedMaps[index / 8] |= 1 << (index % 8);
+        gSaveBlock1Ptr->dexNav.lastMapIndex = index;
+    }
 }
 
 bool8 DexNav_IsVisited(u8 mapIndex)
@@ -88,6 +94,7 @@ void DexNav_InitSave(void)
 {
     memset(&gSaveBlock1Ptr->dexNav, 0, sizeof(gSaveBlock1Ptr->dexNav));
     gSaveBlock1Ptr->dexNav.magic = DEXNAV_MAGIC;
+    gSaveBlock1Ptr->dexNav.lastMapIndex = DEXNAV_LAST_MAP_NONE;
 }
 
 // CONTINUAR (junto de GivePortablePcIfMissing, src/overworld.c). Save de antes do DexNav (sem marcador): zera a
@@ -101,6 +108,7 @@ void DexNav_UpgradeOldSave(void)
         return;
     memset(&gSaveBlock1Ptr->dexNav, 0, sizeof(gSaveBlock1Ptr->dexNav));
     gSaveBlock1Ptr->dexNav.magic = DEXNAV_MAGIC;
+    gSaveBlock1Ptr->dexNav.lastMapIndex = DEXNAV_LAST_MAP_NONE;
     if (FlagGet(FLAG_SYS_GAME_CLEAR))
     {
         for (i = 0; i < DEXNAV_MAP_COUNT; i++)

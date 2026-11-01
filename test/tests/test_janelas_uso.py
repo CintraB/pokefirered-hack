@@ -386,4 +386,4 @@ def test_header_citations_point_at_the_declaration():
             cited = _cited_text(path, first, last)
             assert any(re.search(rf"\b{re.escape(n)}\b", cited) for n in names), (name, f"{path}:{first}", names, cited)
             checked.append(f"{path}:{first}")
-    assert "include/global.h:867" in checked, checked
+    assert "include/global.h:868" in checked, checked
