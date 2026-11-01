@@ -361,6 +361,26 @@ class Mailbox:
         assert raw != NO_RESULT, f"SET_TRAINER_ITEMS recusado: {itens}"
         return raw
 
+    # --- atalhos da tela do DexNav (POK-47) ---------------------------------------------
+    def open_dexnav(self) -> int | None:
+        """Abre o DexNav no mapa atual, de um script de campo (`callnative`); devolve o índice do mapa (None = mapa
+        sem encontro: o script só volta ao campo). A tela monta nos quadros seguintes: espere
+        `dexnav_tela(1)["pronta"]`."""
+        raw = self.call(CMD_OPEN_DEXNAV)
+        return None if raw == NO_RESULT else raw
+
+    def dexnav_tela(self, what: int = 0) -> dict | None:
+        """Estado da tela do DexNav (None = fechada). what 0: modo, aba, cursor, mapa; 1: pronta, abas (bits), mons,
+        topo; 2: capturados/total do mapa e da aba; 3: extra ("+N"), períodos do extra, períodos de agora."""
+        raw = self.call(CMD_DEXNAV_STATE, what)
+        if raw == NO_RESULT:
+            return None
+        b = [raw & 0xFF, raw >> 8 & 0xFF, raw >> 16 & 0xFF, raw >> 24 & 0xFF]
+        nomes = (("modo", "aba", "cursor", "mapa"), ("pronta", "abas", "mons", "topo"),
+                 ("capturados_mapa", "total_mapa", "capturados_aba", "total_aba"),
+                 ("extra", "periodos_extra", "periodos", "_"))[what]
+        return dict(zip(nomes, b))
+
 # --- Hack 6: breeding genético (enum à parte em include/test_hooks.h, a partir de 0x60; ------
 # o uso fica em esteira/breeding.py e scenarios/full_breeding.py / full_egg.py)
 CMD_BREED_SETUP = 0x60      # gTestBreedSetup -> creche (arg0 = 1: ovo pendente) -> compatibilidade (0xFFFFFFFF = pai inválido)
@@ -464,3 +484,10 @@ CMD_DEXNAV_RATE = 0xE1      # arg0 = índice do mapa, arg1 = entrada | período 
 CMD_DEXNAV_ROLL = 0xE2      # arg0 = método (DEXNAV_METHOD_*), arg1 = N -> espécies distintas: o gerador real do mapa atual
                             # N vezes, sem batalha; contagem em gTestText como (u16 espécie, u16 vezes) até espécie 0
                             # (0xFFFFFFFF = o mapa não tem essa tabela ou método inválido)
+CMD_DEXNAV_STATE = 0xE3     # arg0 = 0 -> modo | aba (DEXNAV_TAB_*) << 8 | cursor << 16 | índice do mapa << 24; 1 -> entrada
+                            # pronta | abas do mapa << 8 | Pokémon da aba << 16 | topo << 24; 2 -> capturados | total do
+                            # mapa << 8 | capturados | total da aba << 16/24; 3 -> "+N" | períodos dele << 8 | períodos de
+                            # agora << 16 (0xFFFFFFFF = tela fechada)
+CMD_OPEN_DEXNAV = 0xE4      # script de campo com `callnative DexNav_OpenFromScript` -> índice do mapa atual
+                            # (0xFFFFFFFF = mapa sem encontro: volta ao campo)
+DEXNAV_TAB_LAND, DEXNAV_TAB_WATER, DEXNAV_TAB_RODS, DEXNAV_TAB_ROCK = range(4)  # include/dexnav.h

@@ -1224,6 +1224,28 @@ static u32 DexNavRoll(u32 method, u32 n)
         gTestText[i] = ((const u8 *)tally)[i];
     return distinct;
 }
+
+// Opens the DexNav from a field script, like a key item would: `callnative` (no new special), the screen comes back to
+// the script (waitstate). The map index of the current map, or 0xFFFFFFFF when it has no encounters (no screen).
+static u32 OpenDexNav(void)
+{
+    u32 func = (u32)DexNav_OpenFromScript;
+    s16 mapIndex = DexNav_MapIndexOf(gSaveBlock1Ptr->location.mapGroup, gSaveBlock1Ptr->location.mapNum);
+
+    gTestText[0] = 0x69;            // lockall
+    gTestText[1] = 0x97;            // fadescreen FADE_TO_BLACK
+    gTestText[2] = 1;
+    gTestText[3] = 0x23;            // callnative DexNav_OpenFromScript
+    gTestText[4] = func;
+    gTestText[5] = func >> 8;
+    gTestText[6] = func >> 16;
+    gTestText[7] = func >> 24;
+    gTestText[8] = 0x27;            // waitstate
+    gTestText[9] = 0x6B;            // releaseall
+    gTestText[10] = 0x02;           // end
+    ScriptContext_SetupScript(gTestText);
+    return mapIndex < 0 ? 0xFFFFFFFF : (u32)mapIndex;
+}
 // --- end of POK-47 --------------------------------------------------------------------------
 
 void TestHooks_Run(void)
@@ -1369,6 +1391,8 @@ void TestHooks_Run(void)
     case TEST_CMD_DEXNAV_ENTRY:     result = DexNavEntryHook(gTestMailbox.arg0, gTestMailbox.arg1); break;
     case TEST_CMD_DEXNAV_RATE:      result = DexNavRateHook(gTestMailbox.arg0, gTestMailbox.arg1); break;
     case TEST_CMD_DEXNAV_ROLL:      result = DexNavRoll(gTestMailbox.arg0, gTestMailbox.arg1); break;
+    case TEST_CMD_DEXNAV_STATE:     result = DexNav_TestGetState(gTestMailbox.arg0); break;
+    case TEST_CMD_OPEN_DEXNAV:      result = OpenDexNav(); break;
     default:
         result = 0xFFFFFFFF;
         break;

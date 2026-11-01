@@ -2,6 +2,7 @@
 #define GUARD_DEXNAV_H
 
 #include "global.h"
+#include "main.h"
 
 // DexNav (POK-47): os Pokémon de cada mapa com encontro, com as chances reais da hack, e os mapas visitados.
 // Dados: src/dexnav_data.c (mapas, visitados, período) e DexNav_GetMapEntries em src/wild_encounter.c.
@@ -76,5 +77,34 @@ void DexNav_MarkVisited(u8 mapGroup, u8 mapNum);
 bool8 DexNav_IsVisited(u8 mapIndex);
 void DexNav_InitSave(void);
 void DexNav_UpgradeOldSave(void);
+
+// --- A tela (src/dexnav.c) ---------------------------------------------------------------------------------------
+
+// Modos da tela (TEST_CMD_DEXNAV_STATE): o mapa (layout A, Task 2), a lista de mapas (SELECT) e a busca (START),
+// estes dois na Task 3
+#define DEXNAV_MODE_MAP    0
+#define DEXNAV_MODE_LIST   1
+#define DEXNAV_MODE_SEARCH 2
+
+// Abas da tela do mapa (só aparecem as que o mapa tem; L/R dão a volta). VARAS junta as três varas em seções.
+#define DEXNAV_TAB_LAND  0  // GRAMA (DEXNAV_METHOD_LAND)
+#define DEXNAV_TAB_WATER 1  // SURFAR (DEXNAV_METHOD_WATER; o glossário da esteira barra "SURF")
+#define DEXNAV_TAB_RODS  2  // VARAS (Vara Velha, Vara Boa, Supervara)
+#define DEXNAV_TAB_ROCK  3  // PEDRA (Quebra-Pedra)
+#define DEXNAV_TAB_COUNT 4
+
+// Abre o DexNav e, ao sair (B), vai para `returnTo`. Abre no modo mapa, no mapa atual; mapa sem encontro (cidade,
+// interior) por enquanto volta direto (a Task 3 abre a lista de mapas). Troca o CB2: chamar com a tela já escura.
+void DexNav_Open(MainCallback returnTo);
+// O CB2 da tela aberta (tasks, sprites e fade)
+void CB2_DexNav(void);
+// Para script de campo (`callnative`, depois de `fadescreen`; o script espera com `waitstate`)
+void DexNav_OpenFromScript(void);
+// Atalho da esteira (TEST_CMD_DEXNAV_STATE; 0xFFFFFFFF = tela fechada). what = 0: modo | aba << 8 | cursor << 16 |
+// mapIndex << 24 (aba = DEXNAV_TAB_*; cursor = o Pokémon selecionado, contado na ordem da aba, sem as seções);
+// 1: entrada pronta | abas do mapa (bit por DEXNAV_TAB_*) << 8 | Pokémon na lista da aba << 16 | primeira linha
+// visível << 24; 2: capturados | total do mapa << 8 | capturados | total da aba << 16 e << 24; 3: espécies da
+// linha extra ("+N") | períodos delas (DEXNAV_PERIOD_*) << 8 | períodos de agora << 16
+u32 DexNav_TestGetState(u8 what);
 
 #endif // GUARD_DEXNAV_H

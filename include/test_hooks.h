@@ -163,6 +163,8 @@ enum
     TEST_CMD_DEXNAV_ENTRY = 0xE0, // arg0 = map index (gDexNavMaps), arg1 = entry index: DexNav_GetMapEntries; result = species | method << 16 | periods << 24 (0xFFFFFFFF = past the last entry or bad map)
     TEST_CMD_DEXNAV_RATE = 0xE1,  // arg0 = map index, arg1 = entry index | period << 8 (0 morning, 1 afternoon, 2 night: rateX10[period]; 3 evening: DexNav_RateForPeriods(DAY | NIGHT)); result = rate x 10 | minLevel << 16 | maxLevel << 24 (0xFFFFFFFF = bad args)
     TEST_CMD_DEXNAV_ROLL = 0xE2,  // arg0 = method (DEXNAV_METHOD_*), arg1 = N (<= 0xFFFF): the real generator of the current map (TestRollWild, no battle) N times; gTestText = struct TestDexNavTally[TEST_DEXNAV_TALLY_MAX] (species 0 = end); result = distinct species (0xFFFFFFFF = no such table here or bad method)
+    TEST_CMD_DEXNAV_STATE = 0xE3, // arg0 = what: DexNav_TestGetState (include/dexnav.h); 0: mode | tab (DEXNAV_TAB_*) << 8 | cursor (selected mon, in the tab order) << 16 | map index << 24; 1: input ready | tabs of the map (bit per tab) << 8 | mons in the tab << 16 | first visible row << 24; 2: caught | total of the map << 8 | caught of the tab << 16 | total of the tab << 24; 3: species of the "+N" row | their periods << 8 | current period bits << 16 (0xFFFFFFFF = screen closed)
+    TEST_CMD_OPEN_DEXNAV = 0xE4,  // field script lockall, fadescreen, callnative DexNav_OpenFromScript, waitstate, releaseall: opens the DexNav on the current map; result = its map index (0xFFFFFFFF = no encounters here: the script just returns to the field)
 };
 
 // The tally of TEST_CMD_DEXNAV_ROLL in gTestText (test/esteira/dexnav.py reads this layout)

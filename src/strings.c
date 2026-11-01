@@ -1481,3 +1481,24 @@ const u8 gText_RematchTier_70[] = _("Nível 70");
 const u8 gText_RematchTier_80[] = _("Nível 80");
 const u8 gText_RematchTier_90[] = _("Nível 90");
 const u8 gText_RematchTier_100[] = _("Nível 100");
+
+// POK-47: a tela do mapa do DexNav (src/dexnav.c). Rótulos das abas, títulos das seções de VARAS, nome do nunca visto,
+// "Nv." e "100%" (mapa completo), a linha extra das espécies de outro período ({STR_VAR_1} = quantas, até 2
+// dígitos), a lista vazia e o rodapé. O período no topo é gText_DayNight_PeriodName (o mesmo nome do relógio).
+const u8 gText_DexNav_AbaGrama[] = _("GRAMA");
+const u8 gText_DexNav_AbaSurf[] = _("SURFAR");
+const u8 gText_DexNav_AbaVaras[] = _("VARAS");
+const u8 gText_DexNav_AbaPedra[] = _("PEDRA");
+const u8 gText_DexNav_VaraVelha[] = _("Vara Velha");
+const u8 gText_DexNav_VaraBoa[] = _("Vara Boa");
+const u8 gText_DexNav_Supervara[] = _("Supervara");
+const u8 gText_DexNav_Desconhecido[] = _("??????");
+const u8 gText_DexNav_Nivel[] = _("Nv.");
+const u8 gText_DexNav_Completo[] = _("100%");
+const u8 gText_DexNav_MaisNoite[] = _("+{STR_VAR_1} à noite");
+const u8 gText_DexNav_MaisDia[] = _("+{STR_VAR_1} de dia");
+const u8 gText_DexNav_MaisManha[] = _("+{STR_VAR_1} de manhã");
+const u8 gText_DexNav_MaisTarde[] = _("+{STR_VAR_1} à tarde");
+const u8 gText_DexNav_MaisOutros[] = _("+{STR_VAR_1} em outros horários");
+const u8 gText_DexNav_Nenhum[] = _("Nenhum Pokémon por aqui.");
+const u8 gText_DexNav_Rodape[] = _("L/R: aba   B: sair");

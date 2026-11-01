@@ -1640,5 +1640,22 @@ extern const u8 gText_RematchTier_70[];
 extern const u8 gText_RematchTier_80[];
 extern const u8 gText_RematchTier_90[];
 extern const u8 gText_RematchTier_100[];
+extern const u8 gText_DexNav_AbaGrama[];
+extern const u8 gText_DexNav_AbaSurf[];
+extern const u8 gText_DexNav_AbaVaras[];
+extern const u8 gText_DexNav_AbaPedra[];
+extern const u8 gText_DexNav_VaraVelha[];
+extern const u8 gText_DexNav_VaraBoa[];
+extern const u8 gText_DexNav_Supervara[];
+extern const u8 gText_DexNav_Desconhecido[];
+extern const u8 gText_DexNav_Nivel[];
+extern const u8 gText_DexNav_Completo[];
+extern const u8 gText_DexNav_MaisNoite[];
+extern const u8 gText_DexNav_MaisDia[];
+extern const u8 gText_DexNav_MaisManha[];
+extern const u8 gText_DexNav_MaisTarde[];
+extern const u8 gText_DexNav_MaisOutros[];
+extern const u8 gText_DexNav_Nenhum[];
+extern const u8 gText_DexNav_Rodape[];
 
 #endif //GUARD_STRINGS_H
