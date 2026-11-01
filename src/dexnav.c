@@ -1183,6 +1183,13 @@ static void MontarAba(struct DexNavTela *t)
 
 // --- modo lista: dados ----------------------------------------------------------------------------------------------
 
+// Conhecido: visitado e com encontro agora (a câmara de Tanoby trancada, visitada, ainda não tem nada: "?/?" e A não
+// abre, como o não visitado)
+static bool8 MapaConhecido(struct DexNavTela *t, u8 i)
+{
+    return DexNav_IsVisited(i) && t->mapTotal[i] != 0;
+}
+
 // Completo: visitado (o que não foi visitado não se sabe) e com todas as espécies capturadas
 static bool8 MapaCompleto(struct DexNavTela *t, u8 i)
 {
@@ -1264,8 +1271,25 @@ static void MontarEscolha(struct DexNavTela *t)
     t->alvoEspecie = SPECIES_NONE;
 }
 
-// Passo 2: os mapas da espécie, uma seção por jeito de encontrar (na ordem DEXNAV_METHOD_*), cada uma por chance
-// (maior primeiro; empate: a ordem dos mapas)
+// A espécie aparece agora (no período de agora) neste resultado?
+static bool8 ResultadoAgora(struct DexNavTela *t, const struct DexNavResultado *r)
+{
+    return (r->periods & t->periods) != 0;
+}
+
+// Ordem do resultado: primeiro os que aparecem agora, depois por chance (maior primeiro)
+static bool8 ResultadoAntes(struct DexNavTela *t, u16 a, u16 b)
+{
+    bool8 agoraA = ResultadoAgora(t, &t->resultados[a]), agoraB = ResultadoAgora(t, &t->resultados[b]);
+
+    if (agoraA != agoraB)
+        return agoraA;
+    return t->resultados[a].rateX10 > t->resultados[b].rateX10;
+}
+
+// Passo 2: os mapas da espécie, uma seção por jeito de encontrar (na ordem DEXNAV_METHOD_*); em cada uma, primeiro os
+// mapas onde ela aparece agora, depois os de outro horário, cada grupo por chance (maior primeiro; empate: a ordem
+// dos mapas)
 static void MontarResultado(struct DexNavTela *t)
 {
     u8 m;
@@ -1281,7 +1305,7 @@ static void MontarResultado(struct DexNavTela *t)
         {
             if (t->resultados[r].method != m || t->nLinhas >= LINHAS_MAX)
                 continue;
-            for (j = t->nLinhas; j > primeira && t->resultados[t->linhas[j - 1].idx].rateX10 < t->resultados[r].rateX10; j--)
+            for (j = t->nLinhas; j > primeira && ResultadoAntes(t, r, t->linhas[j - 1].idx); j--)
                 t->linhas[j] = t->linhas[j - 1];
             t->linhas[j].tipo = LINHA_RESULTADO;
             t->linhas[j].idx = r;
@@ -1316,6 +1340,8 @@ static void InputLista(struct DexNavTela *t)
         mapIndex = t->linhas[t->cursor].idx;
         if (!DexNav_IsVisited(mapIndex))
             return;
+        if (!MapaConhecido(t, mapIndex))
+            return;   // visitado, mas sem encontro agora (câmara de Tanoby trancada)
         AbrirMapa(t, mapIndex, SPECIES_NONE, 0xFF);
     }
     else if (JOY_NEW(L_BUTTON) || JOY_NEW(R_BUTTON))
@@ -1781,7 +1807,8 @@ static void DesenharLinhaMon(struct DexNavTela *t, u16 linha, u16 y)
 }
 
 // Uma linha da lista de mapas, coluna por coluna (LST_*): nome, barra (trilho fixo, cheia na proporção capturados/total;
-// dourada no mapa completo), coroa e contador à direita. Não visitado: nome cinza, barra vazia e "?/?".
+// dourada no mapa completo), coroa e contador à direita. Não visitado: nome cinza, barra vazia e "?/?". Visitado mas
+// sem nenhum encontro agora (câmara de Tanoby trancada): o nome normal, barra vazia e "?/?" em cinza.
 static void DesenharLinhaMapa(struct DexNavTela *t, u16 linha, u16 y)
 {
     u8 texto[12];
@@ -1804,7 +1831,7 @@ static void DesenharLinhaMapa(struct DexNavTela *t, u16 linha, u16 y)
         BlitIcone(WIN_LISTA, ICONE_COROA, LST_COROA_X, y + LST_COROA_DY);
         StringCopy(texto, gText_DexNav_Completo);
     }
-    else if (visitado)
+    else if (MapaConhecido(t, i))
     {
         FormatarContador(texto, t->mapCapturados[i], t->mapTotal[i]);
     }
@@ -1812,7 +1839,7 @@ static void DesenharLinhaMapa(struct DexNavTela *t, u16 linha, u16 y)
     {
         StringCopy(texto, gText_DexNav_Interrogacao);
     }
-    cor[1] = visitado ? COR_TEXTO : COR_CINZA;
+    cor[1] = MapaConhecido(t, i) ? COR_TEXTO : COR_CINZA;
     AddTextPrinterParameterized4(WIN_LISTA, FONT_NORMAL, LST_CONTADOR_FIM - GetStringWidth(FONT_NORMAL, texto, 0),
                                  y + LINHA_CURTA_TEXTO_DY, 0, 0, cor, TEXT_SKIP_DRAW, texto);
 }
@@ -1837,7 +1864,8 @@ static void DesenharLinhaEspecie(struct DexNavTela *t, u16 linha, u16 y)
                                  y + LINHA_TEXTO_DY, 0, 0, cor, TEXT_SKIP_DRAW, texto);
 }
 
-// Um mapa do resultado da busca (RES_*): nome ("??????" em cinza se não visitado), chance à direita e horário
+// Um mapa do resultado da busca (RES_*): nome ("??????" em cinza se não visitado), chance à direita e horário; a
+// chance e o horário em cinza (como a linha "+N à noite") quando a espécie não aparece agora nesse mapa
 static void DesenharLinhaResultado(struct DexNavTela *t, u16 linha, u16 y)
 {
     const struct DexNavResultado *r = &t->resultados[t->linhas[linha].idx];
@@ -1847,7 +1875,7 @@ static void DesenharLinhaResultado(struct DexNavTela *t, u16 linha, u16 y)
     CoresDaLinha(cor, linha == t->cursor, !visitado, y, LINHA_CURTA_ALTURA);
     AddTextPrinterParameterized4(WIN_LISTA, FONT_NORMAL, RES_NOME_X, y + LINHA_CURTA_TEXTO_DY, 0, 0, cor,
                                  TEXT_SKIP_DRAW, visitado ? gDexNavMaps[r->mapIndex].name : gText_DexNav_Desconhecido);
-    cor[1] = COR_TEXTO;
+    cor[1] = ResultadoAgora(t, r) ? COR_TEXTO : sCor_Extra[1];
     FormatarChance(texto, r->rateX10);
     AddTextPrinterParameterized4(WIN_LISTA, FONT_NORMAL, RES_CHANCE_FIM - GetStringWidth(FONT_NORMAL, texto, 0),
                                  y + LINHA_CURTA_TEXTO_DY, 0, 0, cor, TEXT_SKIP_DRAW, texto);
@@ -2007,9 +2035,13 @@ static void DesenharRodape(struct DexNavTela *t)
         s = JuntarRodape(gStringVar4, s, gText_DexNav_RodapeBusca);
         break;
     default:
-        s = JuntarRodape(gStringVar4, s, t->buscaPasso == DEXNAV_SEARCH_CHOOSE ? gText_DexNav_RodapeBuscar
-                                                                               : gText_DexNav_RodapeAbrir);
-        s = JuntarRodape(gStringVar4, s, gText_DexNav_RodapePagina);
+        // lista vazia (nada visto ainda): só o que funciona
+        if (t->nLinhas != 0)
+        {
+            s = JuntarRodape(gStringVar4, s, t->buscaPasso == DEXNAV_SEARCH_CHOOSE ? gText_DexNav_RodapeBuscar
+                                                                                   : gText_DexNav_RodapeAbrir);
+            s = JuntarRodape(gStringVar4, s, gText_DexNav_RodapePagina);
+        }
         s = JuntarRodape(gStringVar4, s, gText_DexNav_RodapeMapas);
         break;
     }

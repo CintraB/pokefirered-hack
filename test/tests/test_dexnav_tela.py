@@ -691,3 +691,37 @@ def test_rodape_cabe():
             assert p in rodape, p
         montado = sep.join(textos[p] for p in partes)
         assert _medir(montado, "small") <= LARGURA_TELA - 2 * _defines(fonte)["RODAPE_X"], montado
+
+
+# --- rodada de correções 1 (revisão da Task 3) -----------------------------------------------------------------------
+
+def test_mapa_visitado_sem_encontro_agora():
+    """Câmara de Tanoby trancada (visitada, total 0): "?/?" em cinza e barra vazia, A não abre; o nome fica e o mapa
+    continua na conta da região."""
+    fonte = _ler(TELA_C)
+    conhecido = _sem_comentarios(_corpo(fonte, "MapaConhecido"))
+    assert "DexNav_IsVisited(i)" in conhecido and "t->mapTotal[i] != 0" in conhecido
+    linha = _sem_comentarios(_corpo(fonte, "DesenharLinhaMapa"))
+    assert "else if (MapaConhecido(t, i))" in linha and "cor[1] = MapaConhecido(t, i) ? COR_TEXTO : COR_CINZA;" in linha
+    entrada = _sem_comentarios(_corpo(fonte, "InputLista"))
+    assert re.search(r"if \(!MapaConhecido\(t, mapIndex\)\)\s*return;", entrada)
+    assert entrada.index("MapaConhecido") < entrada.index("AbrirMapa(")
+    assert "MapaConhecido" not in _corpo(fonte, "ContarRegiao"), "o total da região conta todos os mapas"
+
+
+def test_resultado_de_outro_horario_em_cinza_e_depois():
+    fonte = _ler(TELA_C)
+    assert "(r->periods & t->periods) != 0" in _corpo(fonte, "ResultadoAgora")
+    antes = _sem_comentarios(_corpo(fonte, "ResultadoAntes"))
+    assert antes.index("agoraA != agoraB") < antes.index("rateX10 >"), "primeiro os de agora, depois a chance"
+    assert "ResultadoAntes(t, r, t->linhas[j - 1].idx)" in _corpo(fonte, "MontarResultado")
+    linha = _sem_comentarios(_corpo(fonte, "DesenharLinhaResultado"))
+    assert "cor[1] = ResultadoAgora(t, r) ? COR_TEXTO : sCor_Extra[1];" in linha
+    assert linha.index("ResultadoAgora") < linha.index("FormatarChance"), "chance e horário saem com a cor de agora"
+    assert re.search(r"sCor_Extra\[3\] = \{COR_FUNDO, COR_CINZA,", fonte), "o mesmo cinza da linha +N"
+
+
+def test_rodape_da_escolha_vazia():
+    rodape = _sem_comentarios(_corpo(_ler(TELA_C), "DesenharRodape"))
+    m = re.search(r"if \(t->nLinhas != 0\)\s*\{(.*?)\}", rodape, re.S)
+    assert m and "gText_DexNav_RodapeBuscar" in m.group(1) and "gText_DexNav_RodapePagina" in m.group(1), rodape

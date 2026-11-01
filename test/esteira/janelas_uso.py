@@ -108,7 +108,7 @@ VAR_CONTENTS: list[VarContent] = [
       for var in ("STR_VAR_2", "STR_VAR_3")),
     # DexNav (POK-47): quantas espécies da aba só aparecem em outro período (até DEXNAV_MAX_ENTRIES = 32)
     *(VarContent("src/strings.c", label, "STR_VAR_1", 2,
-                 "linha extra do DexNav: ConvertIntToDecimalStringN(gStringVar1, t->extraN, ..., 2) (src/dexnav.c:1893)",
+                 "linha extra do DexNav: ConvertIntToDecimalStringN(gStringVar1, t->extraN, ..., 2) (src/dexnav.c:1921)",
                  digits=True)
       for label in ("gText_DexNav_MaisNoite", "gText_DexNav_MaisDia", "gText_DexNav_MaisManha",
                     "gText_DexNav_MaisTarde", "gText_DexNav_MaisOutros")),
