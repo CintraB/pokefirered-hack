@@ -54,9 +54,17 @@ bool8 SmartAI_ChoosePredictiveSwitch(u8 battler, struct SmartAiDecision *out);
 // Quem entra (troca sem destino escolhido e substituto depois de desmaio): a melhor pontuação; quem leva >= 2x de uma
 // ameaça conhecida só se não houver outro. PARTY_SIZE = nenhum.
 u8 SmartAI_ChooseReplacement(u8 battler);
-// A decisão nova do chefe (troca preditiva → item → ataque) sem emitir nada; as trocas por reação e o resto do
-// original de ShouldSwitch não entram (no jogo eles vêm antes/depois da preditiva). noStayRoll = TRUE tira o sorteio
-// "1 em 5 fica e ataca" (atalho de teste TEST_CMD_AI_SMART_DECIDE).
+// Item do chefe (Task 3): TRUE e `out` = ITEM com o 1º item da lista (gBattleResources->battleHistory->trainerItems,
+// com a regra original de guardar itens para os últimos Pokémon) que vale agora: cura de PS com PS <= 33% (poção que
+// cura < 25% do PS máximo não; Restaurar Tudo também com PS <= 60% e sono/congelamento/paralisia/Tóxico), cura de estado
+// (sono, congelamento, Tóxico, paralisia em quem é rápido, queimadura em atacante físico, veneno comum com PS <= 50%),
+// itens X e Guard Spec no 1º turno como o original. Nenhuma cura se ele derruba antes um Pokémon do jogador, nem cura de
+// PS no Pokémon cuja cura anterior foi desfeita (PS de volta a <= o PS de antes da cura na escolha do turno seguinte).
+// Grava aiHealTurn/aiHealHp ao escolher cura de PS e a marca de cura desfeita; quem emite é ShouldUseItem.
+bool8 SmartAI_ChooseItem(u8 battler, struct SmartAiDecision *out);
+// A decisão nova do chefe (troca preditiva → item → ataque) sem emitir nada nem gravar a cura (o item usa o núcleo puro
+// de SmartAI_ChooseItem); as trocas por reação e o resto do original de ShouldSwitch não entram (no jogo eles vêm
+// antes/depois da preditiva). noStayRoll = TRUE tira o sorteio "1 em 5 fica e ataca" (TEST_CMD_AI_SMART_DECIDE).
 void SmartAI_Decide(u8 battler, bool8 noStayRoll, struct SmartAiDecision *out);
 
 #endif // GUARD_BATTLE_AI_SMART_H

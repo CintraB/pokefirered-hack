@@ -23,5 +23,7 @@ enum {
 
 void AI_TrySwitchOrUseItem(void);
 u8 GetMostSuitableMonToSwitchInto(void);
+// AI_ITEM_* de um item da lista do treinador (exportada no POK-46: o chefe classifica o item como o original).
+u8 GetAI_ItemType(u8 itemId, const u8 *itemEffect);
 
 #endif // GUARD_BATTLE_AI_SWITCH_ITEMS_H

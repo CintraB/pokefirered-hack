@@ -1109,6 +1109,35 @@ static u32 SetEnemyMon(u32 arg0, u32 arg1)
     }
     return species | slot << 16;
 }
+
+// Zeroes and rewrites the trainer's item list of this battle (packed like BattleAI_HandleItemUseBeforeAISetup, itemsNo =
+// how many). arg0 = item1 | item2 << 16, arg1 = item3 | item4 << 16; 0 = none. Result = itemsNo.
+static u32 SetTrainerItems(u32 arg0, u32 arg1)
+{
+    u16 items[MAX_TRAINER_ITEMS];
+    s32 i;
+
+    if (!gMain.inBattle || gBattleResources == NULL)
+        return 0xFFFFFFFF;
+    items[0] = arg0 & 0xFFFF;
+    items[1] = arg0 >> 16;
+    items[2] = arg1 & 0xFFFF;
+    items[3] = arg1 >> 16;
+    for (i = 0; i < MAX_TRAINER_ITEMS; i++)
+    {
+        if (items[i] != ITEM_NONE && (items[i] < ITEM_POTION || items[i] > LAST_BERRY_INDEX))
+            return 0xFFFFFFFF;
+    }
+    gBattleResources->battleHistory->itemsNo = 0;
+    for (i = 0; i < MAX_TRAINER_ITEMS; i++)
+        gBattleResources->battleHistory->trainerItems[i] = ITEM_NONE;
+    for (i = 0; i < MAX_TRAINER_ITEMS; i++)
+    {
+        if (items[i] != ITEM_NONE)
+            gBattleResources->battleHistory->trainerItems[gBattleResources->battleHistory->itemsNo++] = items[i];
+    }
+    return gBattleResources->battleHistory->itemsNo;
+}
 // --- end of POK-46 --------------------------------------------------------------------------
 
 void TestHooks_Run(void)
@@ -1249,6 +1278,7 @@ void TestHooks_Run(void)
     case TEST_CMD_AI_SMART_STATE:   result = AiSmartState(); break;
     case TEST_CMD_AI_SMART_DECIDE:  result = AiSmartDecide(gTestMailbox.arg0); break;
     case TEST_CMD_SET_ENEMY_MON:    result = SetEnemyMon(gTestMailbox.arg0, gTestMailbox.arg1); break;
+    case TEST_CMD_SET_TRAINER_ITEMS: result = SetTrainerItems(gTestMailbox.arg0, gTestMailbox.arg1); break;
     default:
         result = 0xFFFFFFFF;
         break;

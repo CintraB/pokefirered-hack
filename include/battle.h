@@ -466,7 +466,8 @@ struct BattleStruct
     // POK-46: golpes que cada Pokémon do jogador (pela posição no time) já mostrou nesta batalha; MOVE_NONE = vazio
     u16 aiRevealedMoves[PARTY_SIZE][MAX_MON_MOVES];
     // POK-46: por posição do oponente (GetBattlerPosition >> 1): turno (gBattleResults.battleTurnCounter, 0xFFFF =
-    // nunca) da última troca voluntária e da última cura, e o PS logo depois dessa cura
+    // nunca) da última troca voluntária e da última cura de PS (+ slot do time << 8), e o PS logo antes dessa cura
+    // (bits 0-9; bits 10-15 = slots cuja cura foi desfeita). Formato em src/battle_ai_smart.c (HEAL_HP_MASK)
     u16 aiVoluntarySwitchTurn[2];
     u16 aiHealTurn[2];
     u16 aiHealHp[2];

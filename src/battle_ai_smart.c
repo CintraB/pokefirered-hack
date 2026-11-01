@@ -11,6 +11,7 @@
 #include "constants/abilities.h"
 #include "constants/battle_ai.h"
 #include "constants/battle_move_effects.h"
+#include "constants/item_effects.h"
 #include "constants/items.h"
 #include "constants/moves.h"
 #include "constants/opponents.h"
@@ -530,11 +531,250 @@ u8 SmartAI_ChooseReplacement(u8 battler)
     return best != PARTY_SIZE ? best : bestWeak;
 }
 
+// --- Itens na hora certa ---------------------------------------------------------------------------------------------
+
+// aiHealTurn[pos]: byte baixo = turno (battleTurnCounter) da última cura de PS escolhida, byte alto = slot do time do
+// Pokémon curado; SMART_AI_NEVER = nenhuma. aiHealHp[pos]: bits 0-9 = o PS logo antes dessa cura (PS máximo < 1024);
+// bits 10-15 = um bit por slot do time cuja cura foi desfeita (esse Pokémon não cura PS de novo nesta batalha).
+#define HEAL_HP_MASK      0x3FF
+#define HEAL_UNDONE_SHIFT 10
+
+// "Cura desfeita": na escolha do turno seguinte ao da cura (contador = turno da cura + 1), o mesmo Pokémon (mesmo slot
+// do time, na mesma posição) está com PS <= o PS de antes da cura, ou seja, o jogador tirou pelo menos o que a cura deu.
+static bool8 HealUndoneLastTurn(u8 battler)
+{
+    u8 pos = GetBattlerPosition(battler) >> 1;
+    u8 counter = gBattleResults.battleTurnCounter;
+    u16 turn = gBattleStruct->aiHealTurn[pos];
+
+    // Turno 0: não houve cura antes. 0xFF: o contador parou e o "turno anterior" não se distingue mais.
+    if (turn != SMART_AI_NEVER && counter != 0 && counter != 0xFF
+     && (turn & 0xFF) == counter - 1 && (turn >> 8) == gBattlerPartyIndexes[battler]
+     && gBattleMons[battler].hp <= (gBattleStruct->aiHealHp[pos] & HEAL_HP_MASK))
+        return TRUE;
+    return FALSE;
+}
+
+// TRUE = este Pokémon não cura PS: a cura dele já foi desfeita antes (marca do slot) ou acabou de ser.
+static bool8 HealBlocked(u8 battler)
+{
+    u8 pos = GetBattlerPosition(battler) >> 1;
+
+    if (gBattleStruct->aiHealHp[pos] & (1 << (HEAL_UNDONE_SHIFT + gBattlerPartyIndexes[battler])))
+        return TRUE;
+    return HealUndoneLastTurn(battler);
+}
+
+// Os Pokémon do jogador em campo (1 em batalha simples, até 2 em dupla); devolve quantos.
+static u8 PresentFoes(u8 *foes)
+{
+    u8 count = 0, foe;
+    s32 i;
+
+    for (i = B_POSITION_PLAYER_LEFT; i <= B_POSITION_PLAYER_RIGHT; i += 2)
+    {
+        if (i == B_POSITION_PLAYER_RIGHT && !(gBattleTypeFlags & BATTLE_TYPE_DOUBLE))
+            break;
+        foe = GetBattlerAtPosition(i);
+        if (!(gAbsentBattlerFlags & gBitTable[foe]) && gBattleMons[foe].hp != 0)
+            foes[count++] = foe;
+    }
+    return count;
+}
+
+// TRUE = derruba algum Pokémon do jogador em campo neste turno agindo antes: atacar é melhor que curar.
+static bool8 KoFirst(u8 battler)
+{
+    u8 foes[2], count = PresentFoes(foes);
+    s32 i;
+
+    for (i = 0; i < count; i++)
+    {
+        if (SmartAI_CanKoFirst(battler, foes[i]))
+            return TRUE;
+    }
+    return FALSE;
+}
+
+// TRUE = sem a paralisia, ele age antes de todos os Pokémon do jogador em campo (a ordem de GetWhoStrikesFirst, como em
+// SmartAI_CanKoFirst; empate = sorteio dela). A paralisia sai só durante a conta e volta logo depois.
+static bool8 FasterThanFoes(u8 battler)
+{
+    u32 status = gBattleMons[battler].status1;
+    u8 foes[2], count = PresentFoes(foes);
+    bool8 faster = (count != 0);
+    s32 i;
+
+    gBattleMons[battler].status1 &= ~STATUS1_PARALYSIS;
+    for (i = 0; i < count; i++)
+    {
+        if (GetWhoStrikesFirst(battler, foes[i], TRUE) != 0)
+            faster = FALSE;
+    }
+    gBattleMons[battler].status1 = status;
+    return faster;
+}
+
+// Os efeitos do item (NULL = não é um item de usar: fora da tabela ou sem efeito), como em ShouldUseItem.
+static const u8 *ItemEffects(u16 item)
+{
+    if (item < ITEM_POTION || item > LAST_BERRY_INDEX)
+        return NULL;
+    if (item == ITEM_ENIGMA_BERRY)
+        return gSaveBlock1Ptr->enigmaBerry.itemEffect;
+    return gItemEffectTable[item - ITEM_POTION];
+}
+
+// A cura de PS do item vale o turno: Poção Máx. e Restaurar Tudo (ITEM6_HEAL_HP_FULL) sempre; as outras só se curam pelo
+// menos 25% do PS máximo. Reviver e afins não (o Pokémon em campo nunca está desmaiado).
+static bool8 HealsEnough(u16 item, const u8 *itemEffects, u32 maxHP)
+{
+    u8 offset;
+    u32 amount;
+
+    if (itemEffects[4] & ITEM4_REVIVE)
+        return FALSE;
+    offset = GetItemEffectParamOffset(item, 4, ITEM4_HEAL_HP);
+    if (offset == 0)
+        return FALSE;
+    amount = itemEffects[offset];
+    if (amount == ITEM6_HEAL_HP_FULL)
+        return TRUE;
+    if (amount == ITEM6_HEAL_HP_LVL_UP)
+        return FALSE;
+    if (amount == ITEM6_HEAL_HP_HALF)
+        amount = maxHP / 2;
+    return amount * 4 >= maxHP;
+}
+
+// A cura de estado vale o item: sono, congelamento e Tóxico sempre; paralisia só em quem age antes sem ela; queimadura só
+// em atacante físico (Ataque base > Atq. Esp. base); veneno comum só com PS <= 50%. Só confusão, nunca.
+static bool8 CureWorthIt(u8 battler, const u8 *itemEffects)
+{
+    u32 status = gBattleMons[battler].status1;
+    u32 hp = gBattleMons[battler].hp, maxHP = gBattleMons[battler].maxHP;
+    u16 species = gBattleMons[battler].species;
+    u8 cures = itemEffects[3];
+
+    if ((cures & ITEM3_SLEEP) && (status & STATUS1_SLEEP))
+        return TRUE;
+    if ((cures & ITEM3_FREEZE) && (status & STATUS1_FREEZE))
+        return TRUE;
+    if ((cures & ITEM3_POISON) && (status & STATUS1_TOXIC_POISON))
+        return TRUE;
+    if ((cures & ITEM3_PARALYSIS) && (status & STATUS1_PARALYSIS) && FasterThanFoes(battler))
+        return TRUE;
+    if ((cures & ITEM3_BURN) && (status & STATUS1_BURN)
+     && gSpeciesInfo[species].baseAttack > gSpeciesInfo[species].baseSpAttack)
+        return TRUE;
+    if ((cures & ITEM3_POISON) && (status & STATUS1_POISON) && hp * 2 <= maxHP)
+        return TRUE;
+    return FALSE;
+}
+
+// O núcleo da escolha do item, puro (o atalho de teste usa este): o 1º item da lista que vale agora.
+static bool8 ChooseItem(u8 battler, struct SmartAiDecision *out)
+{
+    u32 hp = gBattleMons[battler].hp, maxHP = gBattleMons[battler].maxHP;
+    u8 itemsNo = gBattleResources->battleHistory->itemsNo;
+    u8 validMons = 0, type;
+    s8 koFirst = -1;
+    bool8 healBlocked, use;
+    const u8 *itemEffects;
+    u16 item;
+    s32 i;
+
+    if (hp == 0)
+        return FALSE;
+    for (i = 0; i < PARTY_SIZE; i++)
+    {
+        if (GetMonData(&gEnemyParty[i], MON_DATA_HP) != 0
+         && GetMonData(&gEnemyParty[i], MON_DATA_SPECIES_OR_EGG) != SPECIES_NONE
+         && GetMonData(&gEnemyParty[i], MON_DATA_SPECIES_OR_EGG) != SPECIES_EGG)
+            validMons++;
+    }
+    healBlocked = HealBlocked(battler);
+    for (i = 0; i < MAX_TRAINER_ITEMS; i++)
+    {
+        // A regra original: os itens depois do 1º ficam guardados para quando sobram poucos Pokémon.
+        if (i && validMons > (itemsNo - i) + 1)
+            continue;
+        item = gBattleResources->battleHistory->trainerItems[i];
+        itemEffects = ItemEffects(item);
+        if (itemEffects == NULL)
+            continue;
+        type = GetAI_ItemType(item, itemEffects);
+        switch (type)
+        {
+        case AI_ITEM_FULL_RESTORE:
+            // PS <= 33%, ou PS <= 60% com sono, congelamento, paralisia ou Tóxico (cura o estado e o PS juntos).
+            use = (!healBlocked && hp * 3 <= maxHP)
+               || (hp * 5 <= maxHP * 3
+                && (gBattleMons[battler].status1 & (STATUS1_SLEEP | STATUS1_FREEZE | STATUS1_PARALYSIS | STATUS1_TOXIC_POISON)));
+            break;
+        case AI_ITEM_HEAL_HP:
+            use = !healBlocked && hp * 3 <= maxHP && HealsEnough(item, itemEffects, maxHP);
+            break;
+        case AI_ITEM_CURE_CONDITION:
+            use = CureWorthIt(battler, itemEffects);
+            break;
+        case AI_ITEM_X_STAT:
+            // Itens X e Guard Spec: como o original, só no 1º turno do Pokémon em campo.
+            use = gDisableStructs[battler].isFirstTurn;
+            break;
+        case AI_ITEM_GUARD_SPECS:
+            use = gDisableStructs[battler].isFirstTurn && gSideTimers[GetBattlerSide(battler)].mistTimer == 0;
+            break;
+        default:
+            use = FALSE;
+            break;
+        }
+        if (!use)
+            continue;
+        // Cura (PS ou estado): se ele derruba um Pokémon do jogador neste turno agindo antes, atacar é melhor.
+        if (type != AI_ITEM_X_STAT && type != AI_ITEM_GUARD_SPECS)
+        {
+            if (koFirst < 0)
+                koFirst = KoFirst(battler);
+            if (koFirst)
+                continue;
+        }
+        out->action = SMART_AI_ITEM;
+        out->partySlot = PARTY_SIZE;
+        out->item = item;
+        return TRUE;
+    }
+    return FALSE;
+}
+
+bool8 SmartAI_ChooseItem(u8 battler, struct SmartAiDecision *out)
+{
+    u8 pos = GetBattlerPosition(battler) >> 1;
+    u8 slot = gBattlerPartyIndexes[battler];
+    u8 type;
+
+    // A cura anterior foi desfeita: marca o slot, e ele não cura PS de novo nesta batalha (nem depois de sair e voltar).
+    if (HealUndoneLastTurn(battler))
+        gBattleStruct->aiHealHp[pos] |= 1 << (HEAL_UNDONE_SHIFT + slot);
+    if (!ChooseItem(battler, out))
+        return FALSE;
+    type = GetAI_ItemType(out->item, ItemEffects(out->item));
+    if (type == AI_ITEM_FULL_RESTORE || type == AI_ITEM_HEAL_HP)
+    {
+        // Guarda o turno, o Pokémon e o PS de antes, para ver no turno seguinte se a cura foi desfeita.
+        gBattleStruct->aiHealTurn[pos] = gBattleResults.battleTurnCounter | slot << 8;
+        gBattleStruct->aiHealHp[pos] = (gBattleStruct->aiHealHp[pos] & ~HEAL_HP_MASK) | gBattleMons[battler].hp;
+    }
+    return TRUE;
+}
+
 // --- Decisão completa (atalho de teste) ------------------------------------------------------------------------------
 
 void SmartAI_Decide(u8 battler, bool8 noStayRoll, struct SmartAiDecision *out)
 {
     if (PredictiveSwitch(battler, out, !noStayRoll))
+        return;
+    if (ChooseItem(battler, out))
         return;
     out->action = SMART_AI_ATTACK;
     out->partySlot = PARTY_SIZE;

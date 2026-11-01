@@ -153,6 +153,7 @@ enum
     TEST_CMD_AI_SMART_STATE = 0xD0, // result = gBattleStruct->aiSmart | moves revealed so far by the player mon at B_POSITION_PLAYER_LEFT (aiRevealedMoves of its party slot) << 8 (0xFFFFFFFF = not in battle)
     TEST_CMD_AI_SMART_DECIDE = 0xD1, // arg0 = 1 skips the "1 in 5 stays and attacks" roll (0 = normal roll): the boss decision (predictive switch -> item -> attack) for B_POSITION_OPPONENT_LEFT, nothing emitted; only the new boss decision is reported (not the original reactive switches of ShouldSwitch nor its original tail, which run before/after it in the game); result = action (SMART_AI_*) | partySlot << 8 | item << 16 (0xFFFFFFFF = not in battle, 0xFFFFFFFE = not a boss)
     TEST_CMD_SET_ENEMY_MON = 0xD2,  // arg0 = slot | species << 8, arg1 = level | hpPercent << 8 | status1 byte << 16: rebuilds gEnemyParty[slot] (default moves for the level) and, if on the field, its gBattleMons; result = species | slot << 16 (0xFFFFFFFF = bad args)
+    TEST_CMD_SET_TRAINER_ITEMS = 0xD3, // arg0 = item1 | item2 << 16, arg1 = item3 | item4 << 16 (0 = none): zeroes and rewrites the trainer's item list of this battle (battleHistory trainerItems, packed, and itemsNo); result = itemsNo (0xFFFFFFFF = not in battle or an item outside ITEM_POTION..LAST_BERRY_INDEX)
 };
 // --- end of POK-46 -------------------------------------------------------------------------
 

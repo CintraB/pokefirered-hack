@@ -352,6 +352,14 @@ class Mailbox:
         assert raw == species | slot << 16, f"SET_ENEMY_MON recusado: slot {slot}, espécie {species} ({raw:#x})"
         return raw
 
+    def set_trainer_items(self, *itens: int) -> int:
+        """Troca a lista de itens do treinador nesta batalha (até 4; vazio = nenhum); devolve quantos ficaram."""
+        assert len(itens) <= 4, itens
+        v = list(itens) + [0] * (4 - len(itens))
+        raw = self.call(CMD_SET_TRAINER_ITEMS, v[0] | v[1] << 16, v[2] | v[3] << 16)
+        assert raw != NO_RESULT, f"SET_TRAINER_ITEMS recusado: {itens}"
+        return raw
+
 # --- Hack 6: breeding genético (enum à parte em include/test_hooks.h, a partir de 0x60; ------
 # o uso fica em esteira/breeding.py e scenarios/full_breeding.py / full_egg.py)
 CMD_BREED_SETUP = 0x60      # gTestBreedSetup -> creche (arg0 = 1: ovo pendente) -> compatibilidade (0xFFFFFFFF = pai inválido)
@@ -441,5 +449,8 @@ CMD_AI_SMART_DECIDE = 0xD1  # arg0 = 1 tira o sorteio "1 em 5 fica" -> ação | 
                             # (0xFFFFFFFF = fora de batalha, 0xFFFFFFFE = não é chefe)
 CMD_SET_ENEMY_MON = 0xD2    # arg0 = slot | espécie << 8, arg1 = nível | PS% << 8 | status1 << 16 -> espécie | slot << 16:
                             # refaz gEnemyParty[slot] e, se em campo, gBattleMons (0xFFFFFFFF = argumentos inválidos)
+CMD_SET_TRAINER_ITEMS = 0xD3  # arg0 = item1 | item2 << 16, arg1 = item3 | item4 << 16 (0 = nenhum) -> itemsNo: zera e
+                              # regrava a lista de itens do treinador nesta batalha (0xFFFFFFFF = fora de batalha ou
+                              # item fora de ITEM_POTION..LAST_BERRY_INDEX)
 SMART_AI_ATTACK, SMART_AI_SWITCH, SMART_AI_ITEM = 0, 1, 2  # include/battle_ai_smart.h
 AI_NAO_CHEFE = 0xFFFFFFFE

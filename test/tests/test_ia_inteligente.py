@@ -317,3 +317,125 @@ def test_hooks_d1_d2():
     for proibido in ("BtlController_Emit", "monToSwitchIntoId", "SmartAI_NoteVoluntarySwitch"):
         assert proibido not in decide, proibido
     assert "<< 8" in decide and "<< 16" in decide
+
+
+# --- Task 3: itens na hora certa ----------------------------------------------------------------------------------
+# O chefe escolhe o item em SmartAI_ChooseItem (núcleo puro ChooseItem, o mesmo do atalho 0xD1) e ShouldUseItem emite
+# como o original. "Cura desfeita": na escolha do turno seguinte à cura (contador = turno da cura + 1), o mesmo
+# Pokémon (mesmo slot do time) está com PS <= o PS de antes da cura; a partir daí ele não cura PS de novo nesta
+# batalha (marca por slot em aiHealHp).
+
+
+def test_interface_task3():
+    h = _ler(SMART_H)
+    assert "bool8 SmartAI_ChooseItem(u8 battler, struct SmartAiDecision *out);" in h
+    # GetAI_ItemType exportada: o chefe classifica o item como o original
+    assert "u8 GetAI_ItemType(u8 itemId, const u8 *itemEffect);" in _ler(REPO_ROOT / "include" / "battle_ai_switch_items.h")
+    assert "static u8 GetAI_ItemType" not in _ler(SWITCH_C)
+
+
+def test_limiares_item():
+    fonte = _ler(SMART_C)
+    corpo = _corpo(fonte, "ChooseItem")
+    # a regra original de guardar itens para os últimos Pokémon
+    assert "if (i && validMons > (itemsNo - i) + 1)" in corpo
+    assert "gBattleResources->battleHistory->itemsNo" in corpo and "battleHistory->trainerItems[i]" in corpo
+    assert "hp * 3 <= maxHP" in corpo                                 # cura de PS com PS <= 33%
+    assert "hp * 5 <= maxHP * 3" in corpo                             # Restaurar Tudo com estado e PS <= 60%
+    restore = corpo[corpo.index("case AI_ITEM_FULL_RESTORE:"):corpo.index("case AI_ITEM_HEAL_HP:")]
+    for estado in ("STATUS1_SLEEP", "STATUS1_FREEZE", "STATUS1_PARALYSIS", "STATUS1_TOXIC_POISON"):
+        assert estado in restore, estado
+    assert "STATUS1_POISON " not in restore and "STATUS1_BURN" not in restore
+    # poção que cura < 25% do PS máximo não serve (Poção Máx./Restaurar Tudo = ITEM6_HEAL_HP_FULL servem sempre)
+    cura = _corpo(fonte, "HealsEnough")
+    assert "ITEM6_HEAL_HP_FULL" in cura and "amount * 4 >= maxHP" in cura and "ITEM4_REVIVE" in cura
+    # derruba antes -> ataca: o teste de nocaute vem antes de qualquer cura ser escolhida
+    assert "KoFirst(battler" in corpo
+    ko = _corpo(fonte, "KoFirst")
+    assert "SmartAI_CanKoFirst(battler, " in ko
+    # itens X e Guard Spec: só no 1º turno, como o original
+    assert corpo.count("gDisableStructs[battler].isFirstTurn") == 2 and "mistTimer == 0" in corpo
+
+
+def test_cura_desfeita_estatico():
+    fonte = _ler(SMART_C)
+    desfeita = _corpo(fonte, "HealUndoneLastTurn")
+    assert "gBattleResults.battleTurnCounter" in desfeita
+    assert "counter != 0" in desfeita and "counter != 0xFF" in desfeita
+    assert "(turn & 0xFF) == counter - 1" in desfeita                       # cura no turno anterior
+    assert "turn >> 8" in desfeita and "gBattlerPartyIndexes[battler]" in desfeita  # o mesmo Pokémon
+    assert "gBattleMons[battler].hp <= (gBattleStruct->aiHealHp[pos] & HEAL_HP_MASK)" in desfeita
+    bloqueio = _corpo(fonte, "HealBlocked")
+    assert "HEAL_UNDONE_SHIFT" in bloqueio and "HealUndoneLastTurn(battler)" in bloqueio
+    corpo = _corpo(fonte, "ChooseItem")
+    assert "healBlocked = HealBlocked(battler);" in corpo
+    assert corpo.count("!healBlocked") == 2                                  # Restaurar Tudo (PS) e poções
+    # o núcleo é puro (atalho de teste): quem grava é SmartAI_ChooseItem
+    assert not re.search(r"gBattleStruct->\w+(\[[^\]]*\])?\s*[|&]?=[^=]", corpo)
+    grava = _corpo(fonte, "SmartAI_ChooseItem")
+    assert "ChooseItem(battler, out)" in grava
+    assert "gBattleStruct->aiHealTurn[pos] = gBattleResults.battleTurnCounter | slot << 8;" in grava
+    assert "gBattleMons[battler].hp" in grava and "aiHealHp[pos]" in grava
+    assert grava.index("HealUndoneLastTurn(battler)") < grava.index("ChooseItem(battler, out)")
+    assert "1 << (HEAL_UNDONE_SHIFT + slot)" in grava
+    assert re.search(r"#define HEAL_HP_MASK\s+0x3FF\b", fonte) and re.search(r"#define HEAL_UNDONE_SHIFT\s+10\b", fonte)
+
+
+def test_cura_total_estados():
+    fonte = _ler(SMART_C)
+    corpo = _corpo(fonte, "CureWorthIt")
+    for estado in ("STATUS1_SLEEP", "STATUS1_FREEZE", "STATUS1_TOXIC_POISON"):
+        assert estado in corpo, estado
+    assert re.search(r"STATUS1_PARALYSIS\)[^;]*FasterThanFoes\(battler\)", corpo)      # paralisia: só se é rápido
+    assert "gSpeciesInfo[species].baseAttack > gSpeciesInfo[species].baseSpAttack" in corpo  # queimadura: físico
+    assert re.search(r"STATUS1_POISON\)[^;]*hp \* 2 <= maxHP", corpo)                   # veneno comum: PS <= 50%
+    assert "CONFUSION" not in corpo                                                      # nunca só confusão
+    rapido = _corpo(fonte, "FasterThanFoes")
+    assert "GetWhoStrikesFirst(battler, " in rapido and "STATUS1_PARALYSIS" in rapido
+    assert "status1 = saved" in rapido or "status1 = status" in rapido                    # devolve o estado
+
+
+def test_item_comum_nao_muda():
+    novo, velho = _ler(SWITCH_C), _base("src/battle_ai_switch_items.c")
+    corpo = _corpo(novo, "ShouldUseItem")
+    assert "if (AI_IsSmartTrainer())" in corpo
+    sem = _sem_blocos_do_chefe(corpo)
+    assert [l for l in sem.splitlines() if "Smart" in l] == []
+    assert sem == "\n".join(l.rstrip() for l in _corpo(velho, "ShouldUseItem").splitlines())
+    assert corpo.index("if (AI_IsSmartTrainer())") < corpo.index("for (i = 0; i < PARTY_SIZE; ++i)")
+    # GetAI_ItemType só perde o `static` (a linha da definição tem comentário: _corpo não a acha)
+    def tipo(fonte):
+        inicio = fonte.index("u8 GetAI_ItemType(u8 itemId, const u8 *itemEffect) //")
+        return fonte[inicio:fonte.index("\n}\n", inicio)]
+    assert tipo(novo) == tipo(velho)
+
+
+def test_item_do_chefe_emitido_como_original():
+    corpo = _corpo(_ler(SWITCH_C), "ShouldUseItemSmart")
+    for nome in ("SmartAI_ChooseItem(gActiveBattler, &decision)", "B_ACTION_USE_ITEM",
+                 "*(gBattleStruct->chosenItem + (gActiveBattler / 2) * 2) = decision.item;",
+                 "gBattleResources->battleHistory->trainerItems[i] = 0;",
+                 "*(gBattleStruct->AI_itemType + gActiveBattler / 2) = GetAI_ItemType(decision.item, itemEffects);",
+                 "*(gBattleStruct->AI_itemFlags + gActiveBattler / 2)",
+                 "AI_ITEM_CURE_CONDITION", "AI_ITEM_X_STAT"):
+        assert nome in corpo, nome
+    # as mesmas marcas do original (mensagem do script de uso)
+    for bit in ("0x20", "0x10", "0x8", "0x4", "0x2", "0x1", "0x80"):
+        assert bit in corpo, bit
+
+
+def test_decide_com_item_e_hook_d3():
+    fonte = _ler(SMART_C)
+    decide = _corpo(fonte, "SmartAI_Decide")
+    assert decide.index("PredictiveSwitch(") < decide.index("ChooseItem(battler, out)") < decide.index("SMART_AI_ATTACK")
+    assert "SmartAI_ChooseItem" not in decide                  # o atalho não grava a cura
+    h = _ler(TEST_HOOKS_H)
+    assert re.search(r"TEST_CMD_SET_TRAINER_ITEMS\s*=\s*0xD3\b", h)
+    assert hooks.CMD_SET_TRAINER_ITEMS == 0xD3
+    c = _ler(SRC / "test_hooks.c")
+    assert "case TEST_CMD_SET_TRAINER_ITEMS:" in c
+    itens = _corpo(c, "SetTrainerItems")
+    assert "trainerItems" in itens and "itemsNo" in itens and "LAST_BERRY_INDEX" in itens
+    d = _corpo(c, "AiSmartDecide")
+    for proibido in ("trainerItems", "aiHealTurn", "aiHealHp", "SmartAI_ChooseItem"):
+        assert proibido not in d, proibido
