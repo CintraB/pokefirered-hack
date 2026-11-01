@@ -462,7 +462,8 @@ def test_nao_visitado_nao_abre():
     assert re.search(r"if \(visitado[^)]*\)\s*\{?[^}]*LST_BARRA_LARGURA \*", linha, re.S), linha
     abrir = _sem_comentarios(_corpo(fonte, "InputLista"))
     assert "JOY_NEW(A_BUTTON)" in abrir
-    m = re.search(r"if \(!DexNav_IsVisited\(([^)]*)\)\)\s*return;", abrir)
+    # o teste de visitado vem antes de abrir (MapaConhecido = visitado e com espécie; ver test_mapa_visitado_sem_encontro_agora)
+    m = re.search(r"if \(!MapaConhecido\(t, mapIndex\)\)\s*return;", abrir)
     assert m, abrir
     assert abrir.index(m.group(0)) < abrir.index("AbrirMapa(t, mapIndex"), "o teste de visitado vem antes de abrir"
     busca = _sem_comentarios(_corpo(fonte, "InputBusca"))
@@ -707,6 +708,9 @@ def test_mapa_visitado_sem_encontro_agora():
     assert re.search(r"if \(!MapaConhecido\(t, mapIndex\)\)\s*return;", entrada)
     assert entrada.index("MapaConhecido") < entrada.index("AbrirMapa(")
     assert "MapaConhecido" not in _corpo(fonte, "ContarRegiao"), "o total da região conta todos os mapas"
+    # o cursor inicial "primeiro da lista" cai num mapa que A abre
+    montar = _sem_comentarios(_corpo(fonte, "MontarLista"))
+    assert "visitado == LINHA_NENHUMA && MapaConhecido(t, i)" in montar, montar
 
 
 def test_resultado_de_outro_horario_em_cinza_e_depois():

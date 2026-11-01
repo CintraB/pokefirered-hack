@@ -1183,8 +1183,8 @@ static void MontarAba(struct DexNavTela *t)
 
 // --- modo lista: dados ----------------------------------------------------------------------------------------------
 
-// Conhecido: visitado e com encontro agora (a câmara de Tanoby trancada, visitada, ainda não tem nada: "?/?" e A não
-// abre, como o não visitado)
+// Conhecido: visitado e com alguma espécie (de qualquer período: mapTotal conta todas). A câmara de Tanoby trancada,
+// visitada, ainda não tem nenhuma: "?/?" e A não abre, como o não visitado
 static bool8 MapaConhecido(struct DexNavTela *t, u8 i)
 {
     return DexNav_IsVisited(i) && t->mapTotal[i] != 0;
@@ -1222,7 +1222,7 @@ static u8 MapaDoJogador(void)
 }
 
 // Os mapas da região, na ordem da tabela (a da Pokédex AREA). A seleção vai para o mapa da tela de onde se veio (ou
-// guardado), senão para o mapa do jogador, senão para o primeiro visitado, senão para a primeira linha.
+// guardado), senão para o mapa do jogador, senão para o primeiro conhecido (que A abre), senão para a primeira linha.
 static void MontarLista(struct DexNavTela *t)
 {
     u8 i, jogador = MapaDoJogador();
@@ -1237,7 +1237,7 @@ static void MontarLista(struct DexNavTela *t)
                 noMapa = t->nLinhas;
             if (i == jogador)
                 noJogador = t->nLinhas;
-            if (visitado == LINHA_NENHUMA && DexNav_IsVisited(i))
+            if (visitado == LINHA_NENHUMA && MapaConhecido(t, i))
                 visitado = t->nLinhas;
             AdicionarLinha(t, LINHA_MAPA, i);
         }
@@ -1338,10 +1338,8 @@ static void InputLista(struct DexNavTela *t)
         if (t->cursor >= t->nLinhas || t->linhas[t->cursor].tipo != LINHA_MAPA)
             return;
         mapIndex = t->linhas[t->cursor].idx;
-        if (!DexNav_IsVisited(mapIndex))
-            return;
         if (!MapaConhecido(t, mapIndex))
-            return;   // visitado, mas sem encontro agora (câmara de Tanoby trancada)
+            return;   // não visitado, ou visitado sem nenhuma espécie (câmara de Tanoby trancada)
         AbrirMapa(t, mapIndex, SPECIES_NONE, 0xFF);
     }
     else if (JOY_NEW(L_BUTTON) || JOY_NEW(R_BUTTON))
