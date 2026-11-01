@@ -33,6 +33,7 @@
 #include "event_scripts.h"
 #include "day_night.h"
 #include "conquistas.h"
+#include "dexnav.h"
 
 // this file's functions
 static void ResetMiniGamesResults(void);
@@ -145,6 +146,7 @@ void NewGameInitData(void)
     ClearBag();
     NewGameInitPCItems();
     GivePortablePcIfMissing();
+    DexNav_InitSave(); // POK-47: nenhum mapa visitado, com o marcador
     ClearEnigmaBerries();
     InitEasyChatPhrases();
     ResetTrainerFanClub();

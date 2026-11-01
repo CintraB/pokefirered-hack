@@ -198,12 +198,15 @@ def test_mutacao_tipo_terra_e_acusado():
 # forma curta -> (forma cheia, arquivos onde a curta continua valendo: nome de mapa/região (18 letras), etiqueta
 # de 84 px do Arquivo Fama e, só para a Floresta, o Quest Log, que copia o lugar para gStringVar2 (19 letras
 # + fim; "Floresta de Viridian" tem 20, "Caverna de Cerulean" tem 19 e cabe)
+# POK-47: os nomes do DexNav (src/data/dexnav_mapas.h) são o nome do mapa + andar, na coluna de 120 px da lista
+# ("Caverna de Cerulean B1F" não cabe), então seguem a forma curta do nome de mapa
 SHORT_PLACES = {
     "Cidade Vermilion": ("Cidade de Vermilion", {"src/data/region_map/region_map_sections.json",
-                                                 "data/text/fame_checker.inc"}),
+                                                 "data/text/fame_checker.inc", "src/data/dexnav_mapas.h"}),
     "Floresta Viridian": ("Floresta de Viridian", {"src/data/region_map/region_map_sections.json",
-                                                   "src/data/text/quest_log.h"}),
-    "Caverna Cerulean": ("Caverna de Cerulean", {"src/data/region_map/region_map_sections.json"}),
+                                                   "src/data/text/quest_log.h", "src/data/dexnav_mapas.h"}),
+    "Caverna Cerulean": ("Caverna de Cerulean", {"src/data/region_map/region_map_sections.json",
+                                                 "src/data/dexnav_mapas.h"}),
     "Porto Vermilion": ("Porto de Vermilion", set()),
 }
 

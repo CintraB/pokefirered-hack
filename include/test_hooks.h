@@ -157,6 +157,24 @@ enum
 };
 // --- end of POK-46 -------------------------------------------------------------------------
 
+// --- POK-47: DexNav -----------------------------------------------------------------------
+enum
+{
+    TEST_CMD_DEXNAV_ENTRY = 0xE0, // arg0 = map index (gDexNavMaps), arg1 = entry index: DexNav_GetMapEntries; result = species | method << 16 | periods << 24 (0xFFFFFFFF = past the last entry or bad map)
+    TEST_CMD_DEXNAV_RATE = 0xE1,  // arg0 = map index, arg1 = entry index | period << 8 (0 morning, 1 afternoon, 2 night: rateX10[period]; 3 evening: DexNav_RateForPeriods(DAY | NIGHT)); result = rate x 10 | minLevel << 16 | maxLevel << 24 (0xFFFFFFFF = bad args)
+    TEST_CMD_DEXNAV_ROLL = 0xE2,  // arg0 = method (DEXNAV_METHOD_*), arg1 = N (<= 0xFFFF): the real generator of the current map (TestRollWild, no battle) N times; gTestText = struct TestDexNavTally[TEST_DEXNAV_TALLY_MAX] (species 0 = end); result = distinct species (0xFFFFFFFF = no such table here or bad method)
+};
+
+// The tally of TEST_CMD_DEXNAV_ROLL in gTestText (test/esteira/dexnav.py reads this layout)
+struct TestDexNavTally
+{
+    u16 species;
+    u16 count;
+};
+
+#define TEST_DEXNAV_TALLY_MAX (TEST_TEXT_SIZE / sizeof(struct TestDexNavTally))
+// --- end of POK-47 -------------------------------------------------------------------------
+
 extern struct TestMailbox gTestMailbox;
 extern u8 gTestText[TEST_TEXT_SIZE];
 

@@ -319,6 +319,10 @@ WIDTH_RULES: list[Rule] = [
     Rule("src/strings.c", None, None, "menus e janelas de dezenas de telas: a janela sai de onde cada rótulo "
          "é usado (esteira/janelas_uso.py, USAGE_RULES); texto sem uso no código fica sem medida", by_usage=True),
     # -- tabelas de texto --
+    # POK-47: nomes dos mapas do DexNav (gerados por tools/dexnav/gerar.py), na coluna de nome da lista de mapas
+    Rule("src/data/dexnav_mapas.h", "sDexNavNome_", 120,
+         "nome do mapa na lista do DexNav: DEXNAV_NAME_WIDTH = 120 px (include/dexnav.h:18), FONT_NORMAL, 1 linha; "
+         "impresso direto da tabela (alguns passam dos 20 bytes de gStringVar)", lines=1),
     Rule("src/data/text/quest_log.h", None, 30 * 8 - 2,
          "janela de descrição do Quest Log: DESC_WIN_WIDTH = DISPLAY_WIDTH / 8 = 30 tiles (src/quest_log.c:40,163), "
          "texto em x = 2 (src/quest_log.c:1039)"),

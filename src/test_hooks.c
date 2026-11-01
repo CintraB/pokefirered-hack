@@ -35,6 +35,8 @@ extern u32 TestLandSpecies(u8 mapGroup, u8 mapNum, u8 slot, u8 period);
 extern u32 TestRollWild(u8 area, u8 rod, bool8 startBattle); // Hack 8
 // Hack 7 — frente C
 #include "pokemon_storage_system.h"
+// POK-47
+#include "dexnav.h"
 
 STATIC_ASSERT(TEST_TEXT_SIZE >= SUMMARY_PAGE_TEXT_SIZE, TestTextHoldsASummaryPage);
 
@@ -1140,6 +1142,90 @@ static u32 SetTrainerItems(u32 arg0, u32 arg1)
 }
 // --- end of POK-46 --------------------------------------------------------------------------
 
+// --- POK-47: DexNav -------------------------------------------------------------------------
+// One entry of DexNav_GetMapEntries (FALSE = past the last entry or bad map); the whole list sits on the stack
+// only for the call (DEXNAV_MAX_ENTRIES x 12 bytes)
+static bool8 DexNavEntry(u32 mapIndex, u32 index, struct DexNavEntry *entry)
+{
+    struct DexNavEntry entries[DEXNAV_MAX_ENTRIES];
+    u8 count;
+
+    if (mapIndex >= DEXNAV_MAP_COUNT)
+        return FALSE;
+    count = DexNav_GetMapEntries(mapIndex, entries, DEXNAV_MAX_ENTRIES);
+    if (index >= count)
+        return FALSE;
+    *entry = entries[index];
+    return TRUE;
+}
+
+static u32 DexNavEntryHook(u32 mapIndex, u32 index)
+{
+    struct DexNavEntry entry;
+
+    if (!DexNavEntry(mapIndex, index, &entry))
+        return 0xFFFFFFFF;
+    return entry.species | entry.method << 16 | entry.periods << 24;
+}
+
+static u32 DexNavRateHook(u32 mapIndex, u32 arg1)
+{
+    struct DexNavEntry entry;
+    u32 period = (arg1 >> 8) & 0xFF;
+    u32 rate;
+
+    if (period > DEXNAV_PERIOD_COUNT || !DexNavEntry(mapIndex, arg1 & 0xFF, &entry))
+        return 0xFFFFFFFF;
+    if (period == DEXNAV_PERIOD_COUNT)
+        rate = DexNav_RateForPeriods(&entry, DEXNAV_PERIOD_DAY | DEXNAV_PERIOD_NIGHT); // tarde-noite
+    else
+        rate = entry.rateX10[period];
+    return rate | entry.minLevel << 16 | entry.maxLevel << 24;
+}
+
+// N rolls of the real generator of the current map (TestRollWild: GetCurrentMapWildMonHeaderId, TryGenerateWildMon
+// or GenerateFishingEncounter, no battle), species tallied into gTestText. Uses the RNG (test only).
+static u32 DexNavRoll(u32 method, u32 n)
+{
+    static const u8 sAreaRod[DEXNAV_METHOD_COUNT][2] = {
+        [DEXNAV_METHOD_LAND]      = {0, 0},
+        [DEXNAV_METHOD_WATER]     = {1, 0},
+        [DEXNAV_METHOD_OLD_ROD]   = {3, OLD_ROD},
+        [DEXNAV_METHOD_GOOD_ROD]  = {3, GOOD_ROD},
+        [DEXNAV_METHOD_SUPER_ROD] = {3, SUPER_ROD},
+        [DEXNAV_METHOD_ROCK]      = {2, 0},
+    };
+    // counted on the stack and copied byte by byte: gTestText (u8[]) may sit at an odd address
+    struct TestDexNavTally tally[TEST_DEXNAV_TALLY_MAX];
+    u32 i, j, distinct = 0, rolled;
+    u16 species;
+
+    if (method >= DEXNAV_METHOD_COUNT || n > 0xFFFF)
+        return 0xFFFFFFFF;
+    memset(tally, 0, sizeof(tally));
+    memset(gTestText, 0, sizeof(gTestText));
+    for (i = 0; i < n; i++)
+    {
+        rolled = TestRollWild(sAreaRod[method][0], sAreaRod[method][1], FALSE);
+        if (rolled == 0xFFFFFFFF)
+            return 0xFFFFFFFF;
+        species = rolled & 0xFFFF;
+        for (j = 0; j < distinct && tally[j].species != species; j++)
+            ;
+        if (j == distinct)
+        {
+            if (distinct >= TEST_DEXNAV_TALLY_MAX)
+                continue;
+            tally[distinct++].species = species;
+        }
+        tally[j].count++;
+    }
+    for (i = 0; i < sizeof(tally); i++)
+        gTestText[i] = ((const u8 *)tally)[i];
+    return distinct;
+}
+// --- end of POK-47 --------------------------------------------------------------------------
+
 void TestHooks_Run(void)
 {
     u32 result = 0;
@@ -1279,6 +1365,10 @@ void TestHooks_Run(void)
     case TEST_CMD_AI_SMART_DECIDE:  result = AiSmartDecide(gTestMailbox.arg0); break;
     case TEST_CMD_SET_ENEMY_MON:    result = SetEnemyMon(gTestMailbox.arg0, gTestMailbox.arg1); break;
     case TEST_CMD_SET_TRAINER_ITEMS: result = SetTrainerItems(gTestMailbox.arg0, gTestMailbox.arg1); break;
+    // POK-47
+    case TEST_CMD_DEXNAV_ENTRY:     result = DexNavEntryHook(gTestMailbox.arg0, gTestMailbox.arg1); break;
+    case TEST_CMD_DEXNAV_RATE:      result = DexNavRateHook(gTestMailbox.arg0, gTestMailbox.arg1); break;
+    case TEST_CMD_DEXNAV_ROLL:      result = DexNavRoll(gTestMailbox.arg0, gTestMailbox.arg1); break;
     default:
         result = 0xFFFFFFFF;
         break;

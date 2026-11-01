@@ -56,6 +56,7 @@
 #include "constants/songs.h"
 #include "constants/sound.h"
 #include "day_night.h" /* Hack 7 — frente A */
+#include "dexnav.h" /* POK-47 */
 
 #define PLAYER_LINK_STATE_IDLE 0x80
 #define PLAYER_LINK_STATE_BUSY 0x81
@@ -1706,6 +1707,7 @@ void CB2_ContinueSavedGame(void)
 {
     DayNight_ForgetSeenPeriod(); /* Hack 7 — frente A */
     GivePortablePcIfMissing(); // POK-36
+    DexNav_UpgradeOldSave(); // POK-47: save sem marcador do DexNav
     FieldClearVBlankHBlankCallbacks();
     StopMapMusic();
     ResetSafariZoneFlag_();
@@ -2338,6 +2340,7 @@ static bool32 LoadMap_QLPlayback(u8 *state)
 void CB2_EnterFieldFromQuestLog(void)
 {
     GivePortablePcIfMissing(); // POK-36: CONTINUAR com cenas no Quest Log entra por aqui
+    DexNav_UpgradeOldSave(); // POK-47
     FieldClearVBlankHBlankCallbacks();
     StopMapMusic();
     gGlobalFieldTintMode = QL_TINT_BACKUP_GRAYSCALE;

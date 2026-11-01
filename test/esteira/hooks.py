@@ -455,3 +455,12 @@ CMD_SET_TRAINER_ITEMS = 0xD3  # arg0 = item1 | item2 << 16, arg1 = item3 | item4
                               # item fora de ITEM_POTION..LAST_BERRY_INDEX)
 SMART_AI_ATTACK, SMART_AI_SWITCH, SMART_AI_ITEM = 0, 1, 2  # include/battle_ai_smart.h
 AI_NAO_CHEFE = 0xFFFFFFFE
+
+# --- POK-47: DexNav (enum à parte, a partir de 0xE0; leitura em esteira/dexnav.py) ---
+CMD_DEXNAV_ENTRY = 0xE0     # arg0 = índice do mapa (gDexNavMaps), arg1 = índice da entrada -> espécie | método << 16
+                            # | períodos << 24 (0xFFFFFFFF = depois da última entrada ou mapa inválido)
+CMD_DEXNAV_RATE = 0xE1      # arg0 = índice do mapa, arg1 = entrada | período << 8 (0 manhã, 1 tarde, 2 noite, 3 tarde-noite:
+                            # média da tarde e da noite) -> chance x 10 | nível mín << 16 | nível máx << 24
+CMD_DEXNAV_ROLL = 0xE2      # arg0 = método (DEXNAV_METHOD_*), arg1 = N -> espécies distintas: o gerador real do mapa atual
+                            # N vezes, sem batalha; contagem em gTestText como (u16 espécie, u16 vezes) até espécie 0
+                            # (0xFFFFFFFF = o mapa não tem essa tabela ou método inválido)

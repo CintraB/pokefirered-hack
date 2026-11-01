@@ -6,6 +6,7 @@
 #include "quest_log.h"
 #include "fieldmap.h"
 #include "day_night.h" /* Hack 7 — frente A */
+#include "dexnav.h" /* POK-47 */
 
 struct ConnectionFlags
 {
@@ -111,6 +112,8 @@ static void InitMapLayoutData(struct MapHeader * mapHeader)
     AGB_ASSERT_EX(VMap.Xsize * VMap.Ysize <= VIRTUAL_MAP_SIZE, ABSPATH("fieldmap.c"), 158);
     InitBackupMapLayoutData(mapLayout->map, mapLayout->width, mapLayout->height);
     InitBackupMapLayoutConnections(mapHeader);
+    // POK-47: todo mapa carregado passa por aqui (warp, voo, borda de mapa, CONTINUAR e Quest Log)
+    DexNav_MarkVisited(gSaveBlock1Ptr->location.mapGroup, gSaveBlock1Ptr->location.mapNum);
 }
 
 static void InitBackupMapLayoutData(const u16 *map, u16 width, u16 height)

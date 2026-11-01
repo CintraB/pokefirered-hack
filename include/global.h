@@ -365,6 +365,15 @@ struct DiarioSave
     /*0x3C4*/ u8 livre[60];
 }; // size: 0x400 (964 usados)
 
+// DexNav (POK-47): os mapas com encontro já visitados. Era unused_3A94[64], com zeros nos saves desta hack:
+// magic != DEXNAV_MAGIC (include/dexnav.h) é um save de antes do DexNav (DexNav_UpgradeOldSave ao CONTINUAR).
+struct DexNavSave
+{
+    /*0x00*/ u32 magic;            // DEXNAV_MAGIC ("DNV1") depois do jogo novo ou do CONTINUAR de um save antigo
+    /*0x04*/ u8 visitedMaps[16];   // 1 bit por índice de gDexNavMaps (DEXNAV_MAP_COUNT = 124)
+    /*0x14*/ u8 unused[44];
+}; // size: 64
+
 struct SaveBlock2
 {
     /*0x000*/ u8 playerName[PLAYER_NAME_LENGTH + 1];
@@ -854,7 +863,7 @@ struct SaveBlock1
     /*0x3A18*/ u8 seen2[DEX_FLAGS_NO];
     /*0x3A4C*/ u8 rivalName[PLAYER_NAME_LENGTH + 1];
     /*0x3A54*/ struct FameCheckerSaveData fameChecker[NUM_FAMECHECKER_PERSONS];
-    /*0x3A94*/ u8 unused_3A94[64];
+    /*0x3A94*/ struct DexNavSave dexNav; // POK-47, era unused_3A94[64]
     /*0x3AD4*/ u8 registeredTexts[UNION_ROOM_KB_ROW_COUNT][21];
     /*0x3BA8*/ struct TrainerNameRecord trainerNameRecords[20];
     /*0x3C98*/ struct DaycareMon route5DayCareMon;
