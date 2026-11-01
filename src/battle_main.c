@@ -3,6 +3,7 @@
 #include "battle.h"
 #include "battle_anim.h"
 #include "battle_ai_script_commands.h"
+#include "battle_ai_smart.h"
 #include "battle_controllers.h"
 #include "battle_interface.h"
 #include "battle_main.h"
@@ -725,6 +726,7 @@ static void CB2_InitBattleInternal(void)
         CreateNPCTrainerParty(&gEnemyParty[0], gTrainerBattleOpponent_A);
         SetWildMonHeldItem();
     }
+    SmartAI_InitBattle(); // POK-46: "é chefe" (com o degrau da revanche já aplicado) e o resto do estado da IA
 
     gMain.inBattle = TRUE;
     for (i = 0; i < PARTY_SIZE; i++)

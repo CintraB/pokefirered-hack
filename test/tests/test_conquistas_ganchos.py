@@ -115,8 +115,11 @@ def test_campos_novos_no_fim_de_battle_struct():
     m = re.search(r"^struct BattleStruct\n\{\n(.*?)^\};", h, re.S | re.M)
     assert m
     membros = [l.strip() for l in m.group(1).splitlines() if l.strip() and not l.strip().startswith("//")]
-    assert membros[-3:] == ["u32 conqPersonalidade[PARTY_SIZE];", "u8 conqNocautes[PARTY_SIZE];",
-                           "u8 conqGolpeTardio;"], membros[-4:]
+    # logo depois dos 0x200 do jogo (padding_1E4): os deslocamentos lidos pela esteira (full_conquistas.py) não
+    # mudam; o POK-46 acrescenta os campos dele depois destes
+    i = membros.index("u8 padding_1E4[0x1C];")
+    assert membros[i + 1:i + 4] == ["u32 conqPersonalidade[PARTY_SIZE];", "u8 conqNocautes[PARTY_SIZE];",
+                                    "u8 conqGolpeTardio;"], membros[i:i + 5]
     # BattleStruct mora no heap (AllocZeroed): sem STATIC_ASSERT de tamanho que o fim novo quebre
     for arq in list(SRC.glob("*.c")) + list((REPO_ROOT / "include").glob("*.h")):
         assert not re.search(r"STATIC_ASSERT\(sizeof\((struct BattleStruct|\*gBattleStruct)\)", _ler(arq)), arq

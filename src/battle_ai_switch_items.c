@@ -1,6 +1,7 @@
 #include "global.h"
 #include "battle.h"
 #include "battle_anim.h"
+#include "battle_ai_smart.h"
 #include "battle_controllers.h"
 #include "random.h"
 #include "util.h"
@@ -346,6 +347,19 @@ static bool8 ShouldSwitch(void)
      || FindMonThatAbsorbsOpponentsMove()
      || ShouldSwitchIfNaturalCure())
         return TRUE;
+    if (AI_IsSmartTrainer())
+    {
+        // POK-46: o chefe tenta a troca preditiva (só batalha simples) depois das reações originais; se ela não
+        // acontece, segue o resto do original (troca por golpe que não pega), como todo treinador.
+        struct SmartAiDecision decision;
+
+        if (SmartAI_ChoosePredictiveSwitch(gActiveBattler, &decision))
+        {
+            *(gBattleStruct->AI_monToSwitchIntoId + (GetBattlerPosition(gActiveBattler) >> 1)) = decision.partySlot;
+            BtlController_EmitTwoReturnValues(1, B_ACTION_SWITCH, 0);
+            return TRUE;
+        }
+    }
     if (HasSuperEffectiveMoveAgainstOpponents(FALSE)
      || AreStatsRaised())
         return FALSE;
@@ -359,6 +373,8 @@ void AI_TrySwitchOrUseItem(void)
 {
     u8 battlerIn1, battlerIn2;
 
+    if (AI_IsSmartTrainer())
+        SmartAI_NoteHealUndone(gActiveBattler); // POK-46: antes de ShouldSwitch, para a marca valer mesmo se ele trocar
     if (gBattleTypeFlags & BATTLE_TYPE_TRAINER)
     {
         if (ShouldSwitch())
@@ -391,6 +407,8 @@ void AI_TrySwitchOrUseItem(void)
                 *(gBattleStruct->AI_monToSwitchIntoId + (GetBattlerPosition(gActiveBattler) >> 1)) = monToSwitchId;
             }
             *(gBattleStruct->monToSwitchIntoId + gActiveBattler) = *(gBattleStruct->AI_monToSwitchIntoId + (GetBattlerPosition(gActiveBattler) >> 1));
+            if (AI_IsSmartTrainer())
+                SmartAI_NoteVoluntarySwitch(gActiveBattler); // POK-46: troca por vontade da IA (reação ou preditiva)
             return;
         }
         else if (ShouldUseItem())
@@ -437,6 +455,8 @@ u8 GetMostSuitableMonToSwitchInto(void)
 
     if (*(gBattleStruct->monToSwitchIntoId + gActiveBattler) != PARTY_SIZE)
         return *(gBattleStruct->monToSwitchIntoId + gActiveBattler);
+    if (AI_IsSmartTrainer())
+        return SmartAI_ChooseReplacement(gActiveBattler); // POK-46: pontuação por tipo (sem o bestDmg em u8)
     if (gBattleTypeFlags & BATTLE_TYPE_DOUBLE)
     {
         battlerIn1 = gActiveBattler;
@@ -543,7 +563,7 @@ u8 GetMostSuitableMonToSwitchInto(void)
     return bestMonId;
 }
 
-static u8 GetAI_ItemType(u8 itemId, const u8 *itemEffect) // NOTE: should take u16 as item Id argument
+u8 GetAI_ItemType(u8 itemId, const u8 *itemEffect) // NOTE: should take u16 as item Id argument
 {
     if (itemId == ITEM_FULL_RESTORE)
         return AI_ITEM_FULL_RESTORE;
@@ -559,12 +579,71 @@ static u8 GetAI_ItemType(u8 itemId, const u8 *itemEffect) // NOTE: should take u
         return AI_ITEM_NOT_RECOGNIZABLE;
 }
 
+// POK-46: o item escolhido pelo chefe (SmartAI_ChooseItem, regras em battle_ai_smart.c) emitido como o original: a
+// ação, o item, o item gasto da lista e o tipo/marcas que HandleAction_UseItem lê para escolher o script de uso e a
+// mensagem (estado curado, atributo aumentado). O efeito em si vem do próprio item (Cmd_useitemonopponent).
+static bool8 ShouldUseItemSmart(void)
+{
+    struct SmartAiDecision decision;
+    const u8 *itemEffects;
+    u8 listIndex;
+
+    if (!SmartAI_ChooseItem(gActiveBattler, &decision, &listIndex))
+        return FALSE;
+    itemEffects = SmartAI_ItemEffects(decision.item);
+    *(gBattleStruct->AI_itemType + gActiveBattler / 2) = GetAI_ItemType(decision.item, itemEffects);
+    *(gBattleStruct->AI_itemFlags + gActiveBattler / 2) = 0;
+    switch (*(gBattleStruct->AI_itemType + gActiveBattler / 2))
+    {
+    case AI_ITEM_CURE_CONDITION:
+        // Uma marca por estado presente que o item cura (como o original; a escolha garante pelo menos uma, e sem
+        // nenhuma o laço de HandleAction_UseItem não terminaria).
+        if (itemEffects[3] & ITEM3_SLEEP && gBattleMons[gActiveBattler].status1 & STATUS1_SLEEP)
+            *(gBattleStruct->AI_itemFlags + gActiveBattler / 2) |= 0x20;
+        if (itemEffects[3] & ITEM3_POISON && (gBattleMons[gActiveBattler].status1 & STATUS1_POISON || gBattleMons[gActiveBattler].status1 & STATUS1_TOXIC_POISON))
+            *(gBattleStruct->AI_itemFlags + gActiveBattler / 2) |= 0x10;
+        if (itemEffects[3] & ITEM3_BURN && gBattleMons[gActiveBattler].status1 & STATUS1_BURN)
+            *(gBattleStruct->AI_itemFlags + gActiveBattler / 2) |= 0x8;
+        if (itemEffects[3] & ITEM3_FREEZE && gBattleMons[gActiveBattler].status1 & STATUS1_FREEZE)
+            *(gBattleStruct->AI_itemFlags + gActiveBattler / 2) |= 0x4;
+        if (itemEffects[3] & ITEM3_PARALYSIS && gBattleMons[gActiveBattler].status1 & STATUS1_PARALYSIS)
+            *(gBattleStruct->AI_itemFlags + gActiveBattler / 2) |= 0x2;
+        if (itemEffects[3] & ITEM3_CONFUSION && gBattleMons[gActiveBattler].status2 & STATUS2_CONFUSION)
+            *(gBattleStruct->AI_itemFlags + gActiveBattler / 2) |= 0x1;
+        if (*(gBattleStruct->AI_itemFlags + gActiveBattler / 2) == 0)
+            return FALSE;
+        break;
+    case AI_ITEM_X_STAT:
+        if (itemEffects[0] & ITEM0_X_ATTACK)
+            *(gBattleStruct->AI_itemFlags + gActiveBattler / 2) |= 0x1;
+        if (itemEffects[1] & ITEM1_X_DEFEND)
+            *(gBattleStruct->AI_itemFlags + gActiveBattler / 2) |= 0x2;
+        if (itemEffects[1] & ITEM1_X_SPEED)
+            *(gBattleStruct->AI_itemFlags + gActiveBattler / 2) |= 0x4;
+        if (itemEffects[2] & ITEM2_X_SPATK)
+            *(gBattleStruct->AI_itemFlags + gActiveBattler / 2) |= 0x8;
+        if (itemEffects[2] & ITEM2_X_ACCURACY)
+            *(gBattleStruct->AI_itemFlags + gActiveBattler / 2) |= 0x20;
+        if (itemEffects[0] & ITEM0_DIRE_HIT)
+            *(gBattleStruct->AI_itemFlags + gActiveBattler / 2) |= 0x80;
+        if (*(gBattleStruct->AI_itemFlags + gActiveBattler / 2) == 0)
+            return FALSE;
+        break;
+    }
+    BtlController_EmitTwoReturnValues(1, B_ACTION_USE_ITEM, 0);
+    *(gBattleStruct->chosenItem + (gActiveBattler / 2) * 2) = decision.item;
+    gBattleResources->battleHistory->trainerItems[listIndex] = 0;
+    return TRUE;
+}
+
 static bool8 ShouldUseItem(void)
 {
     s32 i;
     u8 validMons = 0;
     bool8 shouldUse = FALSE;
 
+    if (AI_IsSmartTrainer())
+        return ShouldUseItemSmart(); // POK-46: o chefe usa o item na hora certa
     for (i = 0; i < PARTY_SIZE; ++i)
         if (GetMonData(&gEnemyParty[i], MON_DATA_HP) != 0
          && GetMonData(&gEnemyParty[i], MON_DATA_SPECIES_OR_EGG) != SPECIES_NONE

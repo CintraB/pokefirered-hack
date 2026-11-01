@@ -1012,6 +1012,134 @@ static u32 BuildTrainerParty(u32 trainer, bool8 isRematch)
 }
 // --- end of POK-42 --------------------------------------------------------------------------
 
+// --- POK-46: smart AI for the bosses ---------------------------------------------------------
+#include "battle_anim.h"
+
+// aiSmart | moves revealed by the player mon in the left position << 8; 0xFFFFFFFF outside a battle.
+static u32 AiSmartState(void)
+{
+    u32 count = 0;
+    s32 i;
+    u8 battler;
+
+    if (!gMain.inBattle || gBattleStruct == NULL)
+        return 0xFFFFFFFF;
+    battler = GetBattlerAtPosition(B_POSITION_PLAYER_LEFT);
+    for (i = 0; i < MAX_MON_MOVES; i++)
+    {
+        if (gBattleStruct->aiRevealedMoves[gBattlerPartyIndexes[battler] % PARTY_SIZE][i] != MOVE_NONE)
+            count++;
+    }
+    return gBattleStruct->aiSmart | count << 8;
+}
+
+#include "battle_ai_smart.h"
+
+// The boss decision for the opponent on the left (predictive switch -> item -> attack), with nothing emitted and no
+// battle state changed: action | partySlot << 8 | item << 16. Only the new boss decision: the original reactive
+// switches of ShouldSwitch (before it) and its original tail (after it) are not reported. 0xFFFFFFFF outside a battle, 0xFFFFFFFE when the
+// opponent is not a boss (its decision is the original one, not this). forceNoStay = 1 skips the "1 in 5 stays" roll.
+static u32 AiSmartDecide(u32 forceNoStay)
+{
+    struct SmartAiDecision decision;
+
+    if (!gMain.inBattle || gBattleStruct == NULL)
+        return 0xFFFFFFFF;
+    if (!AI_IsSmartTrainer())
+        return 0xFFFFFFFE;
+    SmartAI_Decide(GetBattlerAtPosition(B_POSITION_OPPONENT_LEFT), forceNoStay != 0, &decision);
+    return decision.action | decision.partySlot << 8 | (u32)decision.item << 16;
+}
+
+// Rebuilds gEnemyParty[slot] (default moves for the level, IVs 0, no held item) with hp% and status1; when that slot is
+// on the field, its gBattleMons entry is refreshed too (stats, types, ability, moves, hp, status1; stat stages back to
+// neutral; status2 kept). arg0 = slot | species << 8, arg1 = level | hpPercent << 8 | status1 << 16.
+static u32 SetEnemyMon(u32 arg0, u32 arg1)
+{
+    u8 slot = arg0 & 0xFF, level = arg1 & 0xFF, hpPercent = (arg1 >> 8) & 0xFF;
+    u16 species = (arg0 >> 8) & 0xFFFF;
+    u32 status = (arg1 >> 16) & 0xFF;
+    u16 hp;
+    s32 i, b;
+    struct Pokemon *mon;
+    struct BattlePokemon *bm;
+
+    if (slot >= PARTY_SIZE || species == SPECIES_NONE || species >= NUM_SPECIES || level == 0 || level > MAX_LEVEL
+     || hpPercent > 100)
+        return 0xFFFFFFFF;
+    mon = &gEnemyParty[slot];
+    CreateMon(mon, species, level, 0, FALSE, 0, OT_ID_RANDOM_NO_SHINY, 0);
+    hp = GetMonData(mon, MON_DATA_MAX_HP) * hpPercent / 100;
+    if (hp == 0 && hpPercent != 0)
+        hp = 1;
+    SetMonData(mon, MON_DATA_HP, &hp);
+    SetMonData(mon, MON_DATA_STATUS, &status);
+    if (!gMain.inBattle || gBattleStruct == NULL)
+        return species | slot << 16;
+    for (b = 0; b < gBattlersCount; b++)
+    {
+        if (GetBattlerSide(b) != B_SIDE_OPPONENT || gBattlerPartyIndexes[b] != slot)
+            continue;
+        bm = &gBattleMons[b];
+        bm->species = species;
+        bm->item = ITEM_NONE;
+        for (i = 0; i < MAX_MON_MOVES; i++)
+        {
+            bm->moves[i] = GetMonData(mon, MON_DATA_MOVE1 + i);
+            bm->pp[i] = GetMonData(mon, MON_DATA_PP1 + i);
+        }
+        bm->ppBonuses = 0;
+        bm->level = level;
+        bm->hp = hp;
+        bm->maxHP = GetMonData(mon, MON_DATA_MAX_HP);
+        bm->attack = GetMonData(mon, MON_DATA_ATK);
+        bm->defense = GetMonData(mon, MON_DATA_DEF);
+        bm->speed = GetMonData(mon, MON_DATA_SPEED);
+        bm->spAttack = GetMonData(mon, MON_DATA_SPATK);
+        bm->spDefense = GetMonData(mon, MON_DATA_SPDEF);
+        bm->status1 = status;
+        bm->personality = GetMonData(mon, MON_DATA_PERSONALITY);
+        bm->abilityNum = GetMonData(mon, MON_DATA_ABILITY_NUM);
+        bm->type1 = gSpeciesInfo[species].types[0];
+        bm->type2 = gSpeciesInfo[species].types[1];
+        bm->ability = bm->abilityNum && gSpeciesInfo[species].abilities[1] != ABILITY_NONE
+                    ? gSpeciesInfo[species].abilities[1] : gSpeciesInfo[species].abilities[0];
+        for (i = 0; i < NUM_BATTLE_STATS; i++)
+            bm->statStages[i] = DEFAULT_STAT_STAGE;
+    }
+    return species | slot << 16;
+}
+
+// Zeroes and rewrites the trainer's item list of this battle (packed like BattleAI_HandleItemUseBeforeAISetup, itemsNo =
+// how many). arg0 = item1 | item2 << 16, arg1 = item3 | item4 << 16; 0 = none. Result = itemsNo.
+static u32 SetTrainerItems(u32 arg0, u32 arg1)
+{
+    u16 items[MAX_TRAINER_ITEMS];
+    s32 i;
+
+    if (!gMain.inBattle || gBattleResources == NULL)
+        return 0xFFFFFFFF;
+    items[0] = arg0 & 0xFFFF;
+    items[1] = arg0 >> 16;
+    items[2] = arg1 & 0xFFFF;
+    items[3] = arg1 >> 16;
+    for (i = 0; i < MAX_TRAINER_ITEMS; i++)
+    {
+        if (items[i] != ITEM_NONE && (items[i] < ITEM_POTION || items[i] > LAST_BERRY_INDEX))
+            return 0xFFFFFFFF;
+    }
+    gBattleResources->battleHistory->itemsNo = 0;
+    for (i = 0; i < MAX_TRAINER_ITEMS; i++)
+        gBattleResources->battleHistory->trainerItems[i] = ITEM_NONE;
+    for (i = 0; i < MAX_TRAINER_ITEMS; i++)
+    {
+        if (items[i] != ITEM_NONE)
+            gBattleResources->battleHistory->trainerItems[gBattleResources->battleHistory->itemsNo++] = items[i];
+    }
+    return gBattleResources->battleHistory->itemsNo;
+}
+// --- end of POK-46 --------------------------------------------------------------------------
+
 void TestHooks_Run(void)
 {
     u32 result = 0;
@@ -1147,6 +1275,10 @@ void TestHooks_Run(void)
     case TEST_CMD_CONQ_TELA:        result = gTestMailbox.arg0 ? Conquistas_TestGetDiario() : Conquistas_TestGetState(); break;
     // POK-44: end
     case TEST_CMD_BUILD_TRAINER_PARTY: result = BuildTrainerParty(gTestMailbox.arg0, gTestMailbox.arg1 != 0); break;
+    case TEST_CMD_AI_SMART_STATE:   result = AiSmartState(); break;
+    case TEST_CMD_AI_SMART_DECIDE:  result = AiSmartDecide(gTestMailbox.arg0); break;
+    case TEST_CMD_SET_ENEMY_MON:    result = SetEnemyMon(gTestMailbox.arg0, gTestMailbox.arg1); break;
+    case TEST_CMD_SET_TRAINER_ITEMS: result = SetTrainerItems(gTestMailbox.arg0, gTestMailbox.arg1); break;
     default:
         result = 0xFFFFFFFF;
         break;

@@ -78,8 +78,8 @@ def test_conquistas_e_diario_no_fim_de_melhorias_modernas():
     """POK-44: a grade 4x3 já está cheia (12 tópicos); os dois cartões entram no fim de "Melhorias modernas",
     como os do POK-43/45, e citam o caminho (SELECT no cartão do menu START; SELECT de novo para o diário)."""
     cartoes = _topico("Melhorias modernas")["cards"]
-    assert [c["title"] for c in cartoes[-3:-1]] == ["Conquistas e prêmios", "Diário da jornada"]   # POK-42 depois
-    conquistas, diario = (_plano(c["body"]) for c in cartoes[-3:-1])
+    assert [c["title"] for c in cartoes[-4:-2]] == ["Conquistas e prêmios", "Diário da jornada"]   # POK-42 e 46 depois
+    conquistas, diario = (_plano(c["body"]) for c in cartoes[-4:-2])
     ativas = sum(1 for c in json.loads((REPO_ROOT / "src/data/conquistas/conquistas.json").read_text(encoding="utf-8"))
                  ["conquistas"] if c.get("ativa", True))
     assert "cartão" in conquistas and "SELECT" in conquistas and f"{ativas} conquistas" in conquistas
@@ -89,11 +89,21 @@ def test_conquistas_e_diario_no_fim_de_melhorias_modernas():
 def test_revanches_por_degrau_no_fim_de_melhorias_modernas():
     """POK-42: como os do POK-43/45 e do POK-44, o cartão entra no fim de "Melhorias modernas" (grade cheia) e cita a
     guarda da Liga, os níveis de Normal a 100 e o que vale para o Explorador VS."""
-    cartao = _topico("Melhorias modernas")["cards"][-1]
+    cartao = _topico("Melhorias modernas")["cards"][-2]   # POK-46 depois
     assert cartao["title"] == "Revanches por degrau" and cartao["itemId"] == "ITEM_VS_SEEKER"
     corpo = _plano(cartao["body"])
     for trecho in ("Hall da Fama", "guarda da Liga", "Normal", "Nível 100", "Elite 4", "Explorador VS", "times de 6",
                    "IVs altos"):
+        assert trecho in corpo, trecho
+
+
+def test_chefes_mais_espertos_no_fim_de_melhorias_modernas():
+    """POK-46: o cartão entra no fim de "Melhorias modernas" (grade cheia) e diz quem são os chefes (as revanches só do
+    Nível 80 para cima) e o que mudou: troca antes do golpe super efetivo, quem entra e as curas."""
+    cartao = _topico("Melhorias modernas")["cards"][-1]
+    assert cartao["title"] == "Chefes mais espertos" and cartao["itemId"] == "ITEM_FULL_RESTORE"
+    corpo = _plano(cartao["body"])
+    for trecho in ("Líderes", "Elite 4", "rival", "Nível 80", "golpe super efetivo", "quem entra", "poções e curas"):
         assert trecho in corpo, trecho
 
 
