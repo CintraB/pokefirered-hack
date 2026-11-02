@@ -7,6 +7,7 @@ encontro do mapa atual N vezes (TEST_CMD_DEXNAV_ROLL, sem batalha) e lê a conta
 Usado pelo `dexnav/chances_reais` (cenário dexnav) e pela verificação da Task 1.
 """
 
+import math
 import struct
 
 from . import hooks
@@ -50,15 +51,29 @@ def rolar(box: hooks.Mailbox, metodo: int, n: int) -> dict[int, int]:
     return contagem
 
 
-def comparar(esperado: dict[int, int], contagem: dict[int, int], n: int, tolerancia_pp: float = 3.0) -> list[tuple]:
-    """(espécie, chance enumerada %, frequência real %) de cada espécie fora de ±tolerância (ou que apareceu sem estar
-    na enumeração); lista vazia = bateu."""
+SIGMAS = 4.5        # tolerância do `comparar`: ~7 em 1 milhão de falso vermelho por espécie (normal, bicaudal)
+ARREDONDAMENTO = 0.05   # p.p.: a chance mostrada é em ‰ (a média da tarde-noite arredonda meio ‰)
+
+
+def tolerancia(chance_pct: float, n: int, sigmas: float = SIGMAS) -> float:
+    """Desvio aceito (p.p.) entre a chance `chance_pct` e a frequência em `n` sorteios: `sigmas` desvios-padrão da
+    binomial (100·√(p(1−p)/n)) mais o arredondamento da chance em ‰. Chance 0 ou 100% não tem desvio: tem de bater."""
+    p = chance_pct / 100
+    return sigmas * 100 * math.sqrt(p * (1 - p) / n) + ARREDONDAMENTO
+
+
+def comparar(esperado: dict[int, int], contagem: dict[int, int], n: int, sigmas: float = SIGMAS) -> list[tuple]:
+    """(espécie, chance enumerada %, frequência real %, tolerância p.p.) de cada espécie fora da tolerância em σ da
+    binomial (`tolerancia`), ou que apareceu sem estar na enumeração / não apareceu estando com 100%; lista vazia =
+    bateu. Com p = 50% e n = 2000, σ = 1,1 p.p. e a tolerância fica em ±5,1 p.p.; com p = 1%, ±1,05 p.p."""
     fora = []
     for especie in set(esperado) | set(contagem):
         chance = esperado.get(especie, 0) / 10
-        freq = 100 * contagem.get(especie, 0) / n
-        if abs(chance - freq) > tolerancia_pp or (chance == 0) != (contagem.get(especie, 0) == 0):
-            fora.append((especie, chance, round(freq, 2)))
+        vezes = contagem.get(especie, 0)
+        freq = 100 * vezes / n
+        tol = tolerancia(chance, n, sigmas)
+        if abs(chance - freq) > tol or (chance == 0) != (vezes == 0) or (chance == 100 and vezes != n):
+            fora.append((especie, chance, round(freq, 2), round(tol, 2)))
     return fora
 
 

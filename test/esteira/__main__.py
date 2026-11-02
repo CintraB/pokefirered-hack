@@ -77,6 +77,7 @@ from esteira.scenarios.full_fisico_fada import run_full_fisico_fada  # POK-43, 4
 from esteira.scenarios.full_conquistas import run_full_conquistas  # POK-44
 from esteira.scenarios.full_revanches import run_full_revanches  # POK-42
 from esteira.scenarios.full_ia_chefes import run_full_ia_chefes  # POK-46
+from esteira.scenarios.full_dexnav import run_full_dexnav  # POK-47
 from esteira.scenarios.full_forest_brock import run_full_forest_brock
 from esteira.scenarios.full_master import run_full_master
 from esteira.scenarios.full_pc import run_full_pc
@@ -190,6 +191,7 @@ FULL_SCENARIOS: list[ScenarioSpec] = [
     ScenarioSpec("conquistas", run_full_conquistas, rom=TEST, save_from="captura"),  # POK-44
     ScenarioSpec("revanches", run_full_revanches, rom=TEST, save_from="captura"),  # POK-42
     ScenarioSpec("ia_chefes", run_full_ia_chefes, rom=TEST, save_from="captura"),  # POK-46
+    ScenarioSpec("dexnav", run_full_dexnav, rom=TEST, save_from="captura"),  # POK-47
     ScenarioSpec("novidades_inicial", run_full_novidades_first_offer, needs="abertura"),
 ]
 # Cenários do modo completo que o `assistir --cenario` mostra numa janela (ROM de teste, a
@@ -207,7 +209,8 @@ WATCH_FULL_SCENARIOS = ("evolucoes", "resumo_evolucao", "resumo_ivs", "ovo",
                         "fisico_fada",  # POK-43, 45
                         "conquistas",  # POK-44
                         "revanches",  # POK-42
-                        "ia_chefes")  # POK-46
+                        "ia_chefes",  # POK-46
+                        "dexnav")  # POK-47
 
 
 def scenarios_for(mode: str) -> list[ScenarioSpec]:

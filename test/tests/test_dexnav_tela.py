@@ -230,9 +230,13 @@ def test_chance_do_periodo_atual():
 def test_marcas_e_silhueta():
     fonte = _ler(TELA_C)
     linha = _corpo(fonte, "DesenharLinhaMon")
-    assert "FLAG_GET_CAUGHT" in fonte and "FLAG_GET_SEEN" in fonte
+    # a marca sai de MarcaDaEspecie (a mesma que o DexNav_TestGetState(7) devolve à esteira)
+    marca = _corpo(fonte, "MarcaDaEspecie")
+    assert "FLAG_GET_CAUGHT" in marca and "FLAG_GET_SEEN" in marca
     for icone in ("ICONE_CAPTURADO", "ICONE_VISTO", "ICONE_NUNCA_VISTO"):
-        assert icone in linha, icone
+        assert icone in marca, icone
+    assert "MarcaDaEspecie(e->species)" in linha and "BlitIcone(WIN_LISTA, marca, COL_MARCA_X" in linha
+    assert "MarcaDaEspecie(" in _corpo(fonte, "DexNav_TestGetState")
     assert "gText_DexNav_Desconhecido" in linha and "gSpeciesNames[" in linha
     icone = _corpo(fonte, "CriarIcone")
     assert "CreateMonIcon(" in icone and "TAG_SILHUETA" in icone and "oam.paletteNum" in icone

@@ -1728,6 +1728,17 @@ static bool8 FoiVisto(u16 species)
     return GetSetPokedexFlag(dex, FLAG_GET_CAUGHT) || GetSetPokedexFlag(dex, FLAG_GET_SEEN);
 }
 
+// A marca da linha de Pokémon (ICONE_CAPTURADO, _VISTO ou _NUNCA_VISTO), pela Pokédex; a esteira lê a mesma
+// (DexNav_TestGetState(7))
+static u8 MarcaDaEspecie(u16 species)
+{
+    u16 dex = SpeciesToNationalPokedexNum(species);
+
+    if (GetSetPokedexFlag(dex, FLAG_GET_CAUGHT))
+        return ICONE_CAPTURADO;
+    return GetSetPokedexFlag(dex, FLAG_GET_SEEN) ? ICONE_VISTO : ICONE_NUNCA_VISTO;
+}
+
 // As cores do texto da linha: fundo amarelo na selecionada (e o retângulo amarelo pintado), letra normal ou cinza
 static void CoresDaLinha(u8 *cor, bool8 selecionada, bool8 cinza, u16 y, u8 altura)
 {
@@ -1769,9 +1780,8 @@ static void DestruirIcones(struct DexNavTela *t)
 static void DesenharLinhaMon(struct DexNavTela *t, u16 linha, u16 y)
 {
     const struct DexNavEntry *e = &t->entries[t->linhas[linha].idx];
-    u16 dex = SpeciesToNationalPokedexNum(e->species);
-    bool8 capturado = GetSetPokedexFlag(dex, FLAG_GET_CAUGHT);
-    bool8 visto = capturado || GetSetPokedexFlag(dex, FLAG_GET_SEEN);
+    u8 marca = MarcaDaEspecie(e->species);
+    bool8 visto = marca != ICONE_NUNCA_VISTO;
     bool8 selecionada = linha == t->cursor;
     u8 cor[3], corNome[3], texto[12];
 
@@ -1780,8 +1790,7 @@ static void DesenharLinhaMon(struct DexNavTela *t, u16 linha, u16 y)
     corNome[1] = visto ? COR_TEXTO : COR_CINZA;
     corNome[2] = COR_SOMBRA;
 
-    BlitIcone(WIN_LISTA, capturado ? ICONE_CAPTURADO : (visto ? ICONE_VISTO : ICONE_NUNCA_VISTO), COL_MARCA_X,
-              y + LINHA_MARCA_DY);
+    BlitIcone(WIN_LISTA, marca, COL_MARCA_X, y + LINHA_MARCA_DY);
     AddTextPrinterParameterized4(WIN_LISTA, FONT_NORMAL, COL_NOME_X, y + LINHA_TEXTO_DY, 0, 0, corNome, TEXT_SKIP_DRAW,
                                  visto ? gSpeciesNames[e->species] : gText_DexNav_Desconhecido);
 
@@ -2107,6 +2116,9 @@ u32 DexNav_TestGetState(u8 what)
             return 0xFFFFFFFF;
         switch (t->linhas[t->cursor].tipo)
         {
+        case LINHA_MON:
+            return t->entries[idx].species | MarcaDaEspecie(t->entries[idx].species) << 16
+                 | (u32)t->entries[idx].method << 24;
         case LINHA_MAPA:
             return idx | DexNav_IsVisited(idx) << 8 | t->mapCapturados[idx] << 16 | (u32)t->mapTotal[idx] << 24;
         case LINHA_ESPECIE:

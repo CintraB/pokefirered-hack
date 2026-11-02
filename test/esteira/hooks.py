@@ -374,8 +374,8 @@ class Mailbox:
         busca), cursor, mapa; 1: pronta, abas (bits), mons, topo; 2: capturados/total do mapa e da aba; 3: extra
         ("+N"), períodos do extra, períodos de agora; 4: cursor e linhas que se escolhem (16 bits cada); 5: telas
         empilhadas, completos e total da região (lista); 6: espécie da busca e resultados (16 bits cada); 7: a linha
-        selecionada (lista: mapa, visitado, capturados, total; escolha: espécie e mapas; resultado: mapa, método,
-        períodos, visitado)."""
+        selecionada (mapa: espécie em baixo16, marca em c (0 capturado, 1 visto, 2 nunca visto) e método em d; lista:
+        mapa, visitado, capturados, total; escolha: espécie e mapas; resultado: mapa, método, períodos, visitado)."""
         if what not in range(8):
             raise ValueError(f"dexnav_tela: what = {what!r} fora de 0..7 (DexNav_TestGetState, include/dexnav.h)")
         raw = self.call(CMD_DEXNAV_STATE, what)
@@ -501,7 +501,7 @@ CMD_DEXNAV_ROLL = 0xE2      # arg0 = método (DEXNAV_METHOD_*), arg1 = N -> esp�
 CMD_DEXNAV_STATE = 0xE3     # arg0 = 0 -> modo | aba (DEXNAV_TAB_*) << 8 | cursor << 16 | índice do mapa << 24; 1 -> entrada
                             # pronta | abas do mapa << 8 | Pokémon da aba << 16 | topo << 24; 2 -> capturados | total do
                             # mapa << 8 | capturados | total da aba << 16/24; 3 -> "+N" | períodos dele << 8 | períodos de
-                            # agora << 16 (0xFFFFFFFF = tela fechada)
+                            # agora << 16; 4-7: Mailbox.dexnav_tela (0xFFFFFFFF = tela fechada)
 CMD_OPEN_DEXNAV = 0xE4      # script de campo com `callnative DexNav_OpenFromScript` -> índice do mapa atual
-                            # (0xFFFFFFFF = mapa sem encontro: volta ao campo)
+                            # (0xFFFFFFFF = mapa sem encontro: a tela abre na lista, no último mapa com encontro visitado)
 DEXNAV_TAB_LAND, DEXNAV_TAB_WATER, DEXNAV_TAB_RODS, DEXNAV_TAB_ROCK = range(4)  # include/dexnav.h

@@ -157,7 +157,14 @@ def test_menu_start_com_oito_linhas_cabe():
     for n in (7, 8):
         altura_tiles = 2 * min(n, linhas_cheias) - 1
         passo_px = curto if n > linhas_cheias else normal
-        assert (n - 1) * passo_px + 14 - 1 <= altura_tiles * 8, f"{n} linhas: a última sai da janela"
+        janela_px = altura_tiles * 8
+        topo_ultima = (n - 1) * passo_px
+        # as 13 linhas de cima do glifo (y = topo .. topo + 12) da última linha cabem na janela (y < janela_px)
+        assert topo_ultima + 13 - 1 < janela_px, f"{n} linhas: a última sai da janela"
+        # a 14ª linha (y = topo + 13) é só a sombra das pernas (g, ç, y): com 8 linhas em 13 px ela cai em y = 104,
+        # fora da janela de 104 px, e é cortada; com 7 linhas em 15 px ela ainda cabe
+        sombra_cortada = topo_ultima + 13 >= janela_px
+        assert sombra_cortada == (n > linhas_cheias), f"{n} linhas: sombra em y = {topo_ultima + 13} de {janela_px}"
         assert 1 + altura_tiles + 1 <= 15, f"{n} linhas: a moldura pisa na barra de ajuda (linha 15)"
         assert base + 7 * altura_tiles <= 0x198, f"{n} linhas: os tiles invadem o diálogo"
     assert curto >= 13, "menos de 13 px: a linha de baixo apagaria a de cima além da sombra"
