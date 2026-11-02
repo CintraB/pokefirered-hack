@@ -268,7 +268,7 @@ WIDTH_RULES: list[Rule] = [
          _DIALOG + "; também na tela de nome (janela 0, src/naming_screen.c:752-755) e como mensagem de batalha "
          "(222 px, mais larga): vale a mais estreita"),
     Rule("data/text/save.inc", None, DIALOG_WIDTH_PX,
-         _DIALOG + "; PrintSaveTextWithFollowupFunc usa a janela 0 (src/start_menu.c:687-691)",
+         _DIALOG + "; PrintSaveTextWithFollowupFunc usa a janela 0 (src/start_menu.c:723-727)",
          box_lines=DIALOG_BOX_LINES),
     Rule("data/text/braille.inc", None, None,
          "braille: alfabeto próprio (tools/preproc/asm_file.cpp, mapa `encoding`) e janela de "
@@ -316,9 +316,67 @@ WIDTH_RULES: list[Rule] = [
            "test/tests/test_conquistas_tela.py::test_larguras_diario", font="small", lines=1)
       for label in ("gText_Diario_TempoTurnos", "gText_Diario_Time", "gText_Diario_Nivel", "gText_Diario_MvpUm",
                     "gText_Diario_MvpVarios")],
+    # POK-47: a tela do DexNav (src/dexnav.c), FONT_NORMAL em 1 linha (o rodapé em FONT_SMALL); as larguras saem das
+    # colunas fixas
+    *[Rule("src/strings.c", label + "$", 38, "aba do DexNav (jeito de encontrar ou região da lista): rótulo em x + "
+           "ABA_TEXTO_DX até antes da coroa em x + ABA_COROA_DX, menos 2 px (src/dexnav.c:177-178)", lines=1)
+      for label in ("gText_DexNav_AbaGrama", "gText_DexNav_AbaSurf", "gText_DexNav_AbaVaras", "gText_DexNav_AbaPedra",
+                    "gText_DexNav_RegiaoKanto", "gText_DexNav_RegiaoSevii")],
+    *[Rule("src/strings.c", label + "$", 218, "título de seção do DexNav (varas; jeitos na busca): x = SECAO_X até "
+           "SELECAO_FIM, menos o fio (src/dexnav.c:150-152)", lines=1)
+      for label in ("gText_DexNav_VaraVelha", "gText_DexNav_VaraBoa", "gText_DexNav_Supervara",
+                    "gText_DexNav_MetodoGrama", "gText_DexNav_MetodoSurfar", "gText_DexNav_MetodoPedra")],
+    Rule("src/strings.c", "gText_DexNav_Desconhecido$", 64, "nome do nunca visto na coluna do nome do DexNav: "
+         "COL_NOME_X, COL_NOME_LARGURA = 64 px (src/dexnav.c:89-90)", lines=1),
+    Rule("src/strings.c", "gText_DexNav_Nivel$", 20, "\"Nv.\" do DexNav: de COL_NIVEL_X até o nível mínimo de 3 "
+         "algarismos (18 px) alinhado à direita em COL_NIVEL_MIN_FIM (src/dexnav.c:93-94)", lines=1),
+    Rule("src/strings.c", "gText_DexNav_Completo$", 32, "\"100%\" do mapa completo no DexNav: no topo, alinhado à "
+         "direita em TOPO_CONTADOR_FIM, depois do período (TOPO_PERIODO_X + 56 + 4) (src/dexnav.c:160-162); na lista, "
+         "no contador de LST_CONTADOR_LARGURA = 32 px (src/dexnav.c:113-114)", lines=1),
+    *[Rule("src/strings.c", label + "$", 184, "linha extra do DexNav: x = COL_NOME_X até as setas em COL_SETA_X "
+           "(src/dexnav.c:89, src/dexnav.c:98)", lines=1)
+      for label in ("gText_DexNav_MaisNoite", "gText_DexNav_MaisDia", "gText_DexNav_MaisManha", "gText_DexNav_MaisTarde",
+                    "gText_DexNav_MaisTardeNoite", "gText_DexNav_MaisOutros")],
+    *[Rule("src/strings.c", label + "$", 232, "lista vazia do DexNav, centralizada na janela de 240 px "
+           "(src/dexnav.c:60)", lines=1)
+      for label in ("gText_DexNav_Nenhum", "gText_DexNav_BuscaVazia", "gText_DexNav_NenhumMapa")],
+    *[Rule("src/strings.c", label + "$", 232, "parte do rodapé do DexNav, FONT_SMALL em x = RODAPE_X (src/dexnav.c:184) "
+           "na janela de 240 px (src/dexnav.c:60); o rodapé montado de cada modo é medido em "
+           "test/tests/test_dexnav_tela.py::test_rodape_cabe", font="small", lines=1)
+      for label in ("gText_DexNav_RodapeSair", "gText_DexNav_RodapeVoltar", "gText_DexNav_RodapeAba",
+                    "gText_DexNav_RodapeRegiao", "gText_DexNav_RodapePagina", "gText_DexNav_RodapeMapas",
+                    "gText_DexNav_RodapeBusca", "gText_DexNav_RodapeAbrir", "gText_DexNav_RodapeBuscar")],
+    Rule("src/strings.c", "gText_DexNav_NenhumAgora$", 184, "aba sem Pokémon no período de agora: x = COL_NOME_X até "
+         "as setas em COL_SETA_X (src/dexnav.c:89, src/dexnav.c:98)", lines=1),
+    Rule("src/strings.c", "gText_DexNav_Interrogacao$", 32, "contador do mapa não visitado na lista do DexNav: alinhado "
+         "à direita em LST_CONTADOR_FIM, LST_CONTADOR_LARGURA = 32 px (src/dexnav.c:113-114); também no topo do mapa "
+         "sem espécie (Tanoby trancada), no lugar do \"100%\" (mesma largura)", lines=1),
+    *[Rule("src/strings.c", label + "$", 180, "título do topo do DexNav (lista e busca): x = TOPO_NOME_X, "
+           "TOPO_TITULO_LARGURA = 180 px, antes do contador (src/dexnav.c:159-164)", lines=1)
+      for label in ("gText_DexNav_MapasKanto", "gText_DexNav_MapasSevii", "gText_DexNav_BuscaTitulo")],
+    *[Rule("src/strings.c", label + "$", 56, "situação da espécie no topo da busca do DexNav: alinhada à direita em "
+           "TOPO_CONTADOR_FIM, TOPO_STATUS_LARGURA = 56 px (src/dexnav.c:162, src/dexnav.c:165)", lines=1)
+      for label in ("gText_DexNav_Capturado", "gText_DexNav_Visto")],
+    Rule("src/strings.c", "gText_DexNav_ColPokemon$", 70, "título da coluna do nome na escolha da busca do DexNav: de "
+         "ESC_NOME_X até o título dos mapas (ESC_MAPAS_FIM - ESC_MAPAS_LARGURA - 4) (src/dexnav.c:126-128)", lines=1),
+    Rule("src/strings.c", "gText_DexNav_ColMapas$", 30, "título da coluna dos mapas na escolha da busca do DexNav: "
+         "alinhado à direita em ESC_MAPAS_FIM, ESC_MAPAS_LARGURA = 30 px (src/dexnav.c:127-128)", lines=1),
+    Rule("src/strings.c", "gText_DexNav_ColMapa$", 120, "título da coluna do mapa no resultado da busca do DexNav: "
+         "RES_NOME_X, a largura do nome do mapa (DEXNAV_NAME_WIDTH = 120 px, include/dexnav.h:19; "
+         "src/dexnav.c:137)", lines=1),
+    Rule("src/strings.c", "gText_DexNav_ColChance$", 40, "título da coluna da chance no resultado da busca do DexNav: "
+         "alinhado à direita em RES_CHANCE_FIM (src/dexnav.c:138); test_colunas_busca_fixas confere que não encosta "
+         "no título do mapa", lines=1),
+    *[Rule("src/strings.c", label, 62, "horário (e o título da coluna) no resultado da busca do DexNav: "
+           "RES_HORARIO_X, RES_HORARIO_LARGURA = 62 px, antes das setas (src/dexnav.c:139-140)", lines=1)
+      for label in ("gText_DexNav_Horario", "gText_DexNav_ColHorario")],
     Rule("src/strings.c", None, None, "menus e janelas de dezenas de telas: a janela sai de onde cada rótulo "
          "é usado (esteira/janelas_uso.py, USAGE_RULES); texto sem uso no código fica sem medida", by_usage=True),
     # -- tabelas de texto --
+    # POK-47: nomes dos mapas do DexNav (gerados por tools/dexnav/gerar.py), na coluna de nome da lista de mapas
+    Rule("src/data/dexnav_mapas.h", "sDexNavNome_", 120,
+         "nome do mapa na lista do DexNav: DEXNAV_NAME_WIDTH = 120 px (include/dexnav.h:19), FONT_NORMAL, 1 linha; "
+         "impresso direto da tabela (alguns passam dos 20 bytes de gStringVar)", lines=1),
     Rule("src/data/text/quest_log.h", None, 30 * 8 - 2,
          "janela de descrição do Quest Log: DESC_WIN_WIDTH = DISPLAY_WIDTH / 8 = 30 tiles (src/quest_log.c:40,163), "
          "texto em x = 2 (src/quest_log.c:1039)"),

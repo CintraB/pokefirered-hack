@@ -361,6 +361,41 @@ class Mailbox:
         assert raw != NO_RESULT, f"SET_TRAINER_ITEMS recusado: {itens}"
         return raw
 
+    # --- atalhos da tela do DexNav (POK-47) ---------------------------------------------
+    def open_dexnav(self) -> int | None:
+        """Abre o DexNav no mapa atual, de um script de campo (`callnative`); devolve o índice do mapa (None = mapa
+        sem encontro: a tela abre na lista de mapas). A tela monta nos quadros seguintes: espere
+        `dexnav_tela(1)["pronta"]`."""
+        raw = self.call(CMD_OPEN_DEXNAV)
+        return None if raw == NO_RESULT else raw
+
+    def dexnav_tela(self, what: int = 0) -> dict | None:
+        """Estado da tela do DexNav (None = fechada). what 0: modo, aba (no modo mapa; a região na lista; o passo na
+        busca), cursor, mapa; 1: pronta, abas (bits), mons, topo; 2: capturados/total do mapa e da aba; 3: extra
+        ("+N"), períodos do extra, períodos de agora; 4: cursor e linhas que se escolhem (16 bits cada); 5: telas
+        empilhadas, completos e total da região (lista); 6: espécie da busca e resultados (16 bits cada); 7: a linha
+        selecionada (mapa: espécie em baixo16, marca em c (0 capturado, 1 visto, 2 nunca visto) e método em d; lista:
+        mapa, visitado, capturados, total; escolha: espécie e mapas; resultado: mapa, método, períodos e em d o
+        visitado (bit 0) e os períodos do horário mostrado (d >> 4))."""
+        if what not in range(8):
+            raise ValueError(f"dexnav_tela: what = {what!r} fora de 0..7 (DexNav_TestGetState, include/dexnav.h)")
+        raw = self.call(CMD_DEXNAV_STATE, what)
+        if raw == NO_RESULT:
+            return None
+        b = [raw & 0xFF, raw >> 8 & 0xFF, raw >> 16 & 0xFF, raw >> 24 & 0xFF]
+        nomes = (("modo", "aba", "cursor", "mapa"), ("pronta", "abas", "mons", "topo"),
+                 ("capturados_mapa", "total_mapa", "capturados_aba", "total_aba"),
+                 ("extra", "periodos_extra", "periodos", "_"), None, ("pilha", "completos", "total", "_"), None,
+                 ("a", "b", "c", "d"))[what]
+        if what == 4:
+            return {"cursor": raw & 0xFFFF, "linhas": raw >> 16}
+        if what == 6:
+            return {"especie": raw & 0xFFFF, "resultados": raw >> 16}
+        d = dict(zip(nomes, b))
+        if what == 7:
+            d["baixo16"], d["alto16"] = raw & 0xFFFF, raw >> 16
+        return d
+
 # --- Hack 6: breeding genético (enum à parte em include/test_hooks.h, a partir de 0x60; ------
 # o uso fica em esteira/breeding.py e scenarios/full_breeding.py / full_egg.py)
 CMD_BREED_SETUP = 0x60      # gTestBreedSetup -> creche (arg0 = 1: ovo pendente) -> compatibilidade (0xFFFFFFFF = pai inválido)
@@ -455,3 +490,19 @@ CMD_SET_TRAINER_ITEMS = 0xD3  # arg0 = item1 | item2 << 16, arg1 = item3 | item4
                               # item fora de ITEM_POTION..LAST_BERRY_INDEX)
 SMART_AI_ATTACK, SMART_AI_SWITCH, SMART_AI_ITEM = 0, 1, 2  # include/battle_ai_smart.h
 AI_NAO_CHEFE = 0xFFFFFFFE
+
+# --- POK-47: DexNav (enum à parte, a partir de 0xE0; leitura em esteira/dexnav.py) ---
+CMD_DEXNAV_ENTRY = 0xE0     # arg0 = índice do mapa (gDexNavMaps), arg1 = índice da entrada -> espécie | método << 16
+                            # | períodos << 24 (0xFFFFFFFF = depois da última entrada ou mapa inválido)
+CMD_DEXNAV_RATE = 0xE1      # arg0 = índice do mapa, arg1 = entrada | período << 8 (0 manhã, 1 tarde, 2 noite, 3 tarde-noite:
+                            # média da tarde e da noite) -> chance x 10 | nível mín << 16 | nível máx << 24
+CMD_DEXNAV_ROLL = 0xE2      # arg0 = método (DEXNAV_METHOD_*), arg1 = N -> espécies distintas: o gerador real do mapa atual
+                            # N vezes, sem batalha; contagem em gTestText como (u16 espécie, u16 vezes) até espécie 0
+                            # (0xFFFFFFFF = o mapa não tem essa tabela ou método inválido)
+CMD_DEXNAV_STATE = 0xE3     # arg0 = 0 -> modo | aba (DEXNAV_TAB_*) << 8 | cursor << 16 | índice do mapa << 24; 1 -> entrada
+                            # pronta | abas do mapa << 8 | Pokémon da aba << 16 | topo << 24; 2 -> capturados | total do
+                            # mapa << 8 | capturados | total da aba << 16/24; 3 -> "+N" | períodos dele << 8 | períodos de
+                            # agora << 16; 4-7: Mailbox.dexnav_tela (0xFFFFFFFF = tela fechada)
+CMD_OPEN_DEXNAV = 0xE4      # script de campo com `callnative DexNav_OpenFromScript` -> índice do mapa atual
+                            # (0xFFFFFFFF = mapa sem encontro: a tela abre na lista, no último mapa com encontro visitado)
+DEXNAV_TAB_LAND, DEXNAV_TAB_WATER, DEXNAV_TAB_RODS, DEXNAV_TAB_ROCK = range(4)  # include/dexnav.h

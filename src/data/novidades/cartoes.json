@@ -410,6 +410,11 @@
           "title": "Chefes mais espertos",
           "body": "Líderes, Elite 4, rival e as revanches do\nNível 80 para cima trocam de Pokémon antes\ndo seu golpe super efetivo, escolhem melhor\nquem entra e usam poções e curas na hora\ncerta.",
           "itemId": "ITEM_FULL_RESTORE"
+        },
+        {
+          "title": "DexNav",
+          "body": "No menu START (ou no SELECT, registrando o\nitem): os Pokémon de cada lugar por jeito de\nencontrar, chance real, níveis e o que falta\ncapturar. SELECT mapas mostra o progresso;\nSTART busca diz onde achar um Pokémon visto.",
+          "itemId": "ITEM_DEXNAV"
         }
       ]
     },

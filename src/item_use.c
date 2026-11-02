@@ -5,6 +5,7 @@
 #include "berry_powder.h"
 #include "bike.h"
 #include "coins.h"
+#include "dexnav.h"
 #include "event_data.h"
 #include "event_scripts.h"
 #include "field_effect.h"
@@ -69,6 +70,8 @@ static void UseTownMapFromBag(void);
 static void Task_UseTownMapFromField(u8 taskId);
 static void UseFameCheckerFromBag(void);
 static void Task_UseFameCheckerFromField(u8 taskId);
+static void OpenDexNavFromBag(void);
+static void Task_OpenDexNavFromField(u8 taskId);
 static void Task_BattleUse_StatBooster_DelayAndPrint(u8 taskId);
 static void Task_BattleUse_StatBooster_WaitButton_ReturnToBattle(u8 taskId);
 
@@ -790,6 +793,38 @@ static void Task_UseFameCheckerFromField(u8 taskId)
         CleanupOverworldWindowsAndTilemaps();
         SetFieldCallback2ForItemUse();
         UseFameChecker(CB2_ReturnToField);
+        DestroyTask(taskId);
+    }
+}
+
+// POK-47: DexNav, no molde do Arquivo Fama. Da bolsa, a tela volta à bolsa (mesmo bolso e posição); do SELECT, ao campo.
+void FieldUseFunc_DexNav(u8 taskId)
+{
+    if (gTasks[taskId].data[3] == 0)
+    {
+        ItemMenu_SetExitCallback(OpenDexNavFromBag);
+        ItemMenu_StartFadeToExitCallback(taskId);
+    }
+    else
+    {
+        StopPokemonLeagueLightingEffectTask();
+        FadeScreen(FADE_TO_BLACK, 0);
+        gTasks[taskId].func = Task_OpenDexNavFromField;
+    }
+}
+
+static void OpenDexNavFromBag(void)
+{
+    DexNav_Open(CB2_BagMenuFromStartMenu);
+}
+
+static void Task_OpenDexNavFromField(u8 taskId)
+{
+    if (!gPaletteFade.active)
+    {
+        CleanupOverworldWindowsAndTilemaps();
+        SetFieldCallback2ForItemUse();
+        DexNav_Open(CB2_ReturnToField);
         DestroyTask(taskId);
     }
 }

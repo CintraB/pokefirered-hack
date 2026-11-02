@@ -18,6 +18,9 @@
 #include "constants/items.h"
 // Hack 7 — frente B
 #include "day_night.h"
+// POK-47 (DexNav)
+#include "dexnav.h"
+#include "field_specials.h"
 
 #define MAX_ENCOUNTER_RATE 1600
 
@@ -908,6 +911,254 @@ static void AddToWildEncounterRateBuff(u8 encounterRate)
     else
         sWildEncounterData.encounterRateBuff = 0;
 }
+
+// POK-47 DexNav: todos os resultados possíveis de um mapa, para a tela, a busca e os testes. Segue as regras do
+// encontro real (GetCurrentMapWildMonHeaderId, TryGenerateWildMon, GenerateFishingEncounter) com as mesmas tabelas,
+// sem sortear nada e sem mexer naquelas funções (a ordem dos sorteios do jogo fica igual):
+// - chance de cada slot = a faixa dele nos limites acumulados ENCOUNTER_CHANCE_* (todos somam 100: x 10 = por mil);
+// - grama: a espécie do slot em cada período pela tabela por horário (Hack 7), com o nível do slot do FRLG; a
+//   tarde-noite sorteia entre a tarde e a noite e não tem coluna (DexNav_RateForPeriods tira a média);
+// - metade LeafGreen (Hack 8): quando a espécie do slot (já pelo horário) é a do FireRed e o slot tem gêmeo em
+//   gWildLeafGreenSwaps, metade da chance vai para cada linha, cada uma com os níveis dela;
+// - Caverna Mutante: a tabela do conjunto atual (VAR_ALTERING_CAVE_WILD_SET dentro dela; de fora, o conjunto do
+//   dia que a var recebe ao entrar; fora da faixa vale 0);
+// - câmara de Tanoby antes de FLAG_SYS_UNLOCKED_TANOBY_RUINS: nada (o jogo não tem encontro lá).
+STATIC_ASSERT(ENCOUNTER_CHANCE_LAND_MONS_TOTAL == 100, DexNavChancesDaGramaSomam100);
+STATIC_ASSERT(ENCOUNTER_CHANCE_WATER_MONS_TOTAL == 100, DexNavChancesDaAguaSomam100);
+STATIC_ASSERT(ENCOUNTER_CHANCE_FISHING_MONS_OLD_ROD_TOTAL == 100, DexNavChancesDaVaraVelhaSomam100);
+STATIC_ASSERT(ENCOUNTER_CHANCE_FISHING_MONS_GOOD_ROD_TOTAL == 100, DexNavChancesDaVaraBoaSomam100);
+STATIC_ASSERT(ENCOUNTER_CHANCE_FISHING_MONS_SUPER_ROD_TOTAL == 100, DexNavChancesDaSuperVaraSomam100);
+
+#define DEXNAV_SLOT_RATE(limit, previous) ((limit) - (previous))
+
+// ChooseWildMonIndex_Land
+static const u8 sDexNavLandRates[LAND_WILD_COUNT] = {
+    ENCOUNTER_CHANCE_LAND_MONS_SLOT_0,
+    DEXNAV_SLOT_RATE(ENCOUNTER_CHANCE_LAND_MONS_SLOT_1, ENCOUNTER_CHANCE_LAND_MONS_SLOT_0),
+    DEXNAV_SLOT_RATE(ENCOUNTER_CHANCE_LAND_MONS_SLOT_2, ENCOUNTER_CHANCE_LAND_MONS_SLOT_1),
+    DEXNAV_SLOT_RATE(ENCOUNTER_CHANCE_LAND_MONS_SLOT_3, ENCOUNTER_CHANCE_LAND_MONS_SLOT_2),
+    DEXNAV_SLOT_RATE(ENCOUNTER_CHANCE_LAND_MONS_SLOT_4, ENCOUNTER_CHANCE_LAND_MONS_SLOT_3),
+    DEXNAV_SLOT_RATE(ENCOUNTER_CHANCE_LAND_MONS_SLOT_5, ENCOUNTER_CHANCE_LAND_MONS_SLOT_4),
+    DEXNAV_SLOT_RATE(ENCOUNTER_CHANCE_LAND_MONS_SLOT_6, ENCOUNTER_CHANCE_LAND_MONS_SLOT_5),
+    DEXNAV_SLOT_RATE(ENCOUNTER_CHANCE_LAND_MONS_SLOT_7, ENCOUNTER_CHANCE_LAND_MONS_SLOT_6),
+    DEXNAV_SLOT_RATE(ENCOUNTER_CHANCE_LAND_MONS_SLOT_8, ENCOUNTER_CHANCE_LAND_MONS_SLOT_7),
+    DEXNAV_SLOT_RATE(ENCOUNTER_CHANCE_LAND_MONS_SLOT_9, ENCOUNTER_CHANCE_LAND_MONS_SLOT_8),
+    DEXNAV_SLOT_RATE(ENCOUNTER_CHANCE_LAND_MONS_SLOT_10, ENCOUNTER_CHANCE_LAND_MONS_SLOT_9),
+    DEXNAV_SLOT_RATE(ENCOUNTER_CHANCE_LAND_MONS_SLOT_11, ENCOUNTER_CHANCE_LAND_MONS_SLOT_10),
+};
+
+// ChooseWildMonIndex_WaterRock (surf e Quebra-Pedra usam os limites da água)
+static const u8 sDexNavWaterRockRates[WATER_WILD_COUNT] = {
+    ENCOUNTER_CHANCE_WATER_MONS_SLOT_0,
+    DEXNAV_SLOT_RATE(ENCOUNTER_CHANCE_WATER_MONS_SLOT_1, ENCOUNTER_CHANCE_WATER_MONS_SLOT_0),
+    DEXNAV_SLOT_RATE(ENCOUNTER_CHANCE_WATER_MONS_SLOT_2, ENCOUNTER_CHANCE_WATER_MONS_SLOT_1),
+    DEXNAV_SLOT_RATE(ENCOUNTER_CHANCE_WATER_MONS_SLOT_3, ENCOUNTER_CHANCE_WATER_MONS_SLOT_2),
+    DEXNAV_SLOT_RATE(ENCOUNTER_CHANCE_WATER_MONS_SLOT_4, ENCOUNTER_CHANCE_WATER_MONS_SLOT_3),
+};
+
+// ChooseWildMonIndex_Fishing: slots 0-1 Vara Velha, 2-4 Vara Boa, 5-9 Super Vara
+static const u8 sDexNavFishingRates[FISH_WILD_COUNT] = {
+    ENCOUNTER_CHANCE_FISHING_MONS_OLD_ROD_SLOT_0,
+    DEXNAV_SLOT_RATE(ENCOUNTER_CHANCE_FISHING_MONS_OLD_ROD_SLOT_1, ENCOUNTER_CHANCE_FISHING_MONS_OLD_ROD_SLOT_0),
+    ENCOUNTER_CHANCE_FISHING_MONS_GOOD_ROD_SLOT_2,
+    DEXNAV_SLOT_RATE(ENCOUNTER_CHANCE_FISHING_MONS_GOOD_ROD_SLOT_3, ENCOUNTER_CHANCE_FISHING_MONS_GOOD_ROD_SLOT_2),
+    DEXNAV_SLOT_RATE(ENCOUNTER_CHANCE_FISHING_MONS_GOOD_ROD_SLOT_4, ENCOUNTER_CHANCE_FISHING_MONS_GOOD_ROD_SLOT_3),
+    ENCOUNTER_CHANCE_FISHING_MONS_SUPER_ROD_SLOT_5,
+    DEXNAV_SLOT_RATE(ENCOUNTER_CHANCE_FISHING_MONS_SUPER_ROD_SLOT_6, ENCOUNTER_CHANCE_FISHING_MONS_SUPER_ROD_SLOT_5),
+    DEXNAV_SLOT_RATE(ENCOUNTER_CHANCE_FISHING_MONS_SUPER_ROD_SLOT_7, ENCOUNTER_CHANCE_FISHING_MONS_SUPER_ROD_SLOT_6),
+    DEXNAV_SLOT_RATE(ENCOUNTER_CHANCE_FISHING_MONS_SUPER_ROD_SLOT_8, ENCOUNTER_CHANCE_FISHING_MONS_SUPER_ROD_SLOT_7),
+    DEXNAV_SLOT_RATE(ENCOUNTER_CHANCE_FISHING_MONS_SUPER_ROD_SLOT_9, ENCOUNTER_CHANCE_FISHING_MONS_SUPER_ROD_SLOT_8),
+};
+
+// Primeiro slot de cada vara (DEXNAV_METHOD_OLD_ROD, _GOOD_ROD, _SUPER_ROD) e o fim
+static const u8 sDexNavRodFirstSlot[] = {0, 2, 5, FISH_WILD_COUNT};
+
+// Períodos da tabela por horário: só os que não sorteiam (rateX10[0..2])
+static const u8 sDexNavTimePeriods[DEXNAV_PERIOD_COUNT] = {TIME_MORNING, TIME_AFTERNOON, TIME_NIGHT};
+
+struct DexNavList
+{
+    struct DexNavEntry *out;
+    u8 count;
+    u8 max;
+};
+
+// UnlockedTanobyOrAreNotInTanoby para um mapa qualquer
+static bool8 DexNav_IsLockedTanobyChamber(u8 mapGroup, u8 mapNum)
+{
+    if (FlagGet(FLAG_SYS_UNLOCKED_TANOBY_RUINS))
+        return FALSE;
+    if (mapGroup != MAP_GROUP(MAP_SEVEN_ISLAND_TANOBY_RUINS_DILFORD_CHAMBER))
+        return FALSE;
+    return mapNum == MAP_NUM(MAP_SEVEN_ISLAND_TANOBY_RUINS_MONEAN_CHAMBER)
+        || mapNum == MAP_NUM(MAP_SEVEN_ISLAND_TANOBY_RUINS_LIPTOO_CHAMBER)
+        || mapNum == MAP_NUM(MAP_SEVEN_ISLAND_TANOBY_RUINS_WEEPTH_CHAMBER)
+        || mapNum == MAP_NUM(MAP_SEVEN_ISLAND_TANOBY_RUINS_DILFORD_CHAMBER)
+        || mapNum == MAP_NUM(MAP_SEVEN_ISLAND_TANOBY_RUINS_SCUFIB_CHAMBER)
+        || mapNum == MAP_NUM(MAP_SEVEN_ISLAND_TANOBY_RUINS_RIXY_CHAMBER)
+        || mapNum == MAP_NUM(MAP_SEVEN_ISLAND_TANOBY_RUINS_VIAPOIS_CHAMBER);
+}
+
+// GetCurrentMapWildMonHeaderId para um mapa qualquer (NULL = sem encontro agora)
+static const struct WildPokemonHeader *DexNav_GetWildHeader(u8 mapGroup, u8 mapNum)
+{
+    u32 i;
+
+    for (i = 0; gWildMonHeaders[i].mapGroup != MAP_GROUP(MAP_UNDEFINED); i++)
+    {
+        if (gWildMonHeaders[i].mapGroup == mapGroup && gWildMonHeaders[i].mapNum == mapNum)
+        {
+            if (mapGroup == MAP_GROUP(MAP_SIX_ISLAND_ALTERING_CAVE) && mapNum == MAP_NUM(MAP_SIX_ISLAND_ALTERING_CAVE))
+            {
+                u16 alteringCaveId;
+
+                // Dentro da caverna vale a var (o que o encontro usa); de fora, o conjunto que a var vai receber
+                // ao entrar (o script de entrada roda GetAlteringCaveSetForScript: um conjunto por dia, Hack 8)
+                if (gSaveBlock1Ptr->location.mapGroup == mapGroup && gSaveBlock1Ptr->location.mapNum == mapNum)
+                    alteringCaveId = VarGet(VAR_ALTERING_CAVE_WILD_SET);
+                else
+                    alteringCaveId = GetAlteringCaveSetForScript();
+                if (alteringCaveId >= NUM_ALTERING_CAVE_TABLES)
+                    alteringCaveId = 0;
+                i += alteringCaveId;
+            }
+            if (DexNav_IsLockedTanobyChamber(mapGroup, mapNum))
+                return NULL;
+            return &gWildMonHeaders[i];
+        }
+    }
+    return NULL;
+}
+
+// A linha LeafGreen do slot (GetLeafGreenSlotMon sem o sorteio), ou NULL
+static const struct WildPokemon *DexNav_GetLeafGreenTwin(const struct WildPokemonInfo *info, u8 slot)
+{
+#ifdef FIRERED
+    u32 i;
+
+    for (i = 0; i < gWildLeafGreenSwapsCount; i++)
+    {
+        if (gWildLeafGreenSwaps[i].info == info && gWildLeafGreenSwaps[i].slot == slot)
+            return &gWildLeafGreenSwaps[i].mon;
+    }
+#endif
+    return NULL;
+}
+
+// Soma uma linha (espécie e níveis) à entrada (espécie, método), criando-a no fim da lista se couber
+static void DexNav_AddResult(struct DexNavList *list, u16 species, u8 method, const struct WildPokemon *mon, u8 periods, u16 rateX10)
+{
+    struct DexNavEntry *entry = NULL;
+    u8 lo, hi;
+    u32 i;
+
+    for (i = 0; i < list->count; i++)
+    {
+        if (list->out[i].species == species && list->out[i].method == method)
+        {
+            entry = &list->out[i];
+            break;
+        }
+    }
+    if (entry == NULL)
+    {
+        if (list->count >= list->max)
+            return;
+        entry = &list->out[list->count++];
+        memset(entry, 0, sizeof(*entry));
+        entry->species = species;
+        entry->method = method;
+        entry->minLevel = 0xFF;
+    }
+    // como ChooseWildMonLevel: mínimo e máximo podem vir trocados na tabela
+    lo = min(mon->minLevel, mon->maxLevel);
+    hi = max(mon->minLevel, mon->maxLevel);
+    if (lo < entry->minLevel)
+        entry->minLevel = lo;
+    if (hi > entry->maxLevel)
+        entry->maxLevel = hi;
+    entry->periods |= periods;
+    for (i = 0; i < DEXNAV_PERIOD_COUNT; i++)
+    {
+        if (periods & (1 << i))
+            entry->rateX10[i] += rateX10;
+    }
+}
+
+// Um slot com a chance `rate` (%): `species` já é a do horário; a metade LeafGreen só quando ela é a do FireRed
+static void DexNav_AddSlot(struct DexNavList *list, const struct WildPokemonInfo *info, u8 slot, u16 species, u8 method, u8 periods, u8 rate)
+{
+    const struct WildPokemon *mon = &info->wildPokemon[slot];
+    const struct WildPokemon *lg = NULL;
+
+    if (species == mon->species)
+        lg = DexNav_GetLeafGreenTwin(info, slot);
+    if (lg != NULL)
+    {
+        DexNav_AddResult(list, mon->species, method, mon, periods, rate * 5);
+        DexNav_AddResult(list, lg->species, method, lg, periods, rate * 5);
+    }
+    else
+    {
+        DexNav_AddResult(list, species, method, mon, periods, rate * 10);
+    }
+}
+
+u8 DexNav_GetMapEntries(u8 mapIndex, struct DexNavEntry *out, u8 max)
+{
+    const struct WildPokemonHeader *header;
+    const struct WildPokemonInfo *info;
+    struct DexNavList list;
+    u8 mapGroup, mapNum, rod, slot, p;
+    u16 species;
+
+    if (mapIndex >= DEXNAV_MAP_COUNT)
+        return 0;
+    mapGroup = gDexNavMaps[mapIndex].mapGroup;
+    mapNum = gDexNavMaps[mapIndex].mapNum;
+    header = DexNav_GetWildHeader(mapGroup, mapNum);
+    if (header == NULL)
+        return 0;
+    list.out = out;
+    list.count = 0;
+    list.max = max;
+
+    info = header->landMonsInfo;
+    if (info != NULL)
+    {
+        for (p = 0; p < DEXNAV_PERIOD_COUNT; p++)
+        {
+            for (slot = 0; slot < LAND_WILD_COUNT; slot++)
+            {
+                species = GetTimeOfDayLandSpecies(mapGroup, mapNum, slot, sDexNavTimePeriods[p], info->wildPokemon[slot].species);
+                DexNav_AddSlot(&list, info, slot, species, DEXNAV_METHOD_LAND, 1 << p, sDexNavLandRates[slot]);
+            }
+        }
+    }
+    info = header->waterMonsInfo;
+    if (info != NULL)
+    {
+        for (slot = 0; slot < WATER_WILD_COUNT; slot++)
+            DexNav_AddSlot(&list, info, slot, info->wildPokemon[slot].species, DEXNAV_METHOD_WATER, DEXNAV_PERIOD_ALL, sDexNavWaterRockRates[slot]);
+    }
+    info = header->fishingMonsInfo;
+    if (info != NULL)
+    {
+        for (rod = 0; rod < 3; rod++)
+        {
+            for (slot = sDexNavRodFirstSlot[rod]; slot < sDexNavRodFirstSlot[rod + 1]; slot++)
+                DexNav_AddSlot(&list, info, slot, info->wildPokemon[slot].species, DEXNAV_METHOD_OLD_ROD + rod, DEXNAV_PERIOD_ALL, sDexNavFishingRates[slot]);
+        }
+    }
+    info = header->rockSmashMonsInfo;
+    if (info != NULL)
+    {
+        for (slot = 0; slot < ROCK_WILD_COUNT; slot++)
+            DexNav_AddSlot(&list, info, slot, info->wildPokemon[slot].species, DEXNAV_METHOD_ROCK, DEXNAV_PERIOD_ALL, sDexNavWaterRockRates[slot]);
+    }
+    return list.count;
+}
+// POK-47 DexNav: fim
 
 // Hack 7 — frente B: test hook, the species a land slot gives in a period (the FRLG species
 // of the slot when the map has no time table; 0xFFFFFFFF = no land table at all)

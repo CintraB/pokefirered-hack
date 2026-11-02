@@ -33,6 +33,7 @@
 #include "event_scripts.h"
 #include "day_night.h"
 #include "conquistas.h"
+#include "dexnav.h"
 
 // this file's functions
 static void ResetMiniGamesResults(void);
@@ -145,6 +146,8 @@ void NewGameInitData(void)
     ClearBag();
     NewGameInitPCItems();
     GivePortablePcIfMissing();
+    GiveDexNavIfMissing(); // POK-47
+    DexNav_InitSave(); // POK-47: nenhum mapa visitado, com o marcador
     ClearEnigmaBerries();
     InitEasyChatPhrases();
     ResetTrainerFanClub();
@@ -171,4 +174,11 @@ void GivePortablePcIfMissing(void)
 {
     if (!CheckBagHasItem(ITEM_PORTABLE_PC, 1))
         AddBagItem(ITEM_PORTABLE_PC, 1);
+}
+
+// POK-47: o DexNav também (o item é o registro no SELECT; o menu Start abre o DexNav mesmo sem ele na bolsa)
+void GiveDexNavIfMissing(void)
+{
+    if (!CheckBagHasItem(ITEM_DEXNAV, 1))
+        AddBagItem(ITEM_DEXNAV, 1);
 }

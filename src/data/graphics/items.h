@@ -431,6 +431,7 @@ const u32 gItemIconPalette_DestinyKnot[] = INCBIN_U32("graphics/items/icon_palet
 const u32 gItemIcon_PrismScale[] = INCBIN_U32("graphics/items/icons/prism_scale.4bpp.lz");
 const u32 gItemIconPalette_PrismScale[] = INCBIN_U32("graphics/items/icon_palettes/prism_scale.gbapal.lz");
 const u32 gItemIconPalette_Incubator[] = INCBIN_U32("graphics/items/icon_palettes/incubator.gbapal.lz");
+const u32 gItemIconPalette_DexNav[] = INCBIN_U32("graphics/items/icon_palettes/dexnav.gbapal.lz");
 const u32 gItemIcon_PowerItem[] = INCBIN_U32("graphics/items/icons/power_item.4bpp.lz");
 const u32 gItemIconPalette_PowerWeight[] = INCBIN_U32("graphics/items/icon_palettes/power_weight.gbapal.lz");
 const u32 gItemIconPalette_PowerBracer[] = INCBIN_U32("graphics/items/icon_palettes/power_bracer.gbapal.lz");

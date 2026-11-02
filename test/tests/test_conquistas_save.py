@@ -22,6 +22,8 @@ NEW_GAME_C = REPO_ROOT / "src" / "new_game.c"
 RULES_MK = REPO_ROOT / "json_data_rules.mk"
 
 AREAS = {"SaveBlock1": ("unused_348C", "conquistas"), "SaveBlock2": ("filler_B20", "diario")}
+# Áreas livres que hacks posteriores ocuparam no mesmo offset (nome na base -> nome atual)
+RENOMEADOS_DEPOIS = {"SaveBlock1": {"unused_3A94": "dexNav"}, "SaveBlock2": {}}  # POK-47
 
 
 def _campos(texto: str, struct_nome: str) -> dict[str, int]:
@@ -45,6 +47,7 @@ def test_offsets_iguais_a_base(global_base, bloco):
     antigo, novo = AREAS[bloco]
     base = _campos(global_base, bloco)
     atual = _campos(GLOBAL_H.read_text(encoding="utf-8"), bloco)
+    base = {RENOMEADOS_DEPOIS[bloco].get(nome, nome): off for nome, off in base.items()}
     assert base.pop(antigo) == atual.pop(novo)
     assert atual == base
 

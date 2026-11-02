@@ -9,9 +9,9 @@ a Pokédex inteira obtível e uma esteira de testes automática no emulador.**
 ![Idioma](https://img.shields.io/badge/idioma-PT--BR-009c3b?style=flat-square)
 ![Base](https://img.shields.io/badge/base-pret%2Fpokefirered-e3350d?style=flat-square)
 ![Linguagem](https://img.shields.io/badge/C-agbcc-555555?style=flat-square)
-![Testes](https://img.shields.io/badge/pytest-4743%20testes-2ea44f?style=flat-square)
-![Esteira](https://img.shields.io/badge/esteira-473%20checagens-2ea44f?style=flat-square)
-![Versão](https://img.shields.io/badge/ROM-v51-informational?style=flat-square)
+![Testes](https://img.shields.io/badge/pytest-4808%20testes-2ea44f?style=flat-square)
+![Esteira](https://img.shields.io/badge/esteira-496%20checagens-2ea44f?style=flat-square)
+![Versão](https://img.shields.io/badge/ROM-v52-informational?style=flat-square)
 
 <img src="docs/readme/inicial.png" width="240" alt="Escolha do inicial em português">
 <img src="docs/readme/chuva.png" width="240" alt="Batalha com chuva contínua">
@@ -61,6 +61,7 @@ perder o jeito do FireRed.
 | 🛠️ | **Melhorias modernas** | Exp. Share para todos, PC Portátil, HMs sem ensinar, status com L/R… |
 | 🏆 | **Conquistas e diário** | 41 conquistas com prêmio na bolsa e o diário das batalhas marcantes, no Cartão de Treinador. |
 | 🔝 | **Revanches por degrau** | Depois do Hall da Fama, a Elite 4 e as revanches do Explorador VS sobem até o nível 100. |
+| 🧭 | **DexNav** | Os Pokémon de cada lugar, com a chance real, o que falta capturar e onde achar cada um. |
 | 🗞️ | **Tela de novidades** | O Prof. Carvalho apresenta cada mudança em cartões ilustrados. |
 | 🧪 | **Esteira de testes** | Toda ROM é jogada no emulador e testada antes de existir. |
 
@@ -135,6 +136,22 @@ perder o jeito do FireRed.
 
 <p align="center">
 <img src="docs/readme/revanche_lista.png" width="240" alt="A guarda da Liga com a lista de níveis">
+</p>
+</details>
+
+<details open>
+<summary><b>🧭 DexNav</b></summary>
+
+| | |
+|---|---|
+| **Como abrir** | Linha **DEXNAV** no menu START, logo abaixo da Pokédex. O item-chave DexNav (já vem na bolsa, e um save antigo ganha ao CONTINUAR) também abre pela bolsa e pode ser registrado no **SELECT**. |
+| **O mapa de agora** | Os Pokémon do lugar em abas por jeito de encontrar (**GRAMA**, **SURFAR**, **VARAS** com as três varas e **PEDRA**, do Esmaga Pedra; **L/R** trocam a aba): ícone, ● capturado, ◐ visto ou ? nunca visto (silhueta e "??????"), a chance de aparecer e os níveis, em colunas alinhadas. A chance é a de verdade: horário, metade LeafGreen e Caverna Mutante incluídos. |
+| **Progresso** | O topo mostra quantas espécies do mapa você já capturou (`1/4`), contando todos os horários; a lista mostra as de agora e uma linha "+N à noite" (ou de dia, de manhã) para as que só aparecem em outro horário. Aba completa ganha coroa; mapa completo, **100%** com coroa. |
+| **SELECT mapas** | Todos os 124 mapas com encontro (um por andar), de Kanto e das Ilhas Sevii (**L/R**), com barra de progresso e o total de mapas completos. **A** abre qualquer mapa já visitado; o que você ainda não visitou fica como `?/?`. |
+| **START busca** | Escolha um Pokémon que você já viu e veja onde ele aparece, com jeito, chance e horário (primeiro os que aparecem agora; os de outro horário em cinza, com a chance do horário em que ele mais aparece). **A** abre o mapa visitado na aba do jeito, já na linha dele se ele aparece agora (senão ele está na linha "+N"). |
+
+<p align="center">
+<img src="docs/readme/dexnav_mapa.png" width="240" alt="DexNav na Rota 1: Pidgey capturado, Rattata visto, um nunca visto e +1 à noite">
 </p>
 </details>
 
@@ -259,6 +276,7 @@ perder o jeito do FireRed.
 | **Conquistas e diário** (31/10) | 41 conquistas com prêmio e aviso, save antigo reconhecido e o diário das batalhas marcantes. |
 | **Revanches por degrau** (31/10) | A guarda da Liga escolhe o nível (Normal a 100) da Elite 4, do Campeão e das revanches do Explorador VS: times de 6, item, IVs altos e a IA dos chefes. |
 | **Chefes mais espertos** (31/10) | Os chefes trocam antes do golpe super efetivo, escolhem melhor quem entra e usam poções e curas na hora certa; treinador comum igual. |
+| **DexNav** (01/11) | Os Pokémon de cada mapa por jeito de encontrar, com a chance real, marcas da Pokédex e progresso; a lista dos 124 mapas e a busca por Pokémon. No menu START e no SELECT. |
 
 ## Esteira de testes
 
@@ -284,7 +302,7 @@ flowchart LR
   comparadas pixel a pixel com as referências aprovadas de cada um.
 - **Checagem de texto**: mede a largura de cada frase traduzida na janela onde ela aparece e o
   tamanho dos buffers, para nada estourar.
-- **4743 testes em pytest** cobrem a própria esteira e as regras de cada hack.
+- **4808 testes em pytest** cobrem a própria esteira e as regras de cada hack.
 
 <details>
 <summary>Comandos (WSL)</summary>

@@ -1413,7 +1413,7 @@ DECLARED: list[Declared] = [
              BufRef("clockText", "src/start_menu.c", "DrawStartMenuClockWindow"),
              (Fixed(5, "HH:MM"), Fixed(1, "espaço"), Text("gText_DayNight_PeriodName")),
              why="relógio do menu Start: clockText[DAY_NIGHT_CLOCK_TEXT_SIZE] = hora + espaço + período "
-                 "(src/day_night.c:96-104, src/start_menu.c:297-307)"),
+                 "(src/day_night.c:96-104, src/start_menu.c:312-322)"),
     Declared("src/day_night.c", "DayNight_FieldUpdate", r".*",
              BufRef("mapName", "src/map_name_popup.c", "MapNamePopupPrintMapNameOnWindow"),
              why="aviso de período (Hack 7): ShowFieldMessagePopup guarda o ponteiro (src/map_name_popup.c:241-247) e o "
@@ -1568,7 +1568,7 @@ DECLARED: list[Declared] = [
     Declared("src/save_menu_util.c", "SaveStatToString", r".*", BufRef("gStringVar4"),
              (Fixed(6, "cores"), Mapsec()),
              why="lugar na janela de salvar: gStringVar4 = cores + nome do lugar (src/save_menu_util.c:14-42, "
-                 "src/start_menu.c:1032)"),
+                 "src/start_menu.c:1068)"),
     Declared("src/shop.c", r"BuyMenuBuildListMenuTemplate|PokeMartWriteNameAndIdAt", r".*",
              BufRef("sShopMenuItemStrings", "src/shop.c"),
              why="lista da loja: sShopMenuItemStrings[i] ([ITEM_NAME_LENGTH]) com o nome do item ou "
@@ -1645,6 +1645,11 @@ DECLARED: list[Declared] = [
              why="detalhe do diário montado em gStringVar4[1000]: nome (até 11 bytes) + gText_Diario_Separador + local (até "
                  "25 bytes), e gText_Diario_TempoTurnos com \"hh:mm\" (até 8 bytes) e turnos (3); as larguras são medidas em "
                  "test/tests/test_conquistas_tela.py::test_larguras_diario"),
+    # POK-47, Task 3
+    Declared("src/dexnav.c", "JuntarRodape", r".*", BufRef("gStringVar4"),
+             why="rodapé do DexNav montado por partes em gStringVar4[1000] (DesenharRodape passa gStringVar4): no "
+                 "máximo 4 partes curtas (\"SELECT mapas\"...) e 3 separadores, menos de 60 bytes; a largura montada é "
+                 "medida em test/tests/test_dexnav_tela.py::test_rodape_cabe"),
 ]
 
 
