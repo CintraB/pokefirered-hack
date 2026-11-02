@@ -2246,6 +2246,9 @@ void LoadSpecialObjectReflectionPalette(u16 tag, u8 slot)
     {
         if (gSpecialObjectReflectionPaletteSets[i].tag == tag)
         {
+            // POK-48: o reflexo vai gravar no slot do seguidor (um script mostrou o Seagallop/Meteorito): ele sai
+            if (gReflectionEffectPaletteMap[slot] == PALSLOT_FOLLOWER)
+                Follower_Remove();
             PatchObjectPalette(gSpecialObjectReflectionPaletteSets[i].data[sCurrentReflectionType], gReflectionEffectPaletteMap[slot]);
             return;
         }
@@ -2267,8 +2270,10 @@ static bool8 SpecialPaletteWritesFollowerSlot(u16 tag)
     return FALSE;
 }
 
-// POK-48: algum objeto do mapa (qualquer template, mesmo escondido por flag: um script pode mostrá-lo) ou a paleta
-// especial já carregada escreve no slot do seguidor (Seagallop e Meteorito: o reflexo deles vai para o slot 11)
+// POK-48: algum objeto visível do mapa (template sem a flag de esconder, a regra do spawn dos NPCs) ou a paleta
+// especial já carregada escreve no slot do seguidor (Seagallop e Meteorito: o reflexo deles vai para o slot 11). Um
+// objeto escondido que um script mostra depois (o Seagallop da cena do Bill em Cinnabar) tira o seguidor na hora, em
+// LoadSpecialObjectReflectionPalette.
 bool8 IsFollowerPaletteSlotInUse(void)
 {
     const struct ObjectEventGraphicsInfo *graphicsInfo;
@@ -2280,6 +2285,8 @@ bool8 IsFollowerPaletteSlotInUse(void)
         return FALSE;
     for (i = 0; i < gMapHeader.events->objectEventCount && i < OBJECT_EVENT_TEMPLATES_COUNT; i++)
     {
+        if (FlagGet(gSaveBlock1Ptr->objectEventTemplates[i].flagId))
+            continue;
         graphicsInfo = GetObjectEventGraphicsInfo(gSaveBlock1Ptr->objectEventTemplates[i].graphicsId);
         if (graphicsInfo->paletteSlot == PALSLOT_NPC_SPECIAL && SpecialPaletteWritesFollowerSlot(graphicsInfo->paletteTag))
             return TRUE;

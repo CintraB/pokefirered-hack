@@ -19,7 +19,9 @@ Task 3 faz o passo); os pontos daqui não o fazem andar.
   `seguidor_noite`);
 - `seguidor/paleta_especial`: no cais do S.S. Anne, a paleta do navio (slot 10) e a do seguidor (slot 11) são as do
   ROM, ao mesmo tempo (foto `seguidor_paleta_especial`); no porto da Ilha Um (o Seagallop usa o slot 11 para o
-  reflexo) o seguidor não aparece.
+  reflexo) o seguidor não aparece;
+- `seguidor/cinnabar`: em Cinnabar o Seagallop do mapa só aparece na cena do Bill (FLAG_HIDE_CINNABAR_SEAGALLOP): com
+  ele escondido, o seguidor existe atrás do jogador, com a paleta do ROM, 1 objeto (foto `seguidor_cinnabar`).
 
 As telas `seguidor_*` são novas: ficam para a aprovação do Cintra (Task 5).
 
@@ -46,13 +48,14 @@ ROUTE1_SOUTH = ("MAP_ROUTE1", (12, 35))     # x 12 livre até o fim da Rota 1 e 
 BORDER_STEPS = 11                           # 4 na Rota 1 + 7 em Pallet (até y 6): seguidor a 12 tiles
 SS_ANNE_DOCK = ("MAP_SSANNE_EXTERIOR", (32, 12))   # o navio (30, 16) na tela
 SEAGALLOP_HARBOR = ("MAP_ONE_ISLAND_HARBOR", (8, 3))
+CINNABAR = ("MAP_CINNABAR_ISLAND", (10, 14))   # o Seagallop do mapa fica escondido (FLAG_HIDE_CINNABAR_SEAGALLOP)
 DIR_SOUTH = 1
 PALSLOT_FOLLOWER, PALSLOT_NPC_SPECIAL = 11, 10
 PLTT_SIZE_4BPP = 32
 OBJ_EVENT_SIZE, SB1_OBJECT_EVENTS, OBJECT_EVENTS_COUNT = 0x24, 0x6A0, 16
 OBJ_GRAPHICS_ID, OBJ_LOCAL_ID = 5, 8
 FOLLOWER_H = REPO_ROOT / "include" / "follower.h"
-SCREEN_POINTS = ("seguidor_parado", "seguidor_noite", "seguidor_paleta_especial")
+SCREEN_POINTS = ("seguidor_parado", "seguidor_noite", "seguidor_paleta_especial", "seguidor_cinnabar")
 
 
 def _follower_define(name: str) -> int:
@@ -227,6 +230,18 @@ class FollowerScenario(CatchSaveScenario):
         assert not state["existe"] and state["objetos"] == 0, f"seguidor no porto do Seagallop: {state}"
         return "S.S. Anne no slot 10 e seguidor no 11 com as cores do ROM; no porto do Seagallop, sem seguidor"
 
+    def _cinnabar(self) -> str:
+        self._restore()
+        hidden = self.consts.flag("FLAG_HIDE_CINNABAR_SEAGALLOP")
+        self.box.set_flag(hidden, True)
+        self._teleport(CINNABAR)
+        state = self._expect_one("Cinnabar")
+        px, py = self.game.player_xy()
+        assert state["xy"] == (px, py - 1) and not state["escondido"], (state, (px, py))
+        assert self._palette(PALSLOT_FOLLOWER) == self._rom("sFollowerPal_Charmander"), "paleta do seguidor em Cinnabar"
+        self._shot("seguidor_cinnabar")
+        return f"Cinnabar com o Seagallop escondido por flag: {state}"
+
     def run(self) -> None:
         try:
             self._flow("seguidor: CONTINUAR, CHARMANDER no 1º lugar, 12:00 e Pallet Town", self._start)
@@ -238,6 +253,7 @@ class FollowerScenario(CatchSaveScenario):
             self.suite.run("seguidor/noite: paleta do seguidor com o tom da noite", self._noite)
             self.suite.run("seguidor/paleta_especial: S.S. Anne e seguidor com as cores certas",
                            self._paleta_especial)
+            self.suite.run("seguidor/cinnabar: aparece com o Seagallop do mapa escondido", self._cinnabar)
         except Abort:
             pass
 

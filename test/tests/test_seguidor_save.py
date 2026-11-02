@@ -102,3 +102,13 @@ def test_telas_do_cenario_no_fim_de_shared_points():
     texto = (REPO_ROOT / "test" / "esteira" / "scenarios" / "full_seguidor.py").read_text(encoding="utf-8")
     for ponto in cen.SCREEN_POINTS:
         assert f'self._shot("{ponto}")' in texto, ponto
+
+
+def test_paleta_so_objetos_visiveis():
+    """Só um objeto visível (sem a flag de esconder) do slot 10 com reflexo no 11 impede o seguidor; um escondido que um
+    script mostra depois tira o seguidor em LoadSpecialObjectReflectionPalette."""
+    eom = _sem_comentarios(_ler(SRC / "event_object_movement.c"))
+    corpo = _funcao(eom, "IsFollowerPaletteSlotInUse")
+    assert "FlagGet(gSaveBlock1Ptr->objectEventTemplates[i].flagId)" in corpo, corpo
+    carga = _funcao(eom, "LoadSpecialObjectReflectionPalette")
+    assert re.search(r"gReflectionEffectPaletteMap\[slot\] == PALSLOT_FOLLOWER\)\s*Follower_Remove\(\);", carga), carga
