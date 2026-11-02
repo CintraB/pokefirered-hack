@@ -94,7 +94,8 @@ def _item_descriptions(source: str) -> dict[str, str]:
 
 # slots vazios ("????????") que os hacks ocuparam depois da base da tradução: "slot:id da base" -> "slot:id novo"
 ITENS_NOVOS_DOS_HACKS = {61: ("ITEM_PORTABLE_PC", "POCKET_KEY_ITEMS"),   # POK-36: PC Portátil
-                         62: ("ITEM_INCUBATOR", "POCKET_KEY_ITEMS")}     # POK-37: Incubadora
+                         62: ("ITEM_INCUBATOR", "POCKET_KEY_ITEMS"),     # POK-37: Incubadora
+                         72: ("ITEM_DEXNAV", "POCKET_KEY_ITEMS")}        # POK-47: DexNav
 _SLOT_DOS_HACKS = {f"{i}:ITEM_NONE": f"{i}:{item}" for i, (item, _) in ITENS_NOVOS_DOS_HACKS.items()}
 
 

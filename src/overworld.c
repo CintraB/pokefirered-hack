@@ -1707,6 +1707,7 @@ void CB2_ContinueSavedGame(void)
 {
     DayNight_ForgetSeenPeriod(); /* Hack 7 — frente A */
     GivePortablePcIfMissing(); // POK-36
+    GiveDexNavIfMissing(); // POK-47
     DexNav_UpgradeOldSave(); // POK-47: save sem marcador do DexNav
     FieldClearVBlankHBlankCallbacks();
     StopMapMusic();
@@ -2340,6 +2341,7 @@ static bool32 LoadMap_QLPlayback(u8 *state)
 void CB2_EnterFieldFromQuestLog(void)
 {
     GivePortablePcIfMissing(); // POK-36: CONTINUAR com cenas no Quest Log entra por aqui
+    GiveDexNavIfMissing(); // POK-47
     DexNav_UpgradeOldSave(); // POK-47
     FieldClearVBlankHBlankCallbacks();
     StopMapMusic();

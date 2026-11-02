@@ -38,6 +38,7 @@
 #include "constants/field_weather.h"
 #include "sloopsvc.h"
 #include "day_night.h"
+#include "dexnav.h"
 
 enum StartMenuOption
 {
@@ -50,8 +51,14 @@ enum StartMenuOption
     STARTMENU_EXIT,
     STARTMENU_RETIRE,
     STARTMENU_PLAYER2,
+    STARTMENU_DEXNAV, // POK-47: no fim, para os índices de antes (a esteira usa) não mudarem
     MAX_STARTMENU_ITEMS
 };
+
+// POK-47: com o DEXNAV o menu chega a 8 linhas. No passo de 15 px elas pisariam na barra de ajuda (linha 15 do BG0)
+// e nos tiles do diálogo (0x198): acima de 7 linhas o passo cai para 13 px (a fonte tem 14; a última linha dela é só
+// a sombra das pernas do g/ç) e a janela fica com a altura de 7 linhas.
+#define START_MENU_FULL_PITCH_ROWS 7
 
 enum SaveCBReturn
 {
@@ -89,6 +96,7 @@ static bool8 StartMenuOptionCallback(void);
 static bool8 StartMenuExitCallback(void);
 static bool8 StartMenuSafariZoneRetireCallback(void);
 static bool8 StartMenuLinkPlayerCallback(void);
+static bool8 StartMenuDexNavCallback(void);
 static bool8 StartCB_Save1(void);
 static bool8 StartCB_Save2(void);
 static void StartMenu_PrepareForSave(void);
@@ -123,7 +131,8 @@ static const struct MenuAction sStartMenuActionTable[] = {
     [STARTMENU_OPTION]  = { gText_MenuOption,  {.u8_void = StartMenuOptionCallback} },
     [STARTMENU_EXIT]    = { gText_MenuExit,    {.u8_void = StartMenuExitCallback} },
     [STARTMENU_RETIRE]  = { gText_MenuRetire,  {.u8_void = StartMenuSafariZoneRetireCallback} },
-    [STARTMENU_PLAYER2] = { gText_MenuPlayer,  {.u8_void = StartMenuLinkPlayerCallback} }
+    [STARTMENU_PLAYER2] = { gText_MenuPlayer,  {.u8_void = StartMenuLinkPlayerCallback} },
+    [STARTMENU_DEXNAV]  = { gText_MenuDexNav,  {.u8_void = StartMenuDexNavCallback} }
 };
 
 static const struct WindowTemplate sSafariZoneStatsWindowTemplate = {
@@ -159,7 +168,8 @@ static const u8 *const sStartMenuDescPointers[] = {
     gStartMenuDesc_Option,
     gStartMenuDesc_Exit,
     gStartMenuDesc_Retire,
-    gStartMenuDesc_Player
+    gStartMenuDesc_Player,
+    gStartMenuDesc_DexNav
 };
 
 static const struct BgTemplate sBGTemplates_AfterLinkSaveMessage[] = {
@@ -228,7 +238,10 @@ static void AppendToStartMenuItems(u8 newEntry)
 static void SetUpStartMenu_NormalField(void)
 {
     if (FlagGet(FLAG_SYS_POKEDEX_GET) == TRUE)
+    {
         AppendToStartMenuItems(STARTMENU_POKEDEX);
+        AppendToStartMenuItems(STARTMENU_DEXNAV); // POK-47: junto com a Pokédex, não depende do item na bolsa
+    }
     if (FlagGet(FLAG_SYS_POKEMON_GET) == TRUE)
         AppendToStartMenuItems(STARTMENU_POKEMON);
     AppendToStartMenuItems(STARTMENU_BAG);
@@ -242,6 +255,8 @@ static void SetUpStartMenu_SafariZone(void)
 {
     AppendToStartMenuItems(STARTMENU_RETIRE);
     AppendToStartMenuItems(STARTMENU_POKEDEX);
+    if (FlagGet(FLAG_SYS_POKEDEX_GET) == TRUE)
+        AppendToStartMenuItems(STARTMENU_DEXNAV); // POK-47
     AppendToStartMenuItems(STARTMENU_POKEMON);
     AppendToStartMenuItems(STARTMENU_BAG);
     AppendToStartMenuItems(STARTMENU_PLAYER);
@@ -323,6 +338,12 @@ static void DestroyStartMenuClockWindow(void)
     }
 }
 
+// POK-47: o passo entre as linhas (ver START_MENU_FULL_PITCH_ROWS)
+static u8 StartMenuLineHeight(void)
+{
+    return sNumStartMenuItems > START_MENU_FULL_PITCH_ROWS ? 13 : 15;
+}
+
 static s8 PrintStartMenuItems(s8 *cursor_p, u8 nitems)
 {
     s16 i = *cursor_p;
@@ -330,12 +351,12 @@ static s8 PrintStartMenuItems(s8 *cursor_p, u8 nitems)
     {
         if (sStartMenuOrder[i] == STARTMENU_PLAYER || sStartMenuOrder[i] == STARTMENU_PLAYER2)
         {
-            Menu_PrintFormatIntlPlayerName(GetStartMenuWindowId(), sStartMenuActionTable[sStartMenuOrder[i]].text, 8, i * 15);
+            Menu_PrintFormatIntlPlayerName(GetStartMenuWindowId(), sStartMenuActionTable[sStartMenuOrder[i]].text, 8, i * StartMenuLineHeight());
         }
         else
         {
             StringExpandPlaceholders(gStringVar4, sStartMenuActionTable[sStartMenuOrder[i]].text);
-            AddTextPrinterParameterized(GetStartMenuWindowId(), FONT_NORMAL, gStringVar4, 8, i * 15, 0xFF, NULL);
+            AddTextPrinterParameterized(GetStartMenuWindowId(), FONT_NORMAL, gStringVar4, 8, i * StartMenuLineHeight(), 0xFF, NULL);
         }
         i++;
         if (i >= sNumStartMenuItems)
@@ -361,7 +382,7 @@ static s8 DoDrawStartMenu(void)
         break;
     case 2:
         LoadStdWindowFrameGfx();
-        DrawStdWindowFrame(CreateStartMenuWindow(sNumStartMenuItems), FALSE);
+        DrawStdWindowFrame(CreateStartMenuWindow(min(sNumStartMenuItems, START_MENU_FULL_PITCH_ROWS)), FALSE);
         sDrawStartMenuState[0]++;
         break;
     case 3:
@@ -375,7 +396,7 @@ static s8 DoDrawStartMenu(void)
             sDrawStartMenuState[0]++;
         break;
     case 5:
-        sStartMenuCursorPos = Menu_InitCursor(GetStartMenuWindowId(), FONT_NORMAL, 0, 0, 15, sNumStartMenuItems, sStartMenuCursorPos);
+        sStartMenuCursorPos = Menu_InitCursor(GetStartMenuWindowId(), FONT_NORMAL, 0, 0, StartMenuLineHeight(), sNumStartMenuItems, sStartMenuCursorPos);
         if (!MenuHelpers_IsLinkActive() && InUnionRoom() != TRUE && gSaveBlock2Ptr->optionsButtonMode == OPTIONS_BUTTON_MODE_HELP)
         {
             DrawHelpMessageWindowWithText(sStartMenuDescPointers[sStartMenuOrder[sStartMenuCursorPos]]);
@@ -564,6 +585,21 @@ static bool8 StartMenuPlayerCallback(void)
         DestroyStartMenuClockWindow();
         CleanupOverworldWindowsAndTilemaps();
         ShowPlayerTrainerCard(CB2_ReturnToFieldWithOpenMenu);
+        return TRUE;
+    }
+    return FALSE;
+}
+
+// POK-47: a tela volta ao campo com o menu Start reaberto
+static bool8 StartMenuDexNavCallback(void)
+{
+    if (!gPaletteFade.active)
+    {
+        PlayRainStoppingSoundEffect();
+        DestroySafariZoneStatsWindow();
+        DestroyStartMenuClockWindow();
+        CleanupOverworldWindowsAndTilemaps();
+        DexNav_Open(CB2_ReturnToFieldWithOpenMenu);
         return TRUE;
     }
     return FALSE;

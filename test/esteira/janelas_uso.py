@@ -125,7 +125,7 @@ VAR_CONTENTS: list[VarContent] = [
                  "(src/conquistas_tela.c:980)", digits=True)
       for label in ("gText_Diario_MvpUm", "gText_Diario_MvpVarios")),
     *(VarContent("src/strings.c", "gText_MenuSafariStats", var, n,
-                 "Safari: passos (3), limite 600 (3) e bolas (2) (src/start_menu.c:275-277)", digits=True)
+                 "Safari: passos (3), limite 600 (3) e bolas (2) (src/start_menu.c:290-292)", digits=True)
       for var, n in (("STR_VAR_1", 3), ("STR_VAR_2", 3), ("STR_VAR_3", 2))),
     VarContent("src/strings.c", "gText_PokeSum_EvoLevelFreeSlot", "STR_VAR_1", 3,
                "nível da evolução (Shedinja, + vaga na equipe): ConvertIntToDecimalStringN(gStringVar1, evo->param, "
@@ -184,13 +184,13 @@ _EC_UNREACHABLE = (
 USAGE_RULES: list[UsageRule] = [
     # -- menu Start e salvar --
     U("src/start_menu.c", "table:sStartMenuActionTable", 7 * 8 - 8,
-      "rótulo do menu Start: janela de 7 tiles (src/new_menu_helpers.c:670), texto em x = 8 (src/start_menu.c:338)"),
+      "rótulo do menu Start: janela de 7 tiles (src/new_menu_helpers.c:670), texto em x = 8 (src/start_menu.c:359)"),
     U("src/start_menu.c", "call:AddTextPrinterParameterized3", 60 - 2,
-      "estatísticas do salvamento: nome em x = 2 e valor em x = 60, FONT_SMALL (src/start_menu.c:1036-1052)",
+      "estatísticas do salvamento: nome em x = 2 e valor em x = 60, FONT_SMALL (src/start_menu.c:1072-1088)",
       font="small"),
     U("src/start_menu.c", "call:StringExpandPlaceholders", 10 * 8 - 4,
-      "estatísticas da Safari: sSafariZoneStatsWindowTemplate 10 tiles (src/start_menu.c:129-133), x = 4 (src/start_menu.c:279)"),
-    U("src/start_menu.c", "*", DIALOG_PX, _DIALOG + "; mensagens de salvar na janela 0 (src/start_menu.c:691, :979)"),
+      "estatísticas da Safari: sSafariZoneStatsWindowTemplate 10 tiles (src/start_menu.c:138-142), x = 4 (src/start_menu.c:294)"),
+    U("src/start_menu.c", "*", DIALOG_PX, _DIALOG + "; mensagens de salvar na janela 0 (src/start_menu.c:727, :1015)"),
     # -- opções --
     U("src/option_menu.c", "table:sOptionMenuItemsNames", 0x82 - 8,
       "nome da opção em x = 8 (src/option_menu.c:563) até a coluna de valores em x = 0x82 (src/option_menu.c:473)"),
@@ -400,8 +400,8 @@ USAGE_RULES: list[UsageRule] = [
       "nome no mapa: WIN_DUNGEON_NAME 15 tiles (src/region_map.c:476-481), x = 12 (src/region_map.c:1481)"),
     U("src/map_name_popup.c", "*", 112, "aviso de nome do mapa: maxWidth = 112 (src/map_name_popup.c:195)"),
     U("src/strings.c", "table:gText_DayNight_PeriodName", 13 * 8 - 4 - 35,
-      "período no relógio do menu Start (Hack 7): sClockWindowTemplate 13 tiles (src/start_menu.c:143-147), "
-      "x = 4 (src/start_menu.c:308), depois de \"00:00 \" (35 px, src/day_night.c:96-104); buffer "
+      "período no relógio do menu Start (Hack 7): sClockWindowTemplate 13 tiles (src/start_menu.c:152-156), "
+      "x = 4 (src/start_menu.c:323), depois de \"00:00 \" (35 px, src/day_night.c:96-104); buffer "
       "DAY_NIGHT_CLOCK_TEXT_SIZE 20 (include/day_night.h:23) menos 6", chars=13),
     U("src/strings.c", "table:gText_DayNight_PeriodStart", 112,
       "aviso de período (Hack 7): ShowFieldMessagePopup (src/day_night.c:271) usa o aviso de mapa, "

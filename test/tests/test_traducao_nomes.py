@@ -28,8 +28,9 @@ CLASS_OVERRIDES = {"TEAM ROCKET": "Recruta"}
 # D3 / decisão D4 do Cintra: os 2 ADMIN da Equipe Rocket viram "Executivo" (pic masculina) e "Executiva" (feminina)
 NEW_KEYS = {"src/data/text/trainer_class_names.h": {"TRAINER_CLASS_ROCKET_ADMIN": "Executivo",
                                                   "TRAINER_CLASS_ROCKET_ADMIN_F": "Executiva"},
-            # itens novos em slots que eram "????????" na base (POK-36, POK-37)
-            "src/data/items.json": {"ITEM_PORTABLE_PC": "PC Portátil", "ITEM_INCUBATOR": "Incubadora"},
+            # itens novos em slots que eram "????????" na base (POK-36, POK-37, POK-47)
+            "src/data/items.json": {"ITEM_PORTABLE_PC": "PC Portátil", "ITEM_INCUBATOR": "Incubadora",
+                                    "ITEM_DEXNAV": "DEXNAV"},
             # tipo novo (POK-45)
             "src/battle_main.c": {"TYPE_FAIRY": "Fada"},
             # golpes novos de Fada (POK-45): nome oficial do GO, abreviado como no glossário

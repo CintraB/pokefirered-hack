@@ -167,6 +167,7 @@ const u8 gText_MenuSave[] = _("Salvar");
 const u8 gText_MenuOption[] = _("Opções");
 const u8 gText_MenuExit[] = _("Sair");
 const u8 gText_MenuRetire[] = _("Desistir");
+const u8 gText_MenuDexNav[] = _("DEXNAV"); // POK-47
 const u8 gText_MenuSafariStats[] = _("{STR_VAR_1}/{STR_VAR_2}\nBolas  {STR_VAR_3}");
 const u8 gText_TimesStrVar1[] = _("×{STR_VAR_1}");
 const u8 gText_Berry[] = _("Fruta "); // PT-BR: vem antes do nome ("Fruta Enigma"), src/item.c
@@ -977,6 +978,7 @@ const u8 gStartMenuDesc_Save[] = _("Salve o jogo com todo o seu progresso\npara 
 const u8 gStartMenuDesc_Option[] = _("Ajuste várias configurações do jogo,\ncomo a velocidade do texto e as regras.");
 const u8 gStartMenuDesc_Exit[] = _("Fecha a janela do Menu.");
 const u8 gStartMenuDesc_Retire[] = _("Desista do Jogo do Safári e volte ao\nbalcão de inscrição.");
+const u8 gStartMenuDesc_DexNav[] = _("Veja os Pokémon de cada lugar, as\nchances de encontrá-los e o que falta."); // POK-47
 
 #include "data/text/quest_log.h"
 

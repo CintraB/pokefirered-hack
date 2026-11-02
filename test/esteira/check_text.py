@@ -268,7 +268,7 @@ WIDTH_RULES: list[Rule] = [
          _DIALOG + "; também na tela de nome (janela 0, src/naming_screen.c:752-755) e como mensagem de batalha "
          "(222 px, mais larga): vale a mais estreita"),
     Rule("data/text/save.inc", None, DIALOG_WIDTH_PX,
-         _DIALOG + "; PrintSaveTextWithFollowupFunc usa a janela 0 (src/start_menu.c:687-691)",
+         _DIALOG + "; PrintSaveTextWithFollowupFunc usa a janela 0 (src/start_menu.c:723-727)",
          box_lines=DIALOG_BOX_LINES),
     Rule("data/text/braille.inc", None, None,
          "braille: alfabeto próprio (tools/preproc/asm_file.cpp, mapa `encoding`) e janela de "
