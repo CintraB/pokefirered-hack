@@ -10,7 +10,7 @@ a Pokédex inteira obtível e uma esteira de testes automática no emulador.**
 ![Base](https://img.shields.io/badge/base-pret%2Fpokefirered-e3350d?style=flat-square)
 ![Linguagem](https://img.shields.io/badge/C-agbcc-555555?style=flat-square)
 ![Testes](https://img.shields.io/badge/pytest-4802%20testes-2ea44f?style=flat-square)
-![Esteira](https://img.shields.io/badge/esteira-493%20checagens-2ea44f?style=flat-square)
+![Esteira](https://img.shields.io/badge/esteira-495%20checagens-2ea44f?style=flat-square)
 ![Versão](https://img.shields.io/badge/ROM-v52-informational?style=flat-square)
 
 <img src="docs/readme/inicial.png" width="240" alt="Escolha do inicial em português">

@@ -11,8 +11,13 @@ Python das regras de encontro), não do C.
 - `dexnav/entradas_c_python` (R2): `DexNav_GetMapEntries` (atalhos 0xE0/0xE1) == `gerar.enumerar` nos 124 mapas
   (espécie, jeito, períodos, chance de cada período, a da tarde-noite e níveis);
 - `dexnav/chances_reais` (R4): o gerador real de encontro (TEST_CMD_DEXNAV_ROLL, 2000 sorteios) contra a chance
-  enumerada, com tolerância em desvios-padrão da binomial (`dexnav.comparar`): Rota 1 à tarde e na tarde-noite
-  (mistura 50/50), Mansão 1F (metade LeafGreen) e Super Vara em Viridian;
+  enumerada, com tolerância em desvios-padrão da binomial (`dexnav.comparar`): Rota 1 à tarde, à noite e na
+  tarde-noite (mistura 50/50), Mansão 1F (metade LeafGreen) e Super Vara em Viridian;
+- `dexnav/caverna_mutante`: dia 22, entrar põe a var no conjunto 4 e o C, o Python e o sorteio real batem (Teddiursa);
+  no dia 23, ainda dentro, continua o conjunto 4 (a var só muda ao entrar); de fora, o DexNav já mostra o conjunto 5
+  (Aipom), e entrar de novo põe a var em 5 e o sorteio bate com ele;
+- `dexnav/tanoby`: câmara Monean trancada: 0 entradas e o gerador real sem encontro; liberada: Unown 100% no C, no
+  Python e no sorteio real;
 - `dexnav/abre_start`: no quarto (sem encontro) o menu Start tem DEXNAV logo abaixo de POKéDEX (8 linhas; foto
   `dexnav_menu_start`); na Rota 1 o DEXNAV abre o modo mapa e B volta ao menu Start com o cursor no DEXNAV;
 - `dexnav/mapa_sem_encontro`: no quarto, abre a lista na Rota 1 (o último mapa com encontro) e B volta ao menu;
@@ -60,7 +65,8 @@ from ..bag import BAG_CONTEXT_TASK, BAG_CURSOR_POS, BAG_ITEMS_ABOVE, BAG_POCKET,
 from ..emu import KEY_A, KEY_B, KEY_DOWN, KEY_L, KEY_LEFT, KEY_R, KEY_RIGHT, KEY_SELECT, KEY_START, KEY_UP
 from ..field_menu import MENU_TIMEOUT, STARTMENU_BAG, STARTMENU_DEXNAV, STARTMENU_POKEDEX
 from ..game import SB1_BAG_POCKETS
-from ..hooks import CMD_WARP, Mailbox
+from ..breeding import header_defines
+from ..hooks import CMD_DEXNAV_ROLL, CMD_WARP, NO_RESULT, Mailbox
 from . import REPO_ROOT, ScenarioContext
 from .base import Abort
 from .quick_catch_save import CatchSaveScenario
@@ -106,6 +112,11 @@ CAMARA = "MAP_SEVEN_ISLAND_TANOBY_RUINS_MONEAN_CHAMBER"
 ABAS_MAPA = "MAP_ONE_ISLAND_KINDLE_ROAD"
 BUSCA = "ODDISH"
 BUSCA_ABRE = "MAP_ROUTE12"
+MUTANTE_MAPA = "MAP_SIX_ISLAND_ALTERING_CAVE"
+MUTANTE_DIAS = (22, 23)       # conjuntos 4 (Teddiursa) e 5 (Aipom): o de fora no dia 23 difere da var de dentro
+NUM_CONJUNTOS_MUTANTE = 9     # NUM_ALTERING_CAVE_TABLES (gerar.NUM_CONJUNTOS_MUTANTE)
+SB1_VARS, VAR_BASE = 0x1000, 0x4000   # u16 vars[] em SaveBlock1
+VARS = header_defines(REPO_ROOT, "vars.h")
 
 ROLAGENS = 2000               # sorteios por linha do chances_reais
 TELA_TIMEOUT = 600            # a lista e a busca varrem os 124 mapas antes (~15 quadros)
@@ -159,6 +170,8 @@ class DexNavScenario(CatchSaveScenario):
         self.vistos = self.capturados | {self.nac[n] for n in SO_VISTOS}
         self.visitados = {self.idx[m] for m in VISITADOS}
         self._esperado: dict[tuple[int, bool], list[dict]] = {}
+        self._dia = CLOCK[0]
+        assert self.g.NUM_CONJUNTOS_MUTANTE == NUM_CONJUNTOS_MUTANTE and self.g.MUTANTE == MUTANTE_MAPA
 
     # --- expectativas (gerar.py) -----------------------------------------------------------------------------------
     def _nac_de(self, especie: str) -> int:
@@ -393,10 +406,19 @@ class DexNavScenario(CatchSaveScenario):
         assert not diferentes, f"{len(diferentes)} mapas diferentes: " + " | ".join(diferentes[:3])
         return f"124 mapas, {entradas} entradas: C == gerar.enumerar (Tanoby trancada, Caverna Mutante no conjunto 0)"
 
-    def _rolar(self, map_id: str, xy, minuto: int, bits: int, metodo: int) -> str:
-        self.box.set_clock(0, minuto)
-        self._teleport(map_id, xy)
-        esperado = {e["id"]: taxa(e["chances"], bits) for e in self._entradas(self.idx[map_id])
+    def _var(self, nome: str) -> int:
+        return self.emu.read_u16(self._sb(1) + SB1_VARS + (VARS[nome] - VAR_BASE) * 2)
+
+    def _rolar(self, map_id: str, xy, minuto: int, bits: int, metodo: int, entradas: list[dict] | None = None,
+               dia: int = 0, warp: bool = True) -> str:
+        """O gerador real do mapa (ROLAGENS vezes) contra a chance do gerar.py (`entradas`, padrão: o mapa no estado da
+        preparação), com a tolerância em σ de `dnv.comparar`."""
+        self.box.set_clock(dia, minuto)
+        if warp:
+            self._teleport(map_id, xy)
+        if entradas is None:
+            entradas = self._entradas(self.idx[map_id])
+        esperado = {e["id"]: taxa(e["chances"], bits) for e in entradas
                     if e["metodo"] == metodo and e["periodos"] & bits}
         contagem = dnv.rolar(self.box, metodo, ROLAGENS)
         fora = dnv.comparar(esperado, contagem, ROLAGENS)
@@ -412,11 +434,90 @@ class DexNavScenario(CatchSaveScenario):
         self._restore()
         partes = [
             self._rolar("MAP_ROUTE1", ROUTE1_XY, 12 * 60, DIA, dnv.LAND),
+            self._rolar("MAP_ROUTE1", ROUTE1_XY, 22 * 60, NOITE, dnv.LAND),
             self._rolar("MAP_ROUTE1", ROUTE1_XY, 18 * 60, TARDE_NOITE, dnv.LAND),
             self._rolar("MAP_POKEMON_MANSION_1F", None, 12 * 60, DIA, dnv.LAND),
             self._rolar("MAP_VIRIDIAN_CITY", None, 12 * 60, DIA, dnv.SUPER_ROD),
         ]
         return f"{ROLAGENS} sorteios, tolerância {dnv.SIGMAS} σ: " + "; ".join(partes)
+
+    def _conjunto_mutante(self) -> tuple[list[dict], list[dict]]:
+        """(C, Python) das entradas da Caverna Mutante agora."""
+        cave = self.idx[MUTANTE_MAPA]
+        return dnv.entradas(self.box, cave), self._entradas_mutante(self._conjunto_esperado())
+
+    def _conjunto_esperado(self) -> int:
+        """Dentro da caverna, a var do encontro; de fora, o conjunto do dia (o que ela recebe ao entrar)."""
+        if self.game.location() == self.consts.map(MUTANTE_MAPA):
+            return self._var("VAR_ALTERING_CAVE_WILD_SET")
+        return self._dia % NUM_CONJUNTOS_MUTANTE
+
+    def _entradas_mutante(self, conjunto: int) -> list[dict]:
+        return [dict(e, id=self.consts.species(e["especie"]), nac=self._nac_de(e["especie"]))
+                for e in self.g.enumerar(MUTANTE_MAPA, conjunto_mutante=conjunto)]
+
+    def _bate_c_python(self, c: list[dict], py: list[dict], what: str) -> list[str]:
+        got = [(e["especie"], e["metodo"], e["periodos"], e["chances"][:3], e["min"], e["max"]) for e in c]
+        want = [(e["id"], e["metodo"], e["periodos"], e["chances"], e["min"], e["max"]) for e in py]
+        assert got == want, f"{what}: C {got} != Python {want}"
+        return [self.consts.species_name(e["especie"]).removeprefix("SPECIES_") for e in c]
+
+    def _caverna_mutante(self) -> str:
+        """Dia 22 (conjunto 4): entrar põe a var em 4 e o sorteio real bate com o conjunto 4. No dia 23, ainda dentro
+        (var 4), o DexNav continua no conjunto 4 e o sorteio também; de fora, o DexNav já mostra o conjunto 5 (o do
+        dia), e entrar de novo põe a var em 5 e o sorteio bate com ele."""
+        self._restore()
+        partes = []
+        self._dia = MUTANTE_DIAS[0]
+        self.box.set_clock(self._dia, 12 * 60)
+        self._teleport(MUTANTE_MAPA)
+        var = self._var("VAR_ALTERING_CAVE_WILD_SET")
+        assert var == self._dia % NUM_CONJUNTOS_MUTANTE, f"dia {self._dia}: var {var}"
+        c, py = self._conjunto_mutante()
+        especies = self._bate_c_python(c, py, f"dentro, dia {self._dia}")
+        partes.append(f"dia {self._dia} dentro (var {var}): {especies}; "
+                      + self._rolar(MUTANTE_MAPA, None, 12 * 60, DIA, dnv.LAND, py, dia=self._dia, warp=False))
+        # dia seguinte, sem sair: a var não muda, o DexNav e o sorteio continuam no conjunto de antes
+        self._dia = MUTANTE_DIAS[1]
+        self.box.set_clock(self._dia, 12 * 60)
+        assert self._var("VAR_ALTERING_CAVE_WILD_SET") == var
+        c, py_dentro = self._conjunto_mutante()
+        assert py_dentro == py
+        especies = self._bate_c_python(c, py_dentro, f"dentro, dia {self._dia}")
+        partes.append(f"dia {self._dia} ainda dentro (var {var}): {especies}; "
+                      + self._rolar(MUTANTE_MAPA, None, 12 * 60, DIA, dnv.LAND, py_dentro, dia=self._dia, warp=False))
+        # de fora: o conjunto do dia, diferente do da var
+        self._teleport("MAP_ROUTE1", ROUTE1_XY)
+        c, py_fora = self._conjunto_mutante()
+        assert py_fora != py, "o conjunto de fora devia ser outro"
+        especies = self._bate_c_python(c, py_fora, f"fora, dia {self._dia}")
+        partes.append(f"dia {self._dia} de fora: {especies}")
+        # entrar de novo: a var vira o conjunto do dia, e o sorteio bate com o que o DexNav mostrava de fora
+        self._teleport(MUTANTE_MAPA)
+        var = self._var("VAR_ALTERING_CAVE_WILD_SET")
+        assert var == self._dia % NUM_CONJUNTOS_MUTANTE, f"dia {self._dia}: var {var}"
+        c, py = self._conjunto_mutante()
+        assert py == py_fora
+        self._bate_c_python(c, py, f"dentro de novo, dia {self._dia}")
+        partes.append(f"entrando (var {var}): "
+                      + self._rolar(MUTANTE_MAPA, None, 12 * 60, DIA, dnv.LAND, py, dia=self._dia, warp=False))
+        return "; ".join(partes)
+
+    def _tanoby(self) -> str:
+        """Câmara Monean: trancada, nem o DexNav nem o gerador real têm encontro; liberada, Unown 100% nos dois."""
+        self._restore()
+        camara = self.idx[CAMARA]
+        self._flag("FLAG_SYS_UNLOCKED_TANOBY_RUINS", False)
+        self._teleport(CAMARA)
+        assert dnv.entradas(self.box, camara) == [] == self._entradas(camara, tanoby=False)
+        raw = self.box.call(CMD_DEXNAV_ROLL, dnv.LAND, 10, timeout=200)
+        assert raw == NO_RESULT, f"trancada: o gerador real achou encontro ({raw:#x})"
+        self._flag("FLAG_SYS_UNLOCKED_TANOBY_RUINS", True)
+        py = self._entradas(camara, tanoby=True)
+        especies = self._bate_c_python(dnv.entradas(self.box, camara), py, "liberada")
+        assert especies == ["UNOWN"] and py[0]["chances"] == [1000, 1000, 1000], (especies, py)
+        rolagem = self._rolar(CAMARA, None, 12 * 60, DIA, dnv.LAND, py, warp=False)
+        return f"trancada: 0 entradas e o gerador real sem encontro; liberada: {especies} 100% e {rolagem}"
 
     def _cursor_menu_em(self, entrada: int) -> None:
         menu = self.menu
@@ -888,6 +989,8 @@ class DexNavScenario(CatchSaveScenario):
             run = self.suite.run
             run("dexnav/entradas_c_python: DexNav_GetMapEntries == gerar.enumerar nos 124 mapas", self._entradas_c_python)
             run("dexnav/chances_reais: o sorteio real bate com a chance mostrada (tolerância em σ)", self._chances_reais)
+            run("dexnav/caverna_mutante: dentro, a var do encontro; de fora, o conjunto do dia", self._caverna_mutante)
+            run("dexnav/tanoby: câmara trancada sem encontro; liberada, Unown 100%", self._tanoby)
             run("dexnav/abre_start: DEXNAV no menu Start abre o mapa e volta ao menu", self._abre_start)
             run("dexnav/mapa_sem_encontro: sem encontro, abre a lista no último mapa com encontro",
                 self._mapa_sem_encontro)
