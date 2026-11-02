@@ -281,7 +281,8 @@ struct DexNavResultado
     u8 mapIndex;
     u8 method;      // DEXNAV_METHOD_*
     u8 periods;     // DEXNAV_PERIOD_* em que aparece
-    u16 rateX10;    // a chance agora se aparece agora; senão, a média dos períodos em que aparece
+    u8 mostrados;   // os períodos do horário mostrado: os de `periods` se aparece agora; senão, os de maior chance
+    u16 rateX10;    // a chance agora se aparece agora; senão, a maior chance de um período só (a dos `mostrados`)
 };
 
 // Uma tela guardada na pilha (o que precisa para remontá-la como estava)
@@ -894,13 +895,15 @@ static void ContarMapa(struct DexNavTela *t, u8 mapIndex)
     }
 }
 
-// As entradas do mapa com a espécie da busca. A chance é a de agora quando a espécie aparece agora; senão, a dos
-// períodos em que ela aparece (a média deles, como a tarde-noite).
+// As entradas do mapa com a espécie da busca. Quando a espécie aparece agora, a chance é a de agora (a tarde-noite é a
+// média da tarde e da noite, como o encontro real) e o horário são todos os períodos em que aparece. Senão, a chance
+// é a maior de um período só (manhã e noite são horários diferentes: a média deles não existe em hora nenhuma) e o
+// horário é o desse período (os empatados juntos: "dia" quando a manhã e a tarde dão a mesma chance).
 static void ColherResultados(struct DexNavTela *t, u8 mapIndex)
 {
     const struct DexNavEntry *e;
     struct DexNavResultado *r;
-    u8 i;
+    u8 i, p;
 
     for (i = 0; i < t->nEntries; i++)
     {
@@ -911,7 +914,28 @@ static void ColherResultados(struct DexNavTela *t, u8 mapIndex)
         r->mapIndex = mapIndex;
         r->method = e->method;
         r->periods = e->periods;
-        r->rateX10 = DexNav_RateForPeriods(e, (e->periods & t->periods) ? t->periods : e->periods);
+        if (e->periods & t->periods)
+        {
+            r->rateX10 = DexNav_RateForPeriods(e, t->periods);
+            r->mostrados = e->periods;
+            continue;
+        }
+        r->rateX10 = 0;
+        r->mostrados = 0;
+        for (p = 0; p < DEXNAV_PERIOD_COUNT; p++)
+        {
+            if (!(e->periods & (1 << p)))
+                continue;
+            if (e->rateX10[p] > r->rateX10)
+            {
+                r->rateX10 = e->rateX10[p];
+                r->mostrados = 1 << p;
+            }
+            else if (e->rateX10[p] == r->rateX10)
+            {
+                r->mostrados |= 1 << p;
+            }
+        }
     }
 }
 
@@ -1339,7 +1363,10 @@ static void InputLista(struct DexNavTela *t)
             return;
         mapIndex = t->linhas[t->cursor].idx;
         if (!MapaConhecido(t, mapIndex))
-            return;   // não visitado, ou visitado sem nenhuma espécie (câmara de Tanoby trancada)
+        {
+            PlaySE(SE_FAILURE);   // não visitado, ou visitado sem nenhuma espécie (câmara de Tanoby trancada)
+            return;
+        }
         AbrirMapa(t, mapIndex, SPECIES_NONE, 0xFF);
     }
     else if (JOY_NEW(L_BUTTON) || JOY_NEW(R_BUTTON))
@@ -1373,7 +1400,10 @@ static void InputBusca(struct DexNavTela *t)
             return;
         r = &t->resultados[t->linhas[t->cursor].idx];
         if (!DexNav_IsVisited(r->mapIndex))
+        {
+            PlaySE(SE_FAILURE);   // mapa não visitado ("??????"): sem estragar surpresa
             return;
+        }
         AbrirMapa(t, r->mapIndex, t->species, r->method);   // DEXNAV_MODE_MAP na aba do jeito
     }
     else if (JOY_NEW(L_BUTTON))
@@ -1584,12 +1614,18 @@ static void DesenharTopo(struct DexNavTela *t)
         StringCopy(contador, gText_DexNav_Completo);
         BlitIcone(WIN_TOPO, ICONE_COROA, TOPO_COROA_X, TOPO_COROA_Y);
     }
+    else if (t->totalMapa == 0)
+    {
+        // nenhuma espécie (câmara de Tanoby trancada, aberta de dentro): "?/?" apagado, como na lista
+        StringCopy(contador, gText_DexNav_Interrogacao);
+    }
     else
     {
         FormatarContador(contador, t->capturadosMapa, t->totalMapa);
     }
     AddTextPrinterParameterized4(WIN_TOPO, FONT_NORMAL, TOPO_CONTADOR_FIM - GetStringWidth(FONT_NORMAL, contador, 0),
-                                 TOPO_TEXTO_Y, 0, 0, sCor_Barra, TEXT_SKIP_DRAW, contador);
+                                 TOPO_TEXTO_Y, 0, 0, t->totalMapa == 0 ? sCor_BarraClara : sCor_Barra, TEXT_SKIP_DRAW,
+                                 contador);
     PutWindowTilemap(WIN_TOPO);
     CopyWindowToVram(WIN_TOPO, COPYWIN_FULL);
 }
@@ -1887,7 +1923,7 @@ static void DesenharLinhaResultado(struct DexNavTela *t, u16 linha, u16 y)
     AddTextPrinterParameterized4(WIN_LISTA, FONT_NORMAL, RES_CHANCE_FIM - GetStringWidth(FONT_NORMAL, texto, 0),
                                  y + LINHA_CURTA_TEXTO_DY, 0, 0, cor, TEXT_SKIP_DRAW, texto);
     AddTextPrinterParameterized4(WIN_LISTA, FONT_NORMAL, RES_HORARIO_X, y + LINHA_CURTA_TEXTO_DY, 0, 0, cor,
-                                 TEXT_SKIP_DRAW, sNomeDoHorario[r->periods & DEXNAV_PERIOD_ALL]);
+                                 TEXT_SKIP_DRAW, sNomeDoHorario[r->mostrados & DEXNAV_PERIOD_ALL]);
 }
 
 // Título da seção de um jeito de encontrar (as varas no modo mapa; todos na busca), com um fio até o fim da linha
@@ -1902,7 +1938,7 @@ static void DesenharLinhaSecao(struct DexNavTela *t, u16 linha, u16 y)
         FillWindowPixelRect(WIN_LISTA, PIXEL_FILL(COR_DIVISOR), fimTexto, y + LINHA_SECAO_ALTURA / 2, SELECAO_FIM - fimTexto, 1);
 }
 
-// "+N à noite" (de dia, de manhã, à tarde ou em outros horários), na coluna do nome
+// "+N à noite" (de dia, de manhã, à tarde, à tarde/noite ou em outros horários), na coluna do nome
 static void DesenharLinhaExtra(struct DexNavTela *t, u16 y)
 {
     const u8 *texto;
@@ -1920,6 +1956,9 @@ static void DesenharLinhaExtra(struct DexNavTela *t, u16 y)
         break;
     case DEXNAV_PERIOD_DAY:
         texto = gText_DexNav_MaisTarde;
+        break;
+    case DEXNAV_PERIOD_DAY | DEXNAV_PERIOD_NIGHT:   // de manhã, as que só aparecem à tarde e à noite
+        texto = gText_DexNav_MaisTardeNoite;
         break;
     default:
         texto = gText_DexNav_MaisOutros;
@@ -2125,7 +2164,8 @@ u32 DexNav_TestGetState(u8 what)
             return idx | (u32)t->especieMapas[SpeciesToNationalPokedexNum(idx)] << 16;
         case LINHA_RESULTADO:
             r = &t->resultados[idx];
-            return r->mapIndex | r->method << 8 | r->periods << 16 | (u32)DexNav_IsVisited(r->mapIndex) << 24;
+            return r->mapIndex | r->method << 8 | r->periods << 16
+                 | (u32)(DexNav_IsVisited(r->mapIndex) | r->mostrados << 4) << 24;
         }
         return 0xFFFFFFFF;
     }

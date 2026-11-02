@@ -58,3 +58,34 @@ def test_telas_no_fim_de_shared_points():
     texto = (REPO_ROOT / "test" / "esteira" / "scenarios" / "full_dexnav.py").read_text(encoding="utf-8")
     for ponto in cen.SCREEN_POINTS:
         assert f'self._shot("{ponto}")' in texto, ponto
+
+
+def test_resultado_fora_do_horario_nos_124_mapas():
+    """R14, no espelho (`full_dexnav.linha_resultado`, o mesmo do cenário) e nos 124 mapas: em qualquer horário de
+    agora (manhã, tarde, tarde-noite, noite), um resultado que não aparece agora mostra a chance de UM período em que
+    ele aparece, a maior delas, com o nome dos períodos que têm essa chance. A versão antiga (a média dos períodos)
+    mostrava 20% para o Spinarak da Rota 2 (manhã 4%, noite 36%), uma chance que não existe em hora nenhuma."""
+    g = cen._gerar()
+    vistos_diferentes = 0
+    for mapa in g.mapas():
+        for e in g.enumerar(mapa["id"], tanoby_liberado=True):
+            ch, per = e["chances"], e["periodos"]
+            individuais = {i: ch[i] for i in range(3) if per >> i & 1}
+            for bits in (cen.MANHA, cen.DIA, cen.TARDE_NOITE, cen.NOITE):
+                agora, chance, mostrados = cen.linha_resultado(ch, per, bits)
+                if agora:
+                    assert (chance, mostrados) == (cen.taxa(ch, bits), per)
+                    continue
+                assert chance in individuais.values() and chance == max(individuais.values()), (mapa["id"], e)
+                assert mostrados and mostrados & ~per == 0, (mapa["id"], e, mostrados)
+                assert all(individuais[i] == chance for i in range(3) if mostrados >> i & 1)
+                assert all(individuais[i] < chance for i in individuais if not mostrados >> i & 1)
+                if len(set(individuais.values())) > 1:
+                    vistos_diferentes += 1
+                    assert chance != cen.taxa(ch, per), (mapa["id"], e)   # a média antiga mentia aqui
+    assert vistos_diferentes > 0
+    # o caso do relatório da revisão
+    spinarak = next(e for e in g.enumerar("MAP_ROUTE2") if e["especie"] == "SPECIES_SPINARAK")
+    assert spinarak["periodos"] == cen.MANHA | cen.NOITE and spinarak["chances"][0] != spinarak["chances"][2]
+    assert cen.linha_resultado(spinarak["chances"], spinarak["periodos"], cen.DIA) == \
+        (False, max(spinarak["chances"]), cen.NOITE)

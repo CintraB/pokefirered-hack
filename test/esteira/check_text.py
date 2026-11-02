@@ -333,10 +333,10 @@ WIDTH_RULES: list[Rule] = [
     Rule("src/strings.c", "gText_DexNav_Completo$", 32, "\"100%\" do mapa completo no DexNav: no topo, alinhado à "
          "direita em TOPO_CONTADOR_FIM, depois do período (TOPO_PERIODO_X + 56 + 4) (src/dexnav.c:160-162); na lista, "
          "no contador de LST_CONTADOR_LARGURA = 32 px (src/dexnav.c:113-114)", lines=1),
-    *[Rule("src/strings.c", label, 184, "linha extra do DexNav: x = COL_NOME_X até as setas em COL_SETA_X "
+    *[Rule("src/strings.c", label + "$", 184, "linha extra do DexNav: x = COL_NOME_X até as setas em COL_SETA_X "
            "(src/dexnav.c:89, src/dexnav.c:98)", lines=1)
       for label in ("gText_DexNav_MaisNoite", "gText_DexNav_MaisDia", "gText_DexNav_MaisManha", "gText_DexNav_MaisTarde",
-                    "gText_DexNav_MaisOutros")],
+                    "gText_DexNav_MaisTardeNoite", "gText_DexNav_MaisOutros")],
     *[Rule("src/strings.c", label + "$", 232, "lista vazia do DexNav, centralizada na janela de 240 px "
            "(src/dexnav.c:60)", lines=1)
       for label in ("gText_DexNav_Nenhum", "gText_DexNav_BuscaVazia", "gText_DexNav_NenhumMapa")],
@@ -349,7 +349,8 @@ WIDTH_RULES: list[Rule] = [
     Rule("src/strings.c", "gText_DexNav_NenhumAgora$", 184, "aba sem Pokémon no período de agora: x = COL_NOME_X até "
          "as setas em COL_SETA_X (src/dexnav.c:89, src/dexnav.c:98)", lines=1),
     Rule("src/strings.c", "gText_DexNav_Interrogacao$", 32, "contador do mapa não visitado na lista do DexNav: alinhado "
-         "à direita em LST_CONTADOR_FIM, LST_CONTADOR_LARGURA = 32 px (src/dexnav.c:113-114)", lines=1),
+         "à direita em LST_CONTADOR_FIM, LST_CONTADOR_LARGURA = 32 px (src/dexnav.c:113-114); também no topo do mapa "
+         "sem espécie (Tanoby trancada), no lugar do \"100%\" (mesma largura)", lines=1),
     *[Rule("src/strings.c", label + "$", 180, "título do topo do DexNav (lista e busca): x = TOPO_NOME_X, "
            "TOPO_TITULO_LARGURA = 180 px, antes do contador (src/dexnav.c:159-164)", lines=1)
       for label in ("gText_DexNav_MapasKanto", "gText_DexNav_MapasSevii", "gText_DexNav_BuscaTitulo")],

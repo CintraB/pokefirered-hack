@@ -117,7 +117,8 @@ void DexNav_OpenFromScript(void);
 // << 8 | mapas da região << 16 (lista; 0 nos outros modos); 6: espécie da busca | resultados << 16;
 // 7: a linha selecionada: mapa -> espécie | marca (0 capturado, 1 visto, 2 nunca visto) << 16 | método << 24;
 // lista -> mapa | visitado << 8 | capturados << 16 | total << 24; escolha -> espécie |
-// mapas onde aparece << 16; resultado -> mapa | método << 8 | períodos << 16 | visitado << 24
+// mapas onde aparece << 16; resultado -> mapa | método << 8 | períodos << 16 | (visitado | períodos do horário
+// mostrado << 4) << 24
 u32 DexNav_TestGetState(u8 what);
 
 #endif // GUARD_DEXNAV_H

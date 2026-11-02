@@ -4,7 +4,7 @@ Sessão própria da ROM de teste a partir do .sav do `captura` (`save_from="capt
 silêncio. A preparação (`_start`, savestate `dexnav_base`) deixa tudo que a tela mostra igual em toda execução, seja
 qual for o inicial ou o Pokémon capturado no `captura`: relógio no dia 0 ao meio-dia (tarde; Caverna Mutante no
 conjunto 0), a Pokédex reescrita na RAM (capturados: Bulbasaur, Pidgey e os 7 de Viridian, que fica completa; só
-vistos: Rattata, Oddish e Mew), os mapas visitados (Cidade de Viridian, Rotas 1, 12 e 22 e Estrada Fagulha), o último
+vistos: Rattata, Oddish, Spinarak e Mew), os mapas visitados (Cidade de Viridian, Rotas 1, 12 e 22 e Estrada Fagulha), o último
 mapa com encontro (Rota 1) e a trava de Tanoby fechada. As expectativas saem de `tools/dexnav/gerar.py` (o espelho
 Python das regras de encontro), não do C.
 
@@ -16,8 +16,10 @@ Python das regras de encontro), não do C.
 - `dexnav/caverna_mutante`: dia 22, entrar põe a var no conjunto 4 e o C, o Python e o sorteio real batem (Teddiursa);
   no dia 23, ainda dentro, continua o conjunto 4 (a var só muda ao entrar); de fora, o DexNav já mostra o conjunto 5
   (Aipom), e entrar de novo põe a var em 5 e o sorteio bate com ele;
-- `dexnav/tanoby`: câmara Monean trancada: 0 entradas e o gerador real sem encontro; liberada: Unown 100% no C, no
-  Python e no sorteio real;
+- `dexnav/tanoby`: câmara Monean trancada: 0 entradas, o gerador real sem encontro e, aberta de dentro, o modo mapa com
+  0 espécies (topo "?/?" apagado, foto `dexnav_tanoby_trancada`); liberada: Unown 100% no C, no Python e no sorteio
+  real;
+- `dexnav/extra_tarde_noite`: de manhã, na Rota 24, as espécies só da tarde e da noite viram "+N à tarde/noite";
 - `dexnav/abre_start`: no quarto (sem encontro) o menu Start tem DEXNAV logo abaixo de POKéDEX (8 linhas; foto
   `dexnav_menu_start`); na Rota 1 o DEXNAV abre o modo mapa e B volta ao menu Start com o cursor no DEXNAV;
 - `dexnav/mapa_sem_encontro`: no quarto, abre a lista na Rota 1 (o último mapa com encontro) e B volta ao menu;
@@ -36,7 +38,9 @@ Python das regras de encontro), não do C.
   vistas com encontro, na ordem da Pokédex Nacional, com o número de mapas de cada uma (sem o Mew, visto sem
   encontro, nem o Hoothoot, que nunca foi visto);
 - `dexnav/busca_resultado` (R11): os 9 mapas do Oddish na ordem real (primeiro os de agora, depois por chance; empate
-  na ordem dos mapas), com jeito, períodos e visitado (foto `dexnav_busca_resultado`);
+  na ordem dos mapas), com jeito, períodos, visitado e o horário mostrado (foto `dexnav_busca_resultado`); e o Spinarak
+  (R14): fora do horário, a maior chance de um período só com o nome dele (Rota 2: "36% noite", não a média de manhã e
+  noite; foto `dexnav_busca_dois_horarios`);
 - `dexnav/navegacao` (R10): mapa → lista → mapa → busca → resultado → mapa (Rota 12, na linha do Oddish) e B em cadeia
   até o campo, cada tela de volta com a seleção de antes; SELECT volta à lista que está na pilha;
 - `dexnav/select`: REGISTRAR na bolsa, SELECT no campo abre o DexNav e B volta ao campo com o controle livre;
@@ -101,7 +105,7 @@ ITEMMENUACTION_REGISTER = 2
 # A Pokédex da preparação (nomes de NATIONAL_DEX_*)
 CAPTURADOS = ("BULBASAUR", "PIDGEY", "PSYDUCK", "POLIWAG", "POLIWHIRL", "SLOWPOKE", "GOLDEEN", "MAGIKARP",
               "GYARADOS")   # os 7 de Viridian (surf e varas): Viridian completa
-SO_VISTOS = ("RATTATA", "ODDISH", "MEW")   # Mew: visto, sem encontro em mapa nenhum
+SO_VISTOS = ("RATTATA", "ODDISH", "SPINARAK", "MEW")   # Mew: visto, sem encontro em mapa nenhum
 VISITADOS = ("MAP_VIRIDIAN_CITY", "MAP_ROUTE1", "MAP_ROUTE12", "MAP_ROUTE22", "MAP_ONE_ISLAND_KINDLE_ROAD")
 ULTIMO = "MAP_ROUTE1"
 
@@ -111,7 +115,10 @@ NAO_VISITADO = "MAP_ROUTE24"
 CAMARA = "MAP_SEVEN_ISLAND_TANOBY_RUINS_MONEAN_CHAMBER"
 ABAS_MAPA = "MAP_ONE_ISLAND_KINDLE_ROAD"
 BUSCA = "ODDISH"
+BUSCA_DOIS_HORARIOS = "SPINARAK"   # Rota 2: manhã 4% e noite 36% (R14)
 BUSCA_ABRE = "MAP_ROUTE12"
+EXTRA_TARDE_NOITE = "MAP_ROUTE24"   # de manhã, a grama tem espécies só da tarde e da noite
+MANHA_MINUTO = 7 * 60
 MUTANTE_MAPA = "MAP_SIX_ISLAND_ALTERING_CAVE"
 MUTANTE_DIAS = (22, 23)       # conjuntos 4 (Teddiursa) e 5 (Aipom): o de fora no dia 23 difere da var de dentro
 NUM_CONJUNTOS_MUTANTE = 9     # NUM_ALTERING_CAVE_TABLES (gerar.NUM_CONJUNTOS_MUTANTE)
@@ -156,6 +163,17 @@ def taxa(chances: list[int], bits: int) -> int:
     """DexNav_RateForPeriods: a média arredondada das colunas dos períodos em `bits`."""
     cols = [chances[i] for i in range(3) if bits >> i & 1]
     return (sum(cols) + len(cols) // 2) // len(cols) if cols else 0
+
+
+def linha_resultado(chances: list[int], periodos: int, bits: int) -> tuple[bool, int, int]:
+    """Uma linha do resultado da busca (ColherResultados, src/dexnav.c): (aparece agora, chance ‰, períodos do horário
+    mostrado). Agora: a chance de agora (`taxa` com os bits de agora: a tarde-noite é a média) e todos os períodos em
+    que aparece. Fora do horário: a maior chance de um período só e esse período (os empatados juntos); nunca a média
+    de horários diferentes (R14)."""
+    if periodos & bits:
+        return True, taxa(chances, bits), periodos
+    maior = max(chances[i] for i in range(3) if periodos >> i & 1)
+    return False, maior, sum(1 << i for i in range(3) if periodos >> i & 1 and chances[i] == maior)
 
 
 class DexNavScenario(CatchSaveScenario):
@@ -239,15 +257,15 @@ class DexNavScenario(CatchSaveScenario):
         return out
 
     def _resultado(self, especie: str, bits: int) -> list[tuple[int, int, int, int]]:
-        """As linhas do resultado da busca: (mapa, jeito, períodos, visitado), uma seção por jeito; em cada uma os de
-        agora primeiro, depois por chance (empate: a ordem dos mapas)."""
+        """As linhas do resultado da busca: (mapa, jeito, períodos, visitado | períodos do horário mostrado << 4), uma
+        seção por jeito; em cada uma os de agora primeiro, depois por chance (empate: a ordem dos mapas)."""
         res = []
         for i in range(len(self.mapas)):
             for e in self._entradas(i):
                 if e["especie"] == f"SPECIES_{especie}":
-                    agora = bool(e["periodos"] & bits)
-                    chance = taxa(e["chances"], bits if agora else e["periodos"])
-                    res.append((i, e["metodo"], e["periodos"], int(i in self.visitados), agora, chance))
+                    agora, chance, mostrados = linha_resultado(e["chances"], e["periodos"], bits)
+                    res.append((i, e["metodo"], e["periodos"], int(i in self.visitados) | mostrados << 4, agora,
+                                chance))
         out = []
         for m in range(6):
             secao = sorted((r for r in res if r[1] == m), key=lambda r: (not r[4], -r[5]))
@@ -512,12 +530,39 @@ class DexNavScenario(CatchSaveScenario):
         assert dnv.entradas(self.box, camara) == [] == self._entradas(camara, tanoby=False)
         raw = self.box.call(CMD_DEXNAV_ROLL, dnv.LAND, 10, timeout=200)
         assert raw == NO_RESULT, f"trancada: o gerador real achou encontro ({raw:#x})"
+        # aberto de dentro: o modo mapa sem espécie (o topo mostra "?/?" apagado, como a lista)
+        assert self._abrir() == camara
+        s0, s2 = self._tela(0), self._tela(2)
+        assert (s0["modo"], s0["mapa"], s2["total_mapa"], s2["capturados_mapa"]) == (MODO_MAPA, camara, 0, 0), (s0, s2)
+        self._shot("dexnav_tanoby_trancada")
+        self._fechar()
+        self.ctl.wait_overworld_idle(600)
         self._flag("FLAG_SYS_UNLOCKED_TANOBY_RUINS", True)
         py = self._entradas(camara, tanoby=True)
         especies = self._bate_c_python(dnv.entradas(self.box, camara), py, "liberada")
         assert especies == ["UNOWN"] and py[0]["chances"] == [1000, 1000, 1000], (especies, py)
         rolagem = self._rolar(CAMARA, None, 12 * 60, DIA, dnv.LAND, py, warp=False)
-        return f"trancada: 0 entradas e o gerador real sem encontro; liberada: {especies} 100% e {rolagem}"
+        return (f"trancada: 0 entradas, o gerador real sem encontro e, aberto de dentro, o mapa com 0 espécies (topo "
+                f"\"?/?\", foto dexnav_tanoby_trancada); liberada: {especies} 100% e {rolagem}")
+
+    def _extra_tarde_noite(self) -> str:
+        """De manhã, na Rota 24, as espécies que só aparecem à tarde e à noite (DAY | NIGHT) formam a linha
+        "+N à tarde/noite" (antes caía em "em outros horários")."""
+        self._restore()
+        rota24 = self.idx[EXTRA_TARDE_NOITE]
+        self.box.set_clock(0, MANHA_MINUTO)
+        self._marcar_visitado(rota24)
+        self._teleport("MAP_ROUTE1", ROUTE1_XY)
+        self._abrir()
+        self._tecla(KEY_SELECT)
+        self._lista_ate(rota24)
+        self._tecla(KEY_A)
+        esp = self._aba(rota24, 0, MANHA)
+        assert esp["periodos_extra"] == DIA | NOITE and esp["extra"] > 0, esp
+        detalhe = self._conferir_aba(rota24, 0, MANHA)
+        self._shot("dexnav_extra_tarde_noite")
+        self._fechar()
+        return f"Rota 24 às {MANHA_MINUTO // 60}h: +{esp['extra']} à tarde/noite (períodos {DIA | NOITE}); {detalhe}"
 
     def _cursor_menu_em(self, entrada: int) -> None:
         menu = self.menu
@@ -719,7 +764,7 @@ class DexNavScenario(CatchSaveScenario):
         self._ir_ate(lambda l: l["baixo16"] == self.consts.species(f"SPECIES_{BUSCA}"), BUSCA)
         self._tecla(KEY_A)
         linha = self._ir_ate(lambda l: l["a"] == rota24, "Rota 24 no resultado")
-        assert linha["d"] == 0, linha
+        assert linha["d"] & 1 == 0, linha   # bit 0: visitado
         self._tecla(KEY_A)
         assert self._estado()[:2] == (MODO_BUSCA, RESULTADO), f"A no resultado não visitado: {self._estado()}"
         self._fechar()
@@ -783,9 +828,23 @@ class DexNavScenario(CatchSaveScenario):
         assert got == want, f"resultado {got}, esperava {want}"
         agora = [m for m, _j, p, _v in want if p & DIA]
         assert agora == [m for m, *_ in want[:len(agora)]], "os de agora não vieram primeiro"
+        # R14: fora do horário, a maior chance de um período só e o nome desse período (Spinarak na Rota 2: manhã 4%
+        # e noite 36% → "36% noite", não a média "20% manhã/noite")
+        self._tecla(KEY_B)
+        alvo = self.consts.species(f"SPECIES_{BUSCA_DOIS_HORARIOS}")
+        self._ir_ate(lambda l: l["baixo16"] == alvo, BUSCA_DOIS_HORARIOS)
+        self._tecla(KEY_A)
+        want2 = self._resultado(BUSCA_DOIS_HORARIOS, DIA)
+        got2 = [(l["a"], l["b"], l["c"], l["d"]) for l in self._linhas()]
+        assert got2 == want2, f"resultado do {BUSCA_DOIS_HORARIOS} {got2}, esperava {want2}"
+        rota2 = self.idx["MAP_ROUTE2"]
+        linha = next(r for r in got2 if r[0] == rota2)
+        assert (linha[2], linha[3] >> 4) == (MANHA | NOITE, NOITE), f"Rota 2: {linha} (períodos, mostrados)"
+        self._shot("dexnav_busca_dois_horarios")
         self._fechar()
-        return (f"{BUSCA}: {len(got)} mapas na ordem (mapa, jeito, períodos, visitado) {got}: os {len(agora)} de "
-                f"agora primeiro, depois os da noite, cada grupo por chance")
+        return (f"{BUSCA}: {len(got)} mapas na ordem (mapa, jeito, períodos, visitado | mostrados << 4) {got}: os "
+                f"{len(agora)} de agora primeiro, depois os da noite, cada grupo por chance; "
+                f"{BUSCA_DOIS_HORARIOS}: {got2}, Rota 2 (manhã/noite) mostrada como noite (36%), a maior de um período")
 
     def _passo(self, key: int, esperado: tuple, what: str) -> tuple:
         self._tecla(key)
@@ -808,7 +867,7 @@ class DexNavScenario(CatchSaveScenario):
         assert self._estado() == (MODO_BUSCA, RESULTADO, rota1, 4), self._estado()
         linha = self._ir_ate(lambda l: l["a"] == rota12, "Rota 12 no resultado")
         cursor_res = self._cursor()[0]
-        assert linha["d"] == 1, linha
+        assert linha["d"] & 1 == 1, linha
         self._passo(KEY_A, (MODO_MAPA, 0, rota12, 5), "A na Rota 12: mapa")
         assert self._tela(7)["baixo16"] == oddish, f"o mapa abriu na linha {self._tela(7)}, esperava o Oddish"
         # B em cadeia: cada tela volta como estava
@@ -991,6 +1050,8 @@ class DexNavScenario(CatchSaveScenario):
             run("dexnav/chances_reais: o sorteio real bate com a chance mostrada (tolerância em σ)", self._chances_reais)
             run("dexnav/caverna_mutante: dentro, a var do encontro; de fora, o conjunto do dia", self._caverna_mutante)
             run("dexnav/tanoby: câmara trancada sem encontro; liberada, Unown 100%", self._tanoby)
+            run("dexnav/extra_tarde_noite: de manhã, \"+N à tarde/noite\" para as espécies da tarde e da noite",
+                self._extra_tarde_noite)
             run("dexnav/abre_start: DEXNAV no menu Start abre o mapa e volta ao menu", self._abre_start)
             run("dexnav/mapa_sem_encontro: sem encontro, abre a lista no último mapa com encontro",
                 self._mapa_sem_encontro)

@@ -9,8 +9,8 @@ a Pokédex inteira obtível e uma esteira de testes automática no emulador.**
 ![Idioma](https://img.shields.io/badge/idioma-PT--BR-009c3b?style=flat-square)
 ![Base](https://img.shields.io/badge/base-pret%2Fpokefirered-e3350d?style=flat-square)
 ![Linguagem](https://img.shields.io/badge/C-agbcc-555555?style=flat-square)
-![Testes](https://img.shields.io/badge/pytest-4802%20testes-2ea44f?style=flat-square)
-![Esteira](https://img.shields.io/badge/esteira-495%20checagens-2ea44f?style=flat-square)
+![Testes](https://img.shields.io/badge/pytest-4808%20testes-2ea44f?style=flat-square)
+![Esteira](https://img.shields.io/badge/esteira-496%20checagens-2ea44f?style=flat-square)
 ![Versão](https://img.shields.io/badge/ROM-v52-informational?style=flat-square)
 
 <img src="docs/readme/inicial.png" width="240" alt="Escolha do inicial em português">
@@ -148,7 +148,7 @@ perder o jeito do FireRed.
 | **O mapa de agora** | Os Pokémon do lugar em abas por jeito de encontrar (**GRAMA**, **SURFAR**, **VARAS** com as três varas e **PEDRA**, do Esmaga Pedra; **L/R** trocam a aba): ícone, ● capturado, ◐ visto ou ? nunca visto (silhueta e "??????"), a chance de aparecer e os níveis, em colunas alinhadas. A chance é a de verdade: horário, metade LeafGreen e Caverna Mutante incluídos. |
 | **Progresso** | O topo mostra quantas espécies do mapa você já capturou (`1/4`), contando todos os horários; a lista mostra as de agora e uma linha "+N à noite" (ou de dia, de manhã) para as que só aparecem em outro horário. Aba completa ganha coroa; mapa completo, **100%** com coroa. |
 | **SELECT mapas** | Todos os 124 mapas com encontro (um por andar), de Kanto e das Ilhas Sevii (**L/R**), com barra de progresso e o total de mapas completos. **A** abre qualquer mapa já visitado; o que você ainda não visitou fica como `?/?`. |
-| **START busca** | Escolha um Pokémon que você já viu e veja onde ele aparece, com jeito, chance e horário (primeiro os que aparecem agora). **A** abre o mapa, na linha dele. |
+| **START busca** | Escolha um Pokémon que você já viu e veja onde ele aparece, com jeito, chance e horário (primeiro os que aparecem agora; os de outro horário em cinza, com a chance do horário em que ele mais aparece). **A** abre o mapa visitado na aba do jeito, já na linha dele se ele aparece agora (senão ele está na linha "+N"). |
 
 <p align="center">
 <img src="docs/readme/dexnav_mapa.png" width="240" alt="DexNav na Rota 1: Pidgey capturado, Rattata visto, um nunca visto e +1 à noite">
@@ -302,7 +302,7 @@ flowchart LR
   comparadas pixel a pixel com as referências aprovadas de cada um.
 - **Checagem de texto**: mede a largura de cada frase traduzida na janela onde ela aparece e o
   tamanho dos buffers, para nada estourar.
-- **4802 testes em pytest** cobrem a própria esteira e as regras de cada hack.
+- **4808 testes em pytest** cobrem a própria esteira e as regras de cada hack.
 
 <details>
 <summary>Comandos (WSL)</summary>

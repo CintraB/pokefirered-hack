@@ -236,7 +236,10 @@ def _ordem_area() -> list[str]:
 
 
 def mapas() -> list[dict]:
-    """Os mapas com encontro, um por mapa: [{id, nome, regiao, grupo, num, secao}] na ordem da tabela."""
+    """Os mapas com encontro, um por mapa: [{id, nome, regiao, grupo, num, secao}] na ordem da tabela.
+
+    A ordem é o bit de "visitado" no save: congelada em test/tests/test_dexnav_dados.py::test_ordem_dos_bits_congelada
+    (mapa novo só no fim; um mapa novo de Kanto que esta ordenação pusesse no meio tem de ir para o fim à mão)."""
     jogo = _mapas_do_jogo()
     nomes_secao, regiao_secao = _secoes()
     area = _ordem_area()
@@ -278,6 +281,7 @@ def header() -> str:
         "// DexNav (POK-47): os mapas com encontro do FireRed (um por mapa: a Caverna Mutante tem 9 tabelas e 1 linha),",
         "// nome PT-BR \"lugar + andar\" e região, na ordem da Pokédex AREA (Kanto, depois Sevii). O índice é o bit de",
         "// \"visitado\" em gSaveBlock1Ptr->dexNav.visitedMaps: mapa novo no meio da ordem desloca os bits dos saves.",
+        "// Ordem congelada em test/tests/test_dexnav_dados.py::test_ordem_dos_bits_congelada: mapa novo só no fim.",
         "",
         f"#define DEXNAV_MAPAS_GERADOS {len(ms)}",
         "",

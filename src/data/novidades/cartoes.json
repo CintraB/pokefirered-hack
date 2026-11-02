@@ -413,7 +413,7 @@
         },
         {
           "title": "DexNav",
-          "body": "No menu START ou no SELECT: os Pokémon de\ncada lugar por jeito de encontrar, com a\nchance real, os níveis e o que você já\ncapturou. SELECT mapas mostra o progresso;\nSTART busca diz onde achar um Pokémon visto.",
+          "body": "No menu START (ou no SELECT, registrando o\nitem): os Pokémon de cada lugar por jeito de\nencontrar, chance real, níveis e o que falta\ncapturar. SELECT mapas mostra o progresso;\nSTART busca diz onde achar um Pokémon visto.",
           "itemId": "ITEM_DEXNAV"
         }
       ]

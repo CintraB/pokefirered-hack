@@ -2,6 +2,7 @@
 // DexNav (POK-47): os mapas com encontro do FireRed (um por mapa: a Caverna Mutante tem 9 tabelas e 1 linha),
 // nome PT-BR "lugar + andar" e região, na ordem da Pokédex AREA (Kanto, depois Sevii). O índice é o bit de
 // "visitado" em gSaveBlock1Ptr->dexNav.visitedMaps: mapa novo no meio da ordem desloca os bits dos saves.
+// Ordem congelada em test/tests/test_dexnav_dados.py::test_ordem_dos_bits_congelada: mapa novo só no fim.
 
 #define DEXNAV_MAPAS_GERADOS 124
 

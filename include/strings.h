@@ -1656,6 +1656,7 @@ extern const u8 gText_DexNav_MaisNoite[];
 extern const u8 gText_DexNav_MaisDia[];
 extern const u8 gText_DexNav_MaisManha[];
 extern const u8 gText_DexNav_MaisTarde[];
+extern const u8 gText_DexNav_MaisTardeNoite[];
 extern const u8 gText_DexNav_MaisOutros[];
 extern const u8 gText_DexNav_Nenhum[];
 extern const u8 gText_DexNav_RodapeSair[];

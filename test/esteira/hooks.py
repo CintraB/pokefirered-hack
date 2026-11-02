@@ -375,7 +375,8 @@ class Mailbox:
         ("+N"), períodos do extra, períodos de agora; 4: cursor e linhas que se escolhem (16 bits cada); 5: telas
         empilhadas, completos e total da região (lista); 6: espécie da busca e resultados (16 bits cada); 7: a linha
         selecionada (mapa: espécie em baixo16, marca em c (0 capturado, 1 visto, 2 nunca visto) e método em d; lista:
-        mapa, visitado, capturados, total; escolha: espécie e mapas; resultado: mapa, método, períodos, visitado)."""
+        mapa, visitado, capturados, total; escolha: espécie e mapas; resultado: mapa, método, períodos e em d o
+        visitado (bit 0) e os períodos do horário mostrado (d >> 4))."""
         if what not in range(8):
             raise ValueError(f"dexnav_tela: what = {what!r} fora de 0..7 (DexNav_TestGetState, include/dexnav.h)")
         raw = self.call(CMD_DEXNAV_STATE, what)

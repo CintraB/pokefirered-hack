@@ -113,8 +113,8 @@ def test_dexnav_no_fim_de_melhorias_modernas():
     cartao = _topico("Melhorias modernas")["cards"][-1]
     assert cartao["title"] == "DexNav" and cartao["itemId"] == "ITEM_DEXNAV"
     corpo = _plano(cartao["body"])
-    for trecho in ("menu START", "SELECT", "jeito de encontrar", "chance real", "níveis", "capturou", "SELECT mapas",
-                   "START busca", "Pokémon visto"):
+    for trecho in ("menu START", "SELECT, registrando o item", "jeito de encontrar", "chance real", "níveis",
+                   "falta capturar", "SELECT mapas", "START busca", "Pokémon visto"):
         assert trecho in corpo, trecho
     rodape = (REPO_ROOT / "src/strings.c").read_text(encoding="utf-8")
     assert '_("SELECT mapas")' in rodape and '_("START busca")' in rodape

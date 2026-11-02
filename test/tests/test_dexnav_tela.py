@@ -217,7 +217,8 @@ def test_linhas_e_rolagem():
 def test_chance_do_periodo_atual():
     """A chance vem de DexNav_RateForPeriods com os bits do período (a tarde-noite tem 2 bits): nunca rateX10[bit]."""
     fonte = _sem_comentarios(_ler(TELA_C))
-    assert "rateX10[" not in fonte
+    # fora do horário, a busca mostra a maior chance de um período só (R14): só o ColherResultados lê uma coluna
+    assert "rateX10[" not in fonte.replace(_corpo(fonte, "ColherResultados"), "")
     assert "DexNav_RateForPeriods(" in fonte and "DexNav_CurrentPeriodBit()" in fonte
     assert re.search(r"->periods & \w+->periods\b|\.periods & \w+->periods\b|periods & t->periods", fonte), \
         "a lista testa o período com `periods & bits`"
@@ -467,11 +468,11 @@ def test_nao_visitado_nao_abre():
     abrir = _sem_comentarios(_corpo(fonte, "InputLista"))
     assert "JOY_NEW(A_BUTTON)" in abrir
     # o teste de visitado vem antes de abrir (MapaConhecido = visitado e com espécie; ver test_mapa_visitado_sem_encontro_agora)
-    m = re.search(r"if \(!MapaConhecido\(t, mapIndex\)\)\s*return;", abrir)
+    m = re.search(r"if \(!MapaConhecido\(t, mapIndex\)\)\s*\{\s*PlaySE\(SE_FAILURE\);\s*return;", abrir)
     assert m, abrir
     assert abrir.index(m.group(0)) < abrir.index("AbrirMapa(t, mapIndex"), "o teste de visitado vem antes de abrir"
     busca = _sem_comentarios(_corpo(fonte, "InputBusca"))
-    m = re.search(r"if \(!DexNav_IsVisited\(([^)]*)\)\)\s*return;", busca)
+    m = re.search(r"if \(!DexNav_IsVisited\(([^)]*)\)\)\s*\{\s*PlaySE\(SE_FAILURE\);\s*return;", busca)
     assert m and busca.index(m.group(0)) < busca.index("AbrirMapa(t, r->mapIndex, t->species, r->method)"), busca
     assert "t->modo = DEXNAV_MODE_MAP;" in _corpo(fonte, "AbrirMapa")
     resultado = _sem_comentarios(_corpo(fonte, "DesenharLinhaResultado"))
@@ -709,7 +710,7 @@ def test_mapa_visitado_sem_encontro_agora():
     linha = _sem_comentarios(_corpo(fonte, "DesenharLinhaMapa"))
     assert "else if (MapaConhecido(t, i))" in linha and "cor[1] = MapaConhecido(t, i) ? COR_TEXTO : COR_CINZA;" in linha
     entrada = _sem_comentarios(_corpo(fonte, "InputLista"))
-    assert re.search(r"if \(!MapaConhecido\(t, mapIndex\)\)\s*return;", entrada)
+    assert re.search(r"if \(!MapaConhecido\(t, mapIndex\)\)\s*\{\s*PlaySE\(SE_FAILURE\);\s*return;", entrada)
     assert entrada.index("MapaConhecido") < entrada.index("AbrirMapa(")
     assert "MapaConhecido" not in _corpo(fonte, "ContarRegiao"), "o total da região conta todos os mapas"
     # o cursor inicial "primeiro da lista" cai num mapa que A abre
@@ -733,3 +734,43 @@ def test_rodape_da_escolha_vazia():
     rodape = _sem_comentarios(_corpo(_ler(TELA_C), "DesenharRodape"))
     m = re.search(r"if \(t->nLinhas != 0\)\s*\{(.*?)\}", rodape, re.S)
     assert m and "gText_DexNav_RodapeBuscar" in m.group(1) and "gText_DexNav_RodapePagina" in m.group(1), rodape
+
+
+# --- revisão final (01/11) ------------------------------------------------------------------------------------------
+
+def test_busca_fora_do_horario_mostra_um_periodo_so():
+    """R14: fora do horário, o resultado da busca mostra a maior chance de UM período (e o nome dele), nunca a média de
+    horários diferentes (manhã e noite não são uma janela 50/50 como a tarde-noite). O espelho Python está em
+    test_dexnav_cenario.py::test_resultado_fora_do_horario_nos_124_mapas."""
+    corpo = _sem_comentarios(_corpo(_ler(TELA_C), "ColherResultados"))
+    assert "DexNav_RateForPeriods(e, e->periods)" not in corpo, corpo
+    assert "DexNav_RateForPeriods(e, t->periods)" in corpo   # agora: a de agora (tarde-noite = média, como o jogo)
+    assert "e->rateX10[p] > r->rateX10" in corpo and "r->mostrados = 1 << p" in corpo
+    assert "e->rateX10[p] == r->rateX10" in corpo and "r->mostrados |= 1 << p" in corpo
+    desenho = _corpo(_ler(TELA_C), "DesenharLinhaResultado")
+    assert "sNomeDoHorario[r->mostrados & DEXNAV_PERIOD_ALL]" in desenho
+    assert "r->mostrados << 4" in _corpo(_ler(TELA_C), "DexNav_TestGetState")
+
+
+def test_a_inerte_toca_som_de_falha():
+    """A num mapa não visitado ou trancado (lista) e num resultado não visitado (busca) avisa com SE_FAILURE."""
+    fonte = _ler(TELA_C)
+    lista = _corpo(fonte, "InputLista")
+    assert re.search(r"if \(!MapaConhecido\(t, mapIndex\)\)\s*\{\s*PlaySE\(SE_FAILURE\);", lista), lista
+    busca = _corpo(fonte, "InputBusca")
+    assert re.search(r"if \(!DexNav_IsVisited\(r->mapIndex\)\)\s*\{\s*PlaySE\(SE_FAILURE\);", busca), busca
+
+
+def test_extra_da_tarde_e_da_noite():
+    """De manhã, as espécies só da tarde e da noite (DAY | NIGHT) são "+N à tarde/noite", não "em outros horários"."""
+    extra = _corpo(_ler(TELA_C), "DesenharLinhaExtra")
+    assert re.search(r"case DEXNAV_PERIOD_DAY \| DEXNAV_PERIOD_NIGHT:[^\n]*\n\s*texto = gText_DexNav_MaisTardeNoite;",
+                     extra), extra
+    assert '_("+{STR_VAR_1} à tarde/noite")' in _ler(SRC / "strings.c")
+
+
+def test_topo_sem_especie_mostra_interrogacao():
+    """Câmara de Tanoby trancada aberta de dentro: o topo mostra "?/?" apagado (como a lista), não "0/0"."""
+    topo = _corpo(_ler(TELA_C), "DesenharTopo")
+    assert re.search(r"else if \(t->totalMapa == 0\)\s*\{[^}]*StringCopy\(contador, gText_DexNav_Interrogacao\);", topo)
+    assert "t->totalMapa == 0 ? sCor_BarraClara : sCor_Barra" in topo
