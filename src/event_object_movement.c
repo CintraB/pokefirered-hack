@@ -2,6 +2,7 @@
 #include "gflib.h"
 #include "event_data.h"
 #include "event_object_movement.h"
+#include "follower.h"
 #include "field_camera.h"
 #include "field_control_avatar.h"
 #include "field_effect.h"
@@ -479,7 +480,20 @@ static const u8 gInitialMovementTypeFacingDirections[MOVEMENT_TYPES_COUNT] = {
 #include "data/object_events/object_event_anims.h"
 #include "data/object_events/base_oam.h"
 #include "data/object_events/object_event_subsprites.h"
+#include "data/object_events/follower_species.h"
 #include "data/object_events/object_event_graphics_info.h"
+
+const struct FollowerSpecies *Follower_GetSpeciesInfo(u16 species)
+{
+    u32 i;
+
+    for (i = 0; i < FOLLOWER_SPECIES_COUNT; i++)
+    {
+        if (gFollowerSpecies[i].species == species)
+            return &gFollowerSpecies[i];
+    }
+    return NULL;
+}
 
 static const struct SpritePalette sObjectEventSpritePalettes[] = {
     {gObjectEventPal_NpcBlue,                 OBJ_EVENT_PAL_TAG_NPC_BLUE},

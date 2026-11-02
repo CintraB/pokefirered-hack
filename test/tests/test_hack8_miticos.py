@@ -632,7 +632,9 @@ def test_jirachi_objeto_de_brilho_t5():
     # gráfico reaproveitado do brilho de campo (nenhuma arte nova)
     consts = _read("include/constants/event_objects.h")
     num = int(re.search(r"#define NUM_OBJ_EVENT_GFX\s+(\d+)", consts).group(1))
-    assert re.search(rf"#define OBJ_EVENT_GFX_JIRACHI_STAR\s+{num - 1}\b", consts)
+    # o brilho foi o último gráfico até o seguidor (POK-48) entrar depois dele
+    assert re.search(rf"#define OBJ_EVENT_GFX_JIRACHI_STAR\s+{num - 2}\b", consts)
+    assert re.search(rf"#define OBJ_EVENT_GFX_FOLLOWER\s+{num - 1}\b", consts)
     pointers = _read("src/data/object_events/object_event_graphics_info_pointers.h")
     assert re.search(r"\[OBJ_EVENT_GFX_JIRACHI_STAR\]\s*=\s*&gObjectEventGraphicsInfo_JirachiStar", pointers)
     info = re.search(

@@ -2943,3 +2943,24 @@ const struct ObjectEventGraphicsInfo gObjectEventGraphicsInfo_JirachiStar = {
     .images = sPicTable_JirachiStar,
     .affineAnims = gDummySpriteAffineAnimTable,
 };
+
+// POK-48: Pokémon seguidor. Imagens e paleta de verdade vêm de gFollowerSpecies em tempo de execução; os campos
+// abaixo valem para qualquer espécie (32x32). A paleta de NPC é só um valor seguro enquanto a espécie não é resolvida.
+const struct ObjectEventGraphicsInfo gObjectEventGraphicsInfo_Follower = {
+    .tileTag = TAG_NONE,
+    .paletteTag = OBJ_EVENT_PAL_TAG_NPC_BLUE,
+    .reflectionPaletteTag = OBJ_EVENT_PAL_TAG_NONE,
+    .size = 512,
+    .width = 32,
+    .height = 32,
+    .paletteSlot = PALSLOT_FOLLOWER,
+    .shadowSize = SHADOW_SIZE_M,
+    .inanimate = FALSE,
+    .disableReflectionPaletteLoad = FALSE,
+    .tracks = TRACKS_FOOT,
+    .oam = &gObjectEventBaseOam_32x32,
+    .subspriteTables = gObjectEventSpriteOamTables_32x32,
+    .anims = sAnimTable_Follower,
+    .images = FOLLOWER_DEFAULT_IMAGES,
+    .affineAnims = gDummySpriteAffineAnimTable,
+};

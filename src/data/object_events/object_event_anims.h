@@ -302,6 +302,47 @@ static const union AnimCmd sAnim_GoFastestEast[] = {
     ANIMCMD_JUMP(0),
 };
 
+// POK-48: Pokémon seguidor. A folha tem 8 quadros: sul 0-1, norte 2-3, oeste 4-5, leste 6-7 (o leste tem desenho
+// próprio, sem espelho). Parado mostra o 1º quadro da direção; andar alterna os dois, no ritmo de cada velocidade.
+#define FOLLOWER_WALK_ANIM(name, frame, ticks) static const union AnimCmd name[] = {     ANIMCMD_FRAME(frame, ticks),     ANIMCMD_FRAME((frame) + 1, ticks),     ANIMCMD_JUMP(0), }
+
+static const union AnimCmd sAnim_FollowerFaceSouth[] = {
+    ANIMCMD_FRAME(0, 16),
+    ANIMCMD_JUMP(0),
+};
+
+static const union AnimCmd sAnim_FollowerFaceNorth[] = {
+    ANIMCMD_FRAME(2, 16),
+    ANIMCMD_JUMP(0),
+};
+
+static const union AnimCmd sAnim_FollowerFaceWest[] = {
+    ANIMCMD_FRAME(4, 16),
+    ANIMCMD_JUMP(0),
+};
+
+static const union AnimCmd sAnim_FollowerFaceEast[] = {
+    ANIMCMD_FRAME(6, 16),
+    ANIMCMD_JUMP(0),
+};
+
+FOLLOWER_WALK_ANIM(sAnim_FollowerGoSouth, 0, 8);
+FOLLOWER_WALK_ANIM(sAnim_FollowerGoNorth, 2, 8);
+FOLLOWER_WALK_ANIM(sAnim_FollowerGoWest, 4, 8);
+FOLLOWER_WALK_ANIM(sAnim_FollowerGoEast, 6, 8);
+FOLLOWER_WALK_ANIM(sAnim_FollowerGoFastSouth, 0, 4);
+FOLLOWER_WALK_ANIM(sAnim_FollowerGoFastNorth, 2, 4);
+FOLLOWER_WALK_ANIM(sAnim_FollowerGoFastWest, 4, 4);
+FOLLOWER_WALK_ANIM(sAnim_FollowerGoFastEast, 6, 4);
+FOLLOWER_WALK_ANIM(sAnim_FollowerGoFasterSouth, 0, 2);
+FOLLOWER_WALK_ANIM(sAnim_FollowerGoFasterNorth, 2, 2);
+FOLLOWER_WALK_ANIM(sAnim_FollowerGoFasterWest, 4, 2);
+FOLLOWER_WALK_ANIM(sAnim_FollowerGoFasterEast, 6, 2);
+FOLLOWER_WALK_ANIM(sAnim_FollowerGoFastestSouth, 0, 1);
+FOLLOWER_WALK_ANIM(sAnim_FollowerGoFastestNorth, 2, 1);
+FOLLOWER_WALK_ANIM(sAnim_FollowerGoFastestWest, 4, 1);
+FOLLOWER_WALK_ANIM(sAnim_FollowerGoFastestEast, 6, 1);
+
 // For indicating a VS Seeker rematch
 static const union AnimCmd sAnim_RaiseHand[] = {
     ANIMCMD_FRAME(9, 0),
@@ -1054,6 +1095,30 @@ static const union AnimCmd *const sAnimTable_Standard[] = {
     [ANIM_STD_GO_FASTEST_WEST] = sAnim_GoFastestWest,
     [ANIM_STD_GO_FASTEST_EAST] = sAnim_GoFastestEast,
     [ANIM_RAISE_HAND] = sAnim_RaiseHand,
+};
+
+// Mesma ordem (ANIM_STD_*) da sAnimTable_Standard, com os quadros da folha do seguidor
+static const union AnimCmd *const sAnimTable_Follower[] = {
+    [ANIM_STD_FACE_SOUTH] = sAnim_FollowerFaceSouth,
+    [ANIM_STD_FACE_NORTH] = sAnim_FollowerFaceNorth,
+    [ANIM_STD_FACE_WEST] = sAnim_FollowerFaceWest,
+    [ANIM_STD_FACE_EAST] = sAnim_FollowerFaceEast,
+    [ANIM_STD_GO_SOUTH] = sAnim_FollowerGoSouth,
+    [ANIM_STD_GO_NORTH] = sAnim_FollowerGoNorth,
+    [ANIM_STD_GO_WEST] = sAnim_FollowerGoWest,
+    [ANIM_STD_GO_EAST] = sAnim_FollowerGoEast,
+    [ANIM_STD_GO_FAST_SOUTH] = sAnim_FollowerGoFastSouth,
+    [ANIM_STD_GO_FAST_NORTH] = sAnim_FollowerGoFastNorth,
+    [ANIM_STD_GO_FAST_WEST] = sAnim_FollowerGoFastWest,
+    [ANIM_STD_GO_FAST_EAST] = sAnim_FollowerGoFastEast,
+    [ANIM_STD_GO_FASTER_SOUTH] = sAnim_FollowerGoFasterSouth,
+    [ANIM_STD_GO_FASTER_NORTH] = sAnim_FollowerGoFasterNorth,
+    [ANIM_STD_GO_FASTER_WEST] = sAnim_FollowerGoFasterWest,
+    [ANIM_STD_GO_FASTER_EAST] = sAnim_FollowerGoFasterEast,
+    [ANIM_STD_GO_FASTEST_SOUTH] = sAnim_FollowerGoFastestSouth,
+    [ANIM_STD_GO_FASTEST_NORTH] = sAnim_FollowerGoFastestNorth,
+    [ANIM_STD_GO_FASTEST_WEST] = sAnim_FollowerGoFastestWest,
+    [ANIM_STD_GO_FASTEST_EAST] = sAnim_FollowerGoFastestEast,
 };
 
 static const union AnimCmd *const sAnimTable_HoOh[] = {

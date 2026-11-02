@@ -23,6 +23,9 @@ enum {
     // the remaining sprite palette slots (12-15) are used by field effects, the interface, etc.
 };
 
+// POK-48: slot da paleta do Pokémon seguidor (provisório; ver include/follower.h)
+#define PALSLOT_FOLLOWER PALSLOT_NPC_SPECIAL_REFLECTION
+
 enum SpinnerRunnerFollowPatterns
 {
     RUNFOLLOW_ANY,
