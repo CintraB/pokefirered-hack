@@ -23,7 +23,10 @@ enum {
     // the remaining sprite palette slots (12-15) are used by field effects, the interface, etc.
 };
 
-// POK-48: slot da paleta do Pokémon seguidor (provisório; ver include/follower.h)
+// POK-48: slot da paleta do Pokémon seguidor. O 11 (reflexo do slot especial) e não o 10: o S.S. Anne, a Estrela de
+// Jirachi e os outros objetos do slot 10 convivem com ele; só o Seagallop e o Meteorito gravam um reflexo no 11, e num
+// mapa com eles o seguidor não aparece (IsFollowerPaletteSlotInUse). O reflexo do seguidor na água usa a própria
+// paleta (reflectionPaletteTag NONE: nada é carregado em gReflectionEffectPaletteMap[11] = 11).
 #define PALSLOT_FOLLOWER PALSLOT_NPC_SPECIAL_REFLECTION
 
 enum SpinnerRunnerFollowPatterns
@@ -239,5 +242,9 @@ void ResetObjectEvents(void);
 /* Hack 7 — frente A */
 extern const struct SpritePalette gSpritePalette_GeneralFieldEffect0;
 void ReloadObjectEventPalettes(void);
+// POK-48: Pokémon seguidor (src/follower.c)
+void RemoveObjectEventById(u8 objectEventId);
+bool8 IsFollowerPaletteSlotInUse(void);
+bool8 CanFollowerSpawnAt(struct ObjectEvent *player, s16 x, s16 y, u8 direction);
 
 #endif // GUARD_EVENT_OBJECT_MOVEMENT_H

@@ -342,6 +342,11 @@ FOLLOWER_WALK_ANIM(sAnim_FollowerGoFastestSouth, 0, 1);
 FOLLOWER_WALK_ANIM(sAnim_FollowerGoFastestNorth, 2, 1);
 FOLLOWER_WALK_ANIM(sAnim_FollowerGoFastestWest, 4, 1);
 FOLLOWER_WALK_ANIM(sAnim_FollowerGoFastestEast, 6, 1);
+// Parado (o "respirar" do HGSS): os 2 quadros da direção, a cada FOLLOWER_IDLE_FRAMES (include/follower.h)
+FOLLOWER_WALK_ANIM(sAnim_FollowerIdleSouth, 0, FOLLOWER_IDLE_FRAMES);
+FOLLOWER_WALK_ANIM(sAnim_FollowerIdleNorth, 2, FOLLOWER_IDLE_FRAMES);
+FOLLOWER_WALK_ANIM(sAnim_FollowerIdleWest, 4, FOLLOWER_IDLE_FRAMES);
+FOLLOWER_WALK_ANIM(sAnim_FollowerIdleEast, 6, FOLLOWER_IDLE_FRAMES);
 
 // For indicating a VS Seeker rematch
 static const union AnimCmd sAnim_RaiseHand[] = {
@@ -1119,6 +1124,10 @@ static const union AnimCmd *const sAnimTable_Follower[] = {
     [ANIM_STD_GO_FASTEST_NORTH] = sAnim_FollowerGoFastestNorth,
     [ANIM_STD_GO_FASTEST_WEST] = sAnim_FollowerGoFastestWest,
     [ANIM_STD_GO_FASTEST_EAST] = sAnim_FollowerGoFastestEast,
+    [FOLLOWER_ANIM_IDLE_SOUTH] = sAnim_FollowerIdleSouth,
+    [FOLLOWER_ANIM_IDLE_NORTH] = sAnim_FollowerIdleNorth,
+    [FOLLOWER_ANIM_IDLE_WEST] = sAnim_FollowerIdleWest,
+    [FOLLOWER_ANIM_IDLE_EAST] = sAnim_FollowerIdleEast,
 };
 
 static const union AnimCmd *const sAnimTable_HoOh[] = {

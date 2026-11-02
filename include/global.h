@@ -392,6 +392,7 @@ struct SaveBlock2
               u16 optionsBattleStyle:1; // OPTIONS_BATTLE_STYLE_[SHIFT/SET]
               u16 optionsBattleSceneOff:1; // whether battle animations are disabled
               u16 regionMapZoom:1; // whether the map is zoomed in
+              u16 optionsFollowerOff:1; // POK-48: Pokémon seguidor desligado (0 = Sim: save antigo abre ligado)
     /*0x018*/ struct Pokedex pokedex;
     /*0x090*/ u32 gameClockFrames; // in-game clock (src/day_night.c), frames since 08:00 of day 0
     /*0x094*/ u8 filler_94[0x4];

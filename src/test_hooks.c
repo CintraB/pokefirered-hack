@@ -37,6 +37,7 @@ extern u32 TestRollWild(u8 area, u8 rod, bool8 startBattle); // Hack 8
 #include "pokemon_storage_system.h"
 // POK-47
 #include "dexnav.h"
+#include "follower.h"
 
 STATIC_ASSERT(TEST_TEXT_SIZE >= SUMMARY_PAGE_TEXT_SIZE, TestTextHoldsASummaryPage);
 
@@ -1394,6 +1395,8 @@ void TestHooks_Run(void)
     case TEST_CMD_DEXNAV_ROLL:      result = DexNavRoll(gTestMailbox.arg0, gTestMailbox.arg1); break;
     case TEST_CMD_DEXNAV_STATE:     result = DexNav_TestGetState(gTestMailbox.arg0); break;
     case TEST_CMD_OPEN_DEXNAV:      result = OpenDexNav(); break;
+    // POK-48
+    case TEST_CMD_FOLLOWER_STATE:   result = Follower_TestGetState(gTestMailbox.arg0); break;
     default:
         result = 0xFFFFFFFF;
         break;

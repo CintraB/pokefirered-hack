@@ -177,6 +177,13 @@ struct TestDexNavTally
 #define TEST_DEXNAV_TALLY_MAX (TEST_TEXT_SIZE / sizeof(struct TestDexNavTally))
 // --- end of POK-47 -------------------------------------------------------------------------
 
+// --- POK-48: Pokémon seguidor ---------------------------------------------------------------
+enum
+{
+    TEST_CMD_FOLLOWER_STATE = 0xF0, // arg0 = what: Follower_TestGetState (include/follower.h); 0: exists | species << 8 | shiny << 24 | hidden << 25; 1: x | y << 16 of the follower (s16 each, without MAP_OFFSET; 0xFFFFFFFE = no follower); 2: facingDirection | idle anim frame << 8 | objects with the follower localId << 16 (0xFFFFFFFF = not in the field)
+};
+// --- end of POK-48 -------------------------------------------------------------------------
+
 extern struct TestMailbox gTestMailbox;
 extern u8 gTestText[TEST_TEXT_SIZE];
 

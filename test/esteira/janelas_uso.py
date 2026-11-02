@@ -590,7 +590,7 @@ USAGE_RULES: list[UsageRule] = [
       "x = 4 + 35 (src/union_room_chat_display.c:1132-1150)", font="small", label="gText_Ellipsis"),
     U("src/union_room_chat.c", "call:StringCopy", None,
       "frase registrada padrão do chat: copiada para registeredTexts[][21] do save (src/union_room_chat.c:1432-1441, "
-      "include/global.h:868): 20 letras", chars=20),
+      "include/global.h:869): 20 letras", chars=20),
     U("src/union_room_chat.c", "call:DynamicPlaceholderTextUtil_ExpandPlaceholders", 21 * 8,
       "entrou/saiu do chat: registro na janela 0 de 21 tiles (src/union_room_chat_display.c:163-168), x = 0 "
       "(src/union_room_chat_display.c:1217); expandido em src/union_room_chat.c:1298, :1318"),
