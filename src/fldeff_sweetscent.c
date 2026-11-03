@@ -1,4 +1,5 @@
 #include "global.h"
+#include "follower.h"
 #include "gflib.h"
 #include "field_player_avatar.h"
 #include "field_effect.h"
@@ -40,6 +41,7 @@ bool8 FldEff_SweetScent(void)
 {
     u8 taskId;
 
+    Follower_Remove(); // POK-48: some no Doce Aroma (volta na batalha: Follower_Refresh; ou na falha)
     SetWeatherScreenFadeOut();
     taskId = CreateFieldEffectShowMon();
     FLDEFF_SET_FUNC_TO_DATA(StartSweetScentFieldEffect);
@@ -94,6 +96,7 @@ static void FailSweetScentEncounter(u8 taskId)
         CpuFastCopy(sPlttBufferBak, gPlttBufferUnfaded, PLTT_SIZE);
         WeatherProcessingIdle();
         Free(sPlttBufferBak);
+        Follower_Spawn(); // POK-48: nada apareceu: o seguidor volta (com as paletas já restauradas)
         ScriptContext_SetupScript(EventScript_FailSweetScent);
         DestroyTask(taskId);
     }

@@ -11,6 +11,7 @@
 #include "overworld.h"
 #include "quest_log.h"
 #include "sloopsvc.h"
+#include "follower.h"
 
 #define SAVEBLOCK_MOVE_RANGE    128
 
@@ -182,7 +183,17 @@ void SaveObjectEvents(void)
     int i;
 
     for (i = 0; i < OBJECT_EVENTS_COUNT; i++)
-        gSaveBlock1Ptr->objectEvents[i] = gObjectEvents[i];
+    {
+        // POK-48: o seguidor nunca vai para o save (ao CONTINUAR, Follower_Refresh o recria da equipe)
+        if (Follower_IsFollowerObject(&gObjectEvents[i]))
+        {
+            CpuFill16(0, &gSaveBlock1Ptr->objectEvents[i], sizeof(gSaveBlock1Ptr->objectEvents[i]));
+        }
+        else
+        {
+            gSaveBlock1Ptr->objectEvents[i] = gObjectEvents[i];
+        }
+    }
 }
 
 void LoadObjectEvents(void)

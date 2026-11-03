@@ -415,6 +415,11 @@
           "title": "DexNav",
           "body": "No menu START (ou no SELECT, registrando o\nitem): os Pokémon de cada lugar por jeito de\nencontrar, chance real, níveis e o que falta\ncapturar. SELECT mapas mostra o progresso;\nSTART busca diz onde achar um Pokémon visto.",
           "itemId": "ITEM_DEXNAV"
+        },
+        {
+          "title": "Pokémon seguidor",
+          "body": "O 1º da equipe anda atrás de você no campo:\nos iniciais de Kanto e as evoluções deles,\nPichu, Pikachu e Raichu. Some na bicicleta\ne no Surf e volta depois. Em OPÇÕES, a\nlinha Seguidor liga e desliga.",
+          "speciesBefore": "SPECIES_PIKACHU"
         }
       ]
     },

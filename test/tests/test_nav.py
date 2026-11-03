@@ -373,6 +373,9 @@ def test_step_crosses_map_connection_to_route1(town):
     # o para em (12,1). SaveBlock1.vars começa em 0x1000 (include/global.h).
     sb1 = emu.read_u32(town.game.syms.addr("gSaveBlock1Ptr"))
     emu.write(sb1 + 0x1000 + (0x4050 - 0x4000) * 2, (1).to_bytes(2, "little"))
+    # Repel (VAR_REPEL_STEP_COUNT=0x4020) com a equipe vazia: IsWildLevelAllowedByRepel recusa todo selvagem. Sem
+    # ele, um encontro na grama da Rota 1 depende do RNG (que muda com o tempo de cada build) e corta o passo
+    emu.write(sb1 + 0x1000 + (0x4020 - 0x4000) * 2, (250).to_bytes(2, "little"))
     assert nav.walk_to(12, 2)
     route1 = consts.map("MAP_ROUTE1")
     height = load_map_grid(str(REPO_ROOT), *route1).height

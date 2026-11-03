@@ -986,6 +986,7 @@ extern const u8 Help_Text_Sound[];
 extern const u8 Help_Text_ButtonMode[];
 extern const u8 Help_Text_Frame[];
 extern const u8 Help_Text_Cancel2[];
+extern const u8 Help_Text_Follower[]; // POK-48
 extern const u8 Help_Text_TM[];
 extern const u8 Help_Text_HM[];
 extern const u8 Help_Text_HMMove[];
@@ -1029,6 +1030,7 @@ extern const u8 Help_Text_DefineSound[];
 extern const u8 Help_Text_DefineButtonMode[];
 extern const u8 Help_Text_DefineFrame[];
 extern const u8 Help_Text_DefineCancel2[];
+extern const u8 Help_Text_DefineFollower[]; // POK-48
 extern const u8 Help_Text_DefineTM[];
 extern const u8 Help_Text_DefineHM[];
 extern const u8 Help_Text_DefineHMMove[];

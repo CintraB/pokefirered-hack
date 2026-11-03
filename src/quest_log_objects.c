@@ -3,6 +3,7 @@
 #include "fieldmap.h"
 #include "field_player_avatar.h"
 #include "metatile_behavior.h"
+#include "follower.h"
 
 void QL_RecordObjects(struct QuestLogScene * questLog)
 {
@@ -10,6 +11,12 @@ void QL_RecordObjects(struct QuestLogScene * questLog)
 
     for (i = 0; i < OBJECT_EVENTS_COUNT; i++)
     {
+        // POK-48: o seguidor não entra na cena (no replay ele não aparece): registro zerado = slot inativo
+        if (Follower_IsFollowerObject(&gObjectEvents[i]))
+        {
+            CpuFill16(0, &questLog->objectEvents[i], sizeof(questLog->objectEvents[i]));
+            continue;
+        }
         questLog->objectEvents[i].active                         = gObjectEvents[i].active;
         questLog->objectEvents[i].triggerGroundEffectsOnStop     = gObjectEvents[i].triggerGroundEffectsOnStop;
         questLog->objectEvents[i].disableCoveringGroundEffects   = gObjectEvents[i].disableCoveringGroundEffects;
@@ -54,6 +61,9 @@ void QL_LoadObjects(const struct QuestLogScene * questLog, const struct ObjectEv
 
     for (i = 0; i < OBJECT_EVENTS_COUNT; i++)
     {
+        // POK-48: um seguidor gravado (não deveria haver) fica de fora do replay
+        if (questLogObjectEvents[i].localId == OBJ_EVENT_ID_FOLLOWER && questLogObjectEvents[i].graphicsId == OBJ_EVENT_GFX_FOLLOWER)
+            continue;
         gObjectEvents[i].active                         = questLogObjectEvents[i].active;
         gObjectEvents[i].triggerGroundEffectsOnStop     = questLogObjectEvents[i].triggerGroundEffectsOnStop;
         gObjectEvents[i].disableCoveringGroundEffects   = questLogObjectEvents[i].disableCoveringGroundEffects;

@@ -52,7 +52,9 @@ def test_ritmo_original_dos_npcs_e_do_script_fica():
 
 
 def test_so_o_jogador_por_input_usa_os_ritmos_novos():
-    assert re.search(r"return objectEvent->isPlayer && !ScriptContext_IsEnabled\(\);", MOVEMENT)
+    # POK-48: o seguidor (Pokémon que anda atrás do jogador) espelha o passo do jogador e ganha o mesmo ritmo
+    assert re.search(r"return \(objectEvent->isPlayer \|\| Follower_IsFollowerObject\(objectEvent\)\)"
+                     r" && !ScriptContext_IsEnabled\(\);", MOVEMENT)
     assert re.search(r"speed == MOVE_SPEED_NORMAL && IsPlayerMovingByInput\(objectEvent\)\)\s*speed = MOVE_SPEED_PLAYER_WALK;",
                      MOVEMENT)
     assert re.search(r"IsPlayerMovingByInput\(objectEvent\) \? MOVE_SPEED_PLAYER_RUN : MOVE_SPEED_FAST_1;", MOVEMENT)

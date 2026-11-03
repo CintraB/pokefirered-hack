@@ -1,6 +1,10 @@
 OBJEVENTGFXDIR := graphics/object_events/pics
 FLDEFFGFXDIR := graphics/field_effects/pics
 
+# POK-48: folhas dos Pokémon seguidores (256x32, 8 quadros 32x32), geradas por tools/seguidores/converter.py
+$(OBJEVENTGFXDIR)/seguidores/%.4bpp: $(OBJEVENTGFXDIR)/seguidores/%.png
+	$(GFX) $< $@ -mwidth 4 -mheight 4
+
 $(OBJEVENTGFXDIR)/misc/cut_tree.4bpp: %.4bpp: %.png
 	$(GFX) $< $@ -mwidth 2 -mheight 2
 

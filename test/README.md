@@ -162,6 +162,7 @@ ROM. Sem o log, só o uso de memória é conferido (o terminal avisa). Deixa os 
 | `evo_dia_noite` | **ROM de teste** | Hack 7: Espeon de dia, Umbreon de noite/entardecer, Milotic pela Escama Prisma e a Escama Prisma na loja de Four Island |
 | `resumo_amizade` | **ROM de teste** | Hack 7: linha de amizade com corações na página EVOLUTION do resumo |
 | `clima` | **ROM de teste** | Hack 7: clima dinâmico por região e período, interiores/cavernas/climas fixos, troca de período e volta da bolsa, e o clima do mapa na batalha (neve → granizo, areia, chuva) |
+| `seguidor` | **ROM de teste** | POK-48, Pokémon seguidor (`full_seguidor.py`, atalhos 0xF0–0xF4): aparece atrás do jogador, anima parado, warp, borda de mapa, save/CONTINUAR, noite e paletas especiais (S.S. Anne, Seagallop, Cinnabar); anda e corre no mesmo quadro e ritmo, ledge, troca de lugar, A nele, cena de Pewter, NPC atravessa, grama; some/volta na bicicleta, Surf, Voar, Corda de Fuga, troca da equipe, Centro, PC (`pc_guardar`); shiny, evolução, opção Seguidor e mapa cheio. Telas `seguidor_*` em `COMUM/` |
 
 Depende da ROM jogável da raiz (se não existir, vira falha `emulador/rom-playable`). Não grava
 em `roms/`: o resultado fica em `test/out/<data-hora>/`. Leva **~4 min** (os cenários rodam em

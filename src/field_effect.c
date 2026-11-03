@@ -1,4 +1,5 @@
 #include "global.h"
+#include "follower.h"
 #include "gflib.h"
 #include "decompress.h"
 #include "event_data.h"
@@ -1094,6 +1095,7 @@ void ReturnToFieldFromFlyMapSelect(void)
 
 static void FieldCallback_UseFly(void)
 {
+    Follower_Remove(); // POK-48: some durante o voo (volta no fim da chegada, Task_FlyIntoMap)
     FadeInFromBlack();
     CreateTask(Task_UseFly, 0);
     LockPlayerFieldControls();
@@ -1127,6 +1129,7 @@ static void Task_UseFly(u8 taskId)
 
 static void FieldCallback_FlyIntoMap(void)
 {
+    Follower_Remove(); // POK-48: nasceu com o mapa; fora durante a chegada do pássaro
     Overworld_PlaySpecialMapMusic();
     FadeInFromBlack();
     CreateTask(Task_FlyIntoMap, 0);
@@ -1153,6 +1156,7 @@ static void Task_FlyIntoMap(u8 taskId)
     {
         UnlockPlayerFieldControls();
         UnfreezeObjectEvents();
+        Follower_Spawn(); // POK-48: pousou: o seguidor volta atrás do jogador
         DestroyTask(taskId);
     }
 }
@@ -2109,6 +2113,7 @@ static void (*const sEscapeRopeWarpOutEffectFuncs[])(struct Task *task) =
 
 void StartEscapeRopeFieldEffect(void)
 {
+    Follower_Remove(); // POK-48: some no giro (Corda de Fuga, Cavar); volta no fim da chegada
     LockPlayerFieldControls();
     FreezeObjectEvents();
     CreateTask(Task_EscapeRopeWarpOut, 80);
@@ -2292,6 +2297,7 @@ static bool32 WarpInObjectEventDownwards(struct ObjectEvent *playerObj, s16 *mov
 
 static void FieldCallback_EscapeRopeExit(void)
 {
+    Follower_Remove(); // POK-48: nasceu com o mapa; fora durante a chegada girando
     Overworld_PlaySpecialMapMusic();
     WarpFadeInScreen();
     QuestLog_DrawPreviouslyOnQuestHeaderIfInPlaybackMode();
@@ -2338,6 +2344,7 @@ static void EscapeRopeWarpInEffect_Spin(struct Task *task)
         playerObj->fixedPriority = FALSE;
         UnlockPlayerFieldControls();
         UnfreezeObjectEvents();
+        Follower_Spawn(); // POK-48: chegou: o seguidor volta atrás do jogador
         DestroyTask(FindTaskIdByFunc(Task_EscapeRopeWarpIn));
     }
 }
@@ -2385,6 +2392,7 @@ static void Task_DoTeleportFieldEffect(u8 taskId)
 
 static void TeleportFieldEffectTask1(struct Task *task)
 {
+    Follower_Remove(); // POK-48: some no giro do Teleporte; volta no fim da chegada
     LockPlayerFieldControls();
     FreezeObjectEvents();
     CameraObjectReset2();
@@ -2469,6 +2477,7 @@ static void (*const sTeleportInEffectFuncs[])(struct Task *) = {
 
 static void FieldCallback_TeleportIn(void)
 {
+    Follower_Remove(); // POK-48: nasceu com o mapa; fora durante a chegada girando
     Overworld_PlaySpecialMapMusic();
     WarpFadeInScreen();
     QuestLog_DrawPreviouslyOnQuestHeaderIfInPlaybackMode();
@@ -2556,6 +2565,7 @@ static void TeleportInFieldEffectTask3(struct Task *task)
             UnlockPlayerFieldControls();
             CameraObjectReset1();
             UnfreezeObjectEvents();
+            Follower_Spawn(); // POK-48: chegou: o seguidor volta atrás do jogador
             DestroyTask(FindTaskIdByFunc(Task_DoTeleportInFieldEffect));
         }
     }
@@ -3020,6 +3030,7 @@ static void Task_FldEffUseSurf(u8 taskId)
 
 static void UseSurfEffect_1(struct Task *task)
 {
+    Follower_Remove(); // POK-48: some ao entrar na água (volta ao sair: Task_WaitStopSurfing)
     LockPlayerFieldControls();
     FreezeObjectEvents();
     gPlayerAvatar.preventStep = TRUE;

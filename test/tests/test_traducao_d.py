@@ -48,6 +48,12 @@ SAME_AS_ENGLISH = {
 
 # "TO" = Treinador Original (glossário: OT -> TO) é a sigla em português, mas "to" está na lista de
 # palavras inglesas da checagem. Exceção só vale se o único achado do rótulo for a sigla em maiúsculas.
+# Rótulos que os hacks acrescentaram à ajuda (não existem na base inglesa; ficam no fim da sua seção)
+HACK_LABELS = {
+    "Help_Text_Follower": "POK-48: termo Seguidor da ajuda das Opções",
+    "Help_Text_DefineFollower": "POK-48: descrição do termo Seguidor",
+}
+
 TO_LABELS = {"Help_Text_OT", "Help_Text_DefineOT", "Help_Text_DefineIDNo", "Help_Text_DefineIDNo2"}
 
 _LABEL = re.compile(r"^(\w+)::", re.M)
@@ -179,7 +185,8 @@ def test_ajuda_inteira_nenhum_rotulo_identico_ao_ingles():
     labels = _labels(HELP_FILE) - JAPANESE_LABELS[HELP_FILE]
     by_label = {e.label: e for e in _entries() if e.file == HELP_FILE}
     assert len(labels) > 350, len(labels)       # D1 + D2: a ajuda inteira (368 rótulos, sem o japonês)
-    assert sorted(labels - set(base)) == []     # todo rótulo existe na base
+    assert sorted(labels - set(base) - set(HACK_LABELS)) == []     # todo rótulo existe na base (menos os dos hacks)
+    labels -= set(HACK_LABELS)
     unchanged = [label for label in sorted(labels)
                  if base[label] == by_label[label].texts and label not in SAME_AS_ENGLISH]
     assert unchanged == []
@@ -191,7 +198,9 @@ def test_rotulos_da_ajuda_iguais_aos_da_base():
     base = _base_text()
     if base is None:
         pytest.skip("sem o commit base da tradução")
-    assert _LABEL.findall((REPO_ROOT / HELP_FILE).read_text(encoding="utf-8")) == _LABEL.findall(base)
+    now = [label for label in _LABEL.findall((REPO_ROOT / HELP_FILE).read_text(encoding="utf-8"))
+           if label not in HACK_LABELS]
+    assert now == _LABEL.findall(base)
 
 
 def test_fim_de_arquivo_da_ajuda_igual_ao_da_base():
@@ -223,6 +232,7 @@ MENU_LABELS: dict[str, list[tuple[str, str, str]]] = {
     "Registrar": [("src/strings.c", "gOtherText_Register", "=")],
     "Abrir": [("src/strings.c", "gOtherText_Open", "=")],
     "Sim": [("src/strings.c", "gText_Yes", "=")],
+    "Não": [("src/strings.c", "gText_FollowerOff", "=")],          # POK-48: SEGUIDOR Não
     "Cancelar": [("src/strings.c", "gText_OptionMenuCancel", "=")],
     "OK": [("src/strings.c", "gText_PartyMenu_OK", "="), ("src/strings.c", "gText_OK", "=")],
     "Itens": [("src/strings.c", "gText_Items2", "=")],

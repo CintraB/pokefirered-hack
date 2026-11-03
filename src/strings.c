@@ -1539,3 +1539,8 @@ const u8 gText_DexNav_HorarioManhaNoite[] = _("manhã/noite");
 const u8 gText_DexNav_HorarioSempre[] = _("dia/noite");
 const u8 gText_DexNav_BuscaVazia[] = _("Nenhum Pokémon selvagem visto.");
 const u8 gText_DexNav_NenhumMapa[] = _("Nenhum mapa.");
+
+// POK-48: Pokémon seguidor (linha do menu de Opções; valor 0 = Sim)
+const u8 gText_Follower[] = _("Seguidor");
+const u8 gText_FollowerOn[] = _("Sim");
+const u8 gText_FollowerOff[] = _("Não");

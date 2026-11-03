@@ -1166,6 +1166,9 @@ Help_Text_Frame::
 Help_Text_Cancel2::
 	.string "Cancelar$"
 
+Help_Text_Follower::
+	.string "Seguidor$"
+
 Help_Text_TM::
 	.string "MT$"
 
@@ -1428,6 +1431,12 @@ Help_Text_DefineCancel2::
 	.string "As opções serão alteradas para as\n"
 	.string "escolhas mostradas em vermelho e você\n"
 	.string "voltará ao menu.$"
+
+Help_Text_DefineFollower::
+	.string "Escolha “Sim” para o primeiro Pokémon\n"
+	.string "da equipe andar atrás de você no\n"
+	.string "campo, ou “Não” para ele não\n"
+	.string "aparecer.$"
 
 Help_Text_DefineTM::
 	.string "Uma MT (Máquina Técnica) é um aparelho\n"

@@ -1486,7 +1486,7 @@ DECLARED: list[Declared] = [
     Declared("src/option_menu.c", "BufferOptionMenuString", r".*",
              BufRef("str", "src/option_menu.c", "BufferOptionMenuString"),
              (Text("gText_FrameType"), Fixed(2, "nº da moldura (o StringAppendN 3 leva o EOS)")),
-             why="opções: str[20] = gText_FrameType + número (src/option_menu.c:496-498)"),
+             why="opções: str[20] = gText_FrameType + número (src/option_menu.c:510-512)"),
     Declared("src/party_menu.c", "DisplayPartyPokemonLevel", r"gText_Lv|gStringVar2", BufRef("gStringVar1"),
              (Text("gText_Lv"), Fixed(3, "nível, 3 algarismos")),
              why="nível na tela da equipe: gStringVar1 = gText_Lv + nível (src/party_menu.c:2333-2335)"),

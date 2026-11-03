@@ -37,6 +37,7 @@ extern u32 TestRollWild(u8 area, u8 rod, bool8 startBattle); // Hack 8
 #include "pokemon_storage_system.h"
 // POK-47
 #include "dexnav.h"
+#include "follower.h"
 
 STATIC_ASSERT(TEST_TEXT_SIZE >= SUMMARY_PAGE_TEXT_SIZE, TestTextHoldsASummaryPage);
 
@@ -1249,6 +1250,82 @@ static u32 OpenDexNav(void)
 }
 // --- end of POK-47 --------------------------------------------------------------------------
 
+// --- POK-48: Pokémon seguidor ---------------------------------------------------------------
+#include "event_object_movement.h"
+#include "field_effect.h"
+#include "field_player_avatar.h"
+#include "party_menu.h"
+
+static u32 SetFollowerOption(u32 off)
+{
+    u32 old = gSaveBlock2Ptr->optionsFollowerOff;
+
+    gSaveBlock2Ptr->optionsFollowerOff = (off != 0);
+    if (Overworld_IsRunning())
+        Follower_Refresh();
+    return old;
+}
+
+// gPlayerParty[0] rebuilt with the same species and level, shiny or never shiny for this player
+static u32 SetLeadShiny(bool32 shiny)
+{
+    struct Pokemon *mon = &gPlayerParty[0];
+    u16 species = GetMonData(mon, MON_DATA_SPECIES);
+    u8 level = GetMonData(mon, MON_DATA_LEVEL);
+    u32 otId = GetPlayerTrainerId();
+    // shiny value = hi(ot) ^ lo(ot) ^ hi(pid) ^ lo(pid): 0 (shiny) or 0x100 (far from the shiny range)
+    u32 personality = (((otId >> 16) ^ (otId & 0xFFFF) ^ (shiny ? 0 : 0x100)) & 0xFFFF) << 16;
+
+    if (GetMonData(mon, MON_DATA_IS_EGG) || !IsValidTestMon(species, level))
+        return 0xFFFFFFFF;
+    CreateMon(mon, species, level, TEST_MON_FIXED_IV, TRUE, personality, OT_ID_PLAYER_ID, 0);
+    return species | (u32)IsMonShiny(mon) << 16;
+}
+
+// Fills (or frees) every free object event with an invisible filler on the player's tile: a full map for the follower
+static u32 FillObjectEvents(bool32 fill)
+{
+    struct ObjectEvent *player = &gObjectEvents[gPlayerAvatar.objectEventId];
+    u32 i, count = 0;
+    int id;
+
+    for (i = 0; i < OBJECT_EVENTS_COUNT; i++)
+    {
+        if (fill)
+        {
+            id = SpawnSpecialObjectEventParameterized(player->graphicsId, MOVEMENT_TYPE_NONE, TEST_FILLER_LOCALID + i,
+                                                      player->currentCoords.x, player->currentCoords.y,
+                                                      player->currentElevation);
+            if (id < OBJECT_EVENTS_COUNT)
+            {
+                gObjectEvents[id].invisible = TRUE;
+                gSprites[gObjectEvents[id].spriteId].invisible = TRUE;
+            }
+        }
+        else if (gObjectEvents[i].active && gObjectEvents[i].localId >= TEST_FILLER_LOCALID
+                 && gObjectEvents[i].localId < TEST_FILLER_LOCALID + OBJECT_EVENTS_COUNT)
+        {
+            RemoveObjectEventById(i);
+        }
+    }
+    for (i = 0; i < OBJECT_EVENTS_COUNT; i++)
+        count += gObjectEvents[i].active;
+    return count;
+}
+
+// What the fly map does on A (region_map.c SetFlyWarpDestination), straight from the field
+static u32 StartFly(u32 healLocation, u32 slot)
+{
+    if (!Overworld_IsRunning() || ScriptContext_IsEnabled() || slot >= PARTY_SIZE || healLocation == 0)
+        return 0xFFFFFFFF;
+    gPartyMenu.slotId = slot;
+    CleanupOverworldWindowsAndTilemaps();
+    SetWarpDestinationToHealLocation(healLocation);
+    ReturnToFieldFromFlyMapSelect();
+    return 1;
+}
+// --- end of POK-48 --------------------------------------------------------------------------
+
 void TestHooks_Run(void)
 {
     u32 result = 0;
@@ -1394,6 +1471,12 @@ void TestHooks_Run(void)
     case TEST_CMD_DEXNAV_ROLL:      result = DexNavRoll(gTestMailbox.arg0, gTestMailbox.arg1); break;
     case TEST_CMD_DEXNAV_STATE:     result = DexNav_TestGetState(gTestMailbox.arg0); break;
     case TEST_CMD_OPEN_DEXNAV:      result = OpenDexNav(); break;
+    // POK-48
+    case TEST_CMD_FOLLOWER_STATE:   result = Follower_TestGetState(gTestMailbox.arg0); break;
+    case TEST_CMD_SET_FOLLOWER_OPTION: result = SetFollowerOption(gTestMailbox.arg0); break;
+    case TEST_CMD_SET_LEAD_SHINY:   result = SetLeadShiny(gTestMailbox.arg0 != 0); break;
+    case TEST_CMD_FILL_OBJECT_EVENTS: result = FillObjectEvents(gTestMailbox.arg0 != 0); break;
+    case TEST_CMD_START_FLY:        result = StartFly(gTestMailbox.arg0, gTestMailbox.arg1); break;
     default:
         result = 0xFFFFFFFF;
         break;

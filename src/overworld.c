@@ -57,6 +57,7 @@
 #include "constants/sound.h"
 #include "day_night.h" /* Hack 7 — frente A */
 #include "dexnav.h" /* POK-47 */
+#include "follower.h" /* POK-48 */
 
 #define PLAYER_LINK_STATE_IDLE 0x80
 #define PLAYER_LINK_STATE_BUSY 0x81
@@ -1498,6 +1499,12 @@ static void CB2_Overworld(void)
         SetFieldVBlankCallback();
 }
 
+// POK-48: o campo está rodando (objetos e sprites do mapa carregados), não um menu, batalha ou carga de mapa
+bool32 Overworld_IsRunning(void)
+{
+    return gMain.callback2 == CB2_Overworld;
+}
+
 void SetMainCallback1(MainCallback cb)
 {
     gMain.callback1 = cb;
@@ -2165,11 +2172,15 @@ static void InitObjectEventsLocal(void)
     ResetInitialPlayerAvatarState();
     TrySpawnObjectEvents(0, 0);
     TryRunOnWarpIntoMapScript();
+    Follower_Spawn(); // POK-48: depois dos NPCs do mapa (prioridade nos objetos) e da direção do script de entrada
 }
 
 static void ReloadObjectsAndRunReturnToFieldMapScript(void)
 {
     SpawnObjectEventsOnReturnToField(0, 0);
+    // POK-48: volta de batalha/menu (o seguidor já está em gObjectEvents), CONTINUAR (o save não o tem) e replay do
+    // Quest Log (não deve existir): cria, recria ou apaga conforme a equipe
+    Follower_Refresh();
     RunOnReturnToFieldMapScript();
 }
 

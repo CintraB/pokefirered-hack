@@ -2,6 +2,7 @@
 #include "gflib.h"
 #include "event_data.h"
 #include "event_object_movement.h"
+#include "follower.h"
 #include "field_camera.h"
 #include "field_control_avatar.h"
 #include "field_effect.h"
@@ -479,6 +480,7 @@ static const u8 gInitialMovementTypeFacingDirections[MOVEMENT_TYPES_COUNT] = {
 #include "data/object_events/object_event_anims.h"
 #include "data/object_events/base_oam.h"
 #include "data/object_events/object_event_subsprites.h"
+#include "data/object_events/follower_species.h"
 #include "data/object_events/object_event_graphics_info.h"
 
 static const struct SpritePalette sObjectEventSpritePalettes[] = {
@@ -1531,6 +1533,12 @@ void RemoveObjectEventByLocalIdAndMap(u8 localId, u8 mapNum, u8 mapGroup)
     }
 }
 
+// POK-48: apaga um objeto sem mexer na flag do template (o seguidor não tem template)
+void RemoveObjectEventById(u8 objectEventId)
+{
+    RemoveObjectEvent(&gObjectEvents[objectEventId]);
+}
+
 static void RemoveObjectEventInternal(struct ObjectEvent *objectEvent)
 {
     struct SpriteFrameImage image;
@@ -1619,6 +1627,9 @@ static u8 TrySpawnObjectEventTemplate(const struct ObjectEventTemplate *objectEv
     gSprites[gObjectEvents[objectEventId].spriteId].images = graphicsInfo->images;
     if (subspriteTables)
         SetSubspriteTables(&gSprites[gObjectEvents[objectEventId].spriteId], subspriteTables);
+    // POK-48: o graphicsId do seguidor é dinâmico: imagens, paleta e callback da espécie
+    if (Follower_IsFollowerObject(&gObjectEvents[objectEventId]))
+        Follower_OnSpriteCreated(&gObjectEvents[objectEventId], &gSprites[gObjectEvents[objectEventId].spriteId]);
 
     return objectEventId;
 }
@@ -1836,7 +1847,8 @@ void RemoveObjectEventsOutsideView(void)
         {
             struct ObjectEvent *objectEvent = &gObjectEvents[i];
 
-            if (objectEvent->active && !objectEvent->isPlayer)
+            // POK-48: o seguidor fica (ele acompanha o jogador, inclusive pela borda entre mapas)
+            if (objectEvent->active && !objectEvent->isPlayer && !Follower_IsFollowerObject(objectEvent))
                 RemoveObjectEventIfOutsideView(objectEvent);
         }
     }
@@ -1901,7 +1913,10 @@ static void SpawnObjectEventOnReturnToField(u8 objectEventId, s16 x, s16 y)
     if (graphicsInfo->paletteSlot == PALSLOT_PLAYER)
         LoadPlayerObjectReflectionPalette(graphicsInfo->paletteTag, graphicsInfo->paletteSlot);
 
-    if (graphicsInfo->paletteSlot >= PALSLOT_NPC_SPECIAL)
+    // POK-48: era `>= PALSLOT_NPC_SPECIAL`, o que também pegaria o seguidor (PALSLOT_FOLLOWER = 11): gravaria a paleta
+    // provisória do graphicsInfo como paleta especial e trocaria sCurrentSpecialObjectPaletteTag (o retint do dia/noite
+    // recarregaria então o slot 10 com ela). Nenhum objeto do jogo original usa o slot 11.
+    if (graphicsInfo->paletteSlot == PALSLOT_NPC_SPECIAL)
         LoadSpecialObjectReflectionPalette(graphicsInfo->paletteTag, graphicsInfo->paletteSlot);
 
     *(u16 *)&spriteTemplate.paletteTag = TAG_NONE;
@@ -1932,6 +1947,8 @@ static void SpawnObjectEventOnReturnToField(u8 objectEventId, s16 x, s16 y)
 
         ResetObjectEventFldEffData(objectEvent);
         SetObjectSubpriorityByElevation(objectEvent->previousElevation, sprite, 1);
+        if (Follower_IsFollowerObject(objectEvent))   // POK-48
+            Follower_OnSpriteCreated(objectEvent, sprite);
     }
 }
 
@@ -2229,10 +2246,52 @@ void LoadSpecialObjectReflectionPalette(u16 tag, u8 slot)
     {
         if (gSpecialObjectReflectionPaletteSets[i].tag == tag)
         {
+            // POK-48: o reflexo vai gravar no slot do seguidor (um script mostrou o Seagallop/Meteorito): ele sai
+            if (gReflectionEffectPaletteMap[slot] == PALSLOT_FOLLOWER)
+                Follower_Remove();
             PatchObjectPalette(gSpecialObjectReflectionPaletteSets[i].data[sCurrentReflectionType], gReflectionEffectPaletteMap[slot]);
             return;
         }
     }
+}
+
+// POK-48: a paleta especial `tag` (slot PALSLOT_NPC_SPECIAL) também grava um reflexo em PALSLOT_FOLLOWER
+static bool8 SpecialPaletteWritesFollowerSlot(u16 tag)
+{
+    u8 i;
+
+    if (gReflectionEffectPaletteMap[PALSLOT_NPC_SPECIAL] != PALSLOT_FOLLOWER)
+        return FALSE;
+    for (i = 0; gSpecialObjectReflectionPaletteSets[i].tag != OBJ_EVENT_PAL_TAG_NONE; i++)
+    {
+        if (gSpecialObjectReflectionPaletteSets[i].tag == tag)
+            return TRUE;
+    }
+    return FALSE;
+}
+
+// POK-48: algum objeto visível do mapa (template sem a flag de esconder, a regra do spawn dos NPCs) ou a paleta
+// especial já carregada escreve no slot do seguidor (Seagallop e Meteorito: o reflexo deles vai para o slot 11). Um
+// objeto escondido que um script mostra depois (o Seagallop da cena do Bill em Cinnabar) tira o seguidor na hora, em
+// LoadSpecialObjectReflectionPalette.
+bool8 IsFollowerPaletteSlotInUse(void)
+{
+    const struct ObjectEventGraphicsInfo *graphicsInfo;
+    u8 i;
+
+    if (sCurrentSpecialObjectPaletteTag != OBJ_EVENT_PAL_TAG_NONE && SpecialPaletteWritesFollowerSlot(sCurrentSpecialObjectPaletteTag))
+        return TRUE;
+    if (gMapHeader.events == NULL)
+        return FALSE;
+    for (i = 0; i < gMapHeader.events->objectEventCount && i < OBJECT_EVENT_TEMPLATES_COUNT; i++)
+    {
+        if (FlagGet(gSaveBlock1Ptr->objectEventTemplates[i].flagId))
+            continue;
+        graphicsInfo = GetObjectEventGraphicsInfo(gSaveBlock1Ptr->objectEventTemplates[i].graphicsId);
+        if (graphicsInfo->paletteSlot == PALSLOT_NPC_SPECIAL && SpecialPaletteWritesFollowerSlot(graphicsInfo->paletteTag))
+            return TRUE;
+    }
+    return FALSE;
 }
 
 // Unused
@@ -2331,7 +2390,8 @@ u8 GetObjectEventIdByPosition(u16 x, u16 y, u8 elevation)
 
     for (i = 0; i < OBJECT_EVENTS_COUNT; i++)
     {
-        if (gObjectEvents[i].active)
+        // POK-48: o seguidor não é um objeto "no tile" (A, loja, Quebra-Pedra): quem está no tile é o NPC, se houver
+        if (gObjectEvents[i].active && !Follower_IsFollowerObject(&gObjectEvents[i]))
         {
             if (gObjectEvents[i].currentCoords.x == x
              && gObjectEvents[i].currentCoords.y == y
@@ -4900,15 +4960,31 @@ static bool8 IsMetatileDirectionallyImpassable(struct ObjectEvent *objectEvent, 
     return FALSE;
 }
 
+// POK-48: (x, y), vizinho do jogador na direção `direction`, serve para o seguidor nascer: sem colisão do mapa, dentro
+// do mapa (ou de uma conexão), sem bloqueio direcional, na mesma elevação, sem objeto e fora da água
+bool8 CanFollowerSpawnAt(struct ObjectEvent *player, s16 x, s16 y, u8 direction)
+{
+    if (MapGridGetCollisionAt(x, y) || GetMapBorderIdAt(x, y) == CONNECTION_INVALID
+     || IsMetatileDirectionallyImpassable(player, x, y, direction)
+     || IsElevationMismatchAt(player->currentElevation, x, y)
+     || DoesObjectCollideWithObjectAt(player, x, y))
+        return FALSE;
+    return !MetatileBehavior_IsSurfable(MapGridGetMetatileBehaviorAt(x, y));
+}
+
+// POK-48: o seguidor não colide com ninguém, nem ninguém com ele (o jogador troca de lugar com ele; NPCs, rotas
+// de NPC, linha de visão de treinador e cenas passam pelo tile dele)
 static bool8 DoesObjectCollideWithObjectAt(struct ObjectEvent *objectEvent, s16 x, s16 y)
 {
     u8 i;
     struct ObjectEvent *curObject;
 
+    if (Follower_IsFollowerObject(objectEvent))
+        return FALSE;
     for (i = 0; i < OBJECT_EVENTS_COUNT; i++)
     {
         curObject = &gObjectEvents[i];
-        if (curObject->active && curObject != objectEvent)
+        if (curObject->active && curObject != objectEvent && !Follower_IsFollowerObject(curObject))
         {
             if ((curObject->currentCoords.x == x && curObject->currentCoords.y == y) || (curObject->previousCoords.x == x && curObject->previousCoords.y == y))
             {
@@ -5062,6 +5138,10 @@ bool8 ObjectEventSetHeldMovement(struct ObjectEvent *objectEvent, u8 movementAct
     objectEvent->heldMovementActive = TRUE;
     objectEvent->heldMovementFinished = FALSE;
     gSprites[objectEvent->spriteId].data[2] = 0;
+    // POK-48: todo passo do jogador (input, script/applymovement, tile de movimento forçado) leva o seguidor junto,
+    // no mesmo quadro (a ação dos dois começa no mesmo AnimateSprites)
+    if (objectEvent->isPlayer)
+        Follower_OnPlayerMovement(objectEvent, movementActionId);
     return FALSE;
 }
 
@@ -5328,9 +5408,23 @@ void InitNpcForMovement(struct ObjectEvent *objectEvent, struct Sprite *sprite, 
 
 // The player walks and runs ~1.5x faster when moved by input. Scripted movement
 // keeps the original pace so cutscenes stay in sync with NPCs.
+// POK-48: the follower's step mirrors the player's and starts in the same frame
+// (Follower_OnPlayerMovement), so it gets the same pace.
 static bool8 IsPlayerMovingByInput(struct ObjectEvent *objectEvent)
 {
-    return objectEvent->isPlayer && !ScriptContext_IsEnabled();
+    return (objectEvent->isPlayer || Follower_IsFollowerObject(objectEvent)) && !ScriptContext_IsEnabled();
+}
+
+// POK-48: the follower has no running frames: it runs with its walking frames (FOLLOWER_ANIM_RUN_*)
+static u8 GetRunAnimNum(struct ObjectEvent *objectEvent)
+{
+    if (Follower_IsFollowerObject(objectEvent))
+    {
+        if (objectEvent->facingDirection < DIR_SOUTH || objectEvent->facingDirection > DIR_EAST)
+            return FOLLOWER_ANIM_RUN_SOUTH;
+        return FOLLOWER_ANIM_RUN_SOUTH + objectEvent->facingDirection - DIR_SOUTH;
+    }
+    return GetRunningDirectionAnimNum(objectEvent->facingDirection);
 }
 
 void InitMovementNormal(struct ObjectEvent *objectEvent, struct Sprite *sprite, u8 direction, u8 speed)
@@ -5347,7 +5441,7 @@ void StartRunningAnim(struct ObjectEvent *objectEvent, struct Sprite *sprite, u8
 {
     u8 speed = IsPlayerMovingByInput(objectEvent) ? MOVE_SPEED_PLAYER_RUN : MOVE_SPEED_FAST_1;
     InitNpcForMovement(objectEvent, sprite, direction, speed);
-    SetStepAnimHandleAlternation(objectEvent, sprite, GetRunningDirectionAnimNum(objectEvent->facingDirection));
+    SetStepAnimHandleAlternation(objectEvent, sprite, GetRunAnimNum(objectEvent));
 }
 
 bool8 UpdateMovementNormal(struct ObjectEvent *objectEvent, struct Sprite *sprite)
@@ -6543,7 +6637,7 @@ void InitNpcForRunSlow(struct ObjectEvent *objectEvent, struct Sprite *sprite, u
 void InitRunSlow(struct ObjectEvent *objectEvent, struct Sprite *sprite, u8 direction)
 {
     InitNpcForRunSlow(objectEvent, sprite, direction);
-    SetStepAnimHandleAlternation(objectEvent, sprite, GetRunningDirectionAnimNum(objectEvent->facingDirection));
+    SetStepAnimHandleAlternation(objectEvent, sprite, GetRunAnimNum(objectEvent));
 }
 
 bool8 UpdateRunSlow(struct ObjectEvent *objectEvent, struct Sprite *sprite)
@@ -9469,4 +9563,5 @@ void ReloadObjectEventPalettes(void)
     }
     if (sCurrentSpecialObjectPaletteTag != OBJ_EVENT_PAL_TAG_NONE && sCurrentSpecialObjectPaletteTag != 0)
         LoadSpecialObjectReflectionPalette(sCurrentSpecialObjectPaletteTag, PALSLOT_NPC_SPECIAL);
+    Follower_ReloadPalette(); // POK-48
 }

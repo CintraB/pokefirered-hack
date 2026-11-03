@@ -78,8 +78,8 @@ def test_conquistas_e_diario_no_fim_de_melhorias_modernas():
     """POK-44: a grade 4x3 já está cheia (12 tópicos); os dois cartões entram no fim de "Melhorias modernas",
     como os do POK-43/45, e citam o caminho (SELECT no cartão do menu START; SELECT de novo para o diário)."""
     cartoes = _topico("Melhorias modernas")["cards"]
-    assert [c["title"] for c in cartoes[-5:-3]] == ["Conquistas e prêmios", "Diário da jornada"]   # POK-42/46/47 depois
-    conquistas, diario = (_plano(c["body"]) for c in cartoes[-5:-3])
+    assert [c["title"] for c in cartoes[-6:-4]] == ["Conquistas e prêmios", "Diário da jornada"]   # POK-42/46/47/48 depois
+    conquistas, diario = (_plano(c["body"]) for c in cartoes[-6:-4])
     ativas = sum(1 for c in json.loads((REPO_ROOT / "src/data/conquistas/conquistas.json").read_text(encoding="utf-8"))
                  ["conquistas"] if c.get("ativa", True))
     assert "cartão" in conquistas and "SELECT" in conquistas and f"{ativas} conquistas" in conquistas
@@ -89,7 +89,7 @@ def test_conquistas_e_diario_no_fim_de_melhorias_modernas():
 def test_revanches_por_degrau_no_fim_de_melhorias_modernas():
     """POK-42: como os do POK-43/45 e do POK-44, o cartão entra no fim de "Melhorias modernas" (grade cheia) e cita a
     guarda da Liga, os níveis de Normal a 100 e o que vale para o Explorador VS."""
-    cartao = _topico("Melhorias modernas")["cards"][-3]   # POK-46 e 47 depois
+    cartao = _topico("Melhorias modernas")["cards"][-4]   # POK-46, 47 e 48 depois
     assert cartao["title"] == "Revanches por degrau" and cartao["itemId"] == "ITEM_VS_SEEKER"
     corpo = _plano(cartao["body"])
     for trecho in ("Hall da Fama", "guarda da Liga", "Normal", "Nível 100", "Elite 4", "Explorador VS", "times de 6",
@@ -100,7 +100,7 @@ def test_revanches_por_degrau_no_fim_de_melhorias_modernas():
 def test_chefes_mais_espertos_no_fim_de_melhorias_modernas():
     """POK-46: o cartão entra no fim de "Melhorias modernas" (grade cheia) e diz quem são os chefes (as revanches só do
     Nível 80 para cima) e o que mudou: troca antes do golpe super efetivo, quem entra e as curas."""
-    cartao = _topico("Melhorias modernas")["cards"][-2]   # POK-47 depois
+    cartao = _topico("Melhorias modernas")["cards"][-3]   # POK-47 e 48 depois
     assert cartao["title"] == "Chefes mais espertos" and cartao["itemId"] == "ITEM_FULL_RESTORE"
     corpo = _plano(cartao["body"])
     for trecho in ("Líderes", "Elite 4", "rival", "Nível 80", "golpe super efetivo", "quem entra", "poções e curas"):
@@ -110,7 +110,7 @@ def test_chefes_mais_espertos_no_fim_de_melhorias_modernas():
 def test_dexnav_no_fim_de_melhorias_modernas():
     """POK-47: o cartão entra no fim de "Melhorias modernas" (grade cheia), com o ícone do item novo, e diz como abrir
     (menu START ou SELECT) e o que a tela tem, com os nomes do rodapé da tela ("SELECT mapas", "START busca")."""
-    cartao = _topico("Melhorias modernas")["cards"][-1]
+    cartao = _topico("Melhorias modernas")["cards"][-2]   # POK-48 depois
     assert cartao["title"] == "DexNav" and cartao["itemId"] == "ITEM_DEXNAV"
     corpo = _plano(cartao["body"])
     for trecho in ("menu START", "SELECT, registrando o item", "jeito de encontrar", "chance real", "níveis",
@@ -118,6 +118,19 @@ def test_dexnav_no_fim_de_melhorias_modernas():
         assert trecho in corpo, trecho
     rodape = (REPO_ROOT / "src/strings.c").read_text(encoding="utf-8")
     assert '_("SELECT mapas")' in rodape and '_("START busca")' in rodape
+
+
+def test_seguidor_no_fim_de_melhorias_modernas():
+    """POK-48: o cartão entra no fim de "Melhorias modernas" (grade cheia), com um dos seguidores na imagem, diz quem
+    segue (as 12 espécies desta etapa), quando some e onde desligar (a linha Seguidor das OPÇÕES)."""
+    cartao = _topico("Melhorias modernas")["cards"][-1]
+    assert cartao["title"] == "Pokémon seguidor" and cartao["speciesBefore"] == "SPECIES_PIKACHU"
+    corpo = _plano(cartao["body"])
+    for trecho in ("1º da equipe", "iniciais de Kanto", "Pichu, Pikachu e Raichu", "bicicleta", "Surf", "OPÇÕES",
+                   "Seguidor"):
+        assert trecho in corpo, trecho
+    strings = (REPO_ROOT / "src/strings.c").read_text(encoding="utf-8")
+    assert '_("Seguidor")' in strings
 
 
 def test_cada_topico_tem_cartao():
