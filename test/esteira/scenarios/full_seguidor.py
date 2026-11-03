@@ -59,7 +59,9 @@ Estados (Task 4):
 - `seguidor/opcao`: no menu de Opções a linha SEGUIDOR (8 linhas, foto `seguidor_opcoes`); Não: ao fechar, o seguidor
   some e o bit do save liga; Sim: volta;
 - `seguidor/mapa_cheio`: com todos os objetos ocupados (TEST_CMD_FILL_OBJECT_EVENTS), o refresh não cria o seguidor,
-  o jogador anda e nada trava; liberados, ele volta.
+  o jogador anda e nada trava; liberados, ele volta;
+- `seguidor/pc_guardar`: no PC do Centro de Viridian, DEPOSITAR o CHARMANDER (1º) deixa o PIDGEY no 1º: ao desligar o
+  PC não existe; RETIRAR o CHARMANDER (vai para o 2º): continua sem; TROCAR para o 1º: existe, atrás, 1 objeto.
 
 As telas `seguidor_*` são novas: ficam para a aprovação do Cintra (Task 5).
 
@@ -79,8 +81,9 @@ from ..hooks import CMD_GIVE_ITEM, CMD_SET_VAR, CMD_START_FLY, CMD_START_WILD_BA
 from ..nav import DIRECTIONS
 from . import REPO_ROOT, ScenarioContext
 from .base import Abort
+from .full_pc import (CURSOR_AREA_IN_BOX, CURSOR_AREA_IN_PARTY, DEPOSIT_CHOOSE_BOX, OPTION_DEPOSIT, OPTION_WITHDRAW,
+                      STORAGE_DEPOSIT, STORAGE_MAIN, STORAGE_TIMEOUT, PcScenario)
 from .pace import RUN_FRAMES_PER_TILE, WALK_FRAMES_PER_TILE
-from .quick_catch_save import CatchSaveScenario
 
 CLOCK = (0, 12 * 60)          # dia 0, 12:00: tarde, tom neutro (sTints[TIME_AFTERNOON] = 256, 256, 256)
 NIGHT = 22 * 60
@@ -146,7 +149,7 @@ def _follower_define(name: str) -> int:
     return int(m.group(1), 0)
 
 
-class FollowerScenario(CatchSaveScenario):
+class FollowerScenario(PcScenario):   # PcScenario (CatchSaveScenario + PC): depositar/retirar pela tela das caixas
     def __init__(self, ctx: ScenarioContext):
         super().__init__(ctx)
         self.box: Mailbox | None = None
@@ -909,6 +912,36 @@ class FollowerScenario(CatchSaveScenario):
         state = self._behind("objetos liberados")
         return f"{OBJECT_EVENTS_COUNT} objetos: sem seguidor, o jogador anda; liberados ({left} ativos): {state}"
 
+    def _pc_guardar(self) -> str:
+        self._restore()
+        self.box.set_party_mon(1, self.consts.species(SWAP_MON[0]), SWAP_MON[1])
+        self._teleport(VIRIDIAN_NURSE)
+        self._expect_one("Centro de Viridian")   # diante da enfermeira: atrás é o balcão, nasce escondido
+        lead =self.game.party()[0]
+        self._open_storage(OPTION_DEPOSIT)
+        self._move_cursor(CURSOR_AREA_IN_PARTY, 0)
+        self._select_first_option()
+        self.ctl.wait_until(lambda: self._storage_at(STORAGE_DEPOSIT, DEPOSIT_CHOOSE_BOX), STORAGE_TIMEOUT,
+                            "pergunta Depositar em qual caixa?")
+        self._press(KEY_A)
+        self.ctl.wait_until(lambda: self._storage_at(STORAGE_MAIN, 0), STORAGE_TIMEOUT, "fim do depósito")
+        self._close_storage()
+        party = [m.species for m in self.game.party()]
+        assert party == [self.consts.species(SWAP_MON[0])], party
+        self._gone("CHARMANDER guardado no PC, PIDGEY no 1º")
+        slot = next(i for i, m in enumerate(self._box()) if m is not None and self._ident(m) == self._ident(lead))
+        self._open_storage(OPTION_WITHDRAW)
+        self._move_cursor(CURSOR_AREA_IN_BOX, slot)
+        self._select_first_option()
+        self.ctl.wait_until(lambda: self._storage_at(STORAGE_MAIN, 0), STORAGE_TIMEOUT, "fim da retirada")
+        self._close_storage()
+        party = [m.species for m in self.game.party()]
+        assert party == [self.consts.species(SWAP_MON[0]), lead.species], party
+        self._gone("CHARMANDER retirado, no 2º lugar")
+        self._party_swap_first()
+        state = self._behind("CHARMANDER de volta ao 1º")
+        return f"guardado (só PIDGEY): sem seguidor; retirado (2º): sem seguidor; trocado para o 1º: {state}"
+
     def run(self) -> None:
         try:
             self._flow("seguidor: CONTINUAR, CHARMANDER no 1º lugar, 12:00 e Pallet Town", self._start)
@@ -939,6 +972,8 @@ class FollowerScenario(CatchSaveScenario):
             self.suite.run("seguidor/evolucao: evoluiu na batalha, volta com o sprite novo", self._evolucao)
             self.suite.run("seguidor/opcao: SEGUIDOR Não some, Sim volta", self._opcao)
             self.suite.run("seguidor/mapa_cheio: sem objeto livre, não aparece e nada trava", self._mapa_cheio)
+            self.suite.run("seguidor/pc_guardar: 1º guardado no PC some; retirado e de volta ao 1º, volta",
+                           self._pc_guardar)
         except Abort:
             pass
 

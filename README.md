@@ -9,9 +9,9 @@ a Pokédex inteira obtível e uma esteira de testes automática no emulador.**
 ![Idioma](https://img.shields.io/badge/idioma-PT--BR-009c3b?style=flat-square)
 ![Base](https://img.shields.io/badge/base-pret%2Fpokefirered-e3350d?style=flat-square)
 ![Linguagem](https://img.shields.io/badge/C-agbcc-555555?style=flat-square)
-![Testes](https://img.shields.io/badge/pytest-4808%20testes-2ea44f?style=flat-square)
-![Esteira](https://img.shields.io/badge/esteira-496%20checagens-2ea44f?style=flat-square)
-![Versão](https://img.shields.io/badge/ROM-v52-informational?style=flat-square)
+![Testes](https://img.shields.io/badge/pytest-4832%20testes-2ea44f?style=flat-square)
+![Esteira](https://img.shields.io/badge/esteira-531%20checagens-2ea44f?style=flat-square)
+![Versão](https://img.shields.io/badge/ROM-v53-informational?style=flat-square)
 
 <img src="docs/readme/inicial.png" width="240" alt="Escolha do inicial em português">
 <img src="docs/readme/chuva.png" width="240" alt="Batalha com chuva contínua">
@@ -62,6 +62,7 @@ perder o jeito do FireRed.
 | 🏆 | **Conquistas e diário** | 41 conquistas com prêmio na bolsa e o diário das batalhas marcantes, no Cartão de Treinador. |
 | 🔝 | **Revanches por degrau** | Depois do Hall da Fama, a Elite 4 e as revanches do Explorador VS sobem até o nível 100. |
 | 🧭 | **DexNav** | Os Pokémon de cada lugar, com a chance real, o que falta capturar e onde achar cada um. |
+| 🐾 | **Pokémon seguidor** | O 1º da equipe anda atrás de você no campo (por enquanto os iniciais de Kanto e a família do Pikachu). |
 | 🗞️ | **Tela de novidades** | O Prof. Carvalho apresenta cada mudança em cartões ilustrados. |
 | 🧪 | **Esteira de testes** | Toda ROM é jogada no emulador e testada antes de existir. |
 
@@ -152,6 +153,21 @@ perder o jeito do FireRed.
 
 <p align="center">
 <img src="docs/readme/dexnav_mapa.png" width="240" alt="DexNav na Rota 1: Pidgey capturado, Rattata visto, um nunca visto e +1 à noite">
+</p>
+</details>
+
+<details open>
+<summary><b>🐾 Pokémon seguidor</b></summary>
+
+| | |
+|---|---|
+| **Quem segue** | O 1º da equipe, se for uma das 12 espécies desta etapa: Bulbasaur, Charmander e Squirtle com as evoluções, Pichu, Pikachu e Raichu (sprites de HeartGold/SoulSilver, com a versão shiny). Outro Pokémon no 1º lugar, desmaiado ou Ovo: ninguém segue. |
+| **No campo** | Anda e corre no mesmo ritmo do jogador, pula ledges junto, atravessa portas e bordas de mapa, entra na grama alta e mexe as patas parado. Não bloqueia nada: voltar para o tile dele troca os dois de lugar, NPCs passam por ele e o **A** nele não faz nada. Pega o tom do dia e da noite e o clima. |
+| **Some e volta** | Some na bicicleta, no Surf, no Voar, na Corda de Fuga, no Cavar, no Teleporte e no Doce Aroma, e volta logo depois, atrás de você. Trocar o 1º (menu da equipe, PC, troca, evolução, cura no Centro) troca o seguidor. |
+| **Opção** | Linha **Seguidor** (Sim/Não) nas OPÇÕES do menu START. O seguidor não vai para o save: ao CONTINUAR, ele é recriado. |
+
+<p align="center">
+<img src="docs/readme/seguidor.png" width="240" alt="Charmander seguindo o jogador na Cidade de Pallet">
 </p>
 </details>
 
@@ -277,6 +293,7 @@ perder o jeito do FireRed.
 | **Revanches por degrau** (31/10) | A guarda da Liga escolhe o nível (Normal a 100) da Elite 4, do Campeão e das revanches do Explorador VS: times de 6, item, IVs altos e a IA dos chefes. |
 | **Chefes mais espertos** (31/10) | Os chefes trocam antes do golpe super efetivo, escolhem melhor quem entra e usam poções e curas na hora certa; treinador comum igual. |
 | **DexNav** (01/11) | Os Pokémon de cada mapa por jeito de encontrar, com a chance real, marcas da Pokédex e progresso; a lista dos 124 mapas e a busca por Pokémon. No menu START e no SELECT. |
+| **Pokémon seguidor** (02/11) | O 1º da equipe anda atrás do jogador (12 espécies, normal e shiny), no ritmo dele, sem bloquear ninguém; some na bicicleta, no Surf e nos golpes de campo e volta depois; opção Seguidor nas OPÇÕES. |
 
 ## Esteira de testes
 
@@ -302,7 +319,7 @@ flowchart LR
   comparadas pixel a pixel com as referências aprovadas de cada um.
 - **Checagem de texto**: mede a largura de cada frase traduzida na janela onde ela aparece e o
   tamanho dos buffers, para nada estourar.
-- **4808 testes em pytest** cobrem a própria esteira e as regras de cada hack.
+- **4832 testes em pytest** cobrem a própria esteira e as regras de cada hack.
 
 <details>
 <summary>Comandos (WSL)</summary>
@@ -342,6 +359,7 @@ O manual completo está em [`test/README.md`](test/README.md).
 | `src/day_night.c`, `src/data/day_night_weather.h` | Relógio, períodos e sorteio de clima por região |
 | `src/data/novidades/cartoes.json` | Cartões da tela de novidades |
 | `src/field_move_rules.c` | HMs sem ensinar |
+| `src/follower.c`, `tools/seguidores/` | Pokémon seguidor e o conversor dos sprites |
 | `test/esteira/` | A esteira de testes (Python + mGBA) |
 | `test/referencias/` | Telas aprovadas, por inicial |
 | `roms/` | ROMs testadas e versionadas |
