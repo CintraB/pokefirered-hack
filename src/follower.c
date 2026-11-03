@@ -36,7 +36,7 @@
 //       seguidor até o tile alvo, no mesmo ritmo (IsPlayerMovingByInput vale para o seguidor: 11 quadros/tile por
 //       input, 16 por script);
 //     correr (player_run; player_run_slow na escada de pedra) → a mesma ação: ritmo de correr (5 por input, 8 por
-//       script) com os quadros de andar (GetRunAnimNum: o seguidor não tem quadros de corrida);
+//       script) com os quadros de andar (GetRunAnimNum → FOLLOWER_ANIM_RUN_*: o seguidor não tem quadros de corrida);
 //     girar (spin) → walk_fast (a mesma velocidade, MOVE_SPEED_FAST_1; o seguidor não tem quadros de giro);
 //     pulo de 1 tile (jump) → jump;
 //     pulo de ledge (jump_2) → jump_2 junto: alinhado atrás, cai no tile da ledge, logo atrás do jogador; vindo de
@@ -52,8 +52,14 @@ struct FollowerState
     u16 species;    // espécie do objeto atual (a do 1º da equipe quando ele foi criado)
     u8 shiny:1;
     u8 unused:7;
-    u8 unused2;
+    u8 stillFrames; // quadros seguidos sem ação de movimento (UpdateIdleAnim espera FOLLOWER_IDLE_DELAY)
 };
+
+// A animação parada só entra depois de FOLLOWER_IDLE_DELAY quadros sem ação: no quadro em que um passo termina, o
+// próximo passo do jogador (que continua andando) ainda não começou, e StartSpriteAnim zeraria animCmdIndex. Com o
+// índice preservado, SetStepAnimHandleAlternation retoma o passo seguinte no quadro em que o anterior acabou: a perna
+// alterna de um tile para o outro (andando e correndo).
+#define FOLLOWER_IDLE_DELAY 2
 
 STATIC_ASSERT(sizeof(struct FollowerState) <= 16, FollowerStateCabeEm16BytesDeEwram);
 // optionsFollowerOff ocupa um dos 4 bits livres do bitfield de 0x14-0x15: nada muda de lugar
@@ -217,7 +223,15 @@ static void UpdateIdleAnim(struct ObjectEvent *objectEvent, struct Sprite *sprit
     u8 anim;
 
     if (objectEvent->singleMovementActive || (objectEvent->heldMovementActive && !objectEvent->heldMovementFinished))
+    {
+        sFollowerState.stillFrames = 0;
         return;
+    }
+    if (sFollowerState.stillFrames < FOLLOWER_IDLE_DELAY)
+    {
+        sFollowerState.stillFrames++;
+        return;
+    }
     anim = sIdleAnims[objectEvent->facingDirection <= DIR_EAST ? objectEvent->facingDirection : DIR_SOUTH];
     if (sprite->animNum != anim)
         StartSpriteAnim(sprite, anim);

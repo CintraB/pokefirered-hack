@@ -5415,11 +5415,15 @@ static bool8 IsPlayerMovingByInput(struct ObjectEvent *objectEvent)
     return (objectEvent->isPlayer || Follower_IsFollowerObject(objectEvent)) && !ScriptContext_IsEnabled();
 }
 
-// POK-48: the follower has no running frames: it runs with its walking frames
+// POK-48: the follower has no running frames: it runs with its walking frames (FOLLOWER_ANIM_RUN_*)
 static u8 GetRunAnimNum(struct ObjectEvent *objectEvent)
 {
     if (Follower_IsFollowerObject(objectEvent))
-        return GetMoveDirectionFastAnimNum(objectEvent->facingDirection);
+    {
+        if (objectEvent->facingDirection < DIR_SOUTH || objectEvent->facingDirection > DIR_EAST)
+            return FOLLOWER_ANIM_RUN_SOUTH;
+        return FOLLOWER_ANIM_RUN_SOUTH + objectEvent->facingDirection - DIR_SOUTH;
+    }
     return GetRunningDirectionAnimNum(objectEvent->facingDirection);
 }
 

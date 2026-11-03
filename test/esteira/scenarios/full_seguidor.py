@@ -25,11 +25,13 @@ passos) e o jogador em Pallet Town (12, 9), virado para o sul.
 Andar junto (Task 3; o seguidor e o jogador lidos em gObjectEvents a cada quadro):
 - `seguidor/anda`: 10 passos em L na Rota 1 (6 para a esquerda, 4 para baixo): no quadro em que o jogador começa cada
   passo, o seguidor começa o dele para o tile de onde o jogador saiu; nunca a mais de 1 tile; os dois no ritmo do
-  andar por input (WALK_FRAMES_PER_TILE de pace.py);
-- `seguidor/corre`: o mesmo com B segurado (FLAG_SYS_B_DASH ligada), 6 tiles, no ritmo da corrida (RUN_FRAMES_PER_TILE);
+  andar por input (WALK_FRAMES_PER_TILE de pace.py); a perna alterna: em cada 2 tiles seguidos o sprite do seguidor
+  mostra os 2 quadros da animação de andar;
+- `seguidor/corre`: o mesmo com B segurado (FLAG_SYS_B_DASH ligada), 6 tiles, no ritmo da corrida (RUN_FRAMES_PER_TILE),
+  também com os 2 quadros em cada 2 tiles;
 - `seguidor/ledge`: pular a ledge da Rota 22 alinhado: o seguidor pula junto (2 tiles) e cai do outro lado, no tile
-  da ledge, logo atrás do jogador; pular vindo de lado (seguidor ao lado): ele vai ao tile de cima e pula no passo
-  seguinte; nos dois casos, depois de mais um passo, está no tile anterior do jogador;
+  da ledge, logo atrás do jogador; pular vindo de lado (seguidor ao lado): ele pula a ledge da coluna dele e cai ao
+  lado do jogador; nos dois casos, depois de mais um passo, está no tile anterior do jogador;
 - `seguidor/troca`: virar e andar para o tile do seguidor: o jogador não é bloqueado e os dois trocam de lugar;
 - `seguidor/a_no_seguidor`: virado para o seguidor, A não começa script nenhum;
 - `seguidor/cena_pewter`: a cena do menino que leva o jogador ao Ginásio de Pewter (gatilho em (42, 22), applymovement
@@ -84,6 +86,9 @@ DIR_SOUTH, DIR_NORTH = 1, 2
 MAP_OFFSET = 7
 OBJ_FLAGS2, OBJ_COORDS, OBJ_FACING = 2, 0x10, 0x18
 SPRITE_SIZE, SPRITE_CALLBACK, SPRITE_DATA, MAX_SPRITES = 0x44, 0x1C, 0x2E, 64   # struct Sprite (include/sprite.h)
+SPRITE_ANIM_NUM, OBJ_SPRITE_ID = 0x2A, 4          # Sprite.animNum (+ animCmdIndex em 0x2B); ObjectEvent.spriteId
+ANIM_GO_FIRST, ANIM_GO_LAST = 4, 19               # ANIM_STD_GO_SOUTH .. ANIM_STD_GO_FASTEST_EAST (2 quadros: índice 0/1)
+ANIM_RUN_FIRST = 20 + 4                           # FOLLOWER_ANIM_RUN_SOUTH = ANIM_STD_COUNT + 4 (include/follower.h)
 PALSLOT_FOLLOWER, PALSLOT_NPC_SPECIAL = 11, 10
 PLTT_SIZE_4BPP = 32
 OBJ_EVENT_SIZE, SB1_OBJECT_EVENTS, OBJECT_EVENTS_COUNT = 0x24, 0x6A0, 16
@@ -102,6 +107,7 @@ class FollowerScenario(CatchSaveScenario):
     def __init__(self, ctx: ScenarioContext):
         super().__init__(ctx)
         self.box: Mailbox | None = None
+        self.anims: list[tuple[int, int, int]] = []   # (quadro, animNum, animCmdIndex) do seguidor no último _track
         self.vars = header_defines(REPO_ROOT, "vars.h")
 
     # --- utilidades -------------------------------------------------------------------------------------------------
@@ -300,6 +306,34 @@ class FollowerScenario(CatchSaveScenario):
         assert player is not None, "jogador fora de gObjectEvents"
         return player, follower
 
+    def _follower_anim(self) -> tuple[int, int]:
+        """(animNum, animCmdIndex) do sprite do seguidor ((-1, -1) sem seguidor)."""
+        local = _follower_define("OBJ_EVENT_ID_FOLLOWER")
+        for obj in self._objects():
+            if obj[0] & 1 and not obj[OBJ_FLAGS2] & 1 and obj[OBJ_LOCAL_ID] == local:
+                base = self.game.syms.addr("gSprites") + obj[OBJ_SPRITE_ID] * SPRITE_SIZE
+                anim = self.emu.read(base + SPRITE_ANIM_NUM, 2)
+                return anim[0], anim[1]
+        return -1, -1
+
+    def _check_legs(self, samples: list[tuple]) -> list[list[int]]:
+        """Em cada janela de 2 tiles seguidos (de um passo do jogador ao 2º seguinte), o sprite do seguidor mostra os 2
+        quadros da animação de andar (animCmdIndex 0 e 1 de uma GO_*). Devolve a sequência de quadros por passo."""
+        moves = [frame for (_, p0, _), (frame, p1, _) in zip(samples, samples[1:]) if p1 != p0]
+        per_step = []
+        for a, b in zip(moves, moves[1:]):
+            per_step.append([idx for f, num, idx in self.anims
+                             if a <= f < b and (ANIM_GO_FIRST <= num <= ANIM_GO_LAST
+                                                or ANIM_RUN_FIRST <= num < ANIM_RUN_FIRST + 4)])
+        for i in range(len(per_step) - 1):
+            seen = set(per_step[i]) | set(per_step[i + 1])
+            assert {0, 1} <= seen, (f"passos {i + 1}-{i + 2}: o seguidor mostrou só os quadros {sorted(seen)} da "
+                                    f"animação de andar ({per_step})")
+            # a perna continua de um passo para o outro: cada passo começa no quadro em que o anterior não começou
+            assert per_step[i] and per_step[i + 1] and per_step[i][0] != per_step[i + 1][0], (
+                f"passos {i + 1}-{i + 2} começam no mesmo quadro da animação de andar ({per_step})")
+        return per_step
+
     def _moving(self) -> bool:
         """Jogador ou seguidor com ação de movimento em curso (heldMovementActive sem heldMovementFinished)."""
         local = _follower_define("OBJ_EVENT_ID_FOLLOWER")
@@ -318,6 +352,7 @@ class FollowerScenario(CatchSaveScenario):
         mask = DIRECTIONS[direction][2] | (KEY_B if run else 0)
         self.ctl.wait_overworld_idle()
         samples = [(0, *self._pair())]
+        self.anims = []
         changes, frame = 0, 0
         self.emu.keys(mask)
         try:
@@ -331,6 +366,7 @@ class FollowerScenario(CatchSaveScenario):
                 if player != samples[-1][1]:
                     changes += 1
                 samples.append((frame, player, follower))
+                self.anims.append((frame, *self._follower_anim()))
         finally:
             self.emu.keys(0)
         self.ctl.wait_until(lambda: self.nav._player_still() and not self._moving(), 90, "fim do passo com o seguidor")
@@ -365,10 +401,12 @@ class FollowerScenario(CatchSaveScenario):
         for direction, tiles in WALK_LEGS:
             samples = self._track(direction, tiles)
             gaps = self._check_follow(samples, WALK_FRAMES_PER_TILE)
+            legs = self._check_legs(samples)
             player, follower = samples[-1][1:]
             dx, dy, _ = DIRECTIONS[direction]
             assert follower == (player[0] - dx, player[1] - dy), (player, follower)
-            report.append(f"{direction} {tiles}: jogador {player}, seguidor {follower}, quadros/tile {gaps}")
+            report.append(f"{direction} {tiles}: jogador {player}, seguidor {follower}, quadros/tile {gaps}, "
+                          f"perna {[''.join(map(str, step)) for step in legs]}")
         self._expect_one("Rota 1 depois do L")
         return "; ".join(report)
 
@@ -380,7 +418,9 @@ class FollowerScenario(CatchSaveScenario):
         for direction, tiles in RUN_LEGS:
             samples = self._track(direction, tiles, run=True)
             gaps = self._check_follow(samples, RUN_FRAMES_PER_TILE)
-            report.append(f"{direction} {tiles} correndo: {samples[-1][1:]}, quadros/tile {gaps}")
+            legs = self._check_legs(samples)
+            report.append(f"{direction} {tiles} correndo: {samples[-1][1:]}, quadros/tile {gaps}, "
+                          f"perna {[''.join(map(str, step)) for step in legs]}")
         self._expect_one("Rota 1 depois da corrida")
         return "; ".join(report)
 
@@ -511,7 +551,7 @@ class FollowerScenario(CatchSaveScenario):
             if crossed and xy == (15, 22):
                 break
         assert crossed, f"a menina não passou por {follower}: {path}"
-        assert worst <= 20, f"a menina parou {worst} quadros (caminho {path})"
+        assert worst <= 16, f"a menina parou {worst} quadros (caminho {path})"
         assert self._pair()[1] == follower, "o seguidor saiu do lugar"
         return f"caminho da menina {path}: passou por {follower}, no máximo {worst} quadros no mesmo tile"
 

@@ -347,6 +347,11 @@ FOLLOWER_WALK_ANIM(sAnim_FollowerIdleSouth, 0, FOLLOWER_IDLE_FRAMES);
 FOLLOWER_WALK_ANIM(sAnim_FollowerIdleNorth, 2, FOLLOWER_IDLE_FRAMES);
 FOLLOWER_WALK_ANIM(sAnim_FollowerIdleWest, 4, FOLLOWER_IDLE_FRAMES);
 FOLLOWER_WALK_ANIM(sAnim_FollowerIdleEast, 6, FOLLOWER_IDLE_FRAMES);
+// Correndo: os quadros de andar, FOLLOWER_RUN_TICKS cada (include/follower.h)
+FOLLOWER_WALK_ANIM(sAnim_FollowerRunSouth, 0, FOLLOWER_RUN_TICKS);
+FOLLOWER_WALK_ANIM(sAnim_FollowerRunNorth, 2, FOLLOWER_RUN_TICKS);
+FOLLOWER_WALK_ANIM(sAnim_FollowerRunWest, 4, FOLLOWER_RUN_TICKS);
+FOLLOWER_WALK_ANIM(sAnim_FollowerRunEast, 6, FOLLOWER_RUN_TICKS);
 
 // For indicating a VS Seeker rematch
 static const union AnimCmd sAnim_RaiseHand[] = {
@@ -1128,6 +1133,10 @@ static const union AnimCmd *const sAnimTable_Follower[] = {
     [FOLLOWER_ANIM_IDLE_NORTH] = sAnim_FollowerIdleNorth,
     [FOLLOWER_ANIM_IDLE_WEST] = sAnim_FollowerIdleWest,
     [FOLLOWER_ANIM_IDLE_EAST] = sAnim_FollowerIdleEast,
+    [FOLLOWER_ANIM_RUN_SOUTH] = sAnim_FollowerRunSouth,
+    [FOLLOWER_ANIM_RUN_NORTH] = sAnim_FollowerRunNorth,
+    [FOLLOWER_ANIM_RUN_WEST] = sAnim_FollowerRunWest,
+    [FOLLOWER_ANIM_RUN_EAST] = sAnim_FollowerRunEast,
 };
 
 static const union AnimCmd *const sAnimTable_HoOh[] = {

@@ -63,7 +63,27 @@ def test_ritmo_do_seguidor():
     assert "!ScriptContext_IsEnabled()" in corpo, corpo
     for nome in ("StartRunningAnim", "InitRunSlow"):
         assert "GetRunAnimNum(objectEvent)" in _funcao(eom, nome), nome
-    assert "GetMoveDirectionFastAnimNum" in _funcao(eom, "GetRunAnimNum")
+    assert "FOLLOWER_ANIM_RUN_SOUTH" in _funcao(eom, "GetRunAnimNum")
+    # o último quadro do passo não anima: na corrida por input (5 quadros/tile) cada quadro dura no máximo 3
+    header = _ler(INCLUDE / "follower.h")
+    ticks = int(re.search(r"#define FOLLOWER_RUN_TICKS (\d+)", header).group(1))
+    assert ticks <= 3, ticks
+    run = {d: int(re.search(rf"#define FOLLOWER_ANIM_RUN_{d}\s+\(ANIM_STD_COUNT \+ (\d+)\)", header).group(1))
+           for d in ("SOUTH", "NORTH", "WEST", "EAST")}
+    assert list(run.values()) == [4, 5, 6, 7], run   # logo depois das 4 paradas
+    anims = _ler(SRC / "data" / "object_events" / "object_event_anims.h")
+    for d in ("South", "North", "West", "East"):
+        assert re.search(rf"FOLLOWER_WALK_ANIM\(sAnim_FollowerRun{d}, \d, FOLLOWER_RUN_TICKS\);", anims), d
+        assert f"[FOLLOWER_ANIM_RUN_{d.upper()}] = sAnim_FollowerRun{d}," in anims, d
+
+
+def test_perna_continua_entre_passos():
+    """A animação parada só entra depois de FOLLOWER_IDLE_DELAY quadros sem ação: no quadro em que um passo termina,
+    StartSpriteAnim zeraria o animCmdIndex que o passo seguinte retoma."""
+    corpo = _funcao(_sem_comentarios(_ler(SRC / "follower.c")), "UpdateIdleAnim")
+    espera = corpo.index("sFollowerState.stillFrames < FOLLOWER_IDLE_DELAY")
+    assert espera < corpo.index("StartSpriteAnim"), corpo
+    assert "sFollowerState.stillFrames = 0;" in corpo, corpo
 
 
 def test_sem_colisao():

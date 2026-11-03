@@ -37,6 +37,16 @@ struct FollowerSpecies
 #define FOLLOWER_ANIM_IDLE_WEST  (ANIM_STD_COUNT + 2)
 #define FOLLOWER_ANIM_IDLE_EAST  (ANIM_STD_COUNT + 3)
 
+// Corrida (o seguidor não tem quadros de corrida): os 2 quadros de andar, FOLLOWER_RUN_TICKS cada. O último quadro do
+// passo não avança a animação (UpdateMovementNormal pausa antes do AnimateSprites), então num passo de 5 quadros
+// (corrida por input) a troca só acontece se cada quadro durar no máximo 3: assim cada passo mostra os 2 e o seguinte
+// começa no outro (a perna alterna de um tile para o outro).
+#define FOLLOWER_ANIM_RUN_SOUTH  (ANIM_STD_COUNT + 4)
+#define FOLLOWER_ANIM_RUN_NORTH  (ANIM_STD_COUNT + 5)
+#define FOLLOWER_ANIM_RUN_WEST   (ANIM_STD_COUNT + 6)
+#define FOLLOWER_ANIM_RUN_EAST   (ANIM_STD_COUNT + 7)
+#define FOLLOWER_RUN_TICKS 3
+
 extern const struct FollowerSpecies gFollowerSpecies[FOLLOWER_SPECIES_COUNT];
 
 struct ObjectEvent;
