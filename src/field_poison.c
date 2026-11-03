@@ -8,6 +8,7 @@
 #include "fldeff.h"
 #include "party_menu.h"
 #include "field_poison.h"
+#include "follower.h"
 #include "constants/battle.h"
 
 static bool32 IsMonValidSpecies(struct Pokemon *pokemon)
@@ -77,6 +78,9 @@ static void Task_TryFieldPoisonWhiteOut(u8 taskId)
             gSpecialVar_Result = TRUE;
         else
             gSpecialVar_Result = FALSE;
+        // POK-48: o 1º desmaiado pelo veneno deixa de seguir (com todos desmaiados, o desmaio total recria tudo)
+        if (!AllMonsFainted())
+            Follower_Refresh();
         ScriptContext_Enable();
         DestroyTask(taskId);
         break;

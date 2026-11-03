@@ -137,3 +137,19 @@ def test_estados():
     assert "Follower_Spawn();" in _funcao(doce, "FailSweetScentEncounter")
     cura = _funcao(_ler("script_pokemon_util.c"), "HealPlayerParty")
     assert re.search(r"if \(Overworld_IsRunning\(\)\)\s*Follower_Refresh\(\);", cura), cura
+    # desmaio pelo veneno no campo: o 1º desmaiado deixa de seguir antes de o script continuar
+    veneno = _funcao(_ler("field_poison.c"), "Task_TryFieldPoisonWhiteOut")
+    assert re.search(r"if \(!AllMonsFainted\(\)\)\s*Follower_Refresh\(\);\s*ScriptContext_Enable\(\);", veneno), veneno
+
+
+def test_ajuda_das_opcoes_tem_o_seguidor():
+    """A ajuda (L/R) das Opções lista o termo Seguidor antes de Cancelar, com nome e descrição em help_system.inc."""
+    ajuda = _ler("help_system.c")
+    termos = re.search(r"sTerms_Options\[\] = \{(.*?)\};", ajuda, re.S).group(1).split()
+    termos = [t.rstrip(",") for t in termos]
+    assert termos[-3:] == ["HELP_TERM_FOLLOWER", "HELP_TERM_CANCEL", "HELP_END"], termos
+    assert "[HELP_TERM_FOLLOWER]       = Help_Text_Follower" in ajuda
+    assert "[HELP_TERM_FOLLOWER]       = Help_Text_DefineFollower" in ajuda
+    inc = (REPO_ROOT / "data/text/help_system.inc").read_text(encoding="utf-8")
+    assert 'Help_Text_Follower::\n\t.string "Seguidor$"' in inc
+    assert "Help_Text_DefineFollower::" in inc

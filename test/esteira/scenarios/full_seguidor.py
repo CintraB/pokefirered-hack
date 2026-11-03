@@ -61,7 +61,9 @@ Estados (Task 4):
 - `seguidor/mapa_cheio`: com todos os objetos ocupados (TEST_CMD_FILL_OBJECT_EVENTS), o refresh não cria o seguidor,
   o jogador anda e nada trava; liberados, ele volta;
 - `seguidor/pc_guardar`: no PC do Centro de Viridian, DEPOSITAR o CHARMANDER (1º) deixa o PIDGEY no 1º: ao desligar o
-  PC não existe; RETIRAR o CHARMANDER (vai para o 2º): continua sem; TROCAR para o 1º: existe, atrás, 1 objeto.
+  PC não existe; RETIRAR o CHARMANDER (vai para o 2º): continua sem; TROCAR para o 1º: existe, atrás, 1 objeto;
+- `seguidor/veneno`: o 1º com 1 PS e envenenado (PIDGEY no 2º) anda na Rota 1 até desmaiar pelo veneno do campo: no
+  fim da mensagem não existe seguidor, o campo fica livre e o jogador anda.
 
 As telas `seguidor_*` são novas: ficam para a aprovação do Cintra (Task 5).
 
@@ -140,7 +142,9 @@ EVOLVED = "CHARMELEON"
 MENUITEM_FOLLOWER = 6                          # src/option_menu.c (antes de MENUITEM_CANCEL)
 OPTION_CURSOR, OPTION_LOAD_STATE = 0x10, 0x12   # struct OptionMenu: option[8] (u16), cursorPos, loadState
 SB2_OPTIONS = 0x14
-OPTIONS_FOLLOWER_OFF_BIT = 12                  # u16 em 0x14: textSpeed:3 frame:5 sound:1 style:1 scene:1 zoom:1 seguidor:1
+MON_STATUS, STATUS1_POISON = 0x50, 1 << 3        # Pokemon.status (u32); STATUS1_POISON (include/constants/battle.h)
+POISON_MAX_STEPS = 12                          # o veneno do campo tira 1 PS a cada 4 passos (DoPoisonFieldEffect)
+OPTIONS_FOLLOWER_OFF_BIT = 12                 # u16 em 0x14: textSpeed:3 frame:5 sound:1 style:1 scene:1 zoom:1 seguidor:1
 
 
 def _follower_define(name: str) -> int:
@@ -942,6 +946,29 @@ class FollowerScenario(PcScenario):   # PcScenario (CatchSaveScenario + PC): dep
         state = self._behind("CHARMANDER de volta ao 1º")
         return f"guardado (só PIDGEY): sem seguidor; retirado (2º): sem seguidor; trocado para o 1º: {state}"
 
+    def _veneno(self) -> str:
+        self._restore()
+        self.box.set_party_mon(1, self.consts.species(SWAP_MON[0]), SWAP_MON[1])
+        self._teleport(ROUTE1_WALK)
+        self._expect_one("Rota 1")
+        party = self.game.syms.addr("gPlayerParty")
+        self.emu.write(party + MON_STATUS, struct.pack("<I", STATUS1_POISON))
+        self.emu.write(party + MON_HP, struct.pack("<H", 1))
+        steps = 0
+        while self.game.party()[0].hp > 0:
+            assert steps < POISON_MAX_STEPS, f"{steps} passos envenenado e o 1º não desmaiou"
+            self.nav.step("left", 1)
+            steps += 1
+            if self.nav.interrupted:
+                break
+        self._finish_script("1º desmaia pelo veneno", 3000)
+        assert self.game.party()[0].hp == 0, self.game.party()[0]
+        assert self.ctl.overworld_idle(), self.game.callback2()
+        self._gone("1º desmaiado pelo veneno")
+        assert self.nav.step("left", 1) == 1, "o jogador não anda depois do desmaio"
+        self._gone("depois de mais um passo")
+        return f"{steps} passos envenenado: o 1º desmaiou, sem seguidor, o jogador anda"
+
     def run(self) -> None:
         try:
             self._flow("seguidor: CONTINUAR, CHARMANDER no 1º lugar, 12:00 e Pallet Town", self._start)
@@ -974,6 +1001,7 @@ class FollowerScenario(PcScenario):   # PcScenario (CatchSaveScenario + PC): dep
             self.suite.run("seguidor/mapa_cheio: sem objeto livre, não aparece e nada trava", self._mapa_cheio)
             self.suite.run("seguidor/pc_guardar: 1º guardado no PC some; retirado e de volta ao 1º, volta",
                            self._pc_guardar)
+            self.suite.run("seguidor/veneno: 1º desmaiado pelo veneno no campo some, nada trava", self._veneno)
         except Abort:
             pass
 

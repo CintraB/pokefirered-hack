@@ -432,6 +432,7 @@ enum
     HELP_TERM_ID_NO2,
     HELP_TERM_MONEY2,
     HELP_TERM_BADGES2,
+    HELP_TERM_FOLLOWER, // POK-48: a linha Seguidor das Opções
 };
 
 static const u8 *const sHelpSystemTermTextPtrs[] = {
@@ -478,7 +479,8 @@ static const u8 *const sHelpSystemTermTextPtrs[] = {
     [HELP_TERM_POKEMON]        = Help_Text_Pokemon,
     [HELP_TERM_ID_NO2]         = Help_Text_IDNo2,
     [HELP_TERM_MONEY2]         = Help_Text_Money2,
-    [HELP_TERM_BADGES2]        = Help_Text_Badges2
+    [HELP_TERM_BADGES2]        = Help_Text_Badges2,
+    [HELP_TERM_FOLLOWER]       = Help_Text_Follower
 };
 
 static const u8 *const sHelpSystemTermDefinitionsTextPtrs[] = {
@@ -525,7 +527,8 @@ static const u8 *const sHelpSystemTermDefinitionsTextPtrs[] = {
     [HELP_TERM_POKEMON]        = Help_Text_DefinePokemon,
     [HELP_TERM_ID_NO2]         = Help_Text_DefineIDNo2,
     [HELP_TERM_MONEY2]         = Help_Text_DefineMoney2,
-    [HELP_TERM_BADGES2]        = Help_Text_DefineBadges2
+    [HELP_TERM_BADGES2]        = Help_Text_DefineBadges2,
+    [HELP_TERM_FOLLOWER]       = Help_Text_DefineFollower
 };
 
 // Submenu IDs for TOPIC_ABOUT_GAME
@@ -813,6 +816,7 @@ static const u8 sTerms_Options[] = {
     HELP_TERM_SOUND, 
     HELP_TERM_BUTTON_MODE, 
     HELP_TERM_FRAME, 
+    HELP_TERM_FOLLOWER, 
     HELP_TERM_CANCEL, 
     HELP_END
 };
