@@ -23,6 +23,7 @@ enum
     MENUITEM_SOUND,
     MENUITEM_BUTTONMODE,
     MENUITEM_FRAMETYPE,
+    MENUITEM_FOLLOWER,   // POK-48: Pokémon seguidor (Sim/Não)
     MENUITEM_CANCEL,
     MENUITEM_COUNT
 };
@@ -38,10 +39,10 @@ enum
 struct OptionMenu
 {
     /*0x00*/ u16 option[MENUITEM_COUNT];
-    /*0x0E*/ u16 cursorPos;
-    /*0x10*/ u8 loadState;
-    /*0x11*/ u8 state;
-    /*0x12*/ u8 loadPaletteState;
+    /*0x10*/ u16 cursorPos;
+    /*0x12*/ u8 loadState;
+    /*0x13*/ u8 state;
+    /*0x14*/ u8 loadPaletteState;
 };
 
 static EWRAM_DATA struct OptionMenu *sOptionMenuPtr = NULL;
@@ -78,12 +79,14 @@ static const struct WindowTemplate sOptionMenuWinTemplates[] =
         .paletteNum = 1,
         .baseBlock = 2
     },
+    // POK-48: 8 linhas (13 px cada, a partir de y = 2) = 106 px: 14 tiles. A janela começa logo abaixo do título,
+    // dentro da mesma moldura (DrawOptionMenuBg), e a borda de baixo fica na última linha da tela (19)
     {
         .bg = 0,
         .tilemapLeft = 2,
-        .tilemapTop = 7,
+        .tilemapTop = 5,
         .width = 26,
-        .height = 12,
+        .height = 14,
         .paletteNum = 1,
         .baseBlock = 0x36
     },
@@ -94,7 +97,9 @@ static const struct WindowTemplate sOptionMenuWinTemplates[] =
         .width = 30,
         .height = 2,
         .paletteNum = 15,
-        .baseBlock = 0x16e
+        // POK-48: a janela dos itens agora vai de 0x36 a 0x1A1 (26 x 14 tiles); a barra de controles (60 tiles) fica
+        // depois das molduras (0x1AA-0x1B2 do usuário, 0x1B3-0x1BB a padrão): 0x1BC-0x1F7. Era 0x16e
+        .baseBlock = 0x1BC
     },
     DUMMY_WIN_TEMPLATE
 };
@@ -131,7 +136,7 @@ static const struct BgTemplate sOptionMenuBgTemplates[] =
 };
 
 static const u16 sOptionMenuPalette[] = INCBIN_U16("graphics/misc/option_menu.gbapal");
-static const u16 sOptionMenuItemCounts[MENUITEM_COUNT] = {3, 2, 2, 2, 3, 10, 0};
+static const u16 sOptionMenuItemCounts[MENUITEM_COUNT] = {3, 2, 2, 2, 3, 10, 2, 0};
 
 static const u8 *const sOptionMenuItemsNames[MENUITEM_COUNT] =
 {
@@ -141,6 +146,7 @@ static const u8 *const sOptionMenuItemsNames[MENUITEM_COUNT] =
     [MENUITEM_SOUND]       = gText_Sound,
     [MENUITEM_BUTTONMODE]  = gText_ButtonMode,
     [MENUITEM_FRAMETYPE]   = gText_Frame,
+    [MENUITEM_FOLLOWER]    = gText_Follower,
     [MENUITEM_CANCEL]      = gText_OptionMenuCancel,
 };
 
@@ -167,6 +173,13 @@ static const u8 *const sSoundOptions[] =
 {
     gText_SoundMono, 
     gText_SoundStereo
+};
+
+// POK-48: valor 0 = Sim (optionsFollowerOff = 0)
+static const u8 *const sFollowerOptions[] =
+{
+    gText_FollowerOn,
+    gText_FollowerOff
 };
 
 static const u8 *const sButtonTypeOptions[] =
@@ -212,6 +225,7 @@ void CB2_OptionsMenuFromStartMenu(void)
     sOptionMenuPtr->option[MENUITEM_SOUND] = gSaveBlock2Ptr->optionsSound;
     sOptionMenuPtr->option[MENUITEM_BUTTONMODE] = gSaveBlock2Ptr->optionsButtonMode;
     sOptionMenuPtr->option[MENUITEM_FRAMETYPE] = gSaveBlock2Ptr->optionsWindowFrameType;
+    sOptionMenuPtr->option[MENUITEM_FOLLOWER] = gSaveBlock2Ptr->optionsFollowerOff;
     
     for (i = 0; i < MENUITEM_COUNT - 1; i++)
     {
@@ -498,6 +512,9 @@ static void BufferOptionMenuString(u8 selection)
         StringAppendN(str, buf, 3);
         AddTextPrinterParameterized3(1, FONT_NORMAL, x, y, dst, -1, str);
         break;
+    case MENUITEM_FOLLOWER:
+        AddTextPrinterParameterized3(1, FONT_NORMAL, x, y, dst, -1, sFollowerOptions[sOptionMenuPtr->option[selection]]);
+        break;
     default:
         break;
     }
@@ -516,6 +533,7 @@ static void CloseAndSaveOptionMenu(u8 taskId)
     gSaveBlock2Ptr->optionsSound = sOptionMenuPtr->option[MENUITEM_SOUND];
     gSaveBlock2Ptr->optionsButtonMode = sOptionMenuPtr->option[MENUITEM_BUTTONMODE];
     gSaveBlock2Ptr->optionsWindowFrameType = sOptionMenuPtr->option[MENUITEM_FRAMETYPE];
+    gSaveBlock2Ptr->optionsFollowerOff = sOptionMenuPtr->option[MENUITEM_FOLLOWER];   // POK-48: o campo recria/apaga na volta
     SetPokemonCryStereo(gSaveBlock2Ptr->optionsSound);
     FREE_AND_SET_NULL(sOptionMenuPtr);
     DestroyTask(taskId);
@@ -533,20 +551,14 @@ static void DrawOptionMenuBg(void)
 {
     u8 h;
     h = 2;
-    
-    FillBgTilemapBufferRect(1, 0x1B3, 1, 2, 1, 1, 3);
-    FillBgTilemapBufferRect(1, 0x1B4, 2, 2, 0x1B, 1, 3);
-    FillBgTilemapBufferRect(1, 0x1B5, 0x1C, 2, 1, 1, 3);
-    FillBgTilemapBufferRect(1, 0x1B6, 1, 3, 1, h, 3);
-    FillBgTilemapBufferRect(1, 0x1B8, 0x1C, 3, 1, h, 3);
-    FillBgTilemapBufferRect(1, 0x1B9, 1, 5, 1, 1, 3);
-    FillBgTilemapBufferRect(1, 0x1BA, 2, 5, 0x1B, 1, 3);
-    FillBgTilemapBufferRect(1, 0x1BB, 0x1C, 5, 1, 1, 3);
-    FillBgTilemapBufferRect(1, 0x1AA, 1, 6, 1, 1, h);
-    FillBgTilemapBufferRect(1, 0x1AB, 2, 6, 0x1A, 1, h);
-    FillBgTilemapBufferRect(1, 0x1AC, 0x1C, 6, 1, 1, h);
-    FillBgTilemapBufferRect(1, 0x1AD, 1, 7, 1, 0x10, h);
-    FillBgTilemapBufferRect(1, 0x1AF, 0x1C, 7, 1, 0x10, h);
+
+    // POK-48: uma moldura só, da linha 2 à 19: o título (janela 0, linhas 3-4) e os 8 itens (janela 1, linhas 5-18).
+    // A caixa própria do título (linhas 2-5) não cabia junto com a janela de 14 tiles dos itens
+    FillBgTilemapBufferRect(1, 0x1AA, 1, 2, 1, 1, h);
+    FillBgTilemapBufferRect(1, 0x1AB, 2, 2, 0x1A, 1, h);
+    FillBgTilemapBufferRect(1, 0x1AC, 0x1C, 2, 1, 1, h);
+    FillBgTilemapBufferRect(1, 0x1AD, 1, 3, 1, 0x10, h);
+    FillBgTilemapBufferRect(1, 0x1AF, 0x1C, 3, 1, 0x10, h);
     FillBgTilemapBufferRect(1, 0x1B0, 1, 0x13, 1, 1, h);
     FillBgTilemapBufferRect(1, 0x1B1, 2, 0x13, 0x1A, 1, h);
     FillBgTilemapBufferRect(1, 0x1B2, 0x1C, 0x13, 1, 1, h);
@@ -569,7 +581,7 @@ static void UpdateSettingSelectionDisplay(u16 selection)
     u16 maxLetterHeight, y;
     
     maxLetterHeight = GetFontAttribute(FONT_NORMAL, FONTATTR_MAX_LETTER_HEIGHT);
-    y = selection * (maxLetterHeight - 1) + 0x3A;
+    y = selection * (maxLetterHeight - 1) + 0x2A;   // POK-48: janela dos itens no tile 5 (0x28) + y = 2
     SetGpuReg(REG_OFFSET_WIN0V, WIN_RANGE(y, y + maxLetterHeight));
     SetGpuReg(REG_OFFSET_WIN0H, WIN_RANGE(0x10, 0xE0));
 }

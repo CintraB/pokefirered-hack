@@ -40,6 +40,27 @@ Andar junto (Task 3; o seguidor e o jogador lidos em gObjectEvents a cada quadro
 - `seguidor/grama`: o seguidor entra na grama alta da Rota 1 e ganha as folhinhas (sprite do efeito de grama com o
   localId dele, no tile dele) (foto `seguidor_grama`).
 
+Estados (Task 4):
+- `seguidor/bicicleta`: com a BICICLETA registrada no SELECT, montar apaga o seguidor (e ele não volta pedalando);
+  descer o recria atrás do jogador, 1 objeto, e ele segue o passo seguinte;
+- `seguidor/surf`: em Pallet, A diante da água (SURF com a 5ª insígnia): na água não existe, nem depois de um passo;
+  ao sair, existe (no tile do jogador, escondido: atrás é água) e o 1º passo em terra o põe atrás, visível;
+- `seguidor/voar`: o voo de verdade (TEST_CMD_START_FLY = o A da tela de voo) até Pewter: na chegada existe, atrás do
+  jogador, 1 objeto, e não existia durante a chegada do pássaro;
+- `seguidor/corda_fuga`: entrar no Mt. Moon pela Rota 4 (o ponto de fuga) e usar a CORDA DE FUGA pela bolsa: na saída
+  existe, atrás do jogador, 1 objeto;
+- `seguidor/troca_equipe`: pelo menu da equipe (TROCAR), PIDGEY no 1º lugar: não existe; de volta CHARMANDER: existe;
+- `seguidor/desmaiado_centro`: 1º com PS 0: não existe no Centro de Viridian; a enfermeira cura: no fim da cena
+  existe, atrás do jogador, sem abrir menu;
+- `seguidor/shiny`: o 1º shiny (TEST_CMD_SET_LEAD_SHINY) e um warp: estado com shiny e a paleta shiny do ROM (foto
+  `seguidor_shiny`);
+- `seguidor/evolucao`: CHARMANDER nv 15 vence um CHANSEY com 1% de PS, sobe de nível e evolui depois da batalha: na
+  volta ao campo o seguidor é CHARMELEON;
+- `seguidor/opcao`: no menu de Opções a linha SEGUIDOR (8 linhas, foto `seguidor_opcoes`); Não: ao fechar, o seguidor
+  some e o bit do save liga; Sim: volta;
+- `seguidor/mapa_cheio`: com todos os objetos ocupados (TEST_CMD_FILL_OBJECT_EVENTS), o refresh não cria o seguidor,
+  o jogador anda e nada trava; liberados, ele volta.
+
 As telas `seguidor_*` são novas: ficam para a aprovação do Cintra (Task 5).
 
 Uso, a partir de test/ (a pasta OUT precisa do captura.sav de um `rapido`/`completo`):
@@ -51,8 +72,10 @@ import struct
 import sys
 
 from ..breeding import header_defines
-from ..emu import KEY_A, KEY_B, KEY_UP
-from ..hooks import CMD_SET_VAR, CMD_WARP, Mailbox
+from ..emu import KEY_A, KEY_B, KEY_DOWN, KEY_LEFT, KEY_SELECT, KEY_UP
+from ..field_menu import STARTMENU_BAG, STARTMENU_OPTION, STARTMENU_POKEMON
+from ..game import MON_HP
+from ..hooks import CMD_GIVE_ITEM, CMD_SET_VAR, CMD_START_FLY, CMD_START_WILD_BATTLE, CMD_WARP, Mailbox
 from ..nav import DIRECTIONS
 from . import REPO_ROOT, ScenarioContext
 from .base import Abort
@@ -94,7 +117,27 @@ PLTT_SIZE_4BPP = 32
 OBJ_EVENT_SIZE, SB1_OBJECT_EVENTS, OBJECT_EVENTS_COUNT = 0x24, 0x6A0, 16
 OBJ_GRAPHICS_ID, OBJ_LOCAL_ID = 5, 8
 FOLLOWER_H = REPO_ROOT / "include" / "follower.h"
-SCREEN_POINTS = ("seguidor_parado", "seguidor_noite", "seguidor_paleta_especial", "seguidor_cinnabar", "seguidor_grama")
+MOVES = {m.group(1): int(m.group(2)) for m in re.finditer(
+    r"^#define (MOVE_\w+)\s+(\d+)\b", (REPO_ROOT / "include/constants/moves.h").read_text(encoding="utf-8"), re.M)}
+SCREEN_POINTS = ("seguidor_parado", "seguidor_noite", "seguidor_paleta_especial", "seguidor_cinnabar", "seguidor_grama",
+                 "seguidor_shiny", "seguidor_opcoes")
+# Task 4
+PALLET_WATER = ("MAP_PALLET_TOWN", (8, 16))   # água (MB_POND_WATER) em x 7..10, y 17..19, logo abaixo
+SURF_MON = ("LAPRAS", 50)
+PLAYER_AVATAR_FLAG_SURFING, PLAYER_AVATAR_FLAG_MACH_BIKE = 1 << 3, 1 << 1   # include/global.fieldmap.h
+SB1_REGISTERED_ITEM = 0x296
+ROUTE4_CAVE = ("MAP_ROUTE4", (19, 6))          # logo abaixo da entrada do Mt. Moon (warp em (19, 5))
+MT_MOON = "MAP_MT_MOON_1F"
+VIRIDIAN_NURSE = ("MAP_VIRIDIAN_CITY_POKEMON_CENTER_1F", (7, 4))   # enfermeira em (7, 2), balcão em (7, 3)
+PEWTER = "MAP_PEWTER_CITY"
+SWAP_MON = ("PIDGEY", 10)
+EVO_LEAD = ("CHARMANDER", 15)                  # evolui no 16
+EVO_FOE = ("CHANSEY", 20)                      # 255 de EXP base: 255 * 20 / 7 = 728 > 500 que faltam do 15 ao 16
+EVOLVED = "CHARMELEON"
+MENUITEM_FOLLOWER = 6                          # src/option_menu.c (antes de MENUITEM_CANCEL)
+OPTION_CURSOR, OPTION_LOAD_STATE = 0x10, 0x12   # struct OptionMenu: option[8] (u16), cursorPos, loadState
+SB2_OPTIONS = 0x14
+OPTIONS_FOLLOWER_OFF_BIT = 12                  # u16 em 0x14: textSpeed:3 frame:5 sound:1 style:1 scene:1 zoom:1 seguidor:1
 
 
 def _follower_define(name: str) -> int:
@@ -579,6 +622,293 @@ class FollowerScenario(CatchSaveScenario):
         self._shot("seguidor_grama")
         return f"seguidor na grama {follower}, efeito de grama dele em {found} (foto seguidor_grama)"
 
+    # --- estados (Task 4) -------------------------------------------------------------------------------------------
+    def _avatar_flags(self) -> int:
+        return self.emu.read_u8(self.game.syms.addr("gPlayerAvatar"))
+
+    def _gone(self, where: str) -> dict:
+        state = self._state()
+        assert not state["existe"] and state["objetos"] == 0, f"{where}: {state}"
+        return state
+
+    def _behind(self, where: str) -> dict:
+        """1 objeto, visível, no tile atrás do jogador (oposto ao facing)."""
+        state = self._expect_one(where)
+        px, py = self.game.player_xy()
+        dx, dy = {1: (0, -1), 2: (0, 1), 3: (1, 0), 4: (-1, 0)}[self._facing()]
+        assert state["xy"] == (px + dx, py + dy) and not state["escondido"], f"{where}: {state}, jogador {(px, py)}"
+        return state
+
+    def _idle_after(self, what: str, timeout: int = 6000) -> None:
+        """A a cada 16 quadros (sem B: B cancela evolução) até o campo ficar livre."""
+        spent = 0
+        while not (self.game.callback2() == "CB2_Overworld" and self.ctl.overworld_idle()
+                   and not self.game.in_battle()):
+            if spent >= timeout:
+                raise self.ctl.timeout_error(what)
+            self.emu.keys(KEY_A if spent % 16 < 2 else 0)
+            self.emu.frames(1)
+            spent += 1
+        self.emu.keys(0)
+        self.emu.frames(30)
+
+    def _bicicleta(self) -> str:
+        self._restore()
+        bike = self.consts.item("ITEM_BICYCLE")
+        self.box.call(CMD_GIVE_ITEM, bike, 1)
+        self.emu.write(self._sb(1) + SB1_REGISTERED_ITEM, struct.pack("<H", bike))
+        self._behind("a pé")
+        self.ctl.press_until(KEY_SELECT, lambda: self._avatar_flags() & PLAYER_AVATAR_FLAG_MACH_BIKE, "montar",
+                             tries=5, wait=30)
+        self.ctl.wait_overworld_idle()
+        self._gone("montado")
+        moved = self.nav.step("down", 2)
+        assert moved == 2, moved
+        self._gone("pedalando")
+        self.ctl.press_until(KEY_SELECT, lambda: not self._avatar_flags() & PLAYER_AVATAR_FLAG_MACH_BIKE, "descer",
+                             tries=5, wait=30)
+        self.ctl.wait_overworld_idle()
+        self.emu.frames(10)
+        down = self._behind("depois de descer")
+        samples = self._track("down", 1)
+        self._check_follow(samples, None)
+        return f"montado: sem seguidor (também depois de 2 passos); desceu: {down}; +1 passo {samples[-1][1:]}"
+
+    def _surf(self) -> str:
+        self._restore()
+        self.box.set_flag(self.consts.flag("FLAG_BADGE05_GET"), True)
+        self.box.set_party_mon(1, self.consts.species(SURF_MON[0]), SURF_MON[1])
+        self.box.set_party_move(1, 0, MOVES["MOVE_SURF"])
+        self._teleport(PALLET_WATER)
+        x, y = PALLET_WATER[1]
+        self._behind("diante da água")
+        self._talk(KEY_DOWN, "SURF")
+        assert self._avatar_flags() & PLAYER_AVATAR_FLAG_SURFING and self.game.player_xy() == (x, y + 1), (
+            self._avatar_flags(), self.game.player_xy())
+        self._gone("na água")
+        for direction, what in (("down", "na água"), ("up", "na água, de volta"), ("up", "para a terra")):
+            # o último desce do Pokémon: o pulo para a terra trava os controles (LockPlayerFieldControls), e o nav o
+            # conta como interrupção; vale o tile de chegada
+            moved = self.nav.step(direction, 1)
+            assert moved == 1 or (what == "para a terra" and self.game.player_xy() == (x, y)), (
+                f"{direction} {what}: andou {moved}, em {self.game.player_xy()}, flags {self._avatar_flags():#x}, "
+                f"interrompido {self.nav.interrupted}")
+            if what == "na água":
+                self._gone("surfando")
+        self.ctl.wait_until(lambda: not self._avatar_flags() & PLAYER_AVATAR_FLAG_SURFING
+                            and self.ctl.overworld_idle(), 300, "sair da água")
+        self.emu.frames(10)
+        out = self._expect_one("fora da água")
+        assert out["xy"] == (x, y) and out["escondido"], f"atrás é água: no tile do jogador, escondido ({out})"
+        samples = self._track("up", 1)
+        self._check_follow(samples, None)
+        after = self._behind("1º passo em terra")
+        return f"na água: sem seguidor; saiu em {(x, y)}: {out}; 1º passo: {after}"
+
+    def _voar(self) -> str:
+        self._restore()
+        heal = {m.group(1): i for i, m in enumerate(re.finditer(r"^\s*(HEAL_LOCATION_\w+),", (
+            REPO_ROOT / "include/constants/heal_locations.h").read_text(encoding="utf-8"), re.M))}
+        pewter = self.consts.map(PEWTER)
+        assert self.box.call(CMD_START_FLY, heal["HEAL_LOCATION_PEWTER_CITY"], 0) == 1, "START_FLY recusado"
+        seen, frames = [], 0
+        while not (self.game.location() == pewter and self.game.callback2() == "CB2_Overworld"
+                   and self.ctl.overworld_idle()):
+            if frames >= 3000:
+                raise self.ctl.timeout_error("voo até Pewter")
+            self.emu.frames(1)
+            frames += 1
+            if frames % 4 == 0 and self.game.callback2() == "CB2_Overworld":
+                pair = self._pair()
+                seen.append((self.game.location(), pair[1] is not None))
+        arrival = [s for loc, s in seen if loc == pewter]
+        departure = [s for loc, s in seen if loc != pewter]
+        self.emu.frames(30)
+        assert arrival and not any(arrival[:-5]), f"seguidor durante a chegada do pássaro: {arrival}"
+        assert departure and not departure[-1], f"seguidor no fim da saída: {departure[-10:]}"
+        # pousa virado para o sul, diante do Centro: atrás (norte) é a parede, então ele nasce no tile do jogador,
+        # escondido, e o 1º passo o põe atrás (a regra do spawn)
+        landed = self._expect_one("Pewter")
+        assert landed["xy"] == self.game.player_xy() and landed["escondido"], (landed, self.game.player_xy())
+        samples = self._track("down", 1)
+        self._check_follow(samples, None)
+        state = self._behind("Pewter, 1º passo")
+        return (f"voo em {frames} quadros, sem seguidor na saída nem na chegada; pousou em {landed['xy']} (escondido: "
+                f"atrás é o Centro); 1º passo: {state}")
+
+    def _corda_fuga(self) -> str:
+        self._restore()
+        rope = self.consts.item("ITEM_ESCAPE_ROPE")
+        self.box.call(CMD_GIVE_ITEM, rope, 1)
+        self._teleport(ROUTE4_CAVE)
+        loc = self.nav.go_through_warp("up")
+        assert loc == self.consts.map(MT_MOON), loc
+        self.emu.frames(30)
+        inside = self._expect_one("Mt. Moon")
+        self.menu.open_start_menu()
+        self.menu.choose(STARTMENU_BAG)
+        self.menu.bag.wait_ready()
+        self.menu.bag.select(rope)
+        self.menu.bag.use_selected()
+        route4 = self.consts.map(ROUTE4_CAVE[0])
+        spent, seen = 0, []
+        while not (self.game.location() == route4 and self.game.callback2() == "CB2_Overworld"
+                   and self.ctl.overworld_idle()):
+            if spent >= 3000:
+                raise self.ctl.timeout_error("Corda de Fuga até a Rota 4")
+            self.emu.keys(KEY_A if spent % 16 < 2 else 0)
+            self.emu.frames(1)
+            spent += 1
+            if spent % 4 == 0 and self.game.callback2() == "CB2_Overworld" and self.game.location() == route4:
+                seen.append(self._pair()[1] is not None)
+        self.emu.keys(0)
+        self.emu.frames(30)
+        out = self._behind("saída do Mt. Moon")
+        assert seen and not any(seen[:-5]), f"seguidor durante a chegada girando: {seen}"
+        return (f"no Mt. Moon {inside['xy']}; Corda de Fuga: Rota 4 {self.game.player_xy()}, {out}; sem seguidor em "
+                f"{len(seen) - sum(seen)} leituras da chegada")
+
+    def _party_swap_first(self) -> None:
+        """START > POKéMON > 1º > TROCAR > 2º; sai do menu e fecha o START."""
+        self.menu.open_start_menu()
+        self.menu.choose(STARTMENU_POKEMON)
+        tasks = self.game.active_tasks
+        self.ctl.wait_until(lambda: "Task_HandleChooseMonInput" in tasks(), 600, "tela de Pokémon")
+        before = [m.species for m in self.game.party()[:2]]
+        cursor = self.game.syms.addr("gPartyMenu") + 9    # gPartyMenu.slotId (include/party_menu.h)
+        assert self.emu.read_u8(cursor) == 0, self.emu.read_u8(cursor)
+        self.ctl.press_until(KEY_A, lambda: "Task_HandleSelectionMenuInput" in tasks(), "ações do 1º")
+        self.emu.frames(10)
+        self.emu.press(KEY_DOWN, hold=2, release=8)        # RESUMO → TROCAR
+        self.ctl.press_until(KEY_A, lambda: "Task_HandleSelectionMenuInput" not in tasks(), "TROCAR")
+        self.ctl.wait_until(lambda: "Task_HandleChooseMonInput" in tasks(), 120, "escolher com quem trocar")
+        # escolhendo com quem trocar, o cursor é gPartyMenu.slotId2 (slotId fica no 1º)
+        self.ctl.press_until(KEY_DOWN, lambda: self.emu.read_u8(cursor + 1) == 1, "cursor no 2º")
+        self.ctl.press_until(KEY_A, lambda: "Task_HandleChooseMonInput" not in tasks(), "trocar")
+        self.ctl.wait_until(lambda: "Task_HandleChooseMonInput" in tasks(), 600, "troca feita")
+        after = [m.species for m in self.game.party()[:2]]
+        assert after == before[::-1], (before, after)
+        self.ctl.press_until(KEY_B, self.menu.start_menu_open, "volta ao menu START", tries=5, wait=60)
+        self.ctl.wait_until(self.menu.accepting_input, 600, "menu START")
+        self.menu.close_start_menu()
+        self.emu.frames(10)
+
+    def _troca_equipe(self) -> str:
+        self._restore()
+        self.box.set_party_mon(1, self.consts.species(SWAP_MON[0]), SWAP_MON[1])
+        self._behind("antes")
+        self._party_swap_first()
+        assert self.game.party()[0].species == self.consts.species(SWAP_MON[0]), self.game.party()[0]
+        self._gone("PIDGEY no 1º lugar")
+        self._party_swap_first()
+        state = self._behind("CHARMANDER de volta")
+        return f"PIDGEY no 1º: sem seguidor; CHARMANDER de volta: {state}"
+
+    def _desmaiado_centro(self) -> str:
+        self._restore()
+        party = self.game.syms.addr("gPlayerParty")
+        self.emu.write(party + MON_HP, b"\0\0")
+        self._teleport(VIRIDIAN_NURSE)
+        assert self.game.party()[0].hp == 0
+        self._gone("1º desmaiado no Centro")
+        self._talk(KEY_UP, "enfermeira cura o time")
+        assert self.game.party()[0].hp == self.game.party()[0].max_hp, self.game.party()[0]
+        assert self.game.callback2() == "CB2_Overworld" and not self.menu.start_menu_open()
+        state = self._behind("fim da cura")
+        return f"PS 0: sem seguidor; depois da cura: {state}"
+
+    def _shiny(self) -> str:
+        self._restore()
+        species = self.box.set_lead_shiny(True)
+        assert species == self.consts.species(LEAD[0]), species
+        self._teleport(PALLET)
+        state = self._behind("1º shiny")
+        assert state["shiny"], state
+        assert self._palette(PALSLOT_FOLLOWER) == self._rom("sFollowerPalShiny_Charmander"), "paleta shiny"
+        self._shot("seguidor_shiny")
+        return f"shiny: {state} com a paleta shiny do ROM (foto seguidor_shiny)"
+
+    def _evolucao(self) -> str:
+        self._restore()
+        self.box.set_party_mon(0, self.consts.species(EVO_LEAD[0]), EVO_LEAD[1])
+        self._teleport(PALLET)
+        self._behind("CHARMANDER nv 15")
+        assert self.box.call(CMD_START_WILD_BATTLE, self.consts.species(EVO_FOE[0]), EVO_FOE[1]) == 1
+        self.driver.wait_battle_start()
+        self.driver.wait_action_menu()
+        self.box.set_enemy_mon(0, self.consts.species(EVO_FOE[0]), EVO_FOE[1], hp_percent=1)
+        outcome = self.driver.fight_to_end()
+        assert outcome == "win", outcome
+        self._idle_after("subida de nível, evolução e volta ao campo")
+        lead = self.game.party()[0]
+        assert lead.species == self.consts.species(EVOLVED), lead
+        state = self._expect_one_species("depois da evolução", EVOLVED)
+        return f"{EVO_LEAD[0]} → {EVOLVED} nv {lead.level}: seguidor {state}"
+
+    def _expect_one_species(self, where: str, species: str) -> dict:
+        state = self._state()
+        assert state["existe"] and state["objetos"] == 1, f"{where}: {state}"
+        assert state["especie"] == self.consts.species(species), f"{where}: espécie {state['especie']}"
+        return state
+
+    def _option_ptr(self) -> int:
+        return self.emu.read_u32(self.game.syms.addr("sOptionMenuPtr"))
+
+    def _options_toggle_follower(self, shot: bool) -> None:
+        """START > OPÇÕES > SEGUIDOR > ← (troca Sim/Não) > B; volta ao campo com o START fechado."""
+        self.menu.open_start_menu()
+        self.menu.choose(STARTMENU_OPTION)
+        ready = lambda: (self._option_ptr() != 0 and "Task_OptionMenu" in self.game.active_tasks()
+                         and self.emu.read_u8(self._option_ptr() + OPTION_LOAD_STATE) == 2)
+        self.ctl.wait_until(ready, 600, "menu de Opções")
+        cursor = lambda: self.emu.read_u16(self._option_ptr() + OPTION_CURSOR)
+        self.ctl.press_until(KEY_UP, lambda: cursor() == MENUITEM_FOLLOWER, "cursor no SEGUIDOR", tries=4, wait=10)
+        value = lambda: self.emu.read_u16(self._option_ptr() + MENUITEM_FOLLOWER * 2)
+        old = value()
+        self.ctl.press_until(KEY_LEFT, lambda: value() != old, "troca Sim/Não")
+        self.emu.frames(10)
+        if shot:
+            self._shot("seguidor_opcoes")
+        self.ctl.press_until(KEY_B, lambda: self._option_ptr() == 0, "fecha as Opções", tries=3, wait=60)
+        self.ctl.wait_until(self.menu.accepting_input, 600, "menu START depois das Opções")
+        self.menu.close_start_menu()
+        self.emu.frames(10)
+
+    def _follower_off_bit(self) -> bool:
+        return bool(self.emu.read_u16(self._sb(2) + SB2_OPTIONS) >> OPTIONS_FOLLOWER_OFF_BIT & 1)
+
+    def _opcao(self) -> str:
+        self._restore()
+        self._behind("Sim")
+        assert not self._follower_off_bit()
+        self._options_toggle_follower(True)
+        assert self._follower_off_bit(), "Não não foi para o save"
+        self._gone("Não")
+        assert self.nav.step("down", 1) == 1
+        self._gone("Não, depois de um passo")
+        self._options_toggle_follower(False)
+        assert not self._follower_off_bit()
+        state = self._behind("Sim de novo")
+        return f"Não: some ao fechar (bit {OPTIONS_FOLLOWER_OFF_BIT} do 0x14); Sim: {state} (foto seguidor_opcoes)"
+
+    def _mapa_cheio(self) -> str:
+        self._restore()
+        self._behind("antes")
+        full = self.box.fill_object_events(True)
+        assert full == OBJECT_EVENTS_COUNT, full
+        assert self.box.set_follower_option(False)        # Não: o refresh apaga o seguidor
+        assert self.box.fill_object_events(True) == OBJECT_EVENTS_COUNT   # o slot dele também
+        self.box.set_follower_option(True)                # Sim: sem objeto livre, não nasce
+        self._gone("mapa cheio")
+        assert self.nav.step("up", 1) == 1, "o jogador não anda com o mapa cheio"
+        self.emu.frames(30)
+        assert self.ctl.overworld_idle(), self.game.callback2()
+        self._gone("mapa cheio, depois de um passo")
+        left = self.box.fill_object_events(False)
+        self.box.set_follower_option(True)
+        state = self._behind("objetos liberados")
+        return f"{OBJECT_EVENTS_COUNT} objetos: sem seguidor, o jogador anda; liberados ({left} ativos): {state}"
+
     def run(self) -> None:
         try:
             self._flow("seguidor: CONTINUAR, CHARMANDER no 1º lugar, 12:00 e Pallet Town", self._start)
@@ -599,6 +929,16 @@ class FollowerScenario(CatchSaveScenario):
             self.suite.run("seguidor/cena_pewter: cena com applymovement no jogador termina", self._cena_pewter)
             self.suite.run("seguidor/npc_atravessa: NPC de rota fixa passa pelo seguidor", self._npc_atravessa)
             self.suite.run("seguidor/grama: folhas da grama alta no seguidor", self._grama)
+            self.suite.run("seguidor/bicicleta: some ao montar, volta atrás ao descer", self._bicicleta)
+            self.suite.run("seguidor/surf: some na água, volta ao sair", self._surf)
+            self.suite.run("seguidor/voar: Voar para Pewter, 1 objeto no destino", self._voar)
+            self.suite.run("seguidor/corda_fuga: Corda de Fuga no Mt. Moon, 1 objeto na saída", self._corda_fuga)
+            self.suite.run("seguidor/troca_equipe: PIDGEY no 1º some, CHARMANDER volta", self._troca_equipe)
+            self.suite.run("seguidor/desmaiado_centro: 1º desmaiado, volta ao fim da cura", self._desmaiado_centro)
+            self.suite.run("seguidor/shiny: paleta shiny com o 1º shiny", self._shiny)
+            self.suite.run("seguidor/evolucao: evoluiu na batalha, volta com o sprite novo", self._evolucao)
+            self.suite.run("seguidor/opcao: SEGUIDOR Não some, Sim volta", self._opcao)
+            self.suite.run("seguidor/mapa_cheio: sem objeto livre, não aparece e nada trava", self._mapa_cheio)
         except Abort:
             pass
 

@@ -1,4 +1,5 @@
 #include "global.h"
+#include "follower.h"
 #include "gflib.h"
 #include "berry.h"
 #include "daycare.h"
@@ -43,6 +44,10 @@ void HealPlayerParty(void)
         arg[3] = 0;
         SetMonData(&gPlayerParty[i], MON_DATA_STATUS, arg);
     }
+    // POK-48: 1º desmaiado curado (Centro Pokémon e outras curas por script): o seguidor volta no fim da cena, sem
+    // precisar de menu. Só com o campo rodando (não no fim de batalha nem na Sala União)
+    if (Overworld_IsRunning())
+        Follower_Refresh();
 }
 
 u8 ScriptGiveMon(u16 species, u8 level, u16 item, u32 unused1, u32 unused2, u8 unused3)

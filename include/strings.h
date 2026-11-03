@@ -1695,4 +1695,9 @@ extern const u8 gText_DexNav_HorarioSempre[];
 extern const u8 gText_DexNav_BuscaVazia[];
 extern const u8 gText_DexNav_NenhumMapa[];
 
+// POK-48: Pokémon seguidor
+extern const u8 gText_Follower[];
+extern const u8 gText_FollowerOn[];
+extern const u8 gText_FollowerOff[];
+
 #endif //GUARD_STRINGS_H

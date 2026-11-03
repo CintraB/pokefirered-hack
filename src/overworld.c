@@ -1499,6 +1499,12 @@ static void CB2_Overworld(void)
         SetFieldVBlankCallback();
 }
 
+// POK-48: o campo está rodando (objetos e sprites do mapa carregados), não um menu, batalha ou carga de mapa
+bool32 Overworld_IsRunning(void)
+{
+    return gMain.callback2 == CB2_Overworld;
+}
+
 void SetMainCallback1(MainCallback cb)
 {
     gMain.callback1 = cb;

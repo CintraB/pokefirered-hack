@@ -1,4 +1,5 @@
 #include "global.h"
+#include "follower.h"
 #include "field_effect.h"
 #include "field_player_avatar.h"
 #include "fldeff.h"
@@ -33,6 +34,7 @@ bool8 FldEff_UseDig(void)
 
     FLDEFF_SET_FUNC_TO_DATA(StartDigFieldEffect);
     SetPlayerAvatarTransitionFlags(PLAYER_AVATAR_FLAG_ON_FOOT);
+    Follower_Remove(); // POK-48: some ao mostrar o Pokémon (volta no fim da chegada, como na Corda de Fuga)
     return FALSE;
 }
 

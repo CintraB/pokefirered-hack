@@ -416,6 +416,19 @@ class Mailbox:
         """Só o quadro da animação parada (0/1): 1 comando = 1 quadro do jogo."""
         return self.call(CMD_FOLLOWER_STATE, 2) >> 8 & 0xFF
 
+    def set_follower_option(self, on: bool) -> bool:
+        """Opção Seguidor (Sim = True), com o refresh do campo; devolve se estava em Sim."""
+        return self.call(CMD_SET_FOLLOWER_OPTION, 0 if on else 1) == 0
+
+    def set_lead_shiny(self, shiny: bool) -> int:
+        result = self.call(CMD_SET_LEAD_SHINY, int(shiny))
+        assert result != NO_RESULT and bool(result >> 16) == shiny, f"SET_LEAD_SHINY recusado: {result:#x}"
+        return result & 0xFFFF
+
+    def fill_object_events(self, fill: bool) -> int:
+        """Ocupa (True) ou libera os slots livres de gObjectEvents; devolve quantos objetos ficaram ativos."""
+        return self.call(CMD_FILL_OBJECT_EVENTS, int(fill))
+
 # --- Hack 6: breeding genético (enum à parte em include/test_hooks.h, a partir de 0x60; ------
 # o uso fica em esteira/breeding.py e scenarios/full_breeding.py / full_egg.py)
 CMD_BREED_SETUP = 0x60      # gTestBreedSetup -> creche (arg0 = 1: ovo pendente) -> compatibilidade (0xFFFFFFFF = pai inválido)
@@ -531,4 +544,11 @@ DEXNAV_TAB_LAND, DEXNAV_TAB_WATER, DEXNAV_TAB_RODS, DEXNAV_TAB_ROCK = range(4)  
 CMD_FOLLOWER_STATE = 0xF0   # arg0 = 0 -> existe | espécie << 8 | shiny << 24 | escondido << 25; 1 -> x | y << 16 do
                             # seguidor (s16 cada, sem o MAP_OFFSET; 0xFFFFFFFE = não existe); 2 -> direção | quadro da
                             # animação parada << 8 | objetos com o localId do seguidor << 16 (0xFFFFFFFF = fora do campo)
+CMD_SET_FOLLOWER_OPTION = 0xF1   # arg0 = 0 Sim / 1 Não (optionsFollowerOff) + Follower_Refresh no campo -> valor antigo
+CMD_SET_LEAD_SHINY = 0xF2   # arg0 = 1 shiny / 0 nunca shiny: refaz gPlayerParty[0] (mesma espécie e nível) -> espécie |
+                            # shiny << 16 (0xFFFFFFFF = sem 1º válido); o seguidor muda no próximo spawn/refresh
+CMD_FILL_OBJECT_EVENTS = 0xF3   # arg0 = 1: objetos invisíveis em todo slot livre de gObjectEvents; 0: tira -> objetos
+                                # ativos depois
+CMD_START_FLY = 0xF4        # arg0 = heal location (HEAL_LOCATION_*), arg1 = slot mostrado: o que a tela de voo faz no
+                            # A (o voo de verdade, saída e chegada) -> 1 (0xFFFFFFFF = fora do campo)
 FOLLOWER_NONE = 0xFFFFFFFE

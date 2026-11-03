@@ -1,4 +1,5 @@
 #include "global.h"
+#include "follower.h"
 #include "field_effect.h"
 #include "field_player_avatar.h"
 #include "fldeff.h"
@@ -31,6 +32,7 @@ bool8 FldEff_UseTeleport(void)
     u8 taskId = CreateFieldEffectShowMon();
     FLDEFF_SET_FUNC_TO_DATA(StartTeleportFieldEffect);
     SetPlayerAvatarTransitionFlags(PLAYER_AVATAR_FLAG_ON_FOOT);
+    Follower_Remove(); // POK-48: some ao mostrar o Pokémon (volta no fim da chegada)
     return FALSE;
 }
 

@@ -1,4 +1,5 @@
 #include "global.h"
+#include "follower.h"
 #include "bike.h"
 #include "field_player_avatar.h"
 #include "metatile_behavior.h"
@@ -319,6 +320,7 @@ void GetOnOffBike(u8 flags)
         SetPlayerAvatarTransitionFlags(PLAYER_AVATAR_FLAG_ON_FOOT);
         Overworld_ClearSavedMusic();
         Overworld_PlaySpecialMapMusic();
+        Follower_Spawn(); // POK-48: desceu da bicicleta: o seguidor volta atrás do jogador
     }
     else
     {

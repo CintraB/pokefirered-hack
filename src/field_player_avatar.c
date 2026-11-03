@@ -1,4 +1,5 @@
 #include "global.h"
+#include "follower.h"
 #include "gflib.h"
 #include "bike.h"
 #include "event_data.h"
@@ -726,12 +727,14 @@ static void PlayerAvatarTransition_Bike(struct ObjectEvent * playerObjEvent)
     QuestLogTryRecordPlayerAvatarGfxTransition(QL_PLAYER_GFX_BIKE);
     QuestLogCallUpdatePlayerSprite(QL_PLAYER_GFX_BIKE);
     BikeClearState(0, 0);
+    Follower_Remove(); // POK-48: some ao montar (volta ao descer: GetOnOffBike)
 }
 
 static void PlayerAvatarTransition_Surfing(struct ObjectEvent * playerObjEvent)
 {
     QuestLogTryRecordPlayerAvatarGfxTransition(QL_PLAYER_GFX_SURF);
     QuestLogCallUpdatePlayerSprite(QL_PLAYER_GFX_SURF);
+    Follower_Remove(); // POK-48: some na água (volta ao sair: Task_WaitStopSurfing)
 }
 
 static void PlayerAvatarTransition_Underwater(struct ObjectEvent * playerObjEvent)
@@ -1629,6 +1632,8 @@ static void Task_WaitStopSurfing(u8 taskId)
         DestroySprite(&gSprites[playerObjEvent->fieldEffectSpriteId]);
         DestroyTask(taskId);
         SetHelpContextForMap();
+        // POK-48: saiu da água: o seguidor volta (atrás é água: no tile do jogador, escondido até o 1º passo)
+        Follower_Spawn();
     }
 }
 

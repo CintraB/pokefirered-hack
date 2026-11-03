@@ -46,6 +46,17 @@
 //   seguidor está no tile do jogador (nasceu escondido), o 1º passo só o revela. Longe demais para uma ação (jogador
 //   teleportado por script), ele aparece direto no tile alvo. Não colide com ninguém (DoesObjectCollideWithObjectAt)
 //   e não é objeto "no tile" para o A (GetObjectEventIdByPosition, GetInteractedObjectEventScript).
+// - Estados (some = Follower_Remove, volta = Follower_Spawn atrás do jogador; Follower_ShouldExist já recusa
+//   bicicleta/surf, então nenhum passo montado o revela):
+//     bicicleta: some na transição (PlayerAvatarTransition_Bike), volta ao descer (GetOnOffBike);
+//     surf: some ao entrar (UseSurfEffect_1 e PlayerAvatarTransition_Surfing), volta no fim do pulo para a terra
+//       (Task_WaitStopSurfing; atrás é água, então nasce no tile do jogador, escondido até o 1º passo);
+//     Voar, Cavar, Teleporte, Corda de Fuga: some no início (FieldCallback_UseFly, FldEff_UseDig, FldEff_UseTeleport,
+//       TeleportFieldEffectTask1, StartEscapeRopeFieldEffect) e também no callback de chegada (o mapa novo já o
+//       criou); volta no fim da chegada (Task_FlyIntoMap, EscapeRopeWarpInEffect_Spin, TeleportInFieldEffectTask3);
+//     Doce Aroma: some no início, volta na falha (FailSweetScentEncounter) ou na volta da batalha (Follower_Refresh);
+//     cura por script (HealPlayerParty, a enfermeira do Centro): Follower_Refresh com o campo rodando;
+//     opção Seguidor (menu de Opções), troca/desmaio/ovo/evolução do 1º: Follower_Refresh na volta ao campo.
 
 struct FollowerState
 {

@@ -193,19 +193,19 @@ USAGE_RULES: list[UsageRule] = [
     U("src/start_menu.c", "*", DIALOG_PX, _DIALOG + "; mensagens de salvar na janela 0 (src/start_menu.c:727, :1015)"),
     # -- opções --
     U("src/option_menu.c", "table:sOptionMenuItemsNames", 0x82 - 8,
-      "nome da opção em x = 8 (src/option_menu.c:563) até a coluna de valores em x = 0x82 (src/option_menu.c:473)"),
+      "nome da opção em x = 8 (src/option_menu.c:575) até a coluna de valores em x = 0x82 (src/option_menu.c:488)"),
     U("src/option_menu.c", "table:s*Options", 0x46,
-      "valor da opção: coluna em x = 0x82 limpa com 0x46 px (src/option_menu.c:473-475)"),
+      "valor da opção: coluna em x = 0x82 limpa com 0x46 px (src/option_menu.c:488-490)"),
     U("src/option_menu.c", "call:StringCopy", 0x46 - 8,
-      "valor da opção \"tipo de moldura\" + número: coluna de 0x46 px (src/option_menu.c:473-475, :496-499)"),
+      "valor da opção \"tipo de moldura\" + número: coluna de 0x46 px (src/option_menu.c:488-490, :510-513)"),
     U("src/option_menu.c", "call:*PickSwitchCancel*", 0xE4, "controles: FONT_SMALL alinhado à direita em 0xE4 "
-      "(src/option_menu.c:319-321)", font="small"),
+      "(src/option_menu.c:333-335)", font="small"),
     U("src/option_menu.c", "call:AddTextPrinterParameterized3", 0xE4, "controles: FONT_SMALL alinhado à direita "
-      "em 0xE4 (src/option_menu.c:319-321)", font="small"),
+      "em 0xE4 (src/option_menu.c:333-335)", font="small"),
     U("src/option_menu.c", "call:GetStringWidth", 0xE4, "controles: FONT_SMALL alinhado à direita em 0xE4 "
-      "(src/option_menu.c:319-321)", font="small"),
-    U("src/option_menu.c", "*", 26 * 8 - 8, "título das opções: janela de 26 tiles (src/option_menu.c:72-76), "
-      "x = 8 (src/option_menu.c:527)"),
+      "(src/option_menu.c:333-335)", font="small"),
+    U("src/option_menu.c", "*", 26 * 8 - 8, "título das opções: janela de 26 tiles (src/option_menu.c:72-77), "
+      "x = 8 (src/option_menu.c:545)"),
     # -- grupo de Pokémon --
     U("src/data/party_menu.h", "table:sCursorOptions", 10 * 8 - 8,
       "menu de ações do grupo: 10 tiles (src/party_menu.c:2540), texto em x = 8 (src/party_menu.c:2562)"),
