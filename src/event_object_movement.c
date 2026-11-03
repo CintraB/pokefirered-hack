@@ -2390,7 +2390,8 @@ u8 GetObjectEventIdByPosition(u16 x, u16 y, u8 elevation)
 
     for (i = 0; i < OBJECT_EVENTS_COUNT; i++)
     {
-        if (gObjectEvents[i].active)
+        // POK-48: o seguidor não é um objeto "no tile" (A, loja, Quebra-Pedra): quem está no tile é o NPC, se houver
+        if (gObjectEvents[i].active && !Follower_IsFollowerObject(&gObjectEvents[i]))
         {
             if (gObjectEvents[i].currentCoords.x == x
              && gObjectEvents[i].currentCoords.y == y
@@ -4971,15 +4972,19 @@ bool8 CanFollowerSpawnAt(struct ObjectEvent *player, s16 x, s16 y, u8 direction)
     return !MetatileBehavior_IsSurfable(MapGridGetMetatileBehaviorAt(x, y));
 }
 
+// POK-48: o seguidor não colide com ninguém, nem ninguém com ele (o jogador troca de lugar com ele; NPCs, rotas
+// de NPC, linha de visão de treinador e cenas passam pelo tile dele)
 static bool8 DoesObjectCollideWithObjectAt(struct ObjectEvent *objectEvent, s16 x, s16 y)
 {
     u8 i;
     struct ObjectEvent *curObject;
 
+    if (Follower_IsFollowerObject(objectEvent))
+        return FALSE;
     for (i = 0; i < OBJECT_EVENTS_COUNT; i++)
     {
         curObject = &gObjectEvents[i];
-        if (curObject->active && curObject != objectEvent)
+        if (curObject->active && curObject != objectEvent && !Follower_IsFollowerObject(curObject))
         {
             if ((curObject->currentCoords.x == x && curObject->currentCoords.y == y) || (curObject->previousCoords.x == x && curObject->previousCoords.y == y))
             {
@@ -5133,6 +5138,10 @@ bool8 ObjectEventSetHeldMovement(struct ObjectEvent *objectEvent, u8 movementAct
     objectEvent->heldMovementActive = TRUE;
     objectEvent->heldMovementFinished = FALSE;
     gSprites[objectEvent->spriteId].data[2] = 0;
+    // POK-48: todo passo do jogador (input, script/applymovement, tile de movimento forçado) leva o seguidor junto,
+    // no mesmo quadro (a ação dos dois começa no mesmo AnimateSprites)
+    if (objectEvent->isPlayer)
+        Follower_OnPlayerMovement(objectEvent, movementActionId);
     return FALSE;
 }
 
@@ -5399,9 +5408,19 @@ void InitNpcForMovement(struct ObjectEvent *objectEvent, struct Sprite *sprite, 
 
 // The player walks and runs ~1.5x faster when moved by input. Scripted movement
 // keeps the original pace so cutscenes stay in sync with NPCs.
+// POK-48: the follower's step mirrors the player's and starts in the same frame
+// (Follower_OnPlayerMovement), so it gets the same pace.
 static bool8 IsPlayerMovingByInput(struct ObjectEvent *objectEvent)
 {
-    return objectEvent->isPlayer && !ScriptContext_IsEnabled();
+    return (objectEvent->isPlayer || Follower_IsFollowerObject(objectEvent)) && !ScriptContext_IsEnabled();
+}
+
+// POK-48: the follower has no running frames: it runs with its walking frames
+static u8 GetRunAnimNum(struct ObjectEvent *objectEvent)
+{
+    if (Follower_IsFollowerObject(objectEvent))
+        return GetMoveDirectionFastAnimNum(objectEvent->facingDirection);
+    return GetRunningDirectionAnimNum(objectEvent->facingDirection);
 }
 
 void InitMovementNormal(struct ObjectEvent *objectEvent, struct Sprite *sprite, u8 direction, u8 speed)
@@ -5418,7 +5437,7 @@ void StartRunningAnim(struct ObjectEvent *objectEvent, struct Sprite *sprite, u8
 {
     u8 speed = IsPlayerMovingByInput(objectEvent) ? MOVE_SPEED_PLAYER_RUN : MOVE_SPEED_FAST_1;
     InitNpcForMovement(objectEvent, sprite, direction, speed);
-    SetStepAnimHandleAlternation(objectEvent, sprite, GetRunningDirectionAnimNum(objectEvent->facingDirection));
+    SetStepAnimHandleAlternation(objectEvent, sprite, GetRunAnimNum(objectEvent));
 }
 
 bool8 UpdateMovementNormal(struct ObjectEvent *objectEvent, struct Sprite *sprite)
@@ -6614,7 +6633,7 @@ void InitNpcForRunSlow(struct ObjectEvent *objectEvent, struct Sprite *sprite, u
 void InitRunSlow(struct ObjectEvent *objectEvent, struct Sprite *sprite, u8 direction)
 {
     InitNpcForRunSlow(objectEvent, sprite, direction);
-    SetStepAnimHandleAlternation(objectEvent, sprite, GetRunningDirectionAnimNum(objectEvent->facingDirection));
+    SetStepAnimHandleAlternation(objectEvent, sprite, GetRunAnimNum(objectEvent));
 }
 
 bool8 UpdateRunSlow(struct ObjectEvent *objectEvent, struct Sprite *sprite)

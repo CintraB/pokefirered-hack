@@ -13,6 +13,7 @@
 #include "field_player_avatar.h"
 #include "field_poison.h"
 #include "field_specials.h"
+#include "follower.h"
 #include "item_menu.h"
 #include "link.h"
 #include "wonder_news.h"
@@ -452,6 +453,11 @@ static const u8 *GetInteractedObjectEventScript(struct MapPosition *position, u8
     }
 
     if (InUnionRoom() == TRUE && !ObjectEventCheckHeldMovementStatus(&gObjectEvents[objectEventId]))
+        return NULL;
+
+    // POK-48: A no seguidor não faz nada. Ele não tem template no mapa (localId OBJ_EVENT_ID_FOLLOWER): o script viria
+    // de um ponteiro nulo. GetObjectEventIdByPosition já o pula; a guarda fica para qualquer outro caminho.
+    if (Follower_IsFollowerObject(&gObjectEvents[objectEventId]))
         return NULL;
 
     gSelectedObjectEvent = objectEventId;

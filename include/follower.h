@@ -67,6 +67,10 @@ bool8 Follower_IsFollowerObject(const struct ObjectEvent *objectEvent);
 void Follower_OnSpriteCreated(struct ObjectEvent *objectEvent, struct Sprite *sprite);
 void Follower_ReloadPalette(void);
 
+// Gancho de ObjectEventSetHeldMovement (só ele chama): o jogador começou a ação `movementActionId` (ainda no tile de
+// partida); o seguidor vai junto para o tile por onde o jogador passa (mapa ação → ação no topo de src/follower.c).
+void Follower_OnPlayerMovement(struct ObjectEvent *player, u8 movementActionId);
+
 // Atalho TEST_CMD_FOLLOWER_STATE (include/test_hooks.h): 0 = existe | espécie << 8 | shiny << 24 | escondido << 25;
 // 1 = x | y << 16 (s16, sem o MAP_OFFSET; 0xFFFFFFFE = não existe); 2 = direção | quadro parado << 8 | objetos com
 // o localId do seguidor << 16; 0xFFFFFFFF fora do campo

@@ -7,6 +7,7 @@
 #include "fieldmap.h"
 #include "link.h"
 #include "main.h"
+#include "metatile_behavior.h"
 #include "overworld.h"
 #include "palette.h"
 #include "pokemon.h"
@@ -27,7 +28,24 @@
 //   com um deles o seguidor não aparece (IsFollowerPaletteSlotInUse). Carregada com o tom do dia/noite
 //   (ApplyGlobalFieldPaletteTint) e o gamma do clima, e recarregada do ROM no retint (ReloadObjectEventPalettes).
 // - Parado (sem movimento em curso), toca a animação parada da direção: os 2 quadros alternando a cada
-//   FOLLOWER_IDLE_FRAMES. O passo junto com o jogador vem na Task 3.
+//   FOLLOWER_IDLE_FRAMES.
+// - Anda junto (Follower_OnPlayerMovement, chamado só de ObjectEventSetHeldMovement quando o objeto é o jogador): a
+//   cada ação do jogador que muda de tile, o seguidor vai para o tile por onde o jogador acabou de passar (o de trás
+//   do destino dele), começando no mesmo quadro. Mapa ação do jogador → ação do seguidor (sFollowerMoves):
+//     andar (walk_slower/slow/normal/fast/faster/slowest, slide, glide, correnteza) → a mesma ação, na direção do
+//       seguidor até o tile alvo, no mesmo ritmo (IsPlayerMovingByInput vale para o seguidor: 11 quadros/tile por
+//       input, 16 por script);
+//     correr (player_run; player_run_slow na escada de pedra) → a mesma ação: ritmo de correr (5 por input, 8 por
+//       script) com os quadros de andar (GetRunAnimNum: o seguidor não tem quadros de corrida);
+//     girar (spin) → walk_fast (a mesma velocidade, MOVE_SPEED_FAST_1; o seguidor não tem quadros de giro);
+//     pulo de 1 tile (jump) → jump;
+//     pulo de ledge (jump_2) → jump_2 junto: alinhado atrás, cai no tile da ledge, logo atrás do jogador; vindo de
+//       lado, pula a ledge da coluna dele (se houver) e cai ao lado do jogador; no tile do jogador, jump de 1 tile;
+//     virar no lugar, walk_in_place, face_*, emotes, delays e o resto → o seguidor fica.
+//   Vale para input, applymovement e tile de movimento forçado: todos passam por ObjectEventSetHeldMovement. Se o
+//   seguidor está no tile do jogador (nasceu escondido), o 1º passo só o revela. Longe demais para uma ação (jogador
+//   teleportado por script), ele aparece direto no tile alvo. Não colide com ninguém (DoesObjectCollideWithObjectAt)
+//   e não é objeto "no tile" para o A (GetObjectEventIdByPosition, GetInteractedObjectEventScript).
 
 struct FollowerState
 {
@@ -43,6 +61,37 @@ STATIC_ASSERT(offsetof(struct SaveBlock2, pokedex) == 0x18, OpcaoDoSeguidorNoBit
 STATIC_ASSERT(sizeof(struct SaveBlock2) == 0xF24, SaveBlock2NaoMudouComOSeguidor);
 
 EWRAM_DATA static struct FollowerState sFollowerState = {0};
+
+enum {
+    FOLLOW_STEP,    // 1 tile, andando/correndo
+    FOLLOW_JUMP,    // 1 tile, pulando
+    FOLLOW_JUMP_2,  // 2 tiles, pulando (ledge)
+};
+
+// Ações do jogador que mudam de tile: a 1ª das 4 (sul, norte, oeste, leste), o tipo e a 1ª das 4 do seguidor
+struct FollowerMove
+{
+    u8 playerAction;
+    u8 kind;
+    u8 followerAction;
+};
+
+static const struct FollowerMove sFollowerMoves[] = {
+    { MOVEMENT_ACTION_WALK_SLOWER_DOWN,         FOLLOW_STEP,   MOVEMENT_ACTION_WALK_SLOWER_DOWN },
+    { MOVEMENT_ACTION_WALK_SLOW_DOWN,           FOLLOW_STEP,   MOVEMENT_ACTION_WALK_SLOW_DOWN },
+    { MOVEMENT_ACTION_WALK_NORMAL_DOWN,         FOLLOW_STEP,   MOVEMENT_ACTION_WALK_NORMAL_DOWN },
+    { MOVEMENT_ACTION_JUMP_2_DOWN,              FOLLOW_JUMP_2, MOVEMENT_ACTION_JUMP_2_DOWN },
+    { MOVEMENT_ACTION_WALK_FAST_DOWN,           FOLLOW_STEP,   MOVEMENT_ACTION_WALK_FAST_DOWN },
+    { MOVEMENT_ACTION_RIDE_WATER_CURRENT_DOWN,  FOLLOW_STEP,   MOVEMENT_ACTION_RIDE_WATER_CURRENT_DOWN },
+    { MOVEMENT_ACTION_WALK_FASTER_DOWN,         FOLLOW_STEP,   MOVEMENT_ACTION_WALK_FASTER_DOWN },
+    { MOVEMENT_ACTION_SLIDE_DOWN,               FOLLOW_STEP,   MOVEMENT_ACTION_SLIDE_DOWN },
+    { MOVEMENT_ACTION_PLAYER_RUN_DOWN,          FOLLOW_STEP,   MOVEMENT_ACTION_PLAYER_RUN_DOWN },
+    { MOVEMENT_ACTION_PLAYER_RUN_DOWN_SLOW,     FOLLOW_STEP,   MOVEMENT_ACTION_PLAYER_RUN_DOWN_SLOW },
+    { MOVEMENT_ACTION_JUMP_DOWN,                FOLLOW_JUMP,   MOVEMENT_ACTION_JUMP_DOWN },
+    { MOVEMENT_ACTION_SPIN_DOWN,                FOLLOW_STEP,   MOVEMENT_ACTION_WALK_FAST_DOWN },
+    { MOVEMENT_ACTION_WALK_SLOWEST_DOWN,        FOLLOW_STEP,   MOVEMENT_ACTION_WALK_SLOWEST_DOWN },
+    { MOVEMENT_ACTION_GLIDE_DOWN,               FOLLOW_STEP,   MOVEMENT_ACTION_GLIDE_DOWN },
+};
 
 static const u8 sIdleAnims[] = {
     [DIR_NONE]  = FOLLOWER_ANIM_IDLE_SOUTH,
@@ -181,7 +230,109 @@ static void SpriteCB_Follower(struct Sprite *sprite)
     struct ObjectEvent *objectEvent = &gObjectEvents[sprite->data[0]];
 
     UpdateObjectEventCurrentMovement(objectEvent, sprite, FollowerMovementTypeCallback);
+    // ninguém espera o fim do passo do seguidor (waitmovement): solta a ação terminada para a próxima entrar
+    // (ObjectEventSetHeldMovement recusa enquanto heldMovementActive)
+    if (objectEvent->heldMovementActive && objectEvent->heldMovementFinished)
+        ObjectEventClearHeldMovement(objectEvent);
     UpdateIdleAnim(objectEvent, sprite);
+}
+
+static u8 GetDirectionToNeighbor(s16 dx, s16 dy)
+{
+    if (dx > 0)
+        return DIR_EAST;
+    if (dx < 0)
+        return DIR_WEST;
+    if (dy > 0)
+        return DIR_SOUTH;
+    return DIR_NORTH;
+}
+
+// Pulo de ledge vindo de lado: o tile do seguidor na direção do pulo também é ledge para essa direção e o tile
+// depois dela é chão
+static bool8 CanFollowerJumpOwnLedge(struct ObjectEvent *follower, u8 direction)
+{
+    s16 x = follower->currentCoords.x, y = follower->currentCoords.y;
+
+    MoveCoords(direction, &x, &y);
+    if (GetLedgeJumpDirection(x, y, direction) != direction)
+        return FALSE;
+    MoveCoords(direction, &x, &y);
+    return !MapGridGetCollisionAt(x, y) && !MetatileBehavior_IsSurfable(MapGridGetMetatileBehaviorAt(x, y));
+}
+
+void Follower_OnPlayerMovement(struct ObjectEvent *player, u8 movementActionId)
+{
+    const struct FollowerMove *move = NULL;
+    struct ObjectEvent *follower;
+    u8 objectEventId, direction, action;
+    s16 targetX, targetY, dx, dy, sideX, sideY;
+    u32 i;
+
+    for (i = 0; i < ARRAY_COUNT(sFollowerMoves); i++)
+    {
+        if (movementActionId >= sFollowerMoves[i].playerAction && movementActionId < sFollowerMoves[i].playerAction + 4)
+        {
+            move = &sFollowerMoves[i];
+            break;
+        }
+    }
+    if (move == NULL)
+        return;   // virar, andar no lugar, emote...: o seguidor fica
+    objectEventId = Follower_GetObjectEventId();
+    if (objectEventId == OBJECT_EVENTS_COUNT)
+        return;
+    follower = &gObjectEvents[objectEventId];
+    direction = movementActionId - move->playerAction + DIR_SOUTH;
+
+    // passo anterior ainda em curso (não deveria: as ações dos dois têm a mesma duração): termina no tile dele
+    if (follower->heldMovementActive && !follower->heldMovementFinished)
+        MoveObjectEventToMapCoords(follower, follower->currentCoords.x, follower->currentCoords.y);
+    ObjectEventClearHeldMovementIfActive(follower);
+    follower->invisible = FALSE;   // nasceu escondido no tile do jogador: o 1º passo o revela
+
+    // alvo: o tile por onde o jogador acabou de passar (o de trás do destino; no pulo de ledge, o da ledge)
+    targetX = player->currentCoords.x;
+    targetY = player->currentCoords.y;
+    if (move->kind == FOLLOW_JUMP_2)
+        MoveCoords(direction, &targetX, &targetY);
+    dx = targetX - follower->currentCoords.x;
+    dy = targetY - follower->currentCoords.y;
+    sideX = follower->currentCoords.x - player->currentCoords.x;
+    sideY = follower->currentCoords.y - player->currentCoords.y;
+    if (dx == 0 && dy == 0)
+        return;
+
+    if (abs(dx) + abs(dy) == 1)
+    {
+        u8 toward = GetDirectionToNeighbor(dx, dy);
+
+        if (move->kind == FOLLOW_STEP)
+            action = move->followerAction + toward - DIR_SOUTH;
+        else
+            action = MOVEMENT_ACTION_JUMP_DOWN + toward - DIR_SOUTH;
+    }
+    else if (move->kind == FOLLOW_JUMP_2
+          && dx == 2 * gDirectionToVectors[direction].x && dy == 2 * gDirectionToVectors[direction].y)
+    {
+        action = move->followerAction + direction - DIR_SOUTH;   // alinhado atrás: pula junto
+    }
+    else if (move->kind == FOLLOW_JUMP_2 && abs(sideX) + abs(sideY) == 1
+          && sideX * gDirectionToVectors[direction].x + sideY * gDirectionToVectors[direction].y == 0
+          && CanFollowerJumpOwnLedge(follower, direction))
+    {
+        action = move->followerAction + direction - DIR_SOUTH;   // ao lado: pula a ledge dele e cai ao lado
+    }
+    else
+    {
+        // longe demais para uma ação (teleporte por script, ledge sem par ao lado): aparece no alvo
+        MoveObjectEventToMapCoords(follower, targetX, targetY);
+        follower->currentElevation = player->currentElevation;
+        follower->previousElevation = player->currentElevation;
+        ObjectEventTurn(follower, direction);
+        return;
+    }
+    ObjectEventSetHeldMovement(follower, action);
 }
 
 void Follower_OnSpriteCreated(struct ObjectEvent *objectEvent, struct Sprite *sprite)
