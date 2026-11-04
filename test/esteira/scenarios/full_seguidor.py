@@ -49,7 +49,8 @@ Estados (Task 4):
   jogador, 1 objeto, e não existia durante a chegada do pássaro;
 - `seguidor/corda_fuga`: entrar no Mt. Moon pela Rota 4 (o ponto de fuga) e usar a CORDA DE FUGA pela bolsa: na saída
   existe, atrás do jogador, 1 objeto;
-- `seguidor/troca_equipe`: pelo menu da equipe (TROCAR), PIDGEY no 1º lugar: não existe; de volta CHARMANDER: existe;
+- `seguidor/troca_equipe`: pelo menu da equipe (TROCAR), PIDGEY no 1º lugar: o seguidor vira PIDGEY (POK-53: os 386
+  seguem); de volta CHARMANDER: existe, atrás;
 - `seguidor/desmaiado_centro`: 1º com PS 0: não existe no Centro de Viridian; a enfermeira cura: no fim da cena
   existe, atrás do jogador, sem abrir menu;
 - `seguidor/shiny`: o 1º shiny (TEST_CMD_SET_LEAD_SHINY) e um warp: estado com shiny e a paleta shiny do ROM (foto
@@ -61,7 +62,8 @@ Estados (Task 4):
 - `seguidor/mapa_cheio`: com todos os objetos ocupados (TEST_CMD_FILL_OBJECT_EVENTS), o refresh não cria o seguidor,
   o jogador anda e nada trava; liberados, ele volta;
 - `seguidor/pc_guardar`: no PC do Centro de Viridian, DEPOSITAR o CHARMANDER (1º) deixa o PIDGEY no 1º: ao desligar o
-  PC não existe; RETIRAR o CHARMANDER (vai para o 2º): continua sem; TROCAR para o 1º: existe, atrás, 1 objeto;
+  PC o seguidor é o PIDGEY; RETIRAR o CHARMANDER (vai para o 2º): continua PIDGEY; TROCAR para o 1º: CHARMANDER, atrás,
+  1 objeto;
 - `seguidor/veneno`: o 1º com 1 PS e envenenado (PIDGEY no 2º) anda na Rota 1 até desmaiar pelo veneno do campo: no
   fim da mensagem não existe seguidor, o campo fica livre e o jogador anda.
 
@@ -638,6 +640,13 @@ class FollowerScenario(PcScenario):   # PcScenario (CatchSaveScenario + PC): dep
         assert not state["existe"] and state["objetos"] == 0, f"{where}: {state}"
         return state
 
+    def _is_species(self, where: str, name: str) -> dict:
+        """1 objeto, da espécie `name` (o 1º da equipe mudou e o seguidor se refez)."""
+        state = self._state()
+        assert state["existe"] and state["objetos"] == 1, f"{where}: {state}"
+        assert state["especie"] == self.consts.species(name), f"{where}: espécie {state['especie']}"
+        return state
+
     def _behind(self, where: str) -> dict:
         """1 objeto, visível, no tile atrás do jogador (oposto ao facing)."""
         state = self._expect_one(where)
@@ -806,10 +815,10 @@ class FollowerScenario(PcScenario):   # PcScenario (CatchSaveScenario + PC): dep
         self._behind("antes")
         self._party_swap_first()
         assert self.game.party()[0].species == self.consts.species(SWAP_MON[0]), self.game.party()[0]
-        self._gone("PIDGEY no 1º lugar")
+        self._is_species("PIDGEY no 1º lugar", SWAP_MON[0])
         self._party_swap_first()
         state = self._behind("CHARMANDER de volta")
-        return f"PIDGEY no 1º: sem seguidor; CHARMANDER de volta: {state}"
+        return f"PIDGEY no 1º: seguidor PIDGEY; CHARMANDER de volta: {state}"
 
     def _desmaiado_centro(self) -> str:
         self._restore()
@@ -932,7 +941,7 @@ class FollowerScenario(PcScenario):   # PcScenario (CatchSaveScenario + PC): dep
         self._close_storage()
         party = [m.species for m in self.game.party()]
         assert party == [self.consts.species(SWAP_MON[0])], party
-        self._gone("CHARMANDER guardado no PC, PIDGEY no 1º")
+        self._is_species("CHARMANDER guardado no PC, PIDGEY no 1º", SWAP_MON[0])
         slot = next(i for i, m in enumerate(self._box()) if m is not None and self._ident(m) == self._ident(lead))
         self._open_storage(OPTION_WITHDRAW)
         self._move_cursor(CURSOR_AREA_IN_BOX, slot)
@@ -941,10 +950,10 @@ class FollowerScenario(PcScenario):   # PcScenario (CatchSaveScenario + PC): dep
         self._close_storage()
         party = [m.species for m in self.game.party()]
         assert party == [self.consts.species(SWAP_MON[0]), lead.species], party
-        self._gone("CHARMANDER retirado, no 2º lugar")
+        self._is_species("CHARMANDER retirado, no 2º lugar", SWAP_MON[0])
         self._party_swap_first()
         state = self._behind("CHARMANDER de volta ao 1º")
-        return f"guardado (só PIDGEY): sem seguidor; retirado (2º): sem seguidor; trocado para o 1º: {state}"
+        return f"guardado (só PIDGEY): seguidor PIDGEY; retirado (2º): continua PIDGEY; trocado para o 1º: {state}"
 
     def _veneno(self) -> str:
         self._restore()
@@ -993,7 +1002,7 @@ class FollowerScenario(PcScenario):   # PcScenario (CatchSaveScenario + PC): dep
             self.suite.run("seguidor/surf: some na água, volta ao sair", self._surf)
             self.suite.run("seguidor/voar: Voar para Pewter, 1 objeto no destino", self._voar)
             self.suite.run("seguidor/corda_fuga: Corda de Fuga no Mt. Moon, 1 objeto na saída", self._corda_fuga)
-            self.suite.run("seguidor/troca_equipe: PIDGEY no 1º some, CHARMANDER volta", self._troca_equipe)
+            self.suite.run("seguidor/troca_equipe: PIDGEY no 1º vira o seguidor, CHARMANDER volta", self._troca_equipe)
             self.suite.run("seguidor/desmaiado_centro: 1º desmaiado, volta ao fim da cura", self._desmaiado_centro)
             self.suite.run("seguidor/shiny: paleta shiny com o 1º shiny", self._shiny)
             self.suite.run("seguidor/evolucao: evoluiu na batalha, volta com o sprite novo", self._evolucao)

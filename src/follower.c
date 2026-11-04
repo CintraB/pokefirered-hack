@@ -120,16 +120,19 @@ static const u8 sIdleAnims[] = {
 
 const struct FollowerSpecies *Follower_GetSpeciesInfo(u16 species)
 {
-    u32 i;
+    const struct FollowerSpecies *info;
+    u16 dex;
 
-    if (species == SPECIES_NONE)
+    if (species == SPECIES_NONE || species >= NUM_SPECIES) // NUM_SPECIES = SPECIES_EGG
         return NULL;
-    for (i = 0; i < FOLLOWER_SPECIES_COUNT; i++)
-    {
-        if (gFollowerSpecies[i].species == species)
-            return &gFollowerSpecies[i];
-    }
-    return NULL;
+    dex = SpeciesToNationalPokedexNum(species);
+    if (dex == 0 || dex > FOLLOWER_SPECIES_COUNT)
+        return NULL;
+    info = &gFollowerSpecies[dex - 1];
+    // species != a pedida: posição vazia (conversão parcial). Grandes (64x64) ainda não seguem.
+    if (info->species != species || info->large)
+        return NULL;
+    return info;
 }
 
 bool8 Follower_IsEnabled(void)

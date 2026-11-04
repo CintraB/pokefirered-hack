@@ -648,7 +648,9 @@ def test_jirachi_objeto_de_brilho_t5():
     assert tabela.count("gFieldEffectObjectPic_SmallSparkle") == 2
     movimento = _read("src/event_object_movement.c")
     assert re.search(r"\{gFieldEffectPal_SmallSparkle,\s*OBJ_EVENT_PAL_TAG_SMALL_SPARKLE\}", movimento)
-    assert not list((REPO_ROOT / "graphics/object_events/pics").rglob("*jirachi*")), "arte nova de brilho"
+    # POK-53: a folha do Jirachi seguidor (pics/seguidores/) não é arte do brilho
+    artes = [p for p in (REPO_ROOT / "graphics/object_events/pics").rglob("*jirachi*") if "seguidores" not in p.parts]
+    assert not artes, "arte nova de brilho"
 
 
 def test_jirachi_brilho_em_terra_firme_sem_bloquear_t5():

@@ -1,4 +1,4 @@
-"""Seguidores (POK-48), Task 1: sprites HGSS das 12 espécies, paletas normal/shiny e o gráfico dinâmico (sem emulador).
+"""Seguidores (POK-48), Task 1: sprites HGSS das 12 espécies da etapa 1 (a etapa 2, POK-53, está em test_seguidores_etapa2.py), paletas normal/shiny e o gráfico dinâmico (sem emulador).
 
 `tools/seguidores/converter.py` lê o pacote Veekun (fora do Git: `.superpowers/brainstorm/seguidores/todos/...`,
 ou a pasta de `SEGUIDORES_VEEKUN`) e grava, por espécie, uma folha indexada 4bpp 256x32 (8 quadros 32x32: sul,
@@ -93,11 +93,13 @@ def tabela_texto():
 
 def test_12_especies():
     texto = tabela_texto()
-    achadas = re.findall(r"\.species\s*=\s*SPECIES_(\w+)", texto)
-    esperado = [ESPECIES[d].upper() for d in ORDEM_DEX]
-    assert achadas == esperado, "a tabela tem de ter exatamente as 12 espécies, em ordem da Pokédex"
+    # POK-53: a tabela passou a ter os 386 (indexada pela dex); as 12 da etapa 1 continuam lá, cada uma na sua posição
+    principal = texto.split("gFollowerSpecies[FOLLOWER_SPECIES_COUNT] = {", 1)[1]
+    for dex in ORDEM_DEX:
+        nome = ESPECIES[dex].upper()
+        assert re.search(rf"\[NATIONAL_DEX_{nome} - 1\] = \{{\n\s*\.species = SPECIES_{nome},", principal), nome
     follower_h = FOLLOWER_H.read_text(encoding="utf-8")
-    assert re.search(r"#define FOLLOWER_SPECIES_COUNT\s+12\b", follower_h)
+    assert re.search(r"#define FOLLOWER_SPECIES_COUNT\s+386\b", follower_h)
     assert "struct FollowerSpecies" in follower_h
     assert "Follower_GetSpeciesInfo" in follower_h
     # a tabela C carrega os 3 arquivos de cada espécie (folha, paleta normal e shiny), todos existentes

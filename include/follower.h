@@ -12,17 +12,22 @@
 // escolhidas em tempo de execução por gFollowerSpecies (src/data/object_events/follower_species.h, gerado por
 // tools/seguidores/converter.py a partir do pacote HGSS do Veekun).
 //
-// Folha de cada espécie: 8 quadros 32x32 (sul, norte, oeste, leste; 2 por direção; o leste tem desenho próprio).
-// A paleta shiny usa os mesmos índices da normal.
+// Folha de cada espécie: 8 quadros 32x32, ou 64x64 nos 7 grandes (sul, norte, oeste, leste; 2 por direção; o leste
+// tem desenho próprio). A paleta shiny usa os mesmos índices da normal.
 struct FollowerSpecies
 {
     u16 species;
+    bool8 large;                               // 64x64 (POK-53: ainda não seguem; a Task 3 liga o gráfico 64x64)
+    u8 formCount;                              // Unown: 28 (forms[letra de GetUnownLetterByPersonality]); demais: 0
     const struct SpriteFrameImage *images;
     const u16 *palette;
     const u16 *shinyPalette;
+    const struct FollowerSpecies *female;      // NULL = usa a padrão
+    const struct FollowerSpecies *forms;       // formCount entradas (species = SPECIES_UNOWN, large igual)
 };
 
-#define FOLLOWER_SPECIES_COUNT 12
+// gFollowerSpecies[dex nacional - 1]
+#define FOLLOWER_SPECIES_COUNT 386
 
 // localId do objeto do seguidor: fora dos templates dos mapas (localId = índice + 1, no máximo
 // OBJECT_EVENT_TEMPLATES_COUNT = 64) e abaixo de LOCALID_PLAYER (0xFF)
@@ -51,7 +56,8 @@ extern const struct FollowerSpecies gFollowerSpecies[FOLLOWER_SPECIES_COUNT];
 
 struct ObjectEvent;
 
-// NULL se a espécie não segue o jogador (não está em gFollowerSpecies, ou SPECIES_NONE).
+// Entrada base da espécie (busca O(1) pela Pokédex nacional). NULL se a espécie não segue o jogador: SPECIES_NONE,
+// ovo, fora de 1..386, sem entrada na tabela ou (por enquanto) grande.
 const struct FollowerSpecies *Follower_GetSpeciesInfo(u16 species);
 
 // Opção "Seguidor: Sim/Não" do menu de Opções (SaveBlock2.optionsFollowerOff, 0 = Sim)
