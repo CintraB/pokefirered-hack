@@ -261,6 +261,7 @@ perder o jeito do FireRed.
 
 - **Tudo em português do Brasil**: textos, menus, nomes, Pokédex e sistema de ajuda, com glossário próprio e medição de largura de cada janela.
 - **Save em qualquer emulador de GBA.**
+- **Bugs do original corrigidos**: todas as correções da decompilação (`BUGFIX`/`UBFIX`) ligadas: IVs dos cães lendários, cor da fala da Daisy, carinha no Cassino e falhas raras de tela, som e memória.
 - **Tela de novidades**: o Prof. Carvalho mostra cada mudança num cartão com ícone, antes e depois.
 </details>
 
@@ -294,6 +295,7 @@ perder o jeito do FireRed.
 | **Chefes mais espertos** (31/10) | Os chefes trocam antes do golpe super efetivo, escolhem melhor quem entra e usam poções e curas na hora certa; treinador comum igual. |
 | **DexNav** (01/11) | Os Pokémon de cada mapa por jeito de encontrar, com a chance real, marcas da Pokédex e progresso; a lista dos 124 mapas e a busca por Pokémon. No menu START e no SELECT. |
 | **Pokémon seguidor** (02/11) | O 1º da equipe anda atrás do jogador (12 espécies, normal e shiny), no ritmo dele, sem bloquear ninguém; some na bicicleta, no Surf e nos golpes de campo e volta depois; opção Seguidor nas OPÇÕES. |
+| **Bugs do original** (03/11) | As 47 correções de bugs do FireRed que a decompilação deixava desligadas, agora ligadas. |
 
 ## Esteira de testes
 
