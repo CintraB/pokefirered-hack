@@ -436,6 +436,10 @@
         {
           "title": "Save em qualquer emulador",
           "body": "O save desta hack funciona em qualquer\nemulador de GBA. Jogue onde preferir!"
+        },
+        {
+          "title": "Bugs do original corrigidos",
+          "body": "Os erros conhecidos do FireRed original foram\ncorrigidos: os cães lendários vêm com os IVs\ncertos, a Daisy fala na cor certa e falhas\nraras de tela, som e memória não travam mais\no jogo."
         }
       ]
     }

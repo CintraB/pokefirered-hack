@@ -77,6 +77,10 @@ INCLUDE_SCANINC_ARGS := $(INCLUDE_DIRS:%=-I %)
 
 O_LEVEL ?= 2
 CPPFLAGS := $(INCLUDE_CPP_ARGS) -Wno-trigraphs -D$(GAME_VERSION) -DREVISION=$(GAME_REVISION) -D$(GAME_LANGUAGE) -DMODERN=$(MODERN)
+# POK-52: the original game's bug fixes (pret's BUGFIX/UBFIX) are always on: the hack no longer
+# matches the retail SHA1. C and #ifdef in .s/.inc read the -D; `.ifdef` in event scripts reads --defsym.
+CPPFLAGS += -DBUGFIX -DUBFIX
+ASFLAGS += --defsym BUGFIX=1 --defsym UBFIX=1
 ifeq ($(MODERN),0)
   CPPFLAGS += -I tools/agbcc/include -I tools/agbcc -nostdinc -undef -std=gnu89
   CC1 := tools/agbcc/bin/agbcc$(EXE)
