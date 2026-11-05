@@ -701,6 +701,11 @@ class ConquistasScenario(CatchSaveScenario):
         self.box.conq_reset(True)
         self._flag("FLAG_SYS_GAME_CLEAR", False)
         self._time_de_um("MEWTWO", 100, "MOVE_PSYCHIC")
+        # 10 PP de Psychic contra os 6 do Campeão (Alakazam e Exeggutor resistem) e as curas dele davam uma vitória no
+        # limite, decidida pelo sorteio: com o Mewtwo seguindo (POK-53, o 1º de qualquer espécie segue), o save do
+        # CHARMANDER perdia com o Rhydon a 211 PS. O Ice Beam no 2º golpe entra quando o Psychic acaba (o BattleDriver
+        # usa o 1º golpe com PP).
+        self.box.set_party_move(0, 1, MOVES["MOVE_ICE_BEAM"])
         self.box.start_trainer_battle(self._trainer_const("TRAINER_CHAMPION_FIRST_SQUIRTLE"))
         self._lutar("Campeão (1ª Liga)", "win")
         campeao = self._entrada("campeao")
