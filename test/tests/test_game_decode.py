@@ -144,3 +144,22 @@ def test_box_mons_reads_the_boxes_of_the_pc():
     box = game.box_mons(1)
     assert [i for i, m in enumerate(box) if m is not None] == [2]
     assert (box[2].species, box[2].personality, box[2].nickname) == (16, 0x0BADF00D, "ESTEIRA")
+
+
+def test_mon_checksum_ok_acusa_pokemon_em_claro_na_ram():
+    """Lido no meio de um GetMonData (DecryptBoxMon ... EncryptBoxMon) que atravessou o quadro, o Pokémon está em
+    claro: decifrar de novo dá lixo e o checksum não fecha (POK-53, Metagross do Campeão nas revanches)."""
+    from esteira.game import MON_CHECKSUM, MON_SECURE, mon_checksum_ok
+    cm = Charmap.load(str(REPO_ROOT))
+    pid, ot = 0x000AF788, 0x1F1C70C7
+    raw = bytearray(build_mon(cm, pid=pid, ot=ot, species=400, level=99, hp=1, max_hp=1, nickname="METAGROSS",
+                              moves=[1, 2, 3, 4], pp=[5, 5, 5, 5], held_item=199))
+    words = struct.unpack_from("<12I", raw, MON_SECURE)
+    plain = struct.pack("<12I", *(w ^ pid ^ ot for w in words))
+    struct.pack_into("<H", raw, MON_CHECKSUM, sum(struct.unpack("<24H", plain)) & 0xFFFF)
+    assert mon_checksum_ok(bytes(raw))
+    assert decode_mon(bytes(raw), cm).species == 400
+    em_claro = bytes(raw[:MON_SECURE]) + plain + bytes(raw[MON_SECURE + 48:])
+    assert not mon_checksum_ok(em_claro)
+    assert decode_mon(em_claro, cm).species != 400
+    assert mon_checksum_ok(bytes(100))      # vaga vazia (ZeroEnemyPartyMons)
