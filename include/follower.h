@@ -8,16 +8,17 @@
 
 // Pokémon seguidor (POK-48): o 1º da equipe anda atrás do jogador no campo (src/follower.c).
 //
-// Um único graphicsId (OBJ_EVENT_GFX_FOLLOWER) serve a todas as espécies: as imagens e a paleta são
-// escolhidas em tempo de execução por gFollowerSpecies (src/data/object_events/follower_species.h, gerado por
-// tools/seguidores/converter.py a partir do pacote HGSS do Veekun).
+// Dois graphicsIds servem a todas as espécies: OBJ_EVENT_GFX_FOLLOWER (32x32) e OBJ_EVENT_GFX_FOLLOWER_LARGE (64x64,
+// os 7 grandes, POK-53). As imagens e a paleta são escolhidas em tempo de execução por gFollowerSpecies
+// (src/data/object_events/follower_species.h, gerado por tools/seguidores/converter.py a partir do pacote HGSS do
+// Veekun), já com a variante do Pokémon (fêmea, letra do Unown).
 //
 // Folha de cada espécie: 8 quadros 32x32, ou 64x64 nos 7 grandes (sul, norte, oeste, leste; 2 por direção; o leste
 // tem desenho próprio). A paleta shiny usa os mesmos índices da normal.
 struct FollowerSpecies
 {
     u16 species;
-    bool8 large;                               // 64x64 (POK-53: ainda não seguem; a Task 3 liga o gráfico 64x64)
+    bool8 large;                               // 64x64: graphicsId OBJ_EVENT_GFX_FOLLOWER_LARGE
     u8 formCount;                              // Unown: 28 (forms[letra de GetUnownLetterByPersonality]); demais: 0
     const struct SpriteFrameImage *images;
     const u16 *palette;
@@ -28,6 +29,13 @@ struct FollowerSpecies
 
 // gFollowerSpecies[dex nacional - 1]
 #define FOLLOWER_SPECIES_COUNT 386
+
+// Variante do Pokémon (Follower_GetMonVariant): a padrão, a fêmea (só se a espécie tem `female`) ou a forma
+// FOLLOWER_VARIANT_FORM + letra do Unown (0..27, GetUnownLetterByPersonality)
+#define FOLLOWER_VARIANT_DEFAULT 0
+#define FOLLOWER_VARIANT_FEMALE  1
+#define FOLLOWER_VARIANT_FORM    2
+#define FOLLOWER_VARIANT_COUNT   (FOLLOWER_VARIANT_FORM + 28)
 
 // localId do objeto do seguidor: fora dos templates dos mapas (localId = índice + 1, no máximo
 // OBJECT_EVENT_TEMPLATES_COUNT = 64) e abaixo de LOCALID_PLAYER (0xFF)
@@ -55,10 +63,18 @@ struct FollowerSpecies
 extern const struct FollowerSpecies gFollowerSpecies[FOLLOWER_SPECIES_COUNT];
 
 struct ObjectEvent;
+struct Pokemon;
 
 // Entrada base da espécie (busca O(1) pela Pokédex nacional). NULL se a espécie não segue o jogador: SPECIES_NONE,
-// ovo, fora de 1..386, sem entrada na tabela ou (por enquanto) grande.
+// ovo, fora de 1..386 ou sem entrada na tabela.
 const struct FollowerSpecies *Follower_GetSpeciesInfo(u16 species);
+
+// Variante do Pokémon (FOLLOWER_VARIANT_*): fêmea por GetMonGender se a espécie tem `female`; Unown (formCount) pela
+// letra da personality. 0 (padrão) para o resto e para quem não segue.
+u8 Follower_GetMonVariant(struct Pokemon *mon);
+// A entrada da variante (base->female, &base->forms[letra]); a própria base se a espécie não tem essa variante.
+// NULL só se base == NULL.
+const struct FollowerSpecies *Follower_GetVariantInfo(const struct FollowerSpecies *base, u8 variant);
 
 // Opção "Seguidor: Sim/Não" do menu de Opções (SaveBlock2.optionsFollowerOff, 0 = Sim)
 bool8 Follower_IsEnabled(void);
@@ -71,11 +87,13 @@ bool8 Follower_ShouldExist(void);
 // tile do jogador, escondido até o 1º passo.
 void Follower_Spawn(void);
 void Follower_Remove(void);
-// Compara espécie/shiny/estado com o objeto atual: cria, apaga ou recria (no mesmo tile) se mudou.
+// Compara espécie/shiny/variante/estado com o objeto atual: cria, apaga ou recria (no mesmo tile) se mudou.
 void Follower_Refresh(void);
 
 // Índice em gObjectEvents (OBJECT_EVENTS_COUNT se não existe)
 u8 Follower_GetObjectEventId(void);
+// Um dos dois graphicsIds do seguidor (32x32 ou 64x64)
+bool8 Follower_IsFollowerGraphicsId(u8 graphicsId);
 bool8 Follower_IsFollowerObject(const struct ObjectEvent *objectEvent);
 
 // Ganchos do motor de objetos (event_object_movement.c): o sprite do seguidor acabou de ser criado (spawn ou volta ao
@@ -87,7 +105,8 @@ void Follower_ReloadPalette(void);
 // partida); o seguidor vai junto para o tile por onde o jogador passa (mapa ação → ação no topo de src/follower.c).
 void Follower_OnPlayerMovement(struct ObjectEvent *player, u8 movementActionId);
 
-// Atalho TEST_CMD_FOLLOWER_STATE (include/test_hooks.h): 0 = existe | espécie << 8 | shiny << 24 | escondido << 25;
+// Atalho TEST_CMD_FOLLOWER_STATE (include/test_hooks.h): 0 = existe | espécie << 8 | shiny << 24 | escondido << 25 |
+// variante << 26 (5 bits: até FOLLOWER_VARIANT_COUNT - 1 = 29) | grande (graphicsId 64x64) << 31;
 // 1 = x | y << 16 (s16, sem o MAP_OFFSET; 0xFFFFFFFE = não existe); 2 = direção | quadro parado << 8 | objetos com
 // o localId do seguidor << 16; 0xFFFFFFFF fora do campo
 u32 Follower_TestGetState(u8 what);

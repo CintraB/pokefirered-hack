@@ -161,7 +161,7 @@ def test_struct_e_busca_o1():
     assert "SpeciesToNationalPokedexNum" in corpo
     assert "gFollowerSpecies[dex - 1]" in corpo
     assert "for (" not in corpo
-    assert "->large" in corpo  # nesta etapa os grandes ainda não seguem
+    assert "->large" not in corpo  # Task 3: os grandes seguem (graphicsId OBJ_EVENT_GFX_FOLLOWER_LARGE)
 
 
 def test_grandes_sao_exatamente_os_7():
@@ -439,3 +439,192 @@ def test_conferir_listas_parcial_so_ve_as_pedidas():
     conv.conferir_listas([_especie(d) for d in range(10, 25)], range(10, 25))   # sem grande nem fêmea pedida
     with pytest.raises(conv.ErroConversao, match=r"faltam \[3\]"):   # Venusaur (3) pedido e sem fêmea
         conv.conferir_listas([_especie(3), _especie(4)], [3, 4])
+
+
+# --- Task 3: grandes 64x64 e variantes (fêmea, letra do Unown) em tempo de execução --------------------------------
+
+EVENT_OBJECTS_H = REPO_ROOT / "include" / "constants" / "event_objects.h"
+GFX_INFO_H = REPO_ROOT / "src" / "data" / "object_events" / "object_event_graphics_info.h"
+GFX_POINTERS_H = REPO_ROOT / "src" / "data" / "object_events" / "object_event_graphics_info_pointers.h"
+TEST_HOOKS_H = REPO_ROOT / "include" / "test_hooks.h"
+TEST_HOOKS_C = REPO_ROOT / "src" / "test_hooks.c"
+
+
+def _sem_comentarios(texto):
+    return re.sub(r"//[^\n]*|/\*.*?\*/", "", texto, flags=re.S)
+
+
+def _funcao(texto, nome):
+    """Corpo de `nome(...)` { ... } (chaves balanceadas)."""
+    m = re.search(rf"^\w[\w\s\*]*\b{nome}\s*\([^;{{]*\)\s*\{{", texto, re.M)
+    assert m, f"função {nome} não encontrada"
+    nivel, i = 1, m.end()
+    while nivel:
+        nivel += {"{": 1, "}": -1}.get(texto[i], 0)
+        i += 1
+    return texto[m.end():i - 1]
+
+
+def _bloco_gfx(nome):
+    m = re.search(rf"gObjectEventGraphicsInfo_{nome} = \{{(.*?)\n\}};", GFX_INFO_H.read_text(encoding="utf-8"), re.S)
+    assert m, nome
+    return campos(m.group(1))
+
+
+def test_graphics_info_large_e_64x64():
+    consts = EVENT_OBJECTS_H.read_text(encoding="utf-8")
+    assert re.search(r"#define OBJ_EVENT_GFX_FOLLOWER\s+153\b", consts)
+    assert re.search(r"#define OBJ_EVENT_GFX_FOLLOWER_LARGE\s+154\b", consts)
+    assert re.search(r"#define NUM_OBJ_EVENT_GFX\s+155\b", consts)
+    pequeno, grande = _bloco_gfx("Follower"), _bloco_gfx("FollowerLarge")
+    assert (grande["width"], grande["height"], grande["size"]) == ("64", "64", "2048")
+    assert grande["oam"] == "&gObjectEventBaseOam_64x64"
+    assert grande["subspriteTables"] == "gObjectEventSpriteOamTables_64x64"
+    assert grande["shadowSize"] == "SHADOW_SIZE_L"
+    # o resto igual ao 32x32: mesmas animações, slot de paleta, rastros
+    for campo in ("anims", "paletteSlot", "paletteTag", "tileTag", "tracks", "inanimate", "affineAnims"):
+        assert grande[campo] == pequeno[campo], campo
+    # imagens padrão do tamanho certo (FreeSpriteTilesIfNotUsingSheet libera images->size)
+    assert grande["images"] == "FOLLOWER_DEFAULT_LARGE_IMAGES"
+    m = re.search(r"#define FOLLOWER_DEFAULT_LARGE_IMAGES sFollowerPicTable_(\w+)", tabela())
+    assert m and Image.open(arquivo_da_folha(f"sFollowerPicTable_{m.group(1)}")).size == (512, 64)
+    ponteiros = GFX_POINTERS_H.read_text(encoding="utf-8")
+    assert re.search(r"\[OBJ_EVENT_GFX_FOLLOWER_LARGE\]\s*=\s*&gObjectEventGraphicsInfo_FollowerLarge,", ponteiros)
+    assert "const struct ObjectEventGraphicsInfo gObjectEventGraphicsInfo_FollowerLarge;" in ponteiros
+
+
+def test_follower_state_cabe_em_16():
+    c = FOLLOWER_C.read_text(encoding="utf-8")
+    corpo = _sem_comentarios(re.search(r"struct FollowerState\n\{(.*?)\};", c, re.S).group(1))
+    tamanhos = {"u8": 1, "u16": 2, "u32": 4, "bool8": 1}
+    total, bits = 0, 0
+    for tipo, _nome, largura in re.findall(r"(\w+)\s+(\w+)(?::(\d+))?;", corpo):
+        if largura:
+            bits += int(largura)
+            continue
+        total += tamanhos[tipo]
+    assert re.search(r"\bu8\s+variant;", corpo), corpo
+    assert total + (bits + 7) // 8 <= 16
+    assert "STATIC_ASSERT(sizeof(struct FollowerState) <= 16" in c
+
+
+def test_todo_teste_de_seguidor_aceita_os_dois_ids():
+    """Nenhum `== OBJ_EVENT_GFX_FOLLOWER` isolado: quem pergunta "é o seguidor?" passa por Follower_IsFollowerObject /
+    Follower_IsFollowerGraphicsId (que aceitam os dois graphicsIds); a criação escolhe o id por `large`."""
+    for caminho in list((REPO_ROOT / "src").rglob("*.c")) + list((REPO_ROOT / "include").rglob("*.h")):
+        texto = _sem_comentarios(caminho.read_text(encoding="utf-8", errors="replace"))
+        if caminho == FOLLOWER_C:
+            texto = texto.replace(_funcao(texto, "Follower_IsFollowerGraphicsId"), "")
+        # (comparar só com _LARGE é perguntar "é o 64x64?", não "é o seguidor?")
+        assert not re.search(r"[!=]=\s*OBJ_EVENT_GFX_FOLLOWER\b|\bOBJ_EVENT_GFX_FOLLOWER\s*[!=]=", texto), caminho
+    c = _sem_comentarios(FOLLOWER_C.read_text(encoding="utf-8"))
+    ids = _funcao(c, "Follower_IsFollowerGraphicsId")
+    assert "OBJ_EVENT_GFX_FOLLOWER" in ids and "OBJ_EVENT_GFX_FOLLOWER_LARGE" in ids
+    assert "Follower_IsFollowerGraphicsId(objectEvent->graphicsId)" in _funcao(c, "Follower_IsFollowerObject")
+    criar = _funcao(c, "CreateFollowerAt")
+    assert re.search(r"->large \? OBJ_EVENT_GFX_FOLLOWER_LARGE : OBJ_EVENT_GFX_FOLLOWER", criar), criar
+    ql = _sem_comentarios((REPO_ROOT / "src" / "quest_log_objects.c").read_text(encoding="utf-8"))
+    assert "Follower_IsFollowerGraphicsId(questLogObjectEvents[i].graphicsId)" in _funcao(ql, "QL_LoadObjects")
+
+
+def test_variante_por_genero_e_letra():
+    c = _sem_comentarios(FOLLOWER_C.read_text(encoding="utf-8"))
+    h = FOLLOWER_H.read_text(encoding="utf-8")
+    assert "u8 Follower_GetMonVariant(struct Pokemon *mon);" in h
+    assert ("const struct FollowerSpecies *Follower_GetVariantInfo(const struct FollowerSpecies *base, u8 variant);"
+            in h)
+    assert re.search(r"#define FOLLOWER_VARIANT_DEFAULT\s+0\b", h)
+    assert re.search(r"#define FOLLOWER_VARIANT_FEMALE\s+1\b", h)
+    assert re.search(r"#define FOLLOWER_VARIANT_FORM\s+2\b", h)
+    variante = _funcao(c, "Follower_GetMonVariant")
+    assert "GetMonGender(mon) == MON_FEMALE" in variante and "->female" in variante
+    assert "GetUnownLetterByPersonality(" in variante and "->formCount" in variante
+    info = _funcao(c, "Follower_GetVariantInfo")
+    assert "base->female" in info and "&base->forms[" in info and "base->formCount" in info
+    # recria se espécie, shiny ou variante mudou
+    refresh = _funcao(c, "Follower_Refresh")
+    for campo in ("sFollowerState.species", "sFollowerState.shiny", "sFollowerState.variant"):
+        assert campo in refresh, campo
+    # imagens, paleta (normal/shiny) e criação usam a variante
+    assert "Follower_GetVariantInfo(" in _funcao(c, "GetFollowerStateInfo")
+    for nome in ("Follower_OnSpriteCreated", "LoadFollowerPalette"):
+        assert "GetFollowerStateInfo(" in _funcao(c, nome), nome
+
+
+def test_estado_0_tem_variante_e_grande():
+    c = _sem_comentarios(FOLLOWER_C.read_text(encoding="utf-8"))
+    estado = _funcao(c, "Follower_TestGetState")
+    assert "sFollowerState.variant << 26" in estado and "<< 31" in estado
+    # 5 bits (26..30): a maior variante é 2 + 27 = 29 (o bit 31 é o `large`)
+    h = FOLLOWER_H.read_text(encoding="utf-8")
+    assert re.search(r"#define FOLLOWER_VARIANT_COUNT\s+\(FOLLOWER_VARIANT_FORM \+ 28\)", h)
+    assert "FOLLOWER_VARIANT_COUNT <= 32" in c
+    header = TEST_HOOKS_H.read_text(encoding="utf-8")
+    linha = next(l for l in header.splitlines() if "TEST_CMD_FOLLOWER_STATE = 0xF0" in l)
+    assert "variant << 26" in linha and "large << 31" in linha
+
+
+class _CaixaFalsa:
+    """Mailbox sem emulador: `call` devolve o que a tabela manda e anota os argumentos."""
+
+    def __init__(self, respostas):
+        self.respostas, self.chamadas = respostas, []
+
+    def call(self, cmd, arg0=0, arg1=0, **_):
+        self.chamadas.append((cmd, arg0, arg1))
+        return self.respostas[(cmd, arg0)] if (cmd, arg0) in self.respostas else self.respostas[cmd]
+
+
+def _caixa(respostas):
+    from esteira import hooks
+
+    caixa = object.__new__(hooks.Mailbox)
+    falsa = _CaixaFalsa(respostas)
+    caixa.call = falsa.call
+    return caixa, falsa
+
+
+def test_follower_state_decodifica_variante_e_grande():
+    from esteira import hooks
+
+    raw = 1 | 208 << 8 | 1 << 24 | 1 << 26 | 1 << 31   # Steelix fêmea shiny, grande
+    caixa, _ = _caixa({(hooks.CMD_FOLLOWER_STATE, 0): raw, (hooks.CMD_FOLLOWER_STATE, 1): 5 | 7 << 16,
+                       (hooks.CMD_FOLLOWER_STATE, 2): 1})
+    d = caixa.follower_state()
+    assert (d["especie"], d["shiny"], d["escondido"], d["variante"], d["grande"]) == (208, True, False, 1, True)
+    raw = 1 | 201 << 8 | 29 << 26   # Unown ?, 32x32
+    caixa, _ = _caixa({(hooks.CMD_FOLLOWER_STATE, 0): raw, (hooks.CMD_FOLLOWER_STATE, 1): 0,
+                       (hooks.CMD_FOLLOWER_STATE, 2): 0})
+    d = caixa.follower_state()
+    assert (d["especie"], d["variante"], d["grande"], d["shiny"]) == (201, 29, False, False)
+
+
+def test_set_lead_look_empacota_e_decodifica():
+    from esteira import hooks
+
+    assert hooks.CMD_SET_LEAD_LOOK == hooks.CMD_START_FLY + 1
+    caixa, falsa = _caixa({hooks.CMD_SET_LEAD_LOOK: 25 | 1 << 16 | 1 << 24})
+    assert caixa.set_lead_look(25, 30, shiny=True, female=True) == {"especie": 25, "variante": 1, "shiny": True}
+    assert falsa.chamadas == [(hooks.CMD_SET_LEAD_LOOK, 25 | 30 << 16, 1 | 2)]
+    caixa, falsa = _caixa({hooks.CMD_SET_LEAD_LOOK: 201 | 29 << 16})
+    assert caixa.set_lead_look(201, 5, letter=27)["variante"] == 29
+    assert falsa.chamadas[0][2] == 27 << 8
+    caixa, _ = _caixa({hooks.CMD_SET_LEAD_LOOK: hooks.NO_RESULT})
+    with pytest.raises(AssertionError, match="SET_LEAD_LOOK"):
+        caixa.set_lead_look(81, 5, female=True)   # Magnemite: sem gênero
+    with pytest.raises(ValueError):
+        caixa.set_lead_look(201, 5, letter=28)
+
+
+def test_set_lead_look_no_c():
+    header = TEST_HOOKS_H.read_text(encoding="utf-8")
+    enum = header[header.index("TEST_CMD_FOLLOWER_STATE = 0xF0"):]
+    enum = enum[:enum.index("};")]
+    nomes = re.findall(r"^\s*(TEST_CMD_\w+)", enum, re.M)
+    assert nomes[nomes.index("TEST_CMD_START_FLY") + 1] == "TEST_CMD_SET_LEAD_LOOK"
+    c = _sem_comentarios(TEST_HOOKS_C.read_text(encoding="utf-8"))
+    assert "case TEST_CMD_SET_LEAD_LOOK:" in c
+    corpo = _funcao(c, "SetLeadLook")
+    for trecho in ("GetGenderFromSpeciesAndPersonality(", "GetUnownLetterByPersonality(", "OT_ID_PLAYER_ID",
+                   "Follower_GetMonVariant(", "IsMonShiny("):
+        assert trecho in corpo, trecho

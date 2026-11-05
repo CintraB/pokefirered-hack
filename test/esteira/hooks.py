@@ -398,14 +398,15 @@ class Mailbox:
 
     # --- POK-48: Pokémon seguidor ------------------------------------------------------------------------------------
     def follower_state(self) -> dict | None:
-        """Estado do seguidor no campo (None = fora do campo): existe, espécie, shiny, escondido (what 0); x, y em
-        metatiles sem o MAP_OFFSET, no mapa atual (what 1; None se não existe); direção, quadro da animação parada e
-        quantos objetos têm o localId do seguidor (what 2)."""
+        """Estado do seguidor no campo (None = fora do campo): existe, espécie, shiny, escondido, variante (0 padrão,
+        1 fêmea, 2 + letra do Unown) e grande (graphicsId 64x64) (what 0); x, y em metatiles sem o MAP_OFFSET, no
+        mapa atual (what 1; None se não existe); direção, quadro da animação parada e quantos objetos têm o localId do
+        seguidor (what 2)."""
         raw = self.call(CMD_FOLLOWER_STATE, 0)
         if raw == NO_RESULT:
             return None
         d = {"existe": bool(raw & 1), "especie": raw >> 8 & 0xFFFF, "shiny": bool(raw >> 24 & 1),
-             "escondido": bool(raw >> 25 & 1)}
+             "escondido": bool(raw >> 25 & 1), "variante": raw >> 26 & 0x1F, "grande": bool(raw >> 31 & 1)}
         xy = self.call(CMD_FOLLOWER_STATE, 1)
         d["xy"] = None if xy in (NO_RESULT, FOLLOWER_NONE) else struct.unpack("<hh", struct.pack("<I", xy))
         extra = self.call(CMD_FOLLOWER_STATE, 2)
@@ -424,6 +425,18 @@ class Mailbox:
         result = self.call(CMD_SET_LEAD_SHINY, int(shiny))
         assert result != NO_RESULT and bool(result >> 16) == shiny, f"SET_LEAD_SHINY recusado: {result:#x}"
         return result & 0xFFFF
+
+    def set_lead_look(self, species: int, level: int, shiny: bool = False, female: bool = False,
+                      letter: int = 0) -> dict:
+        """Refaz o 1º da equipe com a aparência pedida (`letter` 0..27 só conta para o Unown); devolve espécie,
+        variante e shiny que o jogo calculou. AssertionError se for impossível (ex.: fêmea de espécie sem gênero).
+        O seguidor muda no próximo spawn/refresh (ex.: set_follower_option(True))."""
+        if not 0 <= letter < UNOWN_LETRAS:
+            raise ValueError(f"set_lead_look: letra {letter!r} fora de 0..{UNOWN_LETRAS - 1}")
+        result = self.call(CMD_SET_LEAD_LOOK, species | level << 16, int(shiny) | int(female) << 1 | letter << 8)
+        assert result != NO_RESULT, (f"SET_LEAD_LOOK recusado: espécie {species}, nível {level}, shiny {shiny}, "
+                                     f"fêmea {female}, letra {letter}")
+        return {"especie": result & 0xFFFF, "variante": result >> 16 & 0xFF, "shiny": bool(result >> 24 & 1)}
 
     def fill_object_events(self, fill: bool) -> int:
         """Ocupa (True) ou libera os slots livres de gObjectEvents; devolve quantos objetos ficaram ativos."""
@@ -541,7 +554,8 @@ CMD_OPEN_DEXNAV = 0xE4      # script de campo com `callnative DexNav_OpenFromScr
 DEXNAV_TAB_LAND, DEXNAV_TAB_WATER, DEXNAV_TAB_RODS, DEXNAV_TAB_ROCK = range(4)  # include/dexnav.h
 
 # --- POK-48: Pokémon seguidor (enum à parte, a partir de 0xF0; leitura em Mailbox.follower_state) ---
-CMD_FOLLOWER_STATE = 0xF0   # arg0 = 0 -> existe | espécie << 8 | shiny << 24 | escondido << 25; 1 -> x | y << 16 do
+CMD_FOLLOWER_STATE = 0xF0   # arg0 = 0 -> existe | espécie << 8 | shiny << 24 | escondido << 25 | variante << 26 (5 bits:
+                            # 0 padrão, 1 fêmea, 2 + letra do Unown) | grande << 31 (graphicsId 64x64); 1 -> x | y << 16 do
                             # seguidor (s16 cada, sem o MAP_OFFSET; 0xFFFFFFFE = não existe); 2 -> direção | quadro da
                             # animação parada << 8 | objetos com o localId do seguidor << 16 (0xFFFFFFFF = fora do campo)
 CMD_SET_FOLLOWER_OPTION = 0xF1   # arg0 = 0 Sim / 1 Não (optionsFollowerOff) + Follower_Refresh no campo -> valor antigo
@@ -551,4 +565,8 @@ CMD_FILL_OBJECT_EVENTS = 0xF3   # arg0 = 1: objetos invisíveis em todo slot liv
                                 # ativos depois
 CMD_START_FLY = 0xF4        # arg0 = heal location (HEAL_LOCATION_*), arg1 = slot mostrado: o que a tela de voo faz no
                             # A (o voo de verdade, saída e chegada) -> 1 (0xFFFFFFFF = fora do campo)
+CMD_SET_LEAD_LOOK = 0xF5    # arg0 = espécie | nível << 16, arg1 = shiny (bit 0) | fêmea (bit 1) | letra do Unown << 8:
+                            # refaz gPlayerParty[0] com uma personality que dê os 3 -> espécie | variante << 16 | shiny
+                            # << 24 (0xFFFFFFFF = impossível); o seguidor muda no próximo spawn/refresh
 FOLLOWER_NONE = 0xFFFFFFFE
+UNOWN_LETRAS = 28           # NUM_UNOWN_FORMS: a..z, !, ?

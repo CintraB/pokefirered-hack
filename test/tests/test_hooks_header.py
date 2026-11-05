@@ -52,5 +52,18 @@ def test_deslocamentos_da_caixa_batem_com_a_struct():
     assert offsets["arg1"] == hooks._ARG0 + 4   # arg0, arg1, result, done num pack "<IIII"
 
 
+def test_estado_do_seguidor_igual_nos_dois_lados():
+    """POK-53: o estado 0 do seguidor ganhou variante (5 bits, 26..30) e grande (bit 31) e o atalho SET_LEAD_LOOK
+    veio logo depois de START_FLY; o comentário do Python acompanha o do C."""
+    cmds = _commands()
+    assert cmds["TEST_CMD_SET_LEAD_LOOK"] == cmds["TEST_CMD_START_FLY"] + 1 == 0xF5
+    linha = next(l for l in HEADER.splitlines() if "TEST_CMD_FOLLOWER_STATE = 0xF0" in l)
+    assert "variant << 26" in linha and "large << 31" in linha
+    python = (REPO_ROOT / "test" / "esteira" / "hooks.py").read_text(encoding="utf-8")
+    inicio = python.index("CMD_FOLLOWER_STATE = 0xF0")
+    bloco = python[inicio:python.index("CMD_SET_FOLLOWER_OPTION = ", inicio)]
+    assert "variante << 26" in bloco and "grande << 31" in bloco
+
+
 def test_simbolo_da_caixa():
     assert re.search(rf"struct TestMailbox\s+{hooks.MAILBOX_SYMBOL}\s*;", HEADER)

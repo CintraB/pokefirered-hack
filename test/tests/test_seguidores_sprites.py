@@ -212,11 +212,13 @@ def test_falha_mais_de_15_cores(tmp_path):
 
 
 def test_um_gfx_so():
+    # POK-53 (Task 3): um 2º graphicsId só para os 7 grandes (64x64), logo depois; test_seguidores_etapa2 cobre o dele
     texto = EVENT_OBJECTS_H.read_text(encoding="utf-8")
-    assert re.search(r"#define NUM_OBJ_EVENT_GFX\s+154\b", texto)
+    assert re.search(r"#define NUM_OBJ_EVENT_GFX\s+155\b", texto)
     assert re.search(r"#define OBJ_EVENT_GFX_FOLLOWER\s+153\b", texto)
+    assert re.search(r"#define OBJ_EVENT_GFX_FOLLOWER_LARGE\s+154\b", texto)
     ids = [(n, v) for n, v in re.findall(r"#define (OBJ_EVENT_GFX_\w+)\s+(\d+)\b", texto) if int(v) < 240]  # 240+: VAR_*
-    assert max(int(v) for _, v in ids) == 153
+    assert max(int(v) for _, v in ids) == 154
     assert sum(1 for _, v in ids if int(v) == 153) == 1
     # ficha 32x32, no slot de paleta próprio, só um graphicsInfo novo e o ponteiro dele
     info = GFX_INFO_H.read_text(encoding="utf-8")

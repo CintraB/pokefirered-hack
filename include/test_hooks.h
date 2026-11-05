@@ -180,11 +180,12 @@ struct TestDexNavTally
 // --- POK-48: Pokémon seguidor ---------------------------------------------------------------
 enum
 {
-    TEST_CMD_FOLLOWER_STATE = 0xF0, // arg0 = what: Follower_TestGetState (include/follower.h); 0: exists | species << 8 | shiny << 24 | hidden << 25; 1: x | y << 16 of the follower (s16 each, without MAP_OFFSET; 0xFFFFFFFE = no follower); 2: facingDirection | idle anim frame << 8 | objects with the follower localId << 16 (0xFFFFFFFF = not in the field)
+    TEST_CMD_FOLLOWER_STATE = 0xF0, // arg0 = what: Follower_TestGetState (include/follower.h); 0: exists | species << 8 | shiny << 24 | hidden << 25 | variant << 26 (5 bits, FOLLOWER_VARIANT_*: 0 default, 1 female, 2 + Unown letter) | large << 31 (the 64x64 graphicsId); 1: x | y << 16 of the follower (s16 each, without MAP_OFFSET; 0xFFFFFFFE = no follower); 2: facingDirection | idle anim frame << 8 | objects with the follower localId << 16 (0xFFFFFFFF = not in the field)
     TEST_CMD_SET_FOLLOWER_OPTION,   // arg0 = 0 Yes / 1 No: gSaveBlock2Ptr->optionsFollowerOff, then Follower_Refresh if the overworld is running (Overworld_IsRunning); result = the old value
     TEST_CMD_SET_LEAD_SHINY,        // arg0 = 1 shiny / 0 never shiny: rebuilds gPlayerParty[0] (same species and level, player as OT) with that personality; the follower changes on the next spawn/refresh; result = species | IsMonShiny << 16 (0xFFFFFFFF = no valid lead)
     TEST_CMD_FILL_OBJECT_EVENTS,    // arg0 = 1: invisible filler objects (the player's graphics, localId TEST_FILLER_LOCALID + i, on the player's tile) in every free gObjectEvents slot; 0: removes them; result = active objects afterwards
     TEST_CMD_START_FLY,             // arg0 = heal location (HEAL_LOCATION_*), arg1 = party slot shown: what the fly map does on A (SetWarpDestinationToHealLocation + ReturnToFieldFromFlyMapSelect), so the real fly-out/fly-in effects run; result = 1 (0xFFFFFFFF = not in the field or bad args)
+    TEST_CMD_SET_LEAD_LOOK,         // arg0 = species | level << 16, arg1 = shiny (bit 0) | female (bit 1) | Unown letter << 8 (0..27, only checked for SPECIES_UNOWN): rebuilds gPlayerParty[0] (player as OT) with the first personality found that gives all three; the follower changes on the next spawn/refresh; result = species | variant (Follower_GetMonVariant) << 16 | shiny << 24 (0xFFFFFFFF = impossible: bad species/level, letter > 27, female for a species that is never female, or no personality found)
 };
 #define TEST_FILLER_LOCALID 0xE0
 // --- end of POK-48 -------------------------------------------------------------------------

@@ -349,11 +349,15 @@ def texto_tabela(especies):
             form_count=len(e.formas) if e.formas else 0,
             female=f"&sFollowerFemale_{c}" if e.femea else "NULL")
         l.append("    },")
+    # o gráfico 64x64 precisa de imagens padrão 64x64 (a liberação dos tiles usa images->size); sem grande na
+    # conversão (parcial), a padrão pequena só para compilar
+    grande = next((e for e in especies if e.base.grande), especies[0])
     l += [
         "};",
         "",
-        "// Imagens do gráfico dinâmico antes de a espécie ser resolvida em tempo de execução.",
+        "// Imagens dos gráficos dinâmicos (32x32 e 64x64) antes de a espécie ser resolvida em tempo de execução.",
         f"#define FOLLOWER_DEFAULT_IMAGES sFollowerPicTable_{especies[0].base.c}",
+        f"#define FOLLOWER_DEFAULT_LARGE_IMAGES sFollowerPicTable_{grande.base.c}",
         "",
     ]
     return "\n".join(l)

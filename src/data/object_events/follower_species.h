@@ -10017,5 +10017,6 @@ const struct FollowerSpecies gFollowerSpecies[FOLLOWER_SPECIES_COUNT] = {
     },
 };
 
-// Imagens do gráfico dinâmico antes de a espécie ser resolvida em tempo de execução.
+// Imagens dos gráficos dinâmicos (32x32 e 64x64) antes de a espécie ser resolvida em tempo de execução.
 #define FOLLOWER_DEFAULT_IMAGES sFollowerPicTable_Bulbasaur
+#define FOLLOWER_DEFAULT_LARGE_IMAGES sFollowerPicTable_Steelix
