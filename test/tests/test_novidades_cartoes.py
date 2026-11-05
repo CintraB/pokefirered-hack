@@ -121,13 +121,14 @@ def test_dexnav_no_fim_de_melhorias_modernas():
 
 
 def test_seguidor_no_fim_de_melhorias_modernas():
-    """POK-48: o cartão entra no fim de "Melhorias modernas" (grade cheia), com um dos seguidores na imagem, diz quem
-    segue (as 12 espécies desta etapa), quando some e onde desligar (a linha Seguidor das OPÇÕES)."""
+    """POK-48/53: o cartão entra no fim de "Melhorias modernas" (grade cheia), com um dos seguidores na imagem, diz
+    quem segue (os 386, com os grandes, as letras do Unown e as fêmeas), quando some e onde desligar (a linha Seguidor
+    das OPÇÕES)."""
     cartao = _topico("Melhorias modernas")["cards"][-1]
     assert cartao["title"] == "Pokémon seguidor" and cartao["speciesBefore"] == "SPECIES_PIKACHU"
     corpo = _plano(cartao["body"])
-    for trecho in ("1º da equipe", "iniciais de Kanto", "Pichu, Pikachu e Raichu", "bicicleta", "Surf", "OPÇÕES",
-                   "Seguidor"):
+    for trecho in ("1º da equipe", "todos os 386", "grandes como Wailord e Lugia", "letra do Unown", "fêmeas",
+                   "bicicleta", "Surf", "OPÇÕES", "Seguidor"):
         assert trecho in corpo, trecho
     strings = (REPO_ROOT / "src/strings.c").read_text(encoding="utf-8")
     assert '_("Seguidor")' in strings

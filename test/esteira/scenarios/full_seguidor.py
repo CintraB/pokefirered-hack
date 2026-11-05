@@ -67,7 +67,24 @@ Estados (Task 4):
 - `seguidor/veneno`: o 1º com 1 PS e envenenado (PIDGEY no 2º) anda na Rota 1 até desmaiar pelo veneno do campo: no
   fim da mensagem não existe seguidor, o campo fica livre e o jogador anda.
 
-As telas `seguidor_*` são novas: ficam para a aprovação do Cintra (Task 5).
+Etapa 2 (POK-53: os 386; o 1º montado por TEST_CMD_SET_LEAD_LOOK e recriado por um warp ou pelo Follower_Refresh da
+opção Seguidor em Sim; imagens lidas em gSprites[].images, subprioridade em gSprites[].subpriority):
+- `seguidor/grande`: WAILORD no 1º: estado `grande`, graphicsId 64x64, imagens do Wailord; entra no Centro de Viridian
+  e anda 2 para o norte (seguidor ao sul, desenhado atrás do jogador: foto `seguidor_grande_sul`); sai e anda 2 para
+  o sul (seguidor ao norte: foto `seguidor_grande_norte`);
+- `seguidor/troca_tamanho`: em Pallet, Pikachu → Wailord → Pikachu no 1º só pelo refresh (sem sair do mapa): 1 objeto
+  com o localId do seguidor, graphicsId e imagens certos em cada troca;
+- `seguidor/femea`: Pikachu fêmea: variante 1, imagens `_Pikachu_F`, paleta da base (foto `seguidor_femea`);
+- `seguidor/unown`: Unown `!` (26), `a` (0) e `?` (27): variante 2 + letra, imagens da letra, paleta do Unown A (foto
+  `seguidor_unown`, o `?`);
+- `seguidor/hoenn_shiny`: Treecko shiny: paleta shiny do ROM (diferente da normal);
+- `seguidor/continue_variante`: Steelix fêmea no 1º (grande e fêmea), salvar, reset, CONTINUAR: volta grande e fêmea;
+- `seguidor/grama_sul`: Pikachu e Wailord ao sul do jogador na grama alta da Rota 1: a grama do tile do jogador fica
+  na frente dele (cobre as pernas) e o seguidor atrás (jogador + 3);
+- `seguidor/mapa_lotado`: Wailord no Game Corner de Celadon (11 gráficos de NPC diferentes): o seguidor e todos os NPCs
+  com sprite (a pressão de VRAM dos 64 tiles do grande), tiles ocupados no relatório.
+
+As telas `seguidor_*` novas ficam para a aprovação do Cintra.
 
 Uso, a partir de test/ (a pasta OUT precisa do captura.sav de um `rapido`/`completo`):
     python3 -m esteira completo --rom R --elf E --out OUT --only seguidor
@@ -127,7 +144,19 @@ FOLLOWER_H = REPO_ROOT / "include" / "follower.h"
 MOVES = {m.group(1): int(m.group(2)) for m in re.finditer(
     r"^#define (MOVE_\w+)\s+(\d+)\b", (REPO_ROOT / "include/constants/moves.h").read_text(encoding="utf-8"), re.M)}
 SCREEN_POINTS = ("seguidor_parado", "seguidor_noite", "seguidor_paleta_especial", "seguidor_cinnabar", "seguidor_grama",
-                 "seguidor_shiny", "seguidor_opcoes")
+                 "seguidor_shiny", "seguidor_opcoes",
+                 # POK-53 (etapa 2): grande ao sul e ao norte do jogador, fêmea e Unown
+                 "seguidor_grande_sul", "seguidor_grande_norte", "seguidor_femea", "seguidor_unown")
+# POK-53, etapa 2 (tools/seguidores/converter.py: GRANDES, FEMEAS; include/follower.h: FOLLOWER_VARIANT_*)
+VARIANT_FEMALE, VARIANT_FORM = 1, 2
+GFX_FOLLOWER, GFX_FOLLOWER_LARGE = 153, 154    # OBJ_EVENT_GFX_FOLLOWER(_LARGE) (include/constants/event_objects.h)
+UNOWN_EXCLAMATION, UNOWN_QUESTION = 26, 27     # letras 0..25 = A..Z
+SPRITE_IMAGES, SPRITE_SUBPRIORITY = 0x0C, 0x43   # struct Sprite: images, subpriority
+BEHIND_MARGIN = 3                              # src/follower.c: UpdateBehindPlayerSubpriority (jogador + 3)
+ROUTE1_GRASS_NORTH = ("MAP_ROUTE1", (15, 22))  # x 15 com grama até y 28: 6 para baixo, 3 para cima = seguidor ao sul
+GAME_CORNER = ("MAP_CELADON_CITY_GAME_CORNER", (10, 12))   # 11 gráficos de NPC diferentes, todos visíveis
+TOTAL_OBJ_TILES = 1024                         # gSpriteTileAllocBitmap[128]
+HOENN_SHINY = "TREECKO"
 # Task 4
 PALLET_WATER = ("MAP_PALLET_TOWN", (8, 16))   # água (MB_POND_WATER) em x 7..10, y 17..19, logo abaixo
 SURF_MON = ("LAPRAS", 50)
@@ -965,6 +994,199 @@ class FollowerScenario(PcScenario):   # PcScenario (CatchSaveScenario + PC): dep
         self._gone("depois de mais um passo")
         return f"{steps} passos envenenado: o 1º desmaiou, sem seguidor, o jogador anda"
 
+    # --- etapa 2 (POK-53): grandes, fêmeas, Unown, Hoenn ---------------------------------------------------------
+    def _follower_obj(self) -> bytes:
+        local = _follower_define("OBJ_EVENT_ID_FOLLOWER")
+        objs = [o for o in self._objects() if o[0] & 1 and not o[OBJ_FLAGS2] & 1 and o[OBJ_LOCAL_ID] == local]
+        assert len(objs) == 1, f"{len(objs)} objetos com o localId do seguidor"
+        return objs[0]
+
+    def _sprite(self, obj: bytes) -> bytes:
+        sprite_id = obj[OBJ_SPRITE_ID]
+        assert sprite_id < MAX_SPRITES, f"objeto sem sprite (spriteId {sprite_id})"
+        return self.emu.read(self.game.syms.addr("gSprites") + sprite_id * SPRITE_SIZE, SPRITE_SIZE)
+
+    def _player_sprite(self) -> bytes:
+        player = next(o for o in self._objects() if o[0] & 1 and o[OBJ_FLAGS2] & 1)
+        return self._sprite(player)
+
+    def _follower_look(self) -> tuple[int, int, int]:
+        """(graphicsId, endereço de sprite->images, subprioridade) do seguidor."""
+        obj = self._follower_obj()
+        spr = self._sprite(obj)
+        images, = struct.unpack_from("<I", spr, SPRITE_IMAGES)
+        return obj[OBJ_GRAPHICS_ID], images, spr[SPRITE_SUBPRIORITY]
+
+    def _look(self, species: str, shiny: bool = False, female: bool = False, letter: int = 0,
+              where: tuple = PALLET) -> dict:
+        """1º da equipe com a aparência pedida e um warp para `where` (o warp recria o seguidor)."""
+        made = self.box.set_lead_look(self.consts.species(species), LEAD[1], shiny=shiny, female=female, letter=letter)
+        assert made["especie"] == self.consts.species(species) and made["shiny"] == shiny, made
+        self._teleport(where)
+        state = self._expect_one(species, species)
+        assert state["variante"] == made["variante"] and state["shiny"] == shiny, (made, state)
+        return state
+
+    def _check_images(self, table: str, large: bool) -> int:
+        gfx, images, sub = self._follower_look()
+        assert gfx == (GFX_FOLLOWER_LARGE if large else GFX_FOLLOWER), f"graphicsId {gfx}"
+        assert images == self.game.syms.addr(table), f"sprite->images {images:#x}, esperava {table}"
+        return sub
+
+    def _check_behind_drawn(self, where: str) -> tuple[int, int]:
+        """O seguidor desenhado atrás do jogador: subprioridade >= a do jogador + BEHIND_MARGIN."""
+        sub = self._follower_look()[2]
+        player = self._player_sprite()[SPRITE_SUBPRIORITY]
+        assert sub >= player + BEHIND_MARGIN, f"{where}: seguidor {sub}, jogador {player} (seguidor na frente)"
+        return sub, player
+
+    def _grande(self) -> str:
+        self._restore()
+        state = self._look("WAILORD", where=VIRIDIAN_DOOR)
+        assert state["grande"] and state["variante"] == 0, state
+        self._check_images("sFollowerPicTable_Wailord", True)
+        loc = self.nav.go_through_warp("up")
+        assert loc == self.consts.map(CENTER), loc
+        self.emu.frames(30)
+        assert self.nav.step("up", 2) == 2, "não andou no Centro"
+        self.emu.frames(20)
+        south = self._behind("Centro, andando para o norte", "WAILORD")
+        px, py = self.game.player_xy()
+        assert south["xy"] == (px, py + 1) and south["grande"], (south, (px, py))
+        drawn_s = self._check_behind_drawn("ao sul")
+        self._shot("seguidor_grande_sul")
+        assert self.nav.step("down", 2) == 2
+        loc = self.nav.go_through_warp("down")
+        assert loc == self.consts.map(VIRIDIAN_DOOR[0]), loc
+        self.emu.frames(30)
+        assert self.nav.step("down", 2) == 2, "não andou em Viridian"
+        self.emu.frames(20)
+        north = self._behind("Viridian, andando para o sul", "WAILORD")
+        px, py = self.game.player_xy()
+        assert north["xy"] == (px, py - 1) and north["grande"], (north, (px, py))
+        drawn_n = self._check_behind_drawn("ao norte")
+        self._shot("seguidor_grande_norte")
+        return (f"Wailord grande (gfx {GFX_FOLLOWER_LARGE}); no Centro ao sul {south['xy']}, subprioridade "
+                f"seguidor/jogador {drawn_s}; fora ao norte {north['xy']}, {drawn_n} (fotos seguidor_grande_sul/norte)")
+
+    def _troca_tamanho(self) -> str:
+        self._restore()
+        self.box.set_lead_look(self.consts.species("WAILORD"), LEAD[1])
+        self._teleport(PALLET)
+        steps = []
+        for species, table, large in (("PIKACHU", "sFollowerPicTable_Pikachu", False),
+                                      ("WAILORD", "sFollowerPicTable_Wailord", True),
+                                      ("PIKACHU", "sFollowerPicTable_Pikachu", False)):
+            before = self.game.location()
+            self.box.set_lead_look(self.consts.species(species), LEAD[1])
+            self.box.set_follower_option(True)          # já em Sim: só o Follower_Refresh, sem sair do mapa
+            self.emu.frames(10)
+            assert self.game.location() == before, "saiu do mapa"
+            state = self._behind(f"refresh para {species}", species)
+            assert state["grande"] == large, state
+            self._check_images(table, large)
+            steps.append(f"{species} gfx {GFX_FOLLOWER_LARGE if large else GFX_FOLLOWER} {state['xy']}")
+        assert self.nav.step("down", 1) == 1
+        self._expect_one("depois de um passo", "PIKACHU")
+        return "Follower_Refresh: " + " → ".join(steps) + "; 1 objeto em cada troca"
+
+    def _femea(self) -> str:
+        self._restore()
+        state = self._look("PIKACHU", female=True)
+        assert state["variante"] == VARIANT_FEMALE and not state["grande"], state
+        self._check_images("sFollowerPicTable_Pikachu_F", False)
+        # o conversor reaproveitou a paleta da base (sFollowerFemale_Pikachu.palette = sFollowerPal_Pikachu)
+        assert self._palette(PALSLOT_FOLLOWER) == self._rom("sFollowerPal_Pikachu"), "paleta da fêmea"
+        self._behind("Pikachu fêmea", "PIKACHU")
+        self._shot("seguidor_femea")
+        return f"Pikachu fêmea: {state}, imagens _Pikachu_F, paleta da base (foto seguidor_femea)"
+
+    def _unown(self) -> str:
+        self._restore()
+        report = []
+        for letter, table in ((UNOWN_EXCLAMATION, "sFollowerPicTable_UnownExclamation"), (0, "sFollowerPicTable_UnownA"),
+                              (UNOWN_QUESTION, "sFollowerPicTable_UnownQuestion")):
+            state = self._look("UNOWN", letter=letter)
+            assert state["variante"] == VARIANT_FORM + letter and not state["grande"], (letter, state)
+            self._check_images(table, False)
+            assert self._palette(PALSLOT_FOLLOWER) == self._rom("sFollowerPal_UnownA"), f"paleta do Unown {letter}"
+            report.append(f"letra {letter}: variante {state['variante']}")
+        self._behind("Unown ?", "UNOWN")
+        self._shot("seguidor_unown")
+        return "; ".join(report) + " (foto seguidor_unown: o ?)"
+
+    def _hoenn_shiny(self) -> str:
+        self._restore()
+        state = self._look(HOENN_SHINY, shiny=True)
+        assert state["variante"] == 0 and not state["grande"], state
+        self._check_images(f"sFollowerPicTable_{HOENN_SHINY.capitalize()}", False)
+        pal = self._palette(PALSLOT_FOLLOWER)
+        assert pal == self._rom(f"sFollowerPalShiny_{HOENN_SHINY.capitalize()}"), "paleta shiny do Treecko"
+        assert pal != self._rom(f"sFollowerPal_{HOENN_SHINY.capitalize()}"), "paleta shiny igual à normal"
+        self._behind("Treecko shiny", HOENN_SHINY)
+        return f"{HOENN_SHINY} shiny: {state}, paleta sFollowerPalShiny_Treecko no slot {PALSLOT_FOLLOWER}"
+
+    def _continue_variante(self) -> str:
+        self._restore()
+        before = self._look("STEELIX", female=True)
+        assert before["grande"] and before["variante"] == VARIANT_FEMALE, before
+        self._check_images("sFollowerPicTable_Steelix_F", True)
+        assert self.menu.save_game() == 1, "save"
+        self.emu.flush_save()
+        self.emu.reset()
+        self._title_to_continue("tela de título depois do reset", shot="seguidor_save_continue_variante")
+        self.box.conq_silencio(True)
+        self.emu.frames(30)
+        after = self._behind("depois de CONTINUAR", "STEELIX")
+        assert after["grande"] and after["variante"] == VARIANT_FEMALE and after["xy"] == before["xy"], (before, after)
+        self._check_images("sFollowerPicTable_Steelix_F", True)
+        return f"Steelix fêmea grande antes {before['xy']}; CONTINUAR: {after}"
+
+    def _grass_under_player(self) -> tuple[int, int, int]:
+        """(subprioridade da grama do tile do jogador, do jogador, do seguidor)."""
+        px, py = self.game.player_xy()
+        callback = self.game.syms.addr("UpdateTallGrassFieldEffect") & ~1
+        raw = self.emu.read(self.game.syms.addr("gSprites"), SPRITE_SIZE * MAX_SPRITES)
+        grass = None
+        for i in range(MAX_SPRITES):
+            spr = raw[i * SPRITE_SIZE:(i + 1) * SPRITE_SIZE]
+            cb, = struct.unpack_from("<I", spr, SPRITE_CALLBACK)
+            data = struct.unpack_from("<8h", spr, SPRITE_DATA)
+            if cb & ~1 == callback and (data[1] - MAP_OFFSET, data[2] - MAP_OFFSET) == (px, py):
+                grass = spr[SPRITE_SUBPRIORITY]
+        assert grass is not None, f"sem grama no tile do jogador {(px, py)}"
+        return grass, self._player_sprite()[SPRITE_SUBPRIORITY], self._follower_look()[2]
+
+    def _grama_sul(self) -> str:
+        report = []
+        for species in ("PIKACHU", "WAILORD"):
+            self._restore()
+            self._look(species, where=ROUTE1_GRASS_NORTH)
+            assert self.nav.step("down", 6) == 6 and self.nav.step("up", 3) == 3, "passos na grama"
+            self.emu.frames(30)
+            px, py = self.game.player_xy()
+            state = self._expect_one("grama, ao sul", species)
+            assert state["xy"] == (px, py + 1), (state, (px, py))
+            grass, player, follower = self._grass_under_player()
+            assert grass < player, f"{species}: grama do jogador {grass} atrás do jogador {player} (pernas sem grama)"
+            assert follower >= player + BEHIND_MARGIN, f"{species}: seguidor {follower}, jogador {player}"
+            report.append(f"{species}: grama {grass} < jogador {player} < seguidor {follower}")
+        return "; ".join(report)
+
+    def _mapa_lotado(self) -> str:
+        self._restore()
+        self._look("WAILORD", where=GAME_CORNER)
+        self.emu.frames(30)
+        self._check_images("sFollowerPicTable_Wailord", True)
+        active = [o for o in self._objects() if o[0] & 1]
+        without = [o[OBJ_LOCAL_ID] for o in active if o[OBJ_SPRITE_ID] >= MAX_SPRITES]
+        assert not without, f"objetos sem sprite (localId): {without}"
+        gfx = {o[OBJ_GRAPHICS_ID] for o in active}
+        bitmap = self.emu.read(self.game.syms.addr("gSpriteTileAllocBitmap"), TOTAL_OBJ_TILES // 8)
+        used = sum(bin(b).count("1") for b in bitmap)
+        return (f"Game Corner com o Wailord: {len(active)} objetos ({len(gfx)} gráficos), todos com sprite; "
+                f"{used}/{TOTAL_OBJ_TILES} tiles de sprite ocupados")
+
     def run(self) -> None:
         try:
             self._flow("seguidor: CONTINUAR, CHARMANDER no 1º lugar, 12:00 e Pallet Town", self._start)
@@ -998,6 +1220,16 @@ class FollowerScenario(PcScenario):   # PcScenario (CatchSaveScenario + PC): dep
             self.suite.run("seguidor/pc_guardar: 1º guardado no PC some; retirado e de volta ao 1º, volta",
                            self._pc_guardar)
             self.suite.run("seguidor/veneno: 1º desmaiado pelo veneno no campo some, nada trava", self._veneno)
+            # POK-53 (etapa 2)
+            self.suite.run("seguidor/grande: Wailord 64x64 atrás do jogador, passa pela porta", self._grande)
+            self.suite.run("seguidor/troca_tamanho: Wailord ↔ Pikachu pelo refresh, 1 objeto", self._troca_tamanho)
+            self.suite.run("seguidor/femea: Pikachu fêmea com o sprite dela", self._femea)
+            self.suite.run("seguidor/unown: letras !, A e ? do Unown", self._unown)
+            self.suite.run("seguidor/hoenn_shiny: Treecko shiny com a paleta shiny do ROM", self._hoenn_shiny)
+            self.suite.run("seguidor/continue_variante: Steelix fêmea grande volta ao CONTINUAR",
+                           self._continue_variante)
+            self.suite.run("seguidor/grama_sul: grama do jogador cobre as pernas com o seguidor ao sul", self._grama_sul)
+            self.suite.run("seguidor/mapa_lotado: Wailord no Game Corner, todos os NPCs com sprite", self._mapa_lotado)
         except Abort:
             pass
 

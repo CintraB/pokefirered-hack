@@ -62,7 +62,7 @@ perder o jeito do FireRed.
 | 🏆 | **Conquistas e diário** | 41 conquistas com prêmio na bolsa e o diário das batalhas marcantes, no Cartão de Treinador. |
 | 🔝 | **Revanches por degrau** | Depois do Hall da Fama, a Elite 4 e as revanches do Explorador VS sobem até o nível 100. |
 | 🧭 | **DexNav** | Os Pokémon de cada lugar, com a chance real, o que falta capturar e onde achar cada um. |
-| 🐾 | **Pokémon seguidor** | O 1º da equipe anda atrás de você no campo (por enquanto os iniciais de Kanto e a família do Pikachu). |
+| 🐾 | **Pokémon seguidor** | O 1º da equipe anda atrás de você no campo: os 386, com os grandes, as fêmeas e cada letra do Unown. |
 | 🗞️ | **Tela de novidades** | O Prof. Carvalho apresenta cada mudança em cartões ilustrados. |
 | 🧪 | **Esteira de testes** | Toda ROM é jogada no emulador e testada antes de existir. |
 
@@ -161,8 +161,9 @@ perder o jeito do FireRed.
 
 | | |
 |---|---|
-| **Quem segue** | O 1º da equipe, se for uma das 12 espécies desta etapa: Bulbasaur, Charmander e Squirtle com as evoluções, Pichu, Pikachu e Raichu (sprites de HeartGold/SoulSilver, com a versão shiny). Outro Pokémon no 1º lugar, desmaiado ou Ovo: ninguém segue. |
-| **No campo** | Anda e corre no mesmo ritmo do jogador, pula ledges junto, atravessa portas e bordas de mapa, entra na grama alta e mexe as patas parado. Não bloqueia nada: voltar para o tile dele troca os dois de lugar, NPCs passam por ele e o **A** nele não faz nada. Pega o tom do dia e da noite e o clima. |
+| **Quem segue** | O 1º da equipe, qualquer um dos 386 (sprites de HeartGold/SoulSilver, com a versão shiny). Desmaiado ou Ovo: ninguém segue. |
+| **Grandes, fêmeas e Unown** | Os 7 grandes (Steelix, Wailord, Lugia, Ho-Oh, Groudon, Kyogre e Rayquaza) andam num quadro de 64×64. As 6 espécies com sprite próprio de fêmea (Venusaur, Pikachu, Meganium, Wobbuffet, Steelix e Heracross) mostram a fêmea. O Unown aparece com a letra dele (A a Z, **!** e **?**) e o Deoxys na Forma Ataque, a do FireRed. |
+| **No campo** | Anda e corre no mesmo ritmo do jogador, pula ledges junto, atravessa portas e bordas de mapa, entra na grama alta e mexe as patas parado. Fica sempre atrás do jogador no desenho, até ao sul dele. Não bloqueia nada: voltar para o tile dele troca os dois de lugar, NPCs passam por ele e o **A** nele não faz nada. Pega o tom do dia e da noite e o clima. |
 | **Some e volta** | Some na bicicleta, no Surf, no Voar, na Corda de Fuga, no Cavar, no Teleporte e no Doce Aroma, e volta logo depois, atrás de você. Trocar o 1º (menu da equipe, PC, troca, evolução, cura no Centro) troca o seguidor. |
 | **Opção** | Linha **Seguidor** (Sim/Não) nas OPÇÕES do menu START. O seguidor não vai para o save: ao CONTINUAR, ele é recriado. |
 
@@ -296,6 +297,7 @@ perder o jeito do FireRed.
 | **DexNav** (01/11) | Os Pokémon de cada mapa por jeito de encontrar, com a chance real, marcas da Pokédex e progresso; a lista dos 124 mapas e a busca por Pokémon. No menu START e no SELECT. |
 | **Pokémon seguidor** (02/11) | O 1º da equipe anda atrás do jogador (12 espécies, normal e shiny), no ritmo dele, sem bloquear ninguém; some na bicicleta, no Surf e nos golpes de campo e volta depois; opção Seguidor nas OPÇÕES. |
 | **Bugs do original** (03/11) | As 47 correções de bugs do FireRed que a decompilação deixava desligadas, agora ligadas. |
+| **Pokémon seguidor, todos** (03/11) | Os 386 seguem, com a versão shiny: os 7 grandes em 64×64, as fêmeas, cada letra do Unown e o Deoxys Ataque; o seguidor fica sempre atrás do jogador no desenho. A ROM passou a 32 MB. |
 
 ## Esteira de testes
 
