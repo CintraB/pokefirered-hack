@@ -60,6 +60,11 @@ MAX_CORES = 15  # índice 0 é a transparência
 COR_INDICE_0 = (115, 197, 164)  # a mesma que as paletas de NPC usam no índice 0
 RE_CONTAGEM = re.compile(r"(#define FOLLOWER_SPECIES_COUNT\s+)\d+")
 
+# Os 7 grandes (quadros 64x64) e as 6 espécies com fêmea própria no pacote, até a dex 386. A conversão FALHA se o
+# que o pacote tem divergir destas listas (numa conversão parcial, confere só a interseção com as pedidas).
+GRANDES = {208, 249, 250, 321, 382, 383, 384}
+FEMEAS = {3, 25, 154, 202, 208, 214}
+
 DEX_UNOWN = 201
 LETRAS_UNOWN = [chr(c) for c in range(ord("a"), ord("z") + 1)] + ["exclamation", "question"]
 DEX_DEOXYS = 386
@@ -364,7 +369,25 @@ def converter_todas(origem, dexes):
             especies.append(converter_especie(origem, dex, nomes))
         except ErroConversao as e:
             raise ErroConversao(f"{nome_arquivo(nomes[dex])} (#{dex}): {e}") from e
+    conferir_listas(especies, dexes)
     return especies
+
+
+def conferir_listas(especies, dexes):
+    """O pacote tem de ter exatamente os grandes de GRANDES e as fêmeas de FEMEAS (entre as espécies pedidas)."""
+    pedidas = set(dexes)
+    for rotulo, achadas, esperadas in (
+        ("grandes (64x64)", {e.dex for e in especies if e.base.grande}, GRANDES & pedidas),
+        ("fêmeas", {e.dex for e in especies if e.femea}, FEMEAS & pedidas),
+    ):
+        if achadas != esperadas:
+            raise ErroConversao(
+                f"{rotulo} divergem da lista: sobram {sorted(achadas - esperadas)}, faltam {sorted(esperadas - achadas)}")
+    for e in especies:
+        if e.femea and e.femea.grande != e.base.grande:
+            raise ErroConversao(f"#{e.dex}: a fêmea e a forma padrão têm tamanhos diferentes")
+        if e.formas and any(f.grande != e.base.grande for f in e.formas):
+            raise ErroConversao(f"#{e.dex}: as formas têm tamanhos diferentes")
 
 
 def gerar(origem, dexes, saida):

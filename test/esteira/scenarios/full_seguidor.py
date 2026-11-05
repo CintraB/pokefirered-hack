@@ -179,10 +179,10 @@ class FollowerScenario(PcScenario):   # PcScenario (CatchSaveScenario + PC): dep
         assert state is not None, f"estado do seguidor fora do campo ({self.game.callback2()})"
         return state
 
-    def _expect_one(self, where: str) -> dict:
+    def _expect_one(self, where: str, species: str = LEAD[0]) -> dict:
         state = self._state()
         assert state["existe"] and state["objetos"] == 1, f"{where}: {state}"
-        assert state["especie"] == self.consts.species(LEAD[0]), f"{where}: espécie {state['especie']}"
+        assert state["especie"] == self.consts.species(species), f"{where}: espécie {state['especie']}"
         return state
 
     def _palette(self, slot: int) -> bytes:
@@ -640,16 +640,9 @@ class FollowerScenario(PcScenario):   # PcScenario (CatchSaveScenario + PC): dep
         assert not state["existe"] and state["objetos"] == 0, f"{where}: {state}"
         return state
 
-    def _is_species(self, where: str, name: str) -> dict:
-        """1 objeto, da espécie `name` (o 1º da equipe mudou e o seguidor se refez)."""
-        state = self._state()
-        assert state["existe"] and state["objetos"] == 1, f"{where}: {state}"
-        assert state["especie"] == self.consts.species(name), f"{where}: espécie {state['especie']}"
-        return state
-
-    def _behind(self, where: str) -> dict:
-        """1 objeto, visível, no tile atrás do jogador (oposto ao facing)."""
-        state = self._expect_one(where)
+    def _behind(self, where: str, species: str = LEAD[0]) -> dict:
+        """1 objeto da espécie `species`, visível, no tile atrás do jogador (oposto ao facing)."""
+        state = self._expect_one(where, species)
         px, py = self.game.player_xy()
         dx, dy = {1: (0, -1), 2: (0, 1), 3: (1, 0), 4: (-1, 0)}[self._facing()]
         assert state["xy"] == (px + dx, py + dy) and not state["escondido"], f"{where}: {state}, jogador {(px, py)}"
@@ -815,7 +808,7 @@ class FollowerScenario(PcScenario):   # PcScenario (CatchSaveScenario + PC): dep
         self._behind("antes")
         self._party_swap_first()
         assert self.game.party()[0].species == self.consts.species(SWAP_MON[0]), self.game.party()[0]
-        self._is_species("PIDGEY no 1º lugar", SWAP_MON[0])
+        self._behind("PIDGEY no 1º lugar", SWAP_MON[0])
         self._party_swap_first()
         state = self._behind("CHARMANDER de volta")
         return f"PIDGEY no 1º: seguidor PIDGEY; CHARMANDER de volta: {state}"
@@ -858,14 +851,8 @@ class FollowerScenario(PcScenario):   # PcScenario (CatchSaveScenario + PC): dep
         self._idle_after("subida de nível, evolução e volta ao campo")
         lead = self.game.party()[0]
         assert lead.species == self.consts.species(EVOLVED), lead
-        state = self._expect_one_species("depois da evolução", EVOLVED)
+        state = self._expect_one("depois da evolução", EVOLVED)
         return f"{EVO_LEAD[0]} → {EVOLVED} nv {lead.level}: seguidor {state}"
-
-    def _expect_one_species(self, where: str, species: str) -> dict:
-        state = self._state()
-        assert state["existe"] and state["objetos"] == 1, f"{where}: {state}"
-        assert state["especie"] == self.consts.species(species), f"{where}: espécie {state['especie']}"
-        return state
 
     def _option_ptr(self) -> int:
         return self.emu.read_u32(self.game.syms.addr("sOptionMenuPtr"))
@@ -930,7 +917,7 @@ class FollowerScenario(PcScenario):   # PcScenario (CatchSaveScenario + PC): dep
         self.box.set_party_mon(1, self.consts.species(SWAP_MON[0]), SWAP_MON[1])
         self._teleport(VIRIDIAN_NURSE)
         self._expect_one("Centro de Viridian")   # diante da enfermeira: atrás é o balcão, nasce escondido
-        lead =self.game.party()[0]
+        lead = self.game.party()[0]
         self._open_storage(OPTION_DEPOSIT)
         self._move_cursor(CURSOR_AREA_IN_PARTY, 0)
         self._select_first_option()
@@ -941,7 +928,7 @@ class FollowerScenario(PcScenario):   # PcScenario (CatchSaveScenario + PC): dep
         self._close_storage()
         party = [m.species for m in self.game.party()]
         assert party == [self.consts.species(SWAP_MON[0])], party
-        self._is_species("CHARMANDER guardado no PC, PIDGEY no 1º", SWAP_MON[0])
+        self._expect_one("CHARMANDER guardado no PC, PIDGEY no 1º", SWAP_MON[0])
         slot = next(i for i, m in enumerate(self._box()) if m is not None and self._ident(m) == self._ident(lead))
         self._open_storage(OPTION_WITHDRAW)
         self._move_cursor(CURSOR_AREA_IN_BOX, slot)
@@ -950,7 +937,7 @@ class FollowerScenario(PcScenario):   # PcScenario (CatchSaveScenario + PC): dep
         self._close_storage()
         party = [m.species for m in self.game.party()]
         assert party == [self.consts.species(SWAP_MON[0]), lead.species], party
-        self._is_species("CHARMANDER retirado, no 2º lugar", SWAP_MON[0])
+        self._expect_one("CHARMANDER retirado, no 2º lugar", SWAP_MON[0])
         self._party_swap_first()
         state = self._behind("CHARMANDER de volta ao 1º")
         return f"guardado (só PIDGEY): seguidor PIDGEY; retirado (2º): continua PIDGEY; trocado para o 1º: {state}"

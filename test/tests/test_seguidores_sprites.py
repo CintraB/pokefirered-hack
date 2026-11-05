@@ -151,6 +151,8 @@ def test_shiny_mesmo_mapeamento():
                         assert ex[x, y][:3] == ob[x, y][:3], f"{nome} {rotulo}: cor em {x},{y}"
 
 
+@pytest.mark.slow  # POK-53: o padrão do conversor passou a ser as 386 (minutos sobre /mnt/c)
+@pytest.mark.skipif(os.environ.get("ESTEIRA_SKIP_SLOW") == "1", reason="ESTEIRA_SKIP_SLOW=1")
 @tem_veekun
 def test_conferir():
     r = subprocess.run([sys.executable, str(CONVERSOR), "--conferir", "--origem", str(VEEKUN)],

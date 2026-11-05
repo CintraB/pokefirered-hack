@@ -35,6 +35,8 @@ VEEKUN = Path(os.environ.get(
     "SEGUIDORES_VEEKUN",
     REPO_ROOT / ".superpowers" / "brainstorm" / "seguidores" / "todos" / "pokemon" / "overworld"))
 tem_veekun = pytest.mark.skipif(not VEEKUN.is_dir(), reason=f"pacote Veekun ausente em {VEEKUN} (fora do Git)")
+# os que leem o pacote inteiro levam minutos sobre /mnt/c: marcador slow (conftest.py), como em test_pipeline.py
+pula_lento = pytest.mark.skipif(os.environ.get("ESTEIRA_SKIP_SLOW") == "1", reason="ESTEIRA_SKIP_SLOW=1")
 
 
 def nomes_dex():
@@ -235,6 +237,8 @@ def test_deoxys_usa_forma_ataque():
     confere_folha(deoxys, "386-attack", rotulo="deoxys")
 
 
+@pytest.mark.slow
+@pula_lento
 @tem_veekun
 def test_todas_as_folhas_batem_com_o_veekun():
     for dex, c in entradas_principais():
@@ -258,8 +262,180 @@ def test_paletas_e_pngs_validos():
         assert len(cores) == 16 and cores[0] == (115, 197, 164), pal
 
 
+@pytest.mark.slow
+@pula_lento
 @tem_veekun
 def test_converter_conferir_bate():
     r = subprocess.run([sys.executable, str(CONVERSOR), "--especies", "todas", "--conferir", "--origem", str(VEEKUN)],
                        capture_output=True, text=True, cwd=REPO_ROOT)
     assert r.returncode == 0, r.stdout + r.stderr
+
+
+# --- caminhos de erro do conversor (pacote falso com uma espécie só) ------------------------------------------------
+
+def _origem_falsa(tmp_path, dex, alterar=None, escala=1):
+    """Cópia do pacote só com a espécie `dex` (sem fêmea); `escala` amplia os quadros; `alterar(normal, shiny)` mexe
+    nas imagens RGBA do quadro down/1."""
+    for sub in ("", "shiny"):
+        for d in DIRECOES:
+            for f in ("", "frame2"):
+                pasta = tmp_path / "pacote" / sub / d / f
+                pasta.mkdir(parents=True, exist_ok=True)
+                im = Image.open(VEEKUN / sub / d / f / f"{dex}.png").convert("RGBA")
+                if escala != 1:
+                    im = im.resize((im.size[0] * escala, im.size[1] * escala), Image.NEAREST)
+                im.save(pasta / f"{dex}.png")
+    if alterar:
+        pn, ps = tmp_path / "pacote" / "down" / f"{dex}.png", tmp_path / "pacote" / "shiny" / "down" / f"{dex}.png"
+        n, s = Image.open(pn).convert("RGBA"), Image.open(ps).convert("RGBA")
+        alterar(n, s)
+        n.save(pn)
+        s.save(ps)
+    return tmp_path / "pacote"
+
+
+def _rodar(tmp_path, origem, dex):
+    return subprocess.run(
+        [sys.executable, str(CONVERSOR), "--origem", str(origem), "--especies", str(dex), "--saida", str(tmp_path / "saida")],
+        capture_output=True, text=True, cwd=REPO_ROOT)
+
+
+def _transparente_nos_dois(n, s):
+    return next((x, y) for y in range(32) for x in range(32)
+                if n.getpixel((x, y))[3] == 0 and s.getpixel((x, y))[3] == 0)
+
+
+@tem_veekun
+def test_falha_pixel_so_no_shiny_fora_da_lista(tmp_path):
+    def alterar(n, s):
+        s.putpixel(_transparente_nos_dois(n, s), (152, 152, 152, 255))
+    r = _rodar(tmp_path, _origem_falsa(tmp_path, 1, alterar), 1)
+    assert r.returncode != 0
+    assert "transparência" in r.stderr, r.stderr
+
+
+@tem_veekun
+def test_falha_so_no_shiny_com_outra_cor(tmp_path):
+    def alterar(n, s):  # Kingler: só (200, 200, 208) é tolerada
+        s.putpixel(_transparente_nos_dois(n, s), (1, 2, 3, 255))
+    r = _rodar(tmp_path, _origem_falsa(tmp_path, 99, alterar), 99)
+    assert r.returncode != 0
+    assert "transparência" in r.stderr, r.stderr
+
+
+@tem_veekun
+def test_kingler_original_converte(tmp_path):
+    r = _rodar(tmp_path, _origem_falsa(tmp_path, 99), 99)
+    assert r.returncode == 0, r.stderr
+
+
+@tem_veekun
+def test_pares_so_para_a_lista(tmp_path):
+    # Weedle (13) está em PARES_NORMAL_SHINY e converte; a mesma folha com outro número (fora da lista) falha
+    origem = _origem_falsa(tmp_path, 13)
+    assert _rodar(tmp_path, origem, 13).returncode == 0
+    for p in origem.rglob("13.png"):
+        p.rename(p.with_name("10.png"))
+    r = _rodar(tmp_path, origem, 10)
+    assert r.returncode != 0
+    assert "duas cores no shiny" in r.stderr, r.stderr
+
+
+@tem_veekun
+def test_falha_grande_fora_da_lista(tmp_path):
+    r = _rodar(tmp_path, _origem_falsa(tmp_path, 1, escala=2), 1)
+    assert r.returncode != 0
+    assert "grandes" in r.stderr and "[1]" in r.stderr, r.stderr
+
+
+@tem_veekun
+def test_falha_femea_que_falta(tmp_path):
+    # Pikachu está em FEMEAS: o pacote falso não tem a pasta female/
+    r = _rodar(tmp_path, _origem_falsa(tmp_path, 25), 25)
+    assert r.returncode != 0
+    assert "fêmeas" in r.stderr and "faltam [25]" in r.stderr, r.stderr
+
+
+@tem_veekun
+def test_falha_grande_que_ficou_pequeno(tmp_path):
+    # Wailord (321) reduzido para 32x32: sai da lista de grandes
+    origem = _origem_falsa(tmp_path, 321)
+    for p in origem.rglob("321.png"):
+        Image.open(p).resize((32, 32), Image.NEAREST).save(p)
+    r = _rodar(tmp_path, origem, 321)
+    assert r.returncode != 0
+    assert "faltam [321]" in r.stderr, r.stderr
+
+
+@tem_veekun
+def test_falha_femea_a_mais(tmp_path):
+    # Bulbasaur (1) não está em FEMEAS: uma pasta female/ com ele faz o conversor falhar
+    origem = _origem_falsa(tmp_path, 1)
+    for p in list(origem.rglob("1.png")):
+        rel = p.relative_to(origem)
+        destino = origem / ("shiny/female" if rel.parts[0] == "shiny" else "female") / (
+            Path(*rel.parts[1:]) if rel.parts[0] == "shiny" else rel)
+        destino.parent.mkdir(parents=True, exist_ok=True)
+        destino.write_bytes(p.read_bytes())
+    r = _rodar(tmp_path, origem, 1)
+    assert r.returncode != 0
+    assert "fêmeas" in r.stderr and "sobram [1]" in r.stderr, r.stderr
+
+
+@tem_veekun
+def test_falha_quadro_de_tamanho_errado(tmp_path):
+    # Wailord (321) com quadros 48x48: nem 32 nem 64
+    origem = _origem_falsa(tmp_path, 321)
+    for p in origem.rglob("321.png"):
+        Image.open(p).resize((48, 48), Image.NEAREST).save(p)
+    r = _rodar(tmp_path, origem, 321)
+    assert r.returncode != 0
+    assert "48x48" in r.stderr, r.stderr
+
+
+# --- conferir_listas direto, com espécies sintéticas (não precisa do pacote) -----------------------------------------
+
+def _conversor():
+    import importlib.util
+    spec = importlib.util.spec_from_file_location("conversor_seguidores", CONVERSOR)
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+
+def _especie(dex, grande=False, femea=None):
+    from types import SimpleNamespace
+    folha = SimpleNamespace(grande=grande)
+    f = SimpleNamespace(grande=grande if femea == "igual" else not grande) if femea else None
+    return SimpleNamespace(dex=dex, base=folha, femea=f, formas=None)
+
+
+def _especies_certas():
+    return [_especie(d, grande=d in GRANDES, femea="igual" if d in FEMEAS else None) for d in range(1, 387)]
+
+
+def test_conferir_listas_aceita_as_listas_certas():
+    _conversor().conferir_listas(_especies_certas(), range(1, 387))
+
+
+@pytest.mark.parametrize("mexer, trecho", [
+    (lambda es: es.__setitem__(0, _especie(1, grande=True)), "grandes (64x64) divergem da lista: sobram [1]"),
+    (lambda es: es.__setitem__(320, _especie(321)), "grandes (64x64) divergem da lista: sobram [], faltam [321]"),
+    (lambda es: es.__setitem__(0, _especie(1, femea="igual")), "fêmeas divergem da lista: sobram [1]"),
+    (lambda es: es.__setitem__(24, _especie(25)), "fêmeas divergem da lista: sobram [], faltam [25]"),
+    (lambda es: es.__setitem__(207, _especie(208, grande=True, femea="outra")), "#208: a fêmea e a forma padrão"),
+])
+def test_conferir_listas_falha_quando_diverge(mexer, trecho):
+    conv = _conversor()
+    especies = _especies_certas()
+    mexer(especies)
+    with pytest.raises(conv.ErroConversao) as e:
+        conv.conferir_listas(especies, range(1, 387))
+    assert trecho in str(e.value), str(e.value)
+
+
+def test_conferir_listas_parcial_so_ve_as_pedidas():
+    conv = _conversor()
+    conv.conferir_listas([_especie(d) for d in range(10, 25)], range(10, 25))   # sem grande nem fêmea pedida
+    with pytest.raises(conv.ErroConversao, match=r"faltam \[3\]"):   # Venusaur (3) pedido e sem fêmea
+        conv.conferir_listas([_especie(3), _especie(4)], [3, 4])
