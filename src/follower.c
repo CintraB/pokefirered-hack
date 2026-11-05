@@ -24,8 +24,9 @@
 //
 // - Variante (POK-53): fêmea (as 6 espécies com `female`, por GetMonGender) ou letra do Unown (pela personality).
 //   Espécie, shiny e variante ficam em sFollowerState; mudou uma delas, Follower_Refresh recria o objeto.
-// - Grandes (64x64): o sprite sobe 3 tiles acima do pé e, à frente do jogador (ao sul dele), o cobriria inteiro;
-//   por isso ficam sempre atrás do jogador (UpdateLargeSubpriority).
+// - Sempre atrás do jogador, de qualquer tamanho (UpdateBehindPlayerSubpriority): ao sul do jogador o seguidor
+//   ficaria na frente e cobriria o corpo dele (um 64x64 inteiro, um 32x32 alto como o Deoxys quase todo). Por isso a
+//   grama alta não o considera (field_effect_helpers.c, UpdateGrassFieldEffectSubpriority).
 //
 // - Nunca vai para o save (load_save.c) nem para a cena do Quest Log (quest_log_objects.c): ao CONTINUAR, na volta
 //   de batalha/menu e ao montar um mapa ele é recriado da equipe (overworld.c: Follower_Spawn depois dos NPCs do mapa
@@ -308,16 +309,17 @@ static void UpdateIdleAnim(struct ObjectEvent *objectEvent, struct Sprite *sprit
         sprite->animPaused = FALSE;
 }
 
-// Grandes (64x64): sempre atrás do jogador. A subprioridade do motor sai da linha do pé
+// Sempre atrás do jogador (32x32 e 64x64). A subprioridade do motor sai da linha do pé
 // (SetObjectSubpriorityByElevation: 2 por linha de tile, menor = na frente); ao sul do jogador o seguidor ficaria na
-// frente e, com 3 tiles de altura acima do pé, cobriria o jogador inteiro. O valor do jogador pode ser o do quadro
-// anterior (o callback dele pode rodar depois deste) e mudar 2 ao cruzar uma linha: a folga de 3 cobre isso. Entre
-// o seguidor e os NPCs continua valendo a ordem do motor.
-static void UpdateLargeSubpriority(struct ObjectEvent *objectEvent, struct Sprite *sprite)
+// frente e cobriria o corpo dele (o 64x64 sobe 3 tiles acima do pé). O valor do jogador pode ser o do quadro anterior
+// (o callback dele pode rodar depois deste) e mudar 2 ao cruzar uma linha: a folga de 3 cobre isso. Ao norte do
+// jogador o seguidor já está atrás (jogador + 2 ou mais) e só ganha a folga. Entre o seguidor e os NPCs continua
+// valendo a ordem do motor.
+static void UpdateBehindPlayerSubpriority(struct Sprite *sprite)
 {
     const struct Sprite *player;
 
-    if (objectEvent->graphicsId != OBJ_EVENT_GFX_FOLLOWER_LARGE || gPlayerAvatar.spriteId >= MAX_SPRITES)
+    if (gPlayerAvatar.spriteId >= MAX_SPRITES)
         return;
     player = &gSprites[gPlayerAvatar.spriteId];
     if (sprite->subpriority < player->subpriority + 3)
@@ -329,7 +331,7 @@ static void SpriteCB_Follower(struct Sprite *sprite)
     struct ObjectEvent *objectEvent = &gObjectEvents[sprite->data[0]];
 
     UpdateObjectEventCurrentMovement(objectEvent, sprite, FollowerMovementTypeCallback);
-    UpdateLargeSubpriority(objectEvent, sprite);
+    UpdateBehindPlayerSubpriority(sprite);
     // ninguém espera o fim do passo do seguidor (waitmovement): solta a ação terminada para a próxima entrar
     // (ObjectEventSetHeldMovement recusa enquanto heldMovementActive)
     if (objectEvent->heldMovementActive && objectEvent->heldMovementFinished)

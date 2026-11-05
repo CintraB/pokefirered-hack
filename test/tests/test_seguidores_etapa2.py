@@ -564,20 +564,32 @@ def test_estado_0_tem_variante_e_grande():
     assert "variant << 26" in linha and "large << 31" in linha
 
 
-def test_grama_alta_ignora_o_seguidor_grande():
-    """O 64x64 é empurrado para trás do jogador (UpdateLargeSubpriority); a regra da grama alta que manda a grama para
-    trás de quem a cruza não pode valer para ele, ou a grama do tile do jogador vai para trás do jogador (rodada 1)."""
+def test_seguidor_sempre_atras_do_jogador():
+    """Task 3b: qualquer seguidor (32x32 e 64x64) fica atrás do jogador: subprioridade >= a do jogador + 3, a cada
+    quadro, depois do movimento (que recalcula a do motor pela linha do pé)."""
+    c = _sem_comentarios(FOLLOWER_C.read_text(encoding="utf-8"))
+    corpo = _funcao(c, "UpdateBehindPlayerSubpriority")
+    assert "OBJ_EVENT_GFX_FOLLOWER" not in corpo   # sem filtro de tamanho
+    assert re.search(r"sprite->subpriority < player->subpriority \+ 3\)\s*sprite->subpriority = player->subpriority \+ 3;",
+                     corpo), corpo
+    cb = _funcao(c, "SpriteCB_Follower")
+    assert cb.index("UpdateObjectEventCurrentMovement(") < cb.index("UpdateBehindPlayerSubpriority(sprite)")
+    assert "UpdateLargeSubpriority" not in c
+
+
+def test_grama_alta_ignora_o_seguidor():
+    """O seguidor é empurrado para trás do jogador (UpdateBehindPlayerSubpriority); a regra da grama alta que manda a
+    grama para trás de quem a cruza não pode valer para ele, ou a grama do tile do jogador vai para trás do jogador
+    (rodada 1 com o 64x64; na Task 3b vale para os dois tamanhos)."""
     c = _sem_comentarios((REPO_ROOT / "src" / "field_effect_helpers.c").read_text(encoding="utf-8"))
     assert '#include "follower.h"' in c
     corpo = _funcao(c, "UpdateGrassFieldEffectSubpriority")
     laco = corpo[corpo.index("for (i = 0; i < OBJECT_EVENTS_COUNT; i++)"):]
-    pula = re.search(r"if \(Follower_IsFollowerObject\(objectEvent\) && objectEvent->graphicsId == "
-                     r"OBJ_EVENT_GFX_FOLLOWER_LARGE\)\s*continue;", laco)
+    pula = re.search(r"if \(Follower_IsFollowerObject\(objectEvent\)\)\s*continue;", laco)
     assert pula, laco
     # antes de qualquer conta de subprioridade com o objeto
     assert pula.start() < laco.index("linkedSprite->subpriority")
-    # só o grande: o 32x32 continua na regra (como na etapa 1)
-    assert "Follower_IsFollowerObject(objectEvent))" not in laco.replace(pula.group(0), "")
+    assert "OBJ_EVENT_GFX_FOLLOWER" not in laco   # sem filtro de tamanho
 
 
 class _CaixaFalsa:
