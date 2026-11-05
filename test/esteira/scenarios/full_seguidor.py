@@ -81,8 +81,9 @@ opção Seguidor em Sim; imagens lidas em gSprites[].images, subprioridade em gS
 - `seguidor/continue_variante`: Steelix fêmea no 1º (grande e fêmea), salvar, reset, CONTINUAR: volta grande e fêmea;
 - `seguidor/grama_sul`: Pikachu e Wailord ao sul do jogador na grama alta da Rota 1: a grama do tile do jogador fica
   na frente dele (cobre as pernas) e o seguidor atrás (jogador + 3);
-- `seguidor/mapa_lotado`: Wailord no Game Corner de Celadon (11 gráficos de NPC diferentes): o seguidor e todos os NPCs
-  com sprite (a pressão de VRAM dos 64 tiles do grande), tiles ocupados no relatório.
+- `seguidor/mapa_lotado`: Wailord no Game Corner de Celadon (mapa cheio de NPCs de gráficos diferentes): confere que o seguidor e
+  todos os objetos que nasceram têm sprite com o grande ocupando seus 64 tiles; a contagem de tiles ocupados vai
+  para o relatório (o caso não mede a pressão de VRAM, só o que ela deixaria sem sprite).
 
 As telas `seguidor_*` novas ficam para a aprovação do Cintra.
 
@@ -154,7 +155,7 @@ UNOWN_EXCLAMATION, UNOWN_QUESTION = 26, 27     # letras 0..25 = A..Z
 SPRITE_IMAGES, SPRITE_SUBPRIORITY = 0x0C, 0x43   # struct Sprite: images, subpriority
 BEHIND_MARGIN = 3                              # src/follower.c: UpdateBehindPlayerSubpriority (jogador + 3)
 ROUTE1_GRASS_NORTH = ("MAP_ROUTE1", (15, 22))  # x 15 com grama até y 28: 6 para baixo, 3 para cima = seguidor ao sul
-GAME_CORNER = ("MAP_CELADON_CITY_GAME_CORNER", (10, 12))   # 11 gráficos de NPC diferentes, todos visíveis
+GAME_CORNER = ("MAP_CELADON_CITY_GAME_CORNER", (10, 12))   # 11 gráficos de NPC diferentes no mapa; só nascem os ~8 da área da câmera
 TOTAL_OBJ_TILES = 1024                         # gSpriteTileAllocBitmap[128]
 HOENN_SHINY = "TREECKO"
 # Task 4
@@ -945,7 +946,7 @@ class FollowerScenario(PcScenario):   # PcScenario (CatchSaveScenario + PC): dep
         self._restore()
         self.box.set_party_mon(1, self.consts.species(SWAP_MON[0]), SWAP_MON[1])
         self._teleport(VIRIDIAN_NURSE)
-        self._expect_one("Centro de Viridian")   # diante da enfermeira: atrás é o balcão, nasce escondido
+        self._expect_one("Centro de Viridian")   # virado para a enfermeira (balcão à frente, em (7, 3)); atrás é chão: o seguidor nasce em (7, 5)
         lead = self.game.party()[0]
         self._open_storage(OPTION_DEPOSIT)
         self._move_cursor(CURSOR_AREA_IN_PARTY, 0)

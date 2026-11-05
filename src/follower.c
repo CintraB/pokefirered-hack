@@ -314,7 +314,8 @@ static void UpdateIdleAnim(struct ObjectEvent *objectEvent, struct Sprite *sprit
 // frente e cobriria o corpo dele (o 64x64 sobe 3 tiles acima do pé). O valor do jogador pode ser o do quadro anterior
 // (o callback dele pode rodar depois deste) e mudar 2 ao cruzar uma linha: a folga de 3 cobre isso. Ao norte do
 // jogador o seguidor já está atrás (jogador + 2 ou mais) e só ganha a folga. Entre o seguidor e os NPCs continua
-// valendo a ordem do motor.
+// valendo a ordem do motor, fora o piso jogador + 3, que pode deixar um NPC da linha do jogador na frente do seguidor
+// ao sul (mais visível no 64x64).
 static void UpdateBehindPlayerSubpriority(struct Sprite *sprite)
 {
     const struct Sprite *player;
