@@ -1,6 +1,11 @@
 OBJEVENTGFXDIR := graphics/object_events/pics
 FLDEFFGFXDIR := graphics/field_effects/pics
 
+# POK-53: folhas dos 7 seguidores grandes (512x64, 8 quadros 64x64). Antes da regra geral: o make prefere o radical
+# mais curto, mas a ordem deixa explícito.
+$(OBJEVENTGFXDIR)/seguidores/grandes/%.4bpp: $(OBJEVENTGFXDIR)/seguidores/grandes/%.png
+	$(GFX) $< $@ -mwidth 8 -mheight 8
+
 # POK-48: folhas dos Pokémon seguidores (256x32, 8 quadros 32x32), geradas por tools/seguidores/converter.py
 $(OBJEVENTGFXDIR)/seguidores/%.4bpp: $(OBJEVENTGFXDIR)/seguidores/%.png
 	$(GFX) $< $@ -mwidth 4 -mheight 4

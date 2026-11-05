@@ -1255,6 +1255,7 @@ static u32 OpenDexNav(void)
 #include "field_effect.h"
 #include "field_player_avatar.h"
 #include "party_menu.h"
+#include "pokemon_icon.h"
 
 static u32 SetFollowerOption(u32 off)
 {
@@ -1323,6 +1324,45 @@ static u32 StartFly(u32 healLocation, u32 slot)
     SetWarpDestinationToHealLocation(healLocation);
     ReturnToFieldFromFlyMapSelect();
     return 1;
+}
+
+// POK-53: gPlayerParty[0] rebuilt (player as OT) with the first personality that gives the shiny, the gender and (for
+// Unown) the letter asked for. Shiny value = hi(ot) ^ lo(ot) ^ hi(pid) ^ lo(pid): for each low half (gender byte and
+// half of the letter bits), the high half that gives the value `x` (0..7 shiny; 0x100..0x800 never shiny); the 8
+// values of x also move the letter bits of the high half.
+static u32 SetLeadLook(u32 arg0, u32 arg1)
+{
+    struct Pokemon *mon = &gPlayerParty[0];
+    u16 species = arg0 & 0xFFFF;
+    u8 level = (arg0 >> 16) & 0xFF;
+    bool32 shiny = arg1 & 1;
+    bool32 female = (arg1 >> 1) & 1;
+    u32 letter = (arg1 >> 8) & 0xFF;
+    u32 otId = GetPlayerTrainerId();
+    u32 base = (otId >> 16) ^ (otId & 0xFFFF);
+    u32 lo, x, value, personality;
+    u8 ratio;
+
+    if (!IsValidTestMon(species, level) || letter >= NUM_UNOWN_FORMS)
+        return 0xFFFFFFFF;
+    ratio = gSpeciesInfo[species].genderRatio;
+    if (female ? (ratio == MON_MALE || ratio == MON_GENDERLESS) : ratio == MON_FEMALE)
+        return 0xFFFFFFFF;
+    for (lo = 0; lo <= 0xFFFF; lo++)
+    {
+        for (x = 0; x < 8; x++)
+        {
+            value = shiny ? x : (x + 1) << 8;
+            personality = ((base ^ lo ^ value) & 0xFFFF) << 16 | lo;
+            if ((GetGenderFromSpeciesAndPersonality(species, personality) == MON_FEMALE) != female)
+                continue;
+            if (species == SPECIES_UNOWN && GetUnownLetterByPersonality(personality) != letter)
+                continue;
+            CreateMon(mon, species, level, TEST_MON_FIXED_IV, TRUE, personality, OT_ID_PLAYER_ID, 0);
+            return species | (u32)Follower_GetMonVariant(mon) << 16 | (u32)IsMonShiny(mon) << 24;
+        }
+    }
+    return 0xFFFFFFFF;
 }
 // --- end of POK-48 --------------------------------------------------------------------------
 
@@ -1477,6 +1517,7 @@ void TestHooks_Run(void)
     case TEST_CMD_SET_LEAD_SHINY:   result = SetLeadShiny(gTestMailbox.arg0 != 0); break;
     case TEST_CMD_FILL_OBJECT_EVENTS: result = FillObjectEvents(gTestMailbox.arg0 != 0); break;
     case TEST_CMD_START_FLY:        result = StartFly(gTestMailbox.arg0, gTestMailbox.arg1); break;
+    case TEST_CMD_SET_LEAD_LOOK:    result = SetLeadLook(gTestMailbox.arg0, gTestMailbox.arg1); break;
     default:
         result = 0xFFFFFFFF;
         break;

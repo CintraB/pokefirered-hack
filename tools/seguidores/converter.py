@@ -1,26 +1,34 @@
-"""Seguidores (POK-48): converte os sprites de overworld do Veekun (HGSS) em folhas indexadas 4bpp + paletas + tabela C.
+"""Seguidores (POK-48/POK-53): converte os sprites de overworld do Veekun (HGSS) em folhas indexadas 4bpp + paletas + tabela C.
 
-    python3 -I tools/seguidores/converter.py                      # as 12 espécies de ESPECIES_PADRAO
+    python3 -I tools/seguidores/converter.py                      # as 386 espécies (o mesmo que --especies todas)
     python3 -I tools/seguidores/converter.py --especies 1-9,25    # qualquer lista de números da Pokédex nacional
-    python3 -I tools/seguidores/converter.py --especies todas     # 1-386 (etapa 2; só 32x32 por enquanto)
     python3 -I tools/seguidores/converter.py --conferir           # refaz num diretório temporário e compara
+    python3 -I tools/seguidores/converter.py --previa saida.png   # grade normal/shiny de todas as entradas (não grava)
 
 Lê, em `--origem` (padrão: `.superpowers/brainstorm/seguidores/todos/pokemon/overworld`, fora do Git), o layout do
-pacote do Veekun: `<direção>/<dex>.png` e `<direção>/frame2/<dex>.png` para `down`, `up`, `left` e `right`, e o mesmo
-sob `shiny/`. Para cada espécie grava (a partir de `--saida`, padrão a raiz do repositório):
+pacote do Veekun: `<direção>/<arquivo>.png` e `<direção>/frame2/<arquivo>.png` para `down`, `up`, `left` e `right`,
+o mesmo sob `shiny/`, e as fêmeas sob `female/` e `shiny/female/`. Para cada espécie grava (a partir de `--saida`,
+padrão a raiz do repositório):
 
-    graphics/object_events/pics/seguidores/<nome>.png            folha 256x32, PNG 4 bits indexado
+    graphics/object_events/pics/seguidores/<nome>.png            folha 256x32 (8 quadros 32x32), PNG 4 bits indexado
+    graphics/object_events/pics/seguidores/grandes/<nome>.png    folha 512x64 (8 quadros 64x64) dos 7 grandes
     graphics/object_events/palettes/seguidores/<nome>.pal        JASC 16 cores (índice 0 = transparente)
     graphics/object_events/palettes/seguidores/<nome>_shiny.pal  idem, shiny
-    src/data/object_events/follower_species.h                    tabela `gFollowerSpecies` (ordem da Pokédex)
+    src/data/object_events/follower_species.h                    `gFollowerSpecies[dex - 1]`, ordem da Pokédex
 
-A folha tem 8 quadros 32x32 lado a lado: sul (2), norte (2), oeste (2), leste (2), na ordem de `DIRECOES`; o leste
-tem desenho próprio (não é espelho do oeste). O índice de cada pixel vem do sprite normal (cores numeradas pela
-ordem em que aparecem, varrendo os quadros da esquerda para a direita, linha a linha; índice 0 é só transparência) e
-a paleta shiny sai da correspondência pixel a pixel normal -> shiny. A conversão FALHA (código 1) se um índice do
-normal corresponder a duas cores no shiny, se a transparência não coincidir, se um quadro não for 32x32, se houver
-pixel semitransparente ou se a espécie tiver mais de 15 cores. `--conferir` compara o que está no repositório com o
-que a conversão gera agora (PNG pelos pixels e pela paleta; o resto byte a byte).
+Variantes: fêmea (`<nome>_f`, se o pacote tem `female/down/<dex>.png`), as 28 letras do Unown (`unown_<letra>`, na
+ordem de GetUnownLetterByPersonality: a..z, exclamation, question; a entrada base do Unown usa a letra A) e o Deoxys,
+que usa `386-attack` (a forma da batalha no FireRed). Uma variante reaproveita a paleta da espécie quando todas as
+cores dela (normal e shiny) já estão lá; senão ganha `.pal` própria.
+
+A folha tem 8 quadros lado a lado: sul (2), norte (2), oeste (2), leste (2), na ordem de `DIRECOES`; o leste tem
+desenho próprio. Quadros 32x32 ou 64x64 (os 8 do mesmo tamanho). O índice de cada pixel vem do sprite normal (cores
+numeradas pela ordem em que aparecem, varrendo os quadros da esquerda para a direita, linha a linha; índice 0 é só
+transparência) e a paleta shiny sai da correspondência pixel a pixel normal -> shiny. A conversão FALHA (código 1) se
+um índice do normal corresponder a duas cores no shiny, se a transparência não coincidir, se um quadro tiver tamanho
+diferente de 32x32/64x64, se houver pixel semitransparente ou se a folha tiver mais de 15 cores — salvo as exceções
+conhecidas do pacote em `PARES_NORMAL_SHINY` e `SO_NO_SHINY` (abaixo). `--conferir` compara o que está no repositório
+com o que a conversão gera agora (PNG pelos pixels e pela paleta; o resto byte a byte).
 
 Só Pillow e a biblioteca padrão são usados.
 """
@@ -29,9 +37,10 @@ import argparse
 import re
 import sys
 import tempfile
+from dataclasses import dataclass
 from pathlib import Path
 
-from PIL import Image
+from PIL import Image, ImageDraw
 
 REPO = Path(__file__).resolve().parents[2]
 ORIGEM_PADRAO = REPO / ".superpowers" / "brainstorm" / "seguidores" / "todos" / "pokemon" / "overworld"
@@ -40,19 +49,61 @@ PALS_REL = Path("graphics/object_events/palettes/seguidores")
 TABELA_REL = Path("src/data/object_events/follower_species.h")
 FOLLOWER_H_REL = Path("include/follower.h")
 
-ESPECIES_PADRAO = [1, 2, 3, 4, 5, 6, 7, 8, 9, 25, 26, 172]
 NUM_ESPECIES_DEX = 386
 # ordem dos quadros na folha (sul, norte, oeste, leste; 2 quadros cada) = pasta do Veekun
 DIRECOES = ["down", "up", "left", "right"]
 QUADROS_POR_DIRECAO = 2
-TAMANHO_QUADRO = 32
+QUADROS = len(DIRECOES) * QUADROS_POR_DIRECAO
+TAMANHOS_QUADRO = (32, 64)
+PASTA_GRANDES = "grandes"
 MAX_CORES = 15  # índice 0 é a transparência
 COR_INDICE_0 = (115, 197, 164)  # a mesma que as paletas de NPC usam no índice 0
 RE_CONTAGEM = re.compile(r"(#define FOLLOWER_SPECIES_COUNT\s+)\d+")
 
+# Os 7 grandes (quadros 64x64) e as 6 espécies com fêmea própria no pacote, até a dex 386. A conversão FALHA se o
+# que o pacote tem divergir destas listas (numa conversão parcial, confere só a interseção com as pedidas).
+GRANDES = {208, 249, 250, 321, 382, 383, 384}
+FEMEAS = {3, 25, 154, 202, 208, 214}
+
+DEX_UNOWN = 201
+LETRAS_UNOWN = [chr(c) for c in range(ord("a"), ord("z") + 1)] + ["exclamation", "question"]
+DEX_DEOXYS = 386
+FORMA_DEOXYS = "386-attack"  # sDeoxysBaseStats/sprite de batalha do FireRed = Forma Ataque
+
+# Exceções conhecidas do pacote HGSS (conferidas à mão em 03/11/2026):
+# - cor do normal que vira duas cores no shiny (a paleta do DS tinha duas entradas com a mesma cor normal e cores
+#   shiny diferentes). Nessas, o índice é por par (cor normal, cor shiny): a folha continua uma só e a paleta normal
+#   fica com a cor repetida. Fora desta lista, isso é erro.
+PARES_NORMAL_SHINY = {13, 80, 81, 82, 123, 255, 261, 284, 315, 335, 351, 357, 359}
+# - pixels opacos só no shiny, de uma cor que o normal não tem (no normal a cor coincidiu com a chave de
+#   transparência na extração): ficam transparentes nos dois, como no normal.
+SO_NO_SHINY = {99: (200, 200, 208), 141: (152, 152, 152)}
+
 
 class ErroConversao(Exception):
     pass
+
+
+@dataclass
+class Folha:
+    """Uma folha convertida: imagens + a paleta que ela usa (própria ou da espécie base)."""
+    arquivo: str        # caminho relativo a PICS_REL, sem extensão (ex.: "bulbasaur", "grandes/steelix")
+    c: str              # sufixo dos símbolos C (ex.: "Bulbasaur", "Venusaur_F", "UnownA")
+    quadro: int         # 32 ou 64
+    indices: list
+    pal_normal: list
+    pal_shiny: list
+    pares: dict         # (cor normal, cor shiny) -> índice, só das cores usadas
+    pal_c: str          # dono da paleta (o próprio `c` ou o da folha base)
+    pal_arquivo: str    # nome do .pal (sem extensão) em PALS_REL
+
+    @property
+    def grande(self):
+        return self.quadro == 64
+
+    @property
+    def paleta_propria(self):
+        return self.pal_c == self.c
 
 
 def ler_nomes_dex():
@@ -73,18 +124,22 @@ def lista_especies(texto):
     return sorted(dexes)
 
 
-def carregar_quadros(origem, dex, shiny):
+def carregar_quadros(origem, arquivo, shiny, femea=False):
     """Os 8 quadros do Veekun em RGBA, na ordem da folha."""
     base = origem / "shiny" if shiny else origem
+    if femea:
+        base = base / "female"
     quadros = []
     for d in DIRECOES:
         for sub in ("", "frame2"):
-            caminho = base / d / sub / f"{dex}.png"
+            caminho = base / d / sub / f"{arquivo}.png"
             if not caminho.is_file():
                 raise ErroConversao(f"falta {caminho}")
             im = Image.open(caminho).convert("RGBA")
-            if im.size != (TAMANHO_QUADRO, TAMANHO_QUADRO):
-                raise ErroConversao(f"{caminho}: {im.size[0]}x{im.size[1]}, esperado 32x32 (64x64 ainda não é suportado)")
+            if im.size[0] != im.size[1] or im.size[0] not in TAMANHOS_QUADRO:
+                raise ErroConversao(f"{caminho}: {im.size[0]}x{im.size[1]}, esperado 32x32 ou 64x64")
+            if quadros and im.size != quadros[0].size:
+                raise ErroConversao(f"{caminho}: {im.size[0]}x{im.size[1]}, os outros quadros são {quadros[0].size}")
             quadros.append(im)
     return quadros
 
@@ -93,53 +148,61 @@ def pixels_da_folha(quadros):
     """Lista de (r, g, b) ou None (transparente), quadro a quadro, linha a linha, na ordem da folha."""
     saida = []
     for q in quadros:
-        for y in range(TAMANHO_QUADRO):
-            for x in range(TAMANHO_QUADRO):
-                r, g, b, a = q.getpixel((x, y))
-                if a == 0:
-                    saida.append(None)
-                elif a == 255:
-                    saida.append((r, g, b))
-                else:
-                    raise ErroConversao(f"pixel semitransparente (alfa {a}) em ({x}, {y})")
+        n = q.size[0]
+        dados = q.tobytes()
+        for i in range(n * n):
+            r, g, b, a = dados[i * 4:i * 4 + 4]
+            if a == 0:
+                saida.append(None)
+            elif a == 255:
+                saida.append((r, g, b))
+            else:
+                raise ErroConversao(f"pixel semitransparente (alfa {a}) em ({i % n}, {i // n})")
     return saida
 
 
-def converter_especie(origem, dex):
-    """-> (indices da folha 256x32 em ordem de linha, paleta normal, paleta shiny); listas de 16 (r, g, b)."""
-    normal = pixels_da_folha(carregar_quadros(origem, dex, False))
-    shiny = pixels_da_folha(carregar_quadros(origem, dex, True))
-    indice = {}  # cor do normal -> índice (1..15), na ordem de aparição
-    for cor in normal:
-        if cor is not None and cor not in indice:
-            indice[cor] = len(indice) + 1
-    if len(indice) > MAX_CORES:
-        raise ErroConversao(f"{len(indice)} cores no normal; o máximo é {MAX_CORES} (mais o índice 0 transparente)")
-    para_shiny = {}  # índice -> cor do shiny
+def paleta(cores_por_indice):
+    return [COR_INDICE_0] + [cores_por_indice.get(i, (0, 0, 0)) for i in range(1, 16)]
+
+
+def converter_pixels(normal, shiny, dex, base=None):
+    """-> (índices em ordem de quadro, pal normal, pal shiny, pares) ou None se `base` foi pedida e não serve.
+
+    Com `base` (dict par -> índice de outra folha), só usa os índices dela; devolve None se faltar algum par."""
+    so_no_shiny = SO_NO_SHINY.get(dex)
+    pares = dict(base) if base is not None else {}
+    indices = []
     for pn, ps in zip(normal, shiny):
+        if pn is None and ps is not None and ps == so_no_shiny:
+            ps = None
         if (pn is None) != (ps is None):
             raise ErroConversao("a transparência do shiny não coincide com a do normal")
         if pn is None:
+            indices.append(0)
             continue
-        i = indice[pn]
-        if para_shiny.setdefault(i, ps) != ps:
-            raise ErroConversao(
-                f"índice {i} ({pn}) vira duas cores no shiny: {para_shiny[i]} e {ps}; "
-                "não dá para ter uma só folha para as duas paletas")
+        i = pares.get((pn, ps))
+        if i is None:
+            if base is not None:
+                return None
+            i = pares[(pn, ps)] = len(pares) + 1
+        indices.append(i)
+    if len(pares) > MAX_CORES:
+        raise ErroConversao(f"{len(pares)} cores no normal; o máximo é {MAX_CORES} (mais o índice 0 transparente)")
+    if dex not in PARES_NORMAL_SHINY:
+        vistos = {}
+        for (pn, ps) in pares:
+            if pn in vistos:
+                raise ErroConversao(
+                    f"índice {pares[(pn, vistos[pn])]} ({pn}) vira duas cores no shiny: {vistos[pn]} e {ps}; "
+                    "não dá para ter uma só folha para as duas paletas")
+            vistos[pn] = ps
+    pal_n = paleta({i: pn for (pn, _), i in pares.items()})
+    pal_s = paleta({i: ps for (_, ps), i in pares.items()})
+    return indices, pal_n, pal_s, pares
 
-    def paleta(cores_por_indice):
-        pal = [COR_INDICE_0] + [cores_por_indice.get(i, (0, 0, 0)) for i in range(1, 16)]
-        return pal
 
-    pal_normal = paleta({i: cor for cor, i in indice.items()})
-    pal_shiny = paleta(para_shiny)
-    indices = [0 if c is None else indice[c] for c in normal]
-    return reorganizar_em_folha(indices), pal_normal, pal_shiny
-
-
-def reorganizar_em_folha(indices):
-    """Os pixels vêm quadro a quadro; a folha de 256x32 é linha a linha com os quadros lado a lado."""
-    n = TAMANHO_QUADRO
+def reorganizar_em_folha(indices, n):
+    """Os pixels vêm quadro a quadro; a folha é linha a linha com os quadros lado a lado."""
     quadros = len(indices) // (n * n)
     folha = []
     for y in range(n):
@@ -149,11 +212,30 @@ def reorganizar_em_folha(indices):
     return folha
 
 
-def montar_png(indices, pal):
-    quadros = len(DIRECOES) * QUADROS_POR_DIRECAO
-    im = Image.new("P", (TAMANHO_QUADRO * quadros, TAMANHO_QUADRO))
-    im.putpalette([c for cor in pal for c in cor])
-    im.putdata(indices)
+def converter_folha(origem, dex, fonte, arquivo, c, femea=False, base=None):
+    """Converte uma folha; com `base` (Folha), reaproveita a paleta dela se todas as cores couberem."""
+    qn = carregar_quadros(origem, fonte, False, femea)
+    qs = carregar_quadros(origem, fonte, True, femea)
+    if qn[0].size != qs[0].size:
+        raise ErroConversao(f"normal {qn[0].size} e shiny {qs[0].size} de tamanhos diferentes")
+    n = qn[0].size[0]
+    normal, shiny = pixels_da_folha(qn), pixels_da_folha(qs)
+    if n == 64:
+        arquivo = f"{PASTA_GRANDES}/{arquivo}"
+    if base is not None:
+        r = converter_pixels(normal, shiny, dex, base.pares)
+        if r is not None:
+            indices, _, _, _ = r
+            return Folha(arquivo, c, n, reorganizar_em_folha(indices, n), base.pal_normal, base.pal_shiny,
+                         base.pares, base.pal_c, base.pal_arquivo)
+    indices, pal_n, pal_s, pares = converter_pixels(normal, shiny, dex)
+    return Folha(arquivo, c, n, reorganizar_em_folha(indices, n), pal_n, pal_s, pares, c, Path(arquivo).name)
+
+
+def montar_png(folha):
+    im = Image.new("P", (folha.quadro * QUADROS, folha.quadro))
+    im.putpalette([c for cor in folha.pal_normal for c in cor])
+    im.putdata(folha.indices)
     return im
 
 
@@ -170,87 +252,178 @@ def nome_c(sufixo_constante):
     return "".join(p.capitalize() for p in sufixo_constante.split("_"))
 
 
-def texto_tabela(dexes, nomes):
+@dataclass
+class Especie:
+    dex: int
+    constante: str      # sufixo de SPECIES_/NATIONAL_DEX_
+    base: Folha
+    femea: Folha = None
+    formas: list = None  # Unown: 28 Folhas na ordem de LETRAS_UNOWN
+
+
+def converter_especie(origem, dex, nomes):
+    suf = nomes[dex]
+    arq, c = nome_arquivo(suf), nome_c(suf)
+    if dex == DEX_UNOWN:
+        formas = []
+        for letra in LETRAS_UNOWN:
+            rotulo = letra.upper() if len(letra) == 1 else letra.capitalize()
+            formas.append(converter_folha(origem, dex, f"{dex}-{letra}", f"{arq}_{letra}", f"Unown{rotulo}",
+                                          base=formas[0] if formas else None))
+        return Especie(dex, suf, formas[0], formas=formas)
+    fonte = FORMA_DEOXYS if dex == DEX_DEOXYS else str(dex)
+    base = converter_folha(origem, dex, fonte, arq, c)
+    femea = None
+    if (origem / "female" / DIRECOES[0] / f"{dex}.png").is_file():
+        femea = converter_folha(origem, dex, str(dex), f"{arq}_f", f"{c}_F", femea=True, base=base)
+    return Especie(dex, suf, base, femea=femea)
+
+
+def folhas_de(especie):
+    """Todas as folhas distintas da espécie (a base do Unown é a letra A, já em `formas`)."""
+    if especie.formas:
+        return list(especie.formas)
+    return [especie.base] + ([especie.femea] if especie.femea else [])
+
+
+def bool_c(v):
+    return "TRUE" if v else "FALSE"
+
+
+def linhas_entrada(f, species, indent, forms="NULL", form_count=0, female="NULL"):
+    p = " " * indent
+    return [
+        f"{p}.species = SPECIES_{species},",
+        f"{p}.large = {bool_c(f.grande)},",
+        f"{p}.formCount = {form_count},",
+        f"{p}.images = sFollowerPicTable_{f.c},",
+        f"{p}.palette = sFollowerPal_{f.pal_c},",
+        f"{p}.shinyPalette = sFollowerPalShiny_{f.pal_c},",
+        f"{p}.female = {female},",
+        f"{p}.forms = {forms},",
+    ]
+
+
+def texto_tabela(especies):
     especies_h = (REPO / "include" / "constants" / "species.h").read_text(encoding="utf-8")
-    por_dex = []
-    for dex in dexes:
-        suf = nomes[dex]
-        if not re.search(rf"^#define SPECIES_{suf}\s", especies_h, re.M):
-            raise ErroConversao(f"SPECIES_{suf} não existe em include/constants/species.h")
-        por_dex.append((dex, suf))
+    for e in especies:
+        if not re.search(rf"^#define SPECIES_{e.constante}\s", especies_h, re.M):
+            raise ErroConversao(f"SPECIES_{e.constante} não existe em include/constants/species.h")
     l = [
         "// Gerado por tools/seguidores/converter.py a partir do pacote HGSS do Veekun; não editar à mão.",
-        "// Uma entrada por espécie, em ordem da Pokédex: folha de 8 quadros 32x32 (sul, norte, oeste, leste; 2 cada),",
-        "// paleta normal e paleta shiny com o mesmo mapeamento de índices.",
+        "// Uma entrada por espécie, indexada pelo número da Pokédex nacional - 1: folha de 8 quadros (sul, norte, oeste,",
+        "// leste; 2 cada) de 32x32, ou 64x64 nos grandes (`large`), paleta normal e paleta shiny com o mesmo mapeamento",
+        "// de índices. Variantes: fêmea (`female`) e as 28 letras do Unown (`forms`, ordem de GetUnownLetterByPersonality).",
         "",
     ]
-    for _, suf in por_dex:
-        f, c = nome_arquivo(suf), nome_c(suf)
-        l += [
-            f'static const u16 sFollowerPic_{c}[] = INCBIN_U16("graphics/object_events/pics/seguidores/{f}.4bpp");',
-            f'static const u16 sFollowerPal_{c}[] = INCBIN_U16("graphics/object_events/palettes/seguidores/{f}.gbapal");',
-            f'static const u16 sFollowerPalShiny_{c}[] = INCBIN_U16("graphics/object_events/palettes/seguidores/{f}_shiny.gbapal");',
-            f"static const struct SpriteFrameImage sFollowerPicTable_{c}[] = {{",
-        ]
-        l += [f"    overworld_frame(sFollowerPic_{c}, 4, 4, {q})," for q in range(8)]
-        l += ["};", ""]
+    for e in especies:
+        for f in folhas_de(e):
+            tiles = f.quadro // 8
+            l.append(f'static const u16 sFollowerPic_{f.c}[] = INCBIN_U16("{PICS_REL.as_posix()}/{f.arquivo}.4bpp");')
+            if f.paleta_propria:
+                l += [
+                    f'static const u16 sFollowerPal_{f.c}[] = INCBIN_U16("{PALS_REL.as_posix()}/{f.pal_arquivo}.gbapal");',
+                    f'static const u16 sFollowerPalShiny_{f.c}[] = INCBIN_U16("{PALS_REL.as_posix()}/{f.pal_arquivo}_shiny.gbapal");',
+                ]
+            l.append(f"static const struct SpriteFrameImage sFollowerPicTable_{f.c}[] = {{")
+            l += [f"    overworld_frame(sFollowerPic_{f.c}, {tiles}, {tiles}, {q})," for q in range(QUADROS)]
+            l += ["};", ""]
+        if e.femea:
+            l.append(f"static const struct FollowerSpecies sFollowerFemale_{nome_c(e.constante)} = {{")
+            l += linhas_entrada(e.femea, e.constante, 4)
+            l += ["};", ""]
+        if e.formas:
+            l.append(f"static const struct FollowerSpecies sFollowerForms_{nome_c(e.constante)}[{len(e.formas)}] = {{")
+            for f in e.formas:
+                l.append("    {")
+                l += linhas_entrada(f, e.constante, 8)
+                l.append("    },")
+            l += ["};", ""]
     l.append("const struct FollowerSpecies gFollowerSpecies[FOLLOWER_SPECIES_COUNT] = {")
-    for _, suf in por_dex:
-        c = nome_c(suf)
-        l += [
-            "    {",
-            f"        .species = SPECIES_{suf},",
-            f"        .images = sFollowerPicTable_{c},",
-            f"        .palette = sFollowerPal_{c},",
-            f"        .shinyPalette = sFollowerPalShiny_{c},",
-            "    },",
-        ]
+    for e in especies:
+        c = nome_c(e.constante)
+        l.append(f"    [NATIONAL_DEX_{e.constante} - 1] = {{")
+        l += linhas_entrada(
+            e.base, e.constante, 8,
+            forms=f"sFollowerForms_{c}" if e.formas else "NULL",
+            form_count=len(e.formas) if e.formas else 0,
+            female=f"&sFollowerFemale_{c}" if e.femea else "NULL")
+        l.append("    },")
+    # o gráfico 64x64 precisa de imagens padrão 64x64 (a liberação dos tiles usa images->size); sem grande na
+    # conversão (parcial), a padrão pequena só para compilar
+    grande = next((e for e in especies if e.base.grande), especies[0])
     l += [
         "};",
         "",
-        "// Imagens do gráfico dinâmico antes de a espécie ser resolvida em tempo de execução.",
-        f"#define FOLLOWER_DEFAULT_IMAGES sFollowerPicTable_{nome_c(por_dex[0][1])}",
+        "// Imagens dos gráficos dinâmicos (32x32 e 64x64) antes de a espécie ser resolvida em tempo de execução.",
+        f"#define FOLLOWER_DEFAULT_IMAGES sFollowerPicTable_{especies[0].base.c}",
+        f"#define FOLLOWER_DEFAULT_LARGE_IMAGES sFollowerPicTable_{grande.base.c}",
         "",
     ]
-    return "\n".join(l), len(por_dex)
+    return "\n".join(l)
+
+
+def converter_todas(origem, dexes):
+    nomes = ler_nomes_dex()
+    especies = []
+    for dex in dexes:
+        if dex not in nomes or dex > NUM_ESPECIES_DEX:
+            raise ErroConversao(f"espécie {dex} fora da Pokédex nacional (1..{NUM_ESPECIES_DEX})")
+        try:
+            especies.append(converter_especie(origem, dex, nomes))
+        except ErroConversao as e:
+            raise ErroConversao(f"{nome_arquivo(nomes[dex])} (#{dex}): {e}") from e
+    conferir_listas(especies, dexes)
+    return especies
+
+
+def conferir_listas(especies, dexes):
+    """O pacote tem de ter exatamente os grandes de GRANDES e as fêmeas de FEMEAS (entre as espécies pedidas)."""
+    pedidas = set(dexes)
+    for rotulo, achadas, esperadas in (
+        ("grandes (64x64)", {e.dex for e in especies if e.base.grande}, GRANDES & pedidas),
+        ("fêmeas", {e.dex for e in especies if e.femea}, FEMEAS & pedidas),
+    ):
+        if achadas != esperadas:
+            raise ErroConversao(
+                f"{rotulo} divergem da lista: sobram {sorted(achadas - esperadas)}, faltam {sorted(esperadas - achadas)}")
+    for e in especies:
+        if e.femea and e.femea.grande != e.base.grande:
+            raise ErroConversao(f"#{e.dex}: a fêmea e a forma padrão têm tamanhos diferentes")
+        if e.formas and any(f.grande != e.base.grande for f in e.formas):
+            raise ErroConversao(f"#{e.dex}: as formas têm tamanhos diferentes")
 
 
 def gerar(origem, dexes, saida):
-    """Grava tudo sob `saida`; devolve o número de espécies. Levanta ErroConversao."""
-    nomes = ler_nomes_dex()
-    for dex in dexes:
-        if dex not in nomes:
-            raise ErroConversao(f"espécie {dex} fora da Pokédex nacional")
-    tabela, n = texto_tabela(dexes, nomes)
-    (saida / PICS_REL).mkdir(parents=True, exist_ok=True)
+    """Grava tudo sob `saida`; devolve (espécies, caminhos relativos gravados). Levanta ErroConversao."""
+    especies = converter_todas(origem, dexes)
+    tabela = texto_tabela(especies)
+    gravados = [TABELA_REL]
+    (saida / PICS_REL / PASTA_GRANDES).mkdir(parents=True, exist_ok=True)
     (saida / PALS_REL).mkdir(parents=True, exist_ok=True)
-    for dex in dexes:
-        nome = nome_arquivo(nomes[dex])
-        try:
-            indices, pal_n, pal_s = converter_especie(origem, dex)
-        except ErroConversao as e:
-            raise ErroConversao(f"{nome} (#{dex}): {e}") from e
-        montar_png(indices, pal_n).save(saida / PICS_REL / f"{nome}.png", bits=4)
-        for sufixo, pal in (("", pal_n), ("_shiny", pal_s)):
-            (saida / PALS_REL / f"{nome}{sufixo}.pal").write_bytes(texto_pal(pal).encode("ascii"))
+    for e in especies:
+        for f in folhas_de(e):
+            rel = PICS_REL / f"{f.arquivo}.png"
+            montar_png(f).save(saida / rel, bits=4)
+            gravados.append(rel)
+            if f.paleta_propria:
+                for sufixo, pal in (("", f.pal_normal), ("_shiny", f.pal_shiny)):
+                    rel = PALS_REL / f"{f.pal_arquivo}{sufixo}.pal"
+                    (saida / rel).write_bytes(texto_pal(pal).encode("ascii"))
+                    gravados.append(rel)
     (saida / TABELA_REL).parent.mkdir(parents=True, exist_ok=True)
     (saida / TABELA_REL).write_bytes(tabela.encode("utf-8"))
     cabecalho = saida / FOLLOWER_H_REL
-    if cabecalho.is_file():  # mantém FOLLOWER_SPECIES_COUNT igual à tabela
+    if cabecalho.is_file():  # a tabela é indexada pela dex: sempre 386 posições
         texto = cabecalho.read_text(encoding="utf-8")
-        cabecalho.write_text(RE_CONTAGEM.sub(rf"\g<1>{n}", texto), encoding="utf-8", newline="\n")
-    return n
+        cabecalho.write_text(RE_CONTAGEM.sub(rf"\g<1>{NUM_ESPECIES_DEX}", texto), encoding="utf-8", newline="\n")
+    return especies, gravados
 
 
-def comparar(gerado, repo, dexes):
+def comparar(gerado, repo, gravados):
     """Lista as diferenças entre o que `gerado` tem e o que está em `repo`."""
-    nomes = ler_nomes_dex()
     difs = []
-    arquivos = [TABELA_REL]
-    for dex in dexes:
-        nome = nome_arquivo(nomes[dex])
-        arquivos += [PICS_REL / f"{nome}.png", PALS_REL / f"{nome}.pal", PALS_REL / f"{nome}_shiny.pal"]
-    for rel in arquivos:
+    for rel in gravados:
         novo, velho = gerado / rel, repo / rel
         if not velho.is_file():
             difs.append(f"falta no repositório: {rel}")
@@ -263,41 +436,94 @@ def comparar(gerado, repo, dexes):
     cabecalho = repo / FOLLOWER_H_REL
     if cabecalho.is_file():
         m = RE_CONTAGEM.search(cabecalho.read_text(encoding="utf-8"))
-        if not m or not m.group(0).endswith(f" {len(dexes)}"):
-            difs.append(f"{FOLLOWER_H_REL}: FOLLOWER_SPECIES_COUNT não é {len(dexes)}")
+        if not m or not m.group(0).endswith(f" {NUM_ESPECIES_DEX}"):
+            difs.append(f"{FOLLOWER_H_REL}: FOLLOWER_SPECIES_COUNT não é {NUM_ESPECIES_DEX}")
     # arquivos de espécie que não estão na lista
-    esperados = {rel.name for rel in arquivos}
-    for pasta, padrao in ((PICS_REL, "*.png"), (PALS_REL, "*.pal")):
+    esperados = {rel.as_posix() for rel in gravados}
+    for pasta, padrao in ((PICS_REL, "**/*.png"), (PALS_REL, "*.pal")):
         if (repo / pasta).is_dir():
             for p in sorted((repo / pasta).glob(padrao)):
-                if p.name not in esperados:
-                    difs.append(f"sobra no repositório: {pasta / p.name}")
+                rel = p.relative_to(repo).as_posix()
+                if rel not in esperados:
+                    difs.append(f"sobra no repositório: {rel}")
     return difs
+
+
+def desenhar_previa(especies, destino):
+    """Grade 1:1 com o 1º quadro (sul) normal e shiny de cada folha: espécies, letras do Unown, fêmeas e grandes.
+
+    Rótulos sem acento: a fonte padrão do Pillow só tem ASCII."""
+    fundo, texto = (120, 184, 120, 255), (0, 0, 0, 255)
+
+    def rgba(f, pal):
+        im = Image.new("RGBA", (f.quadro * QUADROS, f.quadro), (0, 0, 0, 0))
+        im.putdata([(0, 0, 0, 0) if i == 0 else (*pal[i], 255) for i in f.indices])
+        return im.crop((0, 0, f.quadro, f.quadro))
+
+    secoes = [
+        ("Especies 32x32 (normal | shiny)", [(f"{e.dex}", e.base) for e in especies if not e.base.grande]),
+        ("Unown: a..z, !, ?", [(l if len(l) == 1 else l[0:5], f) for e in especies if e.formas
+                               for l, f in zip(LETRAS_UNOWN, e.formas)]),
+        ("Femeas", [(f"{e.dex} F", e.femea) for e in especies if e.femea]),
+        ("Grandes 64x64", [(f"{e.dex}", e.base) for e in especies if e.base.grande]
+         + [(f"{e.dex} F", e.femea) for e in especies if e.femea and e.femea.grande]),
+    ]
+    colunas, pad, rot = 16, 6, 12
+    largura = colunas * (128 + pad) + pad
+    blocos = []
+    for titulo, itens in secoes:
+        if not itens:
+            continue
+        lado = max(f.quadro for _, f in itens)
+        por_linha = max(1, largura // (2 * lado + pad))
+        linhas = (len(itens) + por_linha - 1) // por_linha
+        bloco = Image.new("RGBA", (largura, 16 + linhas * (lado + rot + pad)), fundo)
+        d = ImageDraw.Draw(bloco)
+        d.text((pad, 2), titulo, fill=texto)
+        for k, (rotulo, f) in enumerate(itens):
+            x = pad + (k % por_linha) * (2 * lado + pad)
+            y = 16 + (k // por_linha) * (lado + rot + pad)
+            d.text((x, y), rotulo, fill=texto)
+            bloco.alpha_composite(rgba(f, f.pal_normal), (x, y + rot))
+            bloco.alpha_composite(rgba(f, f.pal_shiny), (x + lado, y + rot))
+        blocos.append(bloco)
+    im = Image.new("RGBA", (largura, sum(b.size[1] for b in blocos)), fundo)
+    y = 0
+    for b in blocos:
+        im.alpha_composite(b, (0, y))
+        y += b.size[1]
+    im.save(destino)
+    return im.size
 
 
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--origem", type=Path, default=ORIGEM_PADRAO, help="pasta pokemon/overworld do Veekun")
-    ap.add_argument("--especies", default=None, help="ex.: 1-9,25,26,172 ou 'todas' (padrão: as 12 de ESPECIES_PADRAO)")
+    ap.add_argument("--especies", default="todas", help="ex.: 1-9,25,26,172 ou 'todas' (padrão)")
     ap.add_argument("--saida", type=Path, default=REPO, help="raiz onde gravar (padrão: o repositório)")
     ap.add_argument("--conferir", action="store_true", help="refaz num diretório temporário e compara com o repositório")
+    ap.add_argument("--previa", type=Path, default=None, help="só desenha a grade de prévia neste PNG (não grava nada)")
     args = ap.parse_args(argv)
-    dexes = lista_especies(args.especies) if args.especies else list(ESPECIES_PADRAO)
+    dexes = lista_especies(args.especies)
     try:
+        if args.previa:
+            tamanho = desenhar_previa(converter_todas(args.origem, dexes), args.previa)
+            print(f"prévia {tamanho[0]}x{tamanho[1]} em {args.previa}")
+            return 0
         if args.conferir:
             with tempfile.TemporaryDirectory() as tmp:
-                gerar(args.origem, dexes, Path(tmp))
-                difs = comparar(Path(tmp), args.saida, dexes)
+                _, gravados = gerar(args.origem, dexes, Path(tmp))
+                difs = comparar(Path(tmp), args.saida, gravados)
             if difs:
                 print("\n".join(difs), file=sys.stderr)
                 return 1
             print(f"ok: {len(dexes)} espécies iguais ao repositório")
             return 0
-        n = gerar(args.origem, dexes, args.saida)
+        especies, gravados = gerar(args.origem, dexes, args.saida)
     except ErroConversao as e:
         print(f"erro: {e}", file=sys.stderr)
         return 1
-    print(f"{n} espécies gravadas em {args.saida}")
+    print(f"{len(especies)} espécies ({len(gravados) - 1} arquivos) gravadas em {args.saida}")
     return 0
 
 

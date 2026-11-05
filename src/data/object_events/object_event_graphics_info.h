@@ -2964,3 +2964,24 @@ const struct ObjectEventGraphicsInfo gObjectEventGraphicsInfo_Follower = {
     .images = FOLLOWER_DEFAULT_IMAGES,
     .affineAnims = gDummySpriteAffineAnimTable,
 };
+
+// POK-53: o seguidor dos 7 grandes (64x64). As mesmas animações (8 quadros na mesma ordem); só o tamanho, o OAM e a
+// sombra mudam. As imagens padrão têm de ser 64x64: a liberação dos tiles usa images->size.
+const struct ObjectEventGraphicsInfo gObjectEventGraphicsInfo_FollowerLarge = {
+    .tileTag = TAG_NONE,
+    .paletteTag = OBJ_EVENT_PAL_TAG_NPC_BLUE,
+    .reflectionPaletteTag = OBJ_EVENT_PAL_TAG_NONE,
+    .size = 2048,
+    .width = 64,
+    .height = 64,
+    .paletteSlot = PALSLOT_FOLLOWER,
+    .shadowSize = SHADOW_SIZE_L,
+    .inanimate = FALSE,
+    .disableReflectionPaletteLoad = FALSE,
+    .tracks = TRACKS_FOOT,
+    .oam = &gObjectEventBaseOam_64x64,
+    .subspriteTables = gObjectEventSpriteOamTables_64x64,
+    .anims = sAnimTable_Follower,
+    .images = FOLLOWER_DEFAULT_LARGE_IMAGES,
+    .affineAnims = gDummySpriteAffineAnimTable,
+};

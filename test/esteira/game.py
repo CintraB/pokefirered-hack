@@ -116,6 +116,19 @@ def max_pp(base_pp: int, pp_bonuses: int, index: int) -> int:
     return base_pp + base_pp * 20 * ups // 100
 
 
+MON_CHECKSUM = 0x1C           # BoxPokemon.checksum (u16): soma dos 24 u16 das subestruturas decifradas
+
+
+def mon_checksum_ok(raw: bytes) -> bool:
+    """Checksum da BoxPokemon confere com as subestruturas decifradas. Falso quando a leitura pega o Pokémon no meio
+    de um GetMonData/SetMonData (DecryptBoxMon ... EncryptBoxMon) que atravessou a borda do quadro: os dados estão
+    em claro na RAM e decifrá-los de novo dá lixo (ex.: espécie 34527)."""
+    pid, ot = struct.unpack_from("<II", raw, MON_PERSONALITY)
+    words = struct.unpack_from("<12I", raw, MON_SECURE)
+    plain = struct.pack("<12I", *(w ^ pid ^ ot for w in words))
+    return sum(struct.unpack("<24H", plain)) & 0xFFFF == struct.unpack_from("<H", raw, MON_CHECKSUM)[0]
+
+
 def decode_mon(raw: bytes, charmap: Charmap) -> Mon:
     """Decodifica os 100 bytes de uma `struct Pokemon` (dados seguros XOR pid^otId)."""
     if len(raw) < POKEMON_SIZE:

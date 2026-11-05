@@ -152,6 +152,7 @@ const struct ObjectEventGraphicsInfo gObjectEventGraphicsInfo_DeoxysN;
 const struct ObjectEventGraphicsInfo gObjectEventGraphicsInfo_SSAnne;
 const struct ObjectEventGraphicsInfo gObjectEventGraphicsInfo_JirachiStar;
 const struct ObjectEventGraphicsInfo gObjectEventGraphicsInfo_Follower;
+const struct ObjectEventGraphicsInfo gObjectEventGraphicsInfo_FollowerLarge;
 
 
 const struct ObjectEventGraphicsInfo *const gObjectEventGraphicsInfoPointers[NUM_OBJ_EVENT_GFX] = {
@@ -309,4 +310,5 @@ const struct ObjectEventGraphicsInfo *const gObjectEventGraphicsInfoPointers[NUM
     [OBJ_EVENT_GFX_SS_ANNE]                  = &gObjectEventGraphicsInfo_SSAnne,
     [OBJ_EVENT_GFX_JIRACHI_STAR]             = &gObjectEventGraphicsInfo_JirachiStar,
     [OBJ_EVENT_GFX_FOLLOWER]                 = &gObjectEventGraphicsInfo_Follower,
+    [OBJ_EVENT_GFX_FOLLOWER_LARGE]           = &gObjectEventGraphicsInfo_FollowerLarge,
 };

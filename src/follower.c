@@ -11,14 +11,22 @@
 #include "overworld.h"
 #include "palette.h"
 #include "pokemon.h"
+#include "pokemon_icon.h"
 #include "quest_log.h"
 #include "constants/event_objects.h"
 #include "constants/species.h"
 #include "constants/trainer_types.h"
 
 // Pokémon seguidor (POK-48): o 1º da equipe, se estiver em gFollowerSpecies, é um objeto de evento a mais no campo,
-// fora dos templates do mapa (localId OBJ_EVENT_ID_FOLLOWER, graphicsId dinâmico OBJ_EVENT_GFX_FOLLOWER: imagens e
-// paleta da espécie trocadas na criação do sprite, Follower_OnSpriteCreated).
+// fora dos templates do mapa (localId OBJ_EVENT_ID_FOLLOWER, graphicsId dinâmico OBJ_EVENT_GFX_FOLLOWER ou, nos 7
+// grandes, OBJ_EVENT_GFX_FOLLOWER_LARGE: imagens e paleta da espécie e da variante trocadas na criação do sprite,
+// Follower_OnSpriteCreated).
+//
+// - Variante (POK-53): fêmea (as 6 espécies com `female`, por GetMonGender) ou letra do Unown (pela personality).
+//   Espécie, shiny e variante ficam em sFollowerState; mudou uma delas, Follower_Refresh recria o objeto.
+// - Sempre atrás do jogador, de qualquer tamanho (UpdateBehindPlayerSubpriority): ao sul do jogador o seguidor
+//   ficaria na frente e cobriria o corpo dele (um 64x64 inteiro, um 32x32 alto como o Deoxys quase todo). Por isso a
+//   grama alta não o considera (field_effect_helpers.c, UpdateGrassFieldEffectSubpriority).
 //
 // - Nunca vai para o save (load_save.c) nem para a cena do Quest Log (quest_log_objects.c): ao CONTINUAR, na volta
 //   de batalha/menu e ao montar um mapa ele é recriado da equipe (overworld.c: Follower_Spawn depois dos NPCs do mapa
@@ -64,6 +72,7 @@ struct FollowerState
     u8 shiny:1;
     u8 unused:7;
     u8 stillFrames; // quadros seguidos sem ação de movimento (UpdateIdleAnim espera FOLLOWER_IDLE_DELAY)
+    u8 variant;     // FOLLOWER_VARIANT_* do objeto atual
 };
 
 // A animação parada só entra depois de FOLLOWER_IDLE_DELAY quadros sem ação: no quadro em que um passo termina, o
@@ -73,6 +82,8 @@ struct FollowerState
 #define FOLLOWER_IDLE_DELAY 2
 
 STATIC_ASSERT(sizeof(struct FollowerState) <= 16, FollowerStateCabeEm16BytesDeEwram);
+// Follower_TestGetState(0) leva a variante em 5 bits (26..30)
+STATIC_ASSERT(FOLLOWER_VARIANT_COUNT <= 32, VarianteCabeEm5Bits);
 // optionsFollowerOff ocupa um dos 4 bits livres do bitfield de 0x14-0x15: nada muda de lugar
 STATIC_ASSERT(offsetof(struct SaveBlock2, pokedex) == 0x18, OpcaoDoSeguidorNoBitfieldDe0x15);
 STATIC_ASSERT(sizeof(struct SaveBlock2) == 0xF24, SaveBlock2NaoMudouComOSeguidor);
@@ -120,16 +131,56 @@ static const u8 sIdleAnims[] = {
 
 const struct FollowerSpecies *Follower_GetSpeciesInfo(u16 species)
 {
-    u32 i;
+    const struct FollowerSpecies *info;
+    u16 dex;
 
-    if (species == SPECIES_NONE)
+    if (species == SPECIES_NONE || species >= NUM_SPECIES) // NUM_SPECIES = SPECIES_EGG
         return NULL;
-    for (i = 0; i < FOLLOWER_SPECIES_COUNT; i++)
+    dex = SpeciesToNationalPokedexNum(species);
+    if (dex == 0 || dex > FOLLOWER_SPECIES_COUNT)
+        return NULL;
+    info = &gFollowerSpecies[dex - 1];
+    // species != a pedida: posição vazia (conversão parcial)
+    if (info->species != species)
+        return NULL;
+    return info;
+}
+
+u8 Follower_GetMonVariant(struct Pokemon *mon)
+{
+    const struct FollowerSpecies *info = Follower_GetSpeciesInfo(GetMonData(mon, MON_DATA_SPECIES_OR_EGG));
+    u16 letter;
+
+    if (info == NULL)
+        return FOLLOWER_VARIANT_DEFAULT;
+    // formas: só o Unown tem (formCount = 28, na ordem de GetUnownLetterByPersonality)
+    if (info->formCount != 0)
     {
-        if (gFollowerSpecies[i].species == species)
-            return &gFollowerSpecies[i];
+        letter = GetUnownLetterByPersonality(GetMonData(mon, MON_DATA_PERSONALITY));
+        if (letter < info->formCount)
+            return FOLLOWER_VARIANT_FORM + letter;
+        return FOLLOWER_VARIANT_DEFAULT;
     }
-    return NULL;
+    if (info->female != NULL && GetMonGender(mon) == MON_FEMALE)
+        return FOLLOWER_VARIANT_FEMALE;
+    return FOLLOWER_VARIANT_DEFAULT;
+}
+
+const struct FollowerSpecies *Follower_GetVariantInfo(const struct FollowerSpecies *base, u8 variant)
+{
+    if (base == NULL)
+        return NULL;
+    if (variant == FOLLOWER_VARIANT_FEMALE && base->female != NULL)
+        return base->female;
+    if (variant >= FOLLOWER_VARIANT_FORM && variant - FOLLOWER_VARIANT_FORM < base->formCount)
+        return &base->forms[variant - FOLLOWER_VARIANT_FORM];
+    return base;
+}
+
+// A entrada do objeto atual: espécie e variante de sFollowerState
+static const struct FollowerSpecies *GetFollowerStateInfo(void)
+{
+    return Follower_GetVariantInfo(Follower_GetSpeciesInfo(sFollowerState.species), sFollowerState.variant);
 }
 
 bool8 Follower_IsEnabled(void)
@@ -137,9 +188,14 @@ bool8 Follower_IsEnabled(void)
     return !gSaveBlock2Ptr->optionsFollowerOff;
 }
 
+bool8 Follower_IsFollowerGraphicsId(u8 graphicsId)
+{
+    return graphicsId == OBJ_EVENT_GFX_FOLLOWER || graphicsId == OBJ_EVENT_GFX_FOLLOWER_LARGE;
+}
+
 bool8 Follower_IsFollowerObject(const struct ObjectEvent *objectEvent)
 {
-    return objectEvent->localId == OBJ_EVENT_ID_FOLLOWER && objectEvent->graphicsId == OBJ_EVENT_GFX_FOLLOWER;
+    return objectEvent->localId == OBJ_EVENT_ID_FOLLOWER && Follower_IsFollowerGraphicsId(objectEvent->graphicsId);
 }
 
 u8 Follower_GetObjectEventId(void)
@@ -154,8 +210,9 @@ u8 Follower_GetObjectEventId(void)
     return OBJECT_EVENTS_COUNT;
 }
 
-// O 1º da equipe, se segue o jogador: não é ovo, tem PS e está na tabela
-static const struct FollowerSpecies *GetLeadSpeciesInfo(bool8 *shiny)
+// O 1º da equipe, se segue o jogador: não é ovo, tem PS e está na tabela. Devolve a entrada base; a variante vai em
+// *variant.
+static const struct FollowerSpecies *GetLeadSpeciesInfo(bool8 *shiny, u8 *variant)
 {
     struct Pokemon *mon = &gPlayerParty[0];
     u16 species;
@@ -166,6 +223,7 @@ static const struct FollowerSpecies *GetLeadSpeciesInfo(bool8 *shiny)
     if (species == SPECIES_NONE || species == SPECIES_EGG || GetMonData(mon, MON_DATA_HP) == 0)
         return NULL;
     *shiny = IsMonShiny(mon);
+    *variant = Follower_GetMonVariant(mon);
     return Follower_GetSpeciesInfo(species);
 }
 
@@ -184,6 +242,7 @@ static bool8 HasFreeObjectEvent(void)
 bool8 Follower_ShouldExist(void)
 {
     bool8 shiny;
+    u8 variant;
 
     if (!Follower_IsEnabled())
         return FALSE;
@@ -197,7 +256,7 @@ bool8 Follower_ShouldExist(void)
     if (TestPlayerAvatarFlags(PLAYER_AVATAR_FLAG_MACH_BIKE | PLAYER_AVATAR_FLAG_ACRO_BIKE
                             | PLAYER_AVATAR_FLAG_SURFING | PLAYER_AVATAR_FLAG_UNDERWATER))
         return FALSE;
-    if (GetLeadSpeciesInfo(&shiny) == NULL)
+    if (GetLeadSpeciesInfo(&shiny, &variant) == NULL)
         return FALSE;
     if (IsFollowerPaletteSlotInUse())
         return FALSE;
@@ -208,7 +267,7 @@ bool8 Follower_ShouldExist(void)
 
 static void LoadFollowerPalette(void)
 {
-    const struct FollowerSpecies *info = Follower_GetSpeciesInfo(sFollowerState.species);
+    const struct FollowerSpecies *info = GetFollowerStateInfo();
 
     if (info == NULL)
         info = &gFollowerSpecies[0];
@@ -250,11 +309,30 @@ static void UpdateIdleAnim(struct ObjectEvent *objectEvent, struct Sprite *sprit
         sprite->animPaused = FALSE;
 }
 
+// Sempre atrás do jogador (32x32 e 64x64). A subprioridade do motor sai da linha do pé
+// (SetObjectSubpriorityByElevation: 2 por linha de tile, menor = na frente); ao sul do jogador o seguidor ficaria na
+// frente e cobriria o corpo dele (o 64x64 sobe 3 tiles acima do pé). O valor do jogador pode ser o do quadro anterior
+// (o callback dele pode rodar depois deste) e mudar 2 ao cruzar uma linha: a folga de 3 cobre isso. Ao norte do
+// jogador o seguidor já está atrás (jogador + 2 ou mais) e só ganha a folga. Entre o seguidor e os NPCs continua
+// valendo a ordem do motor, fora o piso jogador + 3, que pode deixar um NPC da linha do jogador na frente do seguidor
+// ao sul (mais visível no 64x64).
+static void UpdateBehindPlayerSubpriority(struct Sprite *sprite)
+{
+    const struct Sprite *player;
+
+    if (gPlayerAvatar.spriteId >= MAX_SPRITES)
+        return;
+    player = &gSprites[gPlayerAvatar.spriteId];
+    if (sprite->subpriority < player->subpriority + 3)
+        sprite->subpriority = player->subpriority + 3;
+}
+
 static void SpriteCB_Follower(struct Sprite *sprite)
 {
     struct ObjectEvent *objectEvent = &gObjectEvents[sprite->data[0]];
 
     UpdateObjectEventCurrentMovement(objectEvent, sprite, FollowerMovementTypeCallback);
+    UpdateBehindPlayerSubpriority(sprite);
     // ninguém espera o fim do passo do seguidor (waitmovement): solta a ação terminada para a próxima entrar
     // (ObjectEventSetHeldMovement recusa enquanto heldMovementActive)
     if (objectEvent->heldMovementActive && objectEvent->heldMovementFinished)
@@ -362,12 +440,13 @@ void Follower_OnPlayerMovement(struct ObjectEvent *player, u8 movementActionId)
 
 void Follower_OnSpriteCreated(struct ObjectEvent *objectEvent, struct Sprite *sprite)
 {
-    const struct FollowerSpecies *info = Follower_GetSpeciesInfo(sFollowerState.species);
+    const struct FollowerSpecies *info = GetFollowerStateInfo();
 
-    // estado perdido (não deveria acontecer: o objeto nunca vem do save): a 1ª espécie até o Follower_Refresh
-    if (info == NULL)
-        info = &gFollowerSpecies[0];
-    sprite->images = info->images;
+    // Estado perdido ou de outro tamanho (não deveria acontecer: o objeto nunca vem do save e CreateFollowerAt escolhe
+    // o graphicsId pelo `large`): ficam as imagens padrão do graphicsId, do tamanho certo para os tiles alocados, até
+    // o Follower_Refresh
+    if (info != NULL && info->large == (objectEvent->graphicsId == OBJ_EVENT_GFX_FOLLOWER_LARGE))
+        sprite->images = info->images;
     sprite->callback = SpriteCB_Follower;
     LoadFollowerPalette();
     UpdateSpritePaletteWithWeather(PALSLOT_FOLLOWER);
@@ -379,17 +458,20 @@ static u8 CreateFollowerAt(s16 x, s16 y, u8 direction, bool8 hidden, u8 elevatio
     const struct FollowerSpecies *info;
     struct ObjectEvent *objectEvent;
     bool8 shiny = FALSE;
+    u8 variant = FOLLOWER_VARIANT_DEFAULT;
     u8 objectEventId;
 
-    info = GetLeadSpeciesInfo(&shiny);
+    info = GetLeadSpeciesInfo(&shiny, &variant);
     if (info == NULL)
         return OBJECT_EVENTS_COUNT;
     sFollowerState.species = info->species;
     sFollowerState.shiny = shiny;
+    sFollowerState.variant = variant;
+    info = Follower_GetVariantInfo(info, variant);
 
     memset(&template, 0, sizeof(template));
     template.localId = OBJ_EVENT_ID_FOLLOWER;
-    template.graphicsId = OBJ_EVENT_GFX_FOLLOWER;
+    template.graphicsId = info->large ? OBJ_EVENT_GFX_FOLLOWER_LARGE : OBJ_EVENT_GFX_FOLLOWER;
     template.kind = OBJ_KIND_NORMAL;
     template.x = x - MAP_OFFSET;
     template.y = y - MAP_OFFSET;
@@ -445,6 +527,7 @@ void Follower_Refresh(void)
     struct ObjectEvent *objectEvent;
     const struct FollowerSpecies *info;
     bool8 shiny = FALSE;
+    u8 variant = FOLLOWER_VARIANT_DEFAULT;
     u8 objectEventId;
 
     if (!Follower_ShouldExist())
@@ -458,10 +541,11 @@ void Follower_Refresh(void)
         Follower_Spawn();
         return;
     }
-    info = GetLeadSpeciesInfo(&shiny);
-    if (info->species != sFollowerState.species || shiny != sFollowerState.shiny)
+    info = GetLeadSpeciesInfo(&shiny, &variant);
+    if (info->species != sFollowerState.species || shiny != sFollowerState.shiny || variant != sFollowerState.variant)
     {
-        // outra espécie (troca do 1º, evolução) ou shiny: recria no mesmo tile, virado para o mesmo lado
+        // outra espécie (troca do 1º, evolução), shiny ou variante (fêmea, letra do Unown): recria no mesmo tile,
+        // virado para o mesmo lado (com o graphicsId do tamanho da nova)
         s16 x, y;
         u8 direction, elevation;
         bool8 hidden;
@@ -492,7 +576,8 @@ u32 Follower_TestGetState(u8 what)
     case 0:
         if (objectEventId == OBJECT_EVENTS_COUNT)
             return 0;
-        return 1 | sFollowerState.species << 8 | (u32)sFollowerState.shiny << 24 | (u32)objectEvent->invisible << 25;
+        return 1 | sFollowerState.species << 8 | (u32)sFollowerState.shiny << 24 | (u32)objectEvent->invisible << 25
+             | (u32)sFollowerState.variant << 26 | (u32)(objectEvent->graphicsId == OBJ_EVENT_GFX_FOLLOWER_LARGE) << 31;
     case 1:
         if (objectEventId == OBJECT_EVENTS_COUNT)
             return 0xFFFFFFFE;

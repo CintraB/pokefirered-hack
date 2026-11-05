@@ -62,7 +62,7 @@ void QL_LoadObjects(const struct QuestLogScene * questLog, const struct ObjectEv
     for (i = 0; i < OBJECT_EVENTS_COUNT; i++)
     {
         // POK-48: um seguidor gravado (não deveria haver) fica de fora do replay
-        if (questLogObjectEvents[i].localId == OBJ_EVENT_ID_FOLLOWER && questLogObjectEvents[i].graphicsId == OBJ_EVENT_GFX_FOLLOWER)
+        if (questLogObjectEvents[i].localId == OBJ_EVENT_ID_FOLLOWER && Follower_IsFollowerGraphicsId(questLogObjectEvents[i].graphicsId))
             continue;
         gObjectEvents[i].active                         = questLogObjectEvents[i].active;
         gObjectEvents[i].triggerGroundEffectsOnStop     = questLogObjectEvents[i].triggerGroundEffectsOnStop;

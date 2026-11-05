@@ -48,7 +48,7 @@ from ..bag import MENU_CURSOR_POS, MENU_MAX_CURSOR, MENU_MIN_CURSOR
 from ..battle import ACTION_FIGHT, ACTION_FUNC, B_OUTCOME_WON, BATTLE_TYPE_TRAINER, MOVE_FUNC_SUFFIX
 from ..breeding import header_defines
 from ..emu import KEY_A, KEY_B, KEY_DOWN, KEY_UP
-from ..game import _SUBSTRUCT_ORDER, MON_SECURE, PARTY_SIZE, POKEMON_SIZE, SUBSTRUCT_SIZE
+from ..game import _SUBSTRUCT_ORDER, MON_SECURE, PARTY_SIZE, POKEMON_SIZE, SUBSTRUCT_SIZE, mon_checksum_ok
 from ..hooks import CMD_SET_VAR, CMD_WARP, Mailbox
 from . import REPO_ROOT, ScenarioContext
 from .base import TEXT_PERIOD, Abort
@@ -200,6 +200,13 @@ class RevanchesScenario(CatchSaveScenario):
         raw = self.emu.read(self.game.syms.addr("gEnemyParty"), POKEMON_SIZE * PARTY_SIZE)
         return [raw[i * POKEMON_SIZE:(i + 1) * POKEMON_SIZE] for i in range(PARTY_SIZE)]
 
+    def _settle_enemy_party(self) -> None:
+        """Espera (até 10 quadros) todo Pokémon de gEnemyParty com o checksum certo. Na batalha, a IA pode estar no
+        meio de um GetMonData quando o quadro acaba, com um deles em claro na RAM (visto com o Metagross do Campeão
+        no degrau 5: espécie lida 34527); o quadro seguinte já o devolve cifrado."""
+        self.ctl.wait_until(lambda: all(mon_checksum_ok(r) for r in self._enemy_raw()), 10,
+                            "gEnemyParty com os checksums certos")
+
     def _opponent(self) -> int:
         return self.emu.read_u16(self.game.syms.addr("gTrainerBattleOpponent_A"))
 
@@ -231,6 +238,7 @@ class RevanchesScenario(CatchSaveScenario):
 
     def _check_team(self, expected: list[tuple[str, int, str, int]], what: str) -> str:
         """gEnemyParty == [(espécie, nível, item, IV)] (o IV igual nos 6 atributos)."""
+        self._settle_enemy_party()
         mons, raws = self.game.enemy_party(), self._enemy_raw()
         got = [(self.consts.species_name(m.species), m.level, m.held_item, _ivs(raws[i]))
                for i, m in enumerate(mons)]
@@ -241,6 +249,7 @@ class RevanchesScenario(CatchSaveScenario):
     def _check_original(self, trainer: str, what: str) -> str:
         """gEnemyParty == o time de hoje (trainer_parties.h: nível e espécie)."""
         want = [(sp, lvl) for lvl, sp in self.g.time_original(trainer)]
+        self._settle_enemy_party()
         got = [(self.consts.species_name(m.species), m.level) for m in self.game.enemy_party()]
         assert got == want, f"{what}: time {got}, esperava o de hoje {want}"
         return ", ".join(f"{sp.removeprefix('SPECIES_')} {lvl}" for sp, lvl in want)
@@ -474,6 +483,7 @@ class RevanchesScenario(CatchSaveScenario):
         assert opponent == self._trainer("TRAINER_ELITE_FOUR_LORELEI_2"), \
             f"oponente {self._trainer_name(opponent)}, esperava LORELEI_2"
         expected = self.g.time_liga("LORELEI", 2)
+        self._settle_enemy_party()
         mons, raws = self.game.enemy_party(), self._enemy_raw()
         got = [(self.consts.species_name(m.species), m.level, m.held_item, m.moves, _ivs(raws[i]))
                for i, m in enumerate(mons)]
@@ -552,6 +562,7 @@ class RevanchesScenario(CatchSaveScenario):
         assert opponent in ids, f"oponente {opponent}, esperava um TRAINER_CHAMPION_REMATCH_*"
         variant = ids[opponent]
         expected = self.g.time_liga("CAMPEAO", 5, variant)
+        self._settle_enemy_party()
         got = [(self.consts.species_name(m.species), m.level, m.held_item) for m in self.game.enemy_party()]
         want = [(sp, lvl, self.consts.item(it)) for sp, lvl, it, _ in expected]
         assert got == want, f"Campeão ({variant}) no degrau 5: {got}, esperava {want}"
