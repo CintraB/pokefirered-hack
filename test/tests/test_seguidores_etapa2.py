@@ -564,6 +564,22 @@ def test_estado_0_tem_variante_e_grande():
     assert "variant << 26" in linha and "large << 31" in linha
 
 
+def test_grama_alta_ignora_o_seguidor_grande():
+    """O 64x64 é empurrado para trás do jogador (UpdateLargeSubpriority); a regra da grama alta que manda a grama para
+    trás de quem a cruza não pode valer para ele, ou a grama do tile do jogador vai para trás do jogador (rodada 1)."""
+    c = _sem_comentarios((REPO_ROOT / "src" / "field_effect_helpers.c").read_text(encoding="utf-8"))
+    assert '#include "follower.h"' in c
+    corpo = _funcao(c, "UpdateGrassFieldEffectSubpriority")
+    laco = corpo[corpo.index("for (i = 0; i < OBJECT_EVENTS_COUNT; i++)"):]
+    pula = re.search(r"if \(Follower_IsFollowerObject\(objectEvent\) && objectEvent->graphicsId == "
+                     r"OBJ_EVENT_GFX_FOLLOWER_LARGE\)\s*continue;", laco)
+    assert pula, laco
+    # antes de qualquer conta de subprioridade com o objeto
+    assert pula.start() < laco.index("linkedSprite->subpriority")
+    # só o grande: o 32x32 continua na regra (como na etapa 1)
+    assert "Follower_IsFollowerObject(objectEvent))" not in laco.replace(pula.group(0), "")
+
+
 class _CaixaFalsa:
     """Mailbox sem emulador: `call` devolve o que a tabela manda e anota os argumentos."""
 

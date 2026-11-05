@@ -6,6 +6,7 @@
 #include "field_effect_helpers.h"
 #include "field_weather.h"
 #include "fieldmap.h"
+#include "follower.h"
 #include "metatile_behavior.h"
 #include "constants/field_effects.h"
 #include "constants/event_objects.h"
@@ -1398,6 +1399,11 @@ static void UpdateGrassFieldEffectSubpriority(struct Sprite *sprite, u8 z, u8 of
     for (i = 0; i < OBJECT_EVENTS_COUNT; i++)
     {
         struct ObjectEvent * objectEvent = &gObjectEvents[i];
+        // POK-53: o seguidor 64x64 fica fora. A subprioridade dele é empurrada para trás do jogador
+        // (follower.c, UpdateLargeSubpriority); ao sul do jogador, o topo dele cruza a grama do tile do jogador e
+        // a regra abaixo a mandaria para trás dele também, descobrindo as pernas do jogador.
+        if (Follower_IsFollowerObject(objectEvent) && objectEvent->graphicsId == OBJ_EVENT_GFX_FOLLOWER_LARGE)
+            continue;
         if (objectEvent->active)
         {
             graphicsInfo = GetObjectEventGraphicsInfo(objectEvent->graphicsId);
