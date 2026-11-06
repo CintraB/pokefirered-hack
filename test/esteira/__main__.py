@@ -5,6 +5,7 @@ A partir de test/ (no WSL):
     python3 -m esteira completo --rom R --elf E [--rom-test RT --elf-test ET] [--log L] --out DIR ...
     python3 -m esteira aprovar DIR
     python3 -m esteira nao-testada --out DIR     # SKIP_TESTS=1: só o relatório "NÃO TESTADA"
+    python3 -m esteira galeria --out DIR [--rom-test RT --elf-test ET] [--filtro GLOB] [--save S]   # POK-29
     python3 -m esteira assistir [--starter X] [--from CHECKPOINT | --cenario evolucoes|resumo_evolucao|resumo_ivs|ovo] [--rom R --elf E]
 
 `rapido` roda a checagem do log de build, a checagem dos textos e os 3 roteiros rápidos numa
@@ -80,6 +81,7 @@ from esteira.scenarios.full_ia_chefes import run_full_ia_chefes  # POK-46
 from esteira.scenarios.full_dexnav import run_full_dexnav  # POK-47
 from esteira.scenarios.full_seguidor import run_full_seguidor  # POK-48
 from esteira.scenarios.full_pokerus import run_full_pokerus  # POK-50
+from esteira.scenarios.full_galeria import run_full_galeria  # POK-29
 from esteira.scenarios.full_forest_brock import run_full_forest_brock
 from esteira.scenarios.full_master import run_full_master
 from esteira.scenarios.full_pc import run_full_pc
@@ -196,6 +198,7 @@ FULL_SCENARIOS: list[ScenarioSpec] = [
     ScenarioSpec("dexnav", run_full_dexnav, rom=TEST, save_from="captura"),  # POK-47
     ScenarioSpec("seguidor", run_full_seguidor, rom=TEST, save_from="captura"),  # POK-48
     ScenarioSpec("pokerus", run_full_pokerus, rom=TEST, save_from="captura"),  # POK-50
+    ScenarioSpec("galeria", run_full_galeria, rom=TEST, save_from="captura"),  # POK-29
     ScenarioSpec("novidades_inicial", run_full_novidades_first_offer, needs="abertura"),
 ]
 # Cenários do modo completo que o `assistir --cenario` mostra numa janela (ROM de teste, a
@@ -216,7 +219,8 @@ WATCH_FULL_SCENARIOS = ("evolucoes", "resumo_evolucao", "resumo_ivs", "ovo",
                         "ia_chefes",  # POK-46
                         "dexnav",  # POK-47
                         "seguidor",  # POK-48
-                        "pokerus")  # POK-50
+                        "pokerus",  # POK-50
+                        "galeria")  # POK-29
 
 
 def scenarios_for(mode: str) -> list[ScenarioSpec]:
@@ -1104,6 +1108,17 @@ def build_parser() -> argparse.ArgumentParser:
                        help="ROM de teste, só com --cenario (padrão: pokefirered_switch_test.gba)")
     watch.add_argument("--elf-test", default=DEFAULT_ELF_TEST)
     watch.add_argument("--state", default=STATE_PATH, help=argparse.SUPPRESS)
+    gallery = sub.add_parser(   # POK-29
+        "galeria", help="cada fala do campo na caixa real, página por página (OUT/galeria/index.html)",
+        description="Galeria de textos (esteira/galeria.py): na ROM de teste, mostra cada fala do campo na caixa de "
+                    "mensagem com o pior caso dos placeholders e fotografa cada página. Não aprova nem reprova.")
+    gallery.add_argument("--rom-test", default=DEFAULT_ROM_TEST, help="ROM de teste (padrão: a da raiz)")
+    gallery.add_argument("--elf-test", default=DEFAULT_ELF_TEST)
+    gallery.add_argument("--out", required=True, help="pasta da execução; a galeria sai em OUT/galeria/")
+    gallery.add_argument("--filtro", help="glob do grupo (pasta do mapa ou nome do arquivo) ou do caminho; "
+                                          "vírgula separa vários (ex.: PalletTown*)")
+    gallery.add_argument("--save", help="save de partida (padrão: OUT/captura.sav, senão o mais novo de test/out/*/)")
+    gallery.add_argument("--limite", type=int, help="só os N primeiros textos (depois do filtro)")
     return parser
 
 
@@ -1115,6 +1130,9 @@ def main(argv: list[str] | None = None) -> int:
         return 0
     if args.modo == "assistir":
         return run_watch(args)
+    if args.modo == "galeria":   # POK-29
+        from esteira.galeria import run_gallery
+        return run_gallery(args.rom_test, args.elf_test, args.out, args.filtro, args.save, limit=args.limite)
     if args.modo == "aprovar":
         try:
             copied = approve_refs(args.dir, refs_dir=REFS_DIR)
