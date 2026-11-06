@@ -466,6 +466,13 @@ class Mailbox:
             return result
         return self._pokerus_bytes()
 
+    # --- POK-29: galeria de textos -----------------------------------------------------------
+    def show_field_text(self, address: int, glyph: int) -> None:
+        """Abre a fala de `address` na caixa de mensagem do campo (msgbox MSGBOX_DEFAULT), com os placeholders no pior
+        caso (`glyph` repetido; 0 = buffers como estão)."""
+        result = self.call(CMD_SHOW_FIELD_TEXT, address, glyph)
+        assert result == 1, f"SHOW_FIELD_TEXT recusado: {address:#010x} ({result:#x})"
+
 # --- Hack 6: breeding genético (enum à parte em include/test_hooks.h, a partir de 0x60; ------
 # o uso fica em esteira/breeding.py e scenarios/full_breeding.py / full_egg.py)
 CMD_BREED_SETUP = 0x60      # gTestBreedSetup -> creche (arg0 = 1: ovo pendente) -> compatibilidade (0xFFFFFFFF = pai inválido)
@@ -600,3 +607,7 @@ CMD_POKERUS_STATE = 0x101   # gTestText[0..5] = byte de cada slot -> infectados 
 CMD_POKERUS_RUN = 0x102     # arg0 = o quê (POKERUS_*), arg1 = n; ver Mailbox.pokerus_run
 POKERUS_GIVE_NOW, POKERUS_SPREAD, POKERUS_DAYS, POKERUS_ROLL, POKERUS_EVS = range(5)
 UNOWN_LETRAS = 28           # NUM_UNOWN_FORMS: a..z, !, ?
+
+# --- POK-29: galeria de textos (enum à parte, a partir de 0x110) --------------------------------
+CMD_SHOW_FIELD_TEXT = 0x110 # arg0 = endereço do texto, arg1 = glifo do pior caso (0 = buffers como estão): msgbox
+                            # MSGBOX_DEFAULT num script de campo -> 1 (0xFFFFFFFF = campo ocupado ou fora da ROM)
