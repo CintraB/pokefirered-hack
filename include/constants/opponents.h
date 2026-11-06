@@ -747,11 +747,28 @@
 #define TRAINER_CHAMPION_REMATCH_CHARMANDER      741
 #define TRAINER_CUE_BALL_PAXTON                  742
 
+// POK-51: Família Sombra. Os 9 capangas visíveis dos andares 1-3, os gêmeos guarda-costas (dupla) e as 2 lutas do
+// pedágio. O time de cada um muda com a ocupação (FamiliaSombra_CriarTime, src/data/familia_sombra_times.h).
+#define TRAINER_FAMILIA_CAPANGA_1                743
+#define TRAINER_FAMILIA_CAPANGA_2                744
+#define TRAINER_FAMILIA_CAPANGA_3                745
+#define TRAINER_FAMILIA_CAPANGA_4                746
+#define TRAINER_FAMILIA_CAPANGA_5                747
+#define TRAINER_FAMILIA_CAPANGA_6                748
+#define TRAINER_FAMILIA_CAPANGA_7                749
+#define TRAINER_FAMILIA_CAPANGA_8                750
+#define TRAINER_FAMILIA_CAPANGA_9                751
+#define TRAINER_FAMILIA_GEMEOS                   752
+#define TRAINER_FAMILIA_PEDAGIO_1                753
+#define TRAINER_FAMILIA_PEDAGIO_2                754
+#define TRAINER_FAMILIA_PRIMEIRO                 TRAINER_FAMILIA_CAPANGA_1
+#define TRAINER_FAMILIA_ULTIMO                   TRAINER_FAMILIA_PEDAGIO_2
+
 // NOTE: Because each Trainer uses a flag to determine when they are defeated, there is 
-//       only space for 25 additional trainers before trainer flag space overflows.
+//       only space for 13 additional trainers before trainer flag space overflows.
 //       MAX_TRAINERS_COUNT can be increased but will take up additional saveblock space
 
-#define NUM_TRAINERS                             743
+#define NUM_TRAINERS                             755
 #define MAX_TRAINERS_COUNT                       768
 
 #endif  // GUARD_CONSTANTS_OPPONENTS_H

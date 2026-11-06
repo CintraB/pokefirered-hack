@@ -8,6 +8,7 @@
 #include "dexnav.h"
 #include "event_data.h"
 #include "event_scripts.h"
+#include "familia_sombra.h"
 #include "field_effect.h"
 #include "field_fadetransition.h"
 #include "field_move_rules.h"
@@ -856,7 +857,13 @@ void Task_ItemUse_CloseMessageBoxAndReturnToField_VsSeeker(u8 taskId)
 
 void BattleUseFunc_PokeBallEtc(u8 taskId)
 {
-    if (!IsPlayerPartyAndPokemonStorageFull())
+    if (FamiliaSombra_EhBatalhaDaFamilia())
+    {
+        // POK-51: o capanga desvia a bola (Cmd_handleballthrow) e ela não é gasta.
+        Bag_BeginCloseWin0Animation();
+        ItemMenu_StartFadeToExitCallback(taskId);
+    }
+    else if (!IsPlayerPartyAndPokemonStorageFull())
     {
         RemoveBagItem(gSpecialVar_ItemId, 1);
         Bag_BeginCloseWin0Animation();

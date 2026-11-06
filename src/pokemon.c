@@ -6035,6 +6035,11 @@ static u16 GetBattleBGM(void)
         case TRAINER_CLASS_LEADER:
         case TRAINER_CLASS_ELITE_FOUR:
             return MUS_VS_GYM_LEADER;
+        case TRAINER_CLASS_FAMILIA_SOMBRA:
+            // POK-51: os gêmeos guarda-costas lutam ao som de líder de ginásio; os outros capangas, de treinador.
+            if (gTrainerBattleOpponent_A == TRAINER_FAMILIA_GEMEOS)
+                return MUS_VS_GYM_LEADER;
+            return MUS_VS_TRAINER;
         case TRAINER_CLASS_BOSS:
         case TRAINER_CLASS_TEAM_ROCKET:
         case TRAINER_CLASS_ROCKET_ADMIN:

@@ -27,7 +27,9 @@ CLASS_OVERRIDES = {"TEAM ROCKET": "Recruta"}
 # Chaves acrescentadas por nós (não existem na base inglesa): arquivo -> {chave: nome}
 # D3 / decisão D4 do Cintra: os 2 ADMIN da Equipe Rocket viram "Executivo" (pic masculina) e "Executiva" (feminina)
 NEW_KEYS = {"src/data/text/trainer_class_names.h": {"TRAINER_CLASS_ROCKET_ADMIN": "Executivo",
-                                                  "TRAINER_CLASS_ROCKET_ADMIN_F": "Executiva"},
+                                                  "TRAINER_CLASS_ROCKET_ADMIN_F": "Executiva",
+                                                  # POK-51: os capangas da Família Sombra
+                                                  "TRAINER_CLASS_FAMILIA_SOMBRA": "Capanga"},
             # itens novos em slots que eram "????????" na base (POK-36, POK-37, POK-47, POK-51)
             "src/data/items.json": {"ITEM_PORTABLE_PC": "PC Portátil", "ITEM_INCUBATOR": "Incubadora",
                                     "ITEM_DEXNAV": "DEXNAV", "ITEM_ROSA_VERMELHA": "Rosa Vermelha",

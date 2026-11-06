@@ -12,8 +12,14 @@ void FamiliaSombra_Repovoar(void);
 void FamiliaSombra_ChefeCaiu(void);
 bool8 FamiliaSombra_NoPredio(void);
 
+// Batalhas (Task 3)
+struct Pokemon;
+bool8 FamiliaSombra_EhBatalhaDaFamilia(void);
+u8 FamiliaSombra_CriarTime(struct Pokemon *party, u16 trainerId);
+
 // Specials (VAR_RESULT)
 void FamiliaSombra_GetEstado(void);
 void FamiliaSombra_GetOcupacao(void);
+void FamiliaSombra_SortearPedagio(void);
 
 #endif // GUARD_FAMILIA_SOMBRA_H

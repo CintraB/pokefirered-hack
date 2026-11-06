@@ -676,7 +676,8 @@ def _trainer_pics() -> dict[str, str]:
 def test_executivo_e_executiva_sao_classes_novas_com_id_proprio():
     values = _class_values()
     assert values["TRAINER_CLASS_ROCKET_ADMIN"] == 107 and values["TRAINER_CLASS_ROCKET_ADMIN_F"] == 108
-    assert max(values.values()) == 108
+    # depois delas, só a classe da Família Sombra (POK-51, 109)
+    assert max(v for n, v in values.items() if n != "TRAINER_CLASS_FAMILIA_SOMBRA") == 108
     assert list(values.values()).count(107) == list(values.values()).count(108) == 1   # u8 trainerClass: cabe em 0xFF
 
 
@@ -703,7 +704,8 @@ def test_executivos_so_nos_2_admins_e_recrutas_intactos():
         assert base.count('trainerName = _("GRUNT")') == 51 and base.count('trainerName = _("ADMIN")') == 2
         now = (REPO_ROOT / "src/data/trainers.h").read_text(encoding="utf-8")
         assert re.findall(r"\.trainerClass = (\w+)", base).count("TRAINER_CLASS_TEAM_ROCKET") == 53
-        assert len(re.findall(r"\.trainerClass = ", now)) == len(re.findall(r"\.trainerClass = ", base))
+        # o POK-51 acrescentou os 12 treinadores-slot da Família Sombra (test_familia_batalha.py)
+        assert len(re.findall(r"\.trainerClass = ", now)) == len(re.findall(r"\.trainerClass = ", base)) + 12
         assert re.findall(r'\.trainerName = _\("([^"]*)"\)', base).count("LT. SURGE") == \
             re.findall(r'\.trainerName = _\("([^"]*)"\)', now).count("LT. SURGE") == 1
 

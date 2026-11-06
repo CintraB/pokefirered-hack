@@ -8,6 +8,7 @@
 #include "pokemon_icon.h"
 #include "mail.h"
 #include "event_data.h"
+#include "familia_sombra.h"
 #include "strings.h"
 #include "pokemon_special_anim.h"
 #include "pokemon_storage_system.h"
@@ -9496,7 +9497,14 @@ static void Cmd_handleballthrow(void)
     gActiveBattler = gBattlerAttacker;
     gBattlerTarget = gBattlerAttacker ^ BIT_SIDE;
 
-    if (gBattleTypeFlags & BATTLE_TYPE_GHOST)
+    if (FamiliaSombra_EhBatalhaDaFamilia())
+    {
+        // POK-51: ninguém tira um membro da Família; a bola passa direto e volta para a bolsa.
+        BtlController_EmitBallThrowAnim(BUFFER_A, BALL_GHOST_DODGE);
+        MarkBattlerForControllerExec(gActiveBattler);
+        gBattlescriptCurrInstr = BattleScript_FamiliaBallDodge;
+    }
+    else if (gBattleTypeFlags & BATTLE_TYPE_GHOST)
     {
         BtlController_EmitBallThrowAnim(BUFFER_A, BALL_GHOST_DODGE);
         MarkBattlerForControllerExec(gActiveBattler);

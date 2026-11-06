@@ -266,7 +266,7 @@ def _inc_label_text(rel, label):
 
 
 def test_b2c_derrota_do_brock_cabe_em_gdisplayedstringbattle():
-    """A fala do Treinador é copiada inteira para gDisplayedStringBattle[300] (src/battle_main.c:123):
+    """A fala do Treinador é copiada inteira para gDisplayedStringBattle[300] (src/battle_main.c:128):
     {PLAYER} expande para 7 letras, {PAUSE_UNTIL_PRESS} entra no fim e há o terminador. A do Brock
     tinha 366 bytes (o inglês, 377, já estourava); agora precisa caber de verdade, com folga."""
     size = int(re.search(r"gDisplayedStringBattle\[(\d+)\]", (REPO_ROOT / "src/battle_main.c").read_text(

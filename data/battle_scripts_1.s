@@ -2922,6 +2922,13 @@ BattleScript_PayDayMoneyAndPickUpItems::
 	pickup
 	end2
 
+@ POK-51: vitória sobre a Família Sombra: sem humano para entrar na tela e sem prêmio em dinheiro.
+BattleScript_FamiliaBattleWon::
+	printstring STRINGID_PLAYERDEFEATEDTRAINER1
+	printstring STRINGID_TRAINER1LOSETEXT
+	waitmessage B_WAIT_TIME_LONG
+	goto BattleScript_PayDayMoneyAndPickUpItems
+
 BattleScript_LocalBattleLost::
 	jumpifbattletype BATTLE_TYPE_TRAINER_TOWER, BattleScript_BattleTowerLost
 	jumpifbattletype BATTLE_TYPE_EREADER_TRAINER, BattleScript_EReaderOrSecretBaseTrainerEnd

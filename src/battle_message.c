@@ -16,6 +16,7 @@
 #include "battle_controllers.h"
 #include "graphics.h"
 #include "battle_ai_switch_items.h"
+#include "familia_sombra.h"
 #include "constants/moves.h"
 #include "constants/items.h"
 #include "constants/trainers.h"
@@ -467,6 +468,11 @@ static const u8 sText_Trainer1UsedItem[] = _("{B_TRAINER1_CLASS} {B_TRAINER1_NAM
 static const u8 sText_TrainerBlockedBall[] = _("O Treinador bloqueou a Bola!");
 static const u8 sText_DontBeAThief[] = _("Roubar é feio!");
 static const u8 sText_ItDodgedBall[] = _("Ele se esquivou da Bola!\nEste Pokémon não pode ser pego!");
+
+// POK-51: Família Sombra (abertura da luta e a bola desviada; a bola não é gasta).
+const u8 gText_FamiliaCapangaQuerLutar[] = _("Um capanga da Família Sombra\nquer lutar!\p");
+const u8 gText_FamiliaGemeosQueremLutar[] = _("Os gêmeos guarda-costas\nquerem lutar!\p");
+const u8 gText_FamiliaDesviaBola[] = _("O capanga desvia a Poké Bola!\nNinguém tira um membro da Família.");
 static const u8 sText_YouMissedPkmn[] = _("Você errou o Pokémon!");
 static const u8 sText_PkmnBrokeFree[] = _("Ah, não!\nO Pokémon escapou!");
 static const u8 sText_ItAppearedCaught[] = _("Ahh!\nParecia que tinha pegado!");
@@ -891,6 +897,7 @@ const u8 *const gBattleStringsTable[BATTLESTRINGS_COUNT - BATTLESTRINGS_TABLE_ST
     [STRINGID_TRAINER1MON2COMEBACK - BATTLESTRINGS_TABLE_START]          = sText_Trainer1RecallPkmn2,
     [STRINGID_TRAINER1MON1AND2COMEBACK - BATTLESTRINGS_TABLE_START]      = sText_Trainer1RecallBoth,
     [STRINGID_TEAMGAINEDEXP - BATTLESTRINGS_TABLE_START]                 = sText_TeamGainedExp,
+    [STRINGID_FAMILIADESVIABOLA - BATTLESTRINGS_TABLE_START]             = gText_FamiliaDesviaBola,
 };
 
 const u16 gMissStringIds[] =
@@ -1567,6 +1574,14 @@ void BufferStringBattle(u16 stringId)
                     else
                         stringPtr = sText_LinkTrainerWantsToBattle;
                 }
+            }
+            else if (FamiliaSombra_EhBatalhaDaFamilia())
+            {
+                // POK-51: sem humano; quem se apresenta é o capanga (ou os gêmeos, na dupla).
+                if (gTrainerBattleOpponent_A == TRAINER_FAMILIA_GEMEOS)
+                    stringPtr = gText_FamiliaGemeosQueremLutar;
+                else
+                    stringPtr = gText_FamiliaCapangaQuerLutar;
             }
             else
             {

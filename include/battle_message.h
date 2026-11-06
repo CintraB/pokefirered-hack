@@ -256,4 +256,9 @@ extern const u8 gText_Win[];
 extern const u8 gText_Loss[];
 extern const u8 gText_Draw[];
 
+// POK-51: Família Sombra
+extern const u8 gText_FamiliaCapangaQuerLutar[];
+extern const u8 gText_FamiliaGemeosQueremLutar[];
+extern const u8 gText_FamiliaDesviaBola[];
+
 #endif // GUARD_BATTLE_MESSAGE_H

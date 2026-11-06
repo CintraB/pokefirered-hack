@@ -108,4 +108,5 @@ const u8 gTrainerClassNames[][13] = {
     [TRAINER_CLASS_PAINTER]             = _("Pintora"),
     [TRAINER_CLASS_ROCKET_ADMIN]        = _("Executivo"),
     [TRAINER_CLASS_ROCKET_ADMIN_F]      = _("Executiva"),
+    [TRAINER_CLASS_FAMILIA_SOMBRA]      = _("Capanga"),
 };

@@ -1500,6 +1500,36 @@ static u32 FamiliaSet(u32 estado, u32 queda)
     VarSet(VAR_FAMILIA_QUEDA, queda);
     return 1;
 }
+
+static u32 FamiliaGemeos(void)
+{
+    u8 *s = gTestText;
+    u32 texto = (u32)&gTestText[TEST_TRAINER_DEFEAT_TEXT];
+    s32 i;
+
+    FlagClear(TRAINER_FLAGS_START + TRAINER_FAMILIA_GEMEOS);   // ClearTrainerFlag (battle_setup.h colide com este arquivo)
+    gTestText[TEST_TRAINER_DEFEAT_TEXT] = CHAR_ELLIPSIS;
+    gTestText[TEST_TRAINER_DEFEAT_TEXT + 1] = EOS;
+    gSpecialVar_LastTalked = 0;
+    *s++ = 0x69;                                // lockall
+    *s++ = 0x5C;                                // trainerbattle
+    *s++ = TRAINER_BATTLE_DOUBLE;
+    *s++ = TRAINER_FAMILIA_GEMEOS & 0xFF;
+    *s++ = TRAINER_FAMILIA_GEMEOS >> 8;
+    *s++ = 0;                                   // local id
+    *s++ = 0;
+    for (i = 0; i < 3; i++)                     // intro, defeat and not-enough-mons text
+    {
+        *s++ = texto & 0xFF;
+        *s++ = (texto >> 8) & 0xFF;
+        *s++ = (texto >> 16) & 0xFF;
+        *s++ = texto >> 24;
+    }
+    *s++ = 0x6B;                                // releaseall
+    *s++ = 0x02;                                // end
+    ScriptContext_SetupScript(gTestText);
+    return 1;
+}
 // --- end of POK-51 --------------------------------------------------------------------------
 
 void TestHooks_Run(void)
@@ -1661,6 +1691,7 @@ void TestHooks_Run(void)
     // POK-51
     case TEST_CMD_FAMILIA_ESTADO:   result = FamiliaEstado(); break;
     case TEST_CMD_FAMILIA_SET:      result = FamiliaSet(gTestMailbox.arg0, gTestMailbox.arg1); break;
+    case TEST_CMD_FAMILIA_GEMEOS:   result = FamiliaGemeos(); break;
     // POK-29
     case TEST_CMD_SHOW_FIELD_TEXT:  result = ShowFieldText(gTestMailbox.arg0, gTestMailbox.arg1); break;
     default:

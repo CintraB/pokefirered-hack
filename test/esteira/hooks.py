@@ -484,9 +484,16 @@ class Mailbox:
         result = self.call(CMD_FAMILIA_SET, ocupacao | estado << 8, queda)
         assert result == 1, f"FAMILIA_SET recusado: {result:#x}"
 
+    def familia_gemeos(self) -> None:
+        """Começa a dupla dos gêmeos (TRAINER_FAMILIA_GEMEOS) pelo trainerbattle_double de verdade, com a flag do
+        treinador limpa; as 3 falas são "…" (a de abertura espera o A)."""
+        result = self.call(CMD_FAMILIA_GEMEOS)
+        assert result == 1, f"FAMILIA_GEMEOS recusado: {result:#x}"
+
 # --- POK-51: Família Sombra (enum à parte, a partir de 0x120) -----------------------------------
 CMD_FAMILIA_ESTADO = 0x120  # -> ocupação | estado << 8 | meio-dia da queda << 16
 CMD_FAMILIA_SET = 0x121     # arg0 = ocupação | estado << 8, arg1 = meio-dia da queda -> 1
+CMD_FAMILIA_GEMEOS = 0x122  # -> 1: a dupla dos gêmeos (trainerbattle_double por script de campo; a fala "…" espera o A)
 
 # --- Hack 6: breeding genético (enum à parte em include/test_hooks.h, a partir de 0x60; ------
 # o uso fica em esteira/breeding.py e scenarios/full_breeding.py / full_egg.py)

@@ -267,7 +267,9 @@ def test_toda_mensagem_de_batalha_foi_traduzida():
     base, now = _need_battle_base(), _battle_now()
     renamed = {"sText_BerrySuffix": "sText_BerryPrefix"}   # "Fruta " + nome (ordem PT-BR)
     new = {"sText_TeamGainedExp",   # POK-34: "O resto da equipe também ganhou PE!" (Exp. Share fixo)
-           "gText_AFairyMove"}      # POK-45: "golpe Fada" (tipo novo)
+           "gText_AFairyMove",      # POK-45: "golpe Fada" (tipo novo)
+           # POK-51: a Família Sombra (abertura sem humano e a bola desviada)
+           "gText_FamiliaCapangaQuerLutar", "gText_FamiliaGemeosQueremLutar", "gText_FamiliaDesviaBola"}
     assert set(now) == {renamed.get(label, label) for label in base} | new, "rótulos mudaram"
     same = [label for label, text in base.items()
             if re.search(r"[A-Za-z]{2}", _letters(text)) and now[renamed.get(label, label)] == text

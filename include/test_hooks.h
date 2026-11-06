@@ -212,6 +212,7 @@ enum
 {
     TEST_CMD_FAMILIA_ESTADO = 0x120, // result = occupation (VAR_FAMILIA_OCUPACAO) | state (VAR_FAMILIA_ESTADO) << 8 | fall half-day (VAR_FAMILIA_QUEDA) << 16
     TEST_CMD_FAMILIA_SET,            // arg0 = occupation | state << 8, arg1 = fall half-day (VAR_FAMILIA_QUEDA): written as is; result = 1
+    TEST_CMD_FAMILIA_GEMEOS,         // the twins double battle (TRAINER_FAMILIA_GEMEOS) through a field script in RAM: trainer flag cleared, then trainerbattle_double with "…" as intro, defeat and not-enough-mons text (the intro waits for A); result = 1
 };
 // --- end of POK-51 -------------------------------------------------------------------------
 
