@@ -70,6 +70,7 @@
 #define MULTICHOICE_JOIN_OR_LEAD                               63
 #define MULTICHOICE_TRAINER_TOWER_MODE                         64
 #define MULTICHOICE_REMATCH_TIER                               65 // POK-42: degrau da Liga (guarda da porta)
+#define MULTICHOICE_PEDAGIO                                    66 // POK-51: pedágio da Rota 23 (voltar depois / passar à força)
 
 #define MULTICHOICE_NONE                                      255
 

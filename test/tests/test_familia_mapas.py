@@ -335,3 +335,126 @@ def test_cena_do_chefe():
     assert {(o["local_id"], o["flag"]) for o in m6["object_events"]} == {
         ("LOCALID_FAMILIA_6F_CHEFE", "FLAG_TEMP_1"), ("LOCALID_FAMILIA_6F_GEMEO_A", "FLAG_FAMILIA_GEMEOS_VENCIDOS"),
         ("LOCALID_FAMILIA_6F_GEMEO_B", "FLAG_FAMILIA_GEMEOS_VENCIDOS")}
+
+
+# ---------- o pedágio (Task 6) ----------
+def _rota23_scripts() -> str:
+    return (MAPS / "Route23" / "scripts.inc").read_text(encoding="utf-8")
+
+
+def _rotulo(texto: str, nome: str) -> str:
+    """Corpo de um rótulo `nome::`/`nome:` até o próximo rótulo global."""
+    i = texto.index(f"\n{nome}:")
+    m = re.search(r"\n\w+::", texto[i + 1:])
+    return texto[i: i + 1 + m.start()] if m else texto[i:]
+
+
+def test_pedagio_valor():
+    """¥1.000 (constante do C, a única fonte) e o script cobra com checkmoney/removemoney dessa constante."""
+    assert re.search(r"#define FAMILIA_PEDAGIO\s+1000\b",
+                     (REPO_ROOT / "include/constants/familia_sombra.h").read_text(encoding="utf-8"))
+    s = _rota23_scripts()
+    pedagio = _rotulo(s, "Route23_EventScript_Pedagio")
+    assert "checkmoney FAMILIA_PEDAGIO" in pedagio and "removemoney FAMILIA_PEDAGIO" in pedagio
+    assert pedagio.index("removemoney") < pedagio.index("setflag FLAG_FAMILIA_PEDAGIO_PAGO")
+    # sem dinheiro vai direto ao menu, sem a pergunta de pagar; recusar também termina no menu
+    assert "Route23_EventScript_PedagioSemDinheiro" in pedagio
+    assert re.search(r"Route23_EventScript_PedagioSemDinheiro::\n(?:\t.*\n)*?\tgoto Route23_EventScript_PedagioMenu", s)
+    assert re.search(r"Route23_EventScript_PedagioRecusou::\n(?:\t.*\n)*?\tgoto Route23_EventScript_PedagioMenu", s)
+    assert "¥1.000" in (MAPS / "Route23" / "text.inc").read_text(encoding="utf-8")
+
+
+def test_pedagio_forca_e_menu():
+    s = _rota23_scripts()
+    menu = _rotulo(s, "Route23_EventScript_PedagioMenu")
+    assert "multichoice 17, 6, MULTICHOICE_PEDAGIO, FALSE" in menu
+    forca = _rotulo(s, "Route23_EventScript_PedagioForca")
+    ordem = ["special FamiliaSombra_SortearPedagio", "trainerbattle_no_intro TRAINER_FAMILIA_PEDAGIO_1,",
+             "trainerbattle_no_intro TRAINER_FAMILIA_PEDAGIO_2,", "special FamiliaSombra_PedagioVencido"]
+    pos = [forca.index(p) for p in ordem]
+    assert pos == sorted(pos)
+    # R5: o fim da passagem forçada é um special que liga a flag; a conquista é da Task 7
+    assert "def_special FamiliaSombra_PedagioVencido" in (REPO_ROOT / "data/specials.inc").read_text(encoding="utf-8")
+    corpo = re.search(r"void FamiliaSombra_PedagioVencido\(void\)\n\{(.*?)\n\}", FAMILIA_C, re.S).group(1)
+    assert "FlagSet(FLAG_FAMILIA_PEDAGIO_PAGO);" in corpo
+    # menu novo: id 66 e os dois rótulos na ordem voltar (0) / força (1)
+    menu_h = (REPO_ROOT / "include/constants/menu.h").read_text(encoding="utf-8")
+    assert re.search(r"#define MULTICHOICE_PEDAGIO\s+66\b", menu_h)
+    sm = (REPO_ROOT / "src/script_menu.c").read_text(encoding="utf-8")
+    assert re.search(r"sMultichoiceList_Pedagio\[\] = \{\s*\{ gText_PedagioVoltarDepois \},\s*"
+                     r"\{ gText_PedagioPassarAForca \}\s*\}", sm)
+    assert "[MULTICHOICE_PEDAGIO]" in sm
+    strings = (REPO_ROOT / "src/strings.c").read_text(encoding="utf-8")
+    assert 'gText_PedagioVoltarDepois[] = _("Voltar depois");' in strings
+    assert 'gText_PedagioPassarAForca[] = _("Passar à força");' in strings
+    # voltar depois: um passo para trás, para o lado de onde o jogador veio
+    assert "walk_down" in _rotulo(s, "Route23_Movement_JogadorRecuaSul")
+    assert "walk_up" in _rotulo(s, "Route23_Movement_JogadorRecuaNorte")
+
+
+def test_pedagio_dois_lados():
+    """O corredor de 3 tiles (x 13-15, y 145-148) ao norte do prédio é passagem obrigatória: gatilhos nas 3 colunas
+    nos dois lados do cobrador (y 147 sul, y 145 norte), só com chefe ativo; o cobrador no meio, com a flag
+    temporária que o esconde fora do estado ATIVA."""
+    rota = _map("Route23")
+    w, cells, _attr = _grid("Route23")
+    livres = {(i % w, i // w) for i, (_mid, col) in enumerate(cells) if col == 0}
+    cob = [o for o in rota["object_events"] if o["local_id"] == "LOCALID_FAMILIA_PEDAGIO_COBRADOR"]
+    assert len(cob) == 1 and cob[0]["graphics_id"] == "OBJ_EVENT_GFX_FAMILIA_PERSIAN"
+    assert (cob[0]["x"], cob[0]["y"]) == (14, 146) and cob[0]["flag"] == "FLAG_TEMP_1"
+    assert rota["object_events"][-1] is cob[0]   # no fim: não renumera os LOCALID_* dos guardas
+    assert rota["object_events"].index(cob[0]) + 1 == 8   # o LOCALID_COBRADOR do cenário `familia`
+    assert [(x, 146) in livres for x in (13, 14, 15)] == [True] * 3
+    gat = {(c["x"], c["y"]): c for c in rota["coord_events"] if "Pedagio" in c["script"]}
+    assert set(gat) == {(x, y) for x in (13, 14, 15) for y in (145, 147)}
+    for (x, y), c in gat.items():
+        assert c["var"] == "VAR_TEMP_3" and c["var_value"] == "1" and (x, y) in livres
+        assert c["script"] == ("Route23_EventScript_PedagioSul" if y == 147 else "Route23_EventScript_PedagioNorte")
+    # a linha inteira de cada lado é coberta (não há como contornar) e os gatilhos dos guardas seguem onde estavam
+    for y in (145, 146, 147):
+        assert {x for x in range(w) if (x, y) in livres} == {13, 14, 15}
+    guardas = [(c["x"], c["y"]) for c in rota["coord_events"] if "BadgeGuardTrigger" in c["script"]]
+    assert not set(guardas) & set(gat) and (13, 149) in guardas and len(guardas) == 42
+    s = _rota23_scripts()
+    assert "VAR_TEMP_2, 0" in _rotulo(s, "Route23_EventScript_PedagioSul")
+    assert "VAR_TEMP_2, 1" in _rotulo(s, "Route23_EventScript_PedagioNorte")
+    # o gatilho desarma antes de qualquer outra coisa (gatilho de chão que não muda a var dispara a cada quadro e prende
+    # o jogador); já pagou: solta os controles; "voltar depois" arma de novo depois do passo para trás
+    assert re.search(r"Route23_EventScript_Pedagio::\n\tlockall\n\tsetvar VAR_TEMP_3, 0\n", s)
+    assert "releaseall" in _rotulo(s, "Route23_EventScript_PedagioNada")
+    assert s.count("setvar VAR_TEMP_3, 1") == 3   # ArmarPedagio + os dois recuos
+    assert "setvar VAR_TEMP_3, 1" in _rotulo(s, "Route23_EventScript_ArmarPedagio")
+    assert "Route23_EventScript_ArmarPedagio" in _rotulo(s, "Route23_OnLoad")
+    # cobrador e gatilhos só com chefe ativo
+    trans = _rotulo(s, "Route23_OnTransition")
+    assert trans.index("special FamiliaSombra_Atualizar") < trans.index("special FamiliaSombra_GetEstado") < \
+        trans.index("call_if_ne VAR_RESULT, FAMILIA_ESTADO_ATIVA, Route23_EventScript_EsconderCobrador") < \
+        trans.index("call_if_eq VAR_RESULT, FAMILIA_ESTADO_ATIVA, Route23_EventScript_ArmarPedagio")
+    assert "setflag FLAG_TEMP_1" in _rotulo(s, "Route23_EventScript_EsconderCobrador")
+
+
+def test_pedagio_limpa_ao_sair():
+    """Sair da Rota 23 (portão da Rota 22 norte, Victory Road 1F/2F ou Platô Índigo) zera o "já pagou"; entrar
+    no prédio não (os andares não mexem na flag)."""
+    vizinhos = ("Route22_NorthEntrance", "VictoryRoad_1F", "VictoryRoad_2F", "IndigoPlateau_Exterior")
+    for mapa in vizinhos:
+        s = (MAPS / mapa / "scripts.inc").read_text(encoding="utf-8")
+        rotulo = f"{mapa}_OnTransition"
+        assert f"map_script MAP_SCRIPT_ON_TRANSITION, {rotulo}\n" in s, mapa
+        assert "clearflag FLAG_FAMILIA_PEDAGIO_PAGO" in _rotulo(s, rotulo), mapa
+    # a Rota 23 liga exatamente a esses mapas (e ao prédio, que não conta)
+    rota = _map("Route23")
+    destinos = {w["dest_map"] for w in rota["warp_events"]} | {c["map"] for c in rota["connections"]}
+    assert destinos == {"MAP_VICTORY_ROAD_1F", "MAP_VICTORY_ROAD_2F", "MAP_ROUTE22_NORTH_ENTRANCE",
+                        "MAP_ROUTE23_UNUSED_HOUSE", "MAP_INDIGO_PLATEAU_EXTERIOR", "MAP_ROUTE22"}
+    for pasta in MAPS.iterdir():
+        f = pasta / "scripts.inc"
+        if f.is_file() and pasta.name not in ("Route23",) + vizinhos:
+            assert "FLAG_FAMILIA_PEDAGIO_PAGO" not in f.read_text(encoding="utf-8"), pasta.name
+
+
+def test_route23_onload_atualiza_estado():
+    """CONTINUE roda só o ON_LOAD: ele atualiza o estado ANTES de ler o estado e trancar a porta."""
+    corpo = _rotulo(_rota23_scripts(), "Route23_OnLoad")
+    assert corpo.index("special FamiliaSombra_Atualizar") < corpo.index("special FamiliaSombra_GetEstado") < \
+        corpo.index("Route23_EventScript_TrancarPortaFamilia")

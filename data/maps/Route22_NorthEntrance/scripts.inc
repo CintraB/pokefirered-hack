@@ -1,5 +1,11 @@
 Route22_NorthEntrance_MapScripts::
+	map_script MAP_SCRIPT_ON_TRANSITION, Route22_NorthEntrance_OnTransition
 	.byte 0
+
+@ POK-51: sair da Rota 23 por aqui zera o "já pagou" do pedágio da Família Sombra.
+Route22_NorthEntrance_OnTransition::
+	clearflag FLAG_FAMILIA_PEDAGIO_PAGO
+	end
 
 Route22_NorthEntrance_EventScript_BoulderBadgeGuard::
 	lock

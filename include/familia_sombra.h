@@ -33,6 +33,7 @@ extern bool8 gTestFamiliaAndarEscuro;
 void FamiliaSombra_GetEstado(void);
 void FamiliaSombra_GetOcupacao(void);
 void FamiliaSombra_SortearPedagio(void);
+void FamiliaSombra_PedagioVencido(void);
 void FamiliaSombra_IniciarChefe(void);
 void FamiliaSombra_PrepararAndar(void);
 

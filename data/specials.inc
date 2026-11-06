@@ -488,4 +488,5 @@ gSpecials::
 	def_special FamiliaSombra_SortearPedagio
 	def_special FamiliaSombra_IniciarChefe
 	def_special FamiliaSombra_PrepararAndar
+	def_special FamiliaSombra_PedagioVencido
 gSpecialsEnd::

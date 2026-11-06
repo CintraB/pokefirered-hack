@@ -1483,6 +1483,8 @@ const u8 gText_RematchTier_70[] = _("Nível 70");
 const u8 gText_RematchTier_80[] = _("Nível 80");
 const u8 gText_RematchTier_90[] = _("Nível 90");
 const u8 gText_RematchTier_100[] = _("Nível 100");
+const u8 gText_PedagioVoltarDepois[] = _("Voltar depois");
+const u8 gText_PedagioPassarAForca[] = _("Passar à força");
 
 // POK-47: a tela do mapa do DexNav (src/dexnav.c). Rótulos das abas, títulos das seções de VARAS, nome do nunca visto,
 // "Nv." e "100%" (mapa completo), a linha extra das espécies de outro período ({STR_VAR_1} = quantas, até 2

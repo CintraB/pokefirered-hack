@@ -239,6 +239,12 @@ void FamiliaSombra_SortearPedagio(void)
     sPedagio[1] = (sPedagio[0] + 1 + Random() % (FAMILIA_PLANTEL - 1)) % FAMILIA_PLANTEL;
 }
 
+// Special: as 2 lutas do pedágio foram vencidas, a passagem vale até sair do mapa da Rota 23.
+void FamiliaSombra_PedagioVencido(void)
+{
+    FlagSet(FLAG_FAMILIA_PEDAGIO_PAGO);
+}
+
 // ---- Andares 4-5, efeito de filme e o chefe (Task 4) ----------------------------------------------------------
 
 // Os andares escuros (4º e 5º), onde andar dá encontro com a Família; a lista acaba em FAMILIA_SEM_MAPA.

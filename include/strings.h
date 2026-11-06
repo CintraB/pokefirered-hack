@@ -1642,6 +1642,8 @@ extern const u8 gText_RematchTier_70[];
 extern const u8 gText_RematchTier_80[];
 extern const u8 gText_RematchTier_90[];
 extern const u8 gText_RematchTier_100[];
+extern const u8 gText_PedagioVoltarDepois[];
+extern const u8 gText_PedagioPassarAForca[];
 extern const u8 gText_DexNav_AbaGrama[];
 extern const u8 gText_DexNav_AbaSurf[];
 extern const u8 gText_DexNav_AbaVaras[];

@@ -5,8 +5,11 @@ Route23_MapScripts::
 
 @ POK-51: antes da 8ª insígnia a porta do prédio da Família Sombra fica trancada.
 Route23_OnLoad::
+	@ CONTINUE de um save em pé na rota só roda o ON_LOAD: atualiza o estado aqui também (idempotente)
+	special FamiliaSombra_Atualizar
 	special FamiliaSombra_GetEstado
 	call_if_eq VAR_RESULT, FAMILIA_ESTADO_FECHADO, Route23_EventScript_TrancarPortaFamilia
+	call_if_eq VAR_RESULT, FAMILIA_ESTADO_ATIVA, Route23_EventScript_ArmarPedagio
 	end
 
 Route23_EventScript_TrancarPortaFamilia::
@@ -24,6 +27,9 @@ Route23_EventScript_PortaFamiliaAberta::
 
 Route23_OnTransition::
 	special FamiliaSombra_Atualizar
+	special FamiliaSombra_GetEstado
+	call_if_ne VAR_RESULT, FAMILIA_ESTADO_ATIVA, Route23_EventScript_EsconderCobrador
+	call_if_eq VAR_RESULT, FAMILIA_ESTADO_ATIVA, Route23_EventScript_ArmarPedagio
 	clearflag FLAG_HIDE_VICTORY_ROAD_3F_BOULDER
 	setflag FLAG_HIDE_VICTORY_ROAD_2F_BOULDER
 	setvar VAR_MAP_SCENE_VICTORY_ROAD_1F, 0
@@ -31,6 +37,148 @@ Route23_OnTransition::
 	setvar VAR_MAP_SCENE_VICTORY_ROAD_2F_BOULDER2, 0
 	setvar VAR_MAP_SCENE_VICTORY_ROAD_3F, 0
 	end
+
+@ O cobrador do pedágio só existe com chefe ativo: fora disso a flag temporária (zerada a cada mapa) o esconde.
+Route23_EventScript_EsconderCobrador::
+	setflag FLAG_TEMP_1
+	return
+
+@ POK-51: o pedágio da Família Sombra. Os gatilhos ficam nos dois lados do corredor (y 147 = quem sobe, y 145 =
+@ quem desce) e disparam enquanto VAR_TEMP_3 == 1 (armado só com chefe ativo, a cada carga do mapa). O script
+@ desarma na hora: um gatilho de chão que não muda a variável dispara a cada quadro e prende o jogador no tile.
+@ "Voltar depois" arma de novo depois do passo para trás. VAR_TEMP_2 guarda o lado.
+Route23_EventScript_ArmarPedagio::
+	setvar VAR_TEMP_3, 1
+	return
+
+Route23_EventScript_PedagioSul::
+	setvar VAR_TEMP_2, 0
+	goto Route23_EventScript_Pedagio
+	end
+
+Route23_EventScript_PedagioNorte::
+	setvar VAR_TEMP_2, 1
+	goto Route23_EventScript_Pedagio
+	end
+
+Route23_EventScript_Pedagio::
+	lockall
+	setvar VAR_TEMP_3, 0
+	goto_if_questlog EventScript_ReleaseEnd
+	goto_if_set FLAG_FAMILIA_PEDAGIO_PAGO, Route23_EventScript_PedagioNada
+	call_if_eq VAR_TEMP_2, 0, Route23_EventScript_PersianOlhaSul
+	call_if_eq VAR_TEMP_2, 1, Route23_EventScript_PersianOlhaNorte
+	applymovement LOCALID_FAMILIA_PEDAGIO_COBRADOR, Common_Movement_ExclamationMark
+	waitmovement 0
+	msgbox Route23_Text_PedagioCobra, MSGBOX_DEFAULT
+	checkmoney FAMILIA_PEDAGIO
+	goto_if_eq VAR_RESULT, FALSE, Route23_EventScript_PedagioSemDinheiro
+	showmoneybox 0, 0
+	msgbox Route23_Text_PedagioPagar, MSGBOX_YESNO
+	goto_if_eq VAR_RESULT, NO, Route23_EventScript_PedagioRecusou
+	removemoney FAMILIA_PEDAGIO
+	updatemoneybox
+	playse SE_SHOP
+	waitse
+	hidemoneybox
+	setflag FLAG_FAMILIA_PEDAGIO_PAGO
+	msgbox Route23_Text_PedagioPago, MSGBOX_DEFAULT
+	releaseall
+	end
+
+Route23_EventScript_PedagioNada::
+	releaseall
+	end
+
+Route23_EventScript_PersianOlhaSul::
+	applymovement LOCALID_FAMILIA_PEDAGIO_COBRADOR, Route23_Movement_PersianOlhaSul
+	waitmovement 0
+	return
+
+Route23_EventScript_PersianOlhaNorte::
+	applymovement LOCALID_FAMILIA_PEDAGIO_COBRADOR, Route23_Movement_PersianOlhaNorte
+	waitmovement 0
+	return
+
+Route23_EventScript_PedagioRecusou::
+	hidemoneybox
+	msgbox Route23_Text_PedagioRecusou, MSGBOX_DEFAULT
+	goto Route23_EventScript_PedagioMenu
+	end
+
+Route23_EventScript_PedagioSemDinheiro::
+	msgbox Route23_Text_PedagioSemDinheiro, MSGBOX_DEFAULT
+	goto Route23_EventScript_PedagioMenu
+	end
+
+@ "Voltar depois" (0, ou B) ou "Passar à força" (1)
+Route23_EventScript_PedagioMenu::
+	message Route23_Text_PedagioEscolha
+	waitmessage
+	multichoice 17, 6, MULTICHOICE_PEDAGIO, FALSE
+	goto_if_eq VAR_RESULT, 1, Route23_EventScript_PedagioForca
+	closemessage
+	msgbox Route23_Text_PedagioVoltar, MSGBOX_DEFAULT
+	goto_if_eq VAR_TEMP_2, 1, Route23_EventScript_PedagioRecuaNorte
+	applymovement LOCALID_PLAYER, Route23_Movement_JogadorRecuaSul
+	waitmovement 0
+	setvar VAR_TEMP_3, 1
+	releaseall
+	end
+
+Route23_EventScript_PedagioRecuaNorte::
+	applymovement LOCALID_PLAYER, Route23_Movement_JogadorRecuaNorte
+	waitmovement 0
+	setvar VAR_TEMP_3, 1
+	releaseall
+	end
+
+@ Passar à força: 2 lutas seguidas contra membros sorteados do plantel da ocupação. Perder = desmaio normal.
+Route23_EventScript_PedagioForca::
+	closemessage
+	msgbox Route23_Text_PedagioForca, MSGBOX_DEFAULT
+	special FamiliaSombra_SortearPedagio
+	setvar VAR_LAST_TALKED, LOCALID_FAMILIA_PEDAGIO_COBRADOR
+	trainerbattle_no_intro TRAINER_FAMILIA_PEDAGIO_1, Route23_Text_PedagioDerrota1
+	trainerbattle_no_intro TRAINER_FAMILIA_PEDAGIO_2, Route23_Text_PedagioDerrota2
+	special FamiliaSombra_PedagioVencido
+	msgbox Route23_Text_PedagioLivre, MSGBOX_DEFAULT
+	releaseall
+	end
+
+Route23_EventScript_PedagioCobrador::
+	lock
+	faceplayer
+	goto_if_questlog EventScript_ReleaseEnd
+	goto_if_set FLAG_FAMILIA_PEDAGIO_PAGO, Route23_EventScript_PedagioCobradorPago
+	msgbox Route23_Text_PedagioCobra, MSGBOX_DEFAULT
+	release
+	end
+
+Route23_EventScript_PedagioCobradorPago::
+	msgbox Route23_Text_PedagioJaPagou, MSGBOX_DEFAULT
+	release
+	end
+
+Route23_Movement_PersianOlhaSul:
+	face_down
+	step_end
+
+Route23_Movement_PersianOlhaNorte:
+	face_up
+	step_end
+
+Route23_Movement_JogadorRecuaSul:
+	lock_facing_direction
+	walk_down
+	unlock_facing_direction
+	step_end
+
+Route23_Movement_JogadorRecuaNorte:
+	lock_facing_direction
+	walk_up
+	unlock_facing_direction
+	step_end
 
 Route23_EventScript_CascadeBadgeGuard::
 	lock

@@ -56,7 +56,19 @@ _LABEL = re.compile(r"^([A-Za-z_][A-Za-z0-9_]*)::", re.M)
 ROTULOS_DOS_HACKS = {"PokemonLeague_HallOfFame_Text_OakTickets",     # Hack 8: Carvalho entrega os bilhetes
                      "PokemonMansion_B1F_Text_DiaryMewHint",          # Hack 8: pista do Mew
                      "PokemonMansion_B1F_Text_Mew",                   # Hack 8: grito do Mew
-                     "Route23_Text_PortaFamiliaTrancada"}             # POK-51: porta do prédio da Família
+                     "Route23_Text_PortaFamiliaTrancada",             # POK-51: porta do prédio da Família
+                     "Route23_Text_PedagioCobra",
+                     "Route23_Text_PedagioPagar",
+                     "Route23_Text_PedagioPago",
+                     "Route23_Text_PedagioRecusou",
+                     "Route23_Text_PedagioSemDinheiro",
+                     "Route23_Text_PedagioEscolha",
+                     "Route23_Text_PedagioVoltar",
+                     "Route23_Text_PedagioForca",
+                     "Route23_Text_PedagioDerrota1",
+                     "Route23_Text_PedagioDerrota2",
+                     "Route23_Text_PedagioLivre",
+                     "Route23_Text_PedagioJaPagou"}             # POK-51: pedágio do Persian
 
 
 @lru_cache(maxsize=None)

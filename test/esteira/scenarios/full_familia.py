@@ -56,6 +56,20 @@ WARP só chega a y < 128, então a frente da porta (4, 150) se alcança saindo p
 - `familia/chefe_fuga`: gêmeos já vencidos, a cena vai direto ao chefe; fugindo, ele fica e não há rosa;
 - `familia/rosa`: a cena inteira (gêmeos, Dom) e a Rosa Vermelha na bolsa (tela `familia_rosa`).
 
+Task 6 (o pedágio da Rota 23, nos dois sentidos). O cobrador é um Persian de chapéu no corredor (x 13-15, y 145-148); o
+jogador chega do sul pela porta do prédio e do norte por um WARP a (10, 126) mais uma caminhada; o dinheiro vem da
+escrita direta no save (como full_egg) e a Rota 23 sem guardas (VAR_MAP_SCENE_ROUTE23 = 0).
+
+- `familia/pedagio_paga`: o Persian está lá; pagando ¥1.000 o dinheiro cai 1000, a flag liga e o jogador passa; entrar
+  no prédio e sair não cobra de novo (tela `familia_pedagio`, a pergunta de pagar);
+- `familia/pedagio_sem_dinheiro`: com ¥999 vai direto ao menu "Voltar depois / Passar à força" (sem a pergunta de
+  pagar) e voltar empurra um passo para o sul; recusando com dinheiro, a pergunta vem antes do mesmo menu;
+- `familia/pedagio_forca`: passar à força = TRAINER_FAMILIA_PEDAGIO_1 e depois _2 (2 espécies diferentes do plantel),
+  sem prêmio, e a passagem fica paga;
+- `familia/pedagio_volta`: pago, sair pela Victory Road 1F limpa a flag; descendo, cobra no lado norte (voltar
+  depois empurra um passo para o norte; pagando, passa);
+- `familia/pedagio_sem_chefe`: sem chefe não há cobrador e o corredor fica livre.
+
 Uso, a partir de test/ (a pasta OUT precisa do captura.sav de um `rapido`/`completo`):
     python3 -m esteira completo --rom R --elf E --out OUT --only familia
 """
@@ -65,12 +79,12 @@ import re
 
 from ..battle import ACTION_FIGHT, MENU_TIMEOUT, MOVE_FUNC_SUFFIX, BattleDriver
 from ..breeding import header_defines
-from ..game import POKEMON_SIZE, mon_checksum_ok
-from ..emu import KEY_A, KEY_UP
+from ..game import POKEMON_SIZE, SB1_MONEY, mon_checksum_ok
+from ..emu import KEY_A, KEY_B, KEY_DOWN, KEY_UP
 from ..hooks import CMD_GIVE_ITEM, CMD_SET_VAR, CMD_WARP, Mailbox
 from ..nav import Navigator
 from . import REPO_ROOT, ScenarioContext
-from .base import Abort
+from .base import YESNO_TASK, Abort
 from .quick_catch_save import CatchSaveScenario
 
 ESTADO_FECHADO = 0                   # FAMILIA_ESTADO_FECHADO (include/constants/familia_sombra.h)
@@ -124,6 +138,14 @@ PALETTE_FADE_ACTIVE = 7              # byte de gPaletteFade com o bit `active` (
 OBJECT_EVENTS_COUNT, OBJECT_EVENT_SIZE, OBJECT_EVENT_LOCAL_ID, OBJECT_EVENT_GFX = 16, 0x24, 8, 5
 FOG_CALLBACK = "FogHorizontalSpriteCallback"
 LOCALID_PLAYER, LOCALID_FOLLOWER = 0xFF, 0xFE
+# Task 6: o pedágio
+LOCALID_COBRADOR = 8                 # 8º objeto de Route23 (os 7 guardas vêm antes; o teste estático confere)
+VAR_MAP_SCENE_ROUTE23 = 0x405F
+MULTICHOICE_TASK = "Task_MultichoiceMenu_HandleInput"
+PEDAGIO_SUL = (14, 148)              # um passo antes do gatilho do lado sul (14, 147)
+PEDAGIO_NORTE = (14, 144)            # um passo antes do gatilho do lado norte (14, 145)
+PEDAGIO = 1000
+VR_1F_LIVRE = (11, 19)               # Victory Road 1F: tile livre ao lado do warp de volta à Rota 23
 
 
 def _noir_tool():
@@ -729,6 +751,204 @@ class FamiliaScenario(CatchSaveScenario):
         log.append("2ª queda + 7: continua sem chefe (FAMILIA_OCUPACOES_ATIVAS 2), andar vazio")
         return "; ".join(log)
 
+    # --- o pedágio (Task 6) -----------------------------------------------------------
+    def _set_money(self, amount: int) -> None:
+        """Dinheiro do jogador (u32 XOR encryptionKey): escrita na RAM, só na ROM de teste."""
+        self.emu.write(self.game._sb1() + SB1_MONEY, (amount ^ self.game._key()).to_bytes(4, "little"))
+
+    def _pedagio_prep(self) -> None:
+        """Uma vez só: monta os dois pontos de partida (norte e sul do corredor) como savestates."""
+        if getattr(self, "_pedagio_pronto", False):
+            return
+        self._restore("familia_base")
+        self.box.set_flag(self._flag("FLAG_BADGE08_GET"), True)
+        self.box.set_flag(self._flag("FLAG_FAMILIA_PEDAGIO_PAGO"), False)
+        self.box.call(CMD_SET_VAR, VAR_MAP_SCENE_ROUTE23, 0)      # sem a cena dos guardas das insígnias
+        self.box.call(CMD_SET_VAR, REPEL_VAR, 999)
+        self.box.set_party_mon(0, self._sp("MEWTWO"), 100)
+        self.box.set_party_move(0, 0, self.moves["MOVE_SHADOW_BALL"])
+        self.box.familia_set(1, ESTADO_ATIVA)
+        self._set_money(5000)
+        self._warp("MAP_ROUTE23", ROTA23_SUL)
+        assert self.nav.walk_to(*PEDAGIO_NORTE), f"não chegou ao lado norte: {self.game.player_xy()}"
+        self.ctl.checkpoint("pedagio_norte")
+        self._sair_do_predio()
+        assert self.nav.walk_to(*PEDAGIO_SUL), f"não chegou ao lado sul: {self.game.player_xy()}"
+        self.ctl.checkpoint("pedagio_sul")
+        self._pedagio_pronto = True
+
+    def _pedagio_cena(self, pagar: bool = False, forca: bool = False, shot: str | None = None) -> dict:
+        """Roda a cena do pedágio até o campo ficar livre: A avança as falas; a pergunta sim/não recebe A (pagar) ou B;
+        o menu recebe A em "Voltar depois" ou BAIXO + A em "Passar à força"; cada batalha é lutada até o fim."""
+        info = {"msgs": [], "yesno": False, "menu": False, "lutas": [], "especies": []}
+        spent, handled = 0, False
+        while not (self.ctl.overworld_idle() and info["msgs"]):
+            if spent > 30000:
+                raise self.ctl.timeout_error(f"cena do pedágio; mensagens {info['msgs']}, lutas {info['lutas']}")
+            if self.game.in_battle():
+                self.driver.wait_battle_start()
+                info["lutas"].append(self.emu.read_u16(self._sym("gTrainerBattleOpponent_A")))
+                info["especies"].append(self.driver.battler_species_level(1)[0])
+                result = self.driver.fight_to_end()
+                assert result == "win", f"perdeu para o pedágio: {result}"
+                self.ctl.wait_until(lambda: not self.game.in_battle(), 900, "volta ao campo")
+                spent += 100
+                continue
+            tasks = self._tasks()
+            msg = self._message()
+            if self.ctl.script_active() and msg and (not info["msgs"] or info["msgs"][-1] != msg):
+                info["msgs"].append(msg)
+            if YESNO_TASK in tasks:
+                info["yesno"] = True
+                self.ctl.wait_until(lambda: self._waiting() and not self._fade_active(), 300, "pergunta de pagar")
+                if shot and not handled:
+                    info["shot"] = self._shot(shot)
+                handled = True
+                self.emu.press(KEY_A if pagar else KEY_B, hold=2, release=8)
+                spent += 10
+            elif MULTICHOICE_TASK in tasks:
+                info["menu"] = True
+                self.emu.frames(10)
+                if forca:
+                    self.emu.press(KEY_DOWN, hold=2, release=8)
+                self.emu.press(KEY_A, hold=2, release=20)
+                spent += 40
+            elif self.ctl.script_active():
+                self.emu.press(KEY_A, hold=2, release=8)
+                spent += 10
+            else:
+                self.emu.frames(4)
+                spent += 4
+        self.emu.frames(10)
+        return info
+
+    def _pedagio_passo(self, direction: str) -> None:
+        """Um passo para o gatilho: o script começa um quadro depois do passo (o jogador já pode estar parado)."""
+        assert self.nav.step(direction) == 1
+        self.ctl.wait_until(self.ctl.script_active, 60, f"o gatilho do pedágio ({direction})")
+
+    def _pedagio_gatilho(self, checkpoint: str = "pedagio_sul") -> None:
+        """Do checkpoint, um passo para o gatilho (sul: y 147; norte: y 145); o script do pedágio toma os controles."""
+        self._pedagio_prep()
+        self._restore(checkpoint)
+        self._pedagio_passo("down" if checkpoint == "pedagio_norte" else "up")
+
+    def _pedagio_paga(self) -> str:
+        self._pedagio_prep()
+        self._restore("pedagio_sul")
+        assert self.game.money() == 5000 and not self.game.flag(self._flag("FLAG_FAMILIA_PEDAGIO_PAGO"))
+        assert LOCALID_COBRADOR in self._active_objects(), f"sem o cobrador: {self._active_objects()}"
+        assert self._object_gfx(LOCALID_COBRADOR) == self.gfx["OBJ_EVENT_GFX_FAMILIA_PERSIAN"]
+        assert self._object_xy(LOCALID_COBRADOR) == (14, 146), self._object_xy(LOCALID_COBRADOR)
+        self._pedagio_gatilho()
+        info = self._pedagio_cena(pagar=True, shot="familia_pedagio")
+        assert info["yesno"] and not info["menu"] and not info["lutas"], info
+        assert self._rom_text("Route23_Text_PedagioPago") in info["msgs"], info["msgs"]
+        assert self.game.money() == 5000 - PEDAGIO, f"dinheiro {self.game.money()}"
+        assert self.game.flag(self._flag("FLAG_FAMILIA_PEDAGIO_PAGO"))
+        # passa pela esquerda do Persian e anda sem ser cobrado
+        assert self.game.player_xy() == (14, 147), self.game.player_xy()
+        assert self.nav.step("left") == 1 and self.nav.step("up", 3) == 3 and self.nav.interrupted is None
+        assert self.game.player_xy() == (13, 144), self.game.player_xy()
+        # entra no prédio e sai: continua pago, e não cobra na volta
+        assert self.nav.walk_to(*PORTA_FRENTE), f"não voltou à porta: {self.game.player_xy()}"
+        self.nav.go_through_warp("up")
+        assert self._at("MAP_ROUTE23_UNUSED_HOUSE") and self.game.flag(self._flag("FLAG_FAMILIA_PEDAGIO_PAGO"))
+        self.nav.go_through_warp("down")
+        self._settle("saída do prédio")
+        assert self._at("MAP_ROUTE23") and self.game.flag(self._flag("FLAG_FAMILIA_PEDAGIO_PAGO")), \
+            "o prédio zerou o pago"
+        assert self.nav.walk_to(14, 148)
+        self.nav.step("up")                     # o gatilho arma de novo a cada carga do mapa: o pago o deixa passar
+        self.ctl.wait_overworld_idle()
+        assert self.game.player_xy() == (14, 147) and self.game.money() == 5000 - PEDAGIO
+        assert YESNO_TASK not in self._tasks() and self.game.flag(self._flag("FLAG_FAMILIA_PEDAGIO_PAGO"))
+        assert self.nav.step("left") == 1 and self.nav.step("up", 3) == 3 and self.nav.interrupted is None
+        return (f"cobrador no (14, 146); pagou: ¥5.000 → ¥{self.game.money()}, flag ligada; passou, entrou no "
+                f"prédio, saiu e subiu sem ser cobrado; tela {info['shot']}")
+
+    def _pedagio_sem_dinheiro(self) -> str:
+        self._pedagio_prep()
+        self._restore("pedagio_sul")
+        self._set_money(PEDAGIO - 1)
+        self.ctl.checkpoint("pedagio_pobre")
+        self._pedagio_gatilho("pedagio_pobre")
+        info = self._pedagio_cena()
+        assert not info["yesno"] and info["menu"] and not info["lutas"], info
+        assert self._rom_text("Route23_Text_PedagioSemDinheiro") in info["msgs"], info["msgs"]
+        assert self._rom_text("Route23_Text_PedagioVoltar") in info["msgs"], info["msgs"]
+        assert self.game.money() == PEDAGIO - 1 and not self.game.flag(self._flag("FLAG_FAMILIA_PEDAGIO_PAGO"))
+        assert self.game.player_xy() == PEDAGIO_SUL, f"não voltou um passo: {self.game.player_xy()}"
+        # com dinheiro, recusando: a pergunta vem antes do mesmo menu e nada é cobrado
+        self._pedagio_gatilho("pedagio_sul")
+        info2 = self._pedagio_cena(pagar=False)
+        assert info2["yesno"] and info2["menu"] and not info2["lutas"], info2
+        assert self._rom_text("Route23_Text_PedagioRecusou") in info2["msgs"], info2["msgs"]
+        assert self.game.money() == 5000 and not self.game.flag(self._flag("FLAG_FAMILIA_PEDAGIO_PAGO"))
+        assert self.game.player_xy() == PEDAGIO_SUL
+        return (f"sem dinheiro (¥{PEDAGIO - 1}): só o menu, voltou um passo, nada cobrado; "
+                f"recusando com ¥5.000: pergunta + menu, voltou, ¥5.000 intactos")
+
+    def _pedagio_forca(self) -> str:
+        self._pedagio_prep()
+        self._restore("pedagio_sul")
+        self._set_money(500)
+        self.ctl.checkpoint("pedagio_pobre")
+        self._pedagio_gatilho("pedagio_pobre")
+        info = self._pedagio_cena(forca=True)
+        assert info["menu"] and not info["yesno"], info
+        want = [self._trainer("TRAINER_FAMILIA_PEDAGIO_1"), self._trainer("TRAINER_FAMILIA_PEDAGIO_2")]
+        assert info["lutas"] == want, f"lutas {info['lutas']}, esperava {want}"
+        assert len(set(info["especies"])) == 2, f"as 2 lutas com a mesma espécie: {info['especies']}"
+        assert self.game.money() == 500, f"prêmio ou cobrança: ¥{self.game.money()}"
+        assert self.game.flag(self._flag("FLAG_FAMILIA_PEDAGIO_PAGO"))
+        assert self._rom_text("Route23_Text_PedagioLivre") in info["msgs"], info["msgs"]
+        assert self.nav.step("left") == 1 and self.nav.step("up", 3) == 3 and self.nav.interrupted is None
+        nomes = [self.consts.species_name(sp) for sp in info["especies"]]
+        return f"2 lutas seguidas ({nomes}), dinheiro intacto, passagem paga e livre"
+
+    def _pedagio_volta(self) -> str:
+        self._pedagio_prep()
+        self._restore("pedagio_norte")
+        pago = self._flag("FLAG_FAMILIA_PEDAGIO_PAGO")
+        self.box.set_flag(pago, True)           # pagou na ida
+        self._warp("MAP_VICTORY_ROAD_1F", VR_1F_LIVRE)
+        assert not self.game.flag(pago), "a Victory Road 1F não zerou o pago"
+        self._warp("MAP_ROUTE23", ROTA23_SUL)
+        assert not self.game.flag(pago)
+        assert self.nav.walk_to(*PEDAGIO_NORTE), f"descida interrompida em {self.game.player_xy()}"
+        # descendo: cobra no lado norte; recusar + voltar depois empurra um passo para o norte
+        self._pedagio_passo("down")
+        info = self._pedagio_cena(pagar=False)
+        assert info["yesno"] and info["menu"], info
+        assert self._rom_text("Route23_Text_PedagioCobra") in info["msgs"], info["msgs"]
+        assert self.game.player_xy() == PEDAGIO_NORTE and self.game.money() == 5000 \
+            and not self.game.flag(pago), (self.game.player_xy(), self.game.money())
+        # de novo e pagando: passa pela direita e desce até o sul sem ser cobrado
+        self._pedagio_passo("down")
+        info = self._pedagio_cena(pagar=True)
+        assert info["yesno"] and not info["menu"], info
+        assert self.game.money() == 5000 - PEDAGIO and self.game.flag(pago)
+        assert self.nav.step("right") == 1 and self.nav.step("down", 3) == 3 and self.nav.interrupted is None
+        assert self.game.player_xy() == (15, 148), self.game.player_xy()
+        return "pago na ida, a Victory Road 1F zera; descendo cobra no norte: voltar empurra ao norte, pagar libera"
+
+    def _pedagio_sem_chefe(self) -> str:
+        self._pedagio_prep()
+        self._restore("pedagio_sul")
+        queda = 20
+        self._set_half_day(queda)
+        self.box.familia_set(1, ESTADO_SEM_CHEFE, queda)
+        self._warp("MAP_ROUTE23_UNUSED_HOUSE", SAIDA_1F)
+        self.nav.go_through_warp("down")
+        self._settle("saída do prédio")
+        assert self._at("MAP_ROUTE23") and self.box.familia_estado() == (1, ESTADO_SEM_CHEFE, queda)
+        assert LOCALID_COBRADOR not in self._active_objects(), f"cobrador sem chefe: {self._active_objects()}"
+        assert self.nav.walk_to(*PEDAGIO_SUL)
+        assert self.nav.step("up", 5) == 5 and self.nav.interrupted is None, "o pedágio disparou sem chefe"
+        assert self.game.player_xy() == (14, 143) and not self.ctl.script_active()
+        return "sem chefe: sem Persian, sem gatilho, o corredor livre (inclusive o tile do cobrador)"
+
     def _subida(self) -> str:
         """Da porta ao 6º andar pelas escadas de verdade (capangas já vencidos, Repelente com o Mewtwo nv 100 na
         frente): música, clima e escuro de cada andar; telas do 1º, do 4º (escuro e névoa) e da sala do Dom."""
@@ -946,6 +1166,11 @@ class FamiliaScenario(CatchSaveScenario):
             self.suite.run("familia/gemeos_um_pokemon", self._gemeos_um)
             self.suite.run("familia/chefe_fuga", self._chefe_fuga)
             self.suite.run("familia/rosa", self._rosa)
+            self.suite.run("familia/pedagio_paga", self._pedagio_paga)
+            self.suite.run("familia/pedagio_sem_dinheiro", self._pedagio_sem_dinheiro)
+            self.suite.run("familia/pedagio_forca", self._pedagio_forca)
+            self.suite.run("familia/pedagio_volta", self._pedagio_volta)
+            self.suite.run("familia/pedagio_sem_chefe", self._pedagio_sem_chefe)
         except Abort:
             pass
 

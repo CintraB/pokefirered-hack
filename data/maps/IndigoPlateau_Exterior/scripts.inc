@@ -4,6 +4,7 @@ IndigoPlateau_Exterior_MapScripts::
 	.byte 0
 
 IndigoPlateau_Exterior_OnTransition::
+	clearflag FLAG_FAMILIA_PEDAGIO_PAGO @ POK-51: a Rota 23 liga ao Platô por cima: sair por lá zera o "já pagou"
 	setworldmapflag FLAG_WORLD_MAP_INDIGO_PLATEAU_EXTERIOR
 	call_if_eq VAR_MAP_SCENE_INDIGO_PLATEAU_EXTERIOR, 1, IndigoPlateau_Exterior_EventScript_PlayCreditsMusic
 	end
