@@ -243,8 +243,6 @@ void StartWildBattle(void)
         DoSafariBattle();
     else if (CheckSilphScopeInPokemonTower(gSaveBlock1Ptr->location.mapGroup, gSaveBlock1Ptr->location.mapNum))
         DoGhostBattle();
-    else if (FamiliaSombra_EhAndarEscuro()) // POK-51: nos andares 4-5 da Família Sombra quem aparece é um capanga
-        StartFamiliaWildBattle();
     else
         DoStandardWildBattle();
 }
@@ -261,8 +259,8 @@ static void DoStandardWildBattle(void)
     IncrementGameStat(GAME_STAT_WILD_BATTLES);
 }
 
-// POK-51: o encontro dos andares 4-5 da Família Sombra (gEnemyParty[0] já montado por FamiliaSombra_CriarSelvagem):
-// batalha selvagem marcada com BATTLE_TYPE_FAMILIA (texto do capanga, filme, bola desviada, item protegido) e a
+// POK-51: o encontro dos andares 4-5 da Família Sombra (gEnemyParty[0] já montado por FamiliaSombra_CriarSelvagem;
+// só o gerador da Família chama esta função, nunca o StartWildBattle comum): batalha selvagem marcada com BATTLE_TYPE_FAMILIA (texto do capanga, filme, bola desviada, item protegido) e a
 // música de batalha de treinador. IA e EXP continuam as de selvagem.
 void StartFamiliaWildBattle(void)
 {

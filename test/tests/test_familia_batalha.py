@@ -190,6 +190,10 @@ def test_textos_cabem():
         "gText_FamiliaCapangaQuerLutar": r"Um capanga da Família Sombra\nquer lutar!\p",
         "gText_FamiliaGemeosQueremLutar": r"Os gêmeos guarda-costas\nquerem lutar!\p",
         "gText_FamiliaDesviaBola": r"O capanga desvia a Poké Bola!\nNinguém tira um membro da Família.",
+        "gText_FamiliaChefeDom": r"GENGAR, O DOM,\nquer acertar as contas!\p",
+        "gText_FamiliaChefeCobrador": r"TYRANITAR, O COBRADOR,\nquer acertar as contas!\p",
+        "gText_FamiliaChefeMercenario": r"GARCHOMP, O MERCENÁRIO,\nquer acertar as contas!\p",
+        "gText_FamiliaChefePesadelo": r"DARKRAI, O PESADELO,\nquer acertar as contas!\p",
     }
     for nome, texto in textos.items():
         medida = ct.measure(texto, env, "normal")
@@ -417,22 +421,25 @@ def test_niveis_andares_4_5():
 def test_encontro_so_com_chefe_nos_andares_escuros():
     """Os andares 4-5 (lista de FamiliaSombra_EhAndarEscuro, a Task 5 preenche) só têm encontro com chefe ativo, sem
     andarilho, e o encontro é da Família: bit próprio, música de treinador e o texto do capanga."""
-    # o caminho comum (StandardWildEncounter, TryGenerateWildMon) fica como o da pret: o desvio é antes dele
+    # o andar escuro desvia ANTES do cooldown pela tabela do mapa: esses mapas não têm entrada em wild_encounters.json
     tentar = _block(WILD_C, "bool8 TryStandardWildEncounter(u32 currMetatileAttrs)")
-    desvio = tentar.index("FamiliaSombra_EhAndarEscuro()")
-    assert desvio < tentar.index("FamiliaWildEncounter(") < tentar.index("StandardWildEncounter(currMetatileAttrs")
+    desvio = tentar.index("if (FamiliaSombra_EhAndarEscuro())")
+    assert desvio < tentar.index("return FamiliaWildEncounter(currMetatileAttrs);") \
+        < tentar.index("HandleWildEncounterCooldown(currMetatileAttrs)")
     assert "FamiliaSombra_EhAndarEscuro()" not in _block(WILD_C, "bool8 StandardWildEncounter(")
-    andar = _block(WILD_C, "static bool8 FamiliaWildEncounter(")
+    andar = _block(WILD_C, "static bool8 FamiliaWildEncounter(u32 currMetatileAttrs)")
+    assert "GetCurrentMapWildMonHeaderId" not in andar and "gWildMonHeaders" not in andar   # sem tabela do mapa
     assert "!FamiliaSombra_ChefeAtivo()" in andar and "TryStartRoamerEncounter" not in andar
-    assert "DoWildEncounterRateTest(rate, FALSE)" in andar and "TryStartFamiliaEncounter(TRUE)" in andar
+    assert "!= TILE_ENCOUNTER_LAND" in andar and "FAMILIA_PASSOS_MINIMOS" in andar
+    assert "DoWildEncounterRateTest(FAMILIA_TAXA_ENCONTRO, FALSE)" in andar and "TryStartFamiliaEncounter(TRUE)" in andar
     criar = _block(WILD_C, "static bool8 TryStartFamiliaEncounter(bool8 checkRepel)")
     assert criar.index("FamiliaSombra_ChefeAtivo()") < criar.index("FamiliaSombra_CriarSelvagem(level);")
     assert criar.index("IsWildLevelAllowedByRepel(level)") < criar.index("FamiliaSombra_CriarSelvagem(level);")
-    assert "StartWildBattle();" in criar
+    # só o gerador da Família começa a batalha marcada; o StartWildBattle comum (pesca, Rock Smash, atalhos) não
+    assert "StartFamiliaWildBattle();" in criar and "StartWildBattle();" not in criar.replace("StartFamiliaWildBattle", "")
+    assert "Familia" not in _block(BATTLE_SETUP_C, "void StartWildBattle(void)")
     aroma = _block(WILD_C, "bool8 SweetScentWildEncounter(void)")
     assert aroma.index("FamiliaSombra_EhAndarEscuro()") < aroma.index("TryStartRoamerEncounter")
-    inicio = _block(BATTLE_SETUP_C, "void StartWildBattle(void)")
-    assert inicio.index("FamiliaSombra_EhAndarEscuro()") < inicio.index("DoStandardWildBattle();")
     selvagem = _block(BATTLE_SETUP_C, "void StartFamiliaWildBattle(void)")
     assert "gBattleTypeFlags = BATTLE_TYPE_FAMILIA;" in selvagem
     assert "CreateBattleStartTask(GetWildBattleTransition(), MUS_VS_TRAINER);" in selvagem
@@ -456,3 +463,17 @@ def test_ia_do_chefe():
     assert {f.strip() for f in flags.split("|")} == AI_CHEFE
     escolha = _block(_read("src/battle_controller_opponent.c"), "static void OpponentHandleChooseMove(void)")
     assert re.search(r"BATTLE_TYPE_ROAMER\)\s*\|\| FamiliaSombra_EhChefe\(\)\)", escolha)
+
+
+def test_chefe_com_titulo_na_abertura():
+    """§8: o título aparece em destaque sempre que o chefe é citado, também na abertura da batalha dele."""
+    tabela = _block(BATTLE_MESSAGE_C, "const u8 *const gText_FamiliaChefeQuerAcertar[FAMILIA_OCUPACOES_TOTAL] =")
+    assert [l.strip(" ,") for l in tabela.strip().splitlines()] == [
+        "gText_FamiliaChefeDom", "gText_FamiliaChefeCobrador", "gText_FamiliaChefeMercenario",
+        "gText_FamiliaChefePesadelo"]
+    assert "gText_FamiliaChefeQuerAcertar[OcupacaoDasLutas() - 1]" in _block(
+        FAMILIA_C, "const u8 *FamiliaSombra_TextoDoChefe(void)")
+    intro = BATTLE_MESSAGE_C[BATTLE_MESSAGE_C.index("case STRINGID_INTROMSG:"):]
+    intro = intro[:intro.index("case STRINGID_INTROSENDOUT:")]
+    assert intro.index("else if (FamiliaSombra_EhChefe())") < intro.index("stringPtr = FamiliaSombra_TextoDoChefe();") \
+        < intro.index("else if (gBattleTypeFlags & BATTLE_TYPE_LEGENDARY)")

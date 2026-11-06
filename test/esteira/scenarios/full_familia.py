@@ -27,9 +27,12 @@ atalho FAMILIA_WILD, que monta o mesmo Pokémon do encontro do andar e liga BATT
 - `familia/encontro_wild`: espécie do plantel da ocupação 1, nível 54-58, item e golpes do plantel, o texto do
   capanga, sprite do selvagem, a música de treinador e a paleta do oponente = noir() da prévia aplicado à paleta
   normal da espécie (gPlttBufferUnfaded, índice 0 intocado). Tela `familia_filme_batalha`;
+- `familia/passos_andar_escuro`: o atalho FAMILIA_PASSOS roda o TryStandardWildEncounter de verdade com o andar escuro
+  forçado (o mapa sem tabela própria): com chefe ativo sai um capanga do plantel; sem chefe, 400 passos sem encontro;
 - `familia/bola_selvagem`: a bola desviada e não gasta, como no capanga;
 - `familia/thief_selvagem`: Ladrão e Truque não tiram o item do encontro;
-- `familia/chefe`: o special FamiliaSombra_IniciarChefe: Gengar shiny nv 62 com os golpes e o item da tabela,
+- `familia/chefe`: o special FamiliaSombra_IniciarChefe: abertura "GENGAR, O DOM, quer acertar as contas!", Gengar
+  shiny nv 62 com os golpes e o item da tabela,
   batalha lendária com BATTLE_TYPE_FAMILIA_CHEFE (sem BATTLE_TYPE_FAMILIA), gTrainerBattleOpponent_A = 0,
   MUS_VS_LEGEND e as cores shiny sem filme. Tela `familia_chefe_batalha`;
 - `familia/bola_chefe`: a Master Ball é gasta e captura o chefe;
@@ -46,12 +49,15 @@ import re
 
 from ..battle import ACTION_FIGHT, MENU_TIMEOUT, MOVE_FUNC_SUFFIX, BattleDriver
 from ..breeding import header_defines
+from ..game import POKEMON_SIZE, mon_checksum_ok
 from ..hooks import CMD_GIVE_ITEM, Mailbox
 from . import REPO_ROOT, ScenarioContext
 from .base import Abort
 from .quick_catch_save import CatchSaveScenario
 
 ESTADO_ATIVA = 1                     # FAMILIA_ESTADO_ATIVA (include/constants/familia_sombra.h)
+ESTADO_SEM_CHEFE = 2                 # FAMILIA_ESTADO_SEM_CHEFE
+PASSOS = 400                         # passos do caso familia/passos_andar_escuro
 SPRITE_SIZE, SPRITE_CALLBACK, SPRITE_DATA, SPRITE_IN_USE = 0x44, 0x1C, 0x2E, 0x3E   # struct Sprite
 MAX_SPRITES = 64
 # o Pokémon do oponente que aparece direto (OpponentHandleLoadMonSprite → SpriteCB_EnemyMon e seguintes)
@@ -284,6 +290,9 @@ class FamiliaScenario(CatchSaveScenario):
         assert foe_item and self.emu.read_u16(self._sym("gBattleMons") + BATTLE_MON_SIZE + BATTLE_MON_ITEM) == foe_item
         result = self.driver.fight_turn(INTRO_TIMEOUT)
         mine = self.emu.read_u16(self._sym("gBattleMons") + BATTLE_MON_ITEM)
+        # o time lido com o checksum certo (a leitura pode pegar o Pokémon no meio de um GetMonData/SetMonData)
+        raw = lambda: self.emu.read(self._sym("gPlayerParty"), POKEMON_SIZE)
+        self.ctl.wait_until(lambda: mon_checksum_ok(raw()), 10, "time com checksum certo")
         party_item = self.game.party()[0].held_item
         assert (mine, party_item) == (held_id, held_id), \
             f"{move}: item do Mewtwo {mine} (batalha) / {party_item} (time), esperava {held_id}"
@@ -381,8 +390,8 @@ class FamiliaScenario(CatchSaveScenario):
         expected = chefe_da_tabela(1)
         gengar = self._sp(expected[0])
         self.box.familia_chefe()
-        self.driver.wait_battle_start()
-        self.ctl.wait_until(lambda: self.driver.battler_species_level(1)[0] == gengar, INTRO_TIMEOUT, "chefe em campo")
+        seen = self._wait_intro("gText_FamiliaChefeDom", (1,))     # "GENGAR, O DOM, quer acertar as contas!"
+        assert self.driver.battler_species_level(1)[0] == gengar, seen
         flags = self.driver.battle_type_flags()
         assert flags & BATTLE_TYPE_FAMILIA_CHEFE and flags & BATTLE_TYPE_LEGENDARY, f"gBattleTypeFlags {flags:#x}"
         assert not flags & (BATTLE_TYPE_FAMILIA | BATTLE_TYPE_TRAINER), f"gBattleTypeFlags {flags:#x}"
@@ -402,8 +411,29 @@ class FamiliaScenario(CatchSaveScenario):
         assert got == shiny, f"paleta do chefe {[hex(c) for c in got]}, esperava a shiny {[hex(c) for c in shiny]}"
         shot = self._shot("familia_chefe_batalha")
         self.ctl.checkpoint("familia_chefe")
-        return (f"{sp} nv {lv} shiny, {item}, {moves}; lendária + FAMILIA_CHEFE; MUS_VS_LEGEND; paleta shiny sem "
-                f"filme; tela {shot}")
+        return (f"{sp} nv {lv} shiny, {item}, {moves}; abertura {self._rom_text('gText_FamiliaChefeDom')!r}; "
+                f"lendária + FAMILIA_CHEFE; MUS_VS_LEGEND; paleta shiny sem filme; tela {shot}")
+
+    def _passos(self) -> str:
+        """O caminho de cada passo (TryStandardWildEncounter) com o mapa valendo como andar escuro e SEM entrada em
+        wild_encounters.json para ele: com chefe ativo sai um capanga do plantel; sem chefe, nada em 400 passos."""
+        self._restore("familia_base")
+        plantel = times_table("sFamiliaPlantel")[0]
+        steps, started = self.box.familia_passos(PASSOS)
+        assert started, f"nenhum encontro em {PASSOS} passos com chefe ativo"
+        self._wait_intro("gText_FamiliaCapangaQuerLutar", (1,))
+        flags = self.driver.battle_type_flags()
+        assert flags & BATTLE_TYPE_FAMILIA and not flags & BATTLE_TYPE_TRAINER, f"gBattleTypeFlags {flags:#x}"
+        species, level = self.driver.battler_species_level(1)
+        assert any(self._sp(m[0]) == species for m in plantel) and 54 <= level <= 58, (species, level)
+        ativo = f"chefe ativo: encontro no passo {steps} ({self.consts.species_name(species)} nv {level})"
+        self._restore("familia_base")
+        self.box.familia_set(1, ESTADO_SEM_CHEFE)
+        steps, started = self.box.familia_passos(PASSOS)
+        self.emu.frames(30)
+        assert not started and steps == PASSOS and not self.game.in_battle(), (steps, started)
+        self.box.familia_set(1, ESTADO_ATIVA)
+        return f"{ativo}; sem chefe: {PASSOS} passos sem encontro"
 
     def _chefe_ball(self) -> str:
         self._restore("familia_chefe")
@@ -480,6 +510,7 @@ class FamiliaScenario(CatchSaveScenario):
             self.suite.run("familia/time_por_ocupacao", self._teams)
             self.suite.run("familia/gemeos_dupla", self._twins)
             self.suite.run("familia/encontro_wild", self._encontro)
+            self.suite.run("familia/passos_andar_escuro", self._passos)
             self.suite.run("familia/bola_selvagem", self._wild_ball)
             self.suite.run("familia/thief_selvagem", self._wild_thief)
             self.suite.run("familia/chefe", self._chefe)

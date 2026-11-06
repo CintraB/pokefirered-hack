@@ -473,6 +473,18 @@ static const u8 sText_ItDodgedBall[] = _("Ele se esquivou da Bola!\nEste Pokémo
 const u8 gText_FamiliaCapangaQuerLutar[] = _("Um capanga da Família Sombra\nquer lutar!\p");
 const u8 gText_FamiliaGemeosQueremLutar[] = _("Os gêmeos guarda-costas\nquerem lutar!\p");
 const u8 gText_FamiliaDesviaBola[] = _("O capanga desvia a Poké Bola!\nNinguém tira um membro da Família.");
+// O chefe se apresenta com o título em destaque (spec §8), um por ocupação; 3 e 4 são da parte 2.
+const u8 gText_FamiliaChefeDom[] = _("GENGAR, O DOM,\nquer acertar as contas!\p");
+const u8 gText_FamiliaChefeCobrador[] = _("TYRANITAR, O COBRADOR,\nquer acertar as contas!\p");
+const u8 gText_FamiliaChefeMercenario[] = _("GARCHOMP, O MERCENÁRIO,\nquer acertar as contas!\p");
+const u8 gText_FamiliaChefePesadelo[] = _("DARKRAI, O PESADELO,\nquer acertar as contas!\p");
+const u8 *const gText_FamiliaChefeQuerAcertar[FAMILIA_OCUPACOES_TOTAL] =
+{
+    gText_FamiliaChefeDom,
+    gText_FamiliaChefeCobrador,
+    gText_FamiliaChefeMercenario,
+    gText_FamiliaChefePesadelo,
+};
 static const u8 sText_YouMissedPkmn[] = _("Você errou o Pokémon!");
 static const u8 sText_PkmnBrokeFree[] = _("Ah, não!\nO Pokémon escapou!");
 static const u8 sText_ItAppearedCaught[] = _("Ahh!\nParecia que tinha pegado!");
@@ -1602,6 +1614,8 @@ void BufferStringBattle(u16 stringId)
                 else
                     stringPtr = sText_GhostAppearedCantId;
             }
+            else if (FamiliaSombra_EhChefe()) // POK-51: o chefe da Família, com o título
+                stringPtr = FamiliaSombra_TextoDoChefe();
             else if (gBattleTypeFlags & BATTLE_TYPE_LEGENDARY)
                 stringPtr = sText_WildPkmnAppeared2;
             else if (gBattleTypeFlags & BATTLE_TYPE_DOUBLE) // interesting, looks like they had something planned for wild double battles

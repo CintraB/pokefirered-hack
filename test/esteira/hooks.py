@@ -496,6 +496,12 @@ class Mailbox:
         result = self.call(CMD_FAMILIA_WILD)
         return result & 0xFFFF, result >> 16
 
+    def familia_passos(self, steps: int) -> tuple[int, bool]:
+        """Até `steps` passos pelo TryStandardWildEncounter de verdade num metatile de terra, com o mapa atual valendo
+        como andar escuro da Família; devolve (passos dados, batalha começou)."""
+        result = self.call(CMD_FAMILIA_PASSOS, steps)
+        return result & 0xFFFF, bool(result >> 16)
+
     def familia_chefe(self) -> None:
         """Começa a batalha contra o chefe da ocupação pelo special FamiliaSombra_IniciarChefe num script de campo."""
         result = self.call(CMD_FAMILIA_CHEFE)
@@ -506,6 +512,7 @@ CMD_FAMILIA_ESTADO = 0x120  # -> ocupação | estado << 8 | meio-dia da queda <<
 CMD_FAMILIA_SET = 0x121     # arg0 = ocupação | estado << 8, arg1 = meio-dia da queda -> 1
 CMD_FAMILIA_GEMEOS = 0x122  # -> 1: a dupla dos gêmeos (trainerbattle_double por script de campo; a fala "…" espera o A)
 CMD_FAMILIA_WILD = 0x123    # -> espécie | nível << 16: o encontro dos andares 4-5 (plantel da ocupação, BATTLE_TYPE_FAMILIA)
+CMD_FAMILIA_PASSOS = 0x125  # arg0 = passos -> passos dados | 1 << 16 se a batalha começou (andar escuro forçado)
 CMD_FAMILIA_CHEFE = 0x124   # -> 1: a batalha do chefe (special FamiliaSombra_IniciarChefe por script de campo)
 
 # --- Hack 6: breeding genético (enum à parte em include/test_hooks.h, a partir de 0x60; ------

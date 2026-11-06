@@ -260,5 +260,6 @@ extern const u8 gText_Draw[];
 extern const u8 gText_FamiliaCapangaQuerLutar[];
 extern const u8 gText_FamiliaGemeosQueremLutar[];
 extern const u8 gText_FamiliaDesviaBola[];
+extern const u8 *const gText_FamiliaChefeQuerAcertar[];
 
 #endif // GUARD_BATTLE_MESSAGE_H

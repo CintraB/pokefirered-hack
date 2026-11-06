@@ -269,7 +269,10 @@ def test_toda_mensagem_de_batalha_foi_traduzida():
     new = {"sText_TeamGainedExp",   # POK-34: "O resto da equipe também ganhou PE!" (Exp. Share fixo)
            "gText_AFairyMove",      # POK-45: "golpe Fada" (tipo novo)
            # POK-51: a Família Sombra (abertura sem humano e a bola desviada)
-           "gText_FamiliaCapangaQuerLutar", "gText_FamiliaGemeosQueremLutar", "gText_FamiliaDesviaBola"}
+           "gText_FamiliaCapangaQuerLutar", "gText_FamiliaGemeosQueremLutar", "gText_FamiliaDesviaBola",
+           # POK-51: o chefe se apresenta com o título (um por ocupação)
+           "gText_FamiliaChefeDom", "gText_FamiliaChefeCobrador", "gText_FamiliaChefeMercenario",
+           "gText_FamiliaChefePesadelo"}
     assert set(now) == {renamed.get(label, label) for label in base} | new, "rótulos mudaram"
     same = [label for label, text in base.items()
             if re.search(r"[A-Za-z]{2}", _letters(text)) and now[renamed.get(label, label)] == text

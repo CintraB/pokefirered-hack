@@ -1532,6 +1532,7 @@ static u32 FamiliaGemeos(void)
 }
 
 extern void StartFamiliaWildBattle(void);      // src/battle_setup.c (battle_setup.h colide com este arquivo)
+extern u32 TestFamiliaPassos(u32 steps);       // src/wild_encounter.c
 
 static u32 FamiliaWild(void)
 {
@@ -1721,6 +1722,7 @@ void TestHooks_Run(void)
     case TEST_CMD_FAMILIA_GEMEOS:   result = FamiliaGemeos(); break;
     case TEST_CMD_FAMILIA_WILD:     result = FamiliaWild(); break;
     case TEST_CMD_FAMILIA_CHEFE:    result = FamiliaChefe(); break;
+    case TEST_CMD_FAMILIA_PASSOS:   result = TestFamiliaPassos(gTestMailbox.arg0); break;
     // POK-29
     case TEST_CMD_SHOW_FIELD_TEXT:  result = ShowFieldText(gTestMailbox.arg0, gTestMailbox.arg1); break;
     default:

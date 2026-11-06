@@ -24,6 +24,10 @@ bool8 FamiliaSombra_EhAndarEscuro(void);
 u8 FamiliaSombra_NivelSelvagem(void);
 void FamiliaSombra_CriarSelvagem(u8 level);
 void FamiliaSombra_PaletaNoir(u16 *pal, u16 count);
+const u8 *FamiliaSombra_TextoDoChefe(void);
+#if TESTBUILD
+extern bool8 gTestFamiliaAndarEscuro;
+#endif
 
 // Specials (VAR_RESULT)
 void FamiliaSombra_GetEstado(void);

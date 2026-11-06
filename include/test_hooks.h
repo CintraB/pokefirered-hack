@@ -215,6 +215,7 @@ enum
     TEST_CMD_FAMILIA_GEMEOS,         // the twins double battle (TRAINER_FAMILIA_GEMEOS) through a field script in RAM: trainer flag cleared, then trainerbattle_double with "…" as intro, defeat and not-enough-mons text (the intro waits for A); result = 1
     TEST_CMD_FAMILIA_WILD,           // the floors 4-5 encounter without the map: FamiliaSombra_CriarSelvagem(FamiliaSombra_NivelSelvagem()) (a member of the current occupation's pool, with its item and moves) + StartFamiliaWildBattle (BATTLE_TYPE_FAMILIA); result = species | level << 16
     TEST_CMD_FAMILIA_CHEFE,          // the boss battle through a field script in RAM: lockall, callnative FamiliaSombra_IniciarChefe (the special), waitstate, releaseall, end; result = 1
+    TEST_CMD_FAMILIA_PASSOS,         // arg0 = steps: up to arg0 calls of TryStandardWildEncounter (the real per-step path) on a land metatile with FamiliaSombra_EhAndarEscuro forced on (encounter counters reset first); result = steps taken | 1 << 16 if a battle started
 };
 // --- end of POK-51 -------------------------------------------------------------------------
 

@@ -1,5 +1,6 @@
 #include "global.h"
 #include "battle.h"
+#include "battle_message.h"
 #include "battle_setup.h"
 #include "day_night.h"
 #include "event_data.h"
@@ -223,11 +224,19 @@ static const u16 sAndaresEscuros[] =
     FAMILIA_SEM_MAPA,
 };
 
+#if TESTBUILD
+EWRAM_DATA bool8 gTestFamiliaAndarEscuro = FALSE; // atalho TEST_CMD_FAMILIA_PASSOS: o mapa atual vale como andar escuro
+#endif
+
 bool8 FamiliaSombra_EhAndarEscuro(void)
 {
     u16 mapa = (gSaveBlock1Ptr->location.mapGroup << 8) | gSaveBlock1Ptr->location.mapNum;
     s32 i;
 
+#if TESTBUILD
+    if (gTestFamiliaAndarEscuro)
+        return TRUE;
+#endif
     for (i = 0; sAndaresEscuros[i] != FAMILIA_SEM_MAPA; i++)
     {
         if (sAndaresEscuros[i] == mapa)
@@ -263,6 +272,12 @@ void FamiliaSombra_PaletaNoir(u16 *pal, u16 count)
         cor = pal[i];
         pal[i] = sFamiliaNoir[30 * GET_R(cor) + 59 * GET_G(cor) + 11 * GET_B(cor)];
     }
+}
+
+// A abertura da batalha do chefe: "GENGAR, O DOM, quer acertar as contas!" (o título da ocupação em destaque).
+const u8 *FamiliaSombra_TextoDoChefe(void)
+{
+    return gText_FamiliaChefeQuerAcertar[OcupacaoDasLutas() - 1];
 }
 
 // Special: o chefe da ocupação em gEnemyParty[0] e a batalha contra ele (lendária, MUS_VS_LEGEND). Sempre shiny pela
