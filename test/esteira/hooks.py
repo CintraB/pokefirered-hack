@@ -473,6 +473,21 @@ class Mailbox:
         result = self.call(CMD_SHOW_FIELD_TEXT, address, glyph)
         assert result == 1, f"SHOW_FIELD_TEXT recusado: {address:#010x} ({result:#x})"
 
+    # --- POK-51: Família Sombra ----------------------------------------------------------------
+    def familia_estado(self) -> tuple[int, int, int]:
+        """(ocupação, estado, meio-dia da queda) das vars da Família Sombra."""
+        result = self.call(CMD_FAMILIA_ESTADO)
+        return result & 0xFF, result >> 8 & 0xFF, result >> 16
+
+    def familia_set(self, ocupacao: int, estado: int, queda: int = 0) -> None:
+        """Grava VAR_FAMILIA_OCUPACAO, VAR_FAMILIA_ESTADO e VAR_FAMILIA_QUEDA como estão."""
+        result = self.call(CMD_FAMILIA_SET, ocupacao | estado << 8, queda)
+        assert result == 1, f"FAMILIA_SET recusado: {result:#x}"
+
+# --- POK-51: Família Sombra (enum à parte, a partir de 0x120) -----------------------------------
+CMD_FAMILIA_ESTADO = 0x120  # -> ocupação | estado << 8 | meio-dia da queda << 16
+CMD_FAMILIA_SET = 0x121     # arg0 = ocupação | estado << 8, arg1 = meio-dia da queda -> 1
+
 # --- Hack 6: breeding genético (enum à parte em include/test_hooks.h, a partir de 0x60; ------
 # o uso fica em esteira/breeding.py e scenarios/full_breeding.py / full_egg.py)
 CMD_BREED_SETUP = 0x60      # gTestBreedSetup -> creche (arg0 = 1: ovo pendente) -> compatibilidade (0xFFFFFFFF = pai inválido)

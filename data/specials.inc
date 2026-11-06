@@ -480,4 +480,9 @@ gSpecials::
 	def_special ShouldUseLeagueRematchTeams
 	def_special BufferRematchTierName
 	def_special ShowRematchTierMenu
+	@ Família Sombra (POK-51)
+	def_special FamiliaSombra_Atualizar
+	def_special FamiliaSombra_ChefeCaiu
+	def_special FamiliaSombra_GetEstado
+	def_special FamiliaSombra_GetOcupacao
 gSpecialsEnd::

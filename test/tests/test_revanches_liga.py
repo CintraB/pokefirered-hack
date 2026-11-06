@@ -178,7 +178,8 @@ def test_liga_no_c():
     assert re.search(r"STATIC_ASSERT\(NELEMS\(sLeagueTierParties\) == "
                      r"TRAINER_CHAMPION_REMATCH_CHARMANDER - TRAINER_ELITE_FOUR_LORELEI_2 \+ 1", fonte)
     specials = _ler(REPO_ROOT / "data" / "specials.inc")
-    fim = specials[:specials.index("gSpecialsEnd::")].rstrip().splitlines()
+    fim = [l for l in specials[:specials.index("gSpecialsEnd::")].rstrip().splitlines()
+           if "FamiliaSombra_" not in l and "POK-51" not in l]  # POK-51 vem depois
     # os da Task 4 (BufferRematchTierName) e da onda final (ShowRematchTierMenu) vêm logo depois
     assert [l.strip() for l in fim[-3:]] == ["def_special ShouldUseLeagueRematchTeams", "def_special BufferRematchTierName",
                                            "def_special ShowRematchTierMenu"]

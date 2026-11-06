@@ -317,7 +317,8 @@ def test_icones():
 
 
 def test_special_e_atalhos():
-    specials = re.findall(r"def_special (\w+)", _ler(SPECIALS).split("gSpecialsEnd::")[0])
+    specials = [n for n in re.findall(r"def_special (\w+)", _ler(SPECIALS).split("gSpecialsEnd::")[0])
+                if not n.startswith("FamiliaSombra_")]  # POK-51 vem depois
     # no fim (o POK-42 acrescentou o da Liga depois)
     finais = specials[specials.index("Conquistas_MostrarAviso"):]
     assert finais == ["Conquistas_MostrarAviso", "Conquistas_AbrirTelaDoScript", "ShouldUseLeagueRematchTeams",

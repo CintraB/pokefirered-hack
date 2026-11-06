@@ -38,6 +38,7 @@ extern u32 TestRollWild(u8 area, u8 rod, bool8 startBattle); // Hack 8
 // POK-47
 #include "dexnav.h"
 #include "follower.h"
+#include "familia_sombra.h"
 
 STATIC_ASSERT(TEST_TEXT_SIZE >= SUMMARY_PAGE_TEXT_SIZE, TestTextHoldsASummaryPage);
 
@@ -1485,6 +1486,22 @@ static u32 ShowFieldText(u32 text, u32 glyph)
 // --- end of POK-29 --------------------------------------------------------------------------
 
 
+// --- POK-51: Família Sombra -----------------------------------------------------------------
+static u32 FamiliaEstado(void)
+{
+    return (u32)(VarGet(VAR_FAMILIA_OCUPACAO) & 0xFF) | (u32)(VarGet(VAR_FAMILIA_ESTADO) & 0xFF) << 8
+         | (u32)(VarGet(VAR_FAMILIA_QUEDA) & 0xFFFF) << 16;
+}
+
+static u32 FamiliaSet(u32 estado, u32 queda)
+{
+    VarSet(VAR_FAMILIA_OCUPACAO, estado & 0xFF);
+    VarSet(VAR_FAMILIA_ESTADO, estado >> 8 & 0xFF);
+    VarSet(VAR_FAMILIA_QUEDA, queda);
+    return 1;
+}
+// --- end of POK-51 --------------------------------------------------------------------------
+
 void TestHooks_Run(void)
 {
     u32 result = 0;
@@ -1641,6 +1658,9 @@ void TestHooks_Run(void)
     case TEST_CMD_POKERUS_SET:      result = PokerusSet(gTestMailbox.arg0, gTestMailbox.arg1); break;
     case TEST_CMD_POKERUS_STATE:    result = PokerusState(); break;
     case TEST_CMD_POKERUS_RUN:      result = PokerusRun(gTestMailbox.arg0, gTestMailbox.arg1); break;
+    // POK-51
+    case TEST_CMD_FAMILIA_ESTADO:   result = FamiliaEstado(); break;
+    case TEST_CMD_FAMILIA_SET:      result = FamiliaSet(gTestMailbox.arg0, gTestMailbox.arg1); break;
     // POK-29
     case TEST_CMD_SHOW_FIELD_TEXT:  result = ShowFieldText(gTestMailbox.arg0, gTestMailbox.arg1); break;
     default:
