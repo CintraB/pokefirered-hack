@@ -477,7 +477,12 @@
     "Route22_NorthEntrance"
   ],
   "gMapGroup_IndoorRoute23": [
-    "Route23_UnusedHouse"
+    "Route23_UnusedHouse",
+    "Route23_FamiliaSombra_2F",
+    "Route23_FamiliaSombra_3F",
+    "Route23_FamiliaSombra_4F",
+    "Route23_FamiliaSombra_5F",
+    "Route23_FamiliaSombra_6F"
   ],
   "gMapGroup_IndoorRoute25": [
     "Route25_SeaCottage"

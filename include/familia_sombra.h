@@ -34,5 +34,6 @@ void FamiliaSombra_GetEstado(void);
 void FamiliaSombra_GetOcupacao(void);
 void FamiliaSombra_SortearPedagio(void);
 void FamiliaSombra_IniciarChefe(void);
+void FamiliaSombra_PrepararAndar(void);
 
 #endif // GUARD_FAMILIA_SOMBRA_H

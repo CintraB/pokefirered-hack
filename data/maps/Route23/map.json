@@ -160,6 +160,13 @@
       "elevation": 0,
       "dest_map": "MAP_ROUTE22_NORTH_ENTRANCE",
       "dest_warp_id": "0"
+    },
+    {
+      "x": 4,
+      "y": 149,
+      "elevation": 0,
+      "dest_map": "MAP_ROUTE23_UNUSED_HOUSE",
+      "dest_warp_id": "0"
     }
   ],
   "coord_events": [
@@ -630,6 +637,14 @@
       "elevation": 0,
       "player_facing_dir": "BG_EVENT_PLAYER_FACING_ANY",
       "script": "Route23_EventScript_VictoryRoadGateSign"
+    },
+    {
+      "type": "sign",
+      "x": 4,
+      "y": 149,
+      "elevation": 0,
+      "player_facing_dir": "BG_EVENT_PLAYER_FACING_NORTH",
+      "script": "Route23_EventScript_PortaFamilia"
     }
   ]
 }

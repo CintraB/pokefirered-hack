@@ -1,21 +1,121 @@
 {
   "id": "MAP_ROUTE23_UNUSED_HOUSE",
   "name": "Route23_UnusedHouse",
-  "layout": "LAYOUT_HOUSE2",
-  "music": "MUS_VICTORY_ROAD",
+  "layout": "LAYOUT_ROUTE23_FAMILIA_SOMBRA_1F",
+  "music": "MUS_ROCKET_HIDEOUT",
   "region_map_section": "MAPSEC_ROUTE_23",
   "requires_flash": false,
-  "weather": "WEATHER_NONE",
+  "weather": "WEATHER_SHADE",
   "map_type": "MAP_TYPE_INDOOR",
   "allow_cycling": false,
-  "allow_escaping": false,
-  "allow_running": false,
+  "allow_escaping": true,
+  "allow_running": true,
   "show_map_name": false,
-  "floor_number": 0,
+  "floor_number": 1,
   "battle_scene": "MAP_BATTLE_SCENE_NORMAL",
   "connections": null,
-  "object_events": [],
-  "warp_events": [],
+  "object_events": [
+    {
+      "local_id": "LOCALID_FAMILIA_1F_CAPANGA_1",
+      "type": "object",
+      "graphics_id": "OBJ_EVENT_GFX_VAR_0",
+      "x": 8,
+      "y": 9,
+      "elevation": 3,
+      "movement_type": "MOVEMENT_TYPE_FACE_LEFT",
+      "movement_range_x": 1,
+      "movement_range_y": 1,
+      "trainer_type": "TRAINER_TYPE_NORMAL",
+      "trainer_sight_or_berry_tree_id": "3",
+      "script": "Route23_UnusedHouse_EventScript_Capanga1",
+      "flag": "TRAINER_FLAGS_START + TRAINER_FAMILIA_CAPANGA_1"
+    },
+    {
+      "local_id": "LOCALID_FAMILIA_1F_CAPANGA_2",
+      "type": "object",
+      "graphics_id": "OBJ_EVENT_GFX_VAR_1",
+      "x": 12,
+      "y": 6,
+      "elevation": 3,
+      "movement_type": "MOVEMENT_TYPE_FACE_LEFT",
+      "movement_range_x": 1,
+      "movement_range_y": 1,
+      "trainer_type": "TRAINER_TYPE_NORMAL",
+      "trainer_sight_or_berry_tree_id": "4",
+      "script": "Route23_UnusedHouse_EventScript_Capanga2",
+      "flag": "TRAINER_FLAGS_START + TRAINER_FAMILIA_CAPANGA_2"
+    },
+    {
+      "local_id": "LOCALID_FAMILIA_1F_CAPANGA_3",
+      "type": "object",
+      "graphics_id": "OBJ_EVENT_GFX_VAR_2",
+      "x": 8,
+      "y": 3,
+      "elevation": 3,
+      "movement_type": "MOVEMENT_TYPE_FACE_RIGHT",
+      "movement_range_x": 1,
+      "movement_range_y": 1,
+      "trainer_type": "TRAINER_TYPE_NORMAL",
+      "trainer_sight_or_berry_tree_id": "3",
+      "script": "Route23_UnusedHouse_EventScript_Capanga3",
+      "flag": "TRAINER_FLAGS_START + TRAINER_FAMILIA_CAPANGA_3"
+    },
+    {
+      "local_id": "LOCALID_FAMILIA_1F_ITEM_1",
+      "type": "object",
+      "graphics_id": "OBJ_EVENT_GFX_ITEM_BALL",
+      "x": 2,
+      "y": 9,
+      "elevation": 3,
+      "movement_type": "MOVEMENT_TYPE_FACE_DOWN",
+      "movement_range_x": 1,
+      "movement_range_y": 1,
+      "trainer_type": "TRAINER_TYPE_NONE",
+      "trainer_sight_or_berry_tree_id": "0",
+      "script": "Route23_UnusedHouse_EventScript_Perola",
+      "flag": "FLAG_FAMILIA_ITEM_1_1"
+    },
+    {
+      "local_id": "LOCALID_FAMILIA_1F_ITEM_2",
+      "type": "object",
+      "graphics_id": "OBJ_EVENT_GFX_ITEM_BALL",
+      "x": 13,
+      "y": 8,
+      "elevation": 3,
+      "movement_type": "MOVEMENT_TYPE_FACE_DOWN",
+      "movement_range_x": 1,
+      "movement_range_y": 1,
+      "trainer_type": "TRAINER_TYPE_NONE",
+      "trainer_sight_or_berry_tree_id": "0",
+      "script": "FamiliaSombra_EventScript_Maleta2000",
+      "flag": "FLAG_FAMILIA_ITEM_1_2"
+    }
+  ],
+  "warp_events": [
+    {
+      "x": 7,
+      "y": 11,
+      "elevation": 3,
+      "dest_map": "MAP_ROUTE23",
+      "dest_warp_id": "4"
+    },
+    {
+      "x": 11,
+      "y": 3,
+      "elevation": 3,
+      "dest_map": "MAP_ROUTE23_FAMILIA_SOMBRA_2F",
+      "dest_warp_id": "0"
+    }
+  ],
   "coord_events": [],
-  "bg_events": []
+  "bg_events": [
+    {
+      "type": "sign",
+      "x": 3,
+      "y": 6,
+      "elevation": 0,
+      "player_facing_dir": "BG_EVENT_PLAYER_FACING_NORTH",
+      "script": "Route23_UnusedHouse_EventScript_Bilhete"
+    }
+  ]
 }

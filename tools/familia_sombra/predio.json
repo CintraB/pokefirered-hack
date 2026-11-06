@@ -1,0 +1,146 @@
+{
+  "_comentario": "Gerado por tools/familia_sombra/predio.py. Não editar.",
+  "familia_sombra": {
+    "ladrilhos": 191,
+    "metatiles": 103
+  },
+  "indigo_plateau": {
+    "ladrilhos": 316,
+    "porta_trancada": 840,
+    "porta_aberta": 61
+  },
+  "rota23": {
+    "porta": [
+      4,
+      149
+    ],
+    "predio": [
+      2,
+      144,
+      4,
+      6
+    ]
+  },
+  "andares": {
+    "1": {
+      "largura": 15,
+      "altura": 13,
+      "saida": [
+        7,
+        11
+      ],
+      "sobe": [
+        11,
+        3
+      ],
+      "bilhete": [
+        3,
+        6
+      ]
+    },
+    "2": {
+      "largura": 15,
+      "altura": 13,
+      "desce": [
+        3,
+        3
+      ],
+      "sobe": [
+        11,
+        3
+      ],
+      "bilhete": [
+        7,
+        10
+      ]
+    },
+    "3": {
+      "largura": 15,
+      "altura": 13,
+      "desce": [
+        3,
+        3
+      ],
+      "sobe": [
+        11,
+        3
+      ],
+      "bilhete": [
+        2,
+        9
+      ]
+    },
+    "4": {
+      "largura": 15,
+      "altura": 13,
+      "desce": [
+        3,
+        3
+      ],
+      "sobe": [
+        11,
+        3
+      ],
+      "bilhete": [
+        8,
+        10
+      ]
+    },
+    "5": {
+      "largura": 15,
+      "altura": 13,
+      "desce": [
+        3,
+        3
+      ],
+      "sobe": [
+        11,
+        3
+      ],
+      "bilhete": [
+        11,
+        10
+      ]
+    },
+    "6": {
+      "largura": 13,
+      "altura": 13,
+      "desce": [
+        3,
+        3
+      ],
+      "chefe": [
+        6,
+        4
+      ],
+      "gemeos": [
+        [
+          4,
+          5
+        ],
+        [
+          8,
+          5
+        ]
+      ],
+      "bilhete": [
+        6,
+        6
+      ],
+      "gatilhos": [
+        [
+          3,
+          4
+        ],
+        [
+          4,
+          4
+        ],
+        [
+          5,
+          3
+        ]
+      ]
+    }
+  }
+}

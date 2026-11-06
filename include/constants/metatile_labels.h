@@ -303,4 +303,7 @@
 #define METATILE_RSCave_CrackedFloor                     0x22F
 #define METATILE_RSCave_CrackedFloor_Hole                0x206
 
+// gTileset_IndigoPlateau (POK-51: a porta do prédio da Família Sombra, tools/familia_sombra/predio.py)
+#define METATILE_IndigoPlateau_FamiliaPortaTrancada  0x348
+
 #endif // GUARD_METATILE_LABELS_H

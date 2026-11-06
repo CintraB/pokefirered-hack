@@ -40,6 +40,22 @@ atalho FAMILIA_WILD, que monta o mesmo Pokémon do encontro do andar e liga BATT
   de chefe (aiLogicId 9) e nunca escolhe Raio, nem Comedor de Sonhos com o Golem acordado, nem Hipnose com ele
   dormindo (ao acaso, passar nos 3 turnos tem 1/8 de chance).
 
+Task 5 (o prédio da Rota 23: 6 andares e a sala do Dom). As insígnias vêm do atalho SET_FLAG (Ruling R7); o atalho
+WARP só chega a y < 128, então a frente da porta (4, 150) se alcança saindo pelo tapete do 1º andar.
+
+- `familia/porta_trancada`: sem a 8ª insígnia a porta não abre e a placa fala do charuto (tela
+  `familia_porta_trancada`); com ela, entrar na Rota 23 liga a ocupação 1 e a porta leva ao 1º andar (tela
+  `familia_rota23_predio`);
+- `familia/ciclo`: save antigo com a insígnia = ocupação 1; queda + 6 meios-dias = sem chefe; +7 = ocupação 2 com
+  itens e treinadores de volta, uma vez só; a 2ª queda + 7 = continua sem chefe e o andar fica vazio;
+- `familia/capanga_ve`: o capanga 2 do 1º andar vê o jogador, vem até ele, luta e some depois da derrota;
+- `familia/subida`: da porta ao 6º andar pelas escadas (música, escuro e névoa por andar; o Gengar shiny e os 2
+  Machamp na sala); telas `familia_andar_1`, `familia_andar_4` e `familia_sala_do_dom`;
+- `familia/encontro_andar4` e `familia/sem_encontro_sem_chefe` (Ruling R4): passos de verdade no 4º andar;
+- `familia/gemeos_um_pokemon`: com 1 Pokémon a dupla é recusada e nada começa;
+- `familia/chefe_fuga`: gêmeos já vencidos, a cena vai direto ao chefe; fugindo, ele fica e não há rosa;
+- `familia/rosa`: a cena inteira (gêmeos, Dom) e a Rosa Vermelha na bolsa (tela `familia_rosa`).
+
 Uso, a partir de test/ (a pasta OUT precisa do captura.sav de um `rapido`/`completo`):
     python3 -m esteira completo --rom R --elf E --out OUT --only familia
 """
@@ -50,12 +66,15 @@ import re
 from ..battle import ACTION_FIGHT, MENU_TIMEOUT, MOVE_FUNC_SUFFIX, BattleDriver
 from ..breeding import header_defines
 from ..game import POKEMON_SIZE, mon_checksum_ok
-from ..hooks import CMD_GIVE_ITEM, Mailbox
+from ..emu import KEY_A, KEY_UP
+from ..hooks import CMD_GIVE_ITEM, CMD_SET_VAR, CMD_WARP, Mailbox
+from ..nav import Navigator
 from . import REPO_ROOT, ScenarioContext
 from .base import Abort
 from .quick_catch_save import CatchSaveScenario
 
-ESTADO_ATIVA = 1                     # FAMILIA_ESTADO_ATIVA (include/constants/familia_sombra.h)
+ESTADO_FECHADO = 0                   # FAMILIA_ESTADO_FECHADO (include/constants/familia_sombra.h)
+ESTADO_ATIVA = 1                     # FAMILIA_ESTADO_ATIVA
 ESTADO_SEM_CHEFE = 2                 # FAMILIA_ESTADO_SEM_CHEFE
 PASSOS = 400                         # passos do caso familia/passos_andar_escuro
 SPRITE_SIZE, SPRITE_CALLBACK, SPRITE_DATA, SPRITE_IN_USE = 0x44, 0x1C, 0x2E, 0x3E   # struct Sprite
@@ -82,6 +101,29 @@ STATUS1_SLEEP = 0x7
 AI_RESOURCES, AI_LOGIC_ID = 0x14, 0x11   # gBattleResources->ai, AI_ThinkingStruct.aiLogicId
 CHEFE_AI_BITS = 9                    # FAMILIA_AI_CHEFE vai até AI_SCRIPT_HP_AWARE (bit 8)
 AI_TURNS = 3
+# Task 5: o prédio (posições de tools/familia_sombra/predio.json e dos map.json)
+PORTA_FRENTE = (4, 150)              # Rota 23: o tile na frente da porta do prédio (porta em (4, 149))
+PORTA = (4, 149)
+ROTA23_SUL = (10, 126)               # Rota 23: um tile livre ao sul (o atalho WARP só aceita y < 128)
+SAIDA_1F = (7, 11)                   # 1º andar: o tapete da saída
+ANTES_DA_ESCADA = (10, 3)            # andares 1-5: o tile à esquerda do warp da escada para cima (11, 3)
+SAIDA_ESCADA_6F = (4, 3)             # 6º andar: onde a escada deixa o jogador; um passo para baixo é o gatilho (4, 4)
+VAI_E_VEM_4F = ((4, 6), ("down", "up"))   # 4º andar: corredor da esquerda, (4, 6) a (4, 10) e de volta
+PASSOS_ANDAR = 400
+# 1º andar: do tapete (7, 11) até (10, 6), na linha do capanga 2 (12, 6), que vem até (11, 6)
+VISTA_CAPANGA_2 = ((("right", 2), ("up", 2), ("right", 1), ("up", 3)), (11, 6))
+OBJECT_EVENT_XY, MAP_OFFSET = 0x10, 7  # ObjectEvent.currentCoords (coordenadas do mapa + 7)
+QUEDA_ROSA = 30                      # meio-dia do relógio na vitória do caso familia/rosa
+TRAINER_FLAGS_START = 0x500
+REPEL_VAR = 0x4020                   # VAR_REPEL_STEP_COUNT
+SB1_FLASH_LEVEL = 0x30               # SaveBlock1.flashLevel
+SB2_GAME_CLOCK = 0x90                # SaveBlock2.gameClockFrames (src/day_night.c)
+GAME_CLOCK_FRAMES_PER_MINUTE, GAME_CLOCK_START_MINUTE, HALF_DAY_MINUTES = 150, 480, 720   # constants/day_night.h
+BUTTON_WAIT_STATES = {1, 2, 3}       # RENDER_STATE_WAIT/CLEAR/SCROLL_START: o texto espera um botão
+PALETTE_FADE_ACTIVE = 7              # byte de gPaletteFade com o bit `active` (0x80)
+OBJECT_EVENTS_COUNT, OBJECT_EVENT_SIZE, OBJECT_EVENT_LOCAL_ID, OBJECT_EVENT_GFX = 16, 0x24, 8, 5
+FOG_CALLBACK = "FogHorizontalSpriteCallback"
+LOCALID_PLAYER, LOCALID_FOLLOWER = 0xFF, 0xFE
 
 
 def _noir_tool():
@@ -151,6 +193,8 @@ class FamiliaScenario(CatchSaveScenario):
         self.moves = header_defines(REPO_ROOT, "moves.h")
         self.moves_names = {v: k for k, v in self.moves.items() if k.startswith("MOVE_")}
         self.songs = header_defines(REPO_ROOT, "songs.h")
+        self.nav = Navigator(self.ctl)
+        self.gfx = header_defines(REPO_ROOT, "event_objects.h")
 
     # --- leitura --------------------------------------------------------------------
     def _sym(self, name: str) -> int:
@@ -500,6 +544,383 @@ class FamiliaScenario(CatchSaveScenario):
         self.driver.wait_action_menu(INTRO_TIMEOUT)
         return f"dupla: {seen}, 2 Machamp nv 60; MUS_VS_GYM_LEADER; tela {shot}"
 
+    # --- Task 5: o prédio ------------------------------------------------------------------------
+    def _flag(self, name: str) -> int:
+        return self.consts.flag(name)
+
+    def _trainer_flag(self, name: str) -> int:
+        return TRAINER_FLAGS_START + self._trainer(name)
+
+    def _message(self) -> str:
+        """A última caixa de mensagem do campo (gStringVar4)."""
+        return self.game.charmap.decode(self.emu.read(self._sym("gStringVar4"), STRING_BYTES).split(b"\xff")[0])
+
+    def _fade_active(self) -> bool:
+        return bool(self.emu.read_u8(self._sym("gPaletteFade") + PALETTE_FADE_ACTIVE) & 0x80)
+
+    def _settle(self, what: str) -> None:
+        self.ctl.wait_overworld_idle(900)
+        self.ctl.wait_until(lambda: not self._fade_active(), 300, f"fim do fade: {what}")
+        self.emu.frames(4)
+
+    def _warp(self, map_name: str, xy: tuple[int, int]) -> None:
+        """Atalho WARP (fade e carga do mapa como numa porta: o on_transition do destino roda)."""
+        group, num = self.consts.map(map_name)
+        self._settle(f"antes do warp para {map_name}")
+        self.box.call(CMD_WARP, group | num << 8, xy[0] | xy[1] << 16)
+        self.ctl.wait_until(lambda: self.game.location() == (group, num), 600, f"warp para {map_name}")
+        self._settle(f"warp para {map_name}")
+
+    def _at(self, map_name: str) -> bool:
+        return self.game.location() == self.consts.map(map_name)
+
+    def _half_day(self) -> int:
+        """Meio-dia do relógio da hack (FamiliaSombra_MeiosDiasAgora)."""
+        frames = self.emu.read_u32(self.emu.read_u32(self._sym("gSaveBlock2Ptr")) + SB2_GAME_CLOCK)
+        return (frames // GAME_CLOCK_FRAMES_PER_MINUTE + GAME_CLOCK_START_MINUTE) // HALF_DAY_MINUTES
+
+    def _set_half_day(self, half: int) -> None:
+        self.box.set_clock(half // 2, (half % 2) * HALF_DAY_MINUTES)
+        assert self._half_day() == half, (self._half_day(), half)
+
+    def _repovoaveis(self) -> dict[str, bool]:
+        """O que FamiliaSombra_Repovoar desmarca: 1 item, 1 capanga e os gêmeos (amostra) e a flag dos gêmeos."""
+        return {
+            "item 1_1": self.game.flag(self._flag("FLAG_FAMILIA_ITEM_1_1")),
+            "capanga 1": self.game.flag(self._trainer_flag("TRAINER_FAMILIA_CAPANGA_1")),
+            "treinador gêmeos": self.game.flag(self._trainer_flag("TRAINER_FAMILIA_GEMEOS")),
+            "gêmeos vencidos": self.game.flag(self._flag("FLAG_FAMILIA_GEMEOS_VENCIDOS")),
+        }
+
+    def _mark_repovoaveis(self) -> None:
+        for flag in (self._flag("FLAG_FAMILIA_ITEM_1_1"), self._trainer_flag("TRAINER_FAMILIA_CAPANGA_1"),
+                     self._trainer_flag("TRAINER_FAMILIA_GEMEOS"), self._flag("FLAG_FAMILIA_GEMEOS_VENCIDOS")):
+            assert self.box.set_flag(flag, True)
+
+    def _active_objects(self) -> list[int]:
+        """localId dos objetos ativos do mapa (sem o jogador e o seguidor), em ordem."""
+        base = self._sym("gObjectEvents")
+        ids = []
+        for i in range(OBJECT_EVENTS_COUNT):
+            addr = base + i * OBJECT_EVENT_SIZE
+            local = self.emu.read_u8(addr + OBJECT_EVENT_LOCAL_ID)
+            if self.emu.read_u8(addr) & 1 and local not in (LOCALID_PLAYER, LOCALID_FOLLOWER):
+                ids.append(local)
+        return sorted(ids)
+
+    def _waiting(self) -> bool:
+        """Página inteira na tela, esperando botão (ou impressão acabada)."""
+        return not self.game.text_printer_active() or self.game.text_printer_state(0) in BUTTON_WAIT_STATES
+
+    def _sprites_with(self, callback: str) -> int:
+        base = self._sym("gSprites")
+        return sum(1 for i in range(MAX_SPRITES)
+                   if self.emu.read_u16(base + i * SPRITE_SIZE + SPRITE_IN_USE) & 1 and self._sprite_callback(i) == callback)
+
+    def _object_gfx(self, local: int) -> int:
+        base = self._sym("gObjectEvents")
+        for i in range(OBJECT_EVENTS_COUNT):
+            addr = base + i * OBJECT_EVENT_SIZE
+            if self.emu.read_u8(addr) & 1 and self.emu.read_u8(addr + OBJECT_EVENT_LOCAL_ID) == local:
+                return self.emu.read_u8(addr + OBJECT_EVENT_GFX)
+        raise AssertionError(f"objeto {local} não está no mapa")
+
+    def _scene(self, until, what: str, timeout: int = 4000, shot: tuple[str, str] | None = None) -> list[str]:
+        """Aperta A até `until()`; devolve as mensagens do campo vistas (gStringVar4). `shot` = (trecho, tela):
+        foto quando o trecho está na caixa, já impresso e esperando o botão."""
+        seen, spent, taken = [], 0, False
+        while not until():
+            if spent > timeout:
+                raise self.ctl.timeout_error(f"{what}; mensagens {seen}")
+            msg = self._message()
+            if self.ctl.script_active() and msg and (not seen or seen[-1] != msg):
+                seen.append(msg)
+            if shot and not taken and shot[0] in msg and self.ctl.script_active():
+                self.ctl.wait_until(lambda: self._waiting() and not self._fade_active(), 300, f"texto {shot[0]!r}")
+                self._shot(shot[1])
+                taken = True
+            if self.ctl.script_active() and not self.game.in_battle():
+                self.emu.press(KEY_A, hold=2, release=8)
+                spent += 10
+            else:
+                self.emu.frames(4)
+                spent += 4
+        return seen
+
+    def _sair_do_predio(self) -> None:
+        """Pelo tapete do 1º andar até a frente da porta na Rota 23 (o atalho WARP não chega a y >= 128)."""
+        self._warp("MAP_ROUTE23_UNUSED_HOUSE", SAIDA_1F)
+        self.nav.go_through_warp("down")
+        self._settle("saída do prédio")
+        if self.game.player_xy() == PORTA:      # porta trancada: sai sem a animação e fica no tile da porta
+            self.nav.step("down")
+        assert self._at("MAP_ROUTE23") and self.game.player_xy() == PORTA_FRENTE, \
+            (self.game.location(), self.game.player_xy())
+
+    def _porta(self) -> str:
+        """Sem a 8ª insígnia a porta do prédio está trancada (o metatile vira o da porta sem comportamento e a placa
+        fala do charuto); com ela, a 1ª entrada liga a ocupação 1 e a porta leva ao 1º andar."""
+        self._restore("familia_base")
+        badge = self._flag("FLAG_BADGE08_GET")
+        self.box.set_flag(badge, False)
+        self.box.familia_set(0, ESTADO_FECHADO)
+        self._sair_do_predio()
+        self.emu.keys(KEY_UP)
+        self.emu.frames(60)
+        self.emu.keys(0)
+        self.emu.frames(10)
+        assert self._at("MAP_ROUTE23") and self.game.player_xy() == PORTA_FRENTE, \
+            f"a porta trancada deixou passar: {self.game.location()} {self.game.player_xy()}"
+        self.ctl.press_until(KEY_A, self.ctl.script_active, "placa da porta", tries=5)
+        self.ctl.wait_until(self._waiting, 600, "texto da porta")
+        msg = self._message()
+        assert msg == self._rom_text("Route23_Text_PortaFamiliaTrancada"), msg
+        self._shot("familia_porta_trancada")
+        self._scene(self.ctl.overworld_idle, "fim da placa")
+        assert self.box.familia_estado()[:2] == (0, ESTADO_FECHADO)
+        self.box.set_flag(badge, True)
+        self._warp("MAP_ROUTE23", ROTA23_SUL)
+        assert self.box.familia_estado()[:2] == (1, ESTADO_ATIVA), self.box.familia_estado()
+        self._sair_do_predio()
+        self._shot("familia_rota23_predio")
+        self.nav.go_through_warp("up")
+        assert self._at("MAP_ROUTE23_UNUSED_HOUSE"), self.game.location()
+        return f"trancada: {msg!r}; com a 8ª insígnia: ocupação 1 ATIVA e a porta leva ao 1º andar"
+
+    def _ciclo(self) -> str:
+        """O ciclo pelo relógio: save antigo com a 8ª insígnia entra = ocupação 1; queda + 6 meios-dias = ainda sem
+        chefe; +7 = ocupação 2 com itens e treinadores de volta (uma vez só); a 2ª queda + 7 = continua sem chefe."""
+        self._restore("familia_base")
+        log = []
+        self.box.set_flag(self._flag("FLAG_BADGE08_GET"), True)
+        self.box.familia_set(0, ESTADO_FECHADO)
+        self._mark_repovoaveis()
+        self._warp("MAP_ROUTE23", ROTA23_SUL)
+        assert self.box.familia_estado()[:2] == (1, ESTADO_ATIVA), self.box.familia_estado()
+        assert not any(self._repovoaveis().values()), self._repovoaveis()
+        log.append("save antigo com a insígnia: ocupação 1 ATIVA, tudo no lugar")
+        queda = 20
+        self._set_half_day(queda)
+        self.box.familia_set(1, ESTADO_SEM_CHEFE, queda)
+        self._mark_repovoaveis()
+        self._set_half_day(queda + 6)
+        self._warp("MAP_ROUTE23", ROTA23_SUL)
+        assert self.box.familia_estado() == (1, ESTADO_SEM_CHEFE, queda), self.box.familia_estado()
+        log.append("queda + 6 meios-dias: sem chefe")
+        self._set_half_day(queda + 7)
+        self._warp("MAP_ROUTE23", ROTA23_SUL)
+        assert self.box.familia_estado()[:2] == (2, ESTADO_ATIVA), self.box.familia_estado()
+        assert not any(self._repovoaveis().values()), f"não repovoou: {self._repovoaveis()}"
+        log.append("+7: ocupação 2 ATIVA, itens e treinadores de volta")
+        self._mark_repovoaveis()           # o jogador vence o capanga e pega o item da ocupação 2
+        self._warp("MAP_ROUTE23_UNUSED_HOUSE", SAIDA_1F)
+        self._warp("MAP_ROUTE23", ROTA23_SUL)
+        assert self.box.familia_estado()[:2] == (2, ESTADO_ATIVA)
+        assert all(self._repovoaveis().values()), f"repovoou de novo: {self._repovoaveis()}"
+        log.append("entrar de novo não repovoa outra vez")
+        queda2 = queda + 9
+        self._set_half_day(queda2)
+        self.box.familia_set(2, ESTADO_SEM_CHEFE, queda2)
+        self._set_half_day(queda2 + 7)
+        self._warp("MAP_ROUTE23", ROTA23_SUL)
+        self._warp("MAP_ROUTE23_UNUSED_HOUSE", SAIDA_1F)
+        assert self.box.familia_estado() == (2, ESTADO_SEM_CHEFE, queda2), self.box.familia_estado()
+        assert self._active_objects() == [], f"objetos no 1º andar sem chefe: {self._active_objects()}"
+        log.append("2ª queda + 7: continua sem chefe (FAMILIA_OCUPACOES_ATIVAS 2), andar vazio")
+        return "; ".join(log)
+
+    def _subida(self) -> str:
+        """Da porta ao 6º andar pelas escadas de verdade (capangas já vencidos, Repelente com o Mewtwo nv 100 na
+        frente): música, clima e escuro de cada andar; telas do 1º, do 4º (escuro e névoa) e da sala do Dom."""
+        self._restore("familia_base")
+        self.box.set_party_mon(0, self._sp("MEWTWO"), 100)
+        self.box.call(CMD_SET_VAR, REPEL_VAR, 999)
+        self._warp("MAP_ROUTE23", ROTA23_SUL)
+        self._sair_do_predio()
+        self.nav.go_through_warp("up")
+        self._settle("1º andar")
+        shots = [self._shot("familia_andar_1")]
+        for slot in range(1, 10):
+            self.box.set_flag(self._trainer_flag(f"TRAINER_FAMILIA_CAPANGA_{slot}"), True)
+        self._warp("MAP_ROUTE23_UNUSED_HOUSE", SAIDA_1F)
+        seen = []
+        for andar in range(1, 6):
+            name = "MAP_ROUTE23_UNUSED_HOUSE" if andar == 1 else f"MAP_ROUTE23_FAMILIA_SOMBRA_{andar}F"
+            assert self._at(name), (andar, self.game.location())
+            song = "MUS_ROCKET_HIDEOUT" if andar <= 3 else "MUS_POKE_TOWER"
+            assert self._bgm_is(song), f"{andar}º andar sem {song}"
+            flash = self.emu.read_u8(self.emu.read_u32(self._sym("gSaveBlock1Ptr")) + SB1_FLASH_LEVEL)
+            assert (flash > 0) == (andar in (4, 5)), f"{andar}º andar: flashLevel {flash}"
+            fog = self._sprites_with(FOG_CALLBACK)
+            assert (fog > 0) == (andar in (4, 5)), f"{andar}º andar: {fog} sprites de névoa"
+            if andar == 4:
+                shots.append(self._shot("familia_andar_4"))
+            seen.append(f"{andar}º ({song}, escuro {flash}, névoa {fog})")
+            assert self.nav.walk_to(*ANTES_DA_ESCADA), f"{andar}º andar: não chegou à escada"
+            self.nav.go_through_warp("right")
+            self._settle(f"{andar + 1}º andar")
+        assert self._at("MAP_ROUTE23_FAMILIA_SOMBRA_6F"), self.game.location()
+        self.emu.frames(30)
+        shots.append(self._shot("familia_sala_do_dom"))
+        objs = sorted(self._active_objects())
+        assert objs == [1, 2, 3], f"sala do Dom: objetos {objs} (chefe e os 2 gêmeos)"
+        gfx = [self._object_gfx(local) for local in objs]
+        want = [self.gfx[f"OBJ_EVENT_GFX_FAMILIA_{n}"] for n in ("GENGAR_SHINY", "MACHAMP", "MACHAMP")]
+        assert gfx == want, f"gráficos da sala {gfx}, esperava {want}"
+        return f"andares {seen}; 6º com o Gengar shiny e os 2 Machamp; telas {shots}"
+
+    def _capanga_ve(self) -> str:
+        """O capanga 2 do 1º andar (visão 4, olhando para a esquerda) vê o jogador a 2 tiles, vem até ele e luta;
+        vencido, some do mapa na hora (a flag do treinador é a flag do objeto)."""
+        self._restore("familia_base")
+        self.box.set_party_move(0, 0, self.moves["MOVE_THUNDERBOLT"])
+        self._warp("MAP_ROUTE23_UNUSED_HOUSE", SAIDA_1F)
+        assert 2 in self._active_objects(), self._active_objects()
+        start = self._object_xy(2)
+        for direction, n in VISTA_CAPANGA_2[0]:     # pela direita, longe da vista do capanga 1
+            assert self.nav.step(direction, n) == n, (direction, n, self.game.player_xy())
+        self.ctl.wait_until(self.ctl.script_active, 60, "o capanga vê o jogador")
+        self._scene(self.game.in_battle, "o capanga vem lutar")
+        moved = self._object_xy(2)
+        trainer = self.emu.read_u16(self._sym("gTrainerBattleOpponent_A"))
+        assert trainer == self._trainer("TRAINER_FAMILIA_CAPANGA_2"), trainer
+        assert moved == VISTA_CAPANGA_2[1], f"o capanga não veio até o jogador: {start} -> {moved}"
+        assert self.driver.fight_to_end() == "win", "perdeu para o capanga 2"
+        self._scene(self.ctl.overworld_idle, "volta da batalha")
+        assert 2 not in self._active_objects(), f"o capanga vencido continua no mapa: {self._active_objects()}"
+        assert self.game.flag(self._trainer_flag("TRAINER_FAMILIA_CAPANGA_2"))
+        return f"o capanga 2 andou de {start} para {moved}, lutou e sumiu depois da derrota"
+
+    def _object_xy(self, local: int) -> tuple[int, int]:
+        base = self._sym("gObjectEvents")
+        for i in range(OBJECT_EVENTS_COUNT):
+            addr = base + i * OBJECT_EVENT_SIZE
+            if self.emu.read_u8(addr) & 1 and self.emu.read_u8(addr + OBJECT_EVENT_LOCAL_ID) == local:
+                return (self.emu.read_u16(addr + OBJECT_EVENT_XY) - MAP_OFFSET,
+                        self.emu.read_u16(addr + OBJECT_EVENT_XY + 2) - MAP_OFFSET)
+        raise AssertionError(f"objeto {local} não está no mapa")
+
+    def _to_scene(self, party: tuple[tuple[str, int], ...], gemeos_vencidos: bool) -> None:
+        """Na sala do Dom, um passo antes do gatilho (o tile da saída da escada), com o time `party`."""
+        self._restore("familia_base")
+        for slot, (species, level) in enumerate(party):
+            self.box.set_party_mon(slot, self._sp(species), level)
+        self.box.party_size(len(party))
+        self.box.set_flag(self._flag("FLAG_FAMILIA_GEMEOS_VENCIDOS"), gemeos_vencidos)
+        self.box.set_flag(self._trainer_flag("TRAINER_FAMILIA_GEMEOS"), gemeos_vencidos)
+        self._warp("MAP_ROUTE23_FAMILIA_SOMBRA_6F", SAIDA_ESCADA_6F)
+
+    def _gatilho(self) -> None:
+        """Um passo para baixo, da saída da escada para o gatilho da cena (4, 4), e a cena começa."""
+        self.nav.step("down")
+        self.ctl.wait_until(self.ctl.script_active, 60, "cena do 6º andar")
+
+    def _gemeos_um(self) -> str:
+        """Com 1 Pokémon só: o chefe fala, os gêmeos recusam a dupla ("Os gêmeos só lutam em dupla.") e nada começa;
+        o jogador anda de novo e tudo fica como estava."""
+        self._to_scene((("MEWTWO", 100),), False)
+        self._gatilho()
+        msgs = self._scene(self.ctl.overworld_idle, "recusa dos gêmeos")
+        assert not self.game.in_battle(), "começou uma batalha com 1 Pokémon"
+        want = self._rom_text("Route23_FamiliaSombra_6F_Text_SoEmDupla")
+        assert want in msgs, f"sem a recusa; mensagens {msgs}"
+        dom = self._rom_text("Route23_FamiliaSombra_6F_Text_Dom").split("\n")[0]
+        assert any(m.startswith(dom) for m in msgs), f"sem a fala do Dom: {msgs}"
+        assert not self.game.flag(self._trainer_flag("TRAINER_FAMILIA_GEMEOS"))
+        assert not self.game.flag(self._flag("FLAG_FAMILIA_GEMEOS_VENCIDOS"))
+        assert self.box.familia_estado()[:2] == (1, ESTADO_ATIVA)
+        assert self.nav.step("up") == 1, "o jogador ficou preso depois da recusa"
+        return f"recusa {want!r}; sem batalha; gêmeos e chefe no lugar; o jogador anda"
+
+    def _chefe_fuga(self) -> str:
+        """Gêmeos já vencidos: a cena vai direto ao chefe. Fugindo, o chefe fica (objeto, estado ATIVA, sem queda nem
+        rosa) e os gêmeos não voltam."""
+        self._to_scene((("MEWTWO", 100), ("SNORLAX", 100)), True)
+        objs = sorted(self._active_objects())
+        assert objs == [1], f"gêmeos vencidos voltaram: {objs}"
+        self._gatilho()
+        self._scene(self.game.in_battle, "começo da batalha do chefe")
+        flags = self.driver.battle_type_flags()
+        assert flags & BATTLE_TYPE_FAMILIA_CHEFE and not flags & 1, f"gBattleTypeFlags {flags:#x}"
+        assert self.driver.run_away(), "não fugiu do chefe"
+        msgs = self._scene(self.ctl.overworld_idle, "volta da fuga")
+        assert any(self._rom_text("Route23_FamiliaSombra_6F_Text_FugaDom") in m for m in msgs), msgs
+        assert self.box.familia_estado() == (1, ESTADO_ATIVA, 0), self.box.familia_estado()
+        assert sorted(self._active_objects()) == [1], self._active_objects()
+        assert not self.game.flag(self._flag("FLAG_FAMILIA_ROSA_1"))
+        assert self.game.bag_quantity(self.consts.item("ITEM_ROSA_VERMELHA")) == 0
+        return "direto ao chefe (gêmeos vencidos); fugiu: chefe no lugar, ATIVA, sem rosa"
+
+    def _rosa(self) -> str:
+        """A cena inteira: o Dom fala, a dupla dos gêmeos (vencida), o Dom fala de novo, a luta (vencida): a queda
+        conta, a Rosa Vermelha vai para a bolsa com FLAG_FAMILIA_ROSA_1 e a sala esvazia."""
+        self._to_scene((("MEWTWO", 100), ("SNORLAX", 100)), False)
+        self._set_half_day(QUEDA_ROSA)
+        for slot in (0, 1):
+            for i in range(4):
+                self.box.set_party_move(slot, i, self.moves["MOVE_PSYCHIC"])
+        self._gatilho()
+        self._scene(self.game.in_battle, "começo da dupla")
+        assert self.driver.battle_type_flags() & 1, "os gêmeos não lutaram em dupla"
+        assert self.driver.fight_to_end() == "win", "perdeu para os gêmeos"
+        self._scene(self.game.in_battle, "começo da batalha do chefe")
+        assert self.driver.battle_type_flags() & BATTLE_TYPE_FAMILIA_CHEFE
+        assert self.game.flag(self._flag("FLAG_FAMILIA_GEMEOS_VENCIDOS")), "gêmeos vencidos sem a flag"
+        assert self.driver.fight_to_end() == "win", "perdeu para o Dom"
+        half = self._half_day()
+        assert half == QUEDA_ROSA, half
+        msgs = self._scene(self.ctl.overworld_idle, "a rosa", shot=("Rosa Vermelha", "familia_rosa"))
+        rosa = self.consts.item("ITEM_ROSA_VERMELHA")
+        assert self.game.bag_quantity(rosa) == 1, f"Rosa Vermelha na bolsa: {self.game.bag_quantity(rosa)}"
+        assert self.game.flag(self._flag("FLAG_FAMILIA_ROSA_1"))
+        assert self.box.familia_estado() == (1, ESTADO_SEM_CHEFE, half), self.box.familia_estado()
+        assert self._active_objects() == [], self._active_objects()
+        drop = self._rom_text("Route23_FamiliaSombra_6F_Text_RosaDom")
+        assert drop in msgs, msgs
+        return f"gêmeos e Dom vencidos; {drop!r}; Rosa Vermelha na bolsa; SEM_CHEFE na queda {half}"
+
+    def _encontro_andar4(self) -> str:
+        """Passos de verdade no 4º andar com chefe ativo: sai um capanga do plantel (BATTLE_TYPE_FAMILIA)."""
+        self._restore("familia_base")
+        group, num = self.consts.map("MAP_ROUTE23_FAMILIA_SOMBRA_4F")
+        self.box.call(CMD_WARP, group | num << 8, VAI_E_VEM_4F[0][0] | VAI_E_VEM_4F[0][1] << 16)
+        self.ctl.wait_until(lambda: self.game.location() == (group, num), 600, "warp para o 4º andar")
+        self.ctl.wait_until(lambda: self.ctl.overworld_idle() or self.game.in_battle(), 900, "4º andar")
+        steps = self._walk_until_battle(PASSOS_ANDAR)
+        assert self.game.in_battle(), f"nenhum encontro em {PASSOS_ANDAR} passos no 4º andar"
+        self._wait_intro("gText_FamiliaCapangaQuerLutar", (1,))
+        flags = self.driver.battle_type_flags()
+        assert flags & BATTLE_TYPE_FAMILIA and not flags & BATTLE_TYPE_TRAINER, f"gBattleTypeFlags {flags:#x}"
+        plantel = times_table("sFamiliaPlantel")[0]
+        species, level = self.driver.battler_species_level(1)
+        assert any(self._sp(m[0]) == species for m in plantel) and 54 <= level <= 58, (species, level)
+        return f"encontro no passo {steps}: {self.consts.species_name(species)} nv {level}"
+
+    def _sem_encontro(self) -> str:
+        """Sem chefe, o 4º andar fica vazio: nenhum item e nenhum encontro em PASSOS_ANDAR passos."""
+        self._restore("familia_base")
+        self.box.familia_set(1, ESTADO_SEM_CHEFE, self._half_day())
+        self._warp("MAP_ROUTE23_FAMILIA_SOMBRA_4F", VAI_E_VEM_4F[0])
+        assert self._active_objects() == [], f"objetos no 4º andar sem chefe: {self._active_objects()}"
+        steps = self._walk_until_battle(PASSOS_ANDAR)
+        assert not self.game.in_battle() and steps == PASSOS_ANDAR, steps
+        return f"{steps} passos sem encontro e sem itens"
+
+    def _walk_until_battle(self, limit: int) -> int:
+        steps, k = 0, 0
+        while steps < limit and not self.game.in_battle():
+            # o encontro começa no fim de um passo e a batalha demora uns quadros para aparecer
+            self.ctl.wait_until(lambda: self.ctl.overworld_idle() or self.game.in_battle(), 600, "4º andar livre")
+            if self.game.in_battle():
+                break
+            direction = VAI_E_VEM_4F[1][k % 2]
+            moved = self.nav.step(direction, 4)
+            steps += moved
+            k += 1
+            if self.nav.interrupted == "battle" or self.game.in_battle():
+                break
+        return steps
+
     def run(self) -> None:
         try:
             self._flow("familia: CONTINUAR com o save do modo rápido", self._start)
@@ -516,6 +937,15 @@ class FamiliaScenario(CatchSaveScenario):
             self.suite.run("familia/chefe", self._chefe)
             self.suite.run("familia/bola_chefe", self._chefe_ball)
             self.suite.run("familia/chefe_ia", self._chefe_ia)
+            self.suite.run("familia/porta_trancada", self._porta)
+            self.suite.run("familia/ciclo", self._ciclo)
+            self.suite.run("familia/capanga_ve", self._capanga_ve)
+            self.suite.run("familia/subida", self._subida)
+            self.suite.run("familia/encontro_andar4", self._encontro_andar4)
+            self.suite.run("familia/sem_encontro_sem_chefe", self._sem_encontro)
+            self.suite.run("familia/gemeos_um_pokemon", self._gemeos_um)
+            self.suite.run("familia/chefe_fuga", self._chefe_fuga)
+            self.suite.run("familia/rosa", self._rosa)
         except Abort:
             pass
 

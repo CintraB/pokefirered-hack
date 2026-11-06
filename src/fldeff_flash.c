@@ -1,4 +1,5 @@
 #include "global.h"
+#include "familia_sombra.h"
 #include "gflib.h"
 #include "event_data.h"
 #include "event_scripts.h"
@@ -167,6 +168,9 @@ bool8 SetUpFieldMove_Flash(void)
         return FALSE;
 
     if (FlagGet(FLAG_SYS_FLASH_ACTIVE))
+        return FALSE;
+
+    if (FamiliaSombra_EhAndarEscuro()) // POK-51: o escuro dos andares 4-5 da Família não se acende
         return FALSE;
 
     gFieldCallback2 = FieldCallback_PrepareFadeInFromMenu;

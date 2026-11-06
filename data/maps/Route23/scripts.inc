@@ -1,8 +1,29 @@
 Route23_MapScripts::
 	map_script MAP_SCRIPT_ON_TRANSITION, Route23_OnTransition
+	map_script MAP_SCRIPT_ON_LOAD, Route23_OnLoad
 	.byte 0
 
+@ POK-51: antes da 8ª insígnia a porta do prédio da Família Sombra fica trancada.
+Route23_OnLoad::
+	special FamiliaSombra_GetEstado
+	call_if_eq VAR_RESULT, FAMILIA_ESTADO_FECHADO, Route23_EventScript_TrancarPortaFamilia
+	end
+
+Route23_EventScript_TrancarPortaFamilia::
+	setmetatile 4, 149, METATILE_IndigoPlateau_FamiliaPortaTrancada, TRUE
+	return
+
+Route23_EventScript_PortaFamilia::
+	lockall
+	special FamiliaSombra_GetEstado
+	goto_if_ne VAR_RESULT, FAMILIA_ESTADO_FECHADO, Route23_EventScript_PortaFamiliaAberta
+	msgbox Route23_Text_PortaFamiliaTrancada
+Route23_EventScript_PortaFamiliaAberta::
+	releaseall
+	end
+
 Route23_OnTransition::
+	special FamiliaSombra_Atualizar
 	clearflag FLAG_HIDE_VICTORY_ROAD_3F_BOULDER
 	setflag FLAG_HIDE_VICTORY_ROAD_2F_BOULDER
 	setvar VAR_MAP_SCENE_VICTORY_ROAD_1F, 0

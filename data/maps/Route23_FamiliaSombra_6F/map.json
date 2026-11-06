@@ -1,0 +1,112 @@
+{
+  "id": "MAP_ROUTE23_FAMILIA_SOMBRA_6F",
+  "name": "Route23_FamiliaSombra_6F",
+  "layout": "LAYOUT_ROUTE23_FAMILIA_SOMBRA_6F",
+  "music": "MUS_NONE",
+  "region_map_section": "MAPSEC_ROUTE_23",
+  "requires_flash": false,
+  "weather": "WEATHER_NONE",
+  "map_type": "MAP_TYPE_INDOOR",
+  "allow_cycling": false,
+  "allow_escaping": true,
+  "allow_running": true,
+  "show_map_name": false,
+  "floor_number": 6,
+  "battle_scene": "MAP_BATTLE_SCENE_NORMAL",
+  "connections": null,
+  "object_events": [
+    {
+      "local_id": "LOCALID_FAMILIA_6F_CHEFE",
+      "type": "object",
+      "graphics_id": "OBJ_EVENT_GFX_VAR_0",
+      "x": 6,
+      "y": 4,
+      "elevation": 3,
+      "movement_type": "MOVEMENT_TYPE_FACE_DOWN",
+      "movement_range_x": 1,
+      "movement_range_y": 1,
+      "trainer_type": "TRAINER_TYPE_NONE",
+      "trainer_sight_or_berry_tree_id": "0",
+      "script": "Route23_FamiliaSombra_6F_EventScript_Cena",
+      "flag": "FLAG_TEMP_1"
+    },
+    {
+      "local_id": "LOCALID_FAMILIA_6F_GEMEO_A",
+      "type": "object",
+      "graphics_id": "OBJ_EVENT_GFX_VAR_1",
+      "x": 4,
+      "y": 5,
+      "elevation": 3,
+      "movement_type": "MOVEMENT_TYPE_FACE_DOWN",
+      "movement_range_x": 1,
+      "movement_range_y": 1,
+      "trainer_type": "TRAINER_TYPE_NONE",
+      "trainer_sight_or_berry_tree_id": "0",
+      "script": "Route23_FamiliaSombra_6F_EventScript_Cena",
+      "flag": "FLAG_FAMILIA_GEMEOS_VENCIDOS"
+    },
+    {
+      "local_id": "LOCALID_FAMILIA_6F_GEMEO_B",
+      "type": "object",
+      "graphics_id": "OBJ_EVENT_GFX_VAR_1",
+      "x": 8,
+      "y": 5,
+      "elevation": 3,
+      "movement_type": "MOVEMENT_TYPE_FACE_DOWN",
+      "movement_range_x": 1,
+      "movement_range_y": 1,
+      "trainer_type": "TRAINER_TYPE_NONE",
+      "trainer_sight_or_berry_tree_id": "0",
+      "script": "Route23_FamiliaSombra_6F_EventScript_Cena",
+      "flag": "FLAG_FAMILIA_GEMEOS_VENCIDOS"
+    }
+  ],
+  "warp_events": [
+    {
+      "x": 3,
+      "y": 3,
+      "elevation": 3,
+      "dest_map": "MAP_ROUTE23_FAMILIA_SOMBRA_5F",
+      "dest_warp_id": "1"
+    }
+  ],
+  "coord_events": [
+    {
+      "type": "trigger",
+      "x": 3,
+      "y": 4,
+      "elevation": 3,
+      "var": "VAR_TEMP_1",
+      "var_value": "0",
+      "script": "Route23_FamiliaSombra_6F_EventScript_Cena"
+    },
+    {
+      "type": "trigger",
+      "x": 4,
+      "y": 4,
+      "elevation": 3,
+      "var": "VAR_TEMP_1",
+      "var_value": "0",
+      "script": "Route23_FamiliaSombra_6F_EventScript_Cena"
+    },
+    {
+      "type": "trigger",
+      "x": 5,
+      "y": 3,
+      "elevation": 3,
+      "var": "VAR_TEMP_1",
+      "var_value": "0",
+      "script": "Route23_FamiliaSombra_6F_EventScript_Cena"
+    }
+  ],
+  "bg_events": [
+    {
+      "type": "sign",
+      "x": 6,
+      "y": 6,
+      "elevation": 0,
+      "player_facing_dir": "BG_EVENT_PLAYER_FACING_NORTH",
+      "script": "Route23_FamiliaSombra_6F_EventScript_Bilhete"
+    }
+  ]
+}

@@ -4398,6 +4398,78 @@
       "secondary_tileset": "gTileset_MtEmber",
       "border_filepath": "data/layouts/OneIsland_KindleRoad_EmberSpa/border.bin",
       "blockdata_filepath": "data/layouts/OneIsland_KindleRoad_EmberSpa/map.bin"
+    },
+    {
+      "id": "LAYOUT_ROUTE23_FAMILIA_SOMBRA_1F",
+      "name": "Route23_FamiliaSombra_1F_Layout",
+      "width": 15,
+      "height": 13,
+      "border_width": 2,
+      "border_height": 2,
+      "primary_tileset": "gTileset_Building",
+      "secondary_tileset": "gTileset_FamiliaSombra",
+      "border_filepath": "data/layouts/Route23_FamiliaSombra_1F/border.bin",
+      "blockdata_filepath": "data/layouts/Route23_FamiliaSombra_1F/map.bin"
+    },
+    {
+      "id": "LAYOUT_ROUTE23_FAMILIA_SOMBRA_2F",
+      "name": "Route23_FamiliaSombra_2F_Layout",
+      "width": 15,
+      "height": 13,
+      "border_width": 2,
+      "border_height": 2,
+      "primary_tileset": "gTileset_Building",
+      "secondary_tileset": "gTileset_FamiliaSombra",
+      "border_filepath": "data/layouts/Route23_FamiliaSombra_2F/border.bin",
+      "blockdata_filepath": "data/layouts/Route23_FamiliaSombra_2F/map.bin"
+    },
+    {
+      "id": "LAYOUT_ROUTE23_FAMILIA_SOMBRA_3F",
+      "name": "Route23_FamiliaSombra_3F_Layout",
+      "width": 15,
+      "height": 13,
+      "border_width": 2,
+      "border_height": 2,
+      "primary_tileset": "gTileset_Building",
+      "secondary_tileset": "gTileset_FamiliaSombra",
+      "border_filepath": "data/layouts/Route23_FamiliaSombra_3F/border.bin",
+      "blockdata_filepath": "data/layouts/Route23_FamiliaSombra_3F/map.bin"
+    },
+    {
+      "id": "LAYOUT_ROUTE23_FAMILIA_SOMBRA_4F",
+      "name": "Route23_FamiliaSombra_4F_Layout",
+      "width": 15,
+      "height": 13,
+      "border_width": 2,
+      "border_height": 2,
+      "primary_tileset": "gTileset_Building",
+      "secondary_tileset": "gTileset_FamiliaSombra",
+      "border_filepath": "data/layouts/Route23_FamiliaSombra_4F/border.bin",
+      "blockdata_filepath": "data/layouts/Route23_FamiliaSombra_4F/map.bin"
+    },
+    {
+      "id": "LAYOUT_ROUTE23_FAMILIA_SOMBRA_5F",
+      "name": "Route23_FamiliaSombra_5F_Layout",
+      "width": 15,
+      "height": 13,
+      "border_width": 2,
+      "border_height": 2,
+      "primary_tileset": "gTileset_Building",
+      "secondary_tileset": "gTileset_FamiliaSombra",
+      "border_filepath": "data/layouts/Route23_FamiliaSombra_5F/border.bin",
+      "blockdata_filepath": "data/layouts/Route23_FamiliaSombra_5F/map.bin"
+    },
+    {
+      "id": "LAYOUT_ROUTE23_FAMILIA_SOMBRA_6F",
+      "name": "Route23_FamiliaSombra_6F_Layout",
+      "width": 13,
+      "height": 13,
+      "border_width": 2,
+      "border_height": 2,
+      "primary_tileset": "gTileset_Building",
+      "secondary_tileset": "gTileset_FamiliaSombra",
+      "border_filepath": "data/layouts/Route23_FamiliaSombra_6F/border.bin",
+      "blockdata_filepath": "data/layouts/Route23_FamiliaSombra_6F/map.bin"
     }
   ]
 }

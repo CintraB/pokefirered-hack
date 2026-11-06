@@ -8,6 +8,7 @@
 #include "familia_sombra.h"
 #include "pokemon.h"
 #include "random.h"
+#include "constants/event_objects.h"
 #include "constants/flags.h"
 #include "constants/items.h"
 #include "constants/maps.h"
@@ -94,17 +95,41 @@ void FamiliaSombra_ChefeCaiu(void)
 {
     u8 ocupacao = FamiliaSombra_Ocupacao();
 
+    if (!FamiliaSombra_ChefeAtivo())   // chamada repetida não regrava a queda
+        return;
     VarSet(VAR_FAMILIA_QUEDA, FamiliaSombra_MeiosDiasAgora());
     VarSet(VAR_FAMILIA_ESTADO, FAMILIA_ESTADO_SEM_CHEFE);
     if (ocupacao >= 1 && ocupacao <= FAMILIA_OCUPACOES_TOTAL)
         FlagSet(sRosas[ocupacao - 1]);
 }
 
-// Só o térreo por enquanto (Task 1); os andares 2-6 entram na Task 5.
+// Os 6 andares do prédio (o térreo é o antigo Route23_UnusedHouse).
+static const u16 sAndares[] =
+{
+    MAP_ROUTE23_UNUSED_HOUSE,
+    MAP_ROUTE23_FAMILIA_SOMBRA_2F,
+    MAP_ROUTE23_FAMILIA_SOMBRA_3F,
+    MAP_ROUTE23_FAMILIA_SOMBRA_4F,
+    MAP_ROUTE23_FAMILIA_SOMBRA_5F,
+    MAP_ROUTE23_FAMILIA_SOMBRA_6F,
+};
+
+static u16 MapaAtual(void)
+{
+    return (gSaveBlock1Ptr->location.mapGroup << 8) | gSaveBlock1Ptr->location.mapNum;
+}
+
 bool8 FamiliaSombra_NoPredio(void)
 {
-    return gSaveBlock1Ptr->location.mapGroup == MAP_GROUP(MAP_ROUTE23_UNUSED_HOUSE)
-        && gSaveBlock1Ptr->location.mapNum == MAP_NUM(MAP_ROUTE23_UNUSED_HOUSE);
+    u16 mapa = MapaAtual();
+    s32 i;
+
+    for (i = 0; i < (s32)ARRAY_COUNT(sAndares); i++)
+    {
+        if (sAndares[i] == mapa)
+            return TRUE;
+    }
+    return FALSE;
 }
 
 void FamiliaSombra_GetEstado(void)
@@ -216,11 +241,12 @@ void FamiliaSombra_SortearPedagio(void)
 
 // ---- Andares 4-5, efeito de filme e o chefe (Task 4) ----------------------------------------------------------
 
-// Os andares escuros (4º e 5º), onde andar dá encontro com a Família. A Task 5 acrescenta os mapas; a lista acaba em
-// FAMILIA_SEM_MAPA.
+// Os andares escuros (4º e 5º), onde andar dá encontro com a Família; a lista acaba em FAMILIA_SEM_MAPA.
 #define FAMILIA_SEM_MAPA 0xFFFF
 static const u16 sAndaresEscuros[] =
 {
+    MAP_ROUTE23_FAMILIA_SOMBRA_4F,
+    MAP_ROUTE23_FAMILIA_SOMBRA_5F,
     FAMILIA_SEM_MAPA,
 };
 
@@ -230,7 +256,7 @@ EWRAM_DATA bool8 gTestFamiliaAndarEscuro = FALSE; // atalho TEST_CMD_FAMILIA_PAS
 
 bool8 FamiliaSombra_EhAndarEscuro(void)
 {
-    u16 mapa = (gSaveBlock1Ptr->location.mapGroup << 8) | gSaveBlock1Ptr->location.mapNum;
+    u16 mapa = MapaAtual();
     s32 i;
 
 #if TESTBUILD
@@ -299,4 +325,77 @@ void FamiliaSombra_IniciarChefe(void)
         SetMonMoveSlot(mon, chefe->moves[i], i);
     SetMonData(mon, MON_DATA_HELD_ITEM, &chefe->heldItem);
     StartFamiliaChefeBattle();
+}
+
+// ---- O prédio (Task 5) ----------------------------------------------------------------------------------------
+
+// O gráfico de chapéu de cada espécie que aparece no mapa (capangas dos andares 1-3, gêmeos e chefes).
+static const u16 sGfxDaEspecie[][2] =
+{
+    {SPECIES_HAUNTER,    OBJ_EVENT_GFX_FAMILIA_HAUNTER},
+    {SPECIES_MISDREAVUS, OBJ_EVENT_GFX_FAMILIA_MISDREAVUS},
+    {SPECIES_SABLEYE,    OBJ_EVENT_GFX_FAMILIA_SABLEYE},
+    {SPECIES_BANETTE,    OBJ_EVENT_GFX_FAMILIA_BANETTE},
+    {SPECIES_HOUNDOUR,   OBJ_EVENT_GFX_FAMILIA_HOUNDOUR},
+    {SPECIES_HOUNDOOM,   OBJ_EVENT_GFX_FAMILIA_HOUNDOOM},
+    {SPECIES_MURKROW,    OBJ_EVENT_GFX_FAMILIA_MURKROW},
+    {SPECIES_SNEASEL,    OBJ_EVENT_GFX_FAMILIA_SNEASEL},
+    {SPECIES_CROBAT,     OBJ_EVENT_GFX_FAMILIA_CROBAT},
+    {SPECIES_MUK,        OBJ_EVENT_GFX_FAMILIA_MUK},
+    {SPECIES_WEEZING,    OBJ_EVENT_GFX_FAMILIA_WEEZING},
+    {SPECIES_ARBOK,      OBJ_EVENT_GFX_FAMILIA_ARBOK},
+    {SPECIES_MIGHTYENA,  OBJ_EVENT_GFX_FAMILIA_MIGHTYENA},
+    {SPECIES_ABSOL,      OBJ_EVENT_GFX_FAMILIA_ABSOL},
+    {SPECIES_CACTURNE,   OBJ_EVENT_GFX_FAMILIA_CACTURNE},
+    {SPECIES_SHIFTRY,    OBJ_EVENT_GFX_FAMILIA_SHIFTRY},
+    {SPECIES_CRAWDAUNT,  OBJ_EVENT_GFX_FAMILIA_CRAWDAUNT},
+    {SPECIES_GOLEM,      OBJ_EVENT_GFX_FAMILIA_GOLEM},
+    {SPECIES_MACHAMP,    OBJ_EVENT_GFX_FAMILIA_MACHAMP},
+    {SPECIES_RHYDON,     OBJ_EVENT_GFX_FAMILIA_RHYDON},
+    {SPECIES_GENGAR,     OBJ_EVENT_GFX_FAMILIA_GENGAR_SHINY},
+    {SPECIES_TYRANITAR,  OBJ_EVENT_GFX_FAMILIA_TYRANITAR_SHINY},
+};
+
+// Espécie sem gráfico de chapéu (só a parte 2: Garchomp, Gligar, Darkrai, Dusclops) cai no Gengar / Machamp.
+static u16 GfxDaEspecie(u16 species, u16 reserva)
+{
+    s32 i;
+
+    for (i = 0; i < (s32)ARRAY_COUNT(sGfxDaEspecie); i++)
+    {
+        if (sGfxDaEspecie[i][0] == species)
+            return sGfxDaEspecie[i][1];
+    }
+    return reserva;
+}
+
+// Special, no on_transition de cada andar (VAR_0x8004 = andar, 1 a 6). Os gráficos da ocupação vão para
+// VAR_OBJ_GFX_ID_0..2: nos andares 1-3, os 3 capangas do andar (slots 3n-2..3n, paletas PALSLOT_NPC_1..3); no 6º, o
+// chefe (0) e os gêmeos (1). Sem chefe ativo o prédio fica vazio, só com os bilhetes: capangas, gêmeos e itens do
+// chão ficam marcados como vencidos/pegos (FamiliaSombra_Repovoar desmarca tudo na próxima ocupação).
+void FamiliaSombra_PrepararAndar(void)
+{
+    u8 andar = gSpecialVar_0x8004;
+    u8 ocupacao = OcupacaoDasLutas();
+    u16 flag;
+    s32 i;
+
+    if (andar >= 1 && andar <= 3)
+    {
+        for (i = 0; i < 3; i++)
+            VarSet(VAR_OBJ_GFX_ID_0 + i,
+                   GfxDaEspecie(sFamiliaCapangas[ocupacao - 1][(andar - 1) * 3 + i].species, OBJ_EVENT_GFX_FAMILIA_MUK));
+    }
+    else if (andar == 6)
+    {
+        VarSet(VAR_OBJ_GFX_ID_0, GfxDaEspecie(sFamiliaChefes[ocupacao - 1].species, OBJ_EVENT_GFX_FAMILIA_GENGAR_SHINY));
+        VarSet(VAR_OBJ_GFX_ID_1, GfxDaEspecie(sFamiliaGemeos[ocupacao - 1][0].species, OBJ_EVENT_GFX_FAMILIA_MACHAMP));
+    }
+    if (FamiliaSombra_ChefeAtivo())
+        return;
+    FlagSet(FLAG_FAMILIA_GEMEOS_VENCIDOS);
+    for (flag = FLAG_FAMILIA_ITENS_PRIMEIRA; flag <= FLAG_FAMILIA_ITENS_ULTIMA; flag++)
+        FlagSet(flag);
+    for (flag = TRAINER_FAMILIA_CAPANGA_1; flag <= TRAINER_FAMILIA_GEMEOS; flag++)
+        FlagSet(TRAINER_FLAGS_START + flag);
 }
