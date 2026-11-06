@@ -781,6 +781,13 @@ inglês que entrar depois na `hack-switch` e for trazida para a tradução apare
   usa só o `VAR_CONTENTS`; quebrou contando com um número, declare o contexto, ou o check
   reprova. Num `.inc` sem `--rotulo`, o `--var` vale para todos os rótulos do arquivo, e rótulo
   ainda em inglês que estoure no pior caso também é refeito.
+  **Limite de linhas por caixa** (POK-30): a caixa de diálogo mostra 2 linhas (`\n` desce para a
+  2ª, `\l` rola, `\p` abre caixa nova). Caixa com 3 linhas visíveis (dois `\n`, ou `\n` depois de
+  `\l`) também é refeita, mesmo cabendo na largura: as linhas ficam e só as quebras mudam (a 3ª
+  em diante vira `\l`). O limite vem do `box_lines` da regra do arquivo (diálogo: 2) ou de
+  `--caixa N` (`--caixa 0` desliga; no `--texto` em estilo diálogo o padrão é 2). No estilo
+  linhas (ajuda, Pokédex) não há rolagem: caixa alta demais, ou mais linhas que o `lines` da
+  regra, sai como `aviso:` no stderr, para encurtar à mão.
 
 Página EVOLUTION do resumo (Hack 4): os textos `gText_PokeSum_Evo*` de `src/strings.c` têm o
 limite da janela da página, 222 px (28 tiles com o texto em x = 2, `sWindowTemplates_Evolution`
