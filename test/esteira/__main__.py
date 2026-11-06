@@ -426,9 +426,25 @@ def _missing_save(producer: str, scheduled: bool, save: Path, out: Path) -> tupl
                      "sem --only")
 
 
+START_MARKER = ".inicio"
+
+
+def _disk_now(out: Path) -> float:
+    """O instante atual no relógio do sistema de arquivos de `out` (o mtime de um marcador).
+    `_compare_screens` compara mtime com isto, e não com time.time(): o mtime do ext4 vem do
+    relógio "coarse" do kernel, que fica atrás do time.time() (~6 ms no WSL, bem mais com a
+    máquina ocupada), e uma tela gravada logo no começo sumia da comparação (POK-30)."""
+    marker = out / START_MARKER
+    marker.write_bytes(b"")
+    try:
+        return marker.stat().st_mtime
+    finally:
+        marker.unlink(missing_ok=True)
+
+
 def _compare_screens(suite: Suite, out: Path, starter: str, since: float) -> None:
     """Telas desta execução contra as referências do inicial (e as COMUM, que valem para os
-    três: refs.SHARED_POINTS)."""
+    três: refs.SHARED_POINTS). `since`: início da execução no relógio do disco (`_disk_now`)."""
     for points, folder in ((KEY_POINTS, starter), (SHARED_POINTS, SHARED_REFS)):
         for point in points:
             shot = out / "telas" / f"{point}.png"
@@ -473,7 +489,7 @@ def run_mode(args: argparse.Namespace) -> int:
     out.mkdir(parents=True, exist_ok=True)
     suite = Suite()
     tempos: dict[str, float] = {}
-    started_wall = time.time()
+    started_wall = _disk_now(out)   # telas com mtime >= isto são desta execução
     start = time.monotonic()
     nao_testada = False
     starter: str | None = args.starter   # sem --starter, só sai do rodízio quando o emulador roda

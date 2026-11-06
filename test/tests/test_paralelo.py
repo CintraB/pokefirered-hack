@@ -257,6 +257,28 @@ def names_and_status(tmp: Path) -> list[tuple[str, str]]:
     return re.findall(r'<div class="r (\w+)"><span class="tag">\w+</span><b>([^<]*)</b>', page)
 
 
+@pytest.mark.parametrize("jobs", ["1", "2"])
+def test_tela_gravada_logo_no_inicio_e_comparada_com_o_disco_atrasado(env, monkeypatch, jobs):
+    """O mtime do ext4 vem do relógio "coarse" do kernel, que fica atrás do time.time() (~6 ms no
+    WSL; bem mais com a máquina ocupada, quando a VM perde ticks). Uma tela gravada logo depois do
+    início não pode sumir da comparação (era o `test_paralelo...na_mesma_ordem` instável, POK-30).
+    Aqui o time.time() anda 5 s na frente do disco, de propósito."""
+    real_time = time.time
+    monkeypatch.setattr(cli.time, "time", lambda: real_time() + 5.0)
+    monkeypatch.setenv("ESTEIRA_JOBS", jobs)
+    scenarios(monkeypatch, host=False)
+    assert main(argv(env, "completo", "--starter", "BULBASAUR")) == 0
+    assert ("aviso", "tela/pc") in names_and_status(env)
+    # tela de uma execução anterior na mesma pasta (mais velha que o início) continua de fora
+    old = env / "out" / "telas" / "velha.png"
+    Image.new("RGB", (4, 4)).save(old)
+    os.utime(old, (real_time() - 60, real_time() - 60))
+    monkeypatch.setattr(cli, "KEY_POINTS", (*cli.KEY_POINTS, "velha"))
+    assert main(argv(env, "completo", "--starter", "BULBASAUR")) == 0
+    names = [name for _, name in names_and_status(env)]
+    assert "tela/pc" in names and "tela/velha" not in names
+
+
 def test_paralelo_da_os_mesmos_resultados_que_o_sequencial_na_mesma_ordem(env, monkeypatch,
                                                                            capsys):
     scenarios(monkeypatch)
