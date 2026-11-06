@@ -5,9 +5,10 @@ com a Pokédex e 5 Poké Balls do Oak). Checkpoints: `captura` (capturado com ap
 `centro` (time curado no Centro de Viridian) e `save` (de volta ao jogo depois de salvar,
 reiniciar e escolher CONTINUAR). O modo completo (Task 11) continua de `save`.
 
-Adaptativo (RNG livre): um golpe para ferir o selvagem e depois bolas até capturar; se o
-selvagem fugir/desmaiar ou o time todo desmaiar (o jogo leva ao Centro), procura outro, até
-MAX_CATCH_ENCOUNTERS encontros.
+Adaptativo (RNG livre): foge dos selvagens que não são CATCH_SPECIES (até
+MAX_SKIPPED_ENCOUNTERS, para a tela `captura` sair sempre igual), depois um golpe para ferir o
+selvagem e bolas até capturar; se o selvagem fugir/desmaiar ou o time todo desmaiar (o jogo leva
+ao Centro), procura outro, até MAX_CATCH_ENCOUNTERS encontros.
 Se só o inicial desmaiar (o capturado entra no lugar), a batalha termina e o roteiro volta ao
 Centro antes de tentar de novo. O 1º passo pelo Centro de Viridian fixa ali o ponto de
 retorno (setrespawn em data/maps/ViridianCity_PokemonCenter_1F/scripts.inc).
@@ -40,6 +41,16 @@ BALLS_TO_BUY = 10
 POTIONS_TO_BUY = 3
 POTION_HEAL = 20                    # sItemEffect_Potion (src/data/pokemon/item_effects.h)
 MAX_CATCH_ENCOUNTERS = 5
+# A tela `captura` ("Dar um apelido ao X capturado?") é decidida só pela espécie: a mesma espécie
+# dá o mesmo PNG em qualquer execução (nível, inicial e nº de bolas não aparecem). O slot do
+# selvagem sai do RNG, que muda com qualquer mudança da ROM, então a espécie variava entre
+# Pidgey, Rattata e Sentret e a tela avisava quase sempre (POK-30). Por isso só PIDGEY é
+# capturado: os outros são fugidos. O relógio do jogo começa às 08:00 e anda por quadro (150 por
+# minuto), então a captura cai na manhã/dia, em que a Rota 1 dá PIDGEY 45%, RATTATA 30% e
+# SENTRET 25% (src/data/wild_encounters_time.json); 15 fugas seguidas sem Pidgey: 0,55^15 ≈ 1e-4.
+# Esgotadas as fugas, captura o que vier (só a tela avisa; o roteiro não reprova por isso).
+CATCH_SPECIES = "PIDGEY"
+MAX_SKIPPED_ENCOUNTERS = 15
 MAX_POTION_ENCOUNTERS = 6
 MAX_TURNS = 20                      # turnos lutando numa batalha até o inicial levar um golpe
 
@@ -264,11 +275,25 @@ class CatchSaveScenario(Route1Scenario):
 
     def _catch(self) -> str:
         ball = self.consts.item("ITEM_POKE_BALL")
+        target = self.consts.species(CATCH_SPECIES)
         log = self.measures["catch_log"]
-        for n in range(1, MAX_CATCH_ENCOUNTERS + 1):
+        n = skipped = 0
+        while n < MAX_CATCH_ENCOUNTERS:
             try:
                 wild = self._wild_battle()
                 species = self.driver.battler_species_level(1)[0]
+                if species != target:
+                    if skipped < MAX_SKIPPED_ENCOUNTERS:
+                        skipped += 1            # tela estável: só a espécie CATCH_SPECIES
+                        log.append(f"{wild}: fugiu (a captura é de {CATCH_SPECIES})")
+                        self._end_battle(f"fuga de {wild}")
+                        dispensar_avisos(self.ctx)
+                        continue
+                    if skipped == MAX_SKIPPED_ENCOUNTERS:
+                        skipped += 1            # anota uma vez só
+                        log.append(f"nenhum {CATCH_SPECIES} em {MAX_SKIPPED_ENCOUNTERS} encontros: "
+                                   "captura o que vier (a tela `captura` vai avisar)")
+                n += 1
                 # Um golpe antes das bolas: com o selvagem ferido a chance por bola sobe de ~1/3
                 # para ~2/3. Sem isso, o sorteio (que anda a cada quadro) pode gastar as 15 bolas
                 # num roteiro azarado (Squirtle, 28/10). Se ele desmaiar, vai para o próximo.
@@ -287,7 +312,8 @@ class CatchSaveScenario(Route1Scenario):
                         self.measures["caught"] = (species, wild)
                         self._give_nickname()
                         dispensar_avisos(self.ctx)   # a 1ª captura: o aviso da conquista
-                        return f"{n} encontro(s): " + "; ".join(log)
+                        fled = min(skipped, MAX_SKIPPED_ENCOUNTERS)
+                        return f"{n + fled} encontro(s), {fled} fugido(s): " + "; ".join(log)
                 outcome = OUTCOME_NAMES.get(self.driver.outcome(), str(self.driver.outcome()))
                 log.append(f"{wild}: {thrown} bola(s), batalha terminou em {outcome}")
                 self._after_battle("batalha da captura")

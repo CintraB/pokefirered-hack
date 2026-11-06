@@ -300,3 +300,101 @@ def test_cli_var_option():
     assert done.returncode == 0 and done.stdout.strip() != text
     done = run_cli("--largura", "208", "--texto", text, "--var", "STR_VAR_1=x")
     assert done.returncode != 0
+
+
+# ---- limite de linhas por caixa (POK-30) ---------------------------------------------------
+# A caixa de diálogo padrão mostra 2 linhas (check_text.DIALOG_BOX_LINES): `\n` desce para a 2ª,
+# `\l` rola, `\p` abre caixa nova. Uma 3ª linha (dois `\n` na mesma caixa, ou `\n` depois de `\l`)
+# some sem aviso, e a checagem (check_text.box_lines) reprova.
+
+def test_box_with_three_lines_that_fit_scrolls_the_third():
+    from esteira.check_text import box_lines
+    text = "Linha um.\\nLinha dois.\\nLinha três.\\pOutra caixa.\\nFim.$"
+    assert box_lines(text) == 3
+    out = reflow(text, 208, caixa=2)
+    assert out == "Linha um.\\nLinha dois.\\lLinha três.\\pOutra caixa.\\nFim.$"   # só a quebra muda
+    assert box_lines(out) == 2
+
+
+def test_newline_after_a_scroll_is_a_third_line():
+    from esteira.check_text import box_lines
+    text = "Um.\\nDois.\\lTrês.\\nQuatro.$"          # o \n depois do \l abre a 3ª linha
+    assert box_lines(text) == 3
+    assert reflow(text, 208, caixa=2) == "Um.\\nDois.\\lTrês.\\lQuatro.$"
+
+
+def test_box_inside_the_limit_is_left_alone():
+    for text in ("Quer que eu cure\\nos seus Pokémon para\\lque fiquem em plena forma?$",
+                 "ROUTE 1\\nPALLET TOWN - VIRIDIAN CITY$", "Um.\\lDois.\\lTrês.$"):
+        assert reflow(text, 208, caixa=2) == text
+
+
+def test_without_box_limit_only_the_width_counts():
+    text = "Linha um.\\nLinha dois.\\nLinha três.$"
+    assert reflow(text, 208) == text
+
+
+def test_box_limit_also_applies_when_a_line_overflows():
+    from esteira.check_text import box_lines
+    text = "Curta.\\nCurta também.\\nQuer que eu cure os seus Pokémon para que fiquem em plena forma?$"
+    out = reflow(text, 208, caixa=2)
+    assert box_lines(out) == 2 and max(line_widths(out)) <= 208
+    flat = lambda t: t.replace("\\n", " ").replace("\\l", " ").split()   # noqa: E731
+    assert flat(out) == flat(text)
+
+
+def test_taller_box_keeps_more_newlines():
+    from esteira.check_text import box_lines
+    out = reflow(" ".join(["AAAA"] * 30) + "$", 208, caixa=3)   # 5 linhas de 7 palavras
+    assert out.count("\\n") == 2 and out.count("\\l") == 2 and box_lines(out) == 3
+
+
+def test_lines_style_cannot_scroll_and_reports_the_box():
+    from esteira.reflow import boxes_over
+    text = "Um.\\nDois.\\nTrês.$"
+    assert reflow(text, 208, estilo="linhas", caixa=2) == text      # sem rolagem: não há o que fazer
+    assert boxes_over(text, 2) == [3]
+    assert boxes_over("Um.\\nDois.\\pTrês.$", 2) == []
+
+
+def test_inc_uses_the_box_limit_of_the_rule():
+    from esteira.reflow import reflow_inc
+    source = ('X_Text_A::\n\t.string "Linha um.\\n"\n\t.string "Linha dois.\\n"\n\t.string "Linha três.$"\n\n'
+              'X_Text_B::\n\t.string "Cabe.\\n"\n\t.string "Também.$"\n')
+    new, done, _ = reflow_inc(source, None, None, None, None, None, "data/maps/X/text.inc")
+    assert done == ["X_Text_A"]
+    assert '\t.string "Linha dois.\\l"' in new and '"Cabe.\\n"' in new
+    # janela sem limite de caixa declarado (pc_transfer.inc): só a largura decide
+    new, done, _ = reflow_inc(source, None, None, None, None, None, "data/text/pc_transfer.inc")
+    assert done == [] and new == source
+
+
+def test_inc_reports_what_it_cannot_fix():
+    from esteira.reflow import reflow_inc
+    # a ajuda (help_system.inc) tem no máximo 7 linhas e não rola: o reflow não tem como encolher
+    source = 'Help_Text_A::\n\t.string "' + "\\n".join(["Linha"] * 9) + '$"\n'
+    avisos: list[str] = []
+    new, done, _ = reflow_inc(source, None, None, None, None, None, "data/text/help_system.inc", avisos=avisos)
+    assert new == source and done == []
+    assert avisos and "Help_Text_A" in avisos[0] and "9 linhas" in avisos[0] and "7" in avisos[0]
+
+
+def test_cli_text_uses_the_dialog_box_by_default():
+    text = "Linha um.\\nLinha dois.\\nLinha três.$"
+    done = run_cli("--largura", "208", "--texto", text)
+    assert done.returncode == 0, done.stderr
+    assert done.stdout.strip() == "Linha um.\\nLinha dois.\\lLinha três.$"
+    done = run_cli("--largura", "208", "--texto", text, "--caixa", "0")       # 0 = sem limite
+    assert done.stdout.strip() == text
+    done = run_cli("--largura", "208", "--texto", text, "--estilo", "linhas")
+    assert done.stdout.strip() == text and done.stderr == ""                   # janela desconhecida
+    done = run_cli("--largura", "208", "--texto", text, "--estilo", "linhas", "--caixa", "2")
+    assert done.stdout.strip() == text and "3 linhas" in done.stderr
+
+
+def test_cli_inc_prints_the_warnings(tmp_path):
+    inc = tmp_path / "text.inc"
+    inc.write_text('Text_A::\n\t.string "Um.\\n"\n\t.string "Dois.\\n"\n\t.string "Três.$"\n', encoding="utf-8")
+    done = run_cli("--largura", "208", "--estilo", "linhas", "--caixa", "2", str(inc))
+    assert done.returncode == 0, done.stderr
+    assert "Text_A" in done.stderr and "3 linhas" in done.stderr

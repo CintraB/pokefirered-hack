@@ -8,6 +8,14 @@ gulosa: cada linha leva o máximo de palavras que cabem. `\\p` (caixa nova) é m
 cada caixa a primeira quebra é `\\n` e as seguintes `\\l` (rolagem), como no FRLG (`estilo="dialogo"`); `estilo="linhas"` usa só `\\n`
 (Pokédex, ajuda, descrições). Códigos de controle ficam grudados na palavra em que estavam.
 
+Limite de linhas por caixa (`caixa`): a caixa de diálogo padrão mostra 2 linhas
+(check_text.DIALOG_BOX_LINES): `\\n` desce para a 2ª, `\\l` rola, `\\p` abre caixa nova, e uma 3ª linha
+(dois `\\n` na mesma caixa, ou `\\n` depois de `\\l`) some sem aviso. No estilo diálogo, a caixa que
+passa do limite (medida como na checagem, check_text.box_lines) também é refeita, mesmo cabendo na
+largura: as linhas ficam e só as quebras mudam (as `caixa - 1` primeiras viram `\\n`, as outras `\\l`).
+No estilo linhas não há rolagem: o que passa do limite (da caixa ou o total de linhas da janela,
+`Rule.lines`) não tem conserto automático e vira aviso (`boxes_over`, `avisos` do `.inc`, stderr).
+
 Formatação intencional é preservada:
   - só a caixa que tem linha estourada é refeita (`forcar=True` refaz todas): placa com
     "ROUTE 1\\nPALLET TOWN - VIRIDIAN CITY" que cabe fica como está;
@@ -25,6 +33,8 @@ CLI (de test/):
       #if/.if ficam como estão.
   --var STR_VAR_1=5d (número de 5 algarismos) ou --var STR_VAR_1=13 (13 letras) muda o pior caso de
       um placeholder variável (pode repetir).
+  --caixa N: linhas visíveis por caixa (0 = sem limite). Padrão: no `--texto` em estilo diálogo, 2 (a
+      caixa padrão); num `.inc`, o `box_lines` da regra do arquivo (check_text.WIDTH_RULES).
 """
 
 import argparse
@@ -33,7 +43,8 @@ import sys
 from functools import lru_cache
 from pathlib import Path
 
-from esteira.check_text import VAR_SIZES, VarSize, _LABEL_LINE, _STRING_LINE, _load_env, measure, rule_for, var_sizes
+from esteira.check_text import (DIALOG_BOX_LINES, VAR_SIZES, VarSize, _LABEL_LINE, _STRING_LINE, _load_env, box_lines,
+                                measure, rule_for, var_sizes)
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 _BREAK = re.compile(r"\\[nlp]")
@@ -62,6 +73,20 @@ def line_widths(texto: str, fonte: str = "normal", espaco: int | None = None, re
     """Largura em px de cada linha do texto (quebras \\n, \\l, \\p), com os placeholders variáveis no
     pior caso (`variaveis`; padrão: check_text.VAR_SIZES, 10 letras)."""
     return [_width(line, fonte, espaco, repo, variaveis) for line in _BREAK.split(texto.rstrip("$"))]
+
+
+def boxes_over(texto: str, caixa: int) -> list[int]:
+    """Linhas visíveis (check_text.box_lines) de cada caixa (entre `\\p`) que passa de `caixa`."""
+    return [n for n in (box_lines(box) for box in texto.rstrip("$").split("\\p")) if n > caixa]
+
+
+def _breaks(count: int, estilo: str, caixa: int | None) -> list[str]:
+    """As `count` quebras de uma caixa: no diálogo, `caixa - 1` `\\n` (padrão: 1) e depois `\\l`, que
+    rola; no estilo linhas, só `\\n`."""
+    if estilo != "dialogo":
+        return ["\\n"] * count
+    down = max(0, (caixa if caixa is not None else DIALOG_BOX_LINES) - 1)
+    return ["\\n"] * min(down, count) + ["\\l"] * max(0, count - down)
 
 
 def parse_var(spec: str) -> tuple[str, VarSize]:
@@ -207,13 +232,17 @@ def _spill(box: str, largura_px: int, fonte: str, espaco: int | None, space: int
 
 def reflow(texto: str, largura_px: int, fonte: str = "normal", estilo: str = "dialogo",
            espaco: int | None = None, repo: Path = REPO_ROOT, forcar: bool = False,
-           variaveis: dict[str, VarSize] | None = None) -> str:
+           variaveis: dict[str, VarSize] | None = None, caixa: int | None = None) -> str:
     """O texto com as quebras refeitas para `largura_px`. Sem `forcar`, só as caixas com linha
     estourada mudam, e nelas só a linha que estoura (o excesso desce para a seguinte); com
     `forcar`, cada caixa é refeita do zero (gulosa), mantendo itens de lista e recuos.
     Os placeholders variáveis ({STR_VAR_n}, {B_BUFF*}...) medem o pior caso, como na checagem do
     texto traduzido (check_text.VAR_SIZES, 10 letras); `variaveis` (nome -> VarSize) muda só os
-    placeholders dados, ex.: {"STR_VAR_1": VarSize(5, digits=True)} para um número de 5 algarismos."""
+    placeholders dados, ex.: {"STR_VAR_1": VarSize(5, digits=True)} para um número de 5 algarismos.
+    `caixa`: linhas visíveis por caixa no estilo diálogo (None: sem limite, só a largura decide; as
+    quebras refeitas seguem a caixa padrão, 1 `\\n` e depois `\\l`). Caixa que passa dele é refeita
+    mesmo cabendo na largura: as linhas ficam, só as quebras mudam. No estilo linhas não há rolagem
+    e o limite não muda nada (veja `boxes_over`)."""
     if variaveis is not None:
         variaveis = {**VAR_SIZES, **variaveis}
     if estilo not in ("dialogo", "linhas"):
@@ -223,15 +252,19 @@ def reflow(texto: str, largura_px: int, fonte: str = "normal", estilo: str = "di
     space = espaco if espaco is not None else _width(" ", fonte, None, repo)
     out_boxes = []
     for box in body.split("\\p"):
-        if not forcar and max(line_widths(box, fonte, espaco, repo, variaveis), default=0) <= largura_px:
+        wide = max(line_widths(box, fonte, espaco, repo, variaveis), default=0) > largura_px
+        tall = caixa is not None and estilo == "dialogo" and box_lines(box) > caixa
+        if not forcar and not wide and not tall:
             out_boxes.append(box)          # cabe: as quebras (placas, listas) ficam como estão
             continue
         if forcar:
             lines = [line for seg in _segments(box)
                      for line in _wrap(seg, largura_px, fonte, espaco, space, repo, variaveis)]
-        else:
+        elif wide:
             lines = _spill(box, largura_px, fonte, espaco, space, repo, variaveis)
-        breaks = ["\\n"] + ["\\l" if estilo == "dialogo" else "\\n"] * max(0, len(lines) - 2)
+        else:
+            lines = _BREAK.split(box)      # só passa do limite da caixa: as linhas ficam, as quebras mudam
+        breaks = _breaks(max(0, len(lines) - 1), estilo, caixa)
         text = lines[0] if lines else ""
         for brk, line in zip(breaks, lines[1:]):
             text += brk + line
@@ -257,11 +290,15 @@ _CUT = re.compile(r"^\s*(?:[#.]\s*(?:if|else|elif|endif)\b|@)")
 
 def reflow_inc(source: str, rotulo: str | None, largura: int | None, fonte: str | None, estilo: str | None,
                espaco: int | None, arquivo: str, forcar: bool = False,
-               variaveis: dict[str, VarSize] | None = None) -> tuple[str, list[str], list[str]]:
+               variaveis: dict[str, VarSize] | None = None, caixa: int | None = None,
+               avisos: list[str] | None = None) -> tuple[str, list[str], list[str]]:
     """(arquivo reescrito, rótulos refeitos, rótulos vistos). Rótulo cujas caixas cabem fica
     intacto (a não ser com `forcar`); bloco cortado por #if/.if ou por comentário também.
     Os placeholders variáveis medem o pior caso do rótulo (check_text.var_sizes: VAR_SIZES com as
-    exceções de janelas_uso.VAR_CONTENTS), e `variaveis` (da CLI, `--var`) passa por cima."""
+    exceções de janelas_uso.VAR_CONTENTS), e `variaveis` (da CLI, `--var`) passa por cima.
+    Limite de linhas por caixa: `caixa` (da CLI; 0 = sem limite) ou o `box_lines` da regra. O que o
+    reflow não consegue consertar (caixa alta demais no estilo linhas, que não rola, ou mais linhas
+    que o `lines` da regra) vai para `avisos`, uma frase por problema."""
     lines = source.split("\n")
     out: list[str] = []
     done: list[str] = []
@@ -297,7 +334,12 @@ def reflow_inc(source: str, rotulo: str | None, largura: int | None, fonte: str 
         indent = re.match(r"^(\s*)", line).group(1)
         old = "".join(block)
         sizes = {**var_sizes(arquivo, label or ""), **(variaveis or {})}
-        new = reflow(old, px, font, style, space, forcar=forcar, variaveis=sizes)
+        box = caixa if caixa is not None else (rule.box_lines if rule else None)
+        box = box or None                  # 0 = sem limite
+        new = reflow(old, px, font, style, space, forcar=forcar, variaveis=sizes, caixa=box)
+        if avisos is not None:
+            avisos.extend(_warnings(label or f"linha {i + 1}", new, style, box,
+                                    rule.lines if rule else None, font, space, sizes))
         if new == old:
             out.extend(lines[i:j])     # cabe: o bloco fica exatamente como estava
         else:
@@ -305,6 +347,21 @@ def reflow_inc(source: str, rotulo: str | None, largura: int | None, fonte: str 
             done.append(label or f"linha {i + 1}")
         i = j
     return "\n".join(out), done, seen
+
+
+def _warnings(label: str, text: str, estilo: str, caixa: int | None, total: int | None, fonte: str,
+              espaco: int | None, variaveis: dict[str, VarSize] | None) -> list[str]:
+    """O que ficou fora do limite depois do reflow (sem conserto automático)."""
+    out = []
+    over = boxes_over(text, caixa) if caixa else []
+    if over:
+        out.append(f"{label}: caixa com {max(over)} linhas visíveis, limite {caixa}"
+                   + (" (o estilo linhas não rola: encurte o texto ou divida com \\p)" if estilo != "dialogo" else ""))
+    if total is not None:
+        lines = len(line_widths(text, fonte, espaco, variaveis=variaveis))
+        if lines > total:
+            out.append(f"{label}: {lines} linhas, a janela mostra {total} (encurte o texto)")
+    return out
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -325,6 +382,9 @@ def main(argv: list[str] | None = None) -> int:
                              "janelas_uso.VAR_CONTENTS para o rótulo; pode repetir. Só PRÉVIA: a checagem "
                              "(check_text) não vê o --var, só o VAR_CONTENTS; num .inc sem --rotulo vale "
                              "para todos os rótulos do arquivo")
+    parser.add_argument("--caixa", type=int, metavar="N",
+                        help="linhas visíveis por caixa; 0 = sem limite. Padrão: 2 (caixa de diálogo) no --texto em "
+                             "estilo diálogo; num .inc, o box_lines da regra do arquivo")
     args = parser.parse_args(argv)
     try:
         variaveis = dict(parse_var(spec) for spec in args.var)
@@ -333,8 +393,14 @@ def main(argv: list[str] | None = None) -> int:
     if args.texto is not None:
         if args.largura is None:
             parser.error("--texto precisa de --largura")
-        print(reflow(args.texto, args.largura, args.fonte or "normal", args.estilo or "dialogo", args.espaco,
-                     forcar=args.forcar, variaveis=variaveis))
+        estilo = args.estilo or "dialogo"
+        caixa = args.caixa if args.caixa is not None else (DIALOG_BOX_LINES if estilo == "dialogo" else None)
+        caixa = caixa or None              # 0 = sem limite
+        new = reflow(args.texto, args.largura, args.fonte or "normal", estilo, args.espaco,
+                     forcar=args.forcar, variaveis=variaveis, caixa=caixa)
+        print(new)
+        for aviso in _warnings("texto", new, estilo, caixa, None, args.fonte or "normal", args.espaco, variaveis):
+            print(f"aviso: {aviso}", file=sys.stderr)
         return 0
     if not args.arquivo:
         parser.error("passe --texto ou um arquivo .inc")
@@ -344,15 +410,18 @@ def main(argv: list[str] | None = None) -> int:
     except ValueError:
         rel = path.name
     source = path.read_text(encoding="utf-8")
+    avisos: list[str] = []
     try:
         new, done, seen = reflow_inc(source, args.rotulo, args.largura, args.fonte, args.estilo, args.espaco,
-                                     rel, args.forcar, variaveis)
+                                     rel, args.forcar, variaveis, args.caixa, avisos)
     except ValueError as exc:
         print(exc, file=sys.stderr)
         return 2
     if args.rotulo and not seen:
         print(f"rótulo não encontrado (ou sem .string): {args.rotulo}", file=sys.stderr)
         return 2
+    for aviso in avisos:
+        print(f"aviso: {aviso}", file=sys.stderr)
     if args.escrever:
         path.write_text(new, encoding="utf-8")
         print(f"{len(done)} rótulo(s) refeito(s) em {args.arquivo}" + (f": {', '.join(done)}" if done else ""))

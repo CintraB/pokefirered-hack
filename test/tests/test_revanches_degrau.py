@@ -72,7 +72,9 @@ def test_linha_unica_por_treinador(g):
 
 
 def test_trainers_intocados():
-    r = subprocess.run(["git", "diff", "--quiet", BASE_SHA, "--", "src/data/trainer_parties.h",
+    # só o conteúdo: no /mnt/c (drvfs) o WSL vê todo arquivo como rwxrwxrwx e, com core.fileMode=true,
+    # o git acusaria "mode change 100644 => 100755" conforme quem mexeu por último no índice (POK-30)
+    r = subprocess.run(["git", "-c", "core.fileMode=false", "diff", "--quiet", BASE_SHA, "--", "src/data/trainer_parties.h",
                         "src/data/trainers.h"], cwd=REPO_ROOT)
     assert r.returncode == 0
 
