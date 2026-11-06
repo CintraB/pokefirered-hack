@@ -9,9 +9,9 @@ a Pokédex inteira obtível e uma esteira de testes automática no emulador.**
 ![Idioma](https://img.shields.io/badge/idioma-PT--BR-009c3b?style=flat-square)
 ![Base](https://img.shields.io/badge/base-pret%2Fpokefirered-e3350d?style=flat-square)
 ![Linguagem](https://img.shields.io/badge/C-agbcc-555555?style=flat-square)
-![Testes](https://img.shields.io/badge/pytest-4834%20testes-2ea44f?style=flat-square)
-![Esteira](https://img.shields.io/badge/esteira-532%20checagens-2ea44f?style=flat-square)
-![Versão](https://img.shields.io/badge/ROM-v53-informational?style=flat-square)
+![Testes](https://img.shields.io/badge/pytest-4910%20testes-2ea44f?style=flat-square)
+![Esteira](https://img.shields.io/badge/esteira-560%20checagens-2ea44f?style=flat-square)
+![Versão](https://img.shields.io/badge/ROM-v65-informational?style=flat-square)
 
 <img src="docs/readme/inicial.png" width="240" alt="Escolha do inicial em português">
 <img src="docs/readme/chuva.png" width="240" alt="Batalha com chuva contínua">
@@ -300,6 +300,7 @@ perder o jeito do FireRed.
 | **Bugs do original** (03/11) | As 47 correções de bugs do FireRed que a decompilação deixava desligadas, agora ligadas. |
 | **Pokémon seguidor, todos** (03/11) | Os 386 seguem, com a versão shiny: os 7 grandes em 64×64, as fêmeas, cada letra do Unown e o Deoxys Ataque; o seguidor fica sempre atrás do jogador no desenho. A ROM passou a 32 MB. |
 | **Pokérus** (06/11) | O Pokérus do Rubi/Safira, que o FireRed deixava desligado: pega depois das batalhas, passa aos vizinhos, conta os dias pelo relógio da hack e dobra os EVs. |
+| **Esteira mais firme** (06/11) | Galeria de textos (cada fala na caixa real) e telas de referência estáveis, sem avisos falsos pelo sorteio. |
 
 ## Esteira de testes
 
@@ -325,7 +326,11 @@ flowchart LR
   comparadas pixel a pixel com as referências aprovadas de cada um.
 - **Checagem de texto**: mede a largura de cada frase traduzida na janela onde ela aparece e o
   tamanho dos buffers, para nada estourar.
-- **4834 testes em pytest** cobrem a própria esteira e as regras de cada hack.
+- **Galeria de textos**: mostra cada fala do campo na caixa de texto real, página por página e com o
+  pior caso dos nomes variáveis, numa página HTML para revisar a tradução de olho. Não reprova nada.
+- **Telas estáveis**: a tela da captura sai sempre com o mesmo Pokémon (um Pidgey), e as telas são
+  conferidas pelo relógio do disco, para o sorteio não gerar avisos falsos.
+- **4910 testes em pytest** cobrem a própria esteira e as regras de cada hack.
 
 <details>
 <summary>Comandos (WSL)</summary>
@@ -335,6 +340,7 @@ make firered_switch          # ROM testada e versionada
 make test-quick              # retesta sem versionar
 make test-full               # tudo, com a ROM de teste
 make test-watch              # assiste numa janela
+make test-galeria            # galeria de textos (FILTRO='Mapa*' para um mapa)
 python3 -m pytest test -q    # testes da esteira
 ```
 
