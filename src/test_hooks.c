@@ -1530,6 +1530,33 @@ static u32 FamiliaGemeos(void)
     ScriptContext_SetupScript(gTestText);
     return 1;
 }
+
+extern void StartFamiliaWildBattle(void);      // src/battle_setup.c (battle_setup.h colide com este arquivo)
+
+static u32 FamiliaWild(void)
+{
+    FamiliaSombra_CriarSelvagem(FamiliaSombra_NivelSelvagem());
+    StartFamiliaWildBattle();
+    return GetMonData(&gEnemyParty[0], MON_DATA_SPECIES) | GetMonData(&gEnemyParty[0], MON_DATA_LEVEL) << 16;
+}
+
+static u32 FamiliaChefe(void)
+{
+    u8 *s = gTestText;
+    u32 func = (u32)FamiliaSombra_IniciarChefe;
+
+    *s++ = 0x69;                                // lockall
+    *s++ = 0x23;                                // callnative (o mesmo que special FamiliaSombra_IniciarChefe)
+    *s++ = func & 0xFF;
+    *s++ = (func >> 8) & 0xFF;
+    *s++ = (func >> 16) & 0xFF;
+    *s++ = func >> 24;
+    *s++ = 0x27;                                // waitstate
+    *s++ = 0x6B;                                // releaseall
+    *s++ = 0x02;                                // end
+    ScriptContext_SetupScript(gTestText);
+    return 1;
+}
 // --- end of POK-51 --------------------------------------------------------------------------
 
 void TestHooks_Run(void)
@@ -1692,6 +1719,8 @@ void TestHooks_Run(void)
     case TEST_CMD_FAMILIA_ESTADO:   result = FamiliaEstado(); break;
     case TEST_CMD_FAMILIA_SET:      result = FamiliaSet(gTestMailbox.arg0, gTestMailbox.arg1); break;
     case TEST_CMD_FAMILIA_GEMEOS:   result = FamiliaGemeos(); break;
+    case TEST_CMD_FAMILIA_WILD:     result = FamiliaWild(); break;
+    case TEST_CMD_FAMILIA_CHEFE:    result = FamiliaChefe(); break;
     // POK-29
     case TEST_CMD_SHOW_FIELD_TEXT:  result = ShowFieldText(gTestMailbox.arg0, gTestMailbox.arg1); break;
     default:

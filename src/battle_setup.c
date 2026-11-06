@@ -24,6 +24,8 @@
 #include "field_message_box.h"
 #include "vs_seeker.h"
 #include "rematch_tier.h"
+#include "familia_sombra.h"
+#include "battle_setup.h"
 #include "battle.h"
 #include "battle_transition.h"
 #include "battle_controllers.h"
@@ -241,6 +243,8 @@ void StartWildBattle(void)
         DoSafariBattle();
     else if (CheckSilphScopeInPokemonTower(gSaveBlock1Ptr->location.mapGroup, gSaveBlock1Ptr->location.mapNum))
         DoGhostBattle();
+    else if (FamiliaSombra_EhAndarEscuro()) // POK-51: nos andares 4-5 da Família Sombra quem aparece é um capanga
+        StartFamiliaWildBattle();
     else
         DoStandardWildBattle();
 }
@@ -253,6 +257,35 @@ static void DoStandardWildBattle(void)
     gMain.savedCallback = CB2_EndWildBattle;
     gBattleTypeFlags = 0;
     CreateBattleStartTask(GetWildBattleTransition(), 0);
+    IncrementGameStat(GAME_STAT_TOTAL_BATTLES);
+    IncrementGameStat(GAME_STAT_WILD_BATTLES);
+}
+
+// POK-51: o encontro dos andares 4-5 da Família Sombra (gEnemyParty[0] já montado por FamiliaSombra_CriarSelvagem):
+// batalha selvagem marcada com BATTLE_TYPE_FAMILIA (texto do capanga, filme, bola desviada, item protegido) e a
+// música de batalha de treinador. IA e EXP continuam as de selvagem.
+void StartFamiliaWildBattle(void)
+{
+    LockPlayerFieldControls();
+    FreezeObjectEvents();
+    StopPlayerAvatar();
+    gMain.savedCallback = CB2_EndWildBattle;
+    gBattleTypeFlags = BATTLE_TYPE_FAMILIA;
+    CreateBattleStartTask(GetWildBattleTransition(), MUS_VS_TRAINER);
+    IncrementGameStat(GAME_STAT_TOTAL_BATTLES);
+    IncrementGameStat(GAME_STAT_WILD_BATTLES);
+}
+
+// POK-51: o chefe da Família Sombra (gEnemyParty[0] já montado por FamiliaSombra_IniciarChefe), como os lendários:
+// volta ao script que chamou, música de lendário. Capturável (a bola é gasta normalmente), cores shiny sem filme e a
+// IA dos chefes (BattleAI_SetupAIData). gTrainerBattleOpponent_A fica zerado: a IA não lê um treinador antigo.
+void StartFamiliaChefeBattle(void)
+{
+    LockPlayerFieldControls();
+    gMain.savedCallback = CB2_EndScriptedWildBattle;
+    gBattleTypeFlags = BATTLE_TYPE_LEGENDARY | BATTLE_TYPE_LEGENDARY_FRLG | BATTLE_TYPE_FAMILIA_CHEFE;
+    gTrainerBattleOpponent_A = 0;
+    CreateBattleStartTask(B_TRANSITION_BLUR, MUS_VS_LEGEND);
     IncrementGameStat(GAME_STAT_TOTAL_BATTLES);
     IncrementGameStat(GAME_STAT_WILD_BATTLES);
 }

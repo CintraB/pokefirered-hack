@@ -21,13 +21,30 @@ Task 3 (capangas como treinadores):
 - `familia/gemeos_dupla`: 2 Pokémon no time, FAMILIA_GEMEOS: 2 Machamp nv 60 em campo (batalhadores 1 e 3), a fala
   gText_FamiliaGemeosQueremLutar, sem sprite de treinador e a música MUS_VS_GYM_LEADER. Tela `familia_gemeos_batalha`.
 
+Task 4 (andares 4-5, efeito de filme e o chefe). Os andares 4-5 só existem na Task 5 (Ruling R4): o encontro começa pelo
+atalho FAMILIA_WILD, que monta o mesmo Pokémon do encontro do andar e liga BATTLE_TYPE_FAMILIA.
+
+- `familia/encontro_wild`: espécie do plantel da ocupação 1, nível 54-58, item e golpes do plantel, o texto do
+  capanga, sprite do selvagem, a música de treinador e a paleta do oponente = noir() da prévia aplicado à paleta
+  normal da espécie (gPlttBufferUnfaded, índice 0 intocado). Tela `familia_filme_batalha`;
+- `familia/bola_selvagem`: a bola desviada e não gasta, como no capanga;
+- `familia/thief_selvagem`: Ladrão e Truque não tiram o item do encontro;
+- `familia/chefe`: o special FamiliaSombra_IniciarChefe: Gengar shiny nv 62 com os golpes e o item da tabela,
+  batalha lendária com BATTLE_TYPE_FAMILIA_CHEFE (sem BATTLE_TYPE_FAMILIA), gTrainerBattleOpponent_A = 0,
+  MUS_VS_LEGEND e as cores shiny sem filme. Tela `familia_chefe_batalha`;
+- `familia/bola_chefe`: a Master Ball é gasta e captura o chefe;
+- `familia/chefe_ia`: Golem nv 100 (imune a Raio) só com Endurecer contra o chefe por 3 turnos: a IA usa as 5 flags
+  de chefe (aiLogicId 9) e nunca escolhe Raio, nem Comedor de Sonhos com o Golem acordado, nem Hipnose com ele
+  dormindo (ao acaso, passar nos 3 turnos tem 1/8 de chance).
+
 Uso, a partir de test/ (a pasta OUT precisa do captura.sav de um `rapido`/`completo`):
     python3 -m esteira completo --rom R --elf E --out OUT --only familia
 """
 
+import importlib.util
 import re
 
-from ..battle import BattleDriver
+from ..battle import ACTION_FIGHT, MENU_TIMEOUT, MOVE_FUNC_SUFFIX, BattleDriver
 from ..breeding import header_defines
 from ..hooks import CMD_GIVE_ITEM, Mailbox
 from . import REPO_ROOT, ScenarioContext
@@ -50,6 +67,53 @@ EXTRA_BALLS = 5
 DODGE_TEXT = "desvia a Poké Bola"
 TEAM = (("SPECIES_MEWTWO", PLAYER_LEVEL), ("SPECIES_SNORLAX", PLAYER_LEVEL))
 TIMES_H = REPO_ROOT / "src" / "data" / "familia_sombra_times.h"
+BATTLE_TYPE_TRAINER, BATTLE_TYPE_LEGENDARY = 1 << 3, 1 << 13
+BATTLE_TYPE_FAMILIA, BATTLE_TYPE_FAMILIA_CHEFE = 1 << 20, 1 << 21   # include/constants/battle.h
+OBJ_PLTT = 256                       # gPlttBufferUnfaded: as paletas de sprite começam na 256; batalhador n = 256 + 16n
+PALETTE_ENTRY = 8                    # struct CompressedSpritePalette (data, tag)
+BATTLE_MON_STATUS1 = 0x4C            # struct BattlePokemon
+STATUS1_SLEEP = 0x7
+AI_RESOURCES, AI_LOGIC_ID = 0x14, 0x11   # gBattleResources->ai, AI_ThinkingStruct.aiLogicId
+CHEFE_AI_BITS = 9                    # FAMILIA_AI_CHEFE vai até AI_SCRIPT_HP_AWARE (bit 8)
+AI_TURNS = 3
+
+
+def _noir_tool():
+    spec = importlib.util.spec_from_file_location("familia_noir", REPO_ROOT / "tools" / "familia_sombra" / "noir.py")
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+
+def lz77(data: bytes) -> bytes:
+    """Descompacta o LZ77 do BIOS do GBA (cabeçalho 0x10 + tamanho de 24 bits)."""
+    assert data[0] == 0x10, data[0]
+    size = int.from_bytes(data[1:4], "little")
+    out, i = bytearray(), 4
+    while len(out) < size:
+        flags = data[i]
+        i += 1
+        for bit in range(8):
+            if len(out) >= size:
+                break
+            if flags & (0x80 >> bit):
+                length = (data[i] >> 4) + 3
+                disp = ((data[i] & 0xF) << 8 | data[i + 1]) + 1
+                i += 2
+                for _ in range(length):
+                    out.append(out[-disp])
+            else:
+                out.append(data[i])
+                i += 1
+    return bytes(out[:size])
+
+
+def chefe_da_tabela(ocupacao: int) -> tuple[str, int, str, list[str]]:
+    """(espécie, nível, item, golpes) do chefe da ocupação em sFamiliaChefes."""
+    text = TIMES_H.read_text(encoding="utf-8")
+    text = text[text.index("sFamiliaChefes["):]
+    sp, lv, item, moves = re.findall(r"MEMBRO\((\w+),\s*(\d+),\s*(\w+),\s*([\w ,]+)\)", text)[ocupacao - 1]
+    return sp, int(lv), item, [m.strip() for m in moves.split(",")]
 
 
 def times_table(name: str) -> list[list[tuple[str, int, str, list[str]]]]:
@@ -79,6 +143,7 @@ class FamiliaScenario(CatchSaveScenario):
         self.box: Mailbox | None = None
         self.driver: BattleDriver | None = None
         self.moves = header_defines(REPO_ROOT, "moves.h")
+        self.moves_names = {v: k for k, v in self.moves.items() if k.startswith("MOVE_")}
         self.songs = header_defines(REPO_ROOT, "songs.h")
 
     # --- leitura --------------------------------------------------------------------
@@ -162,8 +227,8 @@ class FamiliaScenario(CatchSaveScenario):
         self.ctl.checkpoint("familia_capanga")
         return f"abertura = gText_FamiliaCapangaQuerLutar; oponente {seen}; sem treinador; tela {shot}"
 
-    def _ball(self) -> str:
-        self._restore("familia_capanga")
+    def _ball(self, checkpoint: str = "familia_capanga") -> str:
+        self._restore(checkpoint)
         ball = self.consts.item("ITEM_POKE_BALL")
         assert self.box.call(CMD_GIVE_ITEM, ball, EXTRA_BALLS) == 1
         before = self.game.bag_quantity(ball)
@@ -201,18 +266,22 @@ class FamiliaScenario(CatchSaveScenario):
         assert self.game.flag(flag), "flag do capanga 1 desligada depois da vitória"
         return f"{won[0]!r}; dinheiro {money} → {self.game.money()}; flag do treinador {flag:#x} ligada"
 
-    def _item_move(self, move: str, held: str | None) -> str:
+    def _item_move(self, move: str, held: str | None, start=None) -> str:
         """Um turno de `move` (no golpe 0) do Mewtwo segurando `held` contra o capanga 1 (Misdreavus com Talismã
-        Fantasma): o item não muda de dono, nem na batalha nem no time."""
+        Fantasma) ou contra a batalha que `start` começa: o item não muda de dono, nem na batalha nem no time."""
         self._restore("familia_base")
         held_id = self.consts.item(f"ITEM_{held}") if held else 0
         self.box.set_party_mon(0, self._sp("MEWTWO"), PLAYER_LEVEL, held_id)
         self.box.set_party_move(0, 0, self.moves[f"MOVE_{move}"])
-        self.box.start_trainer_battle(self._trainer("TRAINER_FAMILIA_CAPANGA_1"))
+        if start is None:
+            self.box.start_trainer_battle(self._trainer("TRAINER_FAMILIA_CAPANGA_1"))
+        else:
+            start()
         self.driver.wait_action_menu(INTRO_TIMEOUT)
         self.emu.frames(10)
-        foe_item = self.consts.item("ITEM_SPELL_TAG")
-        assert self.emu.read_u16(self._sym("gBattleMons") + BATTLE_MON_SIZE + BATTLE_MON_ITEM) == foe_item
+        foe_item = self.game.enemy_party()[0].held_item
+        assert start is not None or foe_item == self.consts.item("ITEM_SPELL_TAG"), foe_item
+        assert foe_item and self.emu.read_u16(self._sym("gBattleMons") + BATTLE_MON_SIZE + BATTLE_MON_ITEM) == foe_item
         result = self.driver.fight_turn(INTRO_TIMEOUT)
         mine = self.emu.read_u16(self._sym("gBattleMons") + BATTLE_MON_ITEM)
         party_item = self.game.party()[0].held_item
@@ -221,8 +290,8 @@ class FamiliaScenario(CatchSaveScenario):
         detail = f"{move}: Mewtwo continua com {held or 'nada'}"
         if result == "menu":
             foe = self.emu.read_u16(self._sym("gBattleMons") + BATTLE_MON_SIZE + BATTLE_MON_ITEM)
-            assert foe == foe_item, f"{move}: o capanga ficou com {foe}, esperava o Talismã Fantasma ({foe_item})"
-            detail += "; o capanga continua com o Talismã Fantasma"
+            assert foe == foe_item, f"{move}: o capanga ficou com {foe}, esperava o item dele ({foe_item})"
+            detail += f"; o capanga continua com o item {foe_item}"
         return detail
 
     def _thief(self) -> str:
@@ -264,6 +333,128 @@ class FamiliaScenario(CatchSaveScenario):
         self.box.familia_set(1, ESTADO_ATIVA)
         return "; ".join(seen)
 
+    # --- Task 4: andares 4-5 e o chefe ----------------------------------------------------------
+    def _species_palette(self, species: int, shiny: bool) -> list[int]:
+        """As 16 cores (GBA) da paleta da espécie, descompactadas da ROM (gMonPaletteTable / gMonShinyPaletteTable)."""
+        table = self._sym("gMonShinyPaletteTable" if shiny else "gMonPaletteTable")
+        ptr = self.emu.read_u32(table + species * PALETTE_ENTRY)
+        raw = lz77(self.emu.read(ptr, 64))
+        return [int.from_bytes(raw[i:i + 2], "little") for i in range(0, 32, 2)]
+
+    def _battler_palette(self, battler: int) -> list[int]:
+        base = self._sym("gPlttBufferUnfaded") + (OBJ_PLTT + 16 * battler) * 2
+        return [self.emu.read_u16(base + 2 * i) for i in range(16)]
+
+    def _encontro(self) -> str:
+        self._restore("familia_base")
+        plantel = times_table("sFamiliaPlantel")[0]
+        species, level = self.box.familia_wild()
+        member = [m for m in plantel if self._sp(m[0]) == species]
+        assert member, f"espécie {species} fora do plantel da ocupação 1"
+        assert 54 <= level <= 58, f"nível {level} fora de 54-58"
+        seen = self._wait_intro("gText_FamiliaCapangaQuerLutar", (1,))
+        flags = self.driver.battle_type_flags()
+        assert flags & BATTLE_TYPE_FAMILIA and not flags & (BATTLE_TYPE_TRAINER | BATTLE_TYPE_FAMILIA_CHEFE), \
+            f"gBattleTypeFlags {flags:#x}"
+        detail = self._party_matches(self.game.enemy_party()[0], member[0], level)
+        assert self._bgm_is("MUS_VS_TRAINER"), "a música não é a de treinador"
+        normal = self._species_palette(species, False)
+        want = [normal[0]] + [_noir_tool().noir_gba(c) for c in normal[1:]]
+        got = self._battler_palette(1)
+        assert got == want, f"paleta do oponente {[hex(c) for c in got]}, esperava o filme {[hex(c) for c in want]}"
+        self.emu.frames(30)
+        shot = self._shot("familia_filme_batalha")
+        self.driver.wait_action_menu(INTRO_TIMEOUT)
+        self.emu.frames(10)
+        self.ctl.checkpoint("familia_selvagem")
+        return f"{detail} com item e golpes do plantel; {seen}; MUS_VS_TRAINER; paleta = noir(normal); tela {shot}"
+
+    def _wild_ball(self) -> str:
+        return self._ball("familia_selvagem")
+
+    def _wild_thief(self) -> str:
+        start = self.box.familia_wild
+        return self._item_move("THIEF", None, start) + " | " + self._item_move("TRICK", "LEFTOVERS", start)
+
+    def _chefe(self) -> str:
+        self._restore("familia_base")
+        expected = chefe_da_tabela(1)
+        gengar = self._sp(expected[0])
+        self.box.familia_chefe()
+        self.driver.wait_battle_start()
+        self.ctl.wait_until(lambda: self.driver.battler_species_level(1)[0] == gengar, INTRO_TIMEOUT, "chefe em campo")
+        flags = self.driver.battle_type_flags()
+        assert flags & BATTLE_TYPE_FAMILIA_CHEFE and flags & BATTLE_TYPE_LEGENDARY, f"gBattleTypeFlags {flags:#x}"
+        assert not flags & (BATTLE_TYPE_FAMILIA | BATTLE_TYPE_TRAINER), f"gBattleTypeFlags {flags:#x}"
+        assert self.emu.read_u16(self._sym("gTrainerBattleOpponent_A")) == 0, "gTrainerBattleOpponent_A não zerado"
+        mon = self.game.enemy_party()[0]
+        assert mon.is_shiny, f"chefe não shiny: pid {mon.personality:#x}, OT {mon.ot_id:#x}"
+        assert mon.ot_id == self.game.party()[0].ot_id, "o OT do chefe não é o jogador"
+        sp, lv, item, moves = expected
+        got = (mon.species, mon.level, mon.held_item, mon.moves)
+        want = (gengar, lv, self.consts.item(f"ITEM_{item}"), [self.moves[f"MOVE_{m}"] for m in moves])
+        assert got == want, f"{sp}: {got}, esperava {want}"
+        assert self._bgm_is("MUS_VS_LEGEND"), "a música não é a de lendário"
+        self.driver.wait_action_menu(INTRO_TIMEOUT)
+        self.emu.frames(10)
+        shiny = self._species_palette(gengar, True)
+        got = self._battler_palette(1)
+        assert got == shiny, f"paleta do chefe {[hex(c) for c in got]}, esperava a shiny {[hex(c) for c in shiny]}"
+        shot = self._shot("familia_chefe_batalha")
+        self.ctl.checkpoint("familia_chefe")
+        return (f"{sp} nv {lv} shiny, {item}, {moves}; lendária + FAMILIA_CHEFE; MUS_VS_LEGEND; paleta shiny sem "
+                f"filme; tela {shot}")
+
+    def _chefe_ball(self) -> str:
+        self._restore("familia_chefe")
+        master = self.consts.item("ITEM_MASTER_BALL")
+        assert self.box.call(CMD_GIVE_ITEM, master, 1) == 1
+        before = self.game.bag_quantity(master)
+        caught = self.driver.throw_ball(master)
+        after = self.game.bag_quantity(master)
+        assert caught, "a Master Ball não capturou o chefe"
+        assert after == before - 1, f"Master Ball: {before} antes, {after} depois (não foi gasta)"
+        return f"capturado; Master Ball {before} -> {after}"
+
+    def _chefe_ia(self) -> str:
+        self._restore("familia_base")
+        self.box.set_party_mon(0, self._sp("GOLEM"), 100)
+        self.box.set_party_move(0, 0, self.moves["MOVE_HARDEN"])
+        self.box.familia_chefe()
+        thunderbolt = self.moves["MOVE_THUNDERBOLT"]
+        dream, hypnosis = self.moves["MOVE_DREAM_EATER"], self.moves["MOVE_HYPNOSIS"]
+        chosen = []
+        for turn in range(1, AI_TURNS + 1):
+            self.driver.wait_action_menu(INTRO_TIMEOUT)
+            asleep = bool(self.emu.read_u32(self._sym("gBattleMons") + BATTLE_MON_STATUS1) & STATUS1_SLEEP)
+            self.emu.frames(10)
+            move, result = self._turn_reading_foe_move()
+            name = self.moves_names.get(move, str(move))
+            chosen.append(name + (" (Golem dormindo)" if asleep else ""))
+            assert move != thunderbolt, f"turno {turn}: Raio contra o Golem (imune)"
+            bad = hypnosis if asleep else dream
+            assert move != bad, f"turno {turn}: {name} com o Golem {'dormindo' if asleep else 'acordado'}"
+            if turn == 1:
+                ai = self.emu.read_u32(self.emu.read_u32(self._sym("gBattleResources")) + AI_RESOURCES)
+                bits = self.emu.read_u8(ai + AI_LOGIC_ID)
+                assert bits == CHEFE_AI_BITS, f"IA do chefe com {bits} bits de flags, esperava {CHEFE_AI_BITS}"
+            assert result == "menu", f"turno {turn}: a batalha acabou ({result})"
+        return f"IA de chefe (aiLogicId {CHEFE_AI_BITS}); golpes {chosen}"
+
+    def _turn_reading_foe_move(self) -> tuple[int, str]:
+        """Um turno de LUTAR (1º golpe com PP), como BattleDriver.fight_turn, lendo gChosenMoveByBattler[1] logo que o
+        jogador escolhe (o motor zera a escolha no fim do turno): (golpe do oponente, 'menu' ou 'end')."""
+        d = self.driver
+        d._choose_action(ACTION_FIGHT)
+        in_moves = lambda: d.controller_func().endswith(MOVE_FUNC_SUFFIX)
+        self.ctl.wait_until(in_moves, MENU_TIMEOUT, "menu de golpes")
+        d._choose_first_move_with_pp()
+        self.ctl.wait_until(lambda: not in_moves(), 60, "saída do menu de golpes")
+        chosen = self._sym("gChosenMoveByBattler") + 2
+        self.ctl.wait_until(lambda: self.emu.read_u16(chosen) != 0, MENU_TIMEOUT, "escolha do chefe")
+        move = self.emu.read_u16(chosen)
+        return move, d._advance_until_menu_or_end("fim do turno", INTRO_TIMEOUT)
+
     def _twins(self) -> str:
         self._restore("familia_base")
         self.box.familia_gemeos()
@@ -288,6 +479,12 @@ class FamiliaScenario(CatchSaveScenario):
             self.suite.run("familia/thief", self._thief)
             self.suite.run("familia/time_por_ocupacao", self._teams)
             self.suite.run("familia/gemeos_dupla", self._twins)
+            self.suite.run("familia/encontro_wild", self._encontro)
+            self.suite.run("familia/bola_selvagem", self._wild_ball)
+            self.suite.run("familia/thief_selvagem", self._wild_thief)
+            self.suite.run("familia/chefe", self._chefe)
+            self.suite.run("familia/bola_chefe", self._chefe_ball)
+            self.suite.run("familia/chefe_ia", self._chefe_ia)
         except Abort:
             pass
 

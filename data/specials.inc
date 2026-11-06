@@ -486,4 +486,5 @@ gSpecials::
 	def_special FamiliaSombra_GetEstado
 	def_special FamiliaSombra_GetOcupacao
 	def_special FamiliaSombra_SortearPedagio
+	def_special FamiliaSombra_IniciarChefe
 gSpecialsEnd::

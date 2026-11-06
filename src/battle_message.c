@@ -1590,7 +1590,12 @@ void BufferStringBattle(u16 stringId)
         }
         else
         {
-            if (gBattleTypeFlags & BATTLE_TYPE_GHOST)
+            if (gBattleTypeFlags & BATTLE_TYPE_FAMILIA)
+            {
+                // POK-51: o encontro dos andares 4-5 também é um capanga da Família.
+                stringPtr = gText_FamiliaCapangaQuerLutar;
+            }
+            else if (gBattleTypeFlags & BATTLE_TYPE_GHOST)
             {
                 if (gBattleTypeFlags & BATTLE_TYPE_GHOST_UNVEILED)
                     stringPtr = sText_TheGhostAppeared;

@@ -23,6 +23,8 @@ struct FamiliaMembro
 #define FAMILIA_NIVEL_PASSO     6   // +6 em tudo a cada ocupação
 #define FAMILIA_NIVEL_PEDAGIO_1 56  // ocupação 1: dentro dos andares 4-5 (54-58)
 #define FAMILIA_NIVEL_PEDAGIO_2 58
+#define FAMILIA_NIVEL_ANDAR_MIN 54  // ocupação 1: encontros dos andares 4-5 (sorteado entre MIN e MAX)
+#define FAMILIA_NIVEL_ANDAR_MAX 58
 
 #define MEMBRO(sp, lv, item, m1, m2, m3, m4) \
     {SPECIES_##sp, lv, ITEM_##item, {MOVE_##m1, MOVE_##m2, MOVE_##m3, MOVE_##m4}}
@@ -102,7 +104,8 @@ static const struct FamiliaMembro sFamiliaGemeos[FAMILIA_OCUPACOES_TOTAL][2] =
     },
 };
 
-// Plantel de cada ocupação (andares 4-5 e as 2 lutas do pedágio): o nível vem de quem chama.
+// Plantel de cada ocupação (encontros dos andares 4-5 e as 2 lutas do pedágio): o nível vem de quem chama
+// (andares 4-5: FAMILIA_NIVEL_ANDAR_MIN..MAX + 6 por ocupação, FamiliaSombra_NivelSelvagem).
 static const struct FamiliaMembro sFamiliaPlantel[FAMILIA_OCUPACOES_TOTAL][FAMILIA_PLANTEL] =
 {
     // Ocupação 1: o Dom
@@ -141,6 +144,23 @@ static const struct FamiliaMembro sFamiliaPlantel[FAMILIA_OCUPACOES_TOTAL][FAMIL
         MEMBRO(CROBAT,     0, SHARP_BEAK,   AERIAL_ACE,   SLUDGE_BOMB,  SHADOW_BALL,  CONFUSE_RAY),
         MEMBRO(MUK,        0, LEFTOVERS,    SLUDGE_BOMB,  FIRE_PUNCH,   THUNDER_PUNCH, CURSE),
     },
+};
+
+// O chefe de cada ocupação (6º andar, encontro estático sempre shiny e capturável; FamiliaSombra_IniciarChefe):
+// nível 62 + 6 por ocupação, 4 golpes e item fixos.
+static const struct FamiliaMembro sFamiliaChefes[FAMILIA_OCUPACOES_TOTAL] =
+{
+    // GENGAR, O DOM: Hipnose põe para dormir e Comedor de Sonhos cobra a conta (a IA só o usa com o alvo dormindo);
+    // Bola Sombria é o golpe forte do tipo, e o Raio cobre os tipos Água e Voador. Talismã Fantasma reforça a
+    // Bola Sombria.
+    MEMBRO(GENGAR,    62, SPELL_TAG,    SHADOW_BALL,  HYPNOSIS,     DREAM_EATER,  THUNDERBOLT),
+    // TYRANITAR, O COBRADOR: Dança do Dragão prepara o ataque e a velocidade; Deslize de Pedra e Mastigar com o
+    // bônus do tipo, Terremoto para Aço e Fogo. Restos o mantêm de pé enquanto se prepara (a areia não o fere).
+    MEMBRO(TYRANITAR, 68, LEFTOVERS,    ROCK_SLIDE,   CRUNCH,       EARTHQUAKE,   DRAGON_DANCE),
+    // O Mercenário (terra/dragão) // parte 2 troca (Garchomp é gen 4): Flygon provisório, golpes de terra e dragão.
+    MEMBRO(FLYGON,    74, SOFT_SAND,    EARTHQUAKE,   DRAGON_CLAW,  ROCK_SLIDE,   FIRE_BLAST),
+    // O Pesadelo (fantasma/psíquico) // parte 2 troca (Darkrai é gen 4): Hypno provisório, o sono e o sonho.
+    MEMBRO(HYPNO,     80, TWISTED_SPOON, PSYCHIC,     HYPNOSIS,     DREAM_EATER,  SHADOW_BALL),
 };
 
 #undef MEMBRO

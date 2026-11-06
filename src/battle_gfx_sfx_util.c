@@ -16,6 +16,7 @@
 #include "constants/battle_anim.h"
 #include "constants/moves.h"
 #include "constants/songs.h"
+#include "familia_sombra.h"
 
 static bool8 ShouldAnimBeDoneRegardlessOfSubsitute(u8 animId);
 static void Task_ClearBitWhenBattleTableAnimDone(u8 taskId);
@@ -348,6 +349,10 @@ void BattleLoadOpponentMonSpriteGfx(struct Pokemon *mon, u8 battlerId)
         lzPaletteData = GetMonSpritePalFromSpeciesAndPersonality(species, otId, monsPersonality);
     buffer = AllocZeroed(0x400);
     LZDecompressWram(lzPaletteData, buffer);
+    // POK-51: efeito de filme antigo nos capangas da Família (o chefe não: cores shiny). LoadPalette grava Unfaded e
+    // Faded, e o clima do POK-15 reaplica a partir do Unfaded.
+    if (FamiliaSombra_EhBatalhaDaFamilia())
+        FamiliaSombra_PaletaNoir(buffer, 16);
     LoadPalette(buffer, paletteOffset, PLTT_SIZE_4BPP);
     LoadPalette(buffer, BG_PLTT_ID(8) + BG_PLTT_ID(battlerId), PLTT_SIZE_4BPP);
     Free(buffer);

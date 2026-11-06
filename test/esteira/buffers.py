@@ -448,7 +448,7 @@ _COPY_CALLS = {
     # frase do Easy Chat: colunas x linhas de palavras com espaço/quebra (src/easy_chat.c:188-213);
     # nunca automática: o número de palavras vem dos argumentos, então a frase é declarada
     "ConvertEasyChatWordsToString": ("ecphrase", 0, None),
-    # texto de batalha com os {B_*} expandidos (src/battle_message.c:1798-1801): o ...ToDisplayedString
+    # texto de batalha com os {B_*} expandidos (src/battle_message.c:1803-1806): o ...ToDisplayedString
     # escreve sempre em gDisplayedStringBattle[300] (src/battle_main.c:128)
     "BattleStringExpandPlaceholdersToDisplayedString": ("battle", None, 0),
     "BattleStringExpandPlaceholders": ("battle", 1, 0),
@@ -464,7 +464,7 @@ EXPANDS = {
                          "VERSION", "EVIL_TEAM", "GOOD_TEAM", "EVIL_LEADER", "GOOD_LEADER", "EVIL_LEGENDARY",
                          "GOOD_LEGENDARY"}),
     "dynamic": frozenset({"DYNAMIC"}),
-    # BattleStringExpandPlaceholders (src/battle_message.c:1848-2223): os nomes e buffers de batalha
+    # BattleStringExpandPlaceholders (src/battle_message.c:1853-2228): os nomes e buffers de batalha
     "battle": frozenset({*ct.DYNAMIC_LETTERS, *ct._PREFIXED, *ct._PREFIX_ONLY, "B_BUFF1", "B_BUFF2", "B_BUFF3",
                          "B_COPY_VAR_1", "B_COPY_VAR_2", "B_COPY_VAR_3", "B_26"}),
 }
@@ -1346,38 +1346,38 @@ DECLARED: list[Declared] = [
              BufRef("text", _BM, "BattleStringExpandPlaceholders"),
              (Text("sText_BerryPrefix", file=_BM), Fixed("BERRY_NAME_LENGTH", "nome da fruta Enigma (BERRY_NAME_LENGTH)")),
              why="item do último efeito: text[30] = sText_BerryPrefix + nome da fruta Enigma "
-                 "(src/battle_message.c:2007-2008, :2020-2021)"),
+                 "(src/battle_message.c:2012-2013, :2025-2026)"),
     Declared(_BM, r"", r"sText_(Foe|Wild)PkmnPrefix", BufRef("text", _BM, "BattleStringExpandPlaceholders"),
              (_NICK, Text("sText_FoePkmnPrefix", "sText_WildPkmnPrefix", file=_BM)),
-             why="HANDLE_NICKNAME_STRING_CASE (macro, src/battle_message.c:1826-1839): text[30] = apelido + "
+             why="HANDLE_NICKNAME_STRING_CASE (macro, src/battle_message.c:1831-1844): text[30] = apelido + "
                  "\" selvagem\"/\" inimigo\" depois do nome"),
     Declared(_BM, "BattleStringExpandPlaceholders", r"", BufRef("text", _BM, "BattleStringExpandPlaceholders"),
-             why="item do último efeito: CopyItemName(gLastUsedItem, text) em text[30] (src/battle_message.c:2030, :2036)",
+             why="item do último efeito: CopyItemName(gLastUsedItem, text) em text[30] (src/battle_message.c:2035, :2041)",
              dest=r"text"),
-    # gBattleTextBuffN -> gStringVarN (src/battle_message.c:1868-1890): o menor deles, gStringVar2/3 (20)
+    # gBattleTextBuffN -> gStringVarN (src/battle_message.c:1873-1895): o menor deles, gStringVar2/3 (20)
     Declared(_BM, "ExpandBattleTextBuffPlaceholders", r"gBattleStringsTable\[.*\]", BufRef("gStringVar2"),
              (Text(*STAT_CHANGE_STRINGS, "sText_ABoosted", file=_BM),),
-             why="gBattleTextBuff2 com UMA string da tabela, expandida em gStringVar2 (src/battle_message.c:1881): "
+             why="gBattleTextBuff2 com UMA string da tabela, expandida em gStringVar2 (src/battle_message.c:1886): "
                  "a mudança de atributo (\"Aumentou muito\" ou \"Aumentou\"..., um OU outro desde a G2: "
                  "src/battle_script_commands.c:6763-6799, src/battle_util.c:2716-2720; test_buffers confere no C) "
                  "e o \"a boosted\" da EXP (src/battle_script_commands.c:3268); as outras strings não vão para buffer"),
     Declared(_BM, "ExpandBattleTextBuffPlaceholders",
              r"gMoveNames\[.*\]|gTypeNames\[.*\]|gStatNamesTable\[.*\]|gPokeblockWasTooXStringTable\[.*\]|"
              r"gAbilityNames\[.*\]|sText_EnigmaBerry|", BufRef("gStringVar2"),
-             why="gBattleTextBuffN expandido em gStringVarN (src/battle_message.c:1868-1890): golpe, tipo, atributo, "
-                 "sabor, habilidade, Fruta Enigma ou item (src/battle_message.c:2240-2332)"),
+             why="gBattleTextBuffN expandido em gStringVarN (src/battle_message.c:1873-1895): golpe, tipo, atributo, "
+                 "sabor, habilidade, Fruta Enigma ou item (src/battle_message.c:2245-2337)"),
     Declared(_BM, "ExpandBattleTextBuffPlaceholders", r".*sText_(Foe|Wild)PkmnPrefix.*|text", BufRef("gStringVar2"),
              (_NICK, Text("sText_FoePkmnPrefix", "sText_WildPkmnPrefix", file=_BM)),
-             why="B_BUFF_MON_NICK_WITH_PREFIX: apelido + \" selvagem\"/\" inimigo\" (src/battle_message.c:2269-2282)"),
+             why="B_BUFF_MON_NICK_WITH_PREFIX: apelido + \" selvagem\"/\" inimigo\" (src/battle_message.c:2274-2287)"),
     Declared(_BM, "ExpandBattleTextBuffPlaceholders", r"sText_BerryPrefix|gEnigmaBerries\[.*\]\.name", BufRef("gStringVar2"),
              (Text("sText_BerryPrefix", file=_BM), Fixed("BERRY_NAME_LENGTH", "nome da fruta Enigma (BERRY_NAME_LENGTH)")),
-             why="B_BUFF_ITEM da Fruta Enigma em batalha de link: sText_BerryPrefix + nome (src/battle_message.c:2317-2318)"),
+             why="B_BUFF_ITEM da Fruta Enigma em batalha de link: sText_BerryPrefix + nome (src/battle_message.c:2322-2323)"),
     Declared(_BM, "BattleStringExpandPlaceholdersToDisplayedString", r".*", None,
-             why="implementação (src/battle_message.c:1798-1801): medida em quem chama"),
+             why="implementação (src/battle_message.c:1803-1806): medida em quem chama"),
     Declared(_BM, "BufferStringBattle", r"stringPtr", BufRef("gDisplayedStringBattle"),
              (Files(_BM),), expand="battle",
              why="mensagem de batalha: stringPtr é qualquer texto de batalha (gBattleStringsTable e os sText_* "
-                 "escolhidos em BufferStringBattle, src/battle_message.c:1556-1795), expandido em "
+                 "escolhidos em BufferStringBattle, src/battle_message.c:1556-1800), expandido em "
                  "gDisplayedStringBattle[300]; mede todo texto de src/battle_message.c"),
     Declared("src/battle_controller_pokedude.c", r"\w+", r"GetPokedudeText\(\)", BufRef("gDisplayedStringBattle"),
              (Text("sPokedudeTexts_Battle", "sPokedudeTexts_Status", "sPokedudeTexts_TypeMatchup",
@@ -1390,12 +1390,12 @@ DECLARED: list[Declared] = [
              why="tutorial do Carvalho: PrintOakTextWithMainBgDarkened(text) (src/battle_controller_oak_old_man.c:"
                  "721-741) expande em gDisplayedStringBattle[300] (:775)"),
     Declared(_BM, "ChooseMoveUsedParticle", r".*", BufRef("gBattleTextBuff1"),
-             why="partícula do golpe usado em gBattleTextBuff1 (src/battle_message.c:1704, :2358-2360)"),
+             why="partícula do golpe usado em gBattleTextBuff1 (src/battle_message.c:1709, :2363-2365)"),
     Declared(_BM, "ChooseTypeOfMoveUsedString", r".*", BufRef("gBattleTextBuff2"),
              (Text("gMoveNames", "sATypeMove_Table", file=_BM),
               Text(*[f"sText_ExclamationMark{n}" for n in ("", "2", "3", "4", "5")], file=_BM)),
-             why="golpe usado: gBattleTextBuff2 = nome do golpe (src/battle_message.c:1706-1709) + a exclamação "
-                 "acrescentada no fim (src/battle_message.c:2389-2415)"),
+             why="golpe usado: gBattleTextBuff2 = nome do golpe (src/battle_message.c:1711-1714) + a exclamação "
+                 "acrescentada no fim (src/battle_message.c:2394-2420)"),
     # ---- campo, menus e telas ---------------------------------------------------------------------------
     Declared("src/berry_crush.c", "Task_ShowBerryCrushRankings", r"gText_XDotY3|gText_TimesPerSec", BufRef("gStringVar4"),
              (Text("gText_XDotY3"), Fixed(1, "espaço"), Text("gText_TimesPerSec")), expand="string",
@@ -1436,7 +1436,7 @@ DECLARED: list[Declared] = [
              BufRef("gStringVar4"),
              (Part("files", EC_WORDS.names, desc="palavra do Easy Chat", times=6), Fixed(1, "espaço ou quebra", times=5)),
              why="frase de 6 palavras do Easy Chat (3x2 ou 2x3) em gStringVar4 (src/battle_tower.c:835-845, "
-                 "src/easy_chat.c:314; Trainer Tower: dest = gStringVar4, src/battle_message.c:2127-2151)"),
+                 "src/easy_chat.c:314; Trainer Tower: dest = gStringVar4, src/battle_message.c:2132-2156)"),
     Declared("src/mail.c", "BufferMailMessage", r"", BufRef("messageLinesBuffer", "src/mail.c"),
              (Part("files", EC_WORDS.names, desc="palavra do Easy Chat", times=3), Fixed(1, "espaço", times=2)),
              why="linha da carta: messageLinesBuffer[i] ([26]) = até 3 palavras do Easy Chat com espaço "

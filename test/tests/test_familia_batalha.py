@@ -6,6 +6,7 @@ captura (a bola é desviada e não é gasta). O time de cada um sai de src/data/
 O comportamento no jogo fica no cenário `familia` da esteira (test/esteira/scenarios/full_familia.py).
 """
 
+import importlib.util
 import json
 import re
 
@@ -274,9 +275,9 @@ def test_repovoar_limpa_os_doze_treinadores():
 
 
 def test_ladrao_cobica_e_truque_nao_tiram_o_item():
-    """§6.3: o item que fortalece o capanga não vai para o jogador. Um ponto só (a Task 4 estende aos andares 4-5)."""
+    """§6.3: o item que fortalece o capanga não vai para o jogador. Um ponto só (capangas, andares 4-5, chefe)."""
     protegido = _block(FAMILIA_C, "bool8 FamiliaSombra_ItemProtegido(void)")
-    assert "return FamiliaSombra_EhBatalhaDaFamilia();" in protegido
+    assert "return FamiliaSombra_EhBatalhaDaFamilia() || FamiliaSombra_EhChefe();" in protegido
     cmds = _read("src/battle_script_commands.c")
     # Ladrão/Cobiça (MOVE_EFFECT_STEAL_ITEM): falha antes de qualquer cópia do item
     roubo = cmds[cmds.index("case MOVE_EFFECT_STEAL_ITEM:"):]
@@ -287,3 +288,171 @@ def test_ladrao_cobica_e_truque_nao_tiram_o_item():
     troca = _block(cmds, "static void Cmd_tryswapitems(void)")
     assert re.search(r"if \(FamiliaSombra_ItemProtegido\(\)\n\s*\|\| gBattleTypeFlags & BATTLE_TYPE_TRAINER_TOWER", troca)
     assert cmds.count("FamiliaSombra_ItemProtegido()") == 2
+
+
+# ---- Task 4: andares 4-5 (encontros), efeito de filme e o chefe ------------------------------------------------
+
+BATTLE_H = _read("include/constants/battle.h")
+BATTLE_SETUP_C = _read("src/battle_setup.c")
+GFX_UTIL_C = _read("src/battle_gfx_sfx_util.c")
+WILD_C = _read("src/wild_encounter.c")
+POKEMON_C = _read("src/pokemon.c")
+NOIR_H = REPO_ROOT / "src" / "data" / "familia_sombra_noir.h"
+
+
+def _noir_tool():
+    spec = importlib.util.spec_from_file_location("familia_noir", REPO_ROOT / "tools" / "familia_sombra" / "noir.py")
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+
+def test_bit_familia_livre():
+    """Os 2 bits novos de gBattleTypeFlags ficam na faixa livre (20-31) e não repetem nenhum outro BATTLE_TYPE_*."""
+    bits = {n: int(v) for n, v in re.findall(r"#define (BATTLE_TYPE_\w+)\s+\(1 << (\d+)\)", BATTLE_H)}
+    for nome in ("BATTLE_TYPE_FAMILIA", "BATTLE_TYPE_FAMILIA_CHEFE"):
+        assert 20 <= bits[nome] <= 31, nome
+        outros = [n for n, b in bits.items() if b == bits[nome] and n != nome]
+        assert not outros, (nome, outros)
+
+
+def test_noir_preserva_transparencia():
+    """FamiliaSombra_PaletaNoir: o índice 0 (transparente) fica como está; as outras cores saem da tabela gerada pela
+    função noir() da prévia, indexada pela soma 30r + 59g + 11b (a mesma conta do C)."""
+    noir = _block(FAMILIA_C, "void FamiliaSombra_PaletaNoir(u16 *pal, u16 count)")
+    assert re.search(r"for \(i = 1; i < count; i\+\+\)", noir)
+    assert "sFamiliaNoir[30 * GET_R(cor) + 59 * GET_G(cor) + 11 * GET_B(cor)]" in noir
+    tool = _noir_tool()
+    assert tool.cabecalho() == NOIR_H.read_text(encoding="utf-8"), "rode tools/familia_sombra/noir.py"
+    tabela = tool.tabela()
+    # toda cor de 5 bits: a tabela pela soma = noir() da prévia aplicado à cor
+    for cor in range(0x8000):
+        assert tabela[tool.soma(cor)] == tool.noir_gba(cor), hex(cor)
+    # preto continua preto; branco vira um cinza-azulado claro (azul >= verde >= vermelho, pouca saturação)
+    assert tabela[0] == 0
+    branco = tabela[tool.S_MAX]
+    r, g, b = branco & 31, branco >> 5 & 31, branco >> 10 & 31
+    assert b >= g >= r and b - r <= 6 and r >= 20, (r, g, b)
+
+
+def test_filme_na_paleta_do_oponente():
+    """A paleta do Pokémon do oponente passa pelo filme antes das 2 cópias (OBJ e BG): LoadPalette grava Unfaded e
+    Faded (o clima do POK-15 reaplica a partir do Unfaded). Reshow e substituto chamam a mesma função."""
+    carga = _block(GFX_UTIL_C, "void BattleLoadOpponentMonSpriteGfx(struct Pokemon *mon, u8 battlerId)")
+    filme = carga.index("FamiliaSombra_PaletaNoir(buffer, 16)")
+    descompacta = carga.index("LZDecompressWram(lzPaletteData, buffer)")
+    assert descompacta < filme < carga.index("LoadPalette(buffer, paletteOffset")
+    assert "if (FamiliaSombra_EhBatalhaDaFamilia())" in carga[:filme]
+    assert "BattleLoadOpponentMonSpriteGfx(&gEnemyParty" in _read("src/reshow_battle_screen.c")
+    assert "BattleLoadOpponentMonSpriteGfx(&gEnemyParty" in GFX_UTIL_C
+
+
+def test_chefe_sem_filme():
+    """O chefe entra com as cores shiny: a batalha dele liga só BATTLE_TYPE_FAMILIA_CHEFE, e o ramo do filme (e da
+    bola desviada) é o de FamiliaSombra_EhBatalhaDaFamilia, que não olha esse bit."""
+    eh = _block(FAMILIA_C, "bool8 FamiliaSombra_EhBatalhaDaFamilia(void)")
+    assert "BATTLE_TYPE_FAMILIA_CHEFE" not in eh and re.search(r"BATTLE_TYPE_FAMILIA\b", eh)
+    chefe = _block(BATTLE_SETUP_C, "void StartFamiliaChefeBattle(void)")
+    flags = re.search(r"gBattleTypeFlags = ([^;]+);", chefe).group(1)
+    assert "BATTLE_TYPE_FAMILIA_CHEFE" in flags and not re.search(r"BATTLE_TYPE_FAMILIA\b", flags)
+    assert "BATTLE_TYPE_LEGENDARY" in flags
+    assert "CreateBattleStartTask(B_TRANSITION_BLUR, MUS_VS_LEGEND);" in chefe
+    assert "gTrainerBattleOpponent_A = 0;" in chefe          # nada de treinador velho na IA do chefe
+    # o chefe é capturável (a bola segue o caminho normal e é gasta), mas o item fixo dele não sai (Ladrão/Truque)
+    protegido = _block(FAMILIA_C, "bool8 FamiliaSombra_ItemProtegido(void)")
+    assert "FamiliaSombra_EhBatalhaDaFamilia()" in protegido and "FamiliaSombra_EhChefe()" in protegido
+    assert "BATTLE_TYPE_FAMILIA_CHEFE" in _block(FAMILIA_C, "bool8 FamiliaSombra_EhChefe(void)")
+
+
+def _chefes() -> list[tuple[str, int, str, list[str]]]:
+    return [(sp, int(lv), item, [x.strip() for x in mv.split(",")]) for sp, lv, item, mv in re.findall(
+        r"MEMBRO\((\w+),\s*(\d+),\s*(\w+),\s*([\w ,]+)\)", _block(TIMES_H, "sFamiliaChefes["))]
+
+
+def test_chefe_shiny_receita():
+    """§6.5: o chefe é sempre shiny. A receita do SetLeadShiny (test_hooks.c): o jogador como OT e a metade alta da
+    personalidade = OT alto ^ OT baixo ^ metade baixa (valor shiny 0); a metade baixa ao acaso (natureza e gênero)."""
+    iniciar = _block(FAMILIA_C, "void FamiliaSombra_IniciarChefe(void)")
+    assert "GetPlayerTrainerId()" in iniciar
+    assert ("CreateMon(mon, chefe->species, chefe->level, MAX_PER_STAT_IVS, TRUE, personality, OT_ID_PLAYER_ID, 0);"
+            in iniciar)
+    assert "personality = (((otId >> 16) ^ (otId & 0xFFFF) ^ baixa) & 0xFFFF) << 16 | baixa;" in iniciar
+    assert "SetMonMoveSlot(mon, chefe->moves[i], i);" in iniciar
+    assert "MON_DATA_HELD_ITEM" in iniciar and "StartFamiliaChefeBattle();" in iniciar
+    assert re.search(r"^\tdef_special FamiliaSombra_IniciarChefe$", _read("data/specials.inc"), re.M)
+    # a conta dá shiny para qualquer OT e qualquer metade baixa
+    for ot in (0, 0x12345678, 0xFFFFFFFF, 0xBEEF0042):
+        for baixa in (0, 1, 0x7FFF, 0xFFFF):
+            pid = (((ot >> 16) ^ (ot & 0xFFFF) ^ baixa) & 0xFFFF) << 16 | baixa
+            assert ((ot >> 16) ^ (ot & 0xFFFF) ^ (pid >> 16) ^ (pid & 0xFFFF)) < 8
+
+
+def test_chefes_da_tabela():
+    """Gengar nv 62 (o Dom) e Tyranitar nv 68 (o Cobrador), +6 por ocupação; 4 golpes e item fixos, com o porquê."""
+    chefes = _chefes()
+    assert [c[0] for c in chefes[:2]] == ["GENGAR", "TYRANITAR"]
+    assert [c[1] for c in chefes] == [62, 68, 74, 80]
+    for sp, _lv, item, moves in chefes:
+        assert item != "NONE" and len(set(moves)) == 4 and "NONE" not in moves, sp
+    assert chefes[0][3] == ["SHADOW_BALL", "HYPNOSIS", "DREAM_EATER", "THUNDERBOLT"]
+    assert chefes[0][2] == "SPELL_TAG"
+    tabela = _block(TIMES_H, "sFamiliaChefes[")
+    assert tabela.count("// parte 2 troca") == 2
+    assert len(re.findall(r"//[^\n]{30,}", tabela)) >= 4        # o porquê de cada escolha
+
+
+def test_niveis_andares_4_5():
+    """§6.3: andares 4-5 = 54-58 na ocupação 1, +6 por ocupação; espécie, item e golpes do plantel."""
+    d = _defines(TIMES_H)
+    assert (int(d["FAMILIA_NIVEL_ANDAR_MIN"]), int(d["FAMILIA_NIVEL_ANDAR_MAX"])) == (54, 58)
+    criar = _block(FAMILIA_C, "u8 FamiliaSombra_NivelSelvagem(void)")
+    assert "FAMILIA_NIVEL_ANDAR_MIN + Random() % (FAMILIA_NIVEL_ANDAR_MAX - FAMILIA_NIVEL_ANDAR_MIN + 1)" in criar
+    assert "(OcupacaoDasLutas() - 1) * FAMILIA_NIVEL_PASSO" in criar
+    criar = _block(FAMILIA_C, "void FamiliaSombra_CriarSelvagem(u8 level)")
+    assert "CriarMembro(&gEnemyParty[0], &sFamiliaPlantel[ocupacao - 1][Random() % FAMILIA_PLANTEL], level);" in criar
+    # o item do plantel não é trocado pelo item comum da espécie
+    assert re.search(r"BATTLE_TYPE_FAMILIA\b", _block(POKEMON_C, "void SetWildMonHeldItem(void)"))
+
+
+def test_encontro_so_com_chefe_nos_andares_escuros():
+    """Os andares 4-5 (lista de FamiliaSombra_EhAndarEscuro, a Task 5 preenche) só têm encontro com chefe ativo, sem
+    andarilho, e o encontro é da Família: bit próprio, música de treinador e o texto do capanga."""
+    # o caminho comum (StandardWildEncounter, TryGenerateWildMon) fica como o da pret: o desvio é antes dele
+    tentar = _block(WILD_C, "bool8 TryStandardWildEncounter(u32 currMetatileAttrs)")
+    desvio = tentar.index("FamiliaSombra_EhAndarEscuro()")
+    assert desvio < tentar.index("FamiliaWildEncounter(") < tentar.index("StandardWildEncounter(currMetatileAttrs")
+    assert "FamiliaSombra_EhAndarEscuro()" not in _block(WILD_C, "bool8 StandardWildEncounter(")
+    andar = _block(WILD_C, "static bool8 FamiliaWildEncounter(")
+    assert "!FamiliaSombra_ChefeAtivo()" in andar and "TryStartRoamerEncounter" not in andar
+    assert "DoWildEncounterRateTest(rate, FALSE)" in andar and "TryStartFamiliaEncounter(TRUE)" in andar
+    criar = _block(WILD_C, "static bool8 TryStartFamiliaEncounter(bool8 checkRepel)")
+    assert criar.index("FamiliaSombra_ChefeAtivo()") < criar.index("FamiliaSombra_CriarSelvagem(level);")
+    assert criar.index("IsWildLevelAllowedByRepel(level)") < criar.index("FamiliaSombra_CriarSelvagem(level);")
+    assert "StartWildBattle();" in criar
+    aroma = _block(WILD_C, "bool8 SweetScentWildEncounter(void)")
+    assert aroma.index("FamiliaSombra_EhAndarEscuro()") < aroma.index("TryStartRoamerEncounter")
+    inicio = _block(BATTLE_SETUP_C, "void StartWildBattle(void)")
+    assert inicio.index("FamiliaSombra_EhAndarEscuro()") < inicio.index("DoStandardWildBattle();")
+    selvagem = _block(BATTLE_SETUP_C, "void StartFamiliaWildBattle(void)")
+    assert "gBattleTypeFlags = BATTLE_TYPE_FAMILIA;" in selvagem
+    assert "CreateBattleStartTask(GetWildBattleTransition(), MUS_VS_TRAINER);" in selvagem
+    assert "sAndaresEscuros" in _block(FAMILIA_C, "bool8 FamiliaSombra_EhAndarEscuro(void)")
+    intro = BATTLE_MESSAGE_C[BATTLE_MESSAGE_C.index("case STRINGID_INTROMSG:"):]
+    intro = intro[:intro.index("case STRINGID_INTROSENDOUT:")]
+    selv = intro[intro.index("if (gBattleTypeFlags & BATTLE_TYPE_FAMILIA)"):]
+    assert selv.index("stringPtr = gText_FamiliaCapangaQuerLutar;") < selv.index("BATTLE_TYPE_GHOST")
+    # o selvagem da Família é da Família: bola desviada, filme, item protegido
+    eh = _block(FAMILIA_C, "bool8 FamiliaSombra_EhBatalhaDaFamilia(void)")
+    assert eh.index("BATTLE_TYPE_LINK") < eh.index("BATTLE_TYPE_FAMILIA)") < eh.index("BATTLE_TYPE_TRAINER)")
+
+
+def test_ia_do_chefe():
+    """§6.3: o chefe, mesmo capturável, escolhe golpes com a IA dos chefes (as 5 flags), não ao acaso."""
+    ai = _block(_read("src/battle_ai_script_commands.c"), "void BattleAI_SetupAIData(void)")
+    chefe = ai.index("if (FamiliaSombra_EhChefe())")
+    assert chefe < ai.index("BATTLE_TYPE_SAFARI") and "FAMILIA_AI_CHEFE" in ai[chefe:ai.index("BATTLE_TYPE_SAFARI")]
+    constantes = _read("include/constants/familia_sombra.h").replace("\\\n", " ")
+    flags = re.search(r"#define FAMILIA_AI_CHEFE\s+\(([^)]*)\)", constantes).group(1)
+    assert {f.strip() for f in flags.split("|")} == AI_CHEFE
+    escolha = _block(_read("src/battle_controller_opponent.c"), "static void OpponentHandleChooseMove(void)")
+    assert re.search(r"BATTLE_TYPE_ROAMER\)\s*\|\| FamiliaSombra_EhChefe\(\)\)", escolha)

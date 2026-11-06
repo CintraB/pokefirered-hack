@@ -3,6 +3,7 @@
 #include "battle_setup.h"
 #include "day_night.h"
 #include "event_data.h"
+#include "field_specials.h"
 #include "familia_sombra.h"
 #include "pokemon.h"
 #include "random.h"
@@ -11,10 +12,12 @@
 #include "constants/maps.h"
 #include "constants/moves.h"
 #include "constants/opponents.h"
+#include "constants/rgb.h"
 #include "constants/species.h"
 #include "constants/trainers.h"
 #include "constants/vars.h"
 #include "data/familia_sombra_times.h"
+#include "data/familia_sombra_noir.h"
 
 // POK-51: estado da Família Sombra. Ocupação (VAR_FAMILIA_OCUPACAO, 0 = nenhuma; 1..4) e estado
 // (FAMILIA_ESTADO_*). A volta da máfia conta meios-dias do relógio da hack (src/day_night.c).
@@ -127,22 +130,31 @@ static u8 OcupacaoDasLutas(void)
     return ocupacao;
 }
 
-// Batalha contra a Família: treinador da classe FAMILIA_SOMBRA. Os encontros dos andares 4-5 (bit de tipo de
-// batalha próprio) entram na Task 4.
+// Batalha contra um capanga da Família: treinador da classe FAMILIA_SOMBRA (andares 1-3, gêmeos, pedágio) ou o
+// encontro dos andares 4-5 (BATTLE_TYPE_FAMILIA). O chefe não entra (BATTLE_TYPE_FAMILIA_CHEFE): ele pode ser
+// capturado e luta com as cores shiny, sem o filme.
 bool8 FamiliaSombra_EhBatalhaDaFamilia(void)
 {
-    if (!(gBattleTypeFlags & BATTLE_TYPE_TRAINER)
-     || gBattleTypeFlags & (BATTLE_TYPE_LINK | BATTLE_TYPE_BATTLE_TOWER | BATTLE_TYPE_TRAINER_TOWER | BATTLE_TYPE_EREADER_TRAINER)
-     || gTrainerBattleOpponent_A >= NUM_TRAINERS)
+    if (gBattleTypeFlags & (BATTLE_TYPE_LINK | BATTLE_TYPE_BATTLE_TOWER | BATTLE_TYPE_TRAINER_TOWER | BATTLE_TYPE_EREADER_TRAINER))
+        return FALSE;
+    if (gBattleTypeFlags & BATTLE_TYPE_FAMILIA)
+        return TRUE;
+    if (!(gBattleTypeFlags & BATTLE_TYPE_TRAINER) || gTrainerBattleOpponent_A >= NUM_TRAINERS)
         return FALSE;
     return gTrainers[gTrainerBattleOpponent_A].trainerClass == TRAINER_CLASS_FAMILIA_SOMBRA;
 }
 
-// O item que fortalece o membro da Família não vai para o jogador (Ladrão, Cobiça e Truque falham). Ponto único: a
-// Task 4 estende aos encontros dos andares 4-5.
+// A batalha contra o chefe da ocupação (FamiliaSombra_IniciarChefe). O diário (Task 7) usa para marcar a luta.
+bool8 FamiliaSombra_EhChefe(void)
+{
+    return (gBattleTypeFlags & BATTLE_TYPE_FAMILIA_CHEFE) && !(gBattleTypeFlags & BATTLE_TYPE_LINK);
+}
+
+// O item que fortalece o membro da Família não vai para o jogador (Ladrão, Cobiça e Truque falham): capangas,
+// encontros dos andares 4-5 e o chefe (o item fixo dele faz parte do chefe; capturado, ele vem junto).
 bool8 FamiliaSombra_ItemProtegido(void)
 {
-    return FamiliaSombra_EhBatalhaDaFamilia();
+    return FamiliaSombra_EhBatalhaDaFamilia() || FamiliaSombra_EhChefe();
 }
 
 static void CriarMembro(struct Pokemon *mon, const struct FamiliaMembro *membro, u8 level)
@@ -199,4 +211,77 @@ void FamiliaSombra_SortearPedagio(void)
 {
     sPedagio[0] = Random() % FAMILIA_PLANTEL;
     sPedagio[1] = (sPedagio[0] + 1 + Random() % (FAMILIA_PLANTEL - 1)) % FAMILIA_PLANTEL;
+}
+
+// ---- Andares 4-5, efeito de filme e o chefe (Task 4) ----------------------------------------------------------
+
+// Os andares escuros (4º e 5º), onde andar dá encontro com a Família. A Task 5 acrescenta os mapas; a lista acaba em
+// FAMILIA_SEM_MAPA.
+#define FAMILIA_SEM_MAPA 0xFFFF
+static const u16 sAndaresEscuros[] =
+{
+    FAMILIA_SEM_MAPA,
+};
+
+bool8 FamiliaSombra_EhAndarEscuro(void)
+{
+    u16 mapa = (gSaveBlock1Ptr->location.mapGroup << 8) | gSaveBlock1Ptr->location.mapNum;
+    s32 i;
+
+    for (i = 0; sAndaresEscuros[i] != FAMILIA_SEM_MAPA; i++)
+    {
+        if (sAndaresEscuros[i] == mapa)
+            return TRUE;
+    }
+    return FALSE;
+}
+
+// Nível do próximo encontro dos andares 4-5: 54-58 na ocupação 1, +6 por ocupação.
+u8 FamiliaSombra_NivelSelvagem(void)
+{
+    return FAMILIA_NIVEL_ANDAR_MIN + Random() % (FAMILIA_NIVEL_ANDAR_MAX - FAMILIA_NIVEL_ANDAR_MIN + 1)
+         + (OcupacaoDasLutas() - 1) * FAMILIA_NIVEL_PASSO;
+}
+
+// O encontro dos andares 4-5 em gEnemyParty[0]: um membro do plantel da ocupação, com o item e os golpes dele.
+void FamiliaSombra_CriarSelvagem(u8 level)
+{
+    u8 ocupacao = OcupacaoDasLutas();
+
+    ZeroEnemyPartyMons();
+    CriarMembro(&gEnemyParty[0], &sFamiliaPlantel[ocupacao - 1][Random() % FAMILIA_PLANTEL], level);
+}
+
+// Efeito de filme antigo (a função noir() da prévia aprovada, tabelada em src/data/familia_sombra_noir.h pela soma
+// que dá a luminância). O índice 0 da paleta (transparente) fica como está.
+void FamiliaSombra_PaletaNoir(u16 *pal, u16 count)
+{
+    u16 i, cor;
+
+    for (i = 1; i < count; i++)
+    {
+        cor = pal[i];
+        pal[i] = sFamiliaNoir[30 * GET_R(cor) + 59 * GET_G(cor) + 11 * GET_B(cor)];
+    }
+}
+
+// Special: o chefe da ocupação em gEnemyParty[0] e a batalha contra ele (lendária, MUS_VS_LEGEND). Sempre shiny pela
+// receita do SetLeadShiny (test_hooks.c): o jogador é o OT e a metade alta da personalidade anula o valor shiny;
+// a metade baixa sai ao acaso (natureza e gênero). IVs no máximo, golpes e item fixos de sFamiliaChefes.
+void FamiliaSombra_IniciarChefe(void)
+{
+    const struct FamiliaMembro *chefe = &sFamiliaChefes[OcupacaoDasLutas() - 1];
+    struct Pokemon *mon = &gEnemyParty[0];
+    u32 otId = GetPlayerTrainerId();
+    u16 baixa = Random();
+    u32 personality;
+    s32 i;
+
+    personality = (((otId >> 16) ^ (otId & 0xFFFF) ^ baixa) & 0xFFFF) << 16 | baixa;
+    ZeroEnemyPartyMons();
+    CreateMon(mon, chefe->species, chefe->level, MAX_PER_STAT_IVS, TRUE, personality, OT_ID_PLAYER_ID, 0);
+    for (i = 0; i < MAX_MON_MOVES; i++)
+        SetMonMoveSlot(mon, chefe->moves[i], i);
+    SetMonData(mon, MON_DATA_HELD_ITEM, &chefe->heldItem);
+    StartFamiliaChefeBattle();
 }

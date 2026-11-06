@@ -6026,6 +6026,11 @@ static u16 GetBattleBGM(void)
         return MUS_RS_VS_TRAINER;
     if (gBattleTypeFlags & BATTLE_TYPE_LINK)
         return MUS_RS_VS_TRAINER;
+    // POK-51: os capangas dos andares 4-5 lutam ao som de treinador; o chefe, de lendário.
+    if (gBattleTypeFlags & BATTLE_TYPE_FAMILIA)
+        return MUS_VS_TRAINER;
+    if (gBattleTypeFlags & BATTLE_TYPE_FAMILIA_CHEFE)
+        return MUS_VS_LEGEND;
     if (gBattleTypeFlags & BATTLE_TYPE_TRAINER)
     {
         switch (gTrainers[gTrainerBattleOpponent_A].trainerClass)
@@ -6209,7 +6214,8 @@ void SetMonPreventsSwitchingString(void)
 
 void SetWildMonHeldItem(void)
 {
-    if (!(gBattleTypeFlags & (BATTLE_TYPE_POKEDUDE | BATTLE_TYPE_LEGENDARY | BATTLE_TYPE_TRAINER)))
+    // POK-51: o encontro dos andares 4-5 da Família já segura o item do plantel (FamiliaSombra_CriarSelvagem).
+    if (!(gBattleTypeFlags & (BATTLE_TYPE_POKEDUDE | BATTLE_TYPE_LEGENDARY | BATTLE_TYPE_TRAINER | BATTLE_TYPE_FAMILIA)))
     {
         u16 rnd = Random() % 100;
         u16 species = GetMonData(&gEnemyParty[0], MON_DATA_SPECIES, NULL);
