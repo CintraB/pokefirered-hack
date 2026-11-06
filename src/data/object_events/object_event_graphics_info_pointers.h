@@ -153,6 +153,8 @@ const struct ObjectEventGraphicsInfo gObjectEventGraphicsInfo_SSAnne;
 const struct ObjectEventGraphicsInfo gObjectEventGraphicsInfo_JirachiStar;
 const struct ObjectEventGraphicsInfo gObjectEventGraphicsInfo_Follower;
 const struct ObjectEventGraphicsInfo gObjectEventGraphicsInfo_FollowerLarge;
+// POK-51: sprites com chapéu, redomas e taças da Família Sombra (gerado por tools/familia_sombra/gerar.py)
+#include "familia_gfx_extern.h"
 
 
 const struct ObjectEventGraphicsInfo *const gObjectEventGraphicsInfoPointers[NUM_OBJ_EVENT_GFX] = {
@@ -311,4 +313,5 @@ const struct ObjectEventGraphicsInfo *const gObjectEventGraphicsInfoPointers[NUM
     [OBJ_EVENT_GFX_JIRACHI_STAR]             = &gObjectEventGraphicsInfo_JirachiStar,
     [OBJ_EVENT_GFX_FOLLOWER]                 = &gObjectEventGraphicsInfo_Follower,
     [OBJ_EVENT_GFX_FOLLOWER_LARGE]           = &gObjectEventGraphicsInfo_FollowerLarge,
+#include "familia_gfx_ponteiros.h"
 };

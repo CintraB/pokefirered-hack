@@ -728,3 +728,13 @@ const u32 gItemIconPalette_PowderJar[] = INCBIN_U32("graphics/items/icon_palette
 const u32 gItemIconPalette_Ruby[] = INCBIN_U32("graphics/items/icon_palettes/ruby.gbapal.lz");
 const u32 gItemIcon_Gem[] = INCBIN_U32("graphics/items/icons/gem.4bpp.lz");
 const u32 gItemIconPalette_Sapphire[] = INCBIN_U32("graphics/items/icon_palettes/sapphire.gbapal.lz");
+
+// POK-51: rosas dos chefes da Família Sombra (gerado por tools/familia_sombra/gerar.py)
+const u32 gItemIcon_RosaVermelha[] = INCBIN_U32("graphics/items/icons/rosa_vermelha.4bpp.lz");
+const u32 gItemIconPalette_RosaVermelha[] = INCBIN_U32("graphics/items/icon_palettes/rosa_vermelha.gbapal.lz");
+const u32 gItemIcon_RosaDourada[] = INCBIN_U32("graphics/items/icons/rosa_dourada.4bpp.lz");
+const u32 gItemIconPalette_RosaDourada[] = INCBIN_U32("graphics/items/icon_palettes/rosa_dourada.gbapal.lz");
+const u32 gItemIcon_RosaAzul[] = INCBIN_U32("graphics/items/icons/rosa_azul.4bpp.lz");
+const u32 gItemIconPalette_RosaAzul[] = INCBIN_U32("graphics/items/icon_palettes/rosa_azul.gbapal.lz");
+const u32 gItemIcon_RosaNegra[] = INCBIN_U32("graphics/items/icons/rosa_negra.4bpp.lz");
+const u32 gItemIconPalette_RosaNegra[] = INCBIN_U32("graphics/items/icon_palettes/rosa_negra.gbapal.lz");

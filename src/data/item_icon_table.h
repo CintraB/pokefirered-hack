@@ -96,11 +96,12 @@ static const u32 *const sItemIconTable[ITEMS_COUNT + 1][2] =
     [ITEM_MAX_REPEL]      = {gItemIcon_Repel, gItemIconPalette_MaxRepel},
     [ITEM_ESCAPE_ROPE]    = {gItemIcon_EscapeRope, gItemIconPalette_EscapeRope},
     [ITEM_REPEL]          = {gItemIcon_Repel, gItemIconPalette_Repel},
+    // POK-51: rosas dos chefes da Família Sombra (itens-chave)
+    [ITEM_ROSA_VERMELHA]  = {gItemIcon_RosaVermelha, gItemIconPalette_RosaVermelha},
+    [ITEM_ROSA_DOURADA]   = {gItemIcon_RosaDourada, gItemIconPalette_RosaDourada},
+    [ITEM_ROSA_AZUL]      = {gItemIcon_RosaAzul, gItemIconPalette_RosaAzul},
+    [ITEM_ROSA_NEGRA]     = {gItemIcon_RosaNegra, gItemIconPalette_RosaNegra},
     // ????????
-    [ITEM_057]            = {gItemIcon_QuestionMark, gItemIconPalette_QuestionMark},
-    [ITEM_058]            = {gItemIcon_QuestionMark, gItemIconPalette_QuestionMark},
-    [ITEM_059]            = {gItemIcon_QuestionMark, gItemIconPalette_QuestionMark},
-    [ITEM_05A]            = {gItemIcon_QuestionMark, gItemIconPalette_QuestionMark},
     [ITEM_05B]            = {gItemIcon_QuestionMark, gItemIconPalette_QuestionMark},
     [ITEM_05C]            = {gItemIcon_QuestionMark, gItemIconPalette_QuestionMark},
     // Evolution stones
