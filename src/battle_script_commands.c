@@ -2629,6 +2629,11 @@ void SetMoveEffect(bool8 primary, u8 certain)
                     {
                         gBattlescriptCurrInstr++;
                     }
+                    else if (FamiliaSombra_ItemProtegido())
+                    {
+                        // POK-51: Ladrão e Cobiça não tiram o item da Família (falham como item que não sai).
+                        gBattlescriptCurrInstr++;
+                    }
                     else if (!(gBattleTypeFlags &
                             (BATTLE_TYPE_EREADER_TRAINER
                             | BATTLE_TYPE_BATTLE_TOWER
@@ -8825,7 +8830,9 @@ static void Cmd_trysethelpinghand(void)
 static void Cmd_tryswapitems(void)
 {
     // opponent can't swap items with player in regular battles
-    if (gBattleTypeFlags & BATTLE_TYPE_TRAINER_TOWER
+    // POK-51: nem o jogador troca itens com a Família (Truque falha)
+    if (FamiliaSombra_ItemProtegido()
+        || gBattleTypeFlags & BATTLE_TYPE_TRAINER_TOWER
         || (GetBattlerSide(gBattlerAttacker) == B_SIDE_OPPONENT
             && !(gBattleTypeFlags & (BATTLE_TYPE_LINK
                                   | BATTLE_TYPE_BATTLE_TOWER

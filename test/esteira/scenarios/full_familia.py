@@ -14,6 +14,8 @@ Task 3 (capangas como treinadores):
   Bolas e a batalha segue (de volta ao menu de ação, o capanga em campo);
 - `familia/vitoria_sem_premio`: vencendo o capanga 1 (Shadow Ball): "Você derrotou Capanga da Família!", sem o
   prêmio em dinheiro (o dinheiro não muda) e com a flag do treinador ligada;
+- `familia/thief`: Mewtwo com Ladrão (sem item) e com Truque (segurando Restos) contra o capanga 1: depois do turno o
+  Mewtwo continua sem item / com os Restos (na batalha e no time) e o capanga com o Talismã Fantasma;
 - `familia/time_por_ocupacao`: BUILD_TRAINER_PARTY na ocupação 1 e na 2: espécie, nível, item e golpes do capanga 1
   batem com src/data/familia_sombra_times.h; gêmeos (2, dupla) e as 2 lutas do pedágio (plantel, níveis 56/58 + 6);
 - `familia/gemeos_dupla`: 2 Pokémon no time, FAMILIA_GEMEOS: 2 Machamp nv 60 em campo (batalhadores 1 e 3), a fala
@@ -41,6 +43,7 @@ WILD_MON_CALLBACKS = {"SpriteCB_EnemyMon", "SpriteCB_MoveWildMonToRight", "Sprit
 TRAINER_SLIDE = "SpriteCB_TrainerSlideIn"
 STRING_BYTES = 300                   # gDisplayedStringBattle[300]
 SONG_SIZE = 8                        # struct Song (header, ms, me)
+BATTLE_MON_SIZE, BATTLE_MON_ITEM = 0x58, 0x2E   # struct BattlePokemon (include/pokemon.h)
 PLAYER_LEVEL = 60
 INTRO_TIMEOUT = 3000
 EXTRA_BALLS = 5
@@ -198,6 +201,33 @@ class FamiliaScenario(CatchSaveScenario):
         assert self.game.flag(flag), "flag do capanga 1 desligada depois da vitória"
         return f"{won[0]!r}; dinheiro {money} → {self.game.money()}; flag do treinador {flag:#x} ligada"
 
+    def _item_move(self, move: str, held: str | None) -> str:
+        """Um turno de `move` (no golpe 0) do Mewtwo segurando `held` contra o capanga 1 (Misdreavus com Talismã
+        Fantasma): o item não muda de dono, nem na batalha nem no time."""
+        self._restore("familia_base")
+        held_id = self.consts.item(f"ITEM_{held}") if held else 0
+        self.box.set_party_mon(0, self._sp("MEWTWO"), PLAYER_LEVEL, held_id)
+        self.box.set_party_move(0, 0, self.moves[f"MOVE_{move}"])
+        self.box.start_trainer_battle(self._trainer("TRAINER_FAMILIA_CAPANGA_1"))
+        self.driver.wait_action_menu(INTRO_TIMEOUT)
+        self.emu.frames(10)
+        foe_item = self.consts.item("ITEM_SPELL_TAG")
+        assert self.emu.read_u16(self._sym("gBattleMons") + BATTLE_MON_SIZE + BATTLE_MON_ITEM) == foe_item
+        result = self.driver.fight_turn(INTRO_TIMEOUT)
+        mine = self.emu.read_u16(self._sym("gBattleMons") + BATTLE_MON_ITEM)
+        party_item = self.game.party()[0].held_item
+        assert (mine, party_item) == (held_id, held_id), \
+            f"{move}: item do Mewtwo {mine} (batalha) / {party_item} (time), esperava {held_id}"
+        detail = f"{move}: Mewtwo continua com {held or 'nada'}"
+        if result == "menu":
+            foe = self.emu.read_u16(self._sym("gBattleMons") + BATTLE_MON_SIZE + BATTLE_MON_ITEM)
+            assert foe == foe_item, f"{move}: o capanga ficou com {foe}, esperava o Talismã Fantasma ({foe_item})"
+            detail += "; o capanga continua com o Talismã Fantasma"
+        return detail
+
+    def _thief(self) -> str:
+        return self._item_move("THIEF", None) + " | " + self._item_move("TRICK", "LEFTOVERS")
+
     def _party_matches(self, mon, expected: tuple[str, int, str, list[str]], level: int | None = None) -> str:
         sp, lv, item, moves = expected
         got = (mon.species, mon.level, mon.held_item, mon.moves)
@@ -255,6 +285,7 @@ class FamiliaScenario(CatchSaveScenario):
             self.suite.run("familia/capanga_apresentacao", self._capanga)
             self.suite.run("familia/bola_capanga", self._ball)
             self.suite.run("familia/vitoria_sem_premio", self._win)
+            self.suite.run("familia/thief", self._thief)
             self.suite.run("familia/time_por_ocupacao", self._teams)
             self.suite.run("familia/gemeos_dupla", self._twins)
         except Abort:

@@ -93,7 +93,7 @@ def test_doze_treinadores():
     d = _defines(OPPONENTS_H)
     ids = [int(d[n]) for n in DOZE]
     assert ids == list(range(743, 755)), ids          # logo depois do último da pret (742), sem buraco
-    assert int(d["NUM_TRAINERS"]) == 755 <= 755 and int(d["MAX_TRAINERS_COUNT"]) == 768
+    assert int(d["NUM_TRAINERS"]) == 755 and int(d["MAX_TRAINERS_COUNT"]) == 768
     assert d["TRAINER_FAMILIA_PRIMEIRO"] == "TRAINER_FAMILIA_CAPANGA_1"
     assert d["TRAINER_FAMILIA_ULTIMO"] == "TRAINER_FAMILIA_PEDAGIO_2"
     for name in DOZE:
@@ -271,3 +271,19 @@ def test_repovoar_limpa_os_doze_treinadores():
     repovoar = _block(FAMILIA_C, "void FamiliaSombra_Repovoar(void)")
     assert re.search(r"for \(flag = TRAINER_FAMILIA_PRIMEIRO; flag <= TRAINER_FAMILIA_ULTIMO; flag\+\+\)\s*"
                      r"ClearTrainerFlag\(flag\);", repovoar)
+
+
+def test_ladrao_cobica_e_truque_nao_tiram_o_item():
+    """§6.3: o item que fortalece o capanga não vai para o jogador. Um ponto só (a Task 4 estende aos andares 4-5)."""
+    protegido = _block(FAMILIA_C, "bool8 FamiliaSombra_ItemProtegido(void)")
+    assert "return FamiliaSombra_EhBatalhaDaFamilia();" in protegido
+    cmds = _read("src/battle_script_commands.c")
+    # Ladrão/Cobiça (MOVE_EFFECT_STEAL_ITEM): falha antes de qualquer cópia do item
+    roubo = cmds[cmds.index("case MOVE_EFFECT_STEAL_ITEM:"):]
+    roubo = roubo[:roubo.index("BattleScript_ItemSteal;")]
+    trecho = roubo[roubo.index("else if (FamiliaSombra_ItemProtegido())"):]
+    assert trecho.index("gBattlescriptCurrInstr++;") < trecho.index("changedItems")
+    # Truque: a 1ª condição do Cmd_tryswapitems já pula para o "falhou"
+    troca = _block(cmds, "static void Cmd_tryswapitems(void)")
+    assert re.search(r"if \(FamiliaSombra_ItemProtegido\(\)\n\s*\|\| gBattleTypeFlags & BATTLE_TYPE_TRAINER_TOWER", troca)
+    assert cmds.count("FamiliaSombra_ItemProtegido()") == 2

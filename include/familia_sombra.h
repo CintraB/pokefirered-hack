@@ -15,6 +15,7 @@ bool8 FamiliaSombra_NoPredio(void);
 // Batalhas (Task 3)
 struct Pokemon;
 bool8 FamiliaSombra_EhBatalhaDaFamilia(void);
+bool8 FamiliaSombra_ItemProtegido(void);
 u8 FamiliaSombra_CriarTime(struct Pokemon *party, u16 trainerId);
 
 // Specials (VAR_RESULT)

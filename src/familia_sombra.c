@@ -138,6 +138,13 @@ bool8 FamiliaSombra_EhBatalhaDaFamilia(void)
     return gTrainers[gTrainerBattleOpponent_A].trainerClass == TRAINER_CLASS_FAMILIA_SOMBRA;
 }
 
+// O item que fortalece o membro da Família não vai para o jogador (Ladrão, Cobiça e Truque falham). Ponto único: a
+// Task 4 estende aos encontros dos andares 4-5.
+bool8 FamiliaSombra_ItemProtegido(void)
+{
+    return FamiliaSombra_EhBatalhaDaFamilia();
+}
+
 static void CriarMembro(struct Pokemon *mon, const struct FamiliaMembro *membro, u8 level)
 {
     s32 i;
