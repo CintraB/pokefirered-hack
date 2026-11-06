@@ -460,7 +460,9 @@ E2_NEW_LABELS = {"PokedexRating_Text_OnlyMewMissing", "PokedexRating_EventScript
                  "EventScript_RepelWoreOffEnd", "EventScript_RepelWoreOffNoneLeft",
                  "Text_RepelWoreOffUseAnother", "Text_PlayerUsedRepel",
                  # POK-36 (PC Portátil)
-                 "Text_BootedUpPortablePC", "EventScript_PortablePC"}
+                 "Text_BootedUpPortablePC", "EventScript_PortablePC",
+                 # POK-50 (a enfermeira explica o Pokérus)
+                 "EventScript_PkmnCenterNurse_CheckPokerus", "Text_PokerusExplanation"}
 
 
 # Arquivos de script criados pelos nossos hacks depois da base inglesa: não há base para comparar os rótulos (as

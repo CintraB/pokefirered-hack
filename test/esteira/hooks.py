@@ -442,6 +442,30 @@ class Mailbox:
         """Ocupa (True) ou libera os slots livres de gObjectEvents; devolve quantos objetos ficaram ativos."""
         return self.call(CMD_FILL_OBJECT_EVENTS, int(fill))
 
+    # --- POK-50: Pokérus ---------------------------------------------------------------------
+    def _pokerus_bytes(self) -> list[int]:
+        return list(self.emu.read(self.ctl.game.syms.addr(TEXT_SYMBOL), 6))
+
+    def set_pokerus(self, slot: int, value: int) -> int:
+        """Grava o byte do Pokérus (cepa << 4 | dias) do slot; devolve o antigo."""
+        old = self.call(CMD_POKERUS_SET, slot, value)
+        assert old != NO_RESULT, f"POKERUS_SET recusado: slot {slot}"
+        return old
+
+    def pokerus_state(self) -> tuple[list[int], int, int]:
+        """(bytes do Pokérus dos 6 slots, bits de quem está infectado, bits de quem já teve)."""
+        result = self.call(CMD_POKERUS_STATE)
+        return self._pokerus_bytes(), result & 0xFF, result >> 8 & 0xFF
+
+    def pokerus_run(self, what: int, n: int = 0, timeout: int = 60) -> list[int] | int:
+        """POKERUS_GIVE_NOW / SPREAD (n vezes) / DAYS (n dias) -> bytes dos 6 slots;
+        POKERUS_ROLL (n sorteios) -> quantos deram Pokérus; POKERUS_EVS (espécie n) -> EVs do 1º."""
+        result = self.call(CMD_POKERUS_RUN, what, n, timeout=timeout)
+        assert result != NO_RESULT, f"POKERUS_RUN recusado: {what}, {n}"
+        if what in (POKERUS_ROLL, POKERUS_EVS):
+            return result
+        return self._pokerus_bytes()
+
 # --- Hack 6: breeding genético (enum à parte em include/test_hooks.h, a partir de 0x60; ------
 # o uso fica em esteira/breeding.py e scenarios/full_breeding.py / full_egg.py)
 CMD_BREED_SETUP = 0x60      # gTestBreedSetup -> creche (arg0 = 1: ovo pendente) -> compatibilidade (0xFFFFFFFF = pai inválido)
@@ -569,4 +593,10 @@ CMD_SET_LEAD_LOOK = 0xF5    # arg0 = espécie | nível << 16, arg1 = shiny (bit 
                             # refaz gPlayerParty[0] com uma personality que dê os 3 -> espécie | variante << 16 | shiny
                             # << 24 (0xFFFFFFFF = impossível); o seguidor muda no próximo spawn/refresh
 FOLLOWER_NONE = 0xFFFFFFFE
+
+# --- POK-50: Pokérus (enum à parte, a partir de 0x100) -----------------------------------------
+CMD_POKERUS_SET = 0x100     # arg0 = slot, arg1 = byte do Pokérus (cepa << 4 | dias) -> byte antigo (0xFFFFFFFF = slot vazio)
+CMD_POKERUS_STATE = 0x101   # gTestText[0..5] = byte de cada slot -> infectados (bits) | já tiveram (bits) << 8
+CMD_POKERUS_RUN = 0x102     # arg0 = o quê (POKERUS_*), arg1 = n; ver Mailbox.pokerus_run
+POKERUS_GIVE_NOW, POKERUS_SPREAD, POKERUS_DAYS, POKERUS_ROLL, POKERUS_EVS = range(5)
 UNOWN_LETRAS = 28           # NUM_UNOWN_FORMS: a..z, !, ?

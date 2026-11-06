@@ -190,6 +190,16 @@ enum
 #define TEST_FILLER_LOCALID 0xE0
 // --- end of POK-48 -------------------------------------------------------------------------
 
+// --- POK-50: Pokérus ------------------------------------------------------------------------
+enum
+{
+    TEST_CMD_POKERUS_SET = 0x100, // arg0 = party slot, arg1 = MON_DATA_POKERUS byte (strain << 4 | days): written as is; result = the old byte (0xFFFFFFFF = bad slot or empty)
+    TEST_CMD_POKERUS_STATE,       // gTestText[0..5] = MON_DATA_POKERUS of gPlayerParty[0..5]; result = CheckPartyPokerus(party, 0x3F) | CheckPartyHasHadPokerus(party, 0x3F) << 8
+    TEST_CMD_POKERUS_RUN,         // arg0 = what, arg1 = n: 0 GivePartyPokerusNow; 1 PartySpreadPokerus n times; 2 UpdatePartyPokerusTime(n); 3 n x RandomlyGivePartyPokerus, result = how many rolls were won (gTestPokerusRollHits; party bytes restored at the end); then (0-2) result = as POKERUS_STATE (gTestText filled too); 4: EVs of gPlayerParty[0] zeroed, MonGainEVs(gPlayerParty[0], species n), result = its EV total (0xFFFFFFFF = bad args)
+};
+extern u32 gTestPokerusRollHits; // src/pokemon.c
+// --- end of POK-50 -------------------------------------------------------------------------
+
 extern struct TestMailbox gTestMailbox;
 extern u8 gTestText[TEST_TEXT_SIZE];
 
