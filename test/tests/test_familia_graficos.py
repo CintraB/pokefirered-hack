@@ -285,13 +285,15 @@ def test_motor_grava_a_paleta_da_familia():
     funcao = re.search(r"static void LoadFamiliaObjectPalette\([^;]*?\)\n\{.*?\n\}", c, re.S).group(0)
     assert "PALSLOT_NPC_1" in funcao and "PALSLOT_NPC_4" in funcao and "OBJ_EVENT_PAL_TAG_FAMILIA_FIRST" in funcao
     assert "PatchObjectPalette(graphicsInfo->paletteTag, graphicsInfo->paletteSlot)" in funcao
-    assert c.count("LoadFamiliaObjectPalette(") >= 4   # protótipo, definição, spawn, troca de gráfico, retint
+    assert c.count("LoadFamiliaObjectPalette(") >= 6   # protótipo, definição, spawn, volta ao campo, troca de gráfico, retint
     setup = re.search(r"static u8 TrySetupObjectEventSprite\(.*?\n\}", c, re.S).group(0)
     assert "LoadFamiliaObjectPalette(graphicsInfo)" in setup
     troca = re.search(r"void ObjectEventSetGraphicsId\(.*?\n\}", c, re.S).group(0)
     assert "LoadFamiliaObjectPalette(graphicsInfo)" in troca
     retint = re.search(r"void ReloadObjectEventPalettes\(.*?\n\}", c, re.S).group(0)
     assert "LoadFamiliaObjectPalette(" in retint
+    volta = re.search(r"static void SpawnObjectEventOnReturnToField\(u8 objectEventId, s16 x, s16 y\)\n\{.*?\n\}", c, re.S).group(0)
+    assert "LoadFamiliaObjectPalette(graphicsInfo)" in volta, "ResumeMap regrava os slots de NPC antes de recriar os objetos"
 
 
 def test_tabela_de_subsprites_32x40():

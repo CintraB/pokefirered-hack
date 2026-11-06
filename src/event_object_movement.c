@@ -1923,6 +1923,8 @@ static void SpawnObjectEventOnReturnToField(u8 objectEventId, s16 x, s16 y)
     // recarregaria então o slot 10 com ela). Nenhum objeto do jogo original usa o slot 11.
     if (graphicsInfo->paletteSlot == PALSLOT_NPC_SPECIAL)
         LoadSpecialObjectReflectionPalette(graphicsInfo->paletteTag, graphicsInfo->paletteSlot);
+    else
+        LoadFamiliaObjectPalette(graphicsInfo); // POK-51: ResumeMap regravou os slots de NPC com as paletas comuns
 
     *(u16 *)&spriteTemplate.paletteTag = TAG_NONE;
     spriteId = CreateSprite(&spriteTemplate, 0, 0, 0);
