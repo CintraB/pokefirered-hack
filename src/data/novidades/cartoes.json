@@ -420,6 +420,11 @@
           "title": "Pokémon seguidor",
           "body": "O 1º da equipe anda atrás de você no campo:\ntodos os 386, até os grandes como Wailord e\nLugia, cada letra do Unown e as fêmeas. Some\nna bicicleta e no Surf e volta depois. Em\nOPÇÕES, a linha Seguidor liga e desliga.",
           "speciesBefore": "SPECIES_PIKACHU"
+        },
+        {
+          "title": "Pokérus",
+          "body": "Depois de uma batalha, um Pokémon pode pegar\no Pokérus (é raro!). Ele passa aos vizinhos\nda equipe e se cura em 1 a 4 dias do relógio,\nmas os EVs ficam em dobro para sempre. A\nenfermeira do Centro avisa quando aparece.",
+          "itemId": "ITEM_HP_UP"
         }
       ]
     },

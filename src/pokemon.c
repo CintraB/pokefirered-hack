@@ -5691,14 +5691,60 @@ u16 GetMonEVCount(struct Pokemon *mon)
     return count;
 }
 
-// This function was stubbed from RS, but it is stubbed badly.
-// This variable is likely the u8 passed to SetMonData in RSE.
-// The pointer reference causes agbcc to reserve it on the stack before even checking
-// whether it's used.
+// POK-50: the Pokérus of Ruby/Sapphire, stubbed in FRLG. The byte is strain << 4 | days left:
+// days left (low nybble) > 0 = infected, strain != 0 with 0 days = cured (the EVs stay doubled).
+// After every non-link battle there is a 3 in 65536 chance that a party mon catches it.
+#if TESTBUILD
+EWRAM_DATA u32 gTestPokerusRollHits = 0; // rolls won, read by TEST_CMD_POKERUS_RUN
+#endif
+
 void RandomlyGivePartyPokerus(struct Pokemon *party)
 {
-    u8 foo;
-    &foo;
+    u16 rnd = Random();
+
+    if (rnd == 0x4000 || rnd == 0x8000 || rnd == 0xC000)
+    {
+#if TESTBUILD
+        gTestPokerusRollHits++;
+#endif
+        GivePartyPokerusNow(party);
+    }
+}
+
+// The infection itself, with the roll already won: a random party mon that is not an Egg, unless
+// it already has or had the Pokérus. Strain and days as in RS: days = (strain % 4) + 1.
+void GivePartyPokerusNow(struct Pokemon *party)
+{
+    struct Pokemon *mon;
+    u8 slot, pokerus;
+
+    for (slot = 0; slot < PARTY_SIZE; slot++)
+    {
+        if (GetMonData(&party[slot], MON_DATA_SPECIES, NULL) && !GetMonData(&party[slot], MON_DATA_IS_EGG, NULL))
+            break;
+    }
+    if (slot == PARTY_SIZE) // only Eggs: nobody can catch it
+        return;
+    do
+    {
+        slot = Random() % PARTY_SIZE;
+        mon = &party[slot];
+    }
+    while (!GetMonData(mon, MON_DATA_SPECIES, NULL) || GetMonData(mon, MON_DATA_IS_EGG, NULL));
+
+    if (CheckPartyHasHadPokerus(party, 1 << slot))
+        return;
+    do
+    {
+        pokerus = Random();
+    }
+    while ((pokerus & 7) == 0);
+    if (pokerus & 0xF0)
+        pokerus &= 7;
+    pokerus |= (pokerus << 4);
+    pokerus &= 0xF3;
+    pokerus++;
+    SetMonData(mon, MON_DATA_POKERUS, &pokerus);
 }
 
 u8 CheckPartyPokerus(struct Pokemon *party, u8 selection)
@@ -5757,18 +5803,57 @@ u8 CheckPartyHasHadPokerus(struct Pokemon *party, u8 selection)
     return retVal;
 }
 
-// These two functions are stubbed from RS, but they're stubbed badly.
-// See note on RandomlyGivePartyPokerus above.
-static void UpdatePartyPokerusTime(void)
+// POK-50: called by the game clock (DayNight_Tick) at every midnight with days = 1. Only the party
+// counts down: a mon left in the PC keeps its days. At 0 days the mon is cured (strain kept).
+void UpdatePartyPokerusTime(u16 days)
 {
-    u8 foo;
-    &foo;
+    int i;
+    u8 pokerus;
+
+    for (i = 0; i < PARTY_SIZE; i++)
+    {
+        if (!GetMonData(&gPlayerParty[i], MON_DATA_SPECIES, NULL))
+            continue;
+        pokerus = GetMonData(&gPlayerParty[i], MON_DATA_POKERUS, NULL);
+        if (!(pokerus & 0xF))
+            continue;
+        if ((pokerus & 0xF) < days || days > 4)
+            pokerus &= 0xF0;
+        else
+            pokerus -= days;
+        if (pokerus == 0)
+            pokerus = 0x10;
+        SetMonData(&gPlayerParty[i], MON_DATA_POKERUS, &pokerus);
+    }
 }
 
+// POK-50: after every non-link battle, 1 in 3: each infected mon passes its strain (same days) to
+// the party neighbours that never had it. The mon it just infected below does not spread again.
 void PartySpreadPokerus(struct Pokemon *party)
 {
-    u8 foo;
-    &foo;
+    int i;
+    u8 pokerus;
+
+    if (Random() % 3 != 0)
+        return;
+    for (i = 0; i < PARTY_SIZE; i++)
+    {
+        if (!GetMonData(&party[i], MON_DATA_SPECIES, NULL))
+            continue;
+        pokerus = GetMonData(&party[i], MON_DATA_POKERUS, NULL);
+        if (!(pokerus & 0xF))
+            continue;
+        // RSE writes an empty neighbour slot too; here only a real mon (an Egg counts, as in RSE)
+        if (i != 0 && GetMonData(&party[i - 1], MON_DATA_SPECIES, NULL)
+         && !(GetMonData(&party[i - 1], MON_DATA_POKERUS, NULL) & 0xF0))
+            SetMonData(&party[i - 1], MON_DATA_POKERUS, &pokerus);
+        if (i != PARTY_SIZE - 1 && GetMonData(&party[i + 1], MON_DATA_SPECIES, NULL)
+         && !(GetMonData(&party[i + 1], MON_DATA_POKERUS, NULL) & 0xF0))
+        {
+            SetMonData(&party[i + 1], MON_DATA_POKERUS, &pokerus);
+            i++;
+        }
+    }
 }
 
 static void SetMonExpWithMaxLevelCheck(struct Pokemon *mon, int species, u8 unused, u32 data)

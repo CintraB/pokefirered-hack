@@ -904,6 +904,16 @@ Text_RestoredPkmnToFullHealth::
 	.string "Os seus Pokémon estão com a\l"
 	.string "saúde completa.$"
 
+@ POK-50
+Text_PokerusExplanation::
+	.string "Os seus Pokémon podem estar\n"
+	.string "infectados com o Pokérus.\p"
+	.string "Pouco se sabe sobre o Pokérus,\n"
+	.string "só que são seres microscópicos\l"
+	.string "que se prendem aos Pokémon.\p"
+	.string "Dizem que, enquanto infectados,\n"
+	.string "os Pokémon crescem muito bem.$"
+
 	.include "data/text/surf.inc"
 
 @ Unused, from R/S
