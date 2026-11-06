@@ -200,6 +200,13 @@ enum
 extern u32 gTestPokerusRollHits; // src/pokemon.c
 // --- end of POK-50 -------------------------------------------------------------------------
 
+// --- POK-29: galeria de textos --------------------------------------------------------------
+enum
+{
+    TEST_CMD_SHOW_FIELD_TEXT = 0x110, // arg0 = text address (ROM), arg1 = glyph (charmap byte; 0 = buffers untouched): playerName and rivalName = 7 x glyph, gStringVar1..3 = 10 x glyph (the worst case of the placeholders), text speed FAST, neutral color; then field script lockall, loadword 0 text, callstd MSGBOX_DEFAULT, releaseall, end; result = 1 (0xFFFFFFFF = not in the free overworld or address outside the ROM)
+};
+// --- end of POK-29 -------------------------------------------------------------------------
+
 extern struct TestMailbox gTestMailbox;
 extern u8 gTestText[TEST_TEXT_SIZE];
 

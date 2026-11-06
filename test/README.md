@@ -22,6 +22,7 @@ repo.
 | Ver o relógio, a hora no menu, o aviso e o tom de cor (Hack 7) numa janela | `make test-watch CENARIO=relogio` | tempo real |
 | Ver o clima por região e o granizo na batalha (Hack 7) numa janela | `make test-watch CENARIO=clima` | tempo real |
 | Ver outro cenário do Hack 7 numa janela | `make test-watch CENARIO=encontros` (ou `dex_nacional`, `pos_liga`, `evo_dia_noite`, `resumo_amizade`) | tempo real |
+| Folhear cada fala do campo na caixa real (galeria de textos, POK-29) | `make test-galeria [FILTRO=PalletTown*]` | ~40 s a galeria inteira (5 sessões) |
 | Aprovar as telas de referência | `make test-approve` | instantâneo |
 | Testes unitários da própria esteira | `python3 -m pytest test -q` | ~40 s (~1,5 min na 1ª vez depois de ligar o WSL) |
 
@@ -440,6 +441,32 @@ make test-watch CENARIO=resumo_amizade               # Hack 7: corações de ami
 - `CENARIO=` e `FROM=` não combinam. O `shiny` e o `creche` não estão disponíveis aqui: 400 000 Pokémon em
   tempo real levariam horas.
 
+### `make test-galeria` (galeria de textos, POK-29)
+
+Mostra **cada fala do campo na caixa de mensagem real**, página por página, para conferir a
+tradução de olho (quebra de linha, rolagem `\l`, páginas `\p`, acentos). Não aprova nem
+reprova e não entra em nenhum pipeline.
+
+```bash
+make test-galeria                          # todas (~3800 falas, ~6600 páginas, ~40 s com ESTEIRA_JOBS=5)
+make test-galeria FILTRO='PalletTown*'     # só os mapas de Pallet (glob do grupo ou do caminho; vírgula separa)
+make test-galeria FILTRO=event_scripts SAVE=test/out/<execução>/captura.sav
+```
+
+- Recompila a ROM de teste e abre `ESTEIRA_JOBS` sessões a partir de uma cópia do `captura.sav`
+  (o de `SAVE=`, senão o mais novo de `test/out/*/`); nunca salva o jogo.
+- Entram os rótulos com `.string` de `data/maps/*/text.inc`, dos `data/text/*.inc` que vão para a
+  caixa do campo (os mesmos que a checagem de texto mede como diálogo), de `data/scripts/*.inc` e
+  de `data/event_scripts.s`. Textos de menus/telas em C ficam de fora.
+- Placeholders no pior caso: `{PLAYER}`/`{RIVAL}` = 7 vezes e `{STR_VAR_n}` = 10 vezes a letra mais
+  larga da fonte normal (atalho `SHOW_FIELD_TEXT`, 0x110). Cor neutra, velocidade rápida.
+- Saída: `test/out/galeria-<data-hora>/galeria/index.html` (um bloco por mapa/arquivo: rótulo,
+  texto-fonte e as páginas lado a lado) e `galeria.json`. Aviso no índice: texto que não terminou
+  ou com número de paradas diferente de `\p` + `\l` + `{PAUSE_UNTIL_PRESS}` + 1.
+- Direto: `python3 -m esteira galeria --out DIR [--filtro GLOB] [--save S] [--limite N]`
+  (`--rom-test`/`--elf-test`: padrão, a da raiz). O cenário `galeria` do `test-full` passa por 4
+  falas fixas só para o atalho não apodrecer.
+
 ## Usando a esteira direto (`python3 -m esteira`)
 
 Os `make test-*` são atalhos para isto. Dentro do WSL, a partir de `test/`:
@@ -456,6 +483,7 @@ python3 -m esteira rapido --rom ../pokefirered_switch.gba --elf ../pokefirered_s
 | `completo` | O rápido + os cenários de `FULL_SCENARIOS` |
 | `aprovar DIR` | Promove as telas da execução `DIR` a referência |
 | `assistir` | Roteiro rápido (ou, com `--cenario <nome>` de `WATCH_FULL_SCENARIOS`, esse cenário na ROM de teste) numa janela (é o que o `make test-watch` chama) |
+| `galeria --out DIR` | Galeria de textos (é o que o `make test-galeria` chama) |
 | `nao-testada --out DIR` | Só o relatório "NÃO TESTADA" (usado por `SKIP_TESTS=1`) |
 
 Opções de `rapido` e `completo` (`--rom`, `--elf` e `--out` são obrigatórios):

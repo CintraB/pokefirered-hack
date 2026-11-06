@@ -136,7 +136,7 @@ MAKEFLAGS += --no-print-directory
 ALL_BUILDS := firered firered_rev1 firered_rev10 leafgreen leafgreen_rev1 leafgreen_rev10
 ALL_BUILDS += $(ALL_BUILDS:%=%_modern)
 
-RULES_NO_SCAN += clean clean-assets tidy generated clean-generated test-quick test-full test-approve test-watch
+RULES_NO_SCAN += clean clean-assets tidy generated clean-generated test-quick test-full test-approve test-watch test-galeria
 .PHONY: all rom modern compare $(ALL_BUILDS) $(ALL_BUILDS:%=compare_%)
 .PHONY: $(RULES_NO_SCAN)
 
@@ -464,6 +464,15 @@ test-watch:
 	@$(if $(CENARIO),$(MAKE) firered_switch TESTBUILD=1,true)
 	@$(ESTEIRA_RUNNER)
 	@cd test && python3 -m esteira assistir --rom $(CURDIR)/pokefirered_switch.gba --elf $(CURDIR)/pokefirered_switch.elf $(if $(CENARIO),--cenario $(CENARIO) --rom-test $(CURDIR)/pokefirered_switch_test.gba --elf-test $(CURDIR)/pokefirered_switch_test.elf) $(if $(FROM),--from $(FROM)) $(if $(STARTER),--starter $(STARTER))
+
+# Text gallery (POK-29): every field text in the real message box, page by page, with the worst case of the
+# placeholders, on the test ROM (rebuilt first). Not part of any pipeline: it only shows, never passes or fails.
+#   make test-galeria [FILTRO=PalletTown*] [SAVE=<captura.sav>]  ->  test/out/galeria-<date-time>/galeria/index.html
+test-galeria:
+	@$(MAKE) firered_switch TESTBUILD=1
+	@$(ESTEIRA_RUNNER)
+	@out=$(ESTEIRA_RUNS_DIR)/galeria-$$(date +%Y%m%d-%H%M%S); mkdir -p $$out; \
+	cd test && python3 -m esteira galeria --rom-test $(CURDIR)/pokefirered_switch_test.gba --elf-test $(CURDIR)/pokefirered_switch_test.elf --out $$out $(if $(FILTRO),--filtro '$(FILTRO)') $(if $(SAVE),--save $(abspath $(SAVE)))
 
 test-approve:
 	@cd test && python3 -m esteira aprovar "$(if $(DIR),$(abspath $(DIR)),$(shell ls -dt $(ESTEIRA_RUNS_DIR)/[0-9]*-[0-9]*/ 2>/dev/null | head -n 1))"

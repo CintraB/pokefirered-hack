@@ -1433,6 +1433,57 @@ static u32 PokerusRun(u32 what, u32 n)
     return PokerusState();
 }
 // --- end of POK-50 --------------------------------------------------------------------------
+// --- POK-29: galeria de textos --------------------------------------------------------------
+// Shows a field text in the real message box, as `msgbox <text>, MSGBOX_DEFAULT` does. With a glyph, the placeholders
+// get their worst case first: {PLAYER}/{RIVAL} with PLAYER_NAME_LENGTH glyphs, {STR_VAR_1..3} with 10 (the size the text
+// check measures). The gallery never saves the game, so the names are not restored.
+#include "constants/vars.h"
+
+#define FIELD_TEXT_VAR_GLYPHS 10
+#define FIELD_TEXT_MSGBOX_DEFAULT 4   // asm/macros/event.inc: MSGBOX_DEFAULT (gStdScripts[4] = Std_MsgboxDefault)
+#define FIELD_TEXT_ROM_START 0x08000000
+#define FIELD_TEXT_ROM_END   0x0A000000
+
+static void FillGlyphs(u8 *dest, u32 count, u8 glyph)
+{
+    u32 i;
+
+    for (i = 0; i < count; i++)
+        dest[i] = glyph;
+    dest[count] = EOS;
+}
+
+static u32 ShowFieldText(u32 text, u32 glyph)
+{
+    if (!Overworld_IsRunning() || ScriptContext_IsEnabled() || text < FIELD_TEXT_ROM_START || text >= FIELD_TEXT_ROM_END)
+        return 0xFFFFFFFF;
+    if (glyph != 0)
+    {
+        FillGlyphs(gSaveBlock2Ptr->playerName, PLAYER_NAME_LENGTH, glyph);
+        FillGlyphs(gSaveBlock1Ptr->rivalName, PLAYER_NAME_LENGTH, glyph);
+        FillGlyphs(gStringVar1, FIELD_TEXT_VAR_GLYPHS, glyph);
+        FillGlyphs(gStringVar2, FIELD_TEXT_VAR_GLYPHS, glyph);
+        FillGlyphs(gStringVar3, FIELD_TEXT_VAR_GLYPHS, glyph);
+    }
+    gSaveBlock2Ptr->optionsTextSpeed = OPTIONS_TEXT_SPEED_FAST;
+    gSpecialVar_TextColor = NPC_TEXT_COLOR_NEUTRAL;
+    gSelectedObjectEvent = 0;
+    gTestText[0] = 0x69;            // lockall
+    gTestText[1] = 0x0F;            // loadword 0, text
+    gTestText[2] = 0;
+    gTestText[3] = text;
+    gTestText[4] = text >> 8;
+    gTestText[5] = text >> 16;
+    gTestText[6] = text >> 24;
+    gTestText[7] = 0x09;            // callstd MSGBOX_DEFAULT
+    gTestText[8] = FIELD_TEXT_MSGBOX_DEFAULT;
+    gTestText[9] = 0x6B;            // releaseall
+    gTestText[10] = 0x02;           // end
+    ScriptContext_SetupScript(gTestText);
+    return 1;
+}
+// --- end of POK-29 --------------------------------------------------------------------------
+
 
 void TestHooks_Run(void)
 {
@@ -1590,6 +1641,8 @@ void TestHooks_Run(void)
     case TEST_CMD_POKERUS_SET:      result = PokerusSet(gTestMailbox.arg0, gTestMailbox.arg1); break;
     case TEST_CMD_POKERUS_STATE:    result = PokerusState(); break;
     case TEST_CMD_POKERUS_RUN:      result = PokerusRun(gTestMailbox.arg0, gTestMailbox.arg1); break;
+    // POK-29
+    case TEST_CMD_SHOW_FIELD_TEXT:  result = ShowFieldText(gTestMailbox.arg0, gTestMailbox.arg1); break;
     default:
         result = 0xFFFFFFFF;
         break;
