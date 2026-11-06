@@ -63,7 +63,8 @@ Os relatórios são arquivos normais do Windows: abra o `relatorio.html` com dup
      buffer fixo menor que ele (regra `buffer`) e texto com palavra inglesa (regra `ingles`);
    - **3 roteiros no emulador**: `abertura` (nome, inicial, batalha do rival), `rota1`
      (passos, Rota 1, encomenda do Oak) e `captura` (loja, captura com apelido, Poção, Centro,
-     salvar, reiniciar e continuar).
+     salvar, reiniciar e continuar). A captura é sempre de um PIDGEY (foge dos outros
+     selvagens): a tela `captura` depende só da espécie, e o sorteio dela muda a cada build (POK-30).
 3. Conforme o resultado:
 
 | Resultado | O que faz | Como reconhecer |
