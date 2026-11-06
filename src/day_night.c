@@ -10,6 +10,7 @@
 #include "graphics.h"
 #include "map_name_popup.h"
 #include "overworld.h"
+#include "pokemon.h"
 #include "quest_log.h"
 #include "script.h"
 #include "strings.h"
@@ -76,9 +77,15 @@ void DayNight_Reset(void)
     gSaveBlock2Ptr->gameClockFrames = 0;
 }
 
+// POK-50: the Pokérus counts its days on this clock (one in-game day = one hour played)
+#define GAME_CLOCK_FRAMES_PER_DAY (MINUTES_PER_DAY * GAME_CLOCK_FRAMES_PER_MINUTE)
+#define GAME_CLOCK_MIDNIGHT_OFFSET ((MINUTES_PER_DAY - GAME_CLOCK_START_MINUTE) * GAME_CLOCK_FRAMES_PER_MINUTE)
+
 void DayNight_Tick(void)
 {
     gSaveBlock2Ptr->gameClockFrames++;
+    if (gSaveBlock2Ptr->gameClockFrames % GAME_CLOCK_FRAMES_PER_DAY == GAME_CLOCK_MIDNIGHT_OFFSET)
+        UpdatePartyPokerusTime(1);
 }
 
 /* Hack 7 — frente A */

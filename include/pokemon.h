@@ -389,6 +389,8 @@ void RandomlyGivePartyPokerus(struct Pokemon *party);
 u8 CheckPartyPokerus(struct Pokemon *party, u8 party_bm);
 u8 CheckPartyHasHadPokerus(struct Pokemon *party, u8 selection);
 void PartySpreadPokerus(struct Pokemon *party);
+void GivePartyPokerusNow(struct Pokemon *party);
+void UpdatePartyPokerusTime(u16 days);
 bool8 TryIncrementMonLevel(struct Pokemon *mon);
 u32 CanMonLearnTMHM(struct Pokemon *mon, u8 tm);
 u8 GetMoveRelearnerMoves(struct Pokemon *mon, u16 *moves);

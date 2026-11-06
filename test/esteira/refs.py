@@ -22,6 +22,7 @@ from esteira.scenarios.full_fisico_fada import SCREEN_POINTS as FISICO_FADA_POIN
 from esteira.scenarios.full_revanches import SCREEN_POINTS as REVANCHES_POINTS   # POK-42
 from esteira.scenarios.full_dexnav import SCREEN_POINTS as DEXNAV_POINTS   # POK-47
 from esteira.scenarios.full_seguidor import SCREEN_POINTS as SEGUIDOR_POINTS   # POK-48
+from esteira.scenarios.full_pokerus import SCREEN_POINTS as POKERUS_POINTS   # POK-50
 from esteira.result import Result
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -36,7 +37,9 @@ STARTER_DEPENDENT_POINTS = ("relogio_menu", "relogio_aviso_noite",   # Hack 7 �
                             "pokedex_nacional",                       # Hack 7 — frente C
                             "pos_liga_ovo", "pos_liga_dinheiro", "pos_liga_objetivo",
                             # POK-15: partículas e selvagem saem do sorteio, que muda com o save
-                            "batalha_clima_chuva", "batalha_clima_granizo", "batalha_clima_areia", "batalha_clima_sol")
+                            "batalha_clima_chuva", "batalha_clima_granizo", "batalha_clima_areia", "batalha_clima_sol",
+                            # POK-50: a explicação da enfermeira, com o NPC que anda no Centro ao fundo
+                            "pokerus_enfermeira")
 KEY_POINTS = (("nome", "inicial", "batalha_rival", "captura", "save_continue") + TOUR_POINTS
               + STARTER_DEPENDENT_POINTS)
 # POK-44, Task 7: a tela de conquistas (aba História e a Batalha com a perdida riscada) e o cartão com a dica do SELECT
@@ -57,7 +60,8 @@ SHARED_POINTS = (EVOLUTION_POINTS + EVOLUTION_PAGE_POINTS + SUMMARY_PAGE_POINTS 
                  + CONQUISTAS_TELA_POINTS  # POK-44: tela de conquistas e a dica no cartão (cenário `conquistas`)
                  + REVANCHES_POINTS  # POK-42: a guarda da Liga (pergunta e lista) e a revanche do Ben no degrau 4
                  + DEXNAV_POINTS  # POK-47: DexNav (mapa, lista, resultado da busca) e o menu Start com DEXNAV
-                 + SEGUIDOR_POINTS)  # POK-48: o seguidor parado, à noite e com o S.S. Anne (o 1º é sempre CHARMANDER)
+                 + SEGUIDOR_POINTS  # POK-48: o seguidor parado, à noite e com o S.S. Anne (o 1º é sempre CHARMANDER)
+                 + POKERUS_POINTS)  # POK-50: o resumo do infectado (PKRS) e do curado (o pontinho)
 DIFF_RED = (255, 0, 0)
 # O Pillow acusa PNG quebrado com OSError (UnidentifiedImageError é subclasse, "image file is
 # truncated"), SyntaxError ("broken PNG file") ou ValueError, conforme onde o arquivo está estragado.

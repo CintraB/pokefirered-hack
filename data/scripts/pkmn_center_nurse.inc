@@ -15,6 +15,16 @@ EventScript_PkmnCenterNurse_HealPkmn::
 	waitmessage
 	call EventScript_PkmnCenterNurse_TakeAndHealPkmn
 	special SetUsedPkmnCenterQuestLogEvent
+	goto_if_unset FLAG_POKERUS_EXPLAINED, EventScript_PkmnCenterNurse_CheckPokerus
+	goto EventScript_PkmnCenterNurse_CheckTrainerTowerAndUnionRoom
+	end
+
+@ POK-50: the first time an infected mon is healed, the nurse explains the Pokérus (as in RSE)
+EventScript_PkmnCenterNurse_CheckPokerus::
+	specialvar VAR_RESULT, IsPokerusInParty
+	goto_if_eq VAR_RESULT, FALSE, EventScript_PkmnCenterNurse_CheckTrainerTowerAndUnionRoom
+	msgbox Text_PokerusExplanation
+	setflag FLAG_POKERUS_EXPLAINED
 	goto EventScript_PkmnCenterNurse_CheckTrainerTowerAndUnionRoom
 	end
 

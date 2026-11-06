@@ -1224,7 +1224,7 @@
 // Unused hidden item flags
 #define FLAG_GOT_SHINY_CHARM            0x4A7
 #define FLAG_GOT_RARE_EGG               0x4A8
-#define FLAG_UNUSED_0x4A9               0x4A9 // Unused Flag
+#define FLAG_POKERUS_EXPLAINED          0x4A9 // POK-50: the nurse explained the Pokérus (once)
 #define FLAG_UNUSED_0x4AA               0x4AA // Unused Flag
 #define FLAG_UNUSED_0x4AB               0x4AB // Unused Flag
 #define FLAG_UNUSED_0x4AC               0x4AC // Unused Flag

@@ -1366,6 +1366,74 @@ static u32 SetLeadLook(u32 arg0, u32 arg1)
 }
 // --- end of POK-48 --------------------------------------------------------------------------
 
+// --- POK-50: Pokérus ------------------------------------------------------------------------
+static u32 PokerusState(void)
+{
+    u8 i;
+
+    for (i = 0; i < PARTY_SIZE; i++)
+        gTestText[i] = GetMonData(&gPlayerParty[i], MON_DATA_POKERUS);
+    return CheckPartyPokerus(gPlayerParty, 0x3F) | (u32)CheckPartyHasHadPokerus(gPlayerParty, 0x3F) << 8;
+}
+
+static u32 PokerusSet(u32 slot, u32 value)
+{
+    u8 pokerus = value, old;
+
+    if (slot >= PARTY_SIZE || GetMonData(&gPlayerParty[slot], MON_DATA_SPECIES) == SPECIES_NONE)
+        return 0xFFFFFFFF;
+    old = GetMonData(&gPlayerParty[slot], MON_DATA_POKERUS);
+    SetMonData(&gPlayerParty[slot], MON_DATA_POKERUS, &pokerus);
+    return old;
+}
+
+static u32 PokerusRun(u32 what, u32 n)
+{
+    u8 saved[PARTY_SIZE], i;
+    u32 k;
+
+    switch (what)
+    {
+    case 0:
+        GivePartyPokerusNow(gPlayerParty);
+        break;
+    case 1:
+        for (k = 0; k < n; k++)
+            PartySpreadPokerus(gPlayerParty);
+        break;
+    case 2:
+        UpdatePartyPokerusTime(n);
+        break;
+    case 3:
+        for (i = 0; i < PARTY_SIZE; i++)
+            saved[i] = GetMonData(&gPlayerParty[i], MON_DATA_POKERUS);
+        gTestPokerusRollHits = 0;
+        for (k = 0; k < n; k++)
+            RandomlyGivePartyPokerus(gPlayerParty);
+        for (i = 0; i < PARTY_SIZE; i++)
+            SetMonData(&gPlayerParty[i], MON_DATA_POKERUS, &saved[i]);
+        return gTestPokerusRollHits;
+    case 4:
+    {
+        u8 zero = 0;
+        u32 total = 0;
+
+        if (n == SPECIES_NONE || n >= NUM_SPECIES || GetMonData(&gPlayerParty[0], MON_DATA_SPECIES) == SPECIES_NONE)
+            return 0xFFFFFFFF;
+        for (i = 0; i < NUM_STATS; i++)
+            SetMonData(&gPlayerParty[0], MON_DATA_HP_EV + i, &zero);
+        MonGainEVs(&gPlayerParty[0], n);
+        for (i = 0; i < NUM_STATS; i++)
+            total += GetMonData(&gPlayerParty[0], MON_DATA_HP_EV + i);
+        return total;
+    }
+    default:
+        return 0xFFFFFFFF;
+    }
+    return PokerusState();
+}
+// --- end of POK-50 --------------------------------------------------------------------------
+
 void TestHooks_Run(void)
 {
     u32 result = 0;
@@ -1518,6 +1586,10 @@ void TestHooks_Run(void)
     case TEST_CMD_FILL_OBJECT_EVENTS: result = FillObjectEvents(gTestMailbox.arg0 != 0); break;
     case TEST_CMD_START_FLY:        result = StartFly(gTestMailbox.arg0, gTestMailbox.arg1); break;
     case TEST_CMD_SET_LEAD_LOOK:    result = SetLeadLook(gTestMailbox.arg0, gTestMailbox.arg1); break;
+    // POK-50
+    case TEST_CMD_POKERUS_SET:      result = PokerusSet(gTestMailbox.arg0, gTestMailbox.arg1); break;
+    case TEST_CMD_POKERUS_STATE:    result = PokerusState(); break;
+    case TEST_CMD_POKERUS_RUN:      result = PokerusRun(gTestMailbox.arg0, gTestMailbox.arg1); break;
     default:
         result = 0xFFFFFFFF;
         break;

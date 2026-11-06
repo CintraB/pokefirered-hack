@@ -97,7 +97,8 @@ def test_telas_do_cenario_no_fim_de_shared_points():
     """As fotos do cenário `seguidor` (o 1º é sempre CHARMANDER: não dependem do inicial) vão para COMUM/."""
     from esteira import refs
     from esteira.scenarios import full_seguidor as cen
-    assert refs.SHARED_POINTS[-len(cen.SCREEN_POINTS):] == cen.SCREEN_POINTS
+    fim = len(refs.SHARED_POINTS) - len(refs.POKERUS_POINTS)   # depois deles, só os do Pokérus (POK-50)
+    assert refs.SHARED_POINTS[fim - len(cen.SCREEN_POINTS):fim] == cen.SCREEN_POINTS
     assert len(set(refs.SHARED_POINTS)) == len(refs.SHARED_POINTS)
     texto = (REPO_ROOT / "test" / "esteira" / "scenarios" / "full_seguidor.py").read_text(encoding="utf-8")
     for ponto in cen.SCREEN_POINTS:

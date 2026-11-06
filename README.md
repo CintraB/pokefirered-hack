@@ -185,6 +185,7 @@ perder o jeito do FireRed.
 | **HMs sem ensinar** | Com a insígnia e a HM na bolsa, basta um Pokémon que possa aprender o golpe. Cavernas escuras já acendem. |
 | **Viagem pelo Mapa** | Com o Voar liberado, o Mapa da Cidade leva direto a uma cidade visitada. |
 | **Chefes mais espertos** | Líderes, Elite 4, rival e as revanches do Nível 80 para cima trocam de Pokémon antes do seu golpe super efetivo (lembrando dos golpes que você já mostrou), escolhem melhor quem entra e usam poções e curas de estado na hora certa, sem repetir uma cura que você desfez. Treinadores comuns não mudam. |
+| **Pokérus** | Depois de uma batalha, um Pokémon pode pegar o Pokérus (raro): passa aos vizinhos da equipe, se cura em 1 a 4 dias do relógio do jogo e deixa os EVs em dobro para sempre. A enfermeira avisa da primeira vez. |
 </details>
 
 <details>
@@ -298,6 +299,7 @@ perder o jeito do FireRed.
 | **Pokémon seguidor** (02/11) | O 1º da equipe anda atrás do jogador (12 espécies, normal e shiny), no ritmo dele, sem bloquear ninguém; some na bicicleta, no Surf e nos golpes de campo e volta depois; opção Seguidor nas OPÇÕES. |
 | **Bugs do original** (03/11) | As 47 correções de bugs do FireRed que a decompilação deixava desligadas, agora ligadas. |
 | **Pokémon seguidor, todos** (03/11) | Os 386 seguem, com a versão shiny: os 7 grandes em 64×64, as fêmeas, cada letra do Unown e o Deoxys Ataque; o seguidor fica sempre atrás do jogador no desenho. A ROM passou a 32 MB. |
+| **Pokérus** (06/11) | O Pokérus do Rubi/Safira, que o FireRed deixava desligado: pega depois das batalhas, passa aos vizinhos, conta os dias pelo relógio da hack e dobra os EVs. |
 
 ## Esteira de testes
 

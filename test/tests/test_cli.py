@@ -481,7 +481,8 @@ def test_registro_dos_cenarios_completos():
                  "revanches",  # POK-42
                  "ia_chefes",  # POK-46
                  "dexnav",  # POK-47
-                 "seguidor"):  # POK-48
+                 "seguidor",  # POK-48
+                 "pokerus"):  # POK-50
         spec = by_name[name]
         assert (spec.rom, spec.save_from, spec.needs) == (TEST, "captura", None)
     playable = [s.name for s in specs if s.rom == cli.PLAYABLE]
@@ -507,7 +508,8 @@ def test_registro_dos_cenarios_completos():
         (TEST, ["revanches"]),  # POK-42
         (TEST, ["ia_chefes"]),  # POK-46
         (TEST, ["dexnav"]),  # POK-47
-        (TEST, ["seguidor"])]  # POK-48
+        (TEST, ["seguidor"]),  # POK-48
+        (TEST, ["pokerus"])]  # POK-50
     for spec in specs:
         if spec.save_from is not None:
             assert spec.rom == TEST and any(g[0] is spec for _, g in groups)

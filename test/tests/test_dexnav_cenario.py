@@ -54,7 +54,7 @@ def test_taxa_igual_ao_c():
 def test_telas_no_fim_de_shared_points():
     assert cen.SCREEN_POINTS == ("dexnav_mapa", "dexnav_lista", "dexnav_busca_resultado", "dexnav_menu_start")
     # depois deles, só os do seguidor (POK-48)
-    fim = len(refs.SHARED_POINTS) - len(refs.SEGUIDOR_POINTS)
+    fim = len(refs.SHARED_POINTS) - len(refs.SEGUIDOR_POINTS) - len(refs.POKERUS_POINTS)
     assert refs.SHARED_POINTS[fim - len(cen.SCREEN_POINTS):fim] == cen.SCREEN_POINTS
     assert len(set(refs.SHARED_POINTS)) == len(refs.SHARED_POINTS)
     texto = (REPO_ROOT / "test" / "esteira" / "scenarios" / "full_dexnav.py").read_text(encoding="utf-8")
