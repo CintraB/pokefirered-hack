@@ -932,6 +932,11 @@ static const u16 sSpeciesToNationalPokedexNum[NUM_SPECIES - 1] =
     SPECIES_TO_NATIONAL(JIRACHI),
     SPECIES_TO_NATIONAL(DEOXYS),
     SPECIES_TO_NATIONAL(CHIMECHO),
+    // POK-54: só na Dex nacional (a de Hoenn fica 0)
+    SPECIES_TO_NATIONAL(GIBLE),
+    SPECIES_TO_NATIONAL(GABITE),
+    SPECIES_TO_NATIONAL(GARCHOMP),
+    SPECIES_TO_NATIONAL(DARKRAI),
 };
 
 // Assigns all Hoenn Dex Indexes to a National Dex Index

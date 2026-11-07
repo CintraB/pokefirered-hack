@@ -18,6 +18,10 @@ from esteira.scenarios import REPO_ROOT
 
 GEN6 = json.loads((REPO_ROOT / "tools" / "gen6" / "gen6.json").read_text(encoding="utf-8"))
 BASE = "759447339662d5680268db3f3b38f44f44ecd88c"   # hack-switch na criação desta branch (SHA fixo)
+# POK-54: espécies da Gen 4 acrescentadas depois da base, sem golpe de Fada (conferidas em test_especies_novas.py)
+EXTRAS_POK54_LEARNSETS = {"sGibleLevelUpLearnset", "sGabiteLevelUpLearnset", "sGarchompLevelUpLearnset",
+                          "sDarkraiLevelUpLearnset"}
+EXTRAS_POK54_OVOS = {"SPECIES_GIBLE"}
 
 
 def _ler(rel: str) -> str:
@@ -158,7 +162,9 @@ def _levelup_esperado() -> set[tuple[str, int, str]]:
 def test_learnsets_gen6():
     atuais, base, ponteiros = _learnsets(_ler("src/data/pokemon/level_up_learnsets.h")), \
         _learnsets(_git_show("src/data/pokemon/level_up_learnsets.h")), _ponteiros()
-    assert set(atuais) == set(base)
+    assert set(atuais) - EXTRAS_POK54_LEARNSETS == set(base)
+    assert not [g for nome in EXTRAS_POK54_LEARNSETS for _, g in atuais[nome] if g in NOVOS]
+    atuais = {k: v for k, v in atuais.items() if k not in EXTRAS_POK54_LEARNSETS}
     for nome, lista in atuais.items():
         assert [x for x in lista if x[1] not in NOVOS] == base[nome], nome          # nada mais mudou
         niveis = [lv for lv, _ in lista]
@@ -173,7 +179,9 @@ def test_learnsets_gen6():
 
 def test_golpes_de_ovo_gen6():
     atuais, base = _ovos(_ler("src/data/pokemon/egg_moves.h")), _ovos(_git_show("src/data/pokemon/egg_moves.h"))
-    assert set(atuais) == set(base)
+    assert set(atuais) - EXTRAS_POK54_OVOS == set(base)
+    assert not [g for esp in EXTRAS_POK54_OVOS for g in atuais[esp] if g in NOVOS]
+    atuais = {k: v for k, v in atuais.items() if k not in EXTRAS_POK54_OVOS}
     for especie, lista in atuais.items():
         assert [g for g in lista if g not in NOVOS] == base[especie], especie
         assert len(lista) <= 10, especie                                            # EGG_MOVES_ARRAY_COUNT

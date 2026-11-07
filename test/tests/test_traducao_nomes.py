@@ -35,6 +35,8 @@ NEW_KEYS = {"src/data/text/trainer_class_names.h": {"TRAINER_CLASS_ROCKET_ADMIN"
                                     "ITEM_DEXNAV": "DEXNAV", "ITEM_ROSA_VERMELHA": "Rosa Vermelha",
                                     "ITEM_ROSA_DOURADA": "Rosa Dourada", "ITEM_ROSA_AZUL": "Rosa Azul",
                                     "ITEM_ROSA_NEGRA": "Rosa Negra"},
+            # POK-54: a habilidade do Darkrai (Bad Dreams), que não existe na 3ª geração
+            "src/data/text/abilities.h": {"ABILITY_BAD_DREAMS": "Sonhos Ruins"},
             # tipo novo (POK-45)
             "src/battle_main.c": {"TYPE_FAIRY": "Fada"},
             # golpes novos de Fada (POK-45): nome oficial do GO, abreviado como no glossário

@@ -30,6 +30,8 @@ TEST_HOOKS_C = (SRC / "test_hooks.c").read_text(encoding="utf-8")
 BASE = "759447339662d5680268db3f3b38f44f44ecd88c"   # hack-switch na criação desta branch (SHA fixo: a hack-switch vai andar)
 TYPE_FAIRY = 18
 TYPE_MYSTERY = 9
+# POK-54: espécies da Gen 4 acrescentadas depois da base; nenhuma é Fada (tools/gen6 não as cita)
+EXTRAS_POK54 = {"SPECIES_GIBLE", "SPECIES_GABITE", "SPECIES_GARCHOMP", "SPECIES_DARKRAI"}
 
 # Triplas da Fada na Gen 6 (atacante, defensor, multiplicador)
 TRIPLAS_FADA = {
@@ -127,8 +129,9 @@ def test_especies_gen6():
     esperado = {k: tuple(v) for k, v in GEN6["species_types"].items()}
     assert len(esperado) == 18
     assert {k: novas[k] for k in esperado} == esperado
-    assert set(novas) == set(antigas)
-    mudaram = {k for k in novas if novas[k] != antigas[k]}
+    assert set(novas) - EXTRAS_POK54 == set(antigas)
+    assert not [k for k in EXTRAS_POK54 if "TYPE_FAIRY" in novas[k]]
+    mudaram = {k for k in antigas if novas[k] != antigas[k]}
     assert mudaram == set(esperado)
     assert [k for k, v in novas.items() if "TYPE_FAIRY" in v and k not in esperado] == []
 
@@ -369,8 +372,12 @@ def test_pokedex_ordem_por_tipo():
             t.setdefault(e, ("TYPE_NORMAL", "TYPE_NORMAL"))
     # a regra explica a ordem da base inteira, e a nova é a mesma regra com os tipos novos
     assert base == sorted(base, key=_chave_por_tipo(tipos_base, nacional, valor))
-    assert sorted(nova) == sorted(base) and len(nova) == len(set(nova)) == 411
-    assert nova == sorted(base, key=_chave_por_tipo(tipos, nacional, valor))
+    # POK-54: as 4 espécies da Gen 4 entram pela mesma regra; o resto continua igual
+    sem_extras = [e for e in nova if e not in EXTRAS_POK54]
+    assert sorted(set(nova) - set(sem_extras)) == sorted(EXTRAS_POK54)
+    assert sorted(sem_extras) == sorted(base) and len(sem_extras) == len(set(sem_extras)) == 411
+    assert sem_extras == sorted(base, key=_chave_por_tipo(tipos, nacional, valor))
+    assert nova == sorted(nova, key=_chave_por_tipo(tipos, nacional, valor))
     # as Fada puras ficam juntas, num bloco só, no fim (TYPE_FAIRY é o último tipo)
     puras = [i for i, e in enumerate(nova) if tipos[e] == ("TYPE_FAIRY", "TYPE_FAIRY")]
     assert len(puras) >= 6 and puras == list(range(puras[0], puras[0] + len(puras)))

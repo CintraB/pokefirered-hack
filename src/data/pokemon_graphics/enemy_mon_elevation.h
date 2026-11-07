@@ -62,4 +62,9 @@ const u8 gEnemyMonElevation[NUM_SPECIES] =
     [SPECIES_JIRACHI] = 12,
     [SPECIES_DEOXYS] = 8,
     [SPECIES_CHIMECHO] = 12,
+    // POK-54
+    [SPECIES_GIBLE] = 0,
+    [SPECIES_GABITE] = 0,
+    [SPECIES_GARCHOMP] = 0,
+    [SPECIES_DARKRAI] = 8,
 };

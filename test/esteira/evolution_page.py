@@ -145,9 +145,11 @@ class EvolutionPage:
         self._widths = _load_widths(self.repo)
 
     def valid_species(self) -> list[str]:
-        """SPECIES_* de 1 a SPECIES_CHIMECHO, sem as OLD_UNOWN_* (a primeira constante de cada id)."""
+        """SPECIES_* de 1 a SPECIES_CHIMECHO, sem as OLD_UNOWN_* (a primeira constante de cada id), e as espécies
+        depois do Ovo e das letras do Unown até NUM_SPECIES - 1 (POK-54: Gible, Gabite, Garchomp e Darkrai)."""
         last = self.consts.species("SPECIES_CHIMECHO")
-        names = [self.consts.species_name(i) for i in range(1, last + 1)]
+        extras = range(self.consts.species("SPECIES_UNOWN_QMARK") + 1, self.consts.value("NUM_SPECIES"))
+        names = [self.consts.species_name(i) for i in (*range(1, last + 1), *extras)]
         return [n for n in names if not n.startswith("SPECIES_OLD_UNOWN_")]
 
     def text(self, species: str) -> str:

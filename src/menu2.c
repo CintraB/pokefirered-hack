@@ -429,7 +429,12 @@ static const u8 sMonPosAttributes[][PSA_MON_ATTR_COUNT] = {
 #endif
     [SPECIES_CHIMECHO        - 1] = {29, 12,  8, 28, 26},
     [SPECIES_OLD_UNOWN_EMARK - 1] = {32, 33,  8, 32, 43},
-    [SPECIES_OLD_UNOWN_QMARK - 1] = {32, 35,  8, 32, 45}
+    [SPECIES_OLD_UNOWN_QMARK - 1] = {32, 35,  8, 32, 45},
+    // POK-54: copiados de Bagon, Shelgon, Salamence e Dusclops
+    [SPECIES_GIBLE            - 1] = {23, 19, 48, 22, 38},
+    [SPECIES_GABITE           - 1] = {25, 27, 48, 25, 44},
+    [SPECIES_GARCHOMP         - 1] = { 9, 17, 48, 10, 33},
+    [SPECIES_DARKRAI          - 1] = {28, 15, 48, 26, 40},
 };
 
 void AddTextPrinterParameterized3(u8 windowId, u8 fontId, u8 x, u8 y, const u8 * color, s8 speed, const u8 * str)

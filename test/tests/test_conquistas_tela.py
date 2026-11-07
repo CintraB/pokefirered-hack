@@ -526,7 +526,7 @@ def test_cenario_do_diario():
     # depois deles, só os das revanches (POK-42), os do DexNav (POK-47), os do seguidor (POK-48), os do Pokérus (POK-50) e os do POK-51
     fim = (len(refs.SHARED_POINTS) - len(refs.REVANCHES_POINTS) - len(refs.DEXNAV_POINTS)
            - len(refs.SEGUIDOR_POINTS) - len(refs.POKERUS_POINTS) - len(refs.FAMILIA_POINTS)
-           - len(refs.CASAS_POINTS))
+           - len(refs.CASAS_POINTS) - len(refs.ESPECIES_POINTS))   # e os do POK-54
     assert refs.SHARED_POINTS[fim - len(pontos):fim] == pontos
 
 

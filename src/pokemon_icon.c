@@ -465,7 +465,12 @@ const u8 *const gMonIconTable[] = {
     [SPECIES_UNOWN_Y]     = gMonIcon_UnownY,
     [SPECIES_UNOWN_Z]     = gMonIcon_UnownZ,
     [SPECIES_UNOWN_EMARK] = gMonIcon_UnownExclamationMark,
-    [SPECIES_UNOWN_QMARK] = gMonIcon_UnownQuestionMark
+    [SPECIES_UNOWN_QMARK] = gMonIcon_UnownQuestionMark,
+    // POK-54
+    [SPECIES_GIBLE]       = gMonIcon_Gible,
+    [SPECIES_GABITE]      = gMonIcon_Gabite,
+    [SPECIES_GARCHOMP]    = gMonIcon_Garchomp,
+    [SPECIES_DARKRAI]     = gMonIcon_Darkrai,
 };
 
 const u8 gMonIconPaletteIndices[] = {
@@ -908,7 +913,12 @@ const u8 gMonIconPaletteIndices[] = {
     [SPECIES_UNOWN_Y]     = 0,
     [SPECIES_UNOWN_Z]     = 0,
     [SPECIES_UNOWN_EMARK] = 0,
-    [SPECIES_UNOWN_QMARK] = 0
+    [SPECIES_UNOWN_QMARK] = 0,
+    // POK-54: tools/gen4/coordenadas.json
+    [SPECIES_GIBLE]       = 0,
+    [SPECIES_GABITE]      = 2,
+    [SPECIES_GARCHOMP]    = 2,
+    [SPECIES_DARKRAI]     = 0,
 };
 
 const struct SpritePalette gMonIconPaletteTable[] = {
