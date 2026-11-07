@@ -66,7 +66,7 @@ perder o jeito do FireRed.
 | 🔝 | **Revanches por degrau** | Depois do Hall da Fama, a Elite 4 e as revanches do Explorador VS sobem até o nível 100. |
 | 🧭 | **DexNav** | Os Pokémon de cada lugar, com a chance real, o que falta capturar e onde achar cada um. |
 | 🐾 | **Pokémon seguidor** | O 1º da equipe anda atrás de você no campo: os 386 e os 4 extras, com os grandes, as fêmeas e cada letra do Unown. |
-| 🏠 | **Casas e Família Sombra** | Mestre dos Golpes, pescador e sala de troféus em casas que eram vazias, e um prédio de seis andares na Rota 23 com a máfia dos Pokémon: quatro chefes shiny, a polícia que fecha o caso e o dossiê. |
+| 🏠 | **Casas e Família Sombra** | Mestre dos Golpes, pescador e sala de troféus em casas que eram vazias, e um prédio de seis andares na Rota 23 com a máfia dos Pokémon: chefes shiny que voltam mais fortes, um caso a fechar e o dossiê. |
 | 🐉 | **Garchomp e Darkrai** | Gible, Gabite, Garchomp e Darkrai (nº 443 a 445 e 491) como extras da Pokédex, com dois golpes novos e uma habilidade nova. Não contam para a Pokédex completa. |
 | 🗞️ | **Tela de novidades** | O Prof. Carvalho apresenta cada mudança em cartões ilustrados. |
 | 🧪 | **Esteira de testes** | Toda ROM é jogada no emulador e testada antes de existir. |
@@ -138,11 +138,11 @@ perder o jeito do FireRed.
 | **Mestre dos Golpes** | Uma casa nova na Rota 6 onde um tutor ensina os 15 golpes de tutor do FireRed, **quantas vezes você quiser**, por ¥3.000 cada. Escolhe o golpe, escolhe o Pokémon (só os compatíveis) e, se cancelar, não paga nada. |
 | **Casa do pescador** | Na areia da Rota 19, um pescador mede o seu **Krabby** e guarda o recorde: bateu, ganha uma Pepita (e uma Bala Rara no primeiro recorde). |
 | **Sala de troféus** | Na Ilha Sete: quatro redomas com as rosas dos chefes da Família, cinco taças (bronze, prata e ouro) uma para cada aba das conquistas e uma placa com os seus recordes. |
-| **O prédio da Rota 23** | Depois da **8ª insígnia**, a porta destranca: seis andares de capangas de chapéu (os três primeiros em penumbra e o 4º e o 5º no escuro, com encontros andando) e, no topo, o primeiro chefe, um **Gengar shiny**, "GENGAR, O DOM". |
-| **A máfia volta** | Vencido o chefe, o prédio fica vazio por cerca de 3h30 de jogo (entre 3h00 e 3h30, conforme o ponto do meio-dia em que o chefe caiu). Depois chega a ocupação seguinte, com o **Tyranitar shiny**, "TYRANITAR, O COBRADOR", e então os dois últimos chefes, cada um mais forte que o anterior (+6 níveis por ocupação). |
+| **O prédio da Rota 23** | Depois da **8ª insígnia**, a porta destranca: seis andares (capangas de chapéu nos três primeiros, em penumbra; encontros com Pokémon da Família a cada passo no 4º e no 5º, no escuro) e, no topo, o primeiro chefe, um **Gengar shiny**, "GENGAR, O DOM". |
+| **A máfia volta** | Vencido o chefe, o prédio fica vazio por cerca de 3h30 de jogo (entre 3h00 e 3h30, conforme o ponto do meio-dia em que o chefe caiu). Depois chega a ocupação seguinte, com o **Tyranitar shiny**, "TYRANITAR, O COBRADOR", e então mais dois chefes, cada um mais forte que o anterior (+6 níveis por ocupação). |
 | **O Mercenário e o Pesadelo** | A 3ª ocupação traz o **Garchomp shiny** (nível 74), "GARCHOMP, O MERCENÁRIO", com Inv. Dragão, e a 4ª o **Darkrai shiny** (nível 80), "DARKRAI, O PESADELO": Vazio Negro para dormir a dupla, Devora-sonho e Pesadelo. Cada um luta ao som de um lendário. O Darkrai é a luta mais difícil da hack. |
-| **A polícia fecha o caso** | Vencido o Pesadelo, a máfia não volta: a polícia lacra a porta do prédio e a **Oficial Jenny** espera na Rota 23. Ela entrega o **Garchomp** e o **Darkrai** que você derrotou sem capturar, já sem dono (no time ou, sem vaga, no PC; sem lugar nenhum, ela pede espaço e oferece de novo) e pergunta se você quer ouvir a história completa. |
-| **O dossiê do caso** | Em tela cheia, com a pasta de papel pardo e uma foto de cada chefe: o Dom, o Cobrador, o Mercenário e o Pesadelo, com o carimbo **CAPTURADO** ou **DERROTADO** conforme o seu histórico. A Jenny abre o dossiê e ele fica disponível sempre que você falar com ela. |
+| **Um caso a fechar** | A Família não dura para sempre, e o desfecho está na [história](#historia-familia-sombra), com spoilers. Os chefes que você derrotar sem capturar não se perdem: alguém os entrega depois, já sem dono (no time ou, sem vaga, no PC; sem lugar nenhum, pede espaço e oferece de novo) e pergunta se você quer ouvir a história completa. |
+| **O dossiê do caso** | Em tela cheia, com a pasta de papel pardo e uma foto de cada chefe, com o carimbo **CAPTURADO** ou **DERROTADO** conforme o seu histórico. Quem entrega os chefes abre o dossiê, e ele fica disponível sempre que você falar com essa pessoa. |
 | **Pedágio** | Enquanto a Família manda, um Persian de chapéu cobra ¥1.000 para passar pela Rota 23, nos dois sentidos. Quem recusa enfrenta duas lutas seguidas para passar à força. |
 | **Cara de filme antigo** | Capangas e gêmeos entram em batalha com cores frias e escurecidas; os chefes aparecem com as cores shiny. Cada chefe vencido dá uma rosa (acende a redoma na sala de troféus), uma conquista e uma batalha no diário. |
 
@@ -164,9 +164,9 @@ perder o jeito do FireRed.
 > [!WARNING]
 > Esta seção conta o enredo inteiro, até o fim. Os detalhes de jogo (andares, pedágio, rosas, chefes) estão em [Casas e Família Sombra](#casas-familia-sombra).
 
-**A Família.** Quando a Equipe Rocket caiu, muitos Pokémon foram deixados para trás, nos porões do Cassino, na Silph e na Torre de Lavender. Um Gengar achou os abandonados um por um e os reuniu num prédio esquecido da Rota 23. "Agora somos família", diz a primeira carta que você encontra. Nascia a Família Sombra, e ele virou **GENGAR, O DOM**: ouvia pedidos, concedia favores e cobrava lealdade, com uma rosa vermelha na lapela, presente de uma menina de Lavender cujo Pokémon ele salvou da Torre.
+**A Família.** Quando a Equipe Rocket caiu, muitos Pokémon foram deixados para trás, nos porões do Cassino, na Silph e na Torre de Lavender. Um Gengar achou os abandonados um por um e os reuniu num prédio esquecido da Rota 23. "Agora somos família", diz uma carta do 2º andar. Nascia a Família Sombra, e ele virou **GENGAR, O DOM**: ouvia pedidos, concedia favores e cobrava lealdade, com uma rosa vermelha na lapela, presente de uma menina de Lavender cujo Pokémon ele salvou da Torre.
 
-**O prédio e o pedágio.** Com a 8ª insígnia, a porta destranca e você sobe seis andares. Nos três primeiros, em penumbra, capangas de chapéu preto fecham o cerco assim que o veem; no 4º e no 5º, no escuro, eles surgem do nada. Ninguém tira um membro da Família: as Poké Bolas são desviadas. Bilhetes pelo caminho, mais dinheiro e pérolas, contam o resto. No 6º andar, o Dom espera atrás da mesa, entre os gêmeos Machamp que revistam quem chega até ele. Lá fora, um Persian de chapéu cobra ¥1.000 de quem passa pela Rota 23, nos dois sentidos: é a "proteção" da Família. Quem recusa enfrenta duas lutas para passar à força.
+**O prédio e o pedágio.** Com a 8ª insígnia, a porta destranca e você sobe seis andares. Nos três primeiros, em penumbra, capangas de chapéu preto fecham o cerco assim que o veem; no 4º e no 5º, no escuro, não há capangas à vista: os encontros andam com você, e Pokémon da Família surgem a cada passo. Ninguém tira um membro da Família: as Poké Bolas são desviadas. Bilhetes pelo caminho, mais dinheiro e pérolas, contam o resto. No 6º andar, o Dom espera atrás da mesa, entre os gêmeos Machamp que revistam quem chega até ele. Lá fora, um Persian de chapéu cobra ¥1.000 de quem passa pela Rota 23, nos dois sentidos: é a "proteção" da Família. Quem recusa enfrenta duas lutas para passar à força.
 
 **Os quatro chefes.** Derrubado o Dom, o prédio fica vazio por cerca de 3h30 de jogo, sem pedágio. Depois chegam os reforços e um novo chefe, e a Família fica mais forte a cada vez. **TYRANITAR, O COBRADOR**, do Monte Prateado, vem com dois Rhydon que não falam, só batem: troca a rosa vermelha por uma dourada, da cor do pedágio, e a Família fica mais rica e mais cruel. Com Kanto perdido, a Família quebra a própria regra e manda buscar alguém de fora. **GARCHOMP, O MERCENÁRIO**, vem de Sinnoh com dois Gligar, não pergunta o motivo, só o preço, e usa uma rosa azul colhida na neve de onde veio. Não é família, é contrato. Por último, nos bilhetes mais antigos, aparece a sombra por trás do Dom, o padrinho do padrinho: **DARKRAI, O PESADELO**, que nunca subiu as escadas porque governava pelos sonhos. Quem dormia no prédio acordava devendo. Dois Dusclops vigiam a porta dele, e a rosa dele é negra. Cada chefe é um Pokémon shiny e pode ser capturado, e cada um que cai deixa a sua rosa com você, que acende a redoma dele na sala de troféus da Ilha Sete.
 
@@ -183,7 +183,7 @@ perder o jeito do FireRed.
 | | |
 |---|---|
 | **Quatro extras** | **Gible** (nº 443), **Gabite** (nº 444), **Garchomp** (nº 445) e **Darkrai** (nº 491), com os dados da 4ª geração. Aparecem na lista da Pokédex e na contagem de vistos e capturados, mas **nunca são exigidos**: o diploma, a Pokédex completa, o Amuleto e o DexNav seguem pedindo só os 386. |
-| **De onde vêm** | Nenhum nasce na natureza. O Gible só sai de **ovo** da creche (com Garchomp, Gabite ou Gible, e Ditto ou parceiro de Monstro ou Dragão), evolui no nível 24 e no 48, e tem só a habilidade Véu de Areia. O Garchomp e o Darkrai vêm dos chefes da Família Sombra, capturados ou entregues pela Oficial Jenny. |
+| **De onde vêm** | Nenhum nasce na natureza. O Gible só sai de **ovo** da creche (com Garchomp, Gabite ou Gible, e Ditto ou parceiro de Monstro ou Dragão), evolui no nível 24 e no 48, e tem só a habilidade Véu de Areia. O Garchomp e o Darkrai vêm dos chefes da Família Sombra: capturados na luta ou entregues depois, já sem dono. |
 | **Golpes novos** | **Inv. Dragão** (Dragon Rush: 100 de poder, 75% de precisão, físico, 20% de fazer o alvo recuar) e **Vazio Negro** (Dark Void: dorme os dois adversários, 80% de precisão, só funciona com o Darkrai). |
 | **Habilidade nova** | **Sonhos Ruins** (Bad Dreams, a do Darkrai): no fim do turno, quem dorme perde 1/8 do PS máximo. |
 | **Em todo lugar** | Resumo, equipe, batalha, creche, seguidor e tela da Pokédex já reconhecem os quatro, e um save antigo continua abrindo. |
@@ -344,7 +344,7 @@ perder o jeito do FireRed.
 | <img src="docs/readme/neve.png" width="240" alt="Neve na Ilha Quatro"><br>Neve na Ilha Quatro | <img src="docs/readme/novidades_cartao.png" width="240" alt="Cartão de novidade"><br>Cartão de novidade | <img src="docs/readme/loja_quatro.png" width="240" alt="Loja da Ilha Quatro"><br>Itens de criação |
 | <img src="docs/readme/pc.png" width="240" alt="PC"><br>PC | <img src="docs/readme/inicial.png" width="240" alt="Escolha do inicial"><br>Escolha do inicial | <img src="docs/readme/sol.png" width="240" alt="Sol na batalha"><br>Sol na batalha |
 | <img src="docs/readme/resumo_fada.png" width="240" alt="Gardevoir Psíquico e Fada"><br>Gardevoir agora é **Fada** | <img src="docs/readme/golpe_fisico.png" width="240" alt="M. Esmagador físico"><br>Categoria do golpe: **FÍSICO** | <img src="docs/readme/golpe_fada.png" width="240" alt="Expl. Lunar"><br>Golpe novo: **Expl. Lunar** |
-| <img src="docs/readme/familia_pesadelo.png" width="240" alt="Darkrai contra Mewtwo"><br>**Darkrai, o Pesadelo**, o último chefe | <img src="docs/readme/dossie_mercenario.png" width="240" alt="Dossiê, ficha do Mercenário"><br>O dossiê do caso | <img src="docs/readme/dex_extras.png" width="240" alt="Pokédex com os 4 extras"><br>Os 4 extras na Pokédex |
+| <img src="docs/readme/familia_pesadelo.png" width="240" alt="Darkrai contra Mewtwo"><br>**Darkrai, o Pesadelo**, contra um Mewtwo nível 60 | <img src="docs/readme/dossie_mercenario.png" width="240" alt="Dossiê, ficha do Mercenário"><br>O dossiê do caso | <img src="docs/readme/dex_extras.png" width="240" alt="Pokédex com os 4 extras"><br>Os 4 extras na Pokédex |
 
 ## Linha do tempo
 
@@ -371,7 +371,7 @@ perder o jeito do FireRed.
 | **Pokémon seguidor, todos** (03/11) | Os 386 seguem, com a versão shiny: os 7 grandes em 64×64, as fêmeas, cada letra do Unown e o Deoxys Ataque; o seguidor fica sempre atrás do jogador no desenho. A ROM passou a 32 MB. |
 | **Pokérus** (06/11) | O Pokérus do Rubi/Safira, que o FireRed deixava desligado: pega depois das batalhas, passa aos vizinhos, conta os dias pelo relógio da hack e dobra os EVs. |
 | **Casas e Família Sombra** (06/11) | Três casas sem uso ganham vida (Mestre dos Golpes na Rota 6, casa do pescador na Rota 19, sala de troféus na Ilha Sete) e a Rota 23 ganha o prédio da Família Sombra: capangas, gêmeos, chefes shiny, pedágio e a máfia que volta. |
-| **Família Sombra, parte 2** (07/11) | Gible, Gabite, Garchomp e Darkrai como extras da Pokédex (nº 443 a 445 e 491), dois golpes novos e a habilidade Sonhos Ruins, os chefes Mercenário e Pesadelo, a polícia e a Oficial Jenny que fecham o prédio, o dossiê em tela cheia, 46 conquistas e a correção das coordenadas de warp em 16 bits. |
+| **Família Sombra, parte 2** (07/11) | Gible, Gabite, Garchomp e Darkrai como extras da Pokédex (nº 443 a 445 e 491), dois golpes novos e a habilidade Sonhos Ruins, os chefes Mercenário e Pesadelo, o desfecho do caso (história recolhida acima, com spoilers), o dossiê em tela cheia, 46 conquistas e a correção das coordenadas de warp em 16 bits. |
 | **Esteira mais firme** (06/11) | Galeria de textos (cada fala na caixa real) e telas de referência estáveis, sem avisos falsos pelo sorteio. |
 
 ## Esteira de testes
@@ -444,7 +444,7 @@ O manual completo está em [`test/README.md`](test/README.md).
 | `src/data/novidades/cartoes.json` | Cartões da tela de novidades |
 | `src/field_move_rules.c` | HMs sem ensinar |
 | `src/follower.c`, `tools/seguidores/` | Pokémon seguidor e o conversor dos sprites |
-| `src/familia_sombra.c`, `src/mestre_golpes.c`, `src/sala_trofeus.c` | Família Sombra (estado, ocupações, pedágio, entrega da Jenny), Mestre dos Golpes e sala de troféus |
+| `src/familia_sombra.c`, `src/mestre_golpes.c`, `src/sala_trofeus.c` | Família Sombra (estado, ocupações, pedágio, entrega dos chefes), Mestre dos Golpes e sala de troféus |
 | `src/dossie.c`, `src/data/dossie_textos.h`, `tools/familia_sombra/dossie.py` | O dossiê do caso em tela cheia e a geração das fotos e da pasta |
 | `test/esteira/` | A esteira de testes (Python + mGBA) |
 | `test/referencias/` | Telas aprovadas, por inicial |
