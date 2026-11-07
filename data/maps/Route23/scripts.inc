@@ -47,8 +47,12 @@ Route23_EventScript_EsconderCobrador::
 @ quem desce) e disparam enquanto VAR_TEMP_3 == 1 (armado só com chefe ativo, a cada carga do mapa). O script
 @ desarma na hora: um gatilho de chão que não muda a variável dispara a cada quadro e prende o jogador no tile.
 @ "Voltar depois" arma de novo depois do passo para trás. VAR_TEMP_2 guarda o lado.
+@ Só com o cobrador presente: o ON_LOAD roda depois do ON_TRANSITION e o chefe pode ter voltado no meio da visita,
+@ quando o Persian já foi escondido (FLAG_TEMP_1); armar assim cobraria sem ninguém no corredor.
 Route23_EventScript_ArmarPedagio::
+	goto_if_set FLAG_TEMP_1, Route23_EventScript_ArmarPedagioSemCobrador
 	setvar VAR_TEMP_3, 1
+Route23_EventScript_ArmarPedagioSemCobrador::
 	return
 
 Route23_EventScript_PedagioSul::

@@ -458,3 +458,31 @@ def test_route23_onload_atualiza_estado():
     corpo = _rotulo(_rota23_scripts(), "Route23_OnLoad")
     assert corpo.index("special FamiliaSombra_Atualizar") < corpo.index("special FamiliaSombra_GetEstado") < \
         corpo.index("Route23_EventScript_TrancarPortaFamilia")
+
+
+def test_pedagio_so_arma_com_cobrador_presente():
+    """O ON_LOAD roda depois do ON_TRANSITION: se o chefe voltou no meio da visita o Persian já foi escondido
+    (FLAG_TEMP_1) e armar o pedágio cobraria sem ninguém no corredor."""
+    arma = _rotulo(_rota23_scripts(), "Route23_EventScript_ArmarPedagio")
+    assert arma.index("goto_if_set FLAG_TEMP_1") < arma.index("setvar VAR_TEMP_3, 1")
+
+
+def test_sala_do_dom_recusa_dos_gemeos_e_revanche():
+    """Time de 1 Pokémon: a dupla é recusada e a música de encontro volta ao normal antes disso. Gêmeos já vencidos:
+    Dom e Cobrador não mandam mais "os rapazes" falar com o jogador."""
+    s = (MAPS / NOMES[6] / "scripts.inc").read_text(encoding="utf-8")
+    t = (MAPS / NOMES[6] / "text.inc").read_text(encoding="utf-8")
+    cena = _rotulo(s, "Route23_FamiliaSombra_6F_EventScript_Cena")
+    assert cena.index("special HasEnoughMonsForDoubleBattle") < cena.index(
+        "call_if_ne VAR_RESULT, PLAYER_HAS_TWO_USABLE_MONS, Route23_FamiliaSombra_6F_EventScript_RestaurarMusica") < \
+        cena.index("trainerbattle TRAINER_BATTLE_CONTINUE_SCRIPT_DOUBLE")
+    assert "fadedefaultbgm" in _rotulo(s, "Route23_FamiliaSombra_6F_EventScript_RestaurarMusica")
+    assert "goto_if_set FLAG_FAMILIA_GEMEOS_VENCIDOS, Route23_FamiliaSombra_6F_EventScript_FalaDomSemGemeos" in \
+        _rotulo(s, "Route23_FamiliaSombra_6F_EventScript_FalaDom")
+    dom = _rotulo(t, "Route23_FamiliaSombra_6F_Text_DomSemGemeos")
+    assert dom.startswith("\nRoute") and "GENGAR, O DOM" in dom and "rapazes" not in dom
+
+
+def test_bilhete_do_5_andar_traz_o_titulo_completo():
+    t = (MAPS / NOMES[5] / "text.inc").read_text(encoding="utf-8")
+    assert "TYRANITAR, O COBRADOR" in t[t.index("Route23_FamiliaSombra_5F_Text_Bilhete2::"):]

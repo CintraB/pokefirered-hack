@@ -4,7 +4,7 @@
 // POK-51: Família Sombra, a máfia do prédio da Rota 23.
 #define FAMILIA_OCUPACOES_TOTAL     4  // chefes possíveis (3 e 4 só na parte 2)
 #define FAMILIA_OCUPACOES_ATIVAS    2  // ocupações ligadas hoje (parte 1)
-#define FAMILIA_MEIOS_DIAS_RETORNO  7  // meios-dias do relógio da hack = 3h30 jogadas
+#define FAMILIA_MEIOS_DIAS_RETORNO  7  // meios-dias do relógio da hack = entre 3h00 e 3h30 jogadas (a queda guarda o meio-dia inteiro)
 #define FAMILIA_PEDAGIO             1000
 
 #define FAMILIA_ESTADO_FECHADO      0  // antes da 8ª insígnia

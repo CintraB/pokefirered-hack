@@ -13,6 +13,17 @@ Route23_FamiliaSombra_6F_Text_Cobrador::
     .string "Você deve à Família desde o\n"
     .string "primeiro degrau. Rapazes!$"
 
+Route23_FamiliaSombra_6F_Text_DomSemGemeos::
+    .string "GENGAR, O DOM: Voltou à minha mesa.\n"
+    .string "Teimoso. Eu respeito isso.\p"
+    .string "Os guarda-costas já não estão\n"
+    .string "no caminho. Só eu e você.$"
+
+Route23_FamiliaSombra_6F_Text_CobradorSemGemeos::
+    .string "TYRANITAR, O COBRADOR: Os guarda-\n"
+    .string "costas já pagaram a parte deles.\p"
+    .string "Agora a sua dívida é comigo.$"
+
 Route23_FamiliaSombra_6F_Text_GemeosMachamp::
     .string "Os gêmeos Machamp, ex-carregadores\n"
     .string "do porto, estalam os quatro punhos.$"

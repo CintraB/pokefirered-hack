@@ -460,9 +460,8 @@ class FollowerScenario(PcScenario):   # PcScenario (CatchSaveScenario + PC): dep
     def _check_follow(samples: list[tuple], pace: int | None, lags: int = 0) -> list[int]:
         """No quadro em que o jogador muda de tile, o seguidor muda para o tile de onde ele saiu; nunca a mais de 1
         tile; com `pace`, os passos seguidos (o 1º depois da virada não conta) levam `pace` quadros, e até `lags`
-        deles `pace + 1` (um quadro de lag do jogo: na grama, o teste de encontro do passo que gera o Pokémon antes
-        de o Repel recusá-lo estoura o quadro conforme o sorteio, e o sorteio muda com qualquer build). Devolve os
-        intervalos entre os passos."""
+        deles `pace + 1` (um quadro de lag do jogo: causa não confirmada, 1 quadro de lag na perna sobre grama que
+        depende do sorteio, e o sorteio muda com qualquer build). Devolve os intervalos entre os passos."""
         moves: list[int] = []
         for (_, p0, f0), (frame, p1, f1) in zip(samples, samples[1:]):
             assert f1 is not None, f"quadro {frame}: sem seguidor"

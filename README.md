@@ -134,7 +134,7 @@ perder o jeito do FireRed.
 | **Casa do pescador** | Na areia da Rota 19, um pescador mede o seu **Krabby** e guarda o recorde: bateu, ganha uma Pepita (e uma Bala Rara no primeiro recorde). |
 | **Sala de troféus** | Na Ilha Sete: quatro redomas com as rosas dos chefes da Família, cinco taças (bronze, prata e ouro) uma para cada aba das conquistas e uma placa com os seus recordes. |
 | **O prédio da Rota 23** | Depois da **8ª insígnia**, a porta destranca: seis andares de capangas de chapéu (os três primeiros em penumbra e o 4º e o 5º no escuro, com encontros andando) e, no topo, o chefe, um **Gengar shiny**, "GENGAR, O DOM". |
-| **A máfia volta** | Vencido o chefe, o prédio fica vazio por 3h30 de jogo. Depois chega a ocupação seguinte, com o **Tyranitar shiny**, "TYRANITAR, O COBRADOR", mais forte (+6 níveis por ocupação). |
+| **A máfia volta** | Vencido o chefe, o prédio fica vazio por cerca de 3h30 de jogo (entre 3h00 e 3h30, conforme o ponto do meio-dia em que o chefe caiu). Depois chega a ocupação seguinte, com o **Tyranitar shiny**, "TYRANITAR, O COBRADOR", mais forte (+6 níveis por ocupação). |
 | **Pedágio** | Enquanto a Família manda, um Persian de chapéu cobra ¥1.000 para passar pela Rota 23, nos dois sentidos. Quem recusa enfrenta duas lutas seguidas para passar à força. |
 | **Cara de filme antigo** | Capangas e gêmeos entram em batalha com cores frias e escurecidas; os chefes aparecem com as cores shiny. Cada chefe vencido dá uma rosa (acende a redoma na sala de troféus), uma conquista e uma batalha no diário. |
 

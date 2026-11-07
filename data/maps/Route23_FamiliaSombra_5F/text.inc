@@ -7,6 +7,6 @@ Route23_FamiliaSombra_5F_Text_Bilhete1::
 
 Route23_FamiliaSombra_5F_Text_Bilhete2::
     .string "Um bilhete escrito às pressas:\n"
-    .string "“O COBRADOR trocou a rosa\p"
-    .string "vermelha por uma dourada, da cor\n"
-    .string "do dinheiro do pedágio.”$"
+    .string "“TYRANITAR, O COBRADOR, trocou\p"
+    .string "a rosa vermelha por uma dourada,\n"
+    .string "da cor do dinheiro do pedágio.”$"

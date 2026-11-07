@@ -81,3 +81,8 @@ def test_ganchos_da_familia():
     # o guard de estado vem antes: chamada repetida não conta de novo
     assert caiu.index("FamiliaSombra_ChefeAtivo") < caiu.index("Conquistas_Evento")
     assert "CONQ_EVT_FAMILIA_PEDAGIO_FORCA" in _corpo(FAMILIA_C, "FamiliaSombra_PedagioVencido")
+
+
+def test_premio_de_pagar_ou_lutar_e_pp_max():
+    """Spec §7b: prêmios no padrão das conquistas difíceis (PP Max / Master Ball), não faixa média (Reviver Máx)."""
+    assert CONQ["familia_pedagio"]["premios"] == [{"item": "ITEM_PP_MAX", "qtd": 1}]

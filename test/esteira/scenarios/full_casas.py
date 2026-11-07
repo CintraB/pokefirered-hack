@@ -29,6 +29,7 @@ import json
 import re
 
 from ..breeding import header_defines
+from ..conquistas import CONQ_PERDIDA
 from ..emu import KEY_A, KEY_B, KEY_DOWN, KEY_UP
 from ..game import SB1_MONEY
 from ..hooks import CMD_SET_VAR, CMD_WARP, Mailbox
@@ -63,7 +64,6 @@ SALA_CURADOR = (9, 5)
 OBJ_EVENT_SIZE, OBJ_EVENT_COUNT = 0x24, 16   # struct ObjectEvent / gObjectEvents[16]
 OBJ_MAP_OFFSET = 7                   # currentCoords = coordenada do mapa + 7
 SCENE_TIMEOUT = 20000
-CONQ_PERDIDA = 2                     # CONQ_PERDIDA (include/constants/conquistas.h)
 # Telas que o cenário grava em OUT/telas/ e que entram na comparação com as referências (esteira/refs.py)
 SCREEN_POINTS = ("casa_rota6_exterior", "mestre_lista", "casa_rota19_exterior", "casa_ilha7_exterior",
                  "sala_trofeus_entrada", "sala_trofeus", "sala_trofeus_tacas")
@@ -405,18 +405,20 @@ class CasasScenario(CatchSaveScenario):
         return int(re.search(rf"#define {nome} (\d+)", (REPO_ROOT / "src/data/conquistas_ids.h").read_text("utf-8")).group(1))
 
     def _tacas(self) -> str:
-        """Taças pela % de cada aba: História toda feita (ouro), Batalha 40% (bronze), Captura 8/11 (prata), Treino
-        2/7 (nada), Exploração nada. A expectativa vem do contador do próprio jogo (feitas | válidas << 8)."""
+        """Taças pela % das conquistas válidas (ativas e não perdidas, `_validas_por_aba`) de cada aba: História toda
+        feita (ouro), Batalha 4 feitas (bronze, 40% das 10 de hoje), Captura 8 (prata, 8/11), Treino 2 (nada, 2/7),
+        Exploração nenhuma. Os níveis esperados saem da conta de feitas × válidas; o contador do próprio jogo
+        (feitas | válidas << 8) tem de bater."""
         self._restore("casas_base")
-        ativas = self._validas_por_aba()
-        for i, quantas in enumerate((len(ativas[0]), 4, 8, 2, 0)):
-            for num in ativas[i][:quantas]:
+        validas_por_aba = self._validas_por_aba()
+        for i, quantas in enumerate((len(validas_por_aba[0]), 4, 8, 2, 0)):
+            for num in validas_por_aba[i][:quantas]:
                 self.box.conq_aplicar(num, 0)
         quer = []
         for i in range(5):
             c = self.box.conq_contador(4 + i)
             feitas, validas = c & 0xFF, c >> 8 & 0xFF
-            assert validas == len(ativas[i]), (i, feitas, validas, len(ativas[i]))
+            assert validas == len(validas_por_aba[i]), (i, feitas, validas, len(validas_por_aba[i]))
             nivel = 3 if feitas >= validas else 2 if feitas * 100 >= 67 * validas else 1 if feitas * 100 >= 34 * validas else 0
             quer.append((nivel, feitas, validas))
         assert [q[0] for q in quer] == [3, 1, 2, 0, 0], quer

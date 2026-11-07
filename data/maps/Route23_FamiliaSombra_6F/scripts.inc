@@ -28,6 +28,9 @@ Route23_FamiliaSombra_6F_EventScript_Cena::
 	call_if_eq VAR_0x8008, 2, Route23_FamiliaSombra_6F_EventScript_FalaCobrador
 	call_if_ne VAR_0x8008, 2, Route23_FamiliaSombra_6F_EventScript_FalaDom
 	goto_if_set FLAG_FAMILIA_GEMEOS_VENCIDOS, Route23_FamiliaSombra_6F_EventScript_Chefe
+	@ time de 1 Pokémon: a dupla é recusada pelo trainerbattle; a música de encontro do chefe não pode ficar presa
+	special HasEnoughMonsForDoubleBattle
+	call_if_ne VAR_RESULT, PLAYER_HAS_TWO_USABLE_MONS, Route23_FamiliaSombra_6F_EventScript_RestaurarMusica
 	goto_if_eq VAR_0x8008, 2, Route23_FamiliaSombra_6F_EventScript_GemeosRhydon
 	@ com o id do gêmeo A: a dupla vira para o jogador e marca o objeto certo (a cena também vem dos gatilhos)
 	trainerbattle TRAINER_BATTLE_CONTINUE_SCRIPT_DOUBLE, TRAINER_FAMILIA_GEMEOS, LOCALID_FAMILIA_6F_GEMEO_A, Route23_FamiliaSombra_6F_Text_GemeosMachamp, Route23_FamiliaSombra_6F_Text_GemeosDerrota, Route23_FamiliaSombra_6F_Text_SoEmDupla, Route23_FamiliaSombra_6F_EventScript_GemeosVencidos
@@ -37,12 +40,27 @@ Route23_FamiliaSombra_6F_EventScript_GemeosRhydon::
 	trainerbattle TRAINER_BATTLE_CONTINUE_SCRIPT_DOUBLE, TRAINER_FAMILIA_GEMEOS, LOCALID_FAMILIA_6F_GEMEO_A, Route23_FamiliaSombra_6F_Text_GemeosRhydon, Route23_FamiliaSombra_6F_Text_GemeosDerrota, Route23_FamiliaSombra_6F_Text_SoEmDupla, Route23_FamiliaSombra_6F_EventScript_GemeosVencidos
 	end
 
+Route23_FamiliaSombra_6F_EventScript_RestaurarMusica::
+	fadedefaultbgm
+	return
+
+@ Com os gêmeos já vencidos (voltou depois de perder ou fugir do chefe) ninguém mais "quer trocar uma palavra".
 Route23_FamiliaSombra_6F_EventScript_FalaDom::
+	goto_if_set FLAG_FAMILIA_GEMEOS_VENCIDOS, Route23_FamiliaSombra_6F_EventScript_FalaDomSemGemeos
 	msgbox Route23_FamiliaSombra_6F_Text_Dom
 	return
 
+Route23_FamiliaSombra_6F_EventScript_FalaDomSemGemeos::
+	msgbox Route23_FamiliaSombra_6F_Text_DomSemGemeos
+	return
+
 Route23_FamiliaSombra_6F_EventScript_FalaCobrador::
+	goto_if_set FLAG_FAMILIA_GEMEOS_VENCIDOS, Route23_FamiliaSombra_6F_EventScript_FalaCobradorSemGemeos
 	msgbox Route23_FamiliaSombra_6F_Text_Cobrador
+	return
+
+Route23_FamiliaSombra_6F_EventScript_FalaCobradorSemGemeos::
+	msgbox Route23_FamiliaSombra_6F_Text_CobradorSemGemeos
 	return
 
 @ Os gêmeos vencidos não voltam nesta ocupação (FamiliaSombra_Repovoar os traz de volta na próxima).

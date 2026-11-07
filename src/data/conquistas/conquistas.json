@@ -601,7 +601,7 @@
       "condicao": "Passar o pedágio da Rota 23 à força, vencendo as 2 lutas",
       "param": "CONQ_EVT_FAMILIA_PEDAGIO_FORCA",
       "premios": [
-        {"item": "ITEM_MAX_REVIVE", "qtd": 2}
+        {"item": "ITEM_PP_MAX", "qtd": 1}
       ]
     },
     {
