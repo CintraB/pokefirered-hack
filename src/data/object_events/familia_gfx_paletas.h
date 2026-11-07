@@ -29,3 +29,6 @@
     {gObjectEventPal_Familia_dusclops, OBJ_EVENT_PAL_TAG_FAMILIA_DUSCLOPS},
     {gObjectEventPal_Familia_garchomp_shiny, OBJ_EVENT_PAL_TAG_FAMILIA_GARCHOMP_SHINY},
     {gObjectEventPal_Familia_darkrai_shiny, OBJ_EVENT_PAL_TAG_FAMILIA_DARKRAI_SHINY},
+    {gObjectEventPal_Familia_policia_growlithe, OBJ_EVENT_PAL_TAG_FAMILIA_POLICIA_GROWLITHE},
+    {gObjectEventPal_Familia_policia_arcanine, OBJ_EVENT_PAL_TAG_FAMILIA_POLICIA_ARCANINE},
+    {gObjectEventPal_Familia_oficial_jenny, OBJ_EVENT_PAL_TAG_FAMILIA_OFICIAL_JENNY},

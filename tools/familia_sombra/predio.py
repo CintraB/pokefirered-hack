@@ -14,8 +14,9 @@ Saídas (versionadas, nada à mão):
     data/tilesets/secondary/familia_sombra/{tiles.png, metatiles.bin, metatile_attributes.bin, palettes/*.pal}
         cópia compacta da Mansão (paletas 7, 8 e 12) + a decoração da sala do Dom (paletas 9, 10 e 11, desenhada
         aqui a partir da prévia aprovada: parede vinho com lambri, cortinas, quadro, tapete, mesa, poltrona, vasos)
-    data/tilesets/secondary/indigo_plateau/{tiles.png, metatiles.bin, metatile_attributes.bin, palettes/07.pal}
-        o prédio abandonado (paleta 7, livre no Platô Índigo) e a porta trancada (METATILE_IndigoPlateau_FamiliaPorta*)
+    data/tilesets/secondary/indigo_plateau/{tiles.png, metatiles.bin, metatile_attributes.bin, palettes/07.pal, 08.pal}
+        o prédio abandonado (paleta 7, livre no Platô Índigo), a porta trancada e a porta lacrada pela polícia, com as
+        faixas amarelas cruzadas (paleta 8, livre) (METATILE_IndigoPlateau_FamiliaPorta*)
     data/layouts/Route23/map.bin                     o prédio 4x6 em (2..5, 144..149), porta em (4, 149)
     data/layouts/Route23_FamiliaSombra_<n>F/{map.bin, border.bin}   os 6 andares
     tools/familia_sombra/predio.json                 contagens e posições (lidas pelos testes e pelo C de teste)
@@ -47,6 +48,8 @@ METATILE_PORTA_GERAL = 0x03D  # METATILE_General_Door (porta animada do tileset 
 
 # Comportamentos e atributos (include/constants/metatile_behaviors.h, src/fieldmap.c: sMetatileAttrMasks)
 MB_NORMAL = 0x00
+PALETA_FITA = 8              # paleta do Platô Índigo que nenhum metatile original usa: a porta lacrada
+FITA_A, FITA_B, FITA_CONTORNO = (248, 216, 32), (24, 24, 24), (56, 40, 8)   # a fita da prévia aprovada (item 6)
 MB_DOWN_LEFT_STAIR_WARP = 0x6F
 MB_COUNTER = 0x80
 ENCONTRO_TERRA = 1 << 24
@@ -837,8 +840,66 @@ def montar_familia(src, dst, plantas):
     return ids, len(lad.lista), len(metas)
 
 
+def metatile_geral_rgb(src, metatile):
+    """O metatile `metatile` do tileset primário General como RGB 16x16 (camada de baixo e a de cima por cima)."""
+    base = src / "data/tilesets/primary/general"
+    ladrilhos = Image.open(base / "tiles.png")
+    paletas = [[tuple(int(v) for v in l.split()) for l in
+                (base / "palettes" / f"{i:02d}.pal").read_text().splitlines()[3:19]] for i in range(7)]
+    entradas = _u16s((base / "metatiles.bin").read_bytes())[metatile * 8:metatile * 8 + 8]
+    im = Image.new("RGB", (16, 16))
+    for camada in (0, 1):
+        for k in range(4):
+            e = entradas[camada * 4 + k]
+            t, hf, vf, pal = e & 0x3FF, e >> 10 & 1, e >> 11 & 1, e >> 12
+            tile = ladrilhos.crop(((t % 16) * 8, (t // 16) * 8, (t % 16) * 8 + 8, (t // 16) * 8 + 8))
+            if hf:
+                tile = tile.transpose(Image.FLIP_LEFT_RIGHT)
+            if vf:
+                tile = tile.transpose(Image.FLIP_TOP_BOTTOM)
+            for y in range(8):
+                for x in range(8):
+                    v = tile.getpixel((x, y))
+                    if v or camada == 0:
+                        im.putpixel(((k % 2) * 8 + x, (k // 2) * 8 + y), _5bits(paletas[pal][v]))
+    return im
+
+
+def fita(im, a, b, meia=1.7):
+    """Faixa amarela de isolamento, com listras pretas, de a até b (banda de ~5 px com contorno escuro): a `fita()` da
+    prévia aprovada."""
+    (x0, y0), (x1, y1) = a, b
+    vx, vy = x1 - x0, y1 - y0
+    n2 = vx * vx + vy * vy
+    n = n2 ** 0.5
+    px = im.load()
+    for y in range(max(0, min(y0, y1) - 4), min(im.height, max(y0, y1) + 5)):
+        for x in range(max(0, min(x0, x1) - 4), min(im.width, max(x0, x1) + 5)):
+            t = ((x - x0) * vx + (y - y0) * vy) / n2
+            if not 0 <= t <= 1:
+                continue
+            d = abs((x - x0) * vy - (y - y0) * vx) / n
+            if d > meia + 0.9:
+                continue
+            if d > meia:
+                px[x, y] = _5bits(FITA_CONTORNO)
+            else:
+                px[x, y] = _5bits(FITA_B if int(t * n / 2.5) % 3 == 2 else FITA_A)
+
+
+def desenhar_porta_lacrada(src):
+    """A porta do prédio com 2 faixas amarelas cruzadas da polícia (RGB 16x16) e a paleta dela (cores do desenho, até 15)."""
+    im = metatile_geral_rgb(src, METATILE_PORTA_GERAL)
+    fita(im, (0, 1), (15, 14))
+    fita(im, (0, 14), (15, 1))
+    cores = sorted({im.getpixel((x, y)) for y in range(16) for x in range(16)}, key=sum)
+    assert len(cores) <= 15, f"a porta lacrada tem {len(cores)} cores"
+    return im, [(0, 0, 0)] + cores
+
+
 def montar_indigo(src, dst):
-    """O prédio no Platô Índigo (paleta 7). Devolve ({(mx, my): id}, id da porta trancada, nº de ladrilhos)."""
+    """O prédio no Platô Índigo (paleta 7). Devolve ({(mx, my): id}, ids das portas trancada e lacrada, nº de
+    ladrilhos)."""
     base_lad = ler_ladrilhos(src / INDIGO / "tiles.png")[:INDIGO_TILES]
     base_met = _u16s((src / INDIGO / "metatiles.bin").read_bytes())[:INDIGO_METATILES * 8]
     base_atr = _u32s((src / INDIGO / "metatile_attributes.bin").read_bytes())[:INDIGO_METATILES]
@@ -855,6 +916,12 @@ def montar_indigo(src, dst):
     porta = PRIMARIOS + INDIGO_METATILES + len(metas)
     metas.append(gen[METATILE_PORTA_GERAL * 8:METATILE_PORTA_GERAL * 8 + 8])
     atrs.append(gen_atr[METATILE_PORTA_GERAL] & ~0x1FF | MB_NORMAL)
+    # a porta lacrada pela polícia (POK-54): a mesma porta com faixas amarelas cruzadas, em ladrilhos de verdade, na
+    # paleta 8; sem comportamento de porta (e sem warp: quem fala é a placa do mapa)
+    lacrada = PRIMARIOS + INDIGO_METATILES + len(metas)
+    img_lacrada, pal_lacrada = desenhar_porta_lacrada(src)
+    metas.append(metatiles_de(img_lacrada, {PALETA_FITA: pal_lacrada}, lad)[(0, 0)])
+    atrs.append(MB_NORMAL)
     assert len(lad.lista) <= MAX_SECUNDARIO and INDIGO_METATILES + len(metas) <= MAX_SECUNDARIO
 
     out = dst / INDIGO
@@ -866,7 +933,8 @@ def montar_indigo(src, dst):
     (out / "metatile_attributes.bin").write_bytes(struct.pack(f"<{len(todos_a)}I", *todos_a))
     (out / "palettes").mkdir(exist_ok=True)
     (out / "palettes" / "07.pal").write_bytes(_jasc(PAL_PREDIO).encode("ascii"))
-    return ids, porta, len(lad.lista)
+    (out / "palettes" / f"{PALETA_FITA:02d}.pal").write_bytes(_jasc(pal_lacrada).encode("ascii"))
+    return ids, (porta, lacrada), len(lad.lista)
 
 
 PREDIO_X, PREDIO_Y = 2, 144     # canto do prédio na Rota 23 (4x6)
@@ -902,6 +970,7 @@ SAIDAS = [
     FAMILIA / "tiles.png", FAMILIA / "metatiles.bin", FAMILIA / "metatile_attributes.bin",
     *[FAMILIA / "palettes" / f"{n:02d}.pal" for n in range(16)],
     INDIGO / "tiles.png", INDIGO / "metatiles.bin", INDIGO / "metatile_attributes.bin", INDIGO / "palettes" / "07.pal",
+    INDIGO / "palettes" / f"{PALETA_FITA:02d}.pal",
     ROTA23, *[Path(f"data/layouts/Route23_FamiliaSombra_{n}F/{f}") for n in range(1, 7) for f in ("map.bin", "border.bin")],
     Path("tools/familia_sombra/predio.json"),
 ]
@@ -913,13 +982,14 @@ def gerar(src, dst):
     dá o mesmo resultado."""
     plantas = andares()
     ids, n_lad, n_met = montar_familia(src, dst, plantas)
-    predio, porta, n_lad_indigo = montar_indigo(src, dst)
+    predio, (porta, lacrada), n_lad_indigo = montar_indigo(src, dst)
     montar_rota23(src, dst, predio)
     montar_andares(dst, plantas, ids)
     info = {
         "_comentario": "Gerado por tools/familia_sombra/predio.py. Não editar.",
         "familia_sombra": {"ladrilhos": n_lad, "metatiles": n_met},
-        "indigo_plateau": {"ladrilhos": n_lad_indigo, "porta_trancada": porta, "porta_aberta": METATILE_PORTA_GERAL},
+        "indigo_plateau": {"ladrilhos": n_lad_indigo, "porta_trancada": porta,
+                           "porta_lacrada": lacrada, "porta_aberta": METATILE_PORTA_GERAL},
         "rota23": {"porta": list(PORTA), "predio": [PREDIO_X, PREDIO_Y, 4, 6]},
         "quadro": {"x": SALA_ESCRITORIO_X, "y": 1, "tela": list(QUADRO_TELA),
                    "metatiles": {nome: [[ids[("d", f"quadro_{nome}_{dx}_{dy}")] for dx in range(3)] for dy in range(2)]

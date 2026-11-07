@@ -39,5 +39,8 @@ void FamiliaSombra_SortearPedagio(void);
 void FamiliaSombra_PedagioVencido(void);
 void FamiliaSombra_IniciarChefe(void);
 void FamiliaSombra_PrepararAndar(void);
+// O fechamento (Task 10): os chefes apreendidos que a Oficial Jenny entrega
+void FamiliaSombra_ApreendidoPendente(void);
+void FamiliaSombra_EntregarApreendido(void);
 
 #endif // GUARD_FAMILIA_SOMBRA_H

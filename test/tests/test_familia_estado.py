@@ -110,17 +110,19 @@ def test_flags_de_captura_livres():
     assert "FlagClear(sCapturados" not in FAMILIA_C and "CAPTURADO" not in _corpo("FamiliaSombra_Repovoar")
 
 
-def test_ultimo_chefe_encerra_sem_gravar_queda():
+def test_ultimo_chefe_encerra_e_grava_a_queda():
     caiu = _corpo("FamiliaSombra_ChefeCaiu")
     # o guard continua antes de tudo
     assert caiu.index("FamiliaSombra_ChefeAtivo") < caiu.index("FlagSet(sRosas[ocupacao - 1])")
     # a captura é marcada só quando o resultado da luta é CAUGHT, na flag da ocupação
     assert re.search(r"if \(gBattleOutcome == B_OUTCOME_CAUGHT\)\s*FlagSet\(sCapturados\[ocupacao - 1\]\);", caiu)
-    # o último chefe encerra; só os outros gravam a queda
-    encerra = re.search(r"if \(ocupacao >= FAMILIA_OCUPACOES_ATIVAS\)\s*\{(.*?)\n    \}\s*else\s*\{(.*?)\n    \}", caiu, re.S)
+    # o último chefe encerra (ENCERRADA); os outros esperam reforços (SEM_CHEFE)
+    encerra = re.search(r"if \(ocupacao >= FAMILIA_OCUPACOES_ATIVAS\)\s*VarSet\(VAR_FAMILIA_ESTADO, "
+                        r"FAMILIA_ESTADO_ENCERRADA\);[^\n]*\n\s*else\s*VarSet\(VAR_FAMILIA_ESTADO, "
+                        r"FAMILIA_ESTADO_SEM_CHEFE\);", caiu)
     assert encerra
-    assert "FAMILIA_ESTADO_ENCERRADA" in encerra.group(1) and "VAR_FAMILIA_QUEDA" not in encerra.group(1)
-    assert "VAR_FAMILIA_QUEDA" in encerra.group(2) and "FAMILIA_ESTADO_SEM_CHEFE" in encerra.group(2)
+    # a queda é gravada antes do ramo, para todos (Task 10: a var não fica com a do chefe 3 em ENCERRADA)
+    assert caiu.count("VAR_FAMILIA_QUEDA") == 1 and caiu.index("VarSet(VAR_FAMILIA_QUEDA") < encerra.start()
     # conquistas: o Mercenário na ocupação 3 e a Família toda na 4
     assert re.search(r"ocupacao == 3\)\s*Conquistas_Evento\(CONQ_EVT_FAMILIA_MERCENARIO\)", caiu)
     assert re.search(r"ocupacao == 4\)\s*Conquistas_Evento\(CONQ_EVT_FAMILIA_TODA\)", caiu)

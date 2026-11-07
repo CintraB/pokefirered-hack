@@ -199,3 +199,8 @@ Route23_FamiliaSombra_6F_Text_BilheteSombra::
     .string "uma sombra por trás do Dom.\n"
     .string "Nunca subiu as escadas.\l"
     .string "Governa pelos sonhos.”$"
+
+Route23_FamiliaSombra_6F_Text_BilheteEncerrada::
+    .string "Um bilhete amassado na mesa vazia:\n"
+    .string "“Acabou. A polícia vem fechar a\l"
+    .string "casa. Ninguém volta aqui.”$"

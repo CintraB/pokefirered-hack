@@ -149,7 +149,9 @@ def test_carimbo_dois_quadros():
 
 def test_special_no_fim():
     specials = re.findall(r"^\s*def_special (\w+)", (REPO_ROOT / "data/specials.inc").read_text("utf-8"), re.M)
-    assert specials[-1] == "Dossie_Abrir", specials[-3:]
+    # o dossiê é o último special da Task 9; só os 2 da entrega da Jenny (Task 10) vêm depois dele
+    assert specials[specials.index("Dossie_Abrir") + 1:] == ["FamiliaSombra_ApreendidoPendente",
+                                                             "FamiliaSombra_EntregarApreendido"], specials[-4:]
 
 
 def test_saida_continua_o_script_e_desliga_a_ajuda():

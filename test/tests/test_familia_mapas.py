@@ -402,7 +402,8 @@ def test_pedagio_dois_lados():
     cob = [o for o in rota["object_events"] if o["local_id"] == "LOCALID_FAMILIA_PEDAGIO_COBRADOR"]
     assert len(cob) == 1 and cob[0]["graphics_id"] == "OBJ_EVENT_GFX_FAMILIA_PERSIAN"
     assert (cob[0]["x"], cob[0]["y"]) == (14, 146) and cob[0]["flag"] == "FLAG_TEMP_1"
-    assert rota["object_events"][-1] is cob[0]   # no fim: não renumera os LOCALID_* dos guardas
+    assert rota["object_events"][7] is cob[0]    # depois dos 7 guardas: não renumera os LOCALID_* deles (a polícia
+    #                                              da porta, POK-54, vem depois do cobrador)
     assert rota["object_events"].index(cob[0]) + 1 == 8   # o LOCALID_COBRADOR do cenário `familia`
     assert [(x, 146) in livres for x in (13, 14, 15)] == [True] * 3
     gat = {(c["x"], c["y"]): c for c in rota["coord_events"] if "Pedagio" in c["script"]}

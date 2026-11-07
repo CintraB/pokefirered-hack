@@ -51,15 +51,19 @@ GFX_IDS_PARTE1 = (
     + [f"OBJ_EVENT_GFX_TACA_{t.upper()}" for t in TACAS]
 )
 GFX_IDS_PARTE2 = [f"OBJ_EVENT_GFX_FAMILIA_{e.upper()}" for e in PARTE2 + CHEFES_PARTE2]
-GFX_IDS = GFX_IDS_PARTE1 + GFX_IDS_PARTE2
+# POK-54, Task 10 (o fechamento): a polícia da porta da Rota 23, ids 190 a 192 (no fim)
+FECHAMENTO = ["policia_growlithe", "policia_arcanine", "oficial_jenny"]
+GFX_IDS_FECHAMENTO = [f"OBJ_EVENT_GFX_{e.upper()}" for e in FECHAMENTO]
+GFX_IDS = GFX_IDS_PARTE1 + GFX_IDS_PARTE2 + GFX_IDS_FECHAMENTO
 ARQUIVO_DO_GFX = dict(zip(GFX_IDS, SPRITES_PARTE1 + [f"redoma_{r}" for r in REDOMAS] + [f"taca_{t}" for t in TACAS]
-                          + PARTE2 + CHEFES_PARTE2))
+                          + PARTE2 + CHEFES_PARTE2 + FECHAMENTO))
 SLOTS = {"PALSLOT_NPC_1", "PALSLOT_NPC_2", "PALSLOT_NPC_3", "PALSLOT_NPC_4"}
-TAMANHO = {"sprite": (32, 40), "redoma": (32, 32), "taca": (16, 32)}
+TAMANHO = {"sprite": (32, 40), "redoma": (32, 32), "taca": (16, 32), "policia": (32, 32), "npc": (160, 32)}
 
 
 def _tipo(arquivo):
-    return "redoma" if arquivo.startswith("redoma_") else "taca" if arquivo.startswith("taca_") else "sprite"
+    return ("redoma" if arquivo.startswith("redoma_") else "taca" if arquivo.startswith("taca_")
+            else "policia" if arquivo.startswith("policia_") else "npc" if arquivo == "oficial_jenny" else "sprite")
 
 
 def _pal(caminho):
@@ -240,14 +244,16 @@ def test_chapeus_parte2():
 
 
 def test_ids_gfx_no_fim():
-    """O id vai para o save: a parte 1 (155..185) fica igual à base e a parte 2 entra no fim (186..189)."""
+    """O id vai para o save: a parte 1 (155..185) fica igual à base e a parte 2 entra no fim (186..189), depois o
+    fechamento (190..192, a polícia da porta)."""
     c = _constantes()
     for i, gfx in enumerate(GFX_IDS_PARTE1):
         assert c[gfx] == 155 + i, gfx
     assert [c[g] for g in GFX_IDS_PARTE2] == [186, 187, 188, 189]
     assert c["OBJ_EVENT_GFX_FAMILIA_GLIGAR"] == 186 and c["OBJ_EVENT_GFX_FAMILIA_DUSCLOPS"] == 187
     assert c["OBJ_EVENT_GFX_FAMILIA_GARCHOMP_SHINY"] == 188 and c["OBJ_EVENT_GFX_FAMILIA_DARKRAI_SHINY"] == 189
-    assert re.search(r"#define NUM_OBJ_EVENT_GFX\s+190\b", EVENT_OBJECTS_H.read_text(encoding="utf-8"))
+    assert [c[g] for g in GFX_IDS_FECHAMENTO] == [190, 191, 192]
+    assert re.search(r"#define NUM_OBJ_EVENT_GFX\s+193\b", EVENT_OBJECTS_H.read_text(encoding="utf-8"))
     # a base (v70) está congelada em ids_do_save_184573748.json: nada dela mudou de número
     base = json.loads((REPO_ROOT / "test" / "tests" / "dados" / "ids_do_save_184573748.json").read_text(
         encoding="utf-8"))["familias"]["OBJ_EVENT_GFX_"]
@@ -297,14 +303,18 @@ def test_graphics_info_e_ponteiros():
         assert slot in SLOTS, nome
         tag = re.search(r"\.paletteTag = (OBJ_EVENT_PAL_TAG_FAMILIA_\w+),", corpo)
         assert tag, nome
-        assert "sAnimTable_Standard" in corpo and ".tracks = TRACKS_NONE" in corpo
+        assert "sAnimTable_Standard" in corpo
+        # a Jenny é NPC de verdade (pega pegadas como o policial); o resto não deixa rastro
+        assert (".tracks = TRACKS_FOOT" if nome == "OficialJenny" else ".tracks = TRACKS_NONE") in corpo
 
 
 def test_tamanhos_do_graphics_info():
     gfx = GFX_H.read_text(encoding="utf-8")
     campos = {"sprite": ("640", "32", "40", "gObjectEventBaseOam_32x32", "gObjectEventSpriteOamTables_32x40"),
               "redoma": ("512", "32", "32", "gObjectEventBaseOam_32x32", "gObjectEventSpriteOamTables_32x32"),
-              "taca": ("256", "16", "32", "gObjectEventBaseOam_16x32", "gObjectEventSpriteOamTables_16x32")}
+              "taca": ("256", "16", "32", "gObjectEventBaseOam_16x32", "gObjectEventSpriteOamTables_16x32"),
+              "policia": ("512", "32", "32", "gObjectEventBaseOam_32x32", "gObjectEventSpriteOamTables_32x32"),
+              "npc": ("256", "16", "32", "gObjectEventBaseOam_16x32", "gObjectEventSpriteOamTables_16x32")}
     for gfx_id, arquivo in ARQUIVO_DO_GFX.items():
         ponteiro = (REPO_ROOT / "src" / "data" / "object_events" / "familia_gfx_ponteiros.h").read_text(encoding="utf-8")
         nome = re.search(rf"\[{gfx_id}\]\s*=\s*&gObjectEventGraphicsInfo_Familia_(\w+),", ponteiro).group(1)
@@ -312,9 +322,13 @@ def test_tamanhos_do_graphics_info():
         tam, w, h, oam, tabelas = campos[_tipo(arquivo)]
         assert f".size = {tam}," in corpo and f".width = {w}," in corpo and f".height = {h}," in corpo, arquivo
         assert f"&{oam}," in corpo and f"{tabelas}," in corpo, arquivo
-        # um quadro só, repetido: 10 entradas (a sAnimTable_Standard vai até o quadro 9)
+        # um quadro só, repetido: 10 entradas (a sAnimTable_Standard vai até o quadro 9); a Jenny tem os 10 quadros
         tab = re.search(rf"sFamiliaPicTable_{nome}\[\] = \{{(.*?)\n\}};", gfx, re.S).group(1)
-        assert tab.count(f"sFamiliaPic_{nome}") == 10 and tab.count(", 0)") == 10
+        assert tab.count(f"sFamiliaPic_{nome}") == 10
+        if _tipo(arquivo) == "npc":
+            assert re.findall(r", (\d)\)", tab) == list("0123456789")
+        else:
+            assert tab.count(", 0)") == 10
         assert f"pics/familia/{arquivo}.4bpp" in gfx
 
 

@@ -268,7 +268,7 @@ Route23_FamiliaSombra_6F_EventScript_RosaNegraParaSala::
 	end
 
 @ O bilhete da mesa: o livro-caixa do chefe ativo; sem chefe, o aviso da próxima ocupação (depois da 1, o Cobrador; depois
-@ da 2, o de fora; depois da 3, a sombra por trás do Dom). Depois da 4 a Família acabou: o estado ENCERRADA é da Task 10.
+@ da 2, o de fora; depois da 3, a sombra por trás do Dom). Depois da 4 a Família acabou (ENCERRADA): o bilhete diz que a polícia fecha a casa.
 Route23_FamiliaSombra_6F_EventScript_Bilhete::
 	lockall
 	special FamiliaSombra_GetEstado
@@ -297,6 +297,8 @@ Route23_FamiliaSombra_6F_EventScript_Bilhete4::
 	end
 
 Route23_FamiliaSombra_6F_EventScript_BilheteSemChefe::
+	special FamiliaSombra_GetEstado
+	goto_if_eq VAR_RESULT, FAMILIA_ESTADO_ENCERRADA, Route23_FamiliaSombra_6F_EventScript_BilheteEncerrada
 	special FamiliaSombra_GetOcupacao
 	goto_if_eq VAR_RESULT, 2, Route23_FamiliaSombra_6F_EventScript_BilheteDeFora
 	goto_if_ge VAR_RESULT, 3, Route23_FamiliaSombra_6F_EventScript_BilheteSombra
@@ -311,5 +313,11 @@ Route23_FamiliaSombra_6F_EventScript_BilheteDeFora::
 
 Route23_FamiliaSombra_6F_EventScript_BilheteSombra::
 	msgbox Route23_FamiliaSombra_6F_Text_BilheteSombra
+	releaseall
+	end
+
+@ O 4º chefe caiu (POK-54): ninguém vai buscar ninguém, a polícia fecha a casa
+Route23_FamiliaSombra_6F_EventScript_BilheteEncerrada::
+	msgbox Route23_FamiliaSombra_6F_Text_BilheteEncerrada
 	releaseall
 	end

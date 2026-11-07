@@ -17,6 +17,13 @@ $(OBJEVENTGFXDIR)/familia/redoma_%.4bpp: $(OBJEVENTGFXDIR)/familia/redoma_%.png
 $(OBJEVENTGFXDIR)/familia/taca_%.4bpp: $(OBJEVENTGFXDIR)/familia/taca_%.png
 	$(GFX) $< $@ -mwidth 2 -mheight 4
 
+# POK-54: a polícia da porta da Rota 23: Growlithe e Arcanine 32x32 e a Oficial Jenny (10 quadros 16x32, como a Picnicker)
+$(OBJEVENTGFXDIR)/familia/policia_%.4bpp: $(OBJEVENTGFXDIR)/familia/policia_%.png
+	$(GFX) $< $@ -mwidth 4 -mheight 4
+
+$(OBJEVENTGFXDIR)/familia/oficial_jenny.4bpp: %.4bpp: %.png
+	$(GFX) $< $@ -mwidth 2 -mheight 4
+
 # POK-48: folhas dos Pokémon seguidores (256x32, 8 quadros 32x32), geradas por tools/seguidores/converter.py
 $(OBJEVENTGFXDIR)/seguidores/%.4bpp: $(OBJEVENTGFXDIR)/seguidores/%.png
 	$(GFX) $< $@ -mwidth 4 -mheight 4

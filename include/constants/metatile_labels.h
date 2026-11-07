@@ -305,6 +305,7 @@
 
 // gTileset_IndigoPlateau (POK-51: a porta do prédio da Família Sombra, tools/familia_sombra/predio.py)
 #define METATILE_IndigoPlateau_FamiliaPortaTrancada  0x348
+#define METATILE_IndigoPlateau_FamiliaPortaLacrada   0x349 // POK-54: a porta com as faixas amarelas da polícia (sem comportamento de porta)
 
 // gTileset_FamiliaSombra (POK-51: o quadro 3x2 da sala do Dom, um retrato por chefe; _<coluna>_<linha>.
 // Gerados por tools/familia_sombra/predio.py, ids em predio.json "quadro"; o teste test_quadro_* confere.)

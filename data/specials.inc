@@ -500,4 +500,6 @@ gSpecials::
 	def_special SalaTrofeus_PlacaHall
 	def_special SalaTrofeus_Curador
 	def_special Dossie_Abrir
+	def_special FamiliaSombra_ApreendidoPendente
+	def_special FamiliaSombra_EntregarApreendido
 gSpecialsEnd::

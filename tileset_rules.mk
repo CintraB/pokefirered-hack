@@ -64,7 +64,7 @@ $(TILESETGFXDIR)/secondary/vermilion_city/tiles.4bpp: %.4bpp: %.png
 	$(GFX) $< $@ -num_tiles 140 -Wnum_tiles
 
 $(TILESETGFXDIR)/secondary/indigo_plateau/tiles.4bpp: %.4bpp: %.png
-	$(GFX) $< $@ -num_tiles 316 -Wnum_tiles
+	$(GFX) $< $@ -num_tiles 320 -Wnum_tiles
 
 $(TILESETGFXDIR)/secondary/cave/tiles.4bpp: %.4bpp: %.png
 	$(GFX) $< $@ -num_tiles 256 -Wnum_tiles

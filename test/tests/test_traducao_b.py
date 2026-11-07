@@ -68,7 +68,21 @@ ROTULOS_DOS_HACKS = {"PokemonLeague_HallOfFame_Text_OakTickets",     # Hack 8: C
                      "Route23_Text_PedagioDerrota1",
                      "Route23_Text_PedagioDerrota2",
                      "Route23_Text_PedagioLivre",
-                     "Route23_Text_PedagioJaPagou"}             # POK-51: pedágio do Persian
+                     "Route23_Text_PedagioJaPagou",             # POK-51: pedágio do Persian
+                     "Route23_Text_PortaFamiliaLacrada",        # POK-54: a polícia lacra o prédio e a Oficial Jenny
+                     "Route23_Text_JennyCaso",
+                     "Route23_Text_JennyApreendido3",
+                     "Route23_Text_JennyApreendido4",
+                     "Route23_Text_JennyRecebeu",
+                     "Route23_Text_JennyEntregouAoPC",
+                     "Route23_Text_JennySemEspaco",
+                     "Route23_Text_JennyQuerOuvir",
+                     "Route23_Text_JennyObrigada",
+                     "Route23_Text_JennyDeNovo",
+                     "Route23_Text_Policial1",
+                     "Route23_Text_Policial2",
+                     "Route23_Text_Growlithe",
+                     "Route23_Text_Arcanine"}
 
 
 @lru_cache(maxsize=None)

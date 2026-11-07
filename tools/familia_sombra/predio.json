@@ -5,8 +5,9 @@
     "metatiles": 132
   },
   "indigo_plateau": {
-    "ladrilhos": 316,
+    "ladrilhos": 320,
     "porta_trancada": 840,
+    "porta_lacrada": 841,
     "porta_aberta": 61
   },
   "rota23": {

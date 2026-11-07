@@ -34,3 +34,6 @@
     [OBJ_EVENT_GFX_FAMILIA_DUSCLOPS] = &gObjectEventGraphicsInfo_Familia_Dusclops,
     [OBJ_EVENT_GFX_FAMILIA_GARCHOMP_SHINY] = &gObjectEventGraphicsInfo_Familia_GarchompShiny,
     [OBJ_EVENT_GFX_FAMILIA_DARKRAI_SHINY] = &gObjectEventGraphicsInfo_Familia_DarkraiShiny,
+    [OBJ_EVENT_GFX_POLICIA_GROWLITHE] = &gObjectEventGraphicsInfo_Familia_PoliciaGrowlithe,
+    [OBJ_EVENT_GFX_POLICIA_ARCANINE] = &gObjectEventGraphicsInfo_Familia_PoliciaArcanine,
+    [OBJ_EVENT_GFX_OFICIAL_JENNY] = &gObjectEventGraphicsInfo_Familia_OficialJenny,

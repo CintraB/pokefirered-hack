@@ -7,6 +7,7 @@
 #include "event_data.h"
 #include "field_specials.h"
 #include "familia_sombra.h"
+#include "pokedex.h"
 #include "pokemon.h"
 #include "random.h"
 #include "constants/event_objects.h"
@@ -124,16 +125,12 @@ void FamiliaSombra_ChefeCaiu(void)
         if (gBattleOutcome == B_OUTCOME_CAUGHT)
             FlagSet(sCapturados[ocupacao - 1]);
     }
+    // a queda de cada chefe fica gravada, o último também (a var não guarda a do chefe anterior)
+    VarSet(VAR_FAMILIA_QUEDA, FamiliaSombra_MeiosDiasAgora());
     if (ocupacao >= FAMILIA_OCUPACOES_ATIVAS)
-    {
-        // o último chefe caiu: sem período de espera e sem volta da máfia (ENCERRADA não grava a queda)
-        VarSet(VAR_FAMILIA_ESTADO, FAMILIA_ESTADO_ENCERRADA);
-    }
+        VarSet(VAR_FAMILIA_ESTADO, FAMILIA_ESTADO_ENCERRADA);   // o último chefe caiu: sem espera e sem volta da máfia
     else
-    {
-        VarSet(VAR_FAMILIA_QUEDA, FamiliaSombra_MeiosDiasAgora());
         VarSet(VAR_FAMILIA_ESTADO, FAMILIA_ESTADO_SEM_CHEFE);
-    }
     // POK-51: "Vencer o Dom", "Vencer o Cobrador"; POK-54: "Vencer o Mercenário" e, com o 4º, "Derrubar a Família Sombra"
     if (ocupacao == 1)
         Conquistas_Evento(CONQ_EVT_FAMILIA_DOM);
@@ -360,11 +357,15 @@ const u8 *FamiliaSombra_TextoDoChefe(void)
 // nível e golpes fixos de sFamiliaChefes; o item fixo só vem com `comItem` (a entrega da Jenny não leva o item).
 void FamiliaSombra_CriarChefe(struct Pokemon *mon, u8 ocupacao, bool8 comItem)
 {
-    const struct FamiliaMembro *chefe = &sFamiliaChefes[ocupacao - 1];
+    const struct FamiliaMembro *chefe;
     u32 otId = GetPlayerTrainerId();
     u16 baixa = Random();
     u32 personality;
     s32 i;
+
+    if (ocupacao < 1 || ocupacao > FAMILIA_OCUPACOES_TOTAL)   // fora da tabela vale a 1ª, como OcupacaoDasLutas
+        ocupacao = 1;
+    chefe = &sFamiliaChefes[ocupacao - 1];
 
     personality = (((otId >> 16) ^ (otId & 0xFFFF) ^ baixa) & 0xFFFF) << 16 | baixa;
     CreateMon(mon, chefe->species, chefe->level, MAX_PER_STAT_IVS, TRUE, personality, OT_ID_PLAYER_ID, 0);
@@ -463,4 +464,57 @@ void FamiliaSombra_PrepararAndar(void)
         FlagSet(flag);
     for (flag = TRAINER_FAMILIA_CAPANGA_1; flag <= TRAINER_FAMILIA_GEMEOS; flag++)
         FlagSet(TRAINER_FLAGS_START + flag);
+}
+
+// ---- O fechamento: os chefes apreendidos pela polícia (Task 10) -----------------------------------------------
+
+// O Garchomp (ocupação 3) e o Darkrai (4) vencidos sem captura não se perdem: a Oficial Jenny entrega os dois, shiny e
+// no nível da luta, sem item. A flag de cada entrega só liga quando o Pokémon de fato chega ao jogador.
+static const u16 sEntregues[] =
+{
+    FLAG_FAMILIA_ENTREGUE_3,
+    FLAG_FAMILIA_ENTREGUE_4,
+};
+#define FAMILIA_PRIMEIRO_APREENDIDO 3
+
+static bool8 ApreendidoPendente(u8 ocupacao)
+{
+    return !FamiliaSombra_ChefeCapturado(ocupacao) && !FlagGet(sEntregues[ocupacao - FAMILIA_PRIMEIRO_APREENDIDO]);
+}
+
+// Special: VAR_RESULT = a ocupação (3 ou 4) do 1º chefe apreendido que ainda não foi entregue, ou 0.
+void FamiliaSombra_ApreendidoPendente(void)
+{
+    if (ApreendidoPendente(3))
+        gSpecialVar_Result = 3;
+    else if (ApreendidoPendente(4))
+        gSpecialVar_Result = 4;
+    else
+        gSpecialVar_Result = 0;
+}
+
+// Special: VAR_0x8004 = ocupação (3 ou 4). Entrega o chefe: shiny, nível e golpes da luta, sem item, o jogador como
+// dono. Vai para o time ou, com o time cheio, para o PC; vistos e capturados na Pokédex. VAR_RESULT = o retorno de
+// GiveMonToPlayer (MON_CANT_GIVE: time e PC cheios, nada acontece e a flag não liga) e VAR_0x8005 = a espécie.
+void FamiliaSombra_EntregarApreendido(void)
+{
+    u8 ocupacao = gSpecialVar_0x8004;
+    struct Pokemon mon;
+    u16 dex;
+
+    if (ocupacao < FAMILIA_PRIMEIRO_APREENDIDO || ocupacao > FAMILIA_OCUPACOES_TOTAL)
+    {
+        gSpecialVar_Result = MON_CANT_GIVE;
+        return;
+    }
+    FamiliaSombra_CriarChefe(&mon, ocupacao, FALSE);
+    gSpecialVar_0x8005 = GetMonData(&mon, MON_DATA_SPECIES);
+    gSpecialVar_Result = GiveMonToPlayer(&mon);
+    if (gSpecialVar_Result == MON_GIVEN_TO_PARTY || gSpecialVar_Result == MON_GIVEN_TO_PC)
+    {
+        dex = SpeciesToNationalPokedexNum(gSpecialVar_0x8005);
+        GetSetPokedexFlag(dex, FLAG_SET_SEEN);
+        GetSetPokedexFlag(dex, FLAG_SET_CAUGHT);
+        FlagSet(sEntregues[ocupacao - FAMILIA_PRIMEIRO_APREENDIDO]);
+    }
 }

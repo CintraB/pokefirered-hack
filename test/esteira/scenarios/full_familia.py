@@ -100,7 +100,8 @@ O quadro da sala do Dom (retrato do chefe em preto e branco, trocado no ON_LOAD 
 POK-54, Task 7 (ocupações 3 e 4: o motor). O chefe cai pelo atalho FAMILIA_CHEFE_CAIU (o special da cena do 6º andar):
 
 - `familia/ciclo_ate_o_fim`: a queda do chefe 2 + 7 meios-dias traz a ocupação 3 (ATIVA, repovoada uma vez só); a queda do
-  3 + 7 traz a 4; a queda do 4 deixa ENCERRADA, sem gravar a queda, e +20 meios-dias depois continua ENCERRADA;
+  3 + 7 traz a 4; a queda do 4 deixa ENCERRADA, com a queda dele gravada (Task 10), e +20 meios-dias depois continua
+  ENCERRADA;
 - `familia/chefe_mercenario`: o special com a ocupação 3: "GARCHOMP, O MERCENÁRIO, ...", Garchomp shiny nv 74 com os
   golpes e a Lum Berry da tabela, MUS_VS_LEGEND e a paleta shiny. Tela `familia_chefe_mercenario`;
 - `familia/chefe_pesadelo`: ocupação 4: Darkrai shiny nv 80, Leftovers, MUS_VS_DEOXYS. Contra um Golem nv 100 só com
@@ -126,6 +127,23 @@ POK-54, Task 9 (o dossiê do caso, src/dossie.c, aberto pelo atalho DOSSIE_ABRIR
   Aberto de novo, B na 3ª página fecha. Telas `dossie_capa` e `dossie_depois`;
 - `dossie/carimbos`: as 4 rosas e só FLAG_FAMILIA_CAPTURADO_3: DERROTADO nas fichas 1, 2 e 4, CAPTURADO na 3, nenhum na
   capa e no Depois. Telas `dossie_ficha_dom` (DERROTADO) e `dossie_ficha_mercenario_capturado`.
+
+POK-54, Task 10 (o fechamento: a polícia na porta, a Oficial Jenny e a entrega dos chefes apreendidos). O estado vem de
+FAMILIA_SET (ocupação 4, ENCERRADA) e SET_FLAG; o jogador sai do 1º andar pelo tapete e chega na porta lacrada (4, 149):
+
+- `familia/cena_jenny`: nada capturado, 5 no time. A cena começa sozinha: a Jenny vem até o jogador (tela
+  `familia_jenny_cena`), entrega o Garchomp (time, que fica com 6) e o Darkrai (PC), ambos shiny, nível 74/80, sem item e
+  com os golpes do chefe, vistos e capturados na Dex. A pergunta do dossiê vem e "Não" só agradece. As 3 flags ligam, a
+  Jenny volta ao posto e o jogador sai da porta;
+- `familia/jenny_de_novo`: falando com a Jenny, a fala, a pergunta e "Sim": o dossiê abre (capa) e B volta ao campo. Sem
+  entrega repetida;
+- `familia/entrega_capturado`: com FLAG_FAMILIA_CAPTURADO_3 só o Darkrai é entregue (ao time);
+- `familia/entrega_time_cheio`: com 6 no time os dois vão ao PC e o texto avisa;
+- `familia/entrega_pc_cheio`: time e PC cheios: nada é entregue, as ENTREGUE ficam desligadas, a Jenny pede espaço; abrindo
+  2 vagas e falando de novo a entrega acontece;
+- `familia/porta_lacrada`: o metatile das faixas (sem warp): a porta não abre, a placa fala da polícia, sem cobrador, sem
+  pedágio e sem capangas. Tela `familia_policia_porta`;
+- `familia/policia_ambiente`: os 2 policiais, o Growlithe e o Arcanine falam.
 
 Uso, a partir de test/ (a pasta OUT precisa do captura.sav de um `rapido`/`completo`):
     python3 -m esteira completo --rom R --elf E --out OUT --only familia
@@ -165,6 +183,7 @@ SCREEN_POINTS = ("familia_capanga_batalha", "familia_filme_batalha", "familia_ch
                  "familia_chefe_mercenario", "familia_chefe_pesadelo",   # POK-54, Task 7
                  "familia_sala_mercenario", "familia_sala_pesadelo", "sala_trofeus_completa",   # POK-54, Task 8
                  "dossie_capa", "dossie_ficha_dom", "dossie_ficha_mercenario_capturado", "dossie_depois",   # POK-54, Task 9
+                 "familia_jenny_cena", "familia_policia_porta",   # POK-54, Task 10
                  "familia_rosa", "familia_porta_trancada", "familia_rota23_predio", "familia_pedagio",
                  "familia_andar_1", "familia_andar_4", "familia_sala_do_dom",
                  "familia_conquistas_batalha")   # `familia_diario_dom` é gravada mas fica fora: traz o TEMPO de jogo (00:08 x 00:09)
@@ -243,6 +262,13 @@ DOSSIE_MUSICA = re.search(r"#define DOSSIE_MUSICA (MUS_\w+)",
                           (REPO_ROOT / "src" / "dossie.c").read_text(encoding="utf-8")).group(1)
 DOSSIE_MUSICA_ASSENTA = 30            # quadros depois de fechar até conferir a música do campo
 DOSSIE_TECLA = dict(hold=6, release=12)   # a troca de página leva mais de 1 quadro (texto da janela de 30x20)
+# Task 10: a polícia na porta (data/maps/Route23/map.json; os LOCALID_* são o índice no array + 1, o teste estático confere)
+LOCALID_JENNY, LOCALID_POLICIAL_1, LOCALID_POLICIAL_2, LOCALID_GROWLITHE, LOCALID_ARCANINE = 9, 10, 11, 12, 13
+JENNY_POSTO = (6, 150)               # onde a Jenny fica (vem até o jogador na cena e volta)
+JENNY_DE_FRENTE = (6, 151)           # o tile de onde se fala com ela (olhando para cima)
+LOCALIDS_CAPANGAS_1F = {1, 2, 3}     # os 3 capangas do 1º andar (os 3 primeiros objetos de Route23_UnusedHouse)
+QUEDA_FIM = 40                       # meio-dia do relógio em que o Pesadelo caiu nos casos do fechamento
+TOTAL_BOXES = 14                     # TOTAL_BOXES_COUNT
 
 
 def dossie_chefes() -> list[int]:
@@ -1533,7 +1559,7 @@ class FamiliaScenario(CatchSaveScenario):
 
     def _ciclo_ate_o_fim(self) -> str:
         """O ciclo inteiro pelo relógio, de verdade: a queda do chefe 2 + 7 meios-dias traz o Mercenário, uma vez só;
-        a queda do 3 + 7 traz o Pesadelo; a queda do 4 fecha a Família (ENCERRADA, sem queda gravada) e nem 20
+        a queda do 3 + 7 traz o Pesadelo; a queda do 4 fecha a Família (ENCERRADA, com a queda dele gravada) e nem 20
         meios-dias depois a máfia volta."""
         self._restore("familia_base")
         log = []
@@ -1552,16 +1578,17 @@ class FamiliaScenario(CatchSaveScenario):
         log.append("queda 3 + 7: ocupação 4 ATIVA, uma vez só")
         queda4 = queda3 + 9
         self._queda(4, ESTADO_ENCERRADA, queda4, queda3)
-        # ENCERRADA não grava a queda: a var guarda a do chefe 3
-        assert self.box.familia_estado() == (4, ESTADO_ENCERRADA, queda3), self.box.familia_estado()
+        # ENCERRADA também grava a queda (Task 10): a var não fica com a do chefe 3
+        assert self.box.familia_estado() == (4, ESTADO_ENCERRADA, queda4), self.box.familia_estado()
         assert self.game.flag(self._flag("FLAG_FAMILIA_ROSA_4")), "a rosa negra não ligou"
         self._set_half_day(queda4 + 20)
         for _ in range(2):
             self._warp("MAP_ROUTE23", ROTA23_SUL)
             self._warp("MAP_ROUTE23_UNUSED_HOUSE", SAIDA_1F)
-        assert self.box.familia_estado() == (4, ESTADO_ENCERRADA, queda3), self.box.familia_estado()
+        assert self.box.familia_estado() == (4, ESTADO_ENCERRADA, queda4), self.box.familia_estado()
         assert self.box.familia_chefe_caiu()[:2] == (4, ESTADO_ENCERRADA), "chamada repetida mudou o estado"
-        log.append("queda 4: ENCERRADA sem gravar a queda; +20 meios-dias e continua ENCERRADA")
+        assert self.box.familia_estado()[2] == queda4, "a chamada repetida regravou a queda"
+        log.append("queda 4: ENCERRADA com a queda dele gravada; +20 meios-dias e continua ENCERRADA")
         return "; ".join(log)
 
     def _chefe_de(self, ocupacao: int, abertura: str, musica: str, tela: str, checkpoint: str) -> str:
@@ -1920,6 +1947,309 @@ class FamiliaScenario(CatchSaveScenario):
         self._dossie_fechou("carimbos")
         return f"carimbos por página {vistos}; telas {shots}"
 
+    # --- POK-54, Task 10: a polícia na porta, a Oficial Jenny e a entrega dos chefes apreendidos --------------------
+    def _flags_do_fim(self, capturados: tuple[int, ...] = (), cena: bool = False) -> None:
+        """As 4 rosas (os 4 chefes caíram), a captura só dos chefes de `capturados` e as flags da Jenny zeradas
+        (a da cena fica ligada com `cena`)."""
+        for n in range(1, 5):
+            self.box.set_flag(self._flag(f"FLAG_FAMILIA_ROSA_{n}"), True)
+            self.box.set_flag(self._flag(f"FLAG_FAMILIA_CAPTURADO_{n}"), n in capturados)
+        self.box.set_flag(self._flag("FLAG_FAMILIA_POLICIA_CENA"), cena)
+        for n in (3, 4):
+            self.box.set_flag(self._flag(f"FLAG_FAMILIA_ENTREGUE_{n}"), False)
+
+    def _time_com(self, n: int) -> None:
+        """Completa o time (Mewtwo e Snorlax da base) com Pidgey nv 5 até `n` Pokémon."""
+        for slot in range(len(self.game.party()), n):
+            self.box.set_party_mon(slot, self._sp("PIDGEY"), 5)
+        assert len(self.game.party()) == n, len(self.game.party())
+
+    def _prep_fim(self, capturados: tuple[int, ...] = (), time: int = 5, pc_cheio: bool = False,
+                  cena: bool = False) -> None:
+        """ENCERRADA (ocupação 4, o Pesadelo caiu), o time com `time` Pokémon e o PC cheio ou não."""
+        self._restore("familia_base")
+        self.box.familia_set(4, ESTADO_ENCERRADA, QUEDA_FIM)
+        self._flags_do_fim(capturados, cena)
+        self._time_com(time)
+        if pc_cheio:
+            assert self.box.fill_pc() > 0
+
+    def _sair_encerrada(self) -> None:
+        """Pelo tapete do 1º andar até a Rota 23 (a porta lacrada não tem animação: o jogador chega em cima dela e a
+        cena da Jenny, se for a hora, já começa)."""
+        self._warp("MAP_ROUTE23_UNUSED_HOUSE", SAIDA_1F)
+        group, num = self.consts.map("MAP_ROUTE23")
+        self.emu.keys(KEY_DOWN)
+        self.ctl.wait_until(lambda: self.game.location() == (group, num), 600, "saída do prédio")
+        self.emu.keys(0)
+
+    def _mon_apreendido(self, mon, ocupacao: int, nivel: bool = True) -> str:
+        """O Pokémon entregue é o chefe da tabela: shiny, sem item, os golpes dele (e o nível, se está no time)."""
+        especie, lv, _item, golpes = chefe_da_tabela(ocupacao)
+        assert mon.species == self._sp(especie), (mon.species, especie)
+        assert mon.is_shiny, f"{especie} entregue sem ser shiny: pid {mon.personality:#x}, OT {mon.ot_id:#x}"
+        assert mon.held_item == 0, f"{especie} entregue com o item {mon.held_item}"
+        assert mon.moves == [self.moves[f"MOVE_{m}"] for m in golpes], (mon.moves, golpes)
+        if nivel:
+            assert mon.level == lv, f"{especie} nv {mon.level}, esperava {lv}"
+        return f"{especie} shiny{f' nv {lv}' if nivel else ''}, sem item, golpes {golpes}"
+
+    def _no_pc(self, especie: str) -> list:
+        return [m for box in range(TOTAL_BOXES) for m in self.game.box_mons(box) if m and m.species == self._sp(especie)]
+
+    def _entregues(self) -> tuple[bool, bool]:
+        return (self.game.flag(self._flag("FLAG_FAMILIA_ENTREGUE_3")),
+                self.game.flag(self._flag("FLAG_FAMILIA_ENTREGUE_4")))
+
+    def _jenny_cena(self, quer_ouvir: bool = False, shot: tuple[str, str] | None = None) -> dict:
+        """Roda a cena da Jenny (ou a conversa com ela) até soltar o jogador. A avança as falas; a pergunta do dossiê
+        recebe A (sim, e o dossiê abre: B o fecha) ou B (não). `shot` = (trecho, tela): foto quando o trecho está na
+        caixa, já impresso e esperando o botão."""
+        info = {"msgs": [], "perguntas": 0, "dossie": None}
+        gastos, taken, na_pergunta = 0, False, False
+        while not (self.ctl.overworld_idle() and info["msgs"]):
+            if gastos > 8000:
+                raise self.ctl.timeout_error(f"cena da Jenny; mensagens {info['msgs']}")
+            estado = self.box.dossie_estado() if info["perguntas"] and quer_ouvir else None
+            msg = self._message()
+            if self.ctl.script_active() and msg and (not info["msgs"] or info["msgs"][-1] != msg):
+                info["msgs"].append(msg)
+            if shot and not taken and shot[0] in msg and self.ctl.script_active():
+                self.ctl.wait_until(lambda: self._waiting() and not self._fade_active(), 300, f"texto {shot[0]!r}")
+                info["shot"] = self._shot(shot[1])
+                taken = True
+            if estado is not None:
+                if estado["pronta"]:
+                    info["dossie"] = estado
+                    self.emu.press(KEY_B, **DOSSIE_TECLA)
+                    self._dossie_fechou("dossiê da Jenny")
+                else:
+                    self.emu.frames(4)
+                gastos += 10
+            elif YESNO_TASK in self._tasks():
+                if not na_pergunta:                       # a tarefa leva uns quadros para sumir depois do botão
+                    info["perguntas"] += 1
+                    na_pergunta = True
+                self.ctl.wait_until(lambda: self._waiting() and not self._fade_active(), 300, "pergunta do dossiê")
+                self.emu.press(KEY_A if quer_ouvir else KEY_B, hold=2, release=8)
+                gastos += 10
+            elif self.ctl.script_active():
+                na_pergunta = False
+                self.emu.press(KEY_A, hold=2, release=8)
+                gastos += 10
+            else:
+                self.emu.frames(4)
+                gastos += 4
+        self.emu.frames(10)
+        return info
+
+    def _falar_com(self, local_xy: tuple[int, int], direcao: str) -> None:
+        """Anda até `local_xy` e olha para `direcao` (o tile vizinho tem NPC: o botão só vira o jogador); A abre a fala."""
+        assert self.nav.walk_to(*local_xy), f"não chegou a {local_xy}: {self.game.player_xy()}"
+        tecla = {"left": KEY_LEFT, "right": KEY_RIGHT, "up": KEY_UP, "down": KEY_DOWN}[direcao]
+        for _ in range(2):          # o 1º toque vira o jogador; o 2º esbarra no NPC (nunca anda: o tile está ocupado)
+            self.emu.press(tecla, hold=2, release=10)
+        assert self.game.player_xy() == local_xy, f"andou em vez de virar: {self.game.player_xy()}"
+        self.ctl.press_until(KEY_A, self.ctl.script_active, f"fala de {direcao} de {local_xy}", tries=6)
+
+    def _esperar_cena(self) -> None:
+        """Depois de sair do prédio: a polícia no mapa e o script da cena já rodando."""
+        self.ctl.wait_until(lambda: LOCALID_JENNY in self._active_objects() and self.ctl.script_active(), 600,
+                            "a cena da Jenny ao sair do prédio")
+
+    def _posto_da_policia(self, jenny_no_posto: bool = True) -> dict:
+        """Onde está cada um da polícia: todos no mapa, nos tiles do map.json (a Jenny, só se `jenny_no_posto`)."""
+        ativos = self._active_objects()
+        esperado = {LOCALID_JENNY: JENNY_POSTO, LOCALID_POLICIAL_1: (3, 150), LOCALID_POLICIAL_2: (5, 150),
+                    LOCALID_GROWLITHE: (3, 151), LOCALID_ARCANINE: (7, 150)}
+        for local, xy in esperado.items():
+            assert local in ativos and self._object_visible(local), f"objeto {local} fora do mapa: {ativos}"
+            if local != LOCALID_JENNY or jenny_no_posto:
+                assert self._object_xy(local) == xy, (local, self._object_xy(local), xy)
+        assert self._object_gfx(LOCALID_JENNY) == self.gfx["OBJ_EVENT_GFX_OFICIAL_JENNY"]
+        assert self._object_gfx(LOCALID_GROWLITHE) == self.gfx["OBJ_EVENT_GFX_POLICIA_GROWLITHE"]
+        assert self._object_gfx(LOCALID_ARCANINE) == self.gfx["OBJ_EVENT_GFX_POLICIA_ARCANINE"]
+        assert self._object_gfx(LOCALID_POLICIAL_1) == self._object_gfx(LOCALID_POLICIAL_2) == self.gfx["OBJ_EVENT_GFX_POLICEMAN"]
+        return esperado
+
+    def _cena_jenny(self) -> str:
+        """Nada capturado, 5 no time. Saindo do prédio a cena começa: a Jenny vem até o jogador, entrega o Garchomp (vai
+        para o time, que fica com 6) e o Darkrai (time cheio: vai para o PC), ambos shiny, no nível da luta, sem item e
+        com os golpes do chefe. A pergunta do dossiê vem e "Não" só agradece. As 3 flags ficam ligadas."""
+        self._prep_fim(time=5)
+        assert not self.game.flag(self._flag("FLAG_FAMILIA_POLICIA_CENA"))
+        self._sair_encerrada()
+        self._esperar_cena()
+        self._posto_da_policia(jenny_no_posto=False)       # a cena já pode ter começado: ela anda
+        assert self.game.player_xy() == PORTA, self.game.player_xy()
+        info = self._jenny_cena(quer_ouvir=False, shot=("Oficial Jenny: Um momento!", "familia_jenny_cena"))
+        msgs = info["msgs"]
+        junto = " ".join(" ".join(msgs).split())
+        nome = self.game.player_name()
+        for rotulo in ("Route23_Text_JennyCaso", "Route23_Text_JennyApreendido3", "Route23_Text_JennyApreendido4",
+                       "Route23_Text_JennyQuerOuvir", "Route23_Text_JennyObrigada"):
+            assert self._rom_text(rotulo) in msgs, (rotulo, msgs)
+        assert f"{nome} recebeu GARCHOMP!" in junto and "DARKRAI foi enviado ao PC!" in junto, junto
+        assert msgs.index(self._rom_text("Route23_Text_JennyApreendido3")) < msgs.index(
+            self._rom_text("Route23_Text_JennyApreendido4")) < msgs.index(self._rom_text("Route23_Text_JennyQuerOuvir"))
+        assert info["perguntas"] == 1 and info["dossie"] is None
+        party = self.game.party()
+        assert len(party) == 6 and party[5].species == self._sp("GARCHOMP"), [m.species for m in party]
+        feito = [self._mon_apreendido(party[5], 3)]
+        no_pc = self._no_pc("DARKRAI")
+        assert len(no_pc) == 1 and not self._no_pc("GARCHOMP"), (len(no_pc), len(self._no_pc("GARCHOMP")))
+        feito.append(self._mon_apreendido(no_pc[0], 4, nivel=False) + " no PC")
+        assert [m.species for m in party[:5]] == [self._sp("MEWTWO"), self._sp("SNORLAX")] + [self._sp("PIDGEY")] * 3
+        assert self.game.flag(self._flag("FLAG_FAMILIA_POLICIA_CENA")) and self._entregues() == (True, True), \
+            self._entregues()
+        for especie in ("GARCHOMP", "DARKRAI"):       # visto e capturado na Dex (as 2 últimas posições do atalho)
+            dex = self.box.dex_info(self._sp(especie))[0]
+            assert self.box.dex_completa(dex)[2:] == (True, True), especie
+        # a Jenny volta ao posto e libera a porta: o jogador não fica preso
+        assert self._object_xy(LOCALID_JENNY) == JENNY_POSTO, self._object_xy(LOCALID_JENNY)
+        self.ctl.checkpoint("jenny_fim")
+        assert self.nav.step("down", 2) == 2 and self.game.player_xy() == (4, 151), self.game.player_xy()
+        assert self.nav.walk_to(8, 151) and self.nav.walk_to(*PORTA_FRENTE), "o jogador ficou preso na porta"
+        return f"{'; '.join(feito)}; flags ligadas; tela {info['shot']}"
+
+    def _jenny_de_novo(self) -> str:
+        """Falando com a Jenny depois da cena: a fala dela, nenhuma entrega repetida e a pergunta; "Sim" abre o
+        dossiê (o estado vira != 0xFFFFFFFF, capa) e B volta ao campo. De novo, "Não" só agradece."""
+        self._restore("jenny_fim")
+        antes = [(m.species, m.personality) for m in self.game.party()]
+        self._falar_com(JENNY_DE_FRENTE, "up")
+        info = self._jenny_cena(quer_ouvir=True)
+        msgs = info["msgs"]
+        assert msgs[0] == self._rom_text("Route23_Text_JennyDeNovo") and msgs[-1] == self._rom_text(
+            "Route23_Text_JennyQuerOuvir"), msgs
+        assert len(msgs) == 2, f"entrega repetida: {msgs}"
+        assert info["dossie"] is not None and info["dossie"]["chefe"] == DOSSIE_CAPA and info["dossie"]["pagina"] == 0, info
+        assert not self.ctl.script_active() and self.box.dossie_estado() is None
+        assert [(m.species, m.personality) for m in self.game.party()] == antes and not self._no_pc("GARCHOMP")
+        assert self._entregues() == (True, True)
+        self._falar_com(JENNY_DE_FRENTE, "up")
+        info = self._jenny_cena(quer_ouvir=False)
+        assert info["msgs"][-1] == self._rom_text("Route23_Text_JennyObrigada") and info["dossie"] is None, info["msgs"]
+        # o carimbo do Garchomp entregue continua DERROTADO (a entrega não é captura)
+        e = self._dossie_abrir("carimbo do chefe entregue")
+        while e["chefe"] != 3:
+            e = self._dossie_tecla(KEY_RIGHT)
+        assert e["carimbo"] == CARIMBO_DERROTADO, e
+        self.emu.press(KEY_B, **DOSSIE_TECLA)
+        self._dossie_fechou("carimbo do entregue")
+        return ("fala, pergunta, sim: dossiê na capa e B volta ao campo; de novo, não: agradece; nada entregue duas "
+                "vezes; o carimbo do Garchomp entregue segue DERROTADO")
+
+    def _entrega_capturado(self) -> str:
+        """Com o Garchomp capturado (FLAG_FAMILIA_CAPTURADO_3), só o Darkrai é entregue: vai para o time."""
+        self._prep_fim(capturados=(3,), time=3)
+        self._sair_encerrada()
+        self._esperar_cena()
+        info = self._jenny_cena()
+        junto = " ".join(" ".join(info["msgs"]).split())
+        assert self._rom_text("Route23_Text_JennyApreendido4") in info["msgs"], info["msgs"]
+        assert self._rom_text("Route23_Text_JennyApreendido3") not in info["msgs"], info["msgs"]
+        assert f"{self.game.player_name()} recebeu DARKRAI!" in junto and "GARCHOMP" not in junto.replace(
+            "DARKRAI", ""), junto
+        party = self.game.party()
+        assert [m.species for m in party] == [self._sp("MEWTWO"), self._sp("SNORLAX"), self._sp("PIDGEY"),
+                                              self._sp("DARKRAI")], [m.species for m in party]
+        feito = self._mon_apreendido(party[3], 4)
+        assert not self._no_pc("GARCHOMP") and not self._no_pc("DARKRAI")
+        assert self._entregues() == (False, True) and self.game.flag(self._flag("FLAG_FAMILIA_CAPTURADO_3"))
+        return f"{feito}; o Garchomp capturado não é entregue; ENTREGUE (3, 4) = {self._entregues()}"
+
+    def _entrega_time_cheio(self) -> str:
+        """Com 6 no time os dois vão ao PC e a Jenny avisa; o time fica como estava."""
+        self._prep_fim(time=6)
+        antes = [(m.species, m.personality) for m in self.game.party()]
+        self._sair_encerrada()
+        self._esperar_cena()
+        info = self._jenny_cena()
+        junto = " ".join(" ".join(info["msgs"]).split())
+        assert junto.count("foi enviado ao PC!") == 2 and "GARCHOMP foi enviado ao PC!" in junto and \
+            "DARKRAI foi enviado ao PC!" in junto and "recebeu" not in junto, junto
+        assert [(m.species, m.personality) for m in self.game.party()] == antes
+        garchomp, darkrai = self._no_pc("GARCHOMP"), self._no_pc("DARKRAI")
+        assert len(garchomp) == 1 and len(darkrai) == 1
+        feito = [self._mon_apreendido(garchomp[0], 3, nivel=False), self._mon_apreendido(darkrai[0], 4, nivel=False)]
+        assert self._entregues() == (True, True)
+        return f"time cheio: {feito} no PC, com o aviso; time intacto"
+
+    def _entrega_pc_cheio(self) -> str:
+        """Time e PC cheios: nada é entregue, as flags ENTREGUE ficam desligadas e a Jenny pede espaço (a cena acaba
+        e a flag dela liga). Com 2 vagas no time e conversando de novo, a entrega acontece."""
+        self._prep_fim(time=6, pc_cheio=True)
+        self._sair_encerrada()
+        self._esperar_cena()
+        info = self._jenny_cena()
+        assert self._rom_text("Route23_Text_JennySemEspaco") in info["msgs"], info["msgs"]
+        assert not any("recebeu" in m or "enviado" in m for m in info["msgs"]), info["msgs"]
+        assert info["msgs"].count(self._rom_text("Route23_Text_JennySemEspaco")) == 1, "o laço não parou"
+        assert not self._no_pc("GARCHOMP") and not self._no_pc("DARKRAI") and len(self.game.party()) == 6
+        assert not any(m.species in (self._sp("GARCHOMP"), self._sp("DARKRAI")) for m in self.game.party())
+        assert self._entregues() == (False, False), "a flag ligou sem entregar"
+        assert self.game.flag(self._flag("FLAG_FAMILIA_POLICIA_CENA")), "a cena acabou"
+        assert self._rom_text("Route23_Text_JennyObrigada") in info["msgs"]
+        # abre 2 vagas no time e fala de novo: a entrega acontece
+        assert self.box.party_size(4) == 4
+        self._falar_com(JENNY_DE_FRENTE, "up")
+        info = self._jenny_cena()
+        junto = " ".join(" ".join(info["msgs"]).split())
+        assert f"{self.game.player_name()} recebeu GARCHOMP!" in junto and f"{self.game.player_name()} recebeu DARKRAI!" in junto, junto
+        assert info["msgs"][0] == self._rom_text("Route23_Text_JennyDeNovo")
+        assert [m.species for m in self.game.party()[4:]] == [self._sp("GARCHOMP"), self._sp("DARKRAI")]
+        assert self._entregues() == (True, True)
+        return "PC e time cheios: nada entregue, flags desligadas, a Jenny pede espaço; com 2 vagas, falando de novo, os 2 chegam ao time"
+
+    def _porta_lacrada(self) -> str:
+        """Com a Família encerrada o metatile da porta é o das faixas amarelas: a porta não abre (nem andando para
+        cima), a placa fala da polícia, não há cobrador nem pedágio armado e o 1º andar não tem capangas."""
+        self._restore("jenny_fim")
+        lacrada = json.loads(PREDIO_JSON.read_text(encoding="utf-8"))["indigo_plateau"]["porta_lacrada"]
+        assert self._metatile(*PORTA) == lacrada & 0x3FF, f"metatile da porta {self._metatile(*PORTA):#x}"
+        assert not self._object_visible(LOCALID_COBRADOR) and self._var(VAR_TEMP_3) == 0
+        self._posto_da_policia()
+        self.box.set_follower_option(False)             # o Mewtwo de seguidor taparia as faixas na foto
+        self.emu.frames(10)
+        assert self.nav.step("down", 2) == 2 and self.game.player_xy() == (4, 151)
+        self._settle("dois passos da porta lacrada")   # o passo termina na tela depois de a posição mudar
+        shot = self._shot("familia_policia_porta")     # um tile mais longe: o jogador não tapa as faixas
+        assert self.nav.step("up") == 1 and self.game.player_xy() == PORTA_FRENTE
+        self.emu.keys(KEY_UP)
+        self.emu.frames(60)
+        self.emu.keys(0)
+        self.emu.frames(10)
+        assert self._at("MAP_ROUTE23") and self.game.player_xy() == PORTA_FRENTE, \
+            f"a porta lacrada deixou passar: {self.game.location()} {self.game.player_xy()}"
+        self.ctl.press_until(KEY_A, self.ctl.script_active, "placa da porta", tries=5)
+        self.ctl.wait_until(self._waiting, 600, "texto da porta")
+        msg = self._message()
+        assert msg == self._rom_text("Route23_Text_PortaFamiliaLacrada"), msg
+        self._scene(self.ctl.overworld_idle, "fim da placa")
+        # o 1º andar não tem capangas nem itens de volta: o prédio está vazio
+        self._warp("MAP_ROUTE23_UNUSED_HOUSE", SAIDA_1F)
+        assert not set(self._active_objects()) & LOCALIDS_CAPANGAS_1F, self._active_objects()
+        return f"porta lacrada (metatile {lacrada:#x}) não abre; placa {msg!r}; sem cobrador e sem capangas; tela {shot}"
+
+    def _policia_ambiente(self) -> str:
+        """Os policiais e o Growlithe falam, o Arcanine late (a fala e o grito)."""
+        self._restore("jenny_fim")
+        self._posto_da_policia()
+        fala = {}
+        for nome, xy, direcao, rotulo in (("policial 1", (4, 150), "left", "Route23_Text_Policial1"),
+                                          ("policial 2", (4, 150), "right", "Route23_Text_Policial2"),
+                                          ("growlithe", (4, 151), "left", "Route23_Text_Growlithe"),
+                                          ("arcanine", (7, 151), "up", "Route23_Text_Arcanine")):
+            self._falar_com(xy, direcao)
+            self.ctl.wait_until(self._waiting, 600, f"fala do {nome}")
+            msg = self._message()
+            assert msg == self._rom_text(rotulo), (nome, msg)
+            fala[nome] = msg
+            self._scene(self.ctl.overworld_idle, f"fim da fala do {nome}")
+        assert fala["arcanine"] == "Arcanine: Au! Au!"
+        return f"falas: {fala}"
+
     def run(self) -> None:
         try:
             self._flow("familia: CONTINUAR com o save do modo rápido", self._start)
@@ -1970,6 +2300,13 @@ class FamiliaScenario(CatchSaveScenario):
             self.suite.run("familia/redomas_completas", self._redomas_completas)
             self.suite.run("dossie/navegacao", self._dossie_navegacao)
             self.suite.run("dossie/carimbos", self._dossie_carimbos)
+            self.suite.run("familia/cena_jenny", self._cena_jenny)
+            self.suite.run("familia/jenny_de_novo", self._jenny_de_novo)
+            self.suite.run("familia/entrega_capturado", self._entrega_capturado)
+            self.suite.run("familia/entrega_time_cheio", self._entrega_time_cheio)
+            self.suite.run("familia/entrega_pc_cheio", self._entrega_pc_cheio)
+            self.suite.run("familia/porta_lacrada", self._porta_lacrada)
+            self.suite.run("familia/policia_ambiente", self._policia_ambiente)
         except Abort:
             pass
 
