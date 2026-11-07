@@ -1493,6 +1493,27 @@ static u32 FamiliaEstado(void)
          | (u32)(VarGet(VAR_FAMILIA_QUEDA) & 0xFFFF) << 16;
 }
 
+// POK-51 (Krabby record of the Route 19 fisherman): rebuilds gPlayerParty[slot] with the same species and level
+// but personality = (old high 16 bits) | low. The low 16 bits are all the size hash depends on (IVs are fixed).
+static u32 SetPartyPidLow(u32 slot, u32 low)
+{
+    struct Pokemon *mon;
+    u16 species;
+    u8 level;
+    u32 personality;
+
+    if (slot >= PARTY_SIZE)
+        return 0xFFFFFFFF;
+    mon = &gPlayerParty[slot];
+    species = GetMonData(mon, MON_DATA_SPECIES);
+    if (species == SPECIES_NONE)
+        return 0xFFFFFFFF;
+    level = GetMonData(mon, MON_DATA_LEVEL);
+    personality = (GetMonData(mon, MON_DATA_PERSONALITY) & 0xFFFF0000) | (low & 0xFFFF);
+    CreateMon(mon, species, level, TEST_MON_FIXED_IV, TRUE, personality, OT_ID_PLAYER_ID, 0);
+    return species;
+}
+
 static u32 FamiliaSet(u32 estado, u32 queda)
 {
     VarSet(VAR_FAMILIA_OCUPACAO, estado & 0xFF);
@@ -1723,6 +1744,8 @@ void TestHooks_Run(void)
     case TEST_CMD_FAMILIA_WILD:     result = FamiliaWild(); break;
     case TEST_CMD_FAMILIA_CHEFE:    result = FamiliaChefe(); break;
     case TEST_CMD_FAMILIA_PASSOS:   result = TestFamiliaPassos(gTestMailbox.arg0); break;
+    // POK-51 casas
+    case TEST_CMD_SET_PARTY_PID_LOW: result = SetPartyPidLow(gTestMailbox.arg0, gTestMailbox.arg1); break;
     // POK-29
     case TEST_CMD_SHOW_FIELD_TEXT:  result = ShowFieldText(gTestMailbox.arg0, gTestMailbox.arg1); break;
     default:

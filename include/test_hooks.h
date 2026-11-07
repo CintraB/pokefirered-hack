@@ -219,6 +219,13 @@ enum
 };
 // --- end of POK-51 -------------------------------------------------------------------------
 
+// --- POK-51: casas (Rota 19) -----------------------------------------------------------------
+enum
+{
+    TEST_CMD_SET_PARTY_PID_LOW = 0x130, // arg0 = party slot, arg1 = new low 16 bits of the personality (the mon is rebuilt, same species, level and fixed IVs 15; the size hash of pokemon_size_record.c is then arg1 with its bytes swapped); result = species (0xFFFFFFFF = empty slot)
+};
+// --- end of POK-51 casas -------------------------------------------------------------------
+
 extern struct TestMailbox gTestMailbox;
 extern u8 gTestText[TEST_TEXT_SIZE];
 

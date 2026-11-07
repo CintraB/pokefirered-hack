@@ -290,7 +290,7 @@
 #define VAR_FAMILIA_OCUPACAO       0x40ED // POK-51: ocupação da máfia (0 = nenhuma; 1..4)
 #define VAR_FAMILIA_ESTADO         0x40EE // POK-51: FAMILIA_ESTADO_*
 #define VAR_FAMILIA_QUEDA          0x40EF // POK-51: meio-dia do relógio em que o chefe caiu
-#define VAR_0x40F0                 0x40F0
+#define VAR_KRABBY_SIZE_RECORD     0x40F0 // POK-51: recorde de tamanho do Krabby (pescador da Rota 19)
 #define VAR_DAILY_BP               0x40F1
 #define VAR_0x40F2                 0x40F2
 #define VAR_0x40F3                 0x40F3

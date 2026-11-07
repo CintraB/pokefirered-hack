@@ -490,4 +490,7 @@ gSpecials::
 	def_special FamiliaSombra_PrepararAndar
 	def_special FamiliaSombra_PedagioVencido
 	def_special MestreGolpes_EscolherGolpe
+	@ Pescador da Rota 19 (POK-51)
+	def_special GetKrabbySizeRecordInfo
+	def_special CompareKrabbySize
 gSpecialsEnd::

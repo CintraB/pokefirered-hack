@@ -651,6 +651,7 @@ gStdScriptsEnd::
 	.include "data/maps/Route17/text.inc"
 	.include "data/maps/Route18/text.inc"
 	.include "data/maps/Route19/text.inc"
+	.include "data/maps/Route19_UnusedHouse/text.inc"
 	.include "data/maps/Route20/text.inc"
 	.include "data/maps/Route21_North/text.inc"
 	.include "data/maps/Route21_South/text.inc"

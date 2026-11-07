@@ -502,6 +502,12 @@ class Mailbox:
         result = self.call(CMD_FAMILIA_PASSOS, steps)
         return result & 0xFFFF, bool(result >> 16)
 
+    def set_party_pid_low(self, slot: int, low: int) -> None:
+        """Refaz o Pokémon do slot com os 16 bits baixos da personalidade escolhidos (IVs fixos em 15): o hash de
+        tamanho do recorde (pokemon_size_record.c) vira `low` com os bytes trocados."""
+        result = self.call(CMD_SET_PARTY_PID_LOW, slot, low)
+        assert result != 0xFFFFFFFF, f"SET_PARTY_PID_LOW recusado: slot {slot} vazio"
+
     def familia_chefe(self) -> None:
         """Começa a batalha contra o chefe da ocupação pelo special FamiliaSombra_IniciarChefe num script de campo."""
         result = self.call(CMD_FAMILIA_CHEFE)
@@ -514,6 +520,9 @@ CMD_FAMILIA_GEMEOS = 0x122  # -> 1: a dupla dos gêmeos (trainerbattle_double po
 CMD_FAMILIA_WILD = 0x123    # -> espécie | nível << 16: o encontro dos andares 4-5 (plantel da ocupação, BATTLE_TYPE_FAMILIA)
 CMD_FAMILIA_PASSOS = 0x125  # arg0 = passos -> passos dados | 1 << 16 se a batalha começou (andar escuro forçado)
 CMD_FAMILIA_CHEFE = 0x124   # -> 1: a batalha do chefe (special FamiliaSombra_IniciarChefe por script de campo)
+
+# --- POK-51: casas (enum à parte, a partir de 0x130) --------------------------------------------
+CMD_SET_PARTY_PID_LOW = 0x130  # arg0 = slot, arg1 = 16 bits baixos da personalidade -> espécie (0xFFFFFFFF = slot vazio)
 
 # --- Hack 6: breeding genético (enum à parte em include/test_hooks.h, a partir de 0x60; ------
 # o uso fica em esteira/breeding.py e scenarios/full_breeding.py / full_egg.py)
