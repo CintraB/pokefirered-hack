@@ -4,10 +4,71 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Pokémon FireRed — PT-BR (by Cintra)</title>
+<meta name="description" content="O Prof. Carvalho apresenta, capítulo por capítulo e sobre o mapa de Kanto, tudo o que esta hack de fã do FireRed em português do Brasil mudou.">
+<meta name="theme-color" content="#0b0b14">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Press+Start+2P&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="estilo.css">
+<link rel="icon" type="image/png" href="assets/oak.png">
+<script>document.documentElement.classList.add("js")</script>
+<script src="pagina.js" defer></script>
 </head>
 <body>
+<a class="pular" href="#sobre">Pular a apresentação</a>
+
+<div id="mapa" aria-hidden="true">
+  <div id="camada"><img id="kanto" src="assets/kanto_detalhe.png" width="768" height="576" alt=""></div>
+  <div id="pino"></div>
+</div>
+<div id="veu" aria-hidden="true"></div>
+<div id="placa" aria-hidden="true"><span id="placa-nome">Região de Kanto</span></div>
+{{TRILHA}}
+
 <main>
+  <section class="hero" id="abertura" {{ABERTURA}}>
+    <div class="hero-topo">
+      <p class="selo">Hack de fã · {{TOTAL_CAPITULOS}} capítulos · {{TOTAL_CARTOES}} novidades</p>
+      <h1><span class="linha">Pokémon FireRed</span> <span class="linha">— PT-BR</span> <span class="by">(by Cintra)</span></h1>
+      <p class="lead">O FireRed inteiro em português do Brasil, com recursos dos jogos mais novos. O Professor apresenta cada novidade, e o mapa de Kanto leva você até onde ela acontece.</p>
+    </div>
+    <div class="cena">
+      <div class="palco"><img class="oak" src="assets/oak.png" width="128" height="128" alt="Prof. Carvalho"></div>
+      <div class="caixa" id="caixa" role="button" tabindex="0" aria-label="Próxima fala do Professor">
+        <p id="fala" aria-hidden="true">Olá! Bem-vindo à página desta hack de POKÉMON FIRERED!</p>
+        <p class="sr" id="fala-leitor" aria-live="polite"></p>
+        <span class="seta" aria-hidden="true">▼</span>
+      </div>
+      <ol id="falas" hidden>
+        <li>Olá! Bem-vindo à página desta hack de POKÉMON FIRERED!</li>
+        <li>Meu nome é CARVALHO. As pessoas me chamam de PROFESSOR POKÉMON.</li>
+        <li>Este FireRed agora fala português do Brasil e ganhou recursos dos jogos mais novos.</li>
+        <li>Role a página: o mapa de KANTO leva você ao lugar de cada novidade!</li>
+      </ol>
+      <p class="dica">Clique, toque ou aperte Enter para continuar</p>
+    </div>
+    <a class="rolar" href="#sobre"><span>Role para começar</span></a>
+  </section>
+
 {{CAPITULOS}}
 </main>
+
+<footer class="rodape" id="fim" {{ABERTURA}}>
+  <div class="fim-cena">
+    <img class="oak" src="assets/oak.png" width="128" height="128" alt="" loading="lazy">
+    <div class="caixa estatica"><p>Foi tudo! O resto você descobre jogando. Boa jornada por KANTO!</p></div>
+  </div>
+  <p class="fim-links"><a class="botao" href="{{REPOSITORIO}}" rel="noopener">Ver o repositório no GitHub</a></p>
+  <div class="fim-grade">
+    <section class="painel" id="creditos" aria-labelledby="t-creditos">
+      <h2 id="t-creditos">Créditos</h2>
+      <ul>{{CREDITOS}}</ul>
+    </section>
+    <section class="painel" id="aviso-legal" aria-labelledby="t-aviso">
+      <h2 id="t-aviso">Aviso legal</h2>
+      <ul>{{AVISO_LEGAL}}</ul>
+    </section>
+  </div>
+</footer>
 </body>
 </html>

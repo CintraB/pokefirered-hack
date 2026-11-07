@@ -12,6 +12,13 @@ ORDEM = ["sobre", "ritmo", "resumo", "dex", "shiny", "creche", "evolucoes",
          "modernas", "dia_noite", "clima", "lendarios", "pos_liga", "familia"]
 CARTOES = Path("src/data/novidades/cartoes.json")
 SITE = Path("site")
+LARGURA_MAPA = 768  # site/assets/kanto_detalhe.png
+TELA = (480, 320)  # tela do GBA (240x160) em 2x
+SPRITE = 3  # sprites de espécie e item em 3x
+REPOSITORIO = "https://github.com/CintraB/pokefirered-hack"
+AVISO_SPOILER = ("<summary><span class=\"aviso\">Aviso de spoiler</span> "
+                 "<span>Abra para ler a história. Quem prefere descobrir jogando pode seguir rolando.</span>"
+                 "</summary>")
 
 
 def juntar_linhas(body: str) -> str:
@@ -94,23 +101,176 @@ def carregar_capitulos(repo: Path) -> list:
     return capitulos
 
 
-def _renderizar(capitulos: list) -> str:
+def telas_do_cartao(tela) -> list:
+    """Campo `tela` do textos.json: um caminho, ou [antes, depois] para o comparador arrastável."""
+    if not tela:
+        return []
+    return [tela] if isinstance(tela, str) else list(tela)
+
+
+def carregar_subcapitulos(repo: Path, capitulos: list) -> dict:
+    """{tópico: [(id, título, cartões)]} de subcapitulos.json; cartão não listado vai para "Mais novidades"."""
+    dados = _ler_json(Path(repo) / SITE / "subcapitulos.json")
+    por_id = {cap["id"]: cap for cap in capitulos}
+    saida = {}
+    for tid, grupos in dados.items():
+        cartoes = {c["id"]: c for c in por_id[tid]["cartoes"]}
+        usados, lista = set(), []
+        for g in grupos:
+            itens = []
+            for chave in g["cartoes"]:
+                cid = chave.replace("/", "-")
+                if cid not in cartoes or cid in usados:
+                    raise ValueError(f"subcapitulos.json: chave sem cartão ou repetida em {tid}: {chave}")
+                usados.add(cid)
+                itens.append(cartoes[cid])
+            lista.append((g["id"], g["titulo"], itens))
+        resto = [c for c in por_id[tid]["cartoes"] if c["id"] not in usados]
+        if resto:
+            lista.append(("mais", "Mais novidades", resto))
+        saida[tid] = lista
+    return saida
+
+
+# ---------- README: aviso legal e créditos iguais aos do repositório ----------
+
+def bullets_do_readme(readme: str, titulo: str) -> list:
+    """Itens "- ..." da seção "## <titulo>" do README (sem blocos <details>), um por item."""
+    if f"## {titulo}\n" not in readme:
+        raise ValueError(f"README sem a seção '## {titulo}'")
+    secao = readme.split(f"## {titulo}\n", 1)[1].split("\n## ", 1)[0]
+    secao = re.sub(r"<details>.*?</details>", "", secao, flags=re.S)
+    itens = []
+    for linha in secao.splitlines():
+        if linha.startswith("- "):
+            itens.append(linha[2:].strip())
+        elif linha.startswith("  ") and linha.strip() and itens:
+            itens[-1] += " " + linha.strip()
+    return itens
+
+
+def _link(m) -> str:
+    rotulo, url = m.group(1), m.group(2)
+    externo = "" if url.startswith("#") else ' rel="noopener"'
+    return f'<a href="{url}"{externo}>{rotulo}</a>'
+
+
+def md_inline(texto: str) -> str:
+    """Markdown de uma linha (negrito, código e link) para HTML."""
+    t = html.escape(texto, quote=False)
+    t = re.sub(r"`([^`]+)`", r"<code>\1</code>", t)
+    t = re.sub(r"\[([^\]]+)\]\(([^)\s]+)\)", _link, t)
+    return re.sub(r"\*\*(.+?)\*\*", r"<strong>\1</strong>", t)
+
+
+# ---------- HTML ----------
+
+def _img(src: str, largura: int, altura: int, alt: str, classe: str) -> str:
     e = html.escape
-    partes = []
-    for cap in capitulos:
-        lugar = cap["lugar"]
-        itens = []
-        for c in cap["cartoes"]:
-            corpo = f"<p>{e(c['texto'])}</p>"
-            if c["longo"]:
-                corpo += f"<p class=\"longo\">{e(c['longo'])}</p>"
-            if c["tela"]:
-                corpo += f"<img src=\"{e(c['tela'])}\" alt=\"\" loading=\"lazy\">"
-            itens.append(f"<article id=\"{c['id']}\"><h3>{e(c['titulo'])}</h3>{corpo}</article>")
-        partes.append(
-            f"<section id=\"{cap['id']}\" data-x=\"{lugar['x']}\" data-y=\"{lugar['y']}\" "
-            f"data-zoom=\"{lugar['zoom']}\"><h2>{e(cap['titulo'])}</h2>{''.join(itens)}</section>")
-    return "\n".join(partes)
+    return (f'<img class="{classe}" src="{e(src)}" width="{largura}" height="{altura}" alt="{e(alt)}" '
+            f'loading="lazy" decoding="async">')
+
+
+def _midia(c: dict) -> str:
+    telas = telas_do_cartao(c["tela"])
+    if len(telas) == 1:
+        return f'<figure class="midia">{_img(telas[0], *TELA, "Tela do jogo: " + c["titulo"], "tela")}</figure>'
+    if len(telas) == 2:
+        return ('<figure class="midia"><div class="ba" style="--corte:50%">'
+                + _img(telas[0], *TELA, "Antes: " + c["titulo"], "tela antes")
+                + _img(telas[1], *TELA, "Depois: " + c["titulo"], "tela depois")
+                + '<span class="linha" aria-hidden="true"></span>'
+                  '<span class="rot r-antes" aria-hidden="true">ANTES</span>'
+                  '<span class="rot r-depois" aria-hidden="true">DEPOIS</span>'
+                  '<input type="range" min="0" max="100" value="50" '
+                  'aria-label="Arraste para comparar antes e depois"></div></figure>')
+    sprites = c.get("sprites") or []  # [{"src", "largura", "altura"}], preenchido pela ligação de imagens
+    if sprites:
+        return ('<figure class="midia sprites">' + "".join(
+            _img(s["src"], s["largura"] * SPRITE, s["altura"] * SPRITE, "", "sprite") for s in sprites)
+            + "</figure>")
+    return ""
+
+
+def _cartao_html(c: dict, nivel: int) -> str:
+    e = html.escape
+    partes = [f'<article class="cartao painel" id="{c["id"]}">', f"<h{nivel}>{e(c['titulo'])}</h{nivel}>"]
+    if c["antes"] or c["depois"]:
+        lados = [f'<span class="{cls}">{e(t)}</span>'
+                 for cls, t in (("antes", c["antes"]), ("depois", c["depois"])) if t]
+        partes.append('<p class="troca">' + '<span class="para" aria-hidden="true">→</span>'.join(lados) + "</p>")
+    partes.append(f"<p>{e(c['texto'])}</p>")
+    if c["longo"]:
+        partes.append(f'<p class="longo">{e(c["longo"])}</p>')
+    partes.append(_midia(c))
+    partes.append("</article>")
+    return "".join(partes)
+
+
+def _capitulo_html(cap: dict, n: int, total: int, subs: list) -> str:
+    e = html.escape
+    lugar = cap["lugar"]
+    qtd = len(cap["cartoes"])
+    cabeca = [f'<header class="painel cabeca"><p class="lugar">{e(lugar["nome"])}</p>',
+              f'<p class="tag">Capítulo {n} de {total} · {qtd} novidade{"s" if qtd != 1 else ""}</p>',
+              f"<h2>{e(cap['titulo'])}</h2>"]
+    if subs:
+        cabeca.append('<nav class="indice" aria-label="Nesta parte"><ol>' + "".join(
+            f'<li><a href="#{cap["id"]}-{sid}">{e(titulo)} <b>{len(itens)}</b></a></li>'
+            for sid, titulo, itens in subs) + "</ol></nav>")
+    cabeca.append("</header>")
+    if subs:
+        corpo = "".join(
+            f'<div class="sub" id="{cap["id"]}-{sid}"><h3 class="subtitulo">{e(titulo)}</h3>'
+            + "".join(_cartao_html(c, 4) for c in itens) + "</div>"
+            for sid, titulo, itens in subs)
+    else:
+        corpo = "".join(_cartao_html(c, 3) for c in cap["cartoes"] if not c["spoiler"])
+        recolhidos = "".join(_cartao_html(c, 3) for c in cap["cartoes"] if c["spoiler"])
+        if recolhidos:
+            corpo += f'<details class="spoiler">{AVISO_SPOILER}{recolhidos}</details>'
+    lado = "dir" if lugar["x"] < LARGURA_MAPA // 2 else "esq"  # painel do lado oposto ao lugar: o pino fica à vista
+    return (f'<section class="cap lado-{lado}" id="{cap["id"]}" {_atributos_lugar(lugar)}>'
+            f'<div class="coluna">{"".join(cabeca)}{corpo}</div></section>')
+
+
+def _trilha(capitulos: list) -> str:
+    e = html.escape
+    alvos = [("abertura", "Abertura")] + [(c["id"], c["titulo"]) for c in capitulos] + [("fim", "Créditos")]
+    return ('<nav id="trilha" aria-label="Capítulos"><ol>' + "".join(
+        f'<li><a href="#{i}"><span>{e(t)}</span></a></li>' for i, t in alvos) + "</ol></nav>")
+
+
+def _atributos_lugar(lugar: dict) -> str:
+    return (f'data-x="{lugar["x"]}" data-y="{lugar["y"]}" data-zoom="{round(lugar["zoom"])}" '
+            f'data-lugar="{html.escape(lugar["nome"])}"')
+
+
+def renderizar(repo: Path, capitulos: list) -> str:
+    """index.html: o template com capítulos, trilha, créditos e aviso legal (estes dois vêm do README)."""
+    repo = Path(repo)
+    subs = carregar_subcapitulos(repo, capitulos)
+    readme = (repo / "README.md").read_text(encoding="utf-8")
+    abertura = _atributos_lugar(_ler_json(repo / SITE / "lugares.json")["abertura"])
+    total = len(capitulos)
+    trocas = {
+        "{{ABERTURA}}": abertura,
+        "{{TRILHA}}": _trilha(capitulos),
+        "{{CAPITULOS}}": "\n".join(_capitulo_html(cap, n, total, subs.get(cap["id"], []))
+                                   for n, cap in enumerate(capitulos, 1)),
+        "{{TOTAL_CAPITULOS}}": str(total),
+        "{{TOTAL_CARTOES}}": str(sum(len(c["cartoes"]) for c in capitulos)),
+        "{{CREDITOS}}": "".join(f"<li>{md_inline(i)}</li>" for i in bullets_do_readme(readme, "Créditos")),
+        "{{AVISO_LEGAL}}": "".join(f"<li>{md_inline(i)}</li>" for i in bullets_do_readme(readme, "Aviso legal")),
+        "{{REPOSITORIO}}": REPOSITORIO,
+    }
+    pagina = (repo / SITE / "template.html").read_text(encoding="utf-8")
+    for marcador, valor in trocas.items():
+        pagina = pagina.replace(marcador, valor)
+    sobra = re.findall(r"\{\{[A-Z_]+\}\}", pagina)
+    if sobra:
+        raise ValueError(f"template.html: marcadores sem valor: {sobra}")
+    return pagina
 
 
 def gerar(repo: Path, saida: Path) -> None:
@@ -123,22 +283,24 @@ def gerar(repo: Path, saida: Path) -> None:
         if chave not in validas:
             raise ValueError(f"textos.json: chave sem cartão correspondente: {chave}")
     for chave, extra in textos.items():
-        tela = extra.get("tela")
-        if tela and not (repo / tela).is_file():
-            raise FileNotFoundError(f"tela não encontrada ({chave}): {repo / tela}")
+        telas = telas_do_cartao(extra.get("tela"))
+        if len(telas) > 2:
+            raise ValueError(f"textos.json ({chave}): 'tela' aceita um caminho ou [antes, depois]")
+        for tela in telas:
+            if not (repo / tela).is_file():
+                raise FileNotFoundError(f"tela não encontrada ({chave}): {repo / tela}")
     capitulos = carregar_capitulos(repo)
+    pagina = renderizar(repo, capitulos)
     if saida.exists():
         shutil.rmtree(saida)
     shutil.copytree(repo / SITE, saida, ignore=shutil.ignore_patterns(
-        "lugares.json", "textos.json", "template.html"))
+        "lugares.json", "textos.json", "subcapitulos.json", "template.html"))
     for extra in textos.values():
-        if extra.get("tela"):
-            destino = saida / extra["tela"]
+        for tela in telas_do_cartao(extra.get("tela")):
+            destino = saida / tela
             destino.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copy2(repo / extra["tela"], destino)
-    modelo = (repo / SITE / "template.html").read_text(encoding="utf-8")
-    (saida / "index.html").write_text(
-        modelo.replace("{{CAPITULOS}}", _renderizar(capitulos)), encoding="utf-8")
+            shutil.copy2(repo / tela, destino)
+    (saida / "index.html").write_text(pagina, encoding="utf-8")
 
 
 def main():

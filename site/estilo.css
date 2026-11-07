@@ -1,0 +1,217 @@
+/* Página do Professor. Valores fixos do Cintra: desfoque do mapa .9px (15%), véu .17 (10%),
+   tudo do jogo em fator inteiro com image-rendering: pixelated, fundo cobrindo a tela inteira. */
+:root {
+  --ink: #f5f3ee; --muted: #b9b6c8; --red: #e3350d; --gold: #ffcb05; --bg: #0b0b14;
+  --vidro: #0b0b14b3; --borda: #ffffff1c;
+  --blur: .9px;
+  --b: 3;              /* fator inteiro do mapa que cobre a tela (o JS recalcula) */
+  --tela-w: 480px;     /* tela do jogo em 2x; o JS reduz para outro fator inteiro em tela estreita */
+  --viagem: 1.6s cubic-bezier(.65, 0, .35, 1);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; background: var(--bg); }
+body { background: var(--bg); color: var(--ink); font-family: Inter, system-ui, sans-serif; overflow-x: clip; }
+a { color: var(--gold); }
+img { image-rendering: pixelated; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.pular { position: fixed; left: 16px; top: -60px; z-index: 20; background: var(--gold); color: #1a1a1a;
+  font-weight: 800; padding: 10px 14px; border-radius: 10px; text-decoration: none; }
+.pular:focus { top: 16px; }
+:focus-visible { outline: 3px solid var(--gold); outline-offset: 3px; }
+
+/* ---------- o mapa ao fundo: a câmera é um translate + scale inteiro ---------- */
+#mapa { position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; }
+#camada { position: absolute; left: 0; top: 0; width: calc(768px * var(--b)); height: calc(576px * var(--b));
+  transform-origin: 0 0; transition: transform var(--viagem); }
+#kanto { display: block; width: 100%; height: 100%; image-rendering: pixelated;
+  filter: saturate(.75) brightness(.55) blur(var(--blur)); }
+#pino { position: absolute; left: 0; top: 0; width: 46px; height: 46px; margin: -23px 0 0 -23px; border-radius: 50%;
+  border: 4px solid var(--gold); box-shadow: 0 0 0 0 #ffcb05aa; opacity: 0;
+  transition: transform var(--viagem), opacity .6s; animation: pulso 1.8s infinite; }
+#pino::after { content: ""; position: absolute; left: 50%; top: 50%; width: 10px; height: 10px; margin: -5px 0 0 -5px;
+  border-radius: 50%; background: var(--gold); box-shadow: 0 0 12px var(--gold); }
+#pino.ativo { opacity: 1; }
+@keyframes pulso { 70% { box-shadow: 0 0 0 40px #ffcb0500; } 100% { box-shadow: 0 0 0 0 #ffcb0500; } }
+#veu { position: fixed; inset: 0; z-index: 1; pointer-events: none; opacity: .17;
+  background: radial-gradient(ellipse at center, #0b0b1400 0%, #0b0b14cc 75%), linear-gradient(#0b0b1466, #0b0b1499); }
+.sem-transicao #camada, .sem-transicao #pino { transition: none !important; }
+main, .rodape { position: relative; z-index: 2; }
+
+/* ---------- placa do lugar (como o nome do mapa que aparece no jogo) e trilha dos capítulos ---------- */
+#placa { position: fixed; left: 18px; top: 18px; z-index: 6; pointer-events: none;
+  font: 11px/1 "Press Start 2P", monospace; letter-spacing: .04em; text-transform: uppercase; color: #fff;
+  background: var(--vidro); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  border: 1px solid var(--borda); border-left: 4px solid var(--gold); border-radius: 10px; padding: 12px 16px; }
+#placa.entra { animation: placa .7s cubic-bezier(.2, .8, .2, 1); }
+@keyframes placa { from { transform: translateY(-140%); opacity: 0; } }
+
+#trilha { position: fixed; right: 18px; top: 50%; transform: translateY(-50%); z-index: 6; }
+#trilha ol { list-style: none; display: flex; flex-direction: column; gap: 4px; }
+#trilha a { position: relative; display: block; width: 22px; height: 22px; border-radius: 50%; }
+#trilha a::before { content: ""; position: absolute; left: 7px; top: 7px; width: 8px; height: 8px; border-radius: 50%;
+  background: #ffffff55; transition: transform .3s, background .3s; }
+#trilha a:hover::before, #trilha a:focus-visible::before { background: #fff; }
+#trilha a[aria-current="true"]::before { background: var(--gold); transform: scale(1.6); box-shadow: 0 0 10px var(--gold); }
+#trilha span { position: absolute; right: 30px; top: 50%; transform: translate(6px, -50%); opacity: 0; pointer-events: none;
+  white-space: nowrap; font: 600 13px Inter, sans-serif; color: #fff; background: var(--vidro);
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid var(--borda);
+  border-radius: 8px; padding: 6px 10px; transition: opacity .2s, transform .2s; }
+#trilha a:hover span, #trilha a:focus-visible span { opacity: 1; transform: translate(0, -50%); }
+
+/* ---------- abertura ---------- */
+.hero { min-height: 100vh; min-height: 100svh; display: flex; flex-direction: column; align-items: center;
+  justify-content: center; gap: 30px; padding: 12vh 6vw 10vh; text-align: center; position: relative; }
+.selo { display: inline-block; font: 700 12px Inter, sans-serif; letter-spacing: .12em; text-transform: uppercase;
+  color: var(--gold); background: #ffcb0514; border: 1px solid #ffcb0544; border-radius: 99px; padding: 7px 14px; }
+h1 { font-family: "Press Start 2P", monospace; font-weight: 400; font-size: clamp(20px, 3vw, 40px); line-height: 1.5;
+  color: var(--gold); text-shadow: 4px 4px 0 #7a1d0d; margin: 22px 0 0; }
+h1 .by { display: block; font-size: .5em; color: var(--ink); text-shadow: 3px 3px 0 #7a1d0d; margin-top: .6em; }
+.lead { color: #eeeaf7; margin: 18px auto 0; max-width: 640px; font-size: 18px; line-height: 1.6;
+  text-shadow: 0 1px 2px #000, 0 2px 14px #000, 0 0 28px #0b0b14; }
+h1 .linha { white-space: nowrap; }
+.cena { width: min(720px, 100%); display: flex; flex-direction: column; align-items: center; }
+.palco { position: relative; width: 128px; height: 128px; margin-bottom: -6px; }
+.palco::before { content: ""; position: absolute; left: 50%; bottom: 2px; width: 150px; height: 26px; margin-left: -75px;
+  border-radius: 50%; background: radial-gradient(#000a, #0000 70%); }
+.oak { position: relative; display: block; width: 128px; height: 128px; image-rendering: pixelated; }
+.palco .oak { animation: flutua 2.4s steps(6) infinite alternate; filter: drop-shadow(0 0 22px #ffcb0533); }
+@keyframes flutua { to { transform: translateY(-6px); } }
+.caixa { width: 100%; text-align: left; background: #fff; color: #303030; border: 6px solid #4a7ec2; border-radius: 14px;
+  padding: 20px 24px 34px; font: 13px/2.1 "Press Start 2P", monospace; min-height: 134px; position: relative;
+  cursor: pointer; box-shadow: 0 0 0 4px #fff, 0 20px 50px #000a; user-select: none; }
+.caixa:focus-visible { outline-offset: 8px; }
+.caixa .resto { visibility: hidden; }
+.seta { position: absolute; right: 18px; bottom: 12px; color: var(--red); animation: pisca .8s steps(2) infinite; }
+.caixa.escrevendo .seta { visibility: hidden; }
+@keyframes pisca { 50% { opacity: 0; } }
+.dica { margin-top: 18px; color: var(--muted); font-size: 13px; }
+.rolar { position: absolute; left: 50%; bottom: 22px; transform: translateX(-50%); color: var(--muted);
+  font: 600 12px Inter, sans-serif; letter-spacing: .1em; text-transform: uppercase; text-decoration: none;
+  display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.rolar::after { content: ""; width: 12px; height: 12px; border-right: 3px solid var(--gold); border-bottom: 3px solid var(--gold);
+  transform: rotate(45deg); animation: desce 1.6s ease-in-out infinite; }
+@keyframes desce { 50% { transform: translateY(6px) rotate(45deg); } }
+
+/* ---------- capítulos: painéis de vidro fosco; o lugar fica visível do lado livre ---------- */
+.painel { background: var(--vidro); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+  border: 1px solid var(--borda); border-radius: 22px; }
+.cap { min-height: 100vh; padding: 22vh 6vw 34vh; display: flex; }
+.coluna { width: min(600px, 100%); display: flex; flex-direction: column; gap: 18px; }
+.lado-esq .coluna { margin-right: auto; }
+.lado-dir .coluna { margin-left: auto; }
+.cabeca { padding: 30px; }
+.lugar { display: inline-flex; gap: 8px; align-items: center; font: 700 12px Inter, sans-serif; color: var(--gold);
+  letter-spacing: .08em; text-transform: uppercase; }
+.lugar::before { content: ""; width: 10px; height: 10px; border-radius: 50%; background: var(--gold); box-shadow: 0 0 12px var(--gold); }
+.tag { font: 10px/1.8 "Press Start 2P", monospace; color: #ffffffaa; margin-top: 12px; }
+.cap h2 { font-size: clamp(28px, 3vw, 38px); font-weight: 800; line-height: 1.15; margin-top: 10px; }
+.indice ol { list-style: none; display: flex; flex-wrap: wrap; gap: 8px; margin-top: 20px; }
+.indice a { display: inline-flex; gap: 8px; align-items: center; text-decoration: none; color: var(--ink);
+  font: 600 14px Inter, sans-serif; background: #ffffff10; border: 1px solid var(--borda); border-radius: 99px;
+  padding: 8px 14px; transition: background .2s, border-color .2s; }
+.indice a:hover { background: #ffcb0522; border-color: #ffcb0566; }
+.indice b { font: 9px "Press Start 2P", monospace; color: var(--gold); }
+.sub { display: flex; flex-direction: column; gap: 18px; scroll-margin-top: 90px; }
+.subtitulo { font: 12px/1.6 "Press Start 2P", monospace; color: var(--gold); margin: 26px 4px 0;
+  text-shadow: 2px 2px 0 #000; }
+
+.cartao { position: relative; padding: 24px 26px; overflow: hidden; scroll-margin-top: 90px;
+  transition: border-color .3s, box-shadow .3s; }
+.cartao::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 2px;
+  background: linear-gradient(90deg, #ffcb0599, #ffcb0500 70%); }
+.cartao:hover { border-color: #ffcb0544; box-shadow: 0 18px 40px #0008; }
+.cartao h3, .cartao h4 { font-size: 20px; font-weight: 700; line-height: 1.3; }
+.cartao p { color: var(--muted); line-height: 1.7; font-size: 16px; margin-top: 10px; }
+.cartao .longo { color: #d6d3e2; }
+.troca { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.cartao .troca { margin-top: 12px; }
+.troca span { font: 9px/1.6 "Press Start 2P", monospace; border-radius: 6px; padding: 6px 8px; }
+.troca .antes { color: #ffb4a3; background: #e3350d26; border: 1px solid #e3350d55; }
+.troca .depois { color: var(--gold); background: #ffcb051f; border: 1px solid #ffcb0566; }
+.troca .para { font: 700 15px Inter, sans-serif; color: var(--muted); padding: 0; }
+
+/* imagens do jogo: tamanho exato em fator inteiro, nunca esticadas */
+.midia { margin-top: 18px; }
+.tela { display: block; box-sizing: content-box; width: var(--tela-w); height: auto; aspect-ratio: 3 / 2;
+  image-rendering: pixelated; border: 4px solid #ffffff22; border-radius: 10px; box-shadow: 0 24px 50px #000c; }
+.ba { position: relative; box-sizing: content-box; width: var(--tela-w); aspect-ratio: 3 / 2; overflow: hidden;
+  border: 4px solid #ffffff22; border-radius: 10px; box-shadow: 0 24px 50px #000c; }
+.ba:has(input:focus-visible) { outline: 3px solid var(--gold); outline-offset: 3px; }
+.ba .tela { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; border-radius: 0; box-shadow: none; }
+.ba .depois { clip-path: inset(0 0 0 var(--corte)); }
+.ba .linha { position: absolute; top: 0; bottom: 0; left: var(--corte); width: 3px; margin-left: -1px;
+  background: var(--gold); pointer-events: none; }
+.ba .linha::after { content: "◂▸"; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  width: 34px; height: 34px; border-radius: 50%; background: var(--gold); color: #1a1a1a;
+  font: 700 13px/34px Inter, sans-serif; text-align: center; box-shadow: 0 4px 14px #0009; }
+.ba .rot { position: absolute; top: 10px; font: 800 11px Inter, sans-serif; letter-spacing: .06em; color: #fff;
+  background: #000a; padding: 4px 8px; border-radius: 6px; pointer-events: none; }
+.ba .r-antes { left: 10px; }
+.ba .r-depois { right: 10px; }
+.ba input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: ew-resize; margin: 0; }
+.sprites { display: flex; gap: 12px; align-items: flex-end; }
+.sprite { image-rendering: pixelated; }
+
+/* revelação ao rolar (só com JS; sem JS tudo aparece) */
+.js .cabeca, .js .cartao { opacity: 0; transform: translateY(48px);
+  transition: opacity .9s ease, transform .9s cubic-bezier(.2, .8, .2, 1), border-color .3s, box-shadow .3s; }
+.js .cabeca.vis, .js .cartao.vis { opacity: 1; transform: none; }
+
+/* spoiler da Família Sombra */
+.spoiler { display: flex; flex-direction: column; gap: 18px; }
+.spoiler summary { list-style: none; cursor: pointer; display: flex; flex-direction: column; gap: 8px;
+  background: repeating-linear-gradient(-45deg, #e3350d 0 10px, #0b0b1400 10px 20px) top / 100% 6px no-repeat, var(--vidro);
+  backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+  border: 2px dashed #e3350d99; border-radius: 22px; padding: 30px 28px 26px; color: #f1dcd6; line-height: 1.6;
+  transition: border-color .2s; }
+.spoiler summary::-webkit-details-marker { display: none; }
+.spoiler summary .aviso { font: 12px/1.6 "Press Start 2P", monospace; color: #ffb4a3; }
+.spoiler summary .aviso::before { content: "▶ "; }
+.spoiler[open] summary .aviso::before { content: "▼ "; }
+.spoiler summary:hover { border-color: var(--red); }
+
+/* ---------- encerramento ---------- */
+.rodape { padding: 26vh 6vw 10vh; display: flex; flex-direction: column; align-items: center; gap: 34px; }
+.fim-cena { width: min(720px, 100%); display: flex; flex-direction: column; align-items: center; }
+.caixa.estatica { cursor: default; min-height: 0; padding-bottom: 22px; }
+.fim-links { text-align: center; }
+.botao { display: inline-block; background: var(--gold); color: #1a1a1a; text-decoration: none; font: 800 16px Inter, sans-serif;
+  padding: 14px 26px; border-radius: 99px; box-shadow: 0 10px 30px #ffcb0533; transition: transform .2s, box-shadow .2s; }
+.botao:hover { transform: translateY(-2px); box-shadow: 0 14px 34px #ffcb0555; }
+.fim-grade { width: min(1100px, 100%); display: grid; grid-template-columns: 1fr 1.4fr; gap: 20px; align-items: start; }
+.fim-grade .painel { padding: 28px 30px; }
+.fim-grade h2 { font: 13px/1.6 "Press Start 2P", monospace; color: var(--gold); margin-bottom: 16px; }
+.fim-grade ul { padding-left: 18px; display: flex; flex-direction: column; gap: 10px; }
+.fim-grade li { color: var(--muted); line-height: 1.65; font-size: 14px; }
+.fim-grade strong { color: var(--ink); }
+.fim-grade code { font: 13px ui-monospace, Consolas, monospace; background: #ffffff14; padding: 1px 5px; border-radius: 4px; }
+
+/* ---------- telas estreitas: coluna única, menos efeitos ---------- */
+@media (max-width: 1000px) {
+  #trilha { display: none; }
+}
+@media (max-width: 800px) {
+  .cap { padding: 16vh 16px 26vh; }
+  .coluna { width: 100%; }
+  .cabeca { padding: 24px 22px; }
+  .cartao { padding: 20px; }
+  .hero { padding: 12vh 16px 14vh; gap: 24px; }
+  .lead { font-size: 16px; }
+  .selo { font-size: 10px; letter-spacing: .06em; }
+  h1 { font-size: 18px; }
+  .caixa { font-size: 11px; padding: 16px 18px 30px; min-height: 120px; }
+  #placa { left: 12px; top: 12px; font-size: 9px; padding: 10px 12px; }
+  .rodape { padding: 20vh 16px 8vh; }
+  .fim-grade { grid-template-columns: 1fr; }
+  .fim-grade .painel { padding: 22px 20px; }
+}
+@media (max-width: 540px) {
+  :root { --tela-w: 240px; }
+}
+
+/* ---------- sem movimento: nada de viagem de câmera, máquina de escrever nem animação contínua ---------- */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { transition: none !important; animation: none !important; }
+  .js .cabeca, .js .cartao { opacity: 1; transform: none; }
+}

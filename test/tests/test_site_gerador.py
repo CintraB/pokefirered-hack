@@ -69,13 +69,14 @@ def test_coordenadas_batem_com_a_formula_e_com_o_layout():
     lugares = json.loads((REPO / "site/lugares.json").read_text(encoding="utf-8"))
     for tid, (c, l, sec) in CELULAS.items():
         assert grade[l][c] == "MAPSEC_" + sec, tid
-        assert (lugares[tid]["x"], lugares[tid]["y"]) == ((c * 8 + 36 - 24) * 4, (l * 8 + 22 - 16) * 4), tid
+        assert (lugares[tid]["x"], lugares[tid]["y"]) == ((c * 8 + 36 - 24) * 4, (l * 8 + 36 - 16) * 4), tid
 
 
 def _repo_temporario(tmp_path, textos):
     repo = tmp_path / "repo"
     (repo / "src/data/novidades").mkdir(parents=True)
     shutil.copy(REPO / "src/data/novidades/cartoes.json", repo / "src/data/novidades")
+    shutil.copy(REPO / "README.md", repo)  # aviso legal e créditos da página vêm do README
     shutil.copytree(REPO / "site", repo / "site")
     (repo / "site/textos.json").write_text(json.dumps(textos), encoding="utf-8")
     return repo
