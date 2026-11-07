@@ -69,6 +69,30 @@ Route23_FamiliaSombra_6F_Text_RosaCobrador::
 Route23_FamiliaSombra_6F_Text_RosaChefe::
     .string "O chefe deixou cair a rosa…$"
 
+Route23_FamiliaSombra_6F_Text_BolsaCheiaRosaVermelha::
+    .string "Sua bolsa de itens-chave está\n"
+    .string "cheia…\p"
+    .string "A ROSA VERMELHA foi enviada direto à\n"
+    .string "Sala de Troféus da Ilha Sete!$"
+
+Route23_FamiliaSombra_6F_Text_BolsaCheiaRosaDourada::
+    .string "Sua bolsa de itens-chave está\n"
+    .string "cheia…\p"
+    .string "A ROSA DOURADA foi enviada direto à\n"
+    .string "Sala de Troféus da Ilha Sete!$"
+
+Route23_FamiliaSombra_6F_Text_BolsaCheiaRosaAzul::
+    .string "Sua bolsa de itens-chave está\n"
+    .string "cheia…\p"
+    .string "A ROSA AZUL foi enviada direto à\n"
+    .string "Sala de Troféus da Ilha Sete!$"
+
+Route23_FamiliaSombra_6F_Text_BolsaCheiaRosaNegra::
+    .string "Sua bolsa de itens-chave está\n"
+    .string "cheia…\p"
+    .string "A ROSA NEGRA foi enviada direto à\n"
+    .string "Sala de Troféus da Ilha Sete!$"
+
 Route23_FamiliaSombra_6F_Text_Bilhete1::
     .string "Um livro-caixa aberto na mesa.\n"
     .string "Na primeira página, à mão:\p"

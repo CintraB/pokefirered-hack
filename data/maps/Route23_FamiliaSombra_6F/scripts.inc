@@ -107,6 +107,8 @@ Route23_FamiliaSombra_6F_EventScript_FugaCobrador::
 	return
 
 @ Vencido ou capturado: a queda conta o período sem chefe, a rosa da ocupação vai para a bolsa e a sala esvazia.
+@ Com o bolso de itens-chave cheio (BAG_KEYITEMS_COUNT) a rosa não se perde: a flag FLAG_FAMILIA_ROSA_n já foi ligada
+@ por FamiliaSombra_ChefeCaiu e é ela que acende a redoma da Sala de Troféus (Ilha Sete); só o giveitem fica de fora.
 Route23_FamiliaSombra_6F_EventScript_ChefeCaiu::
 	special FamiliaSombra_ChefeCaiu
 	fadescreen FADE_TO_BLACK
@@ -116,26 +118,54 @@ Route23_FamiliaSombra_6F_EventScript_ChefeCaiu::
 	goto_if_eq VAR_0x8008, 3, Route23_FamiliaSombra_6F_EventScript_RosaAzul
 	goto_if_eq VAR_0x8008, 4, Route23_FamiliaSombra_6F_EventScript_RosaNegra
 	msgbox Route23_FamiliaSombra_6F_Text_RosaDom
+	checkitemspace ITEM_ROSA_VERMELHA
+	goto_if_eq VAR_RESULT, FALSE, Route23_FamiliaSombra_6F_EventScript_RosaVermelhaParaSala
 	giveitem ITEM_ROSA_VERMELHA
+	releaseall
+	end
+
+Route23_FamiliaSombra_6F_EventScript_RosaVermelhaParaSala::
+	msgbox Route23_FamiliaSombra_6F_Text_BolsaCheiaRosaVermelha
 	releaseall
 	end
 
 Route23_FamiliaSombra_6F_EventScript_RosaDourada::
 	msgbox Route23_FamiliaSombra_6F_Text_RosaCobrador
+	checkitemspace ITEM_ROSA_DOURADA
+	goto_if_eq VAR_RESULT, FALSE, Route23_FamiliaSombra_6F_EventScript_RosaDouradaParaSala
 	giveitem ITEM_ROSA_DOURADA
+	releaseall
+	end
+
+Route23_FamiliaSombra_6F_EventScript_RosaDouradaParaSala::
+	msgbox Route23_FamiliaSombra_6F_Text_BolsaCheiaRosaDourada
 	releaseall
 	end
 
 @ Parte 2 (ocupações 3 e 4, desligadas por FAMILIA_OCUPACOES_ATIVAS).
 Route23_FamiliaSombra_6F_EventScript_RosaAzul::
 	msgbox Route23_FamiliaSombra_6F_Text_RosaChefe
+	checkitemspace ITEM_ROSA_AZUL
+	goto_if_eq VAR_RESULT, FALSE, Route23_FamiliaSombra_6F_EventScript_RosaAzulParaSala
 	giveitem ITEM_ROSA_AZUL
+	releaseall
+	end
+
+Route23_FamiliaSombra_6F_EventScript_RosaAzulParaSala::
+	msgbox Route23_FamiliaSombra_6F_Text_BolsaCheiaRosaAzul
 	releaseall
 	end
 
 Route23_FamiliaSombra_6F_EventScript_RosaNegra::
 	msgbox Route23_FamiliaSombra_6F_Text_RosaChefe
+	checkitemspace ITEM_ROSA_NEGRA
+	goto_if_eq VAR_RESULT, FALSE, Route23_FamiliaSombra_6F_EventScript_RosaNegraParaSala
 	giveitem ITEM_ROSA_NEGRA
+	releaseall
+	end
+
+Route23_FamiliaSombra_6F_EventScript_RosaNegraParaSala::
+	msgbox Route23_FamiliaSombra_6F_Text_BolsaCheiaRosaNegra
 	releaseall
 	end
 
