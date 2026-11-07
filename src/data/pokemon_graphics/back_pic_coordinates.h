@@ -2200,5 +2200,26 @@ const struct MonCoords gMonBackPicCoords[] =
         .size = MON_COORDS_SIZE(32, 56),
         .y_offset = 6,
     },
+    // POK-54: tools/gen4/coordenadas.json
+    [SPECIES_GIBLE] =
+    {
+        .size = MON_COORDS_SIZE(64, 56),
+        .y_offset = 6,
+    },
+    [SPECIES_GABITE] =
+    {
+        .size = MON_COORDS_SIZE(64, 64),
+        .y_offset = 6,
+    },
+    [SPECIES_GARCHOMP] =
+    {
+        .size = MON_COORDS_SIZE(64, 56),
+        .y_offset = 6,
+    },
+    [SPECIES_DARKRAI] =
+    {
+        .size = MON_COORDS_SIZE(64, 64),
+        .y_offset = 6,
+    },
 };
 

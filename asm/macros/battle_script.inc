@@ -1302,6 +1302,18 @@
 	various \battler, VARIOUS_WAIT_FANFARE
 	.endm
 
+@ POK-54: o Dark Void falha na mão de quem não é Darkrai
+	.macro jumpifdarkvoidfails jumpptr:req
+	various BS_ATTACKER, VARIOUS_DARK_VOID_CHECK
+	.4byte \jumpptr
+	.endm
+
+@ POK-54: Bad Dreams passa ao próximo adversário dormindo (alvo e dano de 1/8) e salta; sem nenhum, segue
+	.macro jumpifbaddreamsnexttarget jumpptr:req
+	various BS_ATTACKER, VARIOUS_BAD_DREAMS_NEXT_TARGET
+	.4byte \jumpptr
+	.endm
+
 @ helpful macros
 	.macro setstatchanger stat:req, stages:req, down:req
 	setbyte sSTATCHANGER \stat | \stages << 4 | \down << 7

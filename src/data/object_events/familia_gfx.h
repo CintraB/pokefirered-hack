@@ -30,6 +30,13 @@
 #define OBJ_EVENT_PAL_TAG_FAMILIA_REDOMAS_A 0x1137
 #define OBJ_EVENT_PAL_TAG_FAMILIA_REDOMAS_B 0x1138
 #define OBJ_EVENT_PAL_TAG_FAMILIA_TACAS 0x1139
+#define OBJ_EVENT_PAL_TAG_FAMILIA_GLIGAR 0x113A
+#define OBJ_EVENT_PAL_TAG_FAMILIA_DUSCLOPS 0x113B
+#define OBJ_EVENT_PAL_TAG_FAMILIA_GARCHOMP_SHINY 0x113C
+#define OBJ_EVENT_PAL_TAG_FAMILIA_DARKRAI_SHINY 0x113D
+#define OBJ_EVENT_PAL_TAG_FAMILIA_POLICIA_GROWLITHE 0x113E
+#define OBJ_EVENT_PAL_TAG_FAMILIA_POLICIA_ARCANINE 0x113F
+#define OBJ_EVENT_PAL_TAG_FAMILIA_OFICIAL_JENNY 0x1140
 
 static const u16 gObjectEventPal_Familia_haunter[] = INCBIN_U16("graphics/object_events/palettes/familia/haunter.gbapal");
 static const u16 gObjectEventPal_Familia_misdreavus[] = INCBIN_U16("graphics/object_events/palettes/familia/misdreavus.gbapal");
@@ -57,6 +64,13 @@ static const u16 gObjectEventPal_Familia_tyranitar_shiny[] = INCBIN_U16("graphic
 static const u16 gObjectEventPal_Familia_redomas_a[] = INCBIN_U16("graphics/object_events/palettes/familia/redomas_a.gbapal");
 static const u16 gObjectEventPal_Familia_redomas_b[] = INCBIN_U16("graphics/object_events/palettes/familia/redomas_b.gbapal");
 static const u16 gObjectEventPal_Familia_tacas[] = INCBIN_U16("graphics/object_events/palettes/familia/tacas.gbapal");
+static const u16 gObjectEventPal_Familia_gligar[] = INCBIN_U16("graphics/object_events/palettes/familia/gligar.gbapal");
+static const u16 gObjectEventPal_Familia_dusclops[] = INCBIN_U16("graphics/object_events/palettes/familia/dusclops.gbapal");
+static const u16 gObjectEventPal_Familia_garchomp_shiny[] = INCBIN_U16("graphics/object_events/palettes/familia/garchomp_shiny.gbapal");
+static const u16 gObjectEventPal_Familia_darkrai_shiny[] = INCBIN_U16("graphics/object_events/palettes/familia/darkrai_shiny.gbapal");
+static const u16 gObjectEventPal_Familia_policia_growlithe[] = INCBIN_U16("graphics/object_events/palettes/familia/policia_growlithe.gbapal");
+static const u16 gObjectEventPal_Familia_policia_arcanine[] = INCBIN_U16("graphics/object_events/palettes/familia/policia_arcanine.gbapal");
+static const u16 gObjectEventPal_Familia_oficial_jenny[] = INCBIN_U16("graphics/object_events/palettes/familia/oficial_jenny.gbapal");
 
 static const u16 sFamiliaPic_Haunter[] = INCBIN_U16("graphics/object_events/pics/familia/haunter.4bpp");
 static const struct SpriteFrameImage sFamiliaPicTable_Haunter[] = {
@@ -1047,5 +1061,229 @@ const struct ObjectEventGraphicsInfo gObjectEventGraphicsInfo_Familia_TacaOuro =
     .subspriteTables = gObjectEventSpriteOamTables_16x32,
     .anims = sAnimTable_Standard,
     .images = sFamiliaPicTable_TacaOuro,
+    .affineAnims = gDummySpriteAffineAnimTable,
+};
+
+static const u16 sFamiliaPic_Gligar[] = INCBIN_U16("graphics/object_events/pics/familia/gligar.4bpp");
+static const struct SpriteFrameImage sFamiliaPicTable_Gligar[] = {
+    overworld_frame(sFamiliaPic_Gligar, 4, 5, 0),
+    overworld_frame(sFamiliaPic_Gligar, 4, 5, 0),
+    overworld_frame(sFamiliaPic_Gligar, 4, 5, 0),
+    overworld_frame(sFamiliaPic_Gligar, 4, 5, 0),
+    overworld_frame(sFamiliaPic_Gligar, 4, 5, 0),
+    overworld_frame(sFamiliaPic_Gligar, 4, 5, 0),
+    overworld_frame(sFamiliaPic_Gligar, 4, 5, 0),
+    overworld_frame(sFamiliaPic_Gligar, 4, 5, 0),
+    overworld_frame(sFamiliaPic_Gligar, 4, 5, 0),
+    overworld_frame(sFamiliaPic_Gligar, 4, 5, 0),
+};
+const struct ObjectEventGraphicsInfo gObjectEventGraphicsInfo_Familia_Gligar = {
+    .tileTag = TAG_NONE,
+    .paletteTag = OBJ_EVENT_PAL_TAG_FAMILIA_GLIGAR,
+    .reflectionPaletteTag = OBJ_EVENT_PAL_TAG_NONE,
+    .size = 640,
+    .width = 32,
+    .height = 40,
+    .paletteSlot = PALSLOT_NPC_1,
+    .shadowSize = SHADOW_SIZE_M,
+    .inanimate = FALSE,
+    .disableReflectionPaletteLoad = FALSE,
+    .tracks = TRACKS_NONE,
+    .oam = &gObjectEventBaseOam_32x32,
+    .subspriteTables = gObjectEventSpriteOamTables_32x40,
+    .anims = sAnimTable_Standard,
+    .images = sFamiliaPicTable_Gligar,
+    .affineAnims = gDummySpriteAffineAnimTable,
+};
+
+static const u16 sFamiliaPic_Dusclops[] = INCBIN_U16("graphics/object_events/pics/familia/dusclops.4bpp");
+static const struct SpriteFrameImage sFamiliaPicTable_Dusclops[] = {
+    overworld_frame(sFamiliaPic_Dusclops, 4, 5, 0),
+    overworld_frame(sFamiliaPic_Dusclops, 4, 5, 0),
+    overworld_frame(sFamiliaPic_Dusclops, 4, 5, 0),
+    overworld_frame(sFamiliaPic_Dusclops, 4, 5, 0),
+    overworld_frame(sFamiliaPic_Dusclops, 4, 5, 0),
+    overworld_frame(sFamiliaPic_Dusclops, 4, 5, 0),
+    overworld_frame(sFamiliaPic_Dusclops, 4, 5, 0),
+    overworld_frame(sFamiliaPic_Dusclops, 4, 5, 0),
+    overworld_frame(sFamiliaPic_Dusclops, 4, 5, 0),
+    overworld_frame(sFamiliaPic_Dusclops, 4, 5, 0),
+};
+const struct ObjectEventGraphicsInfo gObjectEventGraphicsInfo_Familia_Dusclops = {
+    .tileTag = TAG_NONE,
+    .paletteTag = OBJ_EVENT_PAL_TAG_FAMILIA_DUSCLOPS,
+    .reflectionPaletteTag = OBJ_EVENT_PAL_TAG_NONE,
+    .size = 640,
+    .width = 32,
+    .height = 40,
+    .paletteSlot = PALSLOT_NPC_3,
+    .shadowSize = SHADOW_SIZE_M,
+    .inanimate = FALSE,
+    .disableReflectionPaletteLoad = FALSE,
+    .tracks = TRACKS_NONE,
+    .oam = &gObjectEventBaseOam_32x32,
+    .subspriteTables = gObjectEventSpriteOamTables_32x40,
+    .anims = sAnimTable_Standard,
+    .images = sFamiliaPicTable_Dusclops,
+    .affineAnims = gDummySpriteAffineAnimTable,
+};
+
+static const u16 sFamiliaPic_GarchompShiny[] = INCBIN_U16("graphics/object_events/pics/familia/garchomp_shiny.4bpp");
+static const struct SpriteFrameImage sFamiliaPicTable_GarchompShiny[] = {
+    overworld_frame(sFamiliaPic_GarchompShiny, 4, 5, 0),
+    overworld_frame(sFamiliaPic_GarchompShiny, 4, 5, 0),
+    overworld_frame(sFamiliaPic_GarchompShiny, 4, 5, 0),
+    overworld_frame(sFamiliaPic_GarchompShiny, 4, 5, 0),
+    overworld_frame(sFamiliaPic_GarchompShiny, 4, 5, 0),
+    overworld_frame(sFamiliaPic_GarchompShiny, 4, 5, 0),
+    overworld_frame(sFamiliaPic_GarchompShiny, 4, 5, 0),
+    overworld_frame(sFamiliaPic_GarchompShiny, 4, 5, 0),
+    overworld_frame(sFamiliaPic_GarchompShiny, 4, 5, 0),
+    overworld_frame(sFamiliaPic_GarchompShiny, 4, 5, 0),
+};
+const struct ObjectEventGraphicsInfo gObjectEventGraphicsInfo_Familia_GarchompShiny = {
+    .tileTag = TAG_NONE,
+    .paletteTag = OBJ_EVENT_PAL_TAG_FAMILIA_GARCHOMP_SHINY,
+    .reflectionPaletteTag = OBJ_EVENT_PAL_TAG_NONE,
+    .size = 640,
+    .width = 32,
+    .height = 40,
+    .paletteSlot = PALSLOT_NPC_4,
+    .shadowSize = SHADOW_SIZE_M,
+    .inanimate = FALSE,
+    .disableReflectionPaletteLoad = FALSE,
+    .tracks = TRACKS_NONE,
+    .oam = &gObjectEventBaseOam_32x32,
+    .subspriteTables = gObjectEventSpriteOamTables_32x40,
+    .anims = sAnimTable_Standard,
+    .images = sFamiliaPicTable_GarchompShiny,
+    .affineAnims = gDummySpriteAffineAnimTable,
+};
+
+static const u16 sFamiliaPic_DarkraiShiny[] = INCBIN_U16("graphics/object_events/pics/familia/darkrai_shiny.4bpp");
+static const struct SpriteFrameImage sFamiliaPicTable_DarkraiShiny[] = {
+    overworld_frame(sFamiliaPic_DarkraiShiny, 4, 5, 0),
+    overworld_frame(sFamiliaPic_DarkraiShiny, 4, 5, 0),
+    overworld_frame(sFamiliaPic_DarkraiShiny, 4, 5, 0),
+    overworld_frame(sFamiliaPic_DarkraiShiny, 4, 5, 0),
+    overworld_frame(sFamiliaPic_DarkraiShiny, 4, 5, 0),
+    overworld_frame(sFamiliaPic_DarkraiShiny, 4, 5, 0),
+    overworld_frame(sFamiliaPic_DarkraiShiny, 4, 5, 0),
+    overworld_frame(sFamiliaPic_DarkraiShiny, 4, 5, 0),
+    overworld_frame(sFamiliaPic_DarkraiShiny, 4, 5, 0),
+    overworld_frame(sFamiliaPic_DarkraiShiny, 4, 5, 0),
+};
+const struct ObjectEventGraphicsInfo gObjectEventGraphicsInfo_Familia_DarkraiShiny = {
+    .tileTag = TAG_NONE,
+    .paletteTag = OBJ_EVENT_PAL_TAG_FAMILIA_DARKRAI_SHINY,
+    .reflectionPaletteTag = OBJ_EVENT_PAL_TAG_NONE,
+    .size = 640,
+    .width = 32,
+    .height = 40,
+    .paletteSlot = PALSLOT_NPC_2,
+    .shadowSize = SHADOW_SIZE_M,
+    .inanimate = FALSE,
+    .disableReflectionPaletteLoad = FALSE,
+    .tracks = TRACKS_NONE,
+    .oam = &gObjectEventBaseOam_32x32,
+    .subspriteTables = gObjectEventSpriteOamTables_32x40,
+    .anims = sAnimTable_Standard,
+    .images = sFamiliaPicTable_DarkraiShiny,
+    .affineAnims = gDummySpriteAffineAnimTable,
+};
+
+static const u16 sFamiliaPic_PoliciaGrowlithe[] = INCBIN_U16("graphics/object_events/pics/familia/policia_growlithe.4bpp");
+static const struct SpriteFrameImage sFamiliaPicTable_PoliciaGrowlithe[] = {
+    overworld_frame(sFamiliaPic_PoliciaGrowlithe, 4, 4, 0),
+    overworld_frame(sFamiliaPic_PoliciaGrowlithe, 4, 4, 0),
+    overworld_frame(sFamiliaPic_PoliciaGrowlithe, 4, 4, 0),
+    overworld_frame(sFamiliaPic_PoliciaGrowlithe, 4, 4, 0),
+    overworld_frame(sFamiliaPic_PoliciaGrowlithe, 4, 4, 0),
+    overworld_frame(sFamiliaPic_PoliciaGrowlithe, 4, 4, 0),
+    overworld_frame(sFamiliaPic_PoliciaGrowlithe, 4, 4, 0),
+    overworld_frame(sFamiliaPic_PoliciaGrowlithe, 4, 4, 0),
+    overworld_frame(sFamiliaPic_PoliciaGrowlithe, 4, 4, 0),
+    overworld_frame(sFamiliaPic_PoliciaGrowlithe, 4, 4, 0),
+};
+const struct ObjectEventGraphicsInfo gObjectEventGraphicsInfo_Familia_PoliciaGrowlithe = {
+    .tileTag = TAG_NONE,
+    .paletteTag = OBJ_EVENT_PAL_TAG_FAMILIA_POLICIA_GROWLITHE,
+    .reflectionPaletteTag = OBJ_EVENT_PAL_TAG_NONE,
+    .size = 512,
+    .width = 32,
+    .height = 32,
+    .paletteSlot = PALSLOT_NPC_4,
+    .shadowSize = SHADOW_SIZE_M,
+    .inanimate = FALSE,
+    .disableReflectionPaletteLoad = FALSE,
+    .tracks = TRACKS_NONE,
+    .oam = &gObjectEventBaseOam_32x32,
+    .subspriteTables = gObjectEventSpriteOamTables_32x32,
+    .anims = sAnimTable_Standard,
+    .images = sFamiliaPicTable_PoliciaGrowlithe,
+    .affineAnims = gDummySpriteAffineAnimTable,
+};
+
+static const u16 sFamiliaPic_PoliciaArcanine[] = INCBIN_U16("graphics/object_events/pics/familia/policia_arcanine.4bpp");
+static const struct SpriteFrameImage sFamiliaPicTable_PoliciaArcanine[] = {
+    overworld_frame(sFamiliaPic_PoliciaArcanine, 4, 4, 0),
+    overworld_frame(sFamiliaPic_PoliciaArcanine, 4, 4, 0),
+    overworld_frame(sFamiliaPic_PoliciaArcanine, 4, 4, 0),
+    overworld_frame(sFamiliaPic_PoliciaArcanine, 4, 4, 0),
+    overworld_frame(sFamiliaPic_PoliciaArcanine, 4, 4, 0),
+    overworld_frame(sFamiliaPic_PoliciaArcanine, 4, 4, 0),
+    overworld_frame(sFamiliaPic_PoliciaArcanine, 4, 4, 0),
+    overworld_frame(sFamiliaPic_PoliciaArcanine, 4, 4, 0),
+    overworld_frame(sFamiliaPic_PoliciaArcanine, 4, 4, 0),
+    overworld_frame(sFamiliaPic_PoliciaArcanine, 4, 4, 0),
+};
+const struct ObjectEventGraphicsInfo gObjectEventGraphicsInfo_Familia_PoliciaArcanine = {
+    .tileTag = TAG_NONE,
+    .paletteTag = OBJ_EVENT_PAL_TAG_FAMILIA_POLICIA_ARCANINE,
+    .reflectionPaletteTag = OBJ_EVENT_PAL_TAG_NONE,
+    .size = 512,
+    .width = 32,
+    .height = 32,
+    .paletteSlot = PALSLOT_NPC_2,
+    .shadowSize = SHADOW_SIZE_M,
+    .inanimate = FALSE,
+    .disableReflectionPaletteLoad = FALSE,
+    .tracks = TRACKS_NONE,
+    .oam = &gObjectEventBaseOam_32x32,
+    .subspriteTables = gObjectEventSpriteOamTables_32x32,
+    .anims = sAnimTable_Standard,
+    .images = sFamiliaPicTable_PoliciaArcanine,
+    .affineAnims = gDummySpriteAffineAnimTable,
+};
+
+static const u16 sFamiliaPic_OficialJenny[] = INCBIN_U16("graphics/object_events/pics/familia/oficial_jenny.4bpp");
+static const struct SpriteFrameImage sFamiliaPicTable_OficialJenny[] = {
+    overworld_frame(sFamiliaPic_OficialJenny, 2, 4, 0),
+    overworld_frame(sFamiliaPic_OficialJenny, 2, 4, 1),
+    overworld_frame(sFamiliaPic_OficialJenny, 2, 4, 2),
+    overworld_frame(sFamiliaPic_OficialJenny, 2, 4, 3),
+    overworld_frame(sFamiliaPic_OficialJenny, 2, 4, 4),
+    overworld_frame(sFamiliaPic_OficialJenny, 2, 4, 5),
+    overworld_frame(sFamiliaPic_OficialJenny, 2, 4, 6),
+    overworld_frame(sFamiliaPic_OficialJenny, 2, 4, 7),
+    overworld_frame(sFamiliaPic_OficialJenny, 2, 4, 8),
+    overworld_frame(sFamiliaPic_OficialJenny, 2, 4, 9),
+};
+const struct ObjectEventGraphicsInfo gObjectEventGraphicsInfo_Familia_OficialJenny = {
+    .tileTag = TAG_NONE,
+    .paletteTag = OBJ_EVENT_PAL_TAG_FAMILIA_OFICIAL_JENNY,
+    .reflectionPaletteTag = OBJ_EVENT_PAL_TAG_NONE,
+    .size = 256,
+    .width = 16,
+    .height = 32,
+    .paletteSlot = PALSLOT_NPC_3,
+    .shadowSize = SHADOW_SIZE_M,
+    .inanimate = FALSE,
+    .disableReflectionPaletteLoad = FALSE,
+    .tracks = TRACKS_FOOT,
+    .oam = &gObjectEventBaseOam_16x32,
+    .subspriteTables = gObjectEventSpriteOamTables_16x32,
+    .anims = sAnimTable_Standard,
+    .images = sFamiliaPicTable_OficialJenny,
     .affineAnims = gDummySpriteAffineAnimTable,
 };

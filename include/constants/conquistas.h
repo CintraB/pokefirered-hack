@@ -57,8 +57,8 @@
 #define CONQ_EVT_FAMILIA_DOM            10  // POK-51: FamiliaSombra_ChefeCaiu (ocupação 1)
 #define CONQ_EVT_FAMILIA_COBRADOR       11  // POK-51: FamiliaSombra_ChefeCaiu (ocupação 2)
 #define CONQ_EVT_FAMILIA_PEDAGIO_FORCA  12  // POK-51: FamiliaSombra_PedagioVencido
-#define CONQ_EVT_FAMILIA_MERCENARIO     13  // POK-51, parte 2 (conquista inativa)
-#define CONQ_EVT_FAMILIA_TODA           14  // POK-51, parte 2 (conquista inativa)
+#define CONQ_EVT_FAMILIA_MERCENARIO     13  // POK-54: FamiliaSombra_ChefeCaiu (ocupação 3)
+#define CONQ_EVT_FAMILIA_TODA           14  // POK-54: FamiliaSombra_ChefeCaiu (ocupação 4, o último chefe)
 
 // Tipos de evento do diário (struct DiarioEvento.tipo).
 #define DIARIO_TIPO_TREINADOR  0

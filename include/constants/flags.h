@@ -213,6 +213,13 @@
 #define FLAG_FAMILIA_ROSA_2                    0x4CF // POK-51
 #define FLAG_FAMILIA_ROSA_3                    0x4D0 // POK-51
 #define FLAG_FAMILIA_ROSA_4                    0x4D1 // POK-51
+#define FLAG_FAMILIA_CAPTURADO_1               0x4D2 // POK-54: o chefe 1 (Dom) foi capturado, não só vencido (nunca limpa)
+#define FLAG_FAMILIA_CAPTURADO_2               0x4D3 // POK-54
+#define FLAG_FAMILIA_CAPTURADO_3               0x4D4 // POK-54
+#define FLAG_FAMILIA_CAPTURADO_4               0x4D5 // POK-54
+#define FLAG_FAMILIA_POLICIA_CENA              0x4D6 // POK-54: a Oficial Jenny já fez a cena da porta (nunca limpa)
+#define FLAG_FAMILIA_ENTREGUE_3                0x4D7 // POK-54: o Garchomp apreendido, vencido sem captura, já foi entregue (nunca limpa)
+#define FLAG_FAMILIA_ENTREGUE_4                0x4D8 // POK-54: o Darkrai apreendido já foi entregue (nunca limpa)
 
 // Unused?
 #define FLAG_0x0AF               0x0AF
@@ -1273,13 +1280,6 @@
 #define FLAG_DEFEATED_CHAMP           0x4BC
 
 // Unused?
-#define FLAG_0x4D2               0x4D2
-#define FLAG_0x4D3               0x4D3
-#define FLAG_0x4D4               0x4D4
-#define FLAG_0x4D5               0x4D5
-#define FLAG_0x4D6               0x4D6
-#define FLAG_0x4D7               0x4D7
-#define FLAG_0x4D8               0x4D8
 #define FLAG_0x4D9               0x4D9
 #define FLAG_0x4DA               0x4DA
 #define FLAG_0x4DB               0x4DB

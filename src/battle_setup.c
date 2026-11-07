@@ -275,15 +275,16 @@ void StartFamiliaWildBattle(void)
 }
 
 // POK-51: o chefe da Família Sombra (gEnemyParty[0] já montado por FamiliaSombra_IniciarChefe), como os lendários:
-// volta ao script que chamou, música de lendário. Capturável (a bola é gasta normalmente), cores shiny sem filme e a
-// IA dos chefes (BattleAI_SetupAIData). gTrainerBattleOpponent_A fica zerado: a IA não lê um treinador antigo.
+// volta ao script que chamou, música de lendário (a do Deoxys na ocupação 4). Capturável (a bola é gasta normalmente),
+// cores shiny sem filme e a IA dos chefes (BattleAI_SetupAIData). gTrainerBattleOpponent_A fica zerado: a IA não lê
+// um treinador antigo.
 void StartFamiliaChefeBattle(void)
 {
     LockPlayerFieldControls();
     gMain.savedCallback = CB2_EndScriptedWildBattle;
     gBattleTypeFlags = BATTLE_TYPE_LEGENDARY | BATTLE_TYPE_LEGENDARY_FRLG | BATTLE_TYPE_FAMILIA_CHEFE;
     gTrainerBattleOpponent_A = 0;
-    CreateBattleStartTask(B_TRANSITION_BLUR, MUS_VS_LEGEND);
+    CreateBattleStartTask(B_TRANSITION_BLUR, FamiliaSombra_MusicaDoChefe());
     IncrementGameStat(GAME_STAT_TOTAL_BATTLES);
     IncrementGameStat(GAME_STAT_WILD_BATTLES);
 }

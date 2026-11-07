@@ -305,6 +305,7 @@
 
 // gTileset_IndigoPlateau (POK-51: a porta do prédio da Família Sombra, tools/familia_sombra/predio.py)
 #define METATILE_IndigoPlateau_FamiliaPortaTrancada  0x348
+#define METATILE_IndigoPlateau_FamiliaPortaLacrada   0x349 // POK-54: a porta com as faixas amarelas da polícia (sem comportamento de porta)
 
 // gTileset_FamiliaSombra (POK-51: o quadro 3x2 da sala do Dom, um retrato por chefe; _<coluna>_<linha>.
 // Gerados por tools/familia_sombra/predio.py, ids em predio.json "quadro"; o teste test_quadro_* confere.)
@@ -320,11 +321,17 @@
 #define METATILE_FamiliaSombra_QuadroDom_0_1         0x2EF
 #define METATILE_FamiliaSombra_QuadroDom_1_1         0x2F1
 #define METATILE_FamiliaSombra_QuadroDom_2_1         0x2F3
-#define METATILE_FamiliaSombra_QuadroVazio_0_0       0x2F4
-#define METATILE_FamiliaSombra_QuadroVazio_1_0       0x2F6
-#define METATILE_FamiliaSombra_QuadroVazio_2_0       0x2F8
-#define METATILE_FamiliaSombra_QuadroVazio_0_1       0x2F5
-#define METATILE_FamiliaSombra_QuadroVazio_1_1       0x2F7
-#define METATILE_FamiliaSombra_QuadroVazio_2_1       0x2F9
+#define METATILE_FamiliaSombra_QuadroMercenario_0_0          0x2F4
+#define METATILE_FamiliaSombra_QuadroMercenario_1_0          0x2F6
+#define METATILE_FamiliaSombra_QuadroMercenario_2_0          0x2F8
+#define METATILE_FamiliaSombra_QuadroMercenario_0_1          0x2F5
+#define METATILE_FamiliaSombra_QuadroMercenario_1_1          0x2F7
+#define METATILE_FamiliaSombra_QuadroMercenario_2_1          0x2F9
+#define METATILE_FamiliaSombra_QuadroPesadelo_0_0            0x2FA
+#define METATILE_FamiliaSombra_QuadroPesadelo_1_0            0x2FC
+#define METATILE_FamiliaSombra_QuadroPesadelo_2_0            0x2FE
+#define METATILE_FamiliaSombra_QuadroPesadelo_0_1            0x2FB
+#define METATILE_FamiliaSombra_QuadroPesadelo_1_1            0x2FD
+#define METATILE_FamiliaSombra_QuadroPesadelo_2_1            0x2FF
 
 #endif // GUARD_METATILE_LABELS_H

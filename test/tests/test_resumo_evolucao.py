@@ -54,6 +54,11 @@ FIXED = {
     "SPECIES_TYROGUE": [f"{LV} 20, Atq < Def {ARROW} HITMONCHAN",
                         f"{LV} 20, Atq > Def {ARROW} HITMONLEE",
                         f"{LV} 20, Atq = Def {ARROW} HITMONTOP"],
+    # POK-54
+    "SPECIES_GIBLE": [f"{LV} 24 {ARROW} GABITE"],
+    "SPECIES_GABITE": [f"{LV} 48 {ARROW} GARCHOMP"],
+    "SPECIES_GARCHOMP": ["Não evolui."],
+    "SPECIES_DARKRAI": ["Não evolui."],
 }
 
 
@@ -75,12 +80,15 @@ def test_eevee_tem_5_linhas_sem_impossible():
     assert [line.endswith(NOT_POSSIBLE) for line in lines] == [False] * 5
 
 
-def test_especies_validas_sao_as_386_sem_old_unown():
+def test_especies_validas_sao_as_390_sem_old_unown():
+    """Os 386 e, depois do Ovo e das letras do Unown, as 4 do POK-54."""
     species = PAGE.valid_species()
-    assert len(species) == 386 == len(set(species))
-    assert species[0] == "SPECIES_BULBASAUR" and species[-1] == "SPECIES_CHIMECHO"
+    assert len(species) == 390 == len(set(species))
+    assert species[0] == "SPECIES_BULBASAUR" and species[385] == "SPECIES_CHIMECHO"
+    assert species[386:] == ["SPECIES_GIBLE", "SPECIES_GABITE", "SPECIES_GARCHOMP", "SPECIES_DARKRAI"]
     assert not [s for s in species if "OLD_UNOWN" in s]
     assert "SPECIES_UNOWN" in species
+    assert "SPECIES_EGG" not in species and not [s for s in species if s.startswith("SPECIES_UNOWN_")]
 
 
 def test_toda_especie_cabe_na_janela_e_no_buffer():

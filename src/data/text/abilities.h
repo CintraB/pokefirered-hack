@@ -76,6 +76,8 @@ static const u8 sPurePowerDescription[] = _("Aumenta o Ataque.");
 static const u8 sShellArmorDescription[] = _("Bloqueia golpes críticos.");
 static const u8 sCacophonyDescription[] = _("Evita golpes sonoros.");
 static const u8 sAirLockDescription[] = _("Anula os efeitos do clima.");
+// POK-54: o efeito entra na Task 5; o nome e a descrição já aqui porque o resumo do Darkrai os imprime
+static const u8 sBadDreamsDescription[] = _("Fere quem dorme a cada turno.");
 
 const u8 *const gAbilityDescriptionPointers[ABILITIES_COUNT] =
 {
@@ -157,6 +159,7 @@ const u8 *const gAbilityDescriptionPointers[ABILITIES_COUNT] =
     [ABILITY_SHELL_ARMOR] = sShellArmorDescription,
     [ABILITY_CACOPHONY] = sCacophonyDescription,
     [ABILITY_AIR_LOCK] = sAirLockDescription,
+    [ABILITY_BAD_DREAMS] = sBadDreamsDescription,  // POK-54
 };
 
 const u8 gAbilityNames[ABILITIES_COUNT][ABILITY_NAME_LENGTH + 1] =
@@ -239,4 +242,5 @@ const u8 gAbilityNames[ABILITIES_COUNT][ABILITY_NAME_LENGTH + 1] =
     [ABILITY_SHELL_ARMOR] = _("Arm. Concha"),
     [ABILITY_CACOPHONY] = _("Cacofonia"),
     [ABILITY_AIR_LOCK] = _("Trava Aérea"),
+    [ABILITY_BAD_DREAMS] = _("Sonhos Ruins"),  // POK-54
 };

@@ -321,7 +321,7 @@ def test_cena_do_chefe():
     venceu ou capturou: ChefeCaiu e a rosa da ocupação; fugiu ou perdeu: o chefe fica."""
     s = (MAPS / NOMES[6] / "scripts.inc").read_text(encoding="utf-8")
     assert s.count("trainerbattle TRAINER_BATTLE_CONTINUE_SCRIPT_DOUBLE, TRAINER_FAMILIA_GEMEOS, "
-                   "LOCALID_FAMILIA_6F_GEMEO_A,") == 2
+                   "LOCALID_FAMILIA_6F_GEMEO_A,") == 4
     chefe = s[s.index("Route23_FamiliaSombra_6F_EventScript_Chefe::"):]
     ordem = ["special FamiliaSombra_IniciarChefe", "waitstate", "GetBattleOutcome", "B_OUTCOME_WON",
              "B_OUTCOME_CAUGHT"]
@@ -402,7 +402,8 @@ def test_pedagio_dois_lados():
     cob = [o for o in rota["object_events"] if o["local_id"] == "LOCALID_FAMILIA_PEDAGIO_COBRADOR"]
     assert len(cob) == 1 and cob[0]["graphics_id"] == "OBJ_EVENT_GFX_FAMILIA_PERSIAN"
     assert (cob[0]["x"], cob[0]["y"]) == (14, 146) and cob[0]["flag"] == "FLAG_TEMP_1"
-    assert rota["object_events"][-1] is cob[0]   # no fim: não renumera os LOCALID_* dos guardas
+    assert rota["object_events"][7] is cob[0]    # depois dos 7 guardas: não renumera os LOCALID_* deles (a polícia
+    #                                              da porta, POK-54, vem depois do cobrador)
     assert rota["object_events"].index(cob[0]) + 1 == 8   # o LOCALID_COBRADOR do cenário `familia`
     assert [(x, 146) in livres for x in (13, 14, 15)] == [True] * 3
     gat = {(c["x"], c["y"]): c for c in rota["coord_events"] if "Pedagio" in c["script"]}
@@ -588,16 +589,21 @@ def _quadro_rgb(nome: str) -> list[list[tuple[int, int, int]]]:
     return out
 
 
+QUADROS_CHEFES = (("Dom", 1), ("Cobrador", 2), ("Mercenario", 3), ("Pesadelo", 4))
+
+
 def test_quadro_metatiles_por_chefe():
-    """Os 3 quadros (Dom, Cobrador, tela vazia da parte 2) com rótulos fixos; o layout traz o Dom e o ON_LOAD do 6º
-    andar troca pelo chefe da ocupação (VAR_FAMILIA_OCUPACAO; sem chefe, fica o do último)."""
+    """Os 4 quadros (Dom, Cobrador, Mercenário e Pesadelo) com rótulos fixos; o layout traz o Dom e o ON_LOAD do 6º
+    andar troca pelo chefe da ocupação (VAR_FAMILIA_OCUPACAO; sem chefe, fica o do último). Sem tela vazia: os 4
+    chefes têm retrato."""
     labels = (REPO_ROOT / "include/constants/metatile_labels.h").read_text(encoding="utf-8")
     s = (MAPS / NOMES[6] / "scripts.inc").read_text(encoding="utf-8")
     assert "map_script MAP_SCRIPT_ON_LOAD, Route23_FamiliaSombra_6F_OnLoad" in s
     carga = _rotulo(s, "Route23_FamiliaSombra_6F_OnLoad")
     assert "special FamiliaSombra_GetOcupacao" in carga
-    for nome, regra in (("Dom", "call_if_eq VAR_0x8008, 1,"), ("Cobrador", "call_if_eq VAR_0x8008, 2,"),
-                        ("Vazio", "call_if_ge VAR_0x8008, 3,")):
+    assert "QuadroVazio" not in s and "QuadroVazio" not in labels and "vazio" not in QUADRO["metatiles"]
+    for nome, ocupacao in QUADROS_CHEFES:
+        regra = f"call_if_eq VAR_0x8008, {ocupacao},"
         assert f"{regra} Route23_FamiliaSombra_6F_EventScript_Quadro{nome}" in carga, nome
         corpo = _rotulo(s, f"Route23_FamiliaSombra_6F_EventScript_Quadro{nome}")
         for dy in range(2):
@@ -609,31 +615,182 @@ def test_quadro_metatiles_por_chefe():
     w, cells, _attr = _grid(NOMES[6])
     padrao = [[cells[(QUADRO["y"] + dy) * w + QUADRO["x"] + dx][0] for dx in range(3)] for dy in range(2)]
     assert padrao == QUADRO["metatiles"]["dom"]
-    assert len({m for q in QUADRO["metatiles"].values() for linha in q for m in linha}) == 18
+    assert set(QUADRO["metatiles"]) == {n.lower() for n, _o in QUADROS_CHEFES}
+    assert len({m for q in QUADRO["metatiles"].values() for linha in q for m in linha}) == 24
+
+
+# Os retratos que já estavam no jogo (parte 1): os ids dos metatiles e o desenho (SHA-256 dos 48x32 pixels) não mudam
+# quando se acrescentam retratos novos. Valores tirados do commit c027fa369, antes da Task 8.
+RETRATOS_ANTIGOS = {
+    "dom": ([[750, 752, 754], [751, 753, 755]], "1e4220f6dfb010ac14c1087f9bf191e46b1e062f8f8a37e77ec19e2b8b0d2d56"),
+    "cobrador": ([[744, 746, 748], [745, 747, 749]], "3e55530f1bc60a4c762b6c38a7dea6b00c26b62878018c7ad3a887b3116c3eb9"),
+}
+
+
+def test_retratos_antigos_iguais():
+    import hashlib
+
+    for nome, (ids, sha) in RETRATOS_ANTIGOS.items():
+        assert QUADRO["metatiles"][nome] == ids, nome
+        assert hashlib.sha256(repr(_quadro_rgb(nome)).encode()).hexdigest() == sha, nome
+    # os limiares por espécie só existem para os dois novos: Gengar e Tyranitar seguem no padrão
+    predio = _predio_py()
+    assert set(predio.LIMIARES_RETRATO) == {"garchomp_shiny", "darkrai_shiny"}
+    assert predio.LIMIAR_PADRAO == (64, 120)
+    for a, b in predio.LIMIARES_RETRATO.values():
+        assert 0 < a < b < 255
+
+
+def _predio_py():
+    import importlib.util
+
+    spec = importlib.util.spec_from_file_location("predio_familia", REPO_ROOT / "tools/familia_sombra/predio.py")
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+
+def test_retrato_tres_tons():
+    """Garchomp e Darkrai em 3 cinzas viravam só contorno com os limiares do Gengar: cada um dos 3 tons cobre pelo
+    menos 10% da tela do retrato nos 4 quadros (preto, cinza médio e cinza claro)."""
+    x0, y0, x1, y1 = QUADRO["tela"]
+    total = (x1 - x0 + 1) * (y1 - y0 + 1)
+    for nome, _o in QUADROS_CHEFES:
+        q = _quadro_rgb(nome.lower())
+        contagem: dict[tuple[int, int, int], int] = {}
+        for y in range(y0, y1 + 1):
+            for x in range(x0, x1 + 1):
+                contagem[q[y][x]] = contagem.get(q[y][x], 0) + 1
+        assert len(contagem) == 3, (nome, contagem)
+        for cor, n in contagem.items():
+            assert n >= total / 10, (nome, cor, f"{n / total:.0%}")
 
 
 def test_quadro_retrato_cinza_dentro_da_moldura():
-    """Dentro da tela só tons de cinza (foto antiga); fora dela os 3 quadros são idênticos ao da tela vazia (a moldura
-    e a parede): nada do retrato passa da moldura. O Dom e o Cobrador têm desenho (3 tons), a tela vazia é escura."""
+    """Dentro da tela só tons de cinza (foto antiga); fora dela os 4 quadros são idênticos (a moldura e a parede):
+    nada do retrato passa da moldura. A moldura dourada fecha a tela nos 4 lados."""
     x0, y0, x1, y1 = QUADRO["tela"]
-    vazio = _quadro_rgb("vazio")
+    ref = _quadro_rgb("dom")
     dentro = lambda x, y: x0 <= x <= x1 and y0 <= y <= y1
-    for nome in ("dom", "cobrador"):
-        q = _quadro_rgb(nome)
+    for nome, _o in QUADROS_CHEFES:
+        q = _quadro_rgb(nome.lower())
         for y in range(32):
             for x in range(48):
                 if not dentro(x, y):
-                    assert q[y][x] == vazio[y][x], (nome, x, y)
+                    assert q[y][x] == ref[y][x], (nome, x, y)
         tons = {q[y][x] for y in range(y0, y1 + 1) for x in range(x0, x1 + 1)}
         assert all(max(c) - min(c) <= 8 for c in tons), (nome, tons)
         assert len(tons) == 3, (nome, tons)
-    escuro = {vazio[y][x] for y in range(y0, y1 + 1) for x in range(x0, x1 + 1)}
-    assert len(escuro) == 1 and max(next(iter(escuro))) <= 32, escuro
-    # a moldura dourada fecha a tela nos 4 lados (o contorno de fora é escuro, o meio é ouro)
     for x in range(x0 - 3, x1 + 4):
-        assert vazio[y0 - 3][x][0] > vazio[y0 - 3][x][2] and vazio[y1 + 3][x][0] > vazio[y1 + 3][x][2]
+        assert ref[y0 - 3][x][0] > ref[y0 - 3][x][2] and ref[y1 + 3][x][0] > ref[y1 + 3][x][2]
     for y in range(y0 - 3, y1 + 4):
-        assert vazio[y][x0 - 3][0] > vazio[y][x0 - 3][2] and vazio[y][x1 + 3][0] > vazio[y][x1 + 3][2]
+        assert ref[y][x0 - 3][0] > ref[y][x0 - 3][2] and ref[y][x1 + 3][0] > ref[y][x1 + 3][2]
+
+
+# ---------- parte 2: as ocupações 3 e 4 no prédio (falas, bilhetes, rosas, curador) ----------
+def _texto_plano(texto: str, rotulo: str) -> str:
+    """O texto de um rótulo sem os códigos de quebra: as linhas viram uma só, separadas por 1 espaço."""
+    corpo = _rotulo("\n" + texto, rotulo)
+    pedacos = re.findall(r'\.string "(.*)"', corpo)
+    return re.sub(r"\s+", " ", re.sub(r"\\[nlp]", " ", "".join(pedacos)).replace("$", " ")).strip()
+
+
+def _rotulos_de_texto(texto: str) -> list[str]:
+    return re.findall(r"^(\w+)::", texto, re.M)
+
+
+def test_bilhetes_3_4_em_todos_os_andares():
+    """Cada andar (1º ao 6º) tem os bilhetes das ocupações 3 e 4, ligados à ocupação (VAR_FAMILIA_OCUPACAO), com o
+    título completo do chefe quando o citam. Os da Rota 23 dependem só da ocupação, como os da parte 1."""
+    for n in range(1, 7):
+        nome = NOMES[n]
+        s = (MAPS / nome / "scripts.inc").read_text(encoding="utf-8")
+        t = (MAPS / nome / "text.inc").read_text(encoding="utf-8")
+        for k in (3, 4):
+            assert f"goto_if_eq VAR_RESULT, {k}, {nome}_EventScript_Bilhete{k}" in s, (nome, k)
+            corpo = _rotulo(s, f"{nome}_EventScript_Bilhete{k}")
+            assert f"msgbox {nome}_Text_Bilhete{k}" in corpo and "releaseall" in corpo, (nome, k)
+            plano = _texto_plano(t, f"{nome}_Text_Bilhete{k}")
+            assert plano, (nome, k)
+        assert "GARCHOMP, O MERCENÁRIO" in _texto_plano(t, f"{nome}_Text_Bilhete3"), nome
+        assert "DARKRAI, O PESADELO" in _texto_plano(t, f"{nome}_Text_Bilhete4"), nome
+    # no 6º andar o livro-caixa vale só com chefe ativo; sem chefe: depois da 2 "alguém de fora", depois da 3 a sombra
+    s6 = (MAPS / NOMES[6] / "scripts.inc").read_text(encoding="utf-8")
+    t6 = (MAPS / NOMES[6] / "text.inc").read_text(encoding="utf-8")
+    sem = _rotulo(s6, "Route23_FamiliaSombra_6F_EventScript_BilheteSemChefe")
+    assert "goto_if_eq VAR_RESULT, 2, Route23_FamiliaSombra_6F_EventScript_BilheteDeFora" in sem
+    assert "goto_if_ge VAR_RESULT, 3, Route23_FamiliaSombra_6F_EventScript_BilheteSombra" in sem
+    assert "buscar alguém de fora" in _texto_plano(t6, "Route23_FamiliaSombra_6F_Text_BilheteDeFora")
+    sombra = _texto_plano(t6, "Route23_FamiliaSombra_6F_Text_BilheteSombra")
+    assert "sombra por trás do Dom" in sombra and "sonhos" in sombra
+
+
+def test_titulos_nas_falas():
+    """Todo rótulo de texto do prédio, da sala de troféus e do 1º andar que cita GARCHOMP ou DARKRAI traz o título ao
+    lado ("GARCHOMP, O MERCENÁRIO", "DARKRAI, O PESADELO"), mesmo quebrado em duas linhas; e os ramos das ocupações
+    3 e 4 da sala do chefe existem, cada um com o título do próprio chefe."""
+    mapas = [NOMES[n] for n in range(1, 7)] + ["SevenIsland_UnusedHouse"]
+    achados = 0
+    for nome in mapas:
+        t = (MAPS / nome / "text.inc").read_text(encoding="utf-8")
+        for rotulo in _rotulos_de_texto(t):
+            plano = _texto_plano(t, rotulo)
+            for especie, titulo in (("GARCHOMP", "O MERCENÁRIO"), ("DARKRAI", "O PESADELO")):
+                assert plano.count(especie) == plano.count(f"{especie}, {titulo}"), (nome, rotulo, plano)
+                achados += plano.count(especie)
+    assert achados >= 20, achados
+    t6 = (MAPS / NOMES[6] / "text.inc").read_text(encoding="utf-8")
+    for sufixo, especie, titulo in (("Mercenario", "GARCHOMP", "O MERCENÁRIO"), ("Pesadelo", "DARKRAI", "O PESADELO")):
+        for base in ("", "SemGemeos"):
+            assert f"{especie}, {titulo}:" in _texto_plano(t6, f"Route23_FamiliaSombra_6F_Text_{sufixo}{base}")
+        for base in ("Desafio", "Fuga"):
+            assert f"{especie}, {titulo}:" in _texto_plano(t6, f"Route23_FamiliaSombra_6F_Text_{base}{sufixo}")
+        assert f"{especie}, {titulo}," in _texto_plano(t6, f"Route23_FamiliaSombra_6F_Text_Rosa{sufixo}")
+    assert "RosaChefe" not in t6 and "RosaChefe" not in (MAPS / NOMES[6] / "scripts.inc").read_text(encoding="utf-8")
+    # os gêmeos da parte 2: Gligar com o Mercenário e Dusclops com o Pesadelo
+    assert "Gligar" in _texto_plano(t6, "Route23_FamiliaSombra_6F_Text_GemeosGligar")
+    assert "Dusclops" in _texto_plano(t6, "Route23_FamiliaSombra_6F_Text_GemeosDusclops")
+
+
+def test_sala_do_chefe_ramos_3_e_4():
+    """Falas, gêmeos, desafio, fuga e rosa por ocupação: nada cai mais nas falas do Dom (antes `call_if_ne ..., 2`)."""
+    s = (MAPS / NOMES[6] / "scripts.inc").read_text(encoding="utf-8")
+    assert "call_if_ne VAR_0x8008, 2," not in s
+    for etapa in ("Fala", "Desafio", "Fuga"):
+        for nome, ocupacao in QUADROS_CHEFES:
+            assert f"call_if_eq VAR_0x8008, {ocupacao}, Route23_FamiliaSombra_6F_EventScript_{etapa}{nome}" in s, (etapa, nome)
+    cena = _rotulo(s, "Route23_FamiliaSombra_6F_EventScript_Cena")
+    assert "goto_if_eq VAR_0x8008, 3, Route23_FamiliaSombra_6F_EventScript_GemeosGligar" in cena
+    assert "goto_if_eq VAR_0x8008, 4, Route23_FamiliaSombra_6F_EventScript_GemeosDusclops" in cena
+    for sufixo, texto in (("Gligar", "GemeosGligar"), ("Dusclops", "GemeosDusclops")):
+        corpo = _rotulo(s, f"Route23_FamiliaSombra_6F_EventScript_Gemeos{sufixo}")
+        assert corpo.count("trainerbattle TRAINER_BATTLE_CONTINUE_SCRIPT_DOUBLE, TRAINER_FAMILIA_GEMEOS, "
+                           "LOCALID_FAMILIA_6F_GEMEO_A,") == 1 and f"Text_{texto}," in corpo
+    for nome in ("Mercenario", "Pesadelo"):
+        sem = _rotulo(s, f"Route23_FamiliaSombra_6F_EventScript_Fala{nome}")
+        assert f"goto_if_set FLAG_FAMILIA_GEMEOS_VENCIDOS, Route23_FamiliaSombra_6F_EventScript_Fala{nome}SemGemeos" in sem
+    assert "msgbox Route23_FamiliaSombra_6F_Text_RosaMercenario" in _rotulo(s, "Route23_FamiliaSombra_6F_EventScript_RosaAzul")
+    assert "msgbox Route23_FamiliaSombra_6F_Text_RosaPesadelo" in _rotulo(s, "Route23_FamiliaSombra_6F_EventScript_RosaNegra")
+
+
+def test_curador_parte2():
+    """O curador da Sala de Troféus comenta a rosa que falta, na ordem das ocupações: Dom, Cobrador, Mercenário,
+    Pesadelo; com as 4 só elogia a sala (e segue para as taças)."""
+    s = (MAPS / "SevenIsland_UnusedHouse" / "scripts.inc").read_text(encoding="utf-8")
+    t = (MAPS / "SevenIsland_UnusedHouse" / "text.inc").read_text(encoding="utf-8")
+    curador = _rotulo(s, "SevenIsland_UnusedHouse_EventScript_Curador")
+    ordem = [f"goto_if_unset FLAG_FAMILIA_ROSA_{n}, SevenIsland_UnusedHouse_EventScript_CuradorFalta{nome}"
+             for n, nome in ((1, "Dom"), (2, "Cobrador"), (3, "Mercenario"), (4, "Pesadelo"))]
+    pos = [curador.index(o) for o in ordem]
+    assert pos == sorted(pos) and curador.index("msgbox SevenIsland_UnusedHouse_Text_CuradorRosas") > pos[-1]
+    for nome in ("Mercenario", "Pesadelo"):
+        corpo = _rotulo(s, f"SevenIsland_UnusedHouse_EventScript_CuradorFalta{nome}")
+        assert f"msgbox SevenIsland_UnusedHouse_Text_CuradorFalta{nome}" in corpo
+        assert "goto SevenIsland_UnusedHouse_EventScript_CuradorTacas" in corpo
+    assert "GARCHOMP, O MERCENÁRIO" in _texto_plano(t, "SevenIsland_UnusedHouse_Text_CuradorFaltaMercenario")
+    assert "DARKRAI, O PESADELO" in _texto_plano(t, "SevenIsland_UnusedHouse_Text_CuradorFaltaPesadelo")
+    assert "quatro rosas" in _texto_plano(t, "SevenIsland_UnusedHouse_Text_CuradorRosas")
+    assert "As outras redomas seguem vazias" not in t
 
 
 def test_chefe_alcancavel_pelo_balcao():

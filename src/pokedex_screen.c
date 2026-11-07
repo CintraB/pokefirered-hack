@@ -906,7 +906,7 @@ void DexScreen_LoadResources(void)
     sPokedexScreenData = Alloc(sizeof(struct PokedexScreenData));
     *sPokedexScreenData = sDexScreenDataInitialState;
     sPokedexScreenData->taskId = taskId;
-    sPokedexScreenData->listItems = Alloc(NATIONAL_DEX_COUNT * sizeof(struct ListMenuItem));
+    sPokedexScreenData->listItems = Alloc(NATIONAL_DEX_TOTAL * sizeof(struct ListMenuItem));
     sPokedexScreenData->numSeenNational = DexScreen_GetDexCount(FLAG_GET_SEEN, 1);
     sPokedexScreenData->numOwnedNational = DexScreen_GetDexCount(FLAG_GET_CAUGHT, 1);
     sPokedexScreenData->numSeenKanto = DexScreen_GetDexCount(FLAG_GET_SEEN, 0);
@@ -1370,7 +1370,7 @@ static void DexScreen_CreateCharacteristicListMenu(void)
 
 static u16 DexScreen_CountMonsInOrderedList(u8 orderIdx)
 {
-    s32 max_n = IsNationalPokedexUiEnabled() ? NATIONAL_DEX_COUNT : KANTO_DEX_COUNT;
+    s32 max_n = IsNationalPokedexUiEnabled() ? NATIONAL_DEX_TOTAL : KANTO_DEX_COUNT;
     u16 ndex_num;
     u16 ret = NATIONAL_DEX_NONE;
     s32 i;
@@ -1399,7 +1399,7 @@ static u16 DexScreen_CountMonsInOrderedList(u8 orderIdx)
         }
         break;
     case DEX_ORDER_ATOZ:
-        for (i = 0; i < NUM_SPECIES - 1; i++)
+        for (i = 0; i < NELEMS(gPokedexOrder_Alphabetical); i++)
         {
             ndex_num = gPokedexOrder_Alphabetical[i];
             if (ndex_num <= max_n)
@@ -1416,7 +1416,7 @@ static u16 DexScreen_CountMonsInOrderedList(u8 orderIdx)
         }
         break;
     case DEX_ORDER_TYPE:
-        for (i = 0; i < NUM_SPECIES - 1; i++)
+        for (i = 0; i < NELEMS(gPokedexOrder_Type); i++)
         {
             ndex_num = SpeciesToNationalPokedexNum(gPokedexOrder_Type[i]);
             if (ndex_num <= max_n)
@@ -1433,7 +1433,7 @@ static u16 DexScreen_CountMonsInOrderedList(u8 orderIdx)
         }
         break;
     case DEX_ORDER_LIGHTEST:
-        for (i = 0; i < NATIONAL_DEX_COUNT; i++)
+        for (i = 0; i < NELEMS(gPokedexOrder_Weight); i++)
         {
             ndex_num = gPokedexOrder_Weight[i];
             if (ndex_num <= max_n)
@@ -1450,7 +1450,7 @@ static u16 DexScreen_CountMonsInOrderedList(u8 orderIdx)
         }
         break;
     case DEX_ORDER_SMALLEST:
-        for (i = 0; i < NATIONAL_DEX_COUNT; i++)
+        for (i = 0; i < NELEMS(gPokedexOrder_Height); i++)
         {
             ndex_num = gPokedexOrder_Height[i];
             if (ndex_num <= max_n)
@@ -1467,7 +1467,7 @@ static u16 DexScreen_CountMonsInOrderedList(u8 orderIdx)
         }
         break;
     case DEX_ORDER_NUMERICAL_NATIONAL:
-        for (i = 0; i < NATIONAL_DEX_COUNT; i++)
+        for (i = 0; i < NATIONAL_DEX_TOTAL; i++)
         {
             ndex_num = i + 1;
             seen = DexScreen_GetSetPokedexFlag(ndex_num, FLAG_GET_SEEN, FALSE);
@@ -2214,7 +2214,7 @@ static void DexScreen_LoadMonPicInWindow(u8 windowId, u16 species, u16 paletteOf
 
 static void DexScreen_PrintMonDexNo(u8 windowId, u8 fontId, u16 species, u8 x, u8 y)
 {
-    u16 dexNum = SpeciesToNationalPokedexNum(species);
+    u16 dexNum = NationalDexNumToDisplayed(SpeciesToNationalPokedexNum(species));
     DexScreen_AddTextPrinterParameterized(windowId, fontId, gText_PokedexNo, x, y, 0);
     DexScreen_PrintNum3LeadingZeroes(windowId, fontId, dexNum, x + 9, y, 0);
 }
@@ -2228,6 +2228,10 @@ s8 DexScreen_GetSetPokedexFlag(u16 nationalDexNo, u8 caseId, bool8 indexIsSpecie
 
     if (indexIsSpecies)
         nationalDexNo = SpeciesToNationalPokedexNum(nationalDexNo);
+
+    // Sem número na Dex (o Ovo, as letras do Unown) ou além dos bytes do save: nada a ler nem a gravar (POK-54)
+    if (nationalDexNo == 0 || nationalDexNo > DEX_FLAGS_NO * 8)
+        return FALSE;
 
     nationalDexNo--;
     index = nationalDexNo / 8;
@@ -2282,13 +2286,8 @@ static u16 DexScreen_GetDexCount(u8 caseId, bool8 whichDex)
                 count++;
         }
         break;
-    case 1: // National
-        for (i = 0; i < NATIONAL_DEX_COUNT; i++)
-        {
-            if (DexScreen_GetSetPokedexFlag(i + 1, caseId, FALSE))
-                count++;
-
-        }
+    case 1: // National (POK-54: with the 4 extras; the 386 rules use GetNationalPokedexCount)
+        count = GetNationalPokedexCountWithExtras(caseId);
         break;
     }
     return count;

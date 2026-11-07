@@ -255,10 +255,10 @@ class ConquistasScenario(CatchSaveScenario):
         assert historia == 3 | 12 << 8, f"história = {historia & 0xFF} de {historia >> 8}"
         ativas = [c for c in cq.dados()["conquistas"] if c.get("ativa", True) and c["aba"] == "batalha"]
         batalha = self.box.conq_contador(4 + ABA_BATALHA)
-        assert batalha >> 8 == len(ativas) == 10, f"batalha: {batalha >> 8} válidas"   # 7 no POK-42 + 3 da Família Sombra (POK-51)
+        assert batalha >> 8 == len(ativas) == 12, f"batalha: {batalha >> 8} válidas"   # 7 no POK-42 + 5 da Família Sombra (POK-51, POK-54)
         self.box.conq_aplicar(cq.num("rival_todas"), APLICAR_PERDER)
         perdeu = self.box.conq_contador(4 + ABA_BATALHA)
-        assert perdeu >> 8 == 9 and perdeu & 0xFF == batalha & 0xFF, f"batalha depois = {perdeu:#x}"
+        assert perdeu >> 8 == 11 and perdeu & 0xFF == batalha & 0xFF, f"batalha depois = {perdeu:#x}"
         return f"3 insígnias: história 3 de 12; rival_todas perdida: batalha {batalha >> 8} → {perdeu >> 8} válidas"
 
     def _marcar_perder(self) -> str:

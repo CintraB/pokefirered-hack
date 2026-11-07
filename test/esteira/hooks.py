@@ -508,6 +508,45 @@ class Mailbox:
         result = self.call(CMD_SET_PARTY_PID_LOW, slot, low)
         assert result != 0xFFFFFFFF, f"SET_PARTY_PID_LOW recusado: slot {slot} vazio"
 
+    def dex_info(self, species: int) -> tuple[int, int]:
+        """(número nacional interno, número impresso nas telas) da espécie; (0, 0) se não tem entrada na Dex."""
+        result = self.call(CMD_DEX_INFO, species)
+        assert result != 0xFFFFFFFF, f"DEX_INFO recusado: espécie {species} fora de NUM_SPECIES"
+        return result & 0xFFFF, result >> 16
+
+    def dex_marcar(self, dex: int, modo: int) -> tuple[int, int]:
+        """Marca o número nacional INTERNO `dex` (modo 0 limpa vistos, capturados e as cópias; 1 visto; 2 visto e
+        capturado); devolve (capturados até os 386, capturados com os 4 extras)."""
+        result = self.call(CMD_DEX_MARCAR, dex, modo)
+        assert result != 0xFFFFFFFF, f"DEX_MARCAR recusado: dex {dex}, modo {modo}"
+        return result & 0xFFFF, result >> 16
+
+    def dex_completa(self, dex: int = 0) -> tuple[bool, bool, bool, bool]:
+        """Só leitura: (HasAllMons, HasAllKantoMonsWithMew, capturado, visto) do número nacional interno `dex`
+        (capturado e visto são False para dex 0)."""
+        result = self.call(CMD_DEX_COMPLETA, dex)
+        return tuple(bool(result >> bit & 1) for bit in range(4))
+
+    def familia_chefe_caiu(self) -> tuple[int, int, tuple[bool, bool, bool, bool]]:
+        """Chama o special FamiliaSombra_ChefeCaiu (o chefe da ocupação atual caiu; gBattleOutcome diz se foi capturado):
+        (ocupação, estado, (capturado do chefe 1, 2, 3, 4))."""
+        result = self.call(CMD_FAMILIA_CHEFE_CAIU)
+        return result & 0xFF, result >> 8 & 0xFF, tuple(bool(result >> (16 + n) & 1) for n in range(4))
+
+    def dossie_abrir(self) -> None:
+        """Abre o dossiê da Família Sombra pelo special Dossie_Abrir num script de campo (com fadescreen e waitstate)."""
+        result = self.call(CMD_DOSSIE_ABRIR)
+        assert result == 1, f"DOSSIE_ABRIR recusado: {result:#x}"
+
+    def dossie_estado(self) -> dict | None:
+        """Estado do dossiê aberto: {pagina (0-based), total, chefe (0 capa, 1-4, 5 depois), carimbo (0 nenhum,
+        1 derrotado, 2 capturado), pronta}; None com a tela fechada."""
+        result = self.call(CMD_DOSSIE_ESTADO)
+        if result == 0xFFFFFFFF:
+            return None
+        return {"pagina": result & 0xFF, "total": result >> 8 & 0xFF, "chefe": result >> 16 & 0xFF,
+                "carimbo": result >> 24 & 0x7F, "pronta": bool(result >> 31)}
+
     def familia_chefe(self) -> None:
         """Começa a batalha contra o chefe da ocupação pelo special FamiliaSombra_IniciarChefe num script de campo."""
         result = self.call(CMD_FAMILIA_CHEFE)
@@ -523,6 +562,14 @@ CMD_FAMILIA_CHEFE = 0x124   # -> 1: a batalha do chefe (special FamiliaSombra_In
 
 # --- POK-51: casas (enum à parte, a partir de 0x130) --------------------------------------------
 CMD_SET_PARTY_PID_LOW = 0x130  # arg0 = slot, arg1 = 16 bits baixos da personalidade -> espécie (0xFFFFFFFF = slot vazio)
+
+# --- POK-54: Pokédex dos 4 extras (enum à parte, a partir de 0x140) ------------------------------
+CMD_DEX_INFO = 0x140    # arg0 = espécie -> número nacional interno | número impresso << 16 (0xFFFFFFFF = fora de NUM_SPECIES)
+CMD_DEX_MARCAR = 0x141  # arg0 = número nacional interno, arg1 = 0 limpa / 1 visto / 2 visto e capturado -> capturados (386) | com os extras << 16
+CMD_DEX_COMPLETA = 0x142  # arg0 = número nacional interno (0 = nenhum), só leitura -> HasAllMons | HasAllKantoMonsWithMew << 1 | capturado(arg0) << 2 | visto(arg0) << 3
+CMD_FAMILIA_CHEFE_CAIU = 0x143  # -> ocupação | estado << 8 | (FLAG_FAMILIA_CAPTURADO_n no bit n - 1) << 16: FamiliaSombra_ChefeCaiu (gBattleOutcome decide a captura)
+CMD_DOSSIE_ABRIR = 0x144   # -> 1: o dossiê pelo special Dossie_Abrir num script de campo (0xFFFFFFFF = special fora de gSpecials)
+CMD_DOSSIE_ESTADO = 0x145  # -> página | total << 8 | chefe da página << 16 | carimbo << 24 | pronta << 31 (0xFFFFFFFF = fechada)
 
 # --- Hack 6: breeding genético (enum à parte em include/test_hooks.h, a partir de 0x60; ------
 # o uso fica em esteira/breeding.py e scenarios/full_breeding.py / full_egg.py)

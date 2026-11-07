@@ -1644,6 +1644,29 @@ u8 CastformDataTypeChange(u8 battler)
     return formChange;
 }
 
+// POK-54, Bad Dreams: o 1º adversário de `user` (a partir da posição `from`) em campo, vivo e dormindo vira o
+// alvo, com o dano de 1/8 do PS máximo (mínimo 1). Aliados nunca entram. FALSE se não houver nenhum.
+bool8 TrySetBadDreamsTarget(u8 user, u8 from)
+{
+    u8 i;
+
+    for (i = from; i < gBattlersCount; i++)
+    {
+        if (GetBattlerSide(i) != GetBattlerSide(user)
+         && !(gAbsentBattlerFlags & gBitTable[i])
+         && gBattleMons[i].hp != 0
+         && (gBattleMons[i].status1 & STATUS1_SLEEP))
+        {
+            gBattlerTarget = i;
+            gBattleMoveDamage = gBattleMons[i].maxHP / 8;
+            if (gBattleMoveDamage == 0)
+                gBattleMoveDamage = 1;
+            return TRUE;
+        }
+    }
+    return FALSE;
+}
+
 u8 AbilityBattleEffects(u8 caseID, u8 battler, u8 ability, u8 special, u16 moveArg)
 {
     u8 effect = 0;
@@ -1877,6 +1900,13 @@ u8 AbilityBattleEffects(u8 caseID, u8 battler, u8 ability, u8 special, u16 moveA
                     break;
                 case ABILITY_TRUANT:
                     gDisableStructs[gBattlerAttacker].truantCounter ^= 1;
+                    break;
+                case ABILITY_BAD_DREAMS: // POK-54: o script passa por cada adversário dormindo
+                    if (TrySetBadDreamsTarget(battler, 0))
+                    {
+                        BattleScriptPushCursorAndCallback(BattleScript_BadDreamsActivates);
+                        effect++;
+                    }
                     break;
                 }
             }

@@ -53,6 +53,7 @@ static const u8 sText_Trainer1RecallBoth[] = _("{B_TRAINER1_NAME}: {B_OPPONENT_M
 static const u8 sText_Trainer2WinText[] = _("{B_TRAINER2_WIN_TEXT}");
 static const u8 sText_PkmnGainedEXP[] = _("O {B_BUFF1} ganhou\n{B_BUFF3} PE{B_BUFF2}!\p");
 static const u8 sText_TeamGainedExp[] = _("O resto da equipe também\nganhou PE!\p");
+static const u8 sText_BadDreams[] = _("O {B_DEF_NAME_WITH_PREFIX} é\natormentado pelo pesadelo!"); // POK-54
 static const u8 sText_EmptyString4[] = _("");
 static const u8 sText_ABoosted[] = _(" com bônus");
 static const u8 sText_PkmnGrewToLv[] = _("O {B_BUFF1} subiu para o\nNv. {B_BUFF2}!{WAIT_SE}\p");
@@ -910,6 +911,7 @@ const u8 *const gBattleStringsTable[BATTLESTRINGS_COUNT - BATTLESTRINGS_TABLE_ST
     [STRINGID_TRAINER1MON1AND2COMEBACK - BATTLESTRINGS_TABLE_START]      = sText_Trainer1RecallBoth,
     [STRINGID_TEAMGAINEDEXP - BATTLESTRINGS_TABLE_START]                 = sText_TeamGainedExp,
     [STRINGID_FAMILIADESVIABOLA - BATTLESTRINGS_TABLE_START]             = gText_FamiliaDesviaBola,
+    [STRINGID_BADDREAMS - BATTLESTRINGS_TABLE_START]                     = sText_BadDreams,
 };
 
 const u16 gMissStringIds[] =

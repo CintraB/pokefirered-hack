@@ -2018,7 +2018,7 @@ void SpriteCB_FaintOpponentMon(struct Sprite *sprite)
         if (unownForm == 0)
             unownSpecies = SPECIES_UNOWN;  // Use the A Unown form.
         else
-            unownSpecies = NUM_SPECIES + unownForm;  // Use one of the other Unown letters.
+            unownSpecies = SPECIES_EGG + unownForm;  // Use one of the other Unown letters.
 
         yOffset = gMonFrontPicCoords[unownSpecies].y_offset;
     }
@@ -2026,7 +2026,7 @@ void SpriteCB_FaintOpponentMon(struct Sprite *sprite)
     {
         yOffset = gCastformFrontSpriteCoords[gBattleMonForms[battler]].y_offset;
     }
-    else if (species > NUM_SPECIES)
+    else if (species >= NUM_SPECIES)
     {
         yOffset = gMonFrontPicCoords[SPECIES_NONE].y_offset;
     }

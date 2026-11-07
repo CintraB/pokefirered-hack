@@ -28,7 +28,7 @@ struct FollowerSpecies
 };
 
 // gFollowerSpecies[dex nacional - 1]
-#define FOLLOWER_SPECIES_COUNT 386
+#define FOLLOWER_SPECIES_COUNT 390
 
 // Variante do Pokémon (Follower_GetMonVariant): a padrão, a fêmea (só se a espécie tem `female`) ou a forma
 // FOLLOWER_VARIANT_FORM + letra do Unown (0..27, GetUnownLetterByPersonality)
@@ -66,7 +66,7 @@ struct ObjectEvent;
 struct Pokemon;
 
 // Entrada base da espécie (busca O(1) pela Pokédex nacional). NULL se a espécie não segue o jogador: SPECIES_NONE,
-// ovo, fora de 1..386 ou sem entrada na tabela.
+// ovo, fora de 1..390 ou sem entrada na tabela.
 const struct FollowerSpecies *Follower_GetSpeciesInfo(u16 species);
 
 // Variante do Pokémon (FOLLOWER_VARIANT_*): fêmea por GetMonGender se a espécie tem `female`; Unown (formCount) pela

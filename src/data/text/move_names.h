@@ -359,5 +359,11 @@ const u8 gMoveNames[MOVES_COUNT][MOVE_NAME_LENGTH + 1] = {
     [MOVE_DAZZLING_GLEAM]  = _("Clarão Desl."),
     [MOVE_DRAINING_KISS]   = _("Beijo Dren."),
     [MOVE_FAIRY_WIND]      = _("Vento Fada"),
-    [MOVE_DISARMING_VOICE] = _("Voz Desarm.")
+    [MOVE_DISARMING_VOICE] = _("Voz Desarm."),
+    [MOVE_DRAGON_RUSH]     = _("Inv. Dragão"),
+    [MOVE_DARK_VOID]       = _("Vazio Negro"),
+    [MOVE_FIRE_FANG]       = _("Presa Ígnea"),
+    [MOVE_OMINOUS_WIND]    = _("Vento Agouro"),
+    [MOVE_NASTY_PLOT]      = _("Trama Vil"),
+    [MOVE_DARK_PULSE]      = _("Pulso Negro")
 };

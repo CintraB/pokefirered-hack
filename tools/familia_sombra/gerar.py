@@ -14,6 +14,8 @@ Saídas (todas versionadas, nada à mão):
     graphics/object_events/pics/familia/<nome>.png           sprite 32x40 com chapéu (1 quadro), 4 bits indexado
     graphics/object_events/pics/familia/redoma_<x>.png       redoma 32x32 (vazia, vermelha, dourada, azul, negra)
     graphics/object_events/pics/familia/taca_<x>.png         taça 16x32 (bronze, prata, ouro)
+    graphics/object_events/pics/familia/policia_<x>.png      Growlithe e Arcanine da polícia, 32x32 (quadro 0 do seguidor, sem chapéu)
+    graphics/object_events/pics/familia/oficial_jenny.png    a Oficial Jenny, NPC 160x32 (10 quadros 16x32), paleta própria
     graphics/object_events/palettes/familia/*.pal            JASC 16 cores (índice 0 = transparente), uma por sprite;
                                                              redomas_a/redomas_b (duas rosas por paleta) e tacas
     graphics/items/icons/rosa_<x>.png + icon_palettes/rosa_<x>.pal   ícones 24x24 das 4 rosas
@@ -68,6 +70,9 @@ ESPECIES = ["haunter", "misdreavus", "sableye", "banette", "houndour", "houndoom
             "muk", "weezing", "arbok", "mightyena", "absol", "cacturne", "shiftry", "crawdaunt", "golem", "persian",
             "machamp", "rhydon"]
 CHEFES_SHINY = ["gengar", "tyranitar"]
+# parte 2 (POK-54): entram DEPOIS das taças, para os ids da parte 1 (155..185) não mudarem (o id vai para o save)
+PARTE2 = ["gligar", "dusclops"]
+CHEFES_SHINY_PARTE2 = ["garchomp", "darkrai"]
 REDOMAS = ["vazia", "vermelha", "dourada", "azul", "negra"]
 TACAS = ["bronze", "prata", "ouro"]
 ROSAS = ["vermelha", "dourada", "azul", "negra"]
@@ -79,8 +84,17 @@ GRUPOS = {
     "sala_do_dom": ["gengar_shiny", "machamp"],
     "sala_do_cobrador": ["tyranitar_shiny", "rhydon"],
     "sala_de_trofeus": ["redomas_a", "redomas_b", "tacas"],
+    "sala_do_mercenario": ["garchomp_shiny", "gligar"],
+    "sala_do_pesadelo": ["darkrai_shiny", "dusclops"],
+    "porta_policia": ["oficial_jenny", "policia_growlithe", "policia_arcanine", "npc_policia"],
 }
+# parte 2, o fechamento (POK-54): a polícia na porta da Rota 23, depois do 190 (os ids do save só crescem no fim)
+POLICIA = ["growlithe", "arcanine"]
+JENNY = "oficial_jenny"
 SLOTS = ["PALSLOT_NPC_1", "PALSLOT_NPC_2", "PALSLOT_NPC_3", "PALSLOT_NPC_4"]
+GRUPOS_TARDIOS = ["porta_policia"]   # o que veio depois da parte 1: distribuído por último (os slots antigos não mudam)
+# paletas que não são nossas mas dividem o mapa: o policial (OBJ_EVENT_GFX_POLICEMAN) usa a azul de NPC no slot 1
+RESERVADAS = {"npc_policia": "PALSLOT_NPC_1"}
 
 # ---------- cores ----------
 C = {
@@ -401,6 +415,66 @@ def taca_png(material):
     return png_com_nomes((16, 32), pix, TACAS_PALETA)
 
 
+# ---------- a polícia da porta (parte 2) ----------
+TEAL = [(136, 224, 208), (64, 176, 176), (24, 104, 112)]   # o cabelo da Jenny: claro, médio, escuro
+PICNICKER = Path("graphics/object_events/pics/people/picnicker.png")
+NPC_AZUL = Path("graphics/object_events/palettes/npc_blue.pal")
+# índice do Picnicker -> índice da Jenny: o cabelo laranja (5-7) vai para os 3 tons de TEAL (11-13 da paleta dela) e o
+# que era pele nos 11-13 da paleta original do Picnicker volta para a pele (1, 2, 4); o resto fica igual
+JENNY_INDICES = {0: 0, 1: 1, 2: 2, 3: 3, 4: 4, 5: 11, 6: 12, 7: 13, 8: 8, 9: 9, 10: 10, 11: 1, 12: 2, 13: 4, 14: 14, 15: 15}
+JENNY_QUADRO = 16                 # largura de cada quadro
+# O quepe do Picnicker é uma boina com faixa clara; o da polícia é escuro, com o distintivo dourado (índices 5 e 6 da
+# paleta azul de NPC: ouro claro e ouro médio) e a aba escura que avança. Linhas de baixo para cima, por quadro:
+# de frente (0, 3 e 4: linha do emblema E; 9, com a mão levantada, tem o quepe uma linha acima) e de lado (2, 7 e 8:
+# topo S do quepe). As costas (1, 5 e 6) não têm emblema e ficam como estão.
+QUEPE_DE_FRENTE = {0: 16, 3: 17, 4: 17, 9: 14}
+QUEPE_DE_LADO = {2: 12, 7: 13, 8: 13}
+OURO_CLARO, OURO_MEDIO, ESCURO, COROA = 5, 6, 10, 9
+
+
+def retoques():
+    """{(quadro, x, y): índice} do quepe da Jenny (a aba que lê como quepe de polícia, o distintivo no meio)."""
+    r = {}
+    for quadro, e in QUEPE_DE_FRENTE.items():
+        for x in range(3, 13):
+            r[(quadro, x, e)] = COROA                 # sem o emblema branco da boina
+            r[(quadro, x, e + 1)] = ESCURO            # faixa escura de lado a lado
+        for x in range(5, 11):
+            r[(quadro, x, e + 2)] = ESCURO            # a faixa clara vira aba escura
+        for x in (7, 8):
+            r[(quadro, x, e + 1)] = OURO_CLARO        # o distintivo, 2x2, como o do policial
+            r[(quadro, x, e + 2)] = OURO_MEDIO
+    for quadro, s in QUEPE_DE_LADO.items():
+        r[(quadro, 3, s + 3)] = OURO_CLARO            # o emblema branco vira distintivo
+        r[(quadro, 3, s + 4)] = OURO_MEDIO
+        r[(quadro, 2, s + 5)] = ESCURO                # a aba que avança, escura
+        r[(quadro, 3, s + 6)] = ESCURO
+        r[(quadro, 4, s + 6)] = ESCURO
+    return r
+
+
+def jenny_png():
+    """(PNG indexado 160x32, paleta de 16 cores) da Oficial Jenny: a Picnicker com a paleta azul de NPC (a do policial),
+    o cabelo azul-petróleo (paleta própria, porque esse tom não existe na azul de NPC) e o quepe de polícia."""
+    pic = Image.open(REPO / PICNICKER)
+    pal = jasc(REPO / NPC_AZUL)
+    pal[11], pal[12], pal[13] = TEAL
+    pal = [pal[0]] + [q(c) for c in pal[1:]]
+    dados = [JENNY_INDICES[v] for v in pic.tobytes()]
+    largura = pic.width
+    for (quadro, x, y), indice in retoques().items():
+        dados[y * largura + quadro * JENNY_QUADRO + x] = indice
+    return png_indexado(pic.size, dados, pal), pal
+
+
+def policia_png(especie):
+    """(PNG indexado 32x32, paleta) do quadro 0 do seguidor (parado, de frente), sem chapéu."""
+    folha = Image.open(REPO / SEG_PICS / f"{especie}.png")
+    pal = jasc(REPO / SEG_PALS / f"{especie}.pal")
+    pal = [pal[0]] + [q(c) for c in pal[1:]]
+    return png_indexado((32, 32), list(folha.crop((0, 0, 32, 32)).tobytes()), pal), pal
+
+
 # ---------- lista de gráficos do mapa ----------
 def lista_gfx():
     """[(nome do arquivo, id C em maiúsculas, nome C em CamelCase, paleta, largura, altura)] na ordem dos ids."""
@@ -417,6 +491,14 @@ def lista_gfx():
         itens.append((f"redoma_{r}", f"REDOMA_{r.upper()}", f"Redoma{camel(r)}", PALETA_DA_REDOMA[r], "redoma"))
     for t in TACAS:
         itens.append((f"taca_{t}", f"TACA_{t.upper()}", f"Taca{camel(t)}", "tacas", "taca"))
+    for e in PARTE2:
+        itens.append((e, e.upper(), camel(e), e, "sprite"))
+    for e in CHEFES_SHINY_PARTE2:
+        n = f"{e}_shiny"
+        itens.append((n, n.upper(), camel(n), n, "sprite"))
+    for e in POLICIA:
+        itens.append((f"policia_{e}", f"POLICIA_{e.upper()}", f"Policia{camel(e)}", f"policia_{e}", "policia"))
+    itens.append((JENNY, JENNY.upper(), camel(JENNY), JENNY, "npc"))
     resultado = []
     for i, (arq, uid, cam, pal, tipo) in enumerate(itens):
         gid = f"OBJ_EVENT_GFX_{'FAMILIA_' if tipo == 'sprite' else ''}{uid}"
@@ -434,24 +516,36 @@ def paletas_distintas(gfx):
 
 
 def distribuir_slots(gfx):
-    """slot de cada paleta: grupos (cliques) com cores diferentes; o resto, no slot menos usado."""
+    """slot de cada paleta: grupos (cliques) com cores diferentes; o resto, no slot menos usado. Os grupos de
+    GRUPOS_TARDIOS entram por último: os slots que já estavam em uso não mudam quando um grupo novo chega."""
     paletas = paletas_distintas(gfx)
-    slot = {}
+    tardias = {p for k in GRUPOS_TARDIOS for p in GRUPOS[k]}
+    slot = dict(RESERVADAS)
     uso = {s: 0 for s in SLOTS}
-    for membros in GRUPOS.values():
+
+    def escolher(p):
+        tomados = {slot[o] for m in GRUPOS.values() if p in m for o in m if o in slot}
+        livre = [s for s in SLOTS if s not in tomados]
+        assert livre, f"grupo com mais de {len(SLOTS)} paletas: {p}"
+        slot[p] = min(livre, key=lambda s: (uso[s], SLOTS.index(s)))
+        uso[slot[p]] += 1
+
+    for nome, membros in GRUPOS.items():
+        if nome in GRUPOS_TARDIOS:
+            continue
         for p in membros:
-            assert p in paletas, p
-            if p in slot:
-                continue
-            tomados = {slot[o] for m in GRUPOS.values() if p in m for o in m if o in slot}
-            livre = [s for s in SLOTS if s not in tomados]
-            assert livre, f"grupo com mais de {len(SLOTS)} paletas: {p}"
-            slot[p] = min(livre, key=lambda s: (uso[s], SLOTS.index(s)))
-            uso[slot[p]] += 1
+            assert p in paletas or p in RESERVADAS, p
+            if p not in slot:
+                escolher(p)
     for p in paletas:
-        if p not in slot:
+        if p not in slot and p not in tardias:
             slot[p] = min(SLOTS, key=lambda s: (uso[s], SLOTS.index(s)))
             uso[slot[p]] += 1
+    for nome in GRUPOS_TARDIOS:
+        for p in GRUPOS[nome]:
+            assert p in paletas or p in RESERVADAS, p
+            if p not in slot:
+                escolher(p)
     return slot
 
 
@@ -492,13 +586,17 @@ def texto_c_gfx(gfx, slot):
     L.append("")
     dim = {"sprite": (4, 5, 32, 40, 640, "32x40", "SHADOW_SIZE_M"),
            "redoma": (4, 4, 32, 32, 512, "32x32", "SHADOW_SIZE_S"),
-           "taca": (2, 4, 16, 32, 256, "16x32", "SHADOW_SIZE_S")}
+           "taca": (2, 4, 16, 32, 256, "16x32", "SHADOW_SIZE_S"),
+           "policia": (4, 4, 32, 32, 512, "32x32", "SHADOW_SIZE_M"),
+           "npc": (2, 4, 16, 32, 256, "16x32", "SHADOW_SIZE_M")}
     for g in gfx:
         w, h, pw, ph, tam, sufixo, sombra = dim[g["tipo"]]
         c = g["camel"]
         L.append(f'static const u16 sFamiliaPic_{c}[] = INCBIN_U16("graphics/object_events/pics/familia/{g["arquivo"]}.4bpp");')
         L.append(f"static const struct SpriteFrameImage sFamiliaPicTable_{c}[] = {{")
-        L += [f"    overworld_frame(sFamiliaPic_{c}, {w}, {h}, 0)," for _ in range(QUADROS_NA_TABELA)]
+        # o NPC tem os 10 quadros de verdade (a Jenny anda e olha para os lados); os outros, 1 quadro repetido
+        quadros = range(QUADROS_NA_TABELA) if g["tipo"] == "npc" else [0] * QUADROS_NA_TABELA
+        L += [f"    overworld_frame(sFamiliaPic_{c}, {w}, {h}, {i})," for i in quadros]
         L.append("};")
         oam = "32x32" if sufixo == "32x40" else sufixo
         tabelas = "gObjectEventSpriteOamTables_" + sufixo
@@ -514,7 +612,7 @@ def texto_c_gfx(gfx, slot):
             f"    .shadowSize = {sombra},",
             "    .inanimate = FALSE,",
             "    .disableReflectionPaletteLoad = FALSE,",
-            "    .tracks = TRACKS_NONE,",
+            f"    .tracks = {'TRACKS_FOOT' if g['tipo'] == 'npc' else 'TRACKS_NONE'},",
             f"    .oam = &gObjectEventBaseOam_{oam},",
             f"    .subspriteTables = {tabelas},",
             "    .anims = sAnimTable_Standard,",
@@ -548,7 +646,7 @@ MARCA_FIM = "// </familia-sombra gfx>"
 
 def bloco_constantes(gfx):
     L = [MARCA_INI,
-         "// POK-51: sprites do mapa da Família Sombra (chapéu), redomas e taças da sala de troféus"]
+         "// POK-51/POK-54: sprites do mapa da Família Sombra (chapéu), redomas e taças da sala de troféus"]
     L += [f"#define {g['id']} {g['valor']}" for g in gfx]
     L += ["", f"#define NUM_OBJ_EVENT_GFX     {PRIMEIRO_GFX + len(gfx)}", MARCA_FIM]
     return "\n".join(L)
@@ -597,6 +695,14 @@ def gerar(saida):
             gravar_png(PICS / f"{a}.png", im)
             if not any(str(p).endswith(f"{g['paleta']}.pal") for p in gravados):
                 gravar_pal(PALS / f"{g['paleta']}.pal", pal)
+        elif g["tipo"] == "policia":
+            im, pal = policia_png(a[len("policia_"):])
+            gravar_png(PICS / f"{a}.png", im)
+            gravar_pal(PALS / f"{g['paleta']}.pal", pal)
+        elif g["tipo"] == "npc":
+            im, pal = jenny_png()
+            gravar_png(PICS / f"{a}.png", im)
+            gravar_pal(PALS / f"{g['paleta']}.pal", pal)
         else:
             im, pal = taca_png(a[len("taca_"):])
             gravar_png(PICS / f"{a}.png", im)
@@ -671,7 +777,8 @@ def folha(destino):
     y = 10
     d.text((10, y), "Sprites do mapa: sem chapéu (em cima) e com chapéu (embaixo), 4x", fill=(30, 30, 30), font=fonte)
     y += 24
-    nomes = [(e, False) for e in ESPECIES] + [(e, True) for e in CHEFES_SHINY]
+    nomes = ([(e, False) for e in ESPECIES] + [(e, True) for e in CHEFES_SHINY]
+             + [(e, False) for e in PARTE2] + [(e, True) for e in CHEFES_SHINY_PARTE2])
     x = 10
     linha = 0
     for nome, shiny in nomes:

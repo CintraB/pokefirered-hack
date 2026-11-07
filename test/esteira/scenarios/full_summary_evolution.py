@@ -9,7 +9,8 @@ teste, `save_from="captura"`). Os atalhos da build de teste (esteira/hooks.py) s
 leem o estado do resumo (página, modo, ovo) e o texto da página; o resto é pelo menu de verdade:
 
 1. o texto que GetEvolutionPageText monta para TODAS as espécies (1..CHIMECHO, sem as
-   OLD_UNOWN) é igual, byte a byte, ao gerado em Python a partir dos fontes;
+   OLD_UNOWN, e as do POK-54 depois das letras do Unown) é igual, byte a byte, ao gerado em
+   Python a partir dos fontes;
 2. START > POKéMON > Eevee > SUMMARY; → → → chega na página EVOLUTION (curPageIndex), com o
    texto do Eevee; ← volta para KNOWN MOVES e → de novo vai para EVOLUTION;
 3. na página EVOLUTION, ↓ troca de Pokémon (Onix, Slowpoke, Bulbasaur, Tauros): a página
@@ -166,7 +167,7 @@ class SummaryEvolutionScenario(CatchSaveScenario):
             if got != want:
                 wrong.append(f"{name}: jogo '{self._read(got)}', esperado '{self._read(want)}'")
         assert not wrong, f"{len(wrong)} espécie(s) com texto diferente: " + "; ".join(wrong[:8])
-        return (f"{len(species)} espécies (1..CHIMECHO, sem as OLD_UNOWN): GetEvolutionPageText "
+        return (f"{len(species)} espécies (1..CHIMECHO sem as OLD_UNOWN, e as do POK-54): GetEvolutionPageText "
                 "igual ao texto gerado dos fontes; Eevee: "
                 f"'{self._read(self.box.evolution_text(self._sp('SPECIES_EEVEE')))}'")
 

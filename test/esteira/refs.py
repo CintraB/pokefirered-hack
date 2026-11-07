@@ -25,6 +25,7 @@ from esteira.scenarios.full_seguidor import SCREEN_POINTS as SEGUIDOR_POINTS   #
 from esteira.scenarios.full_pokerus import SCREEN_POINTS as POKERUS_POINTS   # POK-50
 from esteira.scenarios.full_familia import SCREEN_POINTS as FAMILIA_POINTS   # POK-51
 from esteira.scenarios.full_casas import SCREEN_POINTS as CASAS_POINTS   # POK-51
+from esteira.scenarios.full_especies import SCREEN_POINTS as ESPECIES_POINTS   # POK-54
 from esteira.result import Result
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -65,7 +66,8 @@ SHARED_POINTS = (EVOLUTION_POINTS + EVOLUTION_PAGE_POINTS + SUMMARY_PAGE_POINTS 
                  + SEGUIDOR_POINTS  # POK-48: o seguidor parado, à noite e com o S.S. Anne (o 1º é sempre CHARMANDER)
                  + POKERUS_POINTS  # POK-50: o resumo do infectado (PKRS) e do curado (o pontinho)
                  + FAMILIA_POINTS  # POK-51: o prédio da Família Sombra (batalhas, andares, sala do Dom, pedágio, diário)
-                 + CASAS_POINTS)  # POK-51: o Mestre dos Golpes, o pescador e a sala de troféus
+                 + CASAS_POINTS  # POK-51: o Mestre dos Golpes, o pescador e a sala de troféus
+                 + ESPECIES_POINTS)  # POK-54: Gible, Gabite, Garchomp e Darkrai (resumo, equipe e batalha)
 DIFF_RED = (255, 0, 0)
 # O Pillow acusa PNG quebrado com OSError (UnidentifiedImageError é subclasse, "image file is
 # truncated"), SyntaxError ("broken PNG file") ou ValueError, conforme onde o arquivo está estragado.

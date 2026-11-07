@@ -4,6 +4,7 @@
 #include "gflib.h"
 #include "random.h"
 #include "conquistas.h"
+#include "familia_sombra.h"
 #include "text.h"
 #include "data.h"
 #include "battle.h"
@@ -932,6 +933,11 @@ static const u16 sSpeciesToNationalPokedexNum[NUM_SPECIES - 1] =
     SPECIES_TO_NATIONAL(JIRACHI),
     SPECIES_TO_NATIONAL(DEOXYS),
     SPECIES_TO_NATIONAL(CHIMECHO),
+    // POK-54: só na Dex nacional (a de Hoenn fica 0)
+    SPECIES_TO_NATIONAL(GIBLE),
+    SPECIES_TO_NATIONAL(GABITE),
+    SPECIES_TO_NATIONAL(GARCHOMP),
+    SPECIES_TO_NATIONAL(DARKRAI),
 };
 
 // Assigns all Hoenn Dex Indexes to a National Dex Index
@@ -3964,7 +3970,7 @@ void GetSpeciesName(u8 *name, u16 species)
     // Hmm? FRLG has < while Ruby/Emerald has <=
     for (i = 0; i < POKEMON_NAME_LENGTH; i++)
     {
-        if (species > NUM_SPECIES)
+        if (species >= NUM_SPECIES)
             name[i] = gSpeciesNames[0][i];
         else
             name[i] = gSpeciesNames[species][i];
@@ -5298,6 +5304,24 @@ u16 SpeciesToNationalPokedexNum(u16 species)
     return sSpeciesToNationalPokedexNum[species - 1];
 }
 
+// POK-54: the 4 extras sit right after Deoxys internally (387-390, so the Dex bits and the lists stay compact), but
+// are printed with their real Gen 4 numbers: Gible #443, Gabite #444, Garchomp #445 and Darkrai #491.
+static const u16 sExtraDexDisplayedNumbers[NATIONAL_DEX_EXTRAS_COUNT] =
+{
+    [NATIONAL_DEX_GIBLE - NATIONAL_DEX_COUNT - 1] = 443,
+    [NATIONAL_DEX_GABITE - NATIONAL_DEX_COUNT - 1] = 444,
+    [NATIONAL_DEX_GARCHOMP - NATIONAL_DEX_COUNT - 1] = 445,
+    [NATIONAL_DEX_DARKRAI - NATIONAL_DEX_COUNT - 1] = 491,
+};
+
+// Every Dex number that is printed (list, page, summary, Hall of Fame) goes through here.
+u16 NationalDexNumToDisplayed(u16 nationalNum)
+{
+    if (nationalNum > NATIONAL_DEX_COUNT && nationalNum <= NATIONAL_DEX_TOTAL)
+        return sExtraDexDisplayedNumbers[nationalNum - NATIONAL_DEX_COUNT - 1];
+    return nationalNum;
+}
+
 static u16 SpeciesToHoennPokedexNum(u16 species)
 {
     if (!species)
@@ -6029,8 +6053,9 @@ static u16 GetBattleBGM(void)
     // POK-51: os capangas dos andares 4-5 lutam ao som de treinador; o chefe, de lendário.
     if (gBattleTypeFlags & BATTLE_TYPE_FAMILIA)
         return MUS_VS_TRAINER;
+    // POK-54: o chefe da ocupação 4 (Darkrai) luta ao som do Deoxys; os outros, de lendário.
     if (gBattleTypeFlags & BATTLE_TYPE_FAMILIA_CHEFE)
-        return MUS_VS_LEGEND;
+        return FamiliaSombra_MusicaDoChefe();
     if (gBattleTypeFlags & BATTLE_TYPE_TRAINER)
     {
         switch (gTrainers[gTrainerBattleOpponent_A].trainerClass)
@@ -6088,7 +6113,7 @@ const u32 *GetMonSpritePalFromSpeciesAndPersonality(u16 species, u32 otId, u32 p
 {
     u32 shinyValue;
 
-    if (species > SPECIES_EGG)
+    if (species >= NUM_SPECIES)
         return gMonPaletteTable[0].data;
 
     shinyValue = GET_SHINY_VALUE(otId, personality);

@@ -166,12 +166,12 @@ def test_capangas_visiveis_tem_chapeu_e_paleta_livre_no_andar():
         assert all(m[1] == 0 for m in ocupacao)         # o nível vem do pedágio / dos andares 4-5
 
 
-def test_parte_2_marcada():
+def test_sem_marcas_de_parte_2():
+    """POK-54: os chefes de verdade entraram, então nenhuma marca de "troca na parte 2" sobra; capangas, gêmeos e
+    plantel das ocupações 3 e 4 ficam, com os níveis +6 por ocupação (test_niveis_do_spec)."""
+    assert "parte 2 troca" not in TIMES_H and "provisório" not in TIMES_H
     for table in ("sFamiliaCapangas", "sFamiliaPlantel"):
-        blocos = _ocupacao_blocks(table)
-        assert len(blocos) == 4, table
-        assert all("// parte 2 troca" not in b for b in blocos[:2]), table
-        assert all("// parte 2 troca" in b for b in blocos[2:]), table
+        assert len(_ocupacao_blocks(table)) == 4, table
 
 
 def test_cada_membro_com_item_e_quatro_golpes():
@@ -360,7 +360,7 @@ def test_chefe_sem_filme():
     flags = re.search(r"gBattleTypeFlags = ([^;]+);", chefe).group(1)
     assert "BATTLE_TYPE_FAMILIA_CHEFE" in flags and not re.search(r"BATTLE_TYPE_FAMILIA\b", flags)
     assert "BATTLE_TYPE_LEGENDARY" in flags
-    assert "CreateBattleStartTask(B_TRANSITION_BLUR, MUS_VS_LEGEND);" in chefe
+    assert "CreateBattleStartTask(B_TRANSITION_BLUR, FamiliaSombra_MusicaDoChefe());" in chefe
     assert "gTrainerBattleOpponent_A = 0;" in chefe          # nada de treinador velho na IA do chefe
     # o chefe é capturável (a bola segue o caminho normal e é gasta), mas o item fixo dele não sai (Ladrão/Truque)
     protegido = _block(FAMILIA_C, "bool8 FamiliaSombra_ItemProtegido(void)")
@@ -376,13 +376,17 @@ def _chefes() -> list[tuple[str, int, str, list[str]]]:
 def test_chefe_shiny_receita():
     """§6.5: o chefe é sempre shiny. A receita do SetLeadShiny (test_hooks.c): o jogador como OT e a metade alta da
     personalidade = OT alto ^ OT baixo ^ metade baixa (valor shiny 0); a metade baixa ao acaso (natureza e gênero)."""
-    iniciar = _block(FAMILIA_C, "void FamiliaSombra_IniciarChefe(void)")
-    assert "GetPlayerTrainerId()" in iniciar
+    criar = _block(FAMILIA_C, "void FamiliaSombra_CriarChefe(struct Pokemon *mon, u8 ocupacao, bool8 comItem)")
+    assert "GetPlayerTrainerId()" in criar
     assert ("CreateMon(mon, chefe->species, chefe->level, MAX_PER_STAT_IVS, TRUE, personality, OT_ID_PLAYER_ID, 0);"
-            in iniciar)
-    assert "personality = (((otId >> 16) ^ (otId & 0xFFFF) ^ baixa) & 0xFFFF) << 16 | baixa;" in iniciar
-    assert "SetMonMoveSlot(mon, chefe->moves[i], i);" in iniciar
-    assert "MON_DATA_HELD_ITEM" in iniciar and "StartFamiliaChefeBattle();" in iniciar
+            in criar)
+    assert "personality = (((otId >> 16) ^ (otId & 0xFFFF) ^ baixa) & 0xFFFF) << 16 | baixa;" in criar
+    assert "SetMonMoveSlot(mon, chefe->moves[i], i);" in criar
+    assert re.search(r"if \(comItem\)\s*SetMonData\(mon, MON_DATA_HELD_ITEM, &chefe->heldItem\);", criar)
+    # o special monta o chefe da ocupação das lutas, com item, e começa a batalha
+    iniciar = _block(FAMILIA_C, "void FamiliaSombra_IniciarChefe(void)")
+    assert "FamiliaSombra_CriarChefe(&gEnemyParty[0], OcupacaoDasLutas(), TRUE);" in iniciar
+    assert "StartFamiliaChefeBattle();" in iniciar
     assert re.search(r"^\tdef_special FamiliaSombra_IniciarChefe$", _read("data/specials.inc"), re.M)
     # a conta dá shiny para qualquer OT e qualquer metade baixa
     for ot in (0, 0x12345678, 0xFFFFFFFF, 0xBEEF0042):
@@ -394,15 +398,46 @@ def test_chefe_shiny_receita():
 def test_chefes_da_tabela():
     """Gengar nv 62 (o Dom) e Tyranitar nv 68 (o Cobrador), +6 por ocupação; 4 golpes e item fixos, com o porquê."""
     chefes = _chefes()
-    assert [c[0] for c in chefes[:2]] == ["GENGAR", "TYRANITAR"]
+    assert [c[0] for c in chefes] == ["GENGAR", "TYRANITAR", "GARCHOMP", "DARKRAI"]
     assert [c[1] for c in chefes] == [62, 68, 74, 80]
     for sp, _lv, item, moves in chefes:
         assert item != "NONE" and len(set(moves)) == 4 and "NONE" not in moves, sp
     assert chefes[0][3] == ["SHADOW_BALL", "HYPNOSIS", "DREAM_EATER", "THUNDERBOLT"]
     assert chefes[0][2] == "SPELL_TAG"
+    # POK-54 (spec §3 e a lista final do construtor): o Mercenário e o Pesadelo, exatos
+    assert chefes[2] == ("GARCHOMP", 74, "LUM_BERRY", ["DRAGON_RUSH", "EARTHQUAKE", "CRUNCH", "SWORDS_DANCE"])
+    assert chefes[3] == ("DARKRAI", 80, "LEFTOVERS", ["DARK_VOID", "DREAM_EATER", "CRUNCH", "NIGHTMARE"])
     tabela = _block(TIMES_H, "sFamiliaChefes[")
-    assert tabela.count("// parte 2 troca") == 2
-    assert len(re.findall(r"//[^\n]{30,}", tabela)) >= 4        # o porquê de cada escolha
+    assert "parte 2 troca" not in tabela
+    assert len(re.findall(r"//[^\n]{30,}", tabela)) >= 8        # o porquê de cada escolha (os 4 chefes, 2-3 linhas cada)
+    for titulo in ("GENGAR, O DOM", "TYRANITAR, O COBRADOR", "GARCHOMP, O MERCENÁRIO", "DARKRAI, O PESADELO"):
+        assert titulo.split(",")[0] + "," in tabela, titulo
+
+
+def test_musica_do_chefe():
+    """O Darkrai (ocupação 4) luta ao som do Deoxys; os outros, de lendário. Um ponto só decide, e os dois lugares
+    que tocam música (a abertura e o BGM da batalha) o usam."""
+    musica = _block(FAMILIA_C, "u16 FamiliaSombra_MusicaDoChefe(void)")
+    assert "OcupacaoDasLutas() == 4 ? MUS_VS_DEOXYS : MUS_VS_LEGEND" in musica
+    bgm = _block(POKEMON_C, "static u16 GetBattleBGM(void)")
+    assert re.search(r"BATTLE_TYPE_FAMILIA_CHEFE\)\s*return FamiliaSombra_MusicaDoChefe\(\);", bgm)
+    assert re.search(r"^u16 FamiliaSombra_MusicaDoChefe\(void\);", _read("include/familia_sombra.h"), re.M)
+
+
+def test_todo_membro_de_mapa_tem_chapeu_proprio():
+    """sGfxDaEspecie cobre toda espécie que aparece no mapa (capangas, gêmeos e chefes), inclusive Gligar, Dusclops,
+    Garchomp e Darkrai (Task 7): nenhuma cai no gráfico de reserva."""
+    tabela = _block(FAMILIA_C, "static const u16 sGfxDaEspecie[][2]")
+    mapa = dict(re.findall(r"\{SPECIES_(\w+),\s+(OBJ_EVENT_GFX_FAMILIA_\w+)\}", tabela))
+    assert mapa["GLIGAR"] == "OBJ_EVENT_GFX_FAMILIA_GLIGAR" and mapa["DUSCLOPS"] == "OBJ_EVENT_GFX_FAMILIA_DUSCLOPS"
+    assert mapa["GARCHOMP"] == "OBJ_EVENT_GFX_FAMILIA_GARCHOMP_SHINY"
+    assert mapa["DARKRAI"] == "OBJ_EVENT_GFX_FAMILIA_DARKRAI_SHINY"
+    assert mapa["GENGAR"].endswith("GENGAR_SHINY") and mapa["TYRANITAR"].endswith("TYRANITAR_SHINY")
+    for nome in ("sFamiliaCapangas", "sFamiliaGemeos"):
+        for ocupacao in _membros(nome):
+            for sp, *_ in ocupacao:
+                assert sp in mapa, (nome, sp)
+    assert all(c[0] in mapa for c in _chefes())
 
 
 def test_niveis_andares_4_5():

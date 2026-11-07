@@ -1,6 +1,6 @@
 """Seguidores (POK-48/POK-53): converte os sprites de overworld do Veekun (HGSS) em folhas indexadas 4bpp + paletas + tabela C.
 
-    python3 -I tools/seguidores/converter.py                      # as 386 espécies (o mesmo que --especies todas)
+    python3 -I tools/seguidores/converter.py                      # as 390 espécies (o mesmo que --especies todas)
     python3 -I tools/seguidores/converter.py --especies 1-9,25    # qualquer lista de números da Pokédex nacional
     python3 -I tools/seguidores/converter.py --conferir           # refaz num diretório temporário e compara
     python3 -I tools/seguidores/converter.py --previa saida.png   # grade normal/shiny de todas as entradas (não grava)
@@ -49,7 +49,11 @@ PALS_REL = Path("graphics/object_events/palettes/seguidores")
 TABELA_REL = Path("src/data/object_events/follower_species.h")
 FOLLOWER_H_REL = Path("include/follower.h")
 
-NUM_ESPECIES_DEX = 386
+NUM_ESPECIES_DEX = 390
+# Os 4 depois do Deoxys (POK-54): o número do arquivo no pacote do Veekun é o da Pokédex nacional real (Gible 443,
+# Gabite 444, Garchomp 445, Darkrai 491), diferente do número interno da tabela (387..390). Todos 32x32 e sem fêmea
+# (o pacote tem fêmea de 443-445, mas ficam de fora: FEMEAS e GRANDES não mudam).
+EXTRAS = {387: 443, 388: 444, 389: 445, 390: 491}
 # ordem dos quadros na folha (sul, norte, oeste, leste; 2 quadros cada) = pasta do Veekun
 DIRECOES = ["down", "up", "left", "right"]
 QUADROS_POR_DIRECAO = 2
@@ -271,10 +275,10 @@ def converter_especie(origem, dex, nomes):
             formas.append(converter_folha(origem, dex, f"{dex}-{letra}", f"{arq}_{letra}", f"Unown{rotulo}",
                                           base=formas[0] if formas else None))
         return Especie(dex, suf, formas[0], formas=formas)
-    fonte = FORMA_DEOXYS if dex == DEX_DEOXYS else str(dex)
+    fonte = FORMA_DEOXYS if dex == DEX_DEOXYS else str(EXTRAS.get(dex, dex))
     base = converter_folha(origem, dex, fonte, arq, c)
     femea = None
-    if (origem / "female" / DIRECOES[0] / f"{dex}.png").is_file():
+    if dex not in EXTRAS and (origem / "female" / DIRECOES[0] / f"{dex}.png").is_file():
         femea = converter_folha(origem, dex, str(dex), f"{arq}_f", f"{c}_F", femea=True, base=base)
     return Especie(dex, suf, base, femea=femea)
 
@@ -414,7 +418,7 @@ def gerar(origem, dexes, saida):
     (saida / TABELA_REL).parent.mkdir(parents=True, exist_ok=True)
     (saida / TABELA_REL).write_bytes(tabela.encode("utf-8"))
     cabecalho = saida / FOLLOWER_H_REL
-    if cabecalho.is_file():  # a tabela é indexada pela dex: sempre 386 posições
+    if cabecalho.is_file():  # a tabela é indexada pela dex: sempre NUM_ESPECIES_DEX posições
         texto = cabecalho.read_text(encoding="utf-8")
         cabecalho.write_text(RE_CONTAGEM.sub(rf"\g<1>{NUM_ESPECIES_DEX}", texto), encoding="utf-8", newline="\n")
     return especies, gravados

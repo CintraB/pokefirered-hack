@@ -3,11 +3,15 @@
 #include "battle_message.h"
 #include "battle_setup.h"
 #include "conquistas.h"
+#include "data.h"
 #include "day_night.h"
 #include "event_data.h"
 #include "field_specials.h"
 #include "familia_sombra.h"
+#include "pokedex.h"
 #include "pokemon.h"
+#include "pokemon_storage_system.h"
+#include "string_util.h"
 #include "random.h"
 #include "constants/event_objects.h"
 #include "constants/flags.h"
@@ -16,6 +20,7 @@
 #include "constants/moves.h"
 #include "constants/opponents.h"
 #include "constants/rgb.h"
+#include "constants/songs.h"
 #include "constants/species.h"
 #include "constants/trainers.h"
 #include "constants/vars.h"
@@ -31,6 +36,15 @@ static const u16 sRosas[FAMILIA_OCUPACOES_TOTAL] =
     FLAG_FAMILIA_ROSA_2,
     FLAG_FAMILIA_ROSA_3,
     FLAG_FAMILIA_ROSA_4,
+};
+
+// POK-54: o chefe da ocupação foi capturado (a flag liga na queda; o dossiê da Jenny lê para o carimbo).
+static const u16 sCapturados[FAMILIA_OCUPACOES_TOTAL] =
+{
+    FLAG_FAMILIA_CAPTURADO_1,
+    FLAG_FAMILIA_CAPTURADO_2,
+    FLAG_FAMILIA_CAPTURADO_3,
+    FLAG_FAMILIA_CAPTURADO_4,
 };
 
 u16 FamiliaSombra_MeiosDiasAgora(void)
@@ -89,26 +103,46 @@ void FamiliaSombra_Atualizar(void)
             FamiliaSombra_Repovoar();
         }
         break;
+    case FAMILIA_ESTADO_ENCERRADA:   // o 4º chefe caiu: o prédio fica fechado para sempre
+        break;
     }
 }
 
+bool8 FamiliaSombra_ChefeCapturado(u8 ocupacao)
+{
+    if (ocupacao < 1 || ocupacao > FAMILIA_OCUPACOES_TOTAL)
+        return FALSE;
+    return FlagGet(sCapturados[ocupacao - 1]);
+}
+
+// Chamado quando o chefe da ocupação cai, vencido ou capturado (gBattleOutcome ainda vale: é o resultado da luta).
 void FamiliaSombra_ChefeCaiu(void)
 {
     u8 ocupacao = FamiliaSombra_Ocupacao();
 
     if (!FamiliaSombra_ChefeAtivo())   // chamada repetida não regrava a queda
         return;
-    VarSet(VAR_FAMILIA_QUEDA, FamiliaSombra_MeiosDiasAgora());
-    VarSet(VAR_FAMILIA_ESTADO, FAMILIA_ESTADO_SEM_CHEFE);
     if (ocupacao >= 1 && ocupacao <= FAMILIA_OCUPACOES_TOTAL)
+    {
         FlagSet(sRosas[ocupacao - 1]);
-    // POK-51: "Vencer o Dom" / "Vencer o Cobrador" (o Mercenário é da parte 2: a conquista fica inativa)
+        if (gBattleOutcome == B_OUTCOME_CAUGHT)
+            FlagSet(sCapturados[ocupacao - 1]);
+    }
+    // a queda de cada chefe fica gravada, o último também (a var não guarda a do chefe anterior)
+    VarSet(VAR_FAMILIA_QUEDA, FamiliaSombra_MeiosDiasAgora());
+    if (ocupacao >= FAMILIA_OCUPACOES_ATIVAS)
+        VarSet(VAR_FAMILIA_ESTADO, FAMILIA_ESTADO_ENCERRADA);   // o último chefe caiu: sem espera e sem volta da máfia
+    else
+        VarSet(VAR_FAMILIA_ESTADO, FAMILIA_ESTADO_SEM_CHEFE);
+    // POK-51: "Vencer o Dom", "Vencer o Cobrador"; POK-54: "Vencer o Mercenário" e, com o 4º, "Derrubar a Família Sombra"
     if (ocupacao == 1)
         Conquistas_Evento(CONQ_EVT_FAMILIA_DOM);
     else if (ocupacao == 2)
         Conquistas_Evento(CONQ_EVT_FAMILIA_COBRADOR);
     else if (ocupacao == 3)
         Conquistas_Evento(CONQ_EVT_FAMILIA_MERCENARIO);
+    else if (ocupacao == 4)
+        Conquistas_Evento(CONQ_EVT_FAMILIA_TODA);
 }
 
 // Os 6 andares do prédio (o térreo é o antigo Route23_UnusedHouse).
@@ -321,24 +355,40 @@ const u8 *FamiliaSombra_TextoDoChefe(void)
     return gText_FamiliaChefeQuerAcertar[OcupacaoDasLutas() - 1];
 }
 
-// Special: o chefe da ocupação em gEnemyParty[0] e a batalha contra ele (lendária, MUS_VS_LEGEND). Sempre shiny pela
-// receita do SetLeadShiny (test_hooks.c): o jogador é o OT e a metade alta da personalidade anula o valor shiny;
-// a metade baixa sai ao acaso (natureza e gênero). IVs no máximo, golpes e item fixos de sFamiliaChefes.
-void FamiliaSombra_IniciarChefe(void)
+// O chefe da ocupação em `mon`: sempre shiny pela receita do SetLeadShiny (test_hooks.c): o jogador é o OT e a
+// metade alta da personalidade anula o valor shiny; a metade baixa sai ao acaso (natureza e gênero). IVs no máximo,
+// nível e golpes fixos de sFamiliaChefes; o item fixo só vem com `comItem` (a entrega da Jenny não leva o item).
+void FamiliaSombra_CriarChefe(struct Pokemon *mon, u8 ocupacao, bool8 comItem)
 {
-    const struct FamiliaMembro *chefe = &sFamiliaChefes[OcupacaoDasLutas() - 1];
-    struct Pokemon *mon = &gEnemyParty[0];
+    const struct FamiliaMembro *chefe;
     u32 otId = GetPlayerTrainerId();
     u16 baixa = Random();
     u32 personality;
     s32 i;
 
+    if (ocupacao < 1 || ocupacao > FAMILIA_OCUPACOES_TOTAL)   // fora da tabela vale a 1ª, como OcupacaoDasLutas
+        ocupacao = 1;
+    chefe = &sFamiliaChefes[ocupacao - 1];
+
     personality = (((otId >> 16) ^ (otId & 0xFFFF) ^ baixa) & 0xFFFF) << 16 | baixa;
-    ZeroEnemyPartyMons();
     CreateMon(mon, chefe->species, chefe->level, MAX_PER_STAT_IVS, TRUE, personality, OT_ID_PLAYER_ID, 0);
     for (i = 0; i < MAX_MON_MOVES; i++)
         SetMonMoveSlot(mon, chefe->moves[i], i);
-    SetMonData(mon, MON_DATA_HELD_ITEM, &chefe->heldItem);
+    if (comItem)
+        SetMonData(mon, MON_DATA_HELD_ITEM, &chefe->heldItem);
+}
+
+// A música da batalha do chefe: o Darkrai (ocupação 4) luta ao som do Deoxys; os outros, de lendário.
+u16 FamiliaSombra_MusicaDoChefe(void)
+{
+    return OcupacaoDasLutas() == 4 ? MUS_VS_DEOXYS : MUS_VS_LEGEND;
+}
+
+// Special: o chefe da ocupação em gEnemyParty[0] e a batalha contra ele (lendária, FamiliaSombra_MusicaDoChefe).
+void FamiliaSombra_IniciarChefe(void)
+{
+    ZeroEnemyPartyMons();
+    FamiliaSombra_CriarChefe(&gEnemyParty[0], OcupacaoDasLutas(), TRUE);
     StartFamiliaChefeBattle();
 }
 
@@ -367,11 +417,15 @@ static const u16 sGfxDaEspecie[][2] =
     {SPECIES_GOLEM,      OBJ_EVENT_GFX_FAMILIA_GOLEM},
     {SPECIES_MACHAMP,    OBJ_EVENT_GFX_FAMILIA_MACHAMP},
     {SPECIES_RHYDON,     OBJ_EVENT_GFX_FAMILIA_RHYDON},
+    {SPECIES_GLIGAR,     OBJ_EVENT_GFX_FAMILIA_GLIGAR},
+    {SPECIES_DUSCLOPS,   OBJ_EVENT_GFX_FAMILIA_DUSCLOPS},
     {SPECIES_GENGAR,     OBJ_EVENT_GFX_FAMILIA_GENGAR_SHINY},
     {SPECIES_TYRANITAR,  OBJ_EVENT_GFX_FAMILIA_TYRANITAR_SHINY},
+    {SPECIES_GARCHOMP,   OBJ_EVENT_GFX_FAMILIA_GARCHOMP_SHINY},
+    {SPECIES_DARKRAI,    OBJ_EVENT_GFX_FAMILIA_DARKRAI_SHINY},
 };
 
-// Espécie sem gráfico de chapéu (só a parte 2: Garchomp, Gligar, Darkrai, Dusclops) cai no Gengar / Machamp.
+// Espécie sem gráfico de chapéu cai na reserva (nenhuma das tabelas usa uma: o teste confere).
 static u16 GfxDaEspecie(u16 species, u16 reserva)
 {
     s32 i;
@@ -413,4 +467,98 @@ void FamiliaSombra_PrepararAndar(void)
         FlagSet(flag);
     for (flag = TRAINER_FAMILIA_CAPANGA_1; flag <= TRAINER_FAMILIA_GEMEOS; flag++)
         FlagSet(TRAINER_FLAGS_START + flag);
+}
+
+// ---- O fechamento: os chefes apreendidos pela polícia (Task 10) -----------------------------------------------
+
+// O Garchomp (ocupação 3) e o Darkrai (4) vencidos sem captura não se perdem: a Oficial Jenny entrega os dois, shiny e
+// no nível da luta, sem item. A flag de cada entrega só liga quando o Pokémon de fato chega ao jogador.
+static const u16 sEntregues[] =
+{
+    FLAG_FAMILIA_ENTREGUE_3,
+    FLAG_FAMILIA_ENTREGUE_4,
+};
+#define FAMILIA_PRIMEIRO_APREENDIDO 3
+
+static bool8 ApreendidoPendente(u8 ocupacao)
+{
+    return !FamiliaSombra_ChefeCapturado(ocupacao) && !FlagGet(sEntregues[ocupacao - FAMILIA_PRIMEIRO_APREENDIDO]);
+}
+
+// Special: VAR_RESULT = a ocupação (3 ou 4) do 1º chefe apreendido que ainda não foi entregue, ou 0. Só vale com a
+// Família encerrada: em qualquer outro estado a polícia não existe e ninguém entrega nada (um save em pé na rota, por
+// exemplo, não pode ganhar um chefe que nunca enfrentou).
+void FamiliaSombra_ApreendidoPendente(void)
+{
+    if (FamiliaSombra_Estado() != FAMILIA_ESTADO_ENCERRADA)
+        gSpecialVar_Result = 0;
+    else if (ApreendidoPendente(3))
+        gSpecialVar_Result = 3;
+    else if (ApreendidoPendente(4))
+        gSpecialVar_Result = 4;
+    else
+        gSpecialVar_Result = 0;
+}
+
+// Há vaga no time ou em alguma caixa do PC? (A conferência vem ANTES de criar o Pokémon: GiveMonToPlayer conta o shiny
+// recebido nas conquistas antes de procurar vaga, e a tentativa sem vaga não pode somar.)
+static bool8 HaVagaParaReceber(void)
+{
+    s32 box, pos;
+
+    if (CalculatePlayerPartyCount() < PARTY_SIZE)
+        return TRUE;
+    for (box = 0; box < TOTAL_BOXES_COUNT; box++)
+    {
+        for (pos = 0; pos < IN_BOX_COUNT; pos++)
+        {
+            if (GetBoxMonData(GetBoxedMonPtr(box, pos), MON_DATA_SPECIES, NULL) == SPECIES_NONE)
+                return TRUE;
+        }
+    }
+    return FALSE;
+}
+
+// Special: VAR_0x8004 = ocupação (3 ou 4). Entrega o chefe: shiny, nível e golpes da luta, sem item, o jogador como
+// dono. Sem vaga no time nem no PC (conferido antes de criar o Pokémon) nada acontece: nem Pokémon, nem flag, nem
+// conquista. Vai para o time ou, com o time cheio, para o PC; vistos e capturados na Pokédex. VAR_RESULT = o retorno de
+// GiveMonToPlayer (MON_CANT_GIVE = sem vaga) e VAR_0x8005 = a espécie. Para o PC, STR_VAR_1 = a caixa em que ficou,
+// STR_VAR_2 = a espécie, STR_VAR_3 = a caixa que estava cheia e VAR_0x8006 = qual aviso do jogo (0 "PC de alguém",
+// 1 "PC do Bill", 2 e 3 os mesmos com a caixa cheia), o padrão do givecaughtmon.
+void FamiliaSombra_EntregarApreendido(void)
+{
+    u8 ocupacao = gSpecialVar_0x8004;
+    struct Pokemon mon;
+    u16 dex;
+
+    if (FamiliaSombra_Estado() != FAMILIA_ESTADO_ENCERRADA
+     || ocupacao < FAMILIA_PRIMEIRO_APREENDIDO || ocupacao > FAMILIA_OCUPACOES_TOTAL
+     || !HaVagaParaReceber())
+    {
+        gSpecialVar_Result = MON_CANT_GIVE;
+        return;
+    }
+    FamiliaSombra_CriarChefe(&mon, ocupacao, FALSE);
+    gSpecialVar_0x8005 = GetMonData(&mon, MON_DATA_SPECIES);
+    gSpecialVar_Result = GiveMonToPlayer(&mon);
+    if (gSpecialVar_Result == MON_GIVEN_TO_PARTY || gSpecialVar_Result == MON_GIVEN_TO_PC)
+    {
+        dex = SpeciesToNationalPokedexNum(gSpecialVar_0x8005);
+        GetSetPokedexFlag(dex, FLAG_SET_SEEN);
+        GetSetPokedexFlag(dex, FLAG_SET_CAUGHT);
+        FlagSet(sEntregues[ocupacao - FAMILIA_PRIMEIRO_APREENDIDO]);
+    }
+    if (gSpecialVar_Result == MON_GIVEN_TO_PC)
+    {
+        StringCopy(gStringVar1, GetBoxNamePtr(VarGet(VAR_PC_BOX_TO_SEND_MON)));
+        StringCopy(gStringVar2, gSpeciesNames[gSpecialVar_0x8005]);
+        gSpecialVar_0x8006 = 0;
+        if (ShouldShowBoxWasFullMessage())
+        {
+            StringCopy(gStringVar3, GetBoxNamePtr(GetPCBoxToSendMon()));
+            gSpecialVar_0x8006 = 2;
+        }
+        if (FlagGet(FLAG_SYS_NOT_SOMEONES_PC))
+            gSpecialVar_0x8006++;
+    }
 }

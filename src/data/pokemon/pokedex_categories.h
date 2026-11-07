@@ -550,6 +550,13 @@ static const u16 sDexCategory_CavePkmn_Page10[] = {
     SPECIES_REGISTEEL,
 };
 
+// POK-54
+static const u16 sDexCategory_CavePkmn_Page11[] = {
+    SPECIES_GIBLE,
+    SPECIES_GABITE,
+    SPECIES_GARCHOMP,
+};
+
 static const u16 sDexCategory_MountainPkmn_Page1[] = {
     SPECIES_GEODUDE,
     SPECIES_GRAVELER,
@@ -813,6 +820,11 @@ static const u16 sDexCategory_RarePkmn_Page8[] = {
     SPECIES_MEW,
 };
 
+// POK-54
+static const u16 sDexCategory_RarePkmn_Page9[] = {
+    SPECIES_DARKRAI,
+};
+
 #define DEX_CATEGORY(name){sDexCategory_##name, NELEMS(sDexCategory_##name)}
 
 static const struct PokedexCategoryPage sDexCategory_GrasslandPkmn[] = {
@@ -923,6 +935,7 @@ static const struct PokedexCategoryPage sDexCategory_CavePkmn[] = {
     DEX_CATEGORY(CavePkmn_Page8),
     DEX_CATEGORY(CavePkmn_Page9),
     DEX_CATEGORY(CavePkmn_Page10),
+    DEX_CATEGORY(CavePkmn_Page11),  // POK-54
 };
 
 static const struct PokedexCategoryPage sDexCategory_MountainPkmn[] = {
@@ -983,6 +996,7 @@ static const struct PokedexCategoryPage sDexCategory_RarePkmn[] = {
     DEX_CATEGORY(RarePkmn_Page6),
     DEX_CATEGORY(RarePkmn_Page7),
     DEX_CATEGORY(RarePkmn_Page8),
+    DEX_CATEGORY(RarePkmn_Page9),  // POK-54
 };
 
 struct {

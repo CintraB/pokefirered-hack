@@ -14064,6 +14064,68 @@
    "detectar": true,
    "frente": "POK-45",
    "obs": "✂ de: Voz Desarmante"
+  },
+  {
+   "en": "DRAGON RUSH",
+   "pt": "Inv. Dragão",
+   "fonte": "GO",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "POK-54",
+   "obs": "✂ de: Investida Dragão"
+  },
+  {
+   "en": "DARK VOID",
+   "pt": "Vazio Negro",
+   "fonte": "criado",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "POK-54",
+   "obs": "R1/R7 do POK-54: Vazio Negro em todo lugar, também na descrição"
+  },
+  {
+   "en": "BAD DREAMS",
+   "pt": "Sonhos Ruins",
+   "fonte": "criado",
+   "categoria": "habilidade",
+   "detectar": true,
+   "frente": "POK-54"
+  },
+  {
+   "en": "FIRE FANG",
+   "pt": "Presa Ígnea",
+   "fonte": "criado",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "POK-54",
+   "obs": "Task 12 do POK-54: nome escolhido pelo controlador, no limite de 12 letras"
+  },
+  {
+   "en": "OMINOUS WIND",
+   "pt": "Vento Agouro",
+   "fonte": "criado",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "POK-54",
+   "obs": "Task 12 do POK-54: nome escolhido pelo controlador, no limite de 12 letras"
+  },
+  {
+   "en": "NASTY PLOT",
+   "pt": "Trama Vil",
+   "fonte": "criado",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "POK-54",
+   "obs": "Task 12 do POK-54: nome escolhido pelo controlador, no limite de 12 letras"
+  },
+  {
+   "en": "DARK PULSE",
+   "pt": "Pulso Negro",
+   "fonte": "criado",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "POK-54",
+   "obs": "Task 12 do POK-54: nome escolhido pelo controlador, no limite de 12 letras"
   }
  ],
  "proibidos": [

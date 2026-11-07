@@ -48,6 +48,31 @@ u16 GetNationalPokedexCount(u8 caseID)
     return count;
 }
 
+// POK-54: the Pokedex screen counts the 4 extras (Gible, Gabite, Garchomp, Darkrai) along with the 386. Nothing
+// that rates, rewards or completes the Dex (diploma, HasAllMons, Shiny Charm, achievement, trainer card, save menu,
+// Oak's rating) uses this: they all keep GetNationalPokedexCount, which stops at NATIONAL_DEX_COUNT.
+u16 GetNationalPokedexCountWithExtras(u8 caseID)
+{
+    u16 count = 0;
+    u16 i;
+
+    for (i = 0; i < NATIONAL_DEX_TOTAL; i++)
+    {
+        switch (caseID)
+        {
+        case FLAG_GET_SEEN:
+            if (GetSetPokedexFlag(i + 1, FLAG_GET_SEEN))
+                count++;
+            break;
+        case FLAG_GET_CAUGHT:
+            if (GetSetPokedexFlag(i + 1, FLAG_GET_CAUGHT))
+                count++;
+            break;
+        }
+    }
+    return count;
+}
+
 /*
 u16 GetHoennPokedexCount(u8 caseID)
 {
