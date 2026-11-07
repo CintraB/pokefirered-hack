@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🔥 Pokémon FireRed — PT-BR (hack Cintra)
+# 🔥 Pokémon FireRed — PT-BR (by Cintra)
 
 **FireRed em português do Brasil, com qualidade de vida dos jogos atuais, dia e noite, clima,<br>
 a Pokédex inteira obtível e uma esteira de testes automática no emulador.**
