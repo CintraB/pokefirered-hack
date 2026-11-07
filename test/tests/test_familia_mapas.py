@@ -486,3 +486,68 @@ def test_sala_do_dom_recusa_dos_gemeos_e_revanche():
 def test_bilhete_do_5_andar_traz_o_titulo_completo():
     t = (MAPS / NOMES[5] / "text.inc").read_text(encoding="utf-8")
     assert "TYRANITAR, O COBRADOR" in t[t.index("Route23_FamiliaSombra_5F_Text_Bilhete2::"):]
+
+
+# ---------- ajustes do Cintra (sala do Dom e a rosa com a bolsa cheia) ----------
+def test_sala_do_dom_escritorio_ao_lado_da_escada():
+    """O escritório fica no lado direito, longe da linha da escada: a poltrona encostada na parede (ninguém passa
+    atrás do chefe), os gêmeos dos dois lados dele, o bilhete na frente da mesa e os vasos de rosas à vista de quem
+    sai da escada. Posições de predio.json = map.json."""
+    sala = PREDIO["andares"]["6"]
+    m6 = _map(NOMES[6])
+    pos = {o["local_id"]: (o["x"], o["y"]) for o in m6["object_events"]}
+    cx, cy = sala["chefe"]
+    assert pos["LOCALID_FAMILIA_6F_CHEFE"] == (cx, cy)
+    assert [pos["LOCALID_FAMILIA_6F_GEMEO_A"], pos["LOCALID_FAMILIA_6F_GEMEO_B"]] == [tuple(g) for g in sala["gemeos"]]
+    assert [(b["x"], b["y"]) for b in m6["bg_events"]] == [tuple(sala["bilhete"])]
+    assert sorted((c["x"], c["y"]) for c in m6["coord_events"]) == sorted(tuple(g) for g in sala["gatilhos"])
+    w, cells, attr = _grid(NOMES[6])
+    livres = {(i % w, i // w) for i, (_mid, col) in enumerate(cells) if col == 0}
+    # nada livre atrás (acima) do chefe nem da poltrona; os gêmeos colados nele, um de cada lado
+    assert not [(x, y) for x in range(cx - 1, cx + 2) for y in range(cy) if (x, y) in livres]
+    assert sorted(sala["gemeos"]) == [[cx - 2, cy], [cx + 2, cy]]
+    # a escada é a do canto esquerdo, longe do chefe: ele não fica de costas para quem sobe
+    dx, dy = sala["desce"]
+    assert _behavior_at(NOMES[6], dx, dy) == "MB_DOWN_LEFT_STAIR_WARP"
+    assert cx - dx >= 5 and cy <= dy
+    # a frente da mesa é alcançável a partir da saída da escada
+    saida = (dx + 1, dy)
+    vistos, fila = {saida}, [saida]
+    while fila:
+        x, y = fila.pop()
+        for p in ((x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)):
+            if p in livres and p not in vistos and list(p) not in sala["gemeos"]:
+                vistos.add(p)
+                fila.append(p)
+    assert (cx, sala["bilhete"][1] + 1) in vistos
+    # vasos: tile com colisão; pelo menos 2 na tela de quem sai da escada (15x10 tiles, jogador na coluna 7, linha 4)
+    vaso = {cells[y * w + x][0] for x, y in sala["vasos"]}
+    assert len(vaso) == 1 and not set(map(tuple, sala["vasos"])) & livres
+    na_tela = [v for v in sala["vasos"] if abs(v[0] - saida[0]) <= 7 and -4 <= v[1] - saida[1] <= 5]
+    assert len(na_tela) >= 2, na_tela
+    # nenhum metatile da Mansão na sala (escada, moldura e paredes são do desenho vinho): os da Mansão têm o tipo de
+    # encontro TERRA nos atributos, os da decoração não
+    mansao = sorted({mid for mid, _c in cells if mid >= 640 and attr(mid) >> 24 & 7 == TILE_ENCOUNTER_LAND})
+    assert not mansao, [hex(m) for m in mansao]
+
+
+def test_rosa_com_bolsa_cheia_vai_para_a_sala_de_trofeus():
+    """Bolso de itens-chave cheio: sem giveitem; a flag da rosa (ligada por FamiliaSombra_ChefeCaiu) acende a redoma e
+    a fala diz que a rosa foi direto para a Sala de Troféus, com o nome certo de cada ocupação."""
+    s = (MAPS / NOMES[6] / "scripts.inc").read_text(encoding="utf-8")
+    t = (MAPS / NOMES[6] / "text.inc").read_text(encoding="utf-8")
+    inicio = {"Vermelha": "ChefeCaiu", "Dourada": "RosaDourada", "Azul": "RosaAzul", "Negra": "RosaNegra"}
+    for cor, rotulo in inicio.items():
+        item = f"ITEM_ROSA_{cor.upper()}"
+        corpo = _rotulo(s, f"Route23_FamiliaSombra_6F_EventScript_{rotulo}")
+        assert corpo.index(f"checkitemspace {item}") < corpo.index(
+            f"goto_if_eq VAR_RESULT, FALSE, Route23_FamiliaSombra_6F_EventScript_Rosa{cor}ParaSala") < \
+            corpo.index(f"giveitem {item}"), cor
+        sala = _rotulo(s, f"Route23_FamiliaSombra_6F_EventScript_Rosa{cor}ParaSala")
+        assert "giveitem" not in sala and "additem" not in sala and "removeitem" not in sala
+        assert f"msgbox Route23_FamiliaSombra_6F_Text_BolsaCheiaRosa{cor}" in sala and "releaseall" in sala
+        fala = _rotulo(t, f"Route23_FamiliaSombra_6F_Text_BolsaCheiaRosa{cor}")
+        assert "itens-chave" in fala and f"A ROSA {cor.upper()} foi enviada" in fala and "Sala de Troféus" in fala
+    assert "FlagSet(sRosas[ocupacao - 1]);" in FAMILIA_C
+    redomas = (MAPS / "SevenIsland_UnusedHouse" / "scripts.inc").read_text(encoding="utf-8")
+    assert all(f"FLAG_FAMILIA_ROSA_{n}" in redomas for n in range(1, 5))

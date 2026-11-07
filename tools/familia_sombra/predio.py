@@ -45,6 +45,7 @@ METATILE_PORTA_GERAL = 0x03D  # METATILE_General_Door (porta animada do tileset 
 
 # Comportamentos e atributos (include/constants/metatile_behaviors.h, src/fieldmap.c: sMetatileAttrMasks)
 MB_NORMAL = 0x00
+MB_DOWN_LEFT_STAIR_WARP = 0x6F
 ENCONTRO_TERRA = 1 << 24
 CAMADA_COBERTA = 1 << 29
 
@@ -72,6 +73,8 @@ PAL_ROSAS = [  # paleta 11: vasos com rosas e o quadro do Dom
     (96, 32, 120),
 ]
 PALETAS_DECORACAO = {9: PAL_PAREDE, 10: PAL_PISO, 11: PAL_ROSAS}
+# Metatiles da decoração com comportamento próprio (o resto é MB_NORMAL): o patamar da escada da sala do Dom é o warp
+ATRIBUTOS_DECORACAO = {("d", "escada_2_0"): MB_DOWN_LEFT_STAIR_WARP}
 
 
 def _5bits(cor):
@@ -381,11 +384,12 @@ def desenhar_sala():
     d.rectangle((1, 30, 46, 31), fill=PISO_SOMBRA)
     s["mesa"] = im
 
-    # a poltrona de veludo vermelho e ouro (3x1; o chefe fica na do meio)
+    # a poltrona de veludo vermelho e ouro (3x1; o chefe fica na do meio), encostada na parede: o piso tem a sombra
     im = Image.new("RGB", (48, 16), PISO)
     d = ImageDraw.Draw(im)
     for y in (3, 7, 11, 15):
         d.line((0, y, 47, y), fill=PISO_ESC)
+    d.rectangle((0, 0, 47, 3), fill=PISO_SOMBRA)
     d.rectangle((10, 0, 37, 15), fill=K)
     d.rectangle((11, 0, 36, 13), fill=PAL_PISO[10])
     d.rectangle((13, 0, 34, 12), fill=TAP_ESC)
@@ -400,27 +404,92 @@ def desenhar_sala():
     d.rectangle((8, 15, 39, 15), fill=PISO_SOMBRA)
     s["poltrona"] = im
 
-    # vaso dourado com rosas (paleta 11, sobre o piso)
+    # vaso dourado com um buquê de rosas (paleta 11, sobre o piso): ocupa o tile inteiro para aparecer de longe
     P = PAL_ROSAS
     im = Image.new("RGB", (16, 16), P[10])
     d = ImageDraw.Draw(im)
     for y in (3, 7, 11, 15):
         d.line((0, y, 15, y), fill=P[9])
-    d.rectangle((4, 8, 11, 14), fill=P[1])
-    d.rectangle((5, 8, 10, 13), fill=P[7])
-    d.rectangle((5, 8, 10, 8), fill=P[8])
-    d.line((5, 12, 10, 12), fill=P[6])
-    d.rectangle((6, 14, 9, 15), fill=P[1])
-    for x, y in ((5, 5), (8, 6), (7, 3), (10, 4), (4, 2)):
-        d.line((x, y + 2, x, 8), fill=P[2])
-    for x, y in ((4, 2), (7, 1), (10, 3), (5, 5), (9, 5)):
-        d.rectangle((x - 1, y, x + 1, y + 2), fill=P[4])
+    d.ellipse((3, 13, 12, 15), fill=P[9])                        # sombra no piso
+    d.polygon([(4, 8), (11, 8), (12, 10), (10, 14), (5, 14), (3, 10)], fill=P[1])
+    d.polygon([(5, 9), (10, 9), (11, 10), (9, 13), (6, 13), (4, 10)], fill=P[7])
+    d.line((5, 9, 10, 9), fill=P[8])
+    d.line((4, 10, 6, 10), fill=P[8])
+    d.line((6, 12, 9, 12), fill=P[6])
+    d.rectangle((6, 14, 9, 14), fill=P[6])
+    for x0, y0, x1, y1 in ((2, 4, 1, 6), (13, 4, 14, 6), (4, 6, 3, 8), (11, 6, 12, 8)):
+        d.line((x0, y0, x1, y1), fill=P[3])                      # folhas
+    for x, y in ((7, 1), (3, 3), (11, 3), (5, 5), (9, 5), (7, 4), (13, 6), (2, 6)):
+        d.rectangle((x - 1, y - 1, x + 1, y + 1), fill=P[4])     # rosas
         d.point((x, y), fill=P[5])
-        d.point((x - 1, y + 1), fill=P[5])
-    d.point((3, 6), fill=P[3])
-    d.point((12, 6), fill=P[3])
+        d.point((x - 1, y - 1), fill=P[5])
     s["vaso"] = im
+
+    # a moldura da sala (o alto da parede visto de cima): viga de madeira escura com um filete de ouro
+    faixas = [K, K, PAREDE_ESC, PAREDE_ESC, LAMBRI, MADEIRA_ESC, MADEIRA_ESC, MADEIRA_ESC, MADEIRA_ESC,
+              MADEIRA_ESC, OURO_ESC, OURO, MADEIRA_ESC, MADEIRA_ESC, K, K]   # de fora (0) para dentro (15)
+    for nome, faixa in (("moldura_topo", lambda x, y: y), ("moldura_esq", lambda x, y: x),
+                        ("moldura_dir", lambda x, y: 15 - x), ("moldura_canto_esq", lambda x, y: min(x, y)),
+                        ("moldura_canto_dir", lambda x, y: min(15 - x, y))):
+        im = Image.new("RGB", (16, 16))
+        for y in range(16):
+            for x in range(16):
+                im.putpixel((x, y), faixas[faixa(x, y)])
+        s[nome] = im
+
+    s["escada"] = desenhar_escada()
     return s
+
+
+def desenhar_escada():
+    """A escada para baixo da sala do Dom (3x2 metatiles, (x..x+2, 3..4)): degraus de madeira escura que descem para
+    a esquerda, passadeira vermelha com varetas de latão e o balaústre dourado embaixo. O patamar fica na coluna da
+    direita (o warp); embaixo dele, o piso livre com o pilar do corrimão. Só cores da paleta 10."""
+    im = Image.new("RGB", (48, 32), PISO)
+    d = ImageDraw.Draw(im)
+    for y in (3, 7, 11, 15, 19, 23, 27, 31):                     # o piso de tábuas em volta
+        d.line((0, y, 47, y), fill=PISO_ESC)
+    d.rectangle((0, 0, 47, 3), fill=PISO_SOMBRA)
+    # degraus: o patamar (x 36-47, só na linha de cima) e 6 degraus de 6 px, cada um mais escuro para a esquerda
+    cores = [MAD_CLR, MAD_CLR, MAD, MAD, MAD_ESC, MAD_ESC, PISO_SOMBRA]
+    d.rectangle((36, 0, 47, 15), fill=MAD_CLR)
+    d.line((36, 0, 47, 0), fill=MAD)
+    d.rectangle((36, 1, 37, 15), fill=PAL_PISO[11])             # soleira de latão
+    for i in range(6):
+        x1 = 35 - i * 6
+        x0 = x1 - 5
+        alto = 15 if x0 >= 32 else 23
+        d.rectangle((x0, 0, x1, alto), fill=cores[i + 1])
+        d.line((x0, 0, x0, alto), fill=K)                        # a queda de cada degrau
+        d.line((x1, 0, x1, alto), fill=cores[i])                 # o bocel claro
+    # a passadeira vermelha, com uma vareta de latão em cada degrau
+    d.rectangle((0, 5, 47, 12), fill=TAP)
+    d.line((0, 5, 47, 5), fill=PAL_PISO[11])
+    d.line((0, 12, 47, 12), fill=PAL_PISO[11])
+    for i in range(6):
+        x1 = 35 - i * 6
+        d.line((x1 - 5, 6, x1 - 5, 11), fill=TAP_ESC)
+        d.line((x1, 6, x1, 11), fill=TAP_CLR if i < 3 else TAP)
+        d.line((x1 - 1, 6, x1 - 1, 11), fill=PAL_PISO[10])
+    d.rectangle((38, 6, 47, 11), fill=TAP_CLR)
+    d.line((38, 6, 47, 6), fill=TAP)
+    # o balaústre: corrimão de madeira, colunas douradas e a base; o pilar do canto com a bola de latão
+    d.rectangle((0, 24, 35, 31), fill=PISO_SOMBRA)
+    d.rectangle((0, 22, 35, 23), fill=MAD_CLR)
+    d.line((0, 24, 35, 24), fill=MAD_ESC)
+    for x in range(1, 34, 4):
+        d.rectangle((x, 25, x + 1, 29), fill=PAL_PISO[11])
+        d.point((x, 25), fill=PAL_PISO[12])
+    d.rectangle((0, 30, 35, 31), fill=K)
+    d.rectangle((32, 16, 35, 31), fill=MAD_ESC)                  # corrimão do lado do patamar
+    d.line((32, 16, 32, 31), fill=K)
+    d.rectangle((32, 18, 35, 31), fill=MAD)
+    d.rectangle((31, 19, 36, 31), fill=K)
+    d.rectangle((32, 20, 35, 30), fill=MAD)
+    d.line((33, 20, 33, 30), fill=MAD_CLR)
+    d.rectangle((32, 16, 35, 19), fill=PAL_PISO[11])             # bola de latão no topo do pilar
+    d.point((33, 17), fill=PAL_PISO[12])
+    return im
 
 
 # ---------------------------------------------------------------------------------------------------------------
@@ -489,6 +558,24 @@ class Andar:
         for i, m in enumerate((0x2E0, 0x2E1, 0x2E2)):
             g(x + i, 5, ("m", m), 0)
         return (x + 2, 3)
+
+    def escada_sala(self, x):
+        """A escada para baixo da sala do Dom (desenho próprio, 3x2 em (x..x+2, 3..4)); o warp é (x + 2, 3), com o
+        comportamento da escada da Mansão (ATRIBUTOS_DECORACAO). Embaixo do patamar, (x + 2, 4), o piso é livre."""
+        for dy, cols in enumerate(((1, 1, 0), (1, 1, 0))):
+            for dx, col in enumerate(cols):
+                self.put(x + dx, 3 + dy, ("d", f"escada_{dx}_{dy}"), col)
+        return (x + 2, 3)
+
+    def moldura_sala(self):
+        """O alto da parede e os lados da sala do Dom na viga escura (no lugar da moldura bege da Mansão)."""
+        self.put(0, 0, ("d", "moldura_canto_esq"), 1)
+        self.put(self.w - 1, 0, ("d", "moldura_canto_dir"), 1)
+        for x in range(1, self.w - 1):
+            self.put(x, 0, ("d", "moldura_topo"), 1)
+        for y in range(1, self.h - 1):
+            self.put(0, y, ("d", "moldura_esq"), 1)
+            self.put(self.w - 1, y, ("d", "moldura_dir"), 1)
 
     def saida(self, x):
         """O tapete da saída (3 de largura, embaixo); o warp é (x + 1, h - 2), pisando para baixo."""
@@ -609,26 +696,34 @@ def andares():
     a.entulho(5, 9)
     a.sombras()
     out[5] = (a, {"desce": desce, "sobe": sobe, "bilhete": (11, 10)})
-    # 6º andar: a sala do Dom
+    # 6º andar: a sala do Dom. A escada fica no canto de cima à esquerda; o escritório (quadro, poltrona encostada na
+    # parede, mesa e tapete) fica no lado direito, longe da linha da escada: ninguém passa atrás do chefe, e o jogador
+    # chega pela lateral (onde estão os gêmeos) ou pela frente da mesa.
     a = Andar(LARGURA_6, ALTURA_6, parede_sala=True)
-    desce = a.escada_abaixo(1)
+    a.moldura_sala()
+    desce = a.escada_sala(1)
+    x0 = SALA_ESCRITORIO_X
     for dx in range(3):
-        a.put(5 + dx, 1, ("d", f"quadro_{dx}_0"), 1)
-        a.put(5 + dx, 2, ("d", f"quadro_{dx}_1"), 1)
-        a.put(5 + dx, 4, ("d", f"poltrona_{dx}_0"), 1)
-        a.put(5 + dx, 5, ("d", f"mesa_{dx}_0"), 1)
-        a.put(5 + dx, 6, ("d", f"mesa_{dx}_1"), 1)
-        for y in range(7, ALTURA_6 - 1):
-            a.put(5 + dx, y, ("d", f"tapete_{dx}_0"), 0)
+        a.put(x0 + dx, 1, ("d", f"quadro_{dx}_0"), 1)
+        a.put(x0 + dx, 2, ("d", f"quadro_{dx}_1"), 1)
+        a.put(x0 + dx, 3, ("d", f"poltrona_{dx}_0"), 1)
+        a.put(x0 + dx, 4, ("d", f"mesa_{dx}_0"), 1)
+        a.put(x0 + dx, 5, ("d", f"mesa_{dx}_1"), 1)
+        for y in range(6, ALTURA_6 - 1):
+            a.put(x0 + dx, y, ("d", f"tapete_{dx}_0"), 0)
     for dx in range(2):
-        a.put(9 + dx, 1, ("d", f"cortina_{dx}_0"), 1)
-        a.put(9 + dx, 2, ("d", f"cortina_{dx}_1"), 1)
-    for x, y in ((11, 4), (1, 10), (11, 10)):
+        a.put(4 + dx, 1, ("d", f"cortina_{dx}_0"), 1)
+        a.put(4 + dx, 2, ("d", f"cortina_{dx}_1"), 1)
+    vasos = [(x0 - 1, 4), (x0 + 3, 4), (1, 10), (x0 + 3, 10)]
+    for x, y in vasos:
         a.put(x, y, ("d", "vaso"), 1)
     a.sombras()
-    out[6] = (a, {"desce": desce, "chefe": (6, 4), "gemeos": [(4, 5), (8, 5)], "bilhete": (6, 6),
-                  "gatilhos": [(3, 4), (4, 4), (5, 3)]})
+    out[6] = (a, {"desce": desce, "chefe": (x0 + 1, 3), "gemeos": [(x0 - 1, 3), (x0 + 3, 3)],
+                  "bilhete": (x0 + 1, 5), "gatilhos": [(3, 4), (4, 4), (5, 3)], "vasos": vasos})
     return out
+
+
+SALA_ESCRITORIO_X = 7               # 6º andar: 1ª coluna do escritório (quadro, poltrona, mesa e tapete, 3 de largura)
 
 
 # ---------------------------------------------------------------------------------------------------------------
@@ -674,7 +769,7 @@ def montar_familia(src, dst, plantas):
             chave = ("d", nome) if im.size == (16, 16) else ("d", f"{nome}_{mx}_{my}")
             ids[chave] = PRIMARIOS + len(metas)
             metas.append(ent)
-            atrs.append(MB_NORMAL)
+            atrs.append(ATRIBUTOS_DECORACAO.get(chave, MB_NORMAL))
     assert len(lad.lista) <= MAX_SECUNDARIO, f"familia_sombra: {len(lad.lista)} ladrilhos"
     assert len(metas) <= MAX_SECUNDARIO, f"familia_sombra: {len(metas)} metatiles"
 
