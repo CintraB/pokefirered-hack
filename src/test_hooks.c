@@ -1643,6 +1643,21 @@ static u32 FamiliaChefe(void)
 }
 // --- end of POK-51 --------------------------------------------------------------------------
 
+// --- POK-54, Task 10: chegar por um escape warp (Corda de Fuga, Cavar) em coordenadas com y >= 128 -------------------
+// O WarpTo acima passa x e y por parâmetros s8 do SetWarpDestination; o escape warp guarda s16.
+static u32 EscapeWarpTo(u32 map, u32 xy)
+{
+    gSaveBlock1Ptr->escapeWarp.mapGroup = map & 0xFF;
+    gSaveBlock1Ptr->escapeWarp.mapNum = map >> 8;
+    gSaveBlock1Ptr->escapeWarp.warpId = WARP_ID_NONE;
+    gSaveBlock1Ptr->escapeWarp.x = xy & 0xFFFF;
+    gSaveBlock1Ptr->escapeWarp.y = xy >> 16;
+    SetWarpDestinationToEscapeWarp();
+    DoWarp();
+    ResetInitialPlayerAvatarState();
+    return 1;
+}
+
 // --- POK-54, Task 9: o dossiê da Família Sombra, pelo special de verdade num script de campo ---------------------
 #include "dossie.h"
 
@@ -1843,6 +1858,7 @@ void TestHooks_Run(void)
     case TEST_CMD_FAMILIA_CHEFE_CAIU: result = FamiliaChefeCaiu(); break;
     case TEST_CMD_DOSSIE_ABRIR:     result = DossieAbrir(); break;
     case TEST_CMD_DOSSIE_ESTADO:    result = Dossie_TestEstado(); break;
+    case TEST_CMD_ESCAPE_WARP:      result = EscapeWarpTo(gTestMailbox.arg0, gTestMailbox.arg1); break;
     // POK-29
     case TEST_CMD_SHOW_FIELD_TEXT:  result = ShowFieldText(gTestMailbox.arg0, gTestMailbox.arg1); break;
     default:

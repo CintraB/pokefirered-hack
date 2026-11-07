@@ -3,12 +3,15 @@
 #include "battle_message.h"
 #include "battle_setup.h"
 #include "conquistas.h"
+#include "data.h"
 #include "day_night.h"
 #include "event_data.h"
 #include "field_specials.h"
 #include "familia_sombra.h"
 #include "pokedex.h"
 #include "pokemon.h"
+#include "pokemon_storage_system.h"
+#include "string_util.h"
 #include "random.h"
 #include "constants/event_objects.h"
 #include "constants/flags.h"
@@ -482,10 +485,14 @@ static bool8 ApreendidoPendente(u8 ocupacao)
     return !FamiliaSombra_ChefeCapturado(ocupacao) && !FlagGet(sEntregues[ocupacao - FAMILIA_PRIMEIRO_APREENDIDO]);
 }
 
-// Special: VAR_RESULT = a ocupação (3 ou 4) do 1º chefe apreendido que ainda não foi entregue, ou 0.
+// Special: VAR_RESULT = a ocupação (3 ou 4) do 1º chefe apreendido que ainda não foi entregue, ou 0. Só vale com a
+// Família encerrada: em qualquer outro estado a polícia não existe e ninguém entrega nada (um save em pé na rota, por
+// exemplo, não pode ganhar um chefe que nunca enfrentou).
 void FamiliaSombra_ApreendidoPendente(void)
 {
-    if (ApreendidoPendente(3))
+    if (FamiliaSombra_Estado() != FAMILIA_ESTADO_ENCERRADA)
+        gSpecialVar_Result = 0;
+    else if (ApreendidoPendente(3))
         gSpecialVar_Result = 3;
     else if (ApreendidoPendente(4))
         gSpecialVar_Result = 4;
@@ -493,16 +500,40 @@ void FamiliaSombra_ApreendidoPendente(void)
         gSpecialVar_Result = 0;
 }
 
+// Há vaga no time ou em alguma caixa do PC? (A conferência vem ANTES de criar o Pokémon: GiveMonToPlayer conta o shiny
+// recebido nas conquistas antes de procurar vaga, e a tentativa sem vaga não pode somar.)
+static bool8 HaVagaParaReceber(void)
+{
+    s32 box, pos;
+
+    if (CalculatePlayerPartyCount() < PARTY_SIZE)
+        return TRUE;
+    for (box = 0; box < TOTAL_BOXES_COUNT; box++)
+    {
+        for (pos = 0; pos < IN_BOX_COUNT; pos++)
+        {
+            if (GetBoxMonData(GetBoxedMonPtr(box, pos), MON_DATA_SPECIES, NULL) == SPECIES_NONE)
+                return TRUE;
+        }
+    }
+    return FALSE;
+}
+
 // Special: VAR_0x8004 = ocupação (3 ou 4). Entrega o chefe: shiny, nível e golpes da luta, sem item, o jogador como
-// dono. Vai para o time ou, com o time cheio, para o PC; vistos e capturados na Pokédex. VAR_RESULT = o retorno de
-// GiveMonToPlayer (MON_CANT_GIVE: time e PC cheios, nada acontece e a flag não liga) e VAR_0x8005 = a espécie.
+// dono. Sem vaga no time nem no PC (conferido antes de criar o Pokémon) nada acontece: nem Pokémon, nem flag, nem
+// conquista. Vai para o time ou, com o time cheio, para o PC; vistos e capturados na Pokédex. VAR_RESULT = o retorno de
+// GiveMonToPlayer (MON_CANT_GIVE = sem vaga) e VAR_0x8005 = a espécie. Para o PC, STR_VAR_1 = a caixa em que ficou,
+// STR_VAR_2 = a espécie, STR_VAR_3 = a caixa que estava cheia e VAR_0x8006 = qual aviso do jogo (0 "PC de alguém",
+// 1 "PC do Bill", 2 e 3 os mesmos com a caixa cheia), o padrão do givecaughtmon.
 void FamiliaSombra_EntregarApreendido(void)
 {
     u8 ocupacao = gSpecialVar_0x8004;
     struct Pokemon mon;
     u16 dex;
 
-    if (ocupacao < FAMILIA_PRIMEIRO_APREENDIDO || ocupacao > FAMILIA_OCUPACOES_TOTAL)
+    if (FamiliaSombra_Estado() != FAMILIA_ESTADO_ENCERRADA
+     || ocupacao < FAMILIA_PRIMEIRO_APREENDIDO || ocupacao > FAMILIA_OCUPACOES_TOTAL
+     || !HaVagaParaReceber())
     {
         gSpecialVar_Result = MON_CANT_GIVE;
         return;
@@ -516,5 +547,18 @@ void FamiliaSombra_EntregarApreendido(void)
         GetSetPokedexFlag(dex, FLAG_SET_SEEN);
         GetSetPokedexFlag(dex, FLAG_SET_CAUGHT);
         FlagSet(sEntregues[ocupacao - FAMILIA_PRIMEIRO_APREENDIDO]);
+    }
+    if (gSpecialVar_Result == MON_GIVEN_TO_PC)
+    {
+        StringCopy(gStringVar1, GetBoxNamePtr(VarGet(VAR_PC_BOX_TO_SEND_MON)));
+        StringCopy(gStringVar2, gSpeciesNames[gSpecialVar_0x8005]);
+        gSpecialVar_0x8006 = 0;
+        if (ShouldShowBoxWasFullMessage())
+        {
+            StringCopy(gStringVar3, GetBoxNamePtr(GetPCBoxToSendMon()));
+            gSpecialVar_0x8006 = 2;
+        }
+        if (FlagGet(FLAG_SYS_NOT_SOMEONES_PC))
+            gSpecialVar_0x8006++;
     }
 }

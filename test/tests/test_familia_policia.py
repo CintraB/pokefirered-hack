@@ -254,12 +254,13 @@ def test_cena_com_questlog():
     assert cena.index("goto_if_questlog EventScript_ReleaseEnd") < cena.index("lockall")
     assert "setvar VAR_TEMP_4, 0" in cena                                  # o gatilho não repete (nem no Quest Log)
     assert cena.index("setvar VAR_TEMP_4, 0") < cena.index("goto_if_questlog")
-    for chamada in ("applymovement LOCALID_FAMILIA_POLICIA_JENNY", "call Route23_EventScript_JennyEntregas",
+    for chamada in ("Route23_EventScript_JennyVemDaPorta", "call Route23_EventScript_JennyEntregas",
                     "call Route23_EventScript_JennyOferece"):
         assert chamada in cena, chamada
     # a flag da cena liga antes de soltar o jogador, e a Jenny volta ao posto antes (libera o caminho da porta)
     assert cena.index("setflag FLAG_FAMILIA_POLICIA_CENA") < cena.index("releaseall")
-    assert cena.index("Route23_Movement_JennyVolta") < cena.index("releaseall")
+    assert cena.index("Route23_EventScript_JennyVoltaDaPorta") < cena.index("releaseall")
+    assert "applymovement LOCALID_FAMILIA_POLICIA_JENNY, Route23_Movement_JennyVolta\n" in SCRIPTS
     for rotulo in ("Route23_EventScript_PoliciaJenny", "Route23_EventScript_PoliciaGrowlithe",
                    "Route23_EventScript_PoliciaArcanine"):
         s = _script(rotulo)
@@ -343,6 +344,12 @@ def test_entrega_no_script():
     assert "goto_if_eq VAR_RESULT, 0, Route23_EventScript_JennyEntregasFim" in s
     assert "goto_if_eq VAR_RESULT, MON_CANT_GIVE, Route23_EventScript_JennyEntregaSemEspaco" in s
     assert "goto_if_eq VAR_RESULT, MON_GIVEN_TO_PC, Route23_EventScript_JennyEntregouAoPC" in s
+    # o nome da espécie só entra no ramo do time: no do PC STR_VAR_1 é o nome da caixa (preenchido pelo C)
+    assert s.index("bufferspeciesname STR_VAR_1") > s.index("goto_if_eq VAR_RESULT, MON_GIVEN_TO_PC")
+    # M1: a fanfarra de Pokémon recebido, a do FireRed (a de item é de item)
+    assert "MUS_OBTAIN_ITEM" not in SCRIPTS[SCRIPTS.index("Route23_EventScript_JennyEntregas::"):]
+    assert s.count("playfanfare MUS_LEVEL_UP") == 1 and "playfanfare MUS_LEVEL_UP" in _script(
+        "Route23_EventScript_JennyEntregouAoPC")
     assert s.rstrip().endswith("goto Route23_EventScript_JennyEntregas")           # volta ao topo: o próximo da fila
     assert _script("Route23_EventScript_JennyEntregasFim").strip() == "return"
     assert "return" in _script("Route23_EventScript_JennyEntregaSemEspaco")
@@ -389,9 +396,99 @@ def test_bilhete_do_6o_andar_na_familia_encerrada():
 def test_textos_novos_sem_travessao():
     novos = TEXTOS[TEXTOS.index("Route23_Text_PortaFamiliaLacrada"):]
     assert "—" not in novos and "–" not in novos
-    for rotulo in ("JennyCaso", "JennyApreendido3", "JennyApreendido4", "JennyRecebeu", "JennyEntregouAoPC",
+    for rotulo in ("JennyCaso", "JennyApreendido3", "JennyApreendido4", "JennyRecebeu",
                    "JennySemEspaco", "JennyQuerOuvir", "JennyObrigada", "JennyDeNovo", "Policial1", "Policial2",
                    "Growlithe", "Arcanine"):
         assert f"Route23_Text_{rotulo}::" in novos, rotulo
     # a Jenny nomeia os dois chefes apreendidos
     assert "GARCHOMP" in novos and "DARKRAI" in novos
+
+
+# --- rodada de correção 1 da revisão ------------------------------------------------------------------------------
+
+
+def test_policia_escondida_tambem_no_on_load():
+    """I1: o CONTINUAR de um save em pé na rota só roda o ON_LOAD: ele também esconde a polícia fora de ENCERRADA."""
+    onload = _script("Route23_OnLoad")
+    assert "call_if_ne VAR_RESULT, FAMILIA_ESTADO_ENCERRADA, Route23_EventScript_EsconderPolicia" in onload
+    assert onload.index("special FamiliaSombra_GetEstado") < onload.index("Route23_EventScript_EsconderPolicia")
+
+
+def test_apreendido_so_em_encerrada():
+    """I1: sem a Família encerrada ninguém tem o que entregar nem pode receber (as 2 specials conferem o estado)."""
+    pendente = _corpo(FAMILIA_C, "FamiliaSombra_ApreendidoPendente")
+    assert re.search(r"if \(FamiliaSombra_Estado\(\) != FAMILIA_ESTADO_ENCERRADA\)\s*gSpecialVar_Result = 0;", pendente)
+    entrega = _corpo(FAMILIA_C, "FamiliaSombra_EntregarApreendido")
+    assert "FamiliaSombra_Estado() != FAMILIA_ESTADO_ENCERRADA" in entrega.split("FamiliaSombra_CriarChefe")[0]
+
+
+def test_vaga_conferida_antes_de_criar_o_pokemon():
+    """I2: GiveMonToPlayer conta o shiny nas conquistas antes de procurar vaga: sem vaga nem se cria nem se dá."""
+    entrega = _corpo(FAMILIA_C, "FamiliaSombra_EntregarApreendido")
+    antes = entrega.split("FamiliaSombra_CriarChefe")[0]
+    assert "!HaVagaParaReceber()" in antes and "MON_CANT_GIVE" in antes
+    assert entrega.index("!HaVagaParaReceber()") < entrega.index("GiveMonToPlayer")
+    vaga = _corpo(FAMILIA_C, "HaVagaParaReceber")
+    assert "CalculatePlayerPartyCount() < PARTY_SIZE" in vaga and "TOTAL_BOXES_COUNT" in vaga and "IN_BOX_COUNT" in vaga
+    assert "SPECIES_NONE" in vaga and "GiveMonToPlayer" not in vaga
+
+
+def test_aviso_do_pc_no_padrao_do_jogo():
+    """M3: o PC usa os 4 textos do jogo (caixa em que ficou, caixa que estava cheia, PC de alguém ou do Bill)."""
+    s = _script("Route23_EventScript_JennyEntregouAoPC")
+    for texto in ("Text_MonSentToBoxInSomeonesPC", "Text_MonSentToBoxInBillsPC", "Text_MonSentToBoxSomeonesBoxFull",
+                  "Text_MonSentToBoxBillsBoxFull"):
+        assert texto in SCRIPTS, texto
+    entrega = _corpo(FAMILIA_C, "FamiliaSombra_EntregarApreendido")
+    assert "GetBoxNamePtr(VarGet(VAR_PC_BOX_TO_SEND_MON))" in entrega and "ShouldShowBoxWasFullMessage()" in entrega
+    assert "GetBoxNamePtr(GetPCBoxToSendMon())" in entrega and "FLAG_SYS_NOT_SOMEONES_PC" in entrega
+    assert "gSpecialVar_0x8006" in entrega and "VAR_0x8006" in s
+
+
+def test_cada_movimento_da_jenny_tem_o_waitmovement_dela():
+    """I4: `waitmovement 0` espera só o último applymovement: a Jenny tem o waitmovement dela, e o jogador, o dele."""
+    cena = _script("Route23_EventScript_CenaPolicia")
+    assert cena.index("applymovement LOCALID_PLAYER") < cena.index("waitmovement 0") < cena.index("call_if_ne VAR_TEMP_5")
+    for rotulo in ("JennyVemDaPorta", "JennyVemDeFora", "JennyVoltaDaPorta", "JennyVoltaDeFora"):
+        s = _script(f"Route23_EventScript_{rotulo}")
+        assert re.search(r"applymovement LOCALID_FAMILIA_POLICIA_JENNY, \w+\n\twaitmovement LOCALID_FAMILIA_POLICIA_JENNY",
+                         s), rotulo
+
+
+def _caminho(movimento: str, inicio: tuple[int, int]) -> list[tuple[int, int]]:
+    passos = {"walk_right": (1, 0), "walk_left": (-1, 0), "walk_up": (0, -1), "walk_down": (0, 1)}
+    corpo = re.search(rf"{movimento}:\n(.*?)step_end", SCRIPTS, re.S).group(1).split()
+    pos, caminho = inicio, []
+    for p in corpo:
+        if p in passos:
+            pos = (pos[0] + passos[p][0], pos[1] + passos[p][1])
+            caminho.append(pos)
+    return caminho
+
+
+def test_jenny_nunca_pisa_no_jogador():
+    """I3: o jogador chega em (4, 149) (saiu pela porta) ou (4, 150) (escape warp): a Jenny para no tile à frente dele e
+    volta ao posto; o y dele (VAR_TEMP_5) escolhe o roteiro."""
+    posto = (6, 150)
+    outros = {(o["x"], o["y"]) for o in _objetos()[9:]}
+    for y_jogador, ida, volta, parada in ((149, "Route23_Movement_JennyAteOJogador", "Route23_Movement_JennyVolta", (4, 150)),
+                                          (150, "Route23_Movement_JennyAteOJogadorDeFora",
+                                           "Route23_Movement_JennyVoltaDeFora", (4, 151))):
+        ate = _caminho(ida, posto)
+        assert ate[-1] == parada and (4, y_jogador) not in ate, (y_jogador, ate)
+        assert not set(ate) & outros
+        de_volta = _caminho(volta, parada)
+        assert de_volta[-1] == posto and not set(de_volta) & outros, (y_jogador, de_volta)
+    cena = _script("Route23_EventScript_CenaPolicia")
+    assert "getplayerxy VAR_0x8004, VAR_TEMP_5" in cena
+    assert "call_if_ne VAR_TEMP_5, 150, Route23_EventScript_JennyVemDaPorta" in cena
+    assert "call_if_eq VAR_TEMP_5, 150, Route23_EventScript_JennyVemDeFora" in cena
+    assert "call_if_ne VAR_TEMP_5, 150, Route23_EventScript_JennyVoltaDaPorta" in cena
+    assert "call_if_eq VAR_TEMP_5, 150, Route23_EventScript_JennyVoltaDeFora" in cena
+
+
+def test_atalho_escape_warp_no_cabecalho():
+    h = (REPO_ROOT / "include/test_hooks.h").read_text(encoding="utf-8")
+    assert re.search(r"TEST_CMD_ESCAPE_WARP,\s*// = 0x146:", h)
+    c = (REPO_ROOT / "src/test_hooks.c").read_text(encoding="utf-8")
+    assert "case TEST_CMD_ESCAPE_WARP:" in c and "gSaveBlock1Ptr->escapeWarp.y = xy >> 16;" in c

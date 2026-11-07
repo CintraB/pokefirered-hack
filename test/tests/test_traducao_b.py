@@ -74,7 +74,6 @@ ROTULOS_DOS_HACKS = {"PokemonLeague_HallOfFame_Text_OakTickets",     # Hack 8: C
                      "Route23_Text_JennyApreendido3",
                      "Route23_Text_JennyApreendido4",
                      "Route23_Text_JennyRecebeu",
-                     "Route23_Text_JennyEntregouAoPC",
                      "Route23_Text_JennySemEspaco",
                      "Route23_Text_JennyQuerOuvir",
                      "Route23_Text_JennyObrigada",

@@ -19,6 +19,9 @@ Route23_OnLoad::
 	call_if_eq VAR_RESULT, FAMILIA_ESTADO_FECHADO, Route23_EventScript_TrancarPortaFamilia
 	call_if_eq VAR_RESULT, FAMILIA_ESTADO_ATIVA, Route23_EventScript_ArmarPedagio
 	call_if_eq VAR_RESULT, FAMILIA_ESTADO_ENCERRADA, Route23_EventScript_LacrarPortaFamilia
+	@ o CONTINUAR de um save em pé na rota só roda este ON_LOAD (e ele roda antes de os objetos nascerem): sem isto a
+	@ polícia apareceria em qualquer estado
+	call_if_ne VAR_RESULT, FAMILIA_ESTADO_ENCERRADA, Route23_EventScript_EsconderPolicia
 	end
 
 Route23_EventScript_TrancarPortaFamilia::
@@ -339,24 +342,48 @@ Route23_EventScript_VictoryRoadGateSign::
 	end
 
 @ ---- POK-54: a polícia na porta e a Oficial Jenny ---------------------------------------------------------------
-@ A cena (ON_FRAME): a Jenny vem do posto (6, 150) até o jogador, que sai do prédio na porta (4, 149) e só tem a saída
-@ (4, 150) -> (4, 151) entre os policiais. Por isso, no fim ela volta ao posto e libera o caminho.
-@ A flag da cena só liga no fim (sair do mapa no meio refaz tudo; nada se entrega duas vezes: cada entrega tem a flag).
+@ A cena (ON_FRAME): a Jenny vem do posto (6, 150) até o jogador, que sai do prédio na porta (4, 149) (ela termina em
+@ (4, 150), à frente dele) ou, chegando por outro caminho, em (4, 150) (ela para em (4, 151), olhando para cima). A saída
+@ do jogador é (4, 150) -> (4, 151) entre os policiais: no fim ela volta ao posto e libera o caminho. VAR_TEMP_5 guarda o
+@ y do jogador (149 ou 150) durante a cena. Cada movimento tem o seu waitmovement: a fala nunca começa com ela andando e
+@ a volta nunca se perde.
 Route23_EventScript_CenaPolicia::
 	setvar VAR_TEMP_4, 0
 	goto_if_questlog EventScript_ReleaseEnd
 	lockall
-	applymovement LOCALID_FAMILIA_POLICIA_JENNY, Route23_Movement_JennyAteOJogador
+	getplayerxy VAR_0x8004, VAR_TEMP_5
 	applymovement LOCALID_PLAYER, Route23_Movement_JogadorOlhaBaixo
 	waitmovement 0
+	call_if_ne VAR_TEMP_5, 150, Route23_EventScript_JennyVemDaPorta
+	call_if_eq VAR_TEMP_5, 150, Route23_EventScript_JennyVemDeFora
 	msgbox Route23_Text_JennyCaso, MSGBOX_DEFAULT
 	call Route23_EventScript_JennyEntregas
 	call Route23_EventScript_JennyOferece
 	setflag FLAG_FAMILIA_POLICIA_CENA
-	applymovement LOCALID_FAMILIA_POLICIA_JENNY, Route23_Movement_JennyVolta
-	waitmovement 0
+	call_if_ne VAR_TEMP_5, 150, Route23_EventScript_JennyVoltaDaPorta
+	call_if_eq VAR_TEMP_5, 150, Route23_EventScript_JennyVoltaDeFora
 	releaseall
 	end
+
+Route23_EventScript_JennyVemDaPorta::
+	applymovement LOCALID_FAMILIA_POLICIA_JENNY, Route23_Movement_JennyAteOJogador
+	waitmovement LOCALID_FAMILIA_POLICIA_JENNY
+	return
+
+Route23_EventScript_JennyVemDeFora::
+	applymovement LOCALID_FAMILIA_POLICIA_JENNY, Route23_Movement_JennyAteOJogadorDeFora
+	waitmovement LOCALID_FAMILIA_POLICIA_JENNY
+	return
+
+Route23_EventScript_JennyVoltaDaPorta::
+	applymovement LOCALID_FAMILIA_POLICIA_JENNY, Route23_Movement_JennyVolta
+	waitmovement LOCALID_FAMILIA_POLICIA_JENNY
+	return
+
+Route23_EventScript_JennyVoltaDeFora::
+	applymovement LOCALID_FAMILIA_POLICIA_JENNY, Route23_Movement_JennyVoltaDeFora
+	waitmovement LOCALID_FAMILIA_POLICIA_JENNY
+	return
 
 Route23_Movement_JennyAteOJogador:
 	emote_exclamation_mark
@@ -368,6 +395,21 @@ Route23_Movement_JennyAteOJogador:
 
 Route23_Movement_JennyVolta:
 	walk_down
+	walk_right
+	walk_right
+	walk_up
+	face_down
+	step_end
+
+Route23_Movement_JennyAteOJogadorDeFora:
+	emote_exclamation_mark
+	walk_down
+	walk_left
+	walk_left
+	face_up
+	step_end
+
+Route23_Movement_JennyVoltaDeFora:
 	walk_right
 	walk_right
 	walk_up
@@ -388,10 +430,10 @@ Route23_EventScript_JennyEntregas::
 	call_if_eq VAR_0x8008, 4, Route23_EventScript_JennyApreendido4
 	copyvar VAR_0x8004, VAR_0x8008
 	special FamiliaSombra_EntregarApreendido
-	bufferspeciesname STR_VAR_1, VAR_0x8005
 	goto_if_eq VAR_RESULT, MON_CANT_GIVE, Route23_EventScript_JennyEntregaSemEspaco
 	goto_if_eq VAR_RESULT, MON_GIVEN_TO_PC, Route23_EventScript_JennyEntregouAoPC
-	playfanfare MUS_OBTAIN_ITEM
+	bufferspeciesname STR_VAR_1, VAR_0x8005
+	playfanfare MUS_LEVEL_UP
 	message Route23_Text_JennyRecebeu
 	waitmessage
 	waitfanfare
@@ -408,13 +450,35 @@ Route23_EventScript_JennyApreendido4::
 	msgbox Route23_Text_JennyApreendido4, MSGBOX_DEFAULT
 	return
 
+@ Time cheio: o aviso do jogo para o PC (o mesmo da captura): a caixa em que ficou e, se a caixa de sempre estava cheia,
+@ qual era. VAR_0x8006: 0 PC de alguém, 1 PC do Bill, 2 e 3 os mesmos com a caixa cheia.
 Route23_EventScript_JennyEntregouAoPC::
-	playfanfare MUS_OBTAIN_ITEM
-	message Route23_Text_JennyEntregouAoPC
+	playfanfare MUS_LEVEL_UP
+	call_if_eq VAR_0x8006, 0, Route23_EventScript_JennyAvisoPCAlguem
+	call_if_eq VAR_0x8006, 1, Route23_EventScript_JennyAvisoPCBill
+	call_if_eq VAR_0x8006, 2, Route23_EventScript_JennyAvisoPCAlguemCheia
+	call_if_eq VAR_0x8006, 3, Route23_EventScript_JennyAvisoPCBillCheia
 	waitmessage
 	waitfanfare
+	waitbuttonpress
 	closemessage
 	goto Route23_EventScript_JennyEntregas
+
+Route23_EventScript_JennyAvisoPCAlguem::
+	message Text_MonSentToBoxInSomeonesPC
+	return
+
+Route23_EventScript_JennyAvisoPCBill::
+	message Text_MonSentToBoxInBillsPC
+	return
+
+Route23_EventScript_JennyAvisoPCAlguemCheia::
+	message Text_MonSentToBoxSomeonesBoxFull
+	return
+
+Route23_EventScript_JennyAvisoPCBillCheia::
+	message Text_MonSentToBoxBillsBoxFull
+	return
 
 Route23_EventScript_JennyEntregaSemEspaco::
 	msgbox Route23_Text_JennySemEspaco, MSGBOX_DEFAULT

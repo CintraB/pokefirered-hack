@@ -89,10 +89,6 @@ Route23_Text_JennyApreendido4::
 Route23_Text_JennyRecebeu::
     .string "{PLAYER} recebeu {STR_VAR_1}!$"
 
-Route23_Text_JennyEntregouAoPC::
-    .string "Seu time está cheio.\n"
-    .string "{STR_VAR_1} foi enviado ao PC!$"
-
 Route23_Text_JennySemEspaco::
     .string "Oficial Jenny: Time e PC cheios!\n"
     .string "Abra espaço e fale comigo de novo.\l"

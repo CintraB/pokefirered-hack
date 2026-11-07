@@ -145,6 +145,17 @@ FAMILIA_SET (ocupação 4, ENCERRADA) e SET_FLAG; o jogador sai do 1º andar pel
   pedágio e sem capangas. Tela `familia_policia_porta`;
 - `familia/policia_ambiente`: os 2 policiais, o Growlithe e o Arcanine falam.
 
+Rodada de correção 1 (revisão da Task 10):
+
+- `familia/entrega_pc_cheio` também conversa 3 vezes com tudo cheio e confere que `shiniesObtidos` não muda (a vaga é
+  conferida antes de criar o Pokémon) e que os 2 recebidos de verdade contam;
+- `familia/entrega_caixa_cheia`: a caixa atual cheia: os dois vão para a caixa 2 e o aviso diz a caixa que estava cheia;
+- `familia/cena_jenny_sim`: nada a entregar e a resposta é Sim: o dossiê abre no meio da cena, a Jenny volta ao posto e
+  o jogador sai livre da porta;
+- `familia/cena_jenny_escape`: chegada por escape warp (atalho ESCAPE_WARP) em (4, 150): a Jenny para em (4, 151);
+- as 3 cenas conferem onde a Jenny está quando a 1ª fala abre (ela já terminou de andar);
+- `familia/continue_rota23_*` conferem que a polícia não aparece no CONTINUAR sem a Família encerrada.
+
 Uso, a partir de test/ (a pasta OUT precisa do captura.sav de um `rapido`/`completo`):
     python3 -m esteira completo --rom R --elf E --out OUT --only familia
 """
@@ -159,7 +170,7 @@ from ..breeding import header_defines
 from ..game import POKEMON_SIZE, SB1_MONEY, mon_checksum_ok
 from .. import conquistas as cq
 from ..emu import KEY_A, KEY_B, KEY_DOWN, KEY_LEFT, KEY_R, KEY_RIGHT, KEY_UP
-from ..hooks import CMD_GIVE_ITEM, CMD_SET_VAR, CMD_START_WILD_BATTLE, CMD_WARP, Mailbox
+from ..hooks import CMD_ESCAPE_WARP, CMD_GIVE_ITEM, CMD_SET_VAR, CMD_START_WILD_BATTLE, CMD_WARP, Mailbox
 from ..nav import Navigator
 from . import REPO_ROOT, ScenarioContext
 from .base import YESNO_TASK, Abort
@@ -266,6 +277,7 @@ DOSSIE_TECLA = dict(hold=6, release=12)   # a troca de página leva mais de 1 qu
 LOCALID_JENNY, LOCALID_POLICIAL_1, LOCALID_POLICIAL_2, LOCALID_GROWLITHE, LOCALID_ARCANINE = 9, 10, 11, 12, 13
 JENNY_POSTO = (6, 150)               # onde a Jenny fica (vem até o jogador na cena e volta)
 JENNY_DE_FRENTE = (6, 151)           # o tile de onde se fala com ela (olhando para cima)
+LOCALIDS_POLICIA = (LOCALID_JENNY, LOCALID_POLICIAL_1, LOCALID_POLICIAL_2, LOCALID_GROWLITHE, LOCALID_ARCANINE)
 LOCALIDS_CAPANGAS_1F = {1, 2, 3}     # os 3 capangas do 1º andar (os 3 primeiros objetos de Route23_UnusedHouse)
 QUEDA_FIM = 40                       # meio-dia do relógio em que o Pesadelo caiu nos casos do fechamento
 TOTAL_BOXES = 14                     # TOTAL_BOXES_COUNT
@@ -1431,6 +1443,7 @@ class FamiliaScenario(CatchSaveScenario):
             "layout": self.emu.read_u16(self._sym("gMapHeader") + MAP_HEADER_LAYOUT_ID) == layouts["LAYOUT_ROUTE23"],
             "porta_trancada": porta == predio["porta_trancada"],
             "persian": self._object_visible(LOCALID_COBRADOR),
+            "policia": any(self._object_visible(l) for l in LOCALIDS_POLICIA),
             "pedagio_armado": self._var(VAR_TEMP_3) == 1,
             "estado": self.box.familia_estado()[:2],
         }
@@ -1462,6 +1475,7 @@ class FamiliaScenario(CatchSaveScenario):
         assert depois["xy"] == PEDAGIO_SUL, depois
         assert depois["porta_trancada"] == (estado == ESTADO_FECHADO), depois
         assert depois["persian"] == depois["pedagio_armado"] == (estado == ESTADO_ATIVA), depois
+        assert not depois["policia"], f"a polícia apareceu no CONTINUAR sem a Família encerrada: {depois}"
         return (f"CONTINUAR em {depois['xy']}: layout LAYOUT_ROUTE23, porta "
                 f"{'trancada' if depois['porta_trancada'] else 'aberta'}, Persian "
                 f"{'visível e pedágio armado' if depois['persian'] else 'ausente e pedágio desarmado'}")
@@ -2014,6 +2028,8 @@ class FamiliaScenario(CatchSaveScenario):
             msg = self._message()
             if self.ctl.script_active() and msg and (not info["msgs"] or info["msgs"][-1] != msg):
                 info["msgs"].append(msg)
+                if "jenny_xy" not in info and msg == self._rom_text("Route23_Text_JennyCaso"):
+                    info["jenny_xy"] = self._object_xy(LOCALID_JENNY)      # onde ela está quando a 1ª fala abre
             if shot and not taken and shot[0] in msg and self.ctl.script_active():
                 self.ctl.wait_until(lambda: self._waiting() and not self._fade_active(), 300, f"texto {shot[0]!r}")
                 info["shot"] = self._shot(shot[1])
@@ -2089,7 +2105,9 @@ class FamiliaScenario(CatchSaveScenario):
         for rotulo in ("Route23_Text_JennyCaso", "Route23_Text_JennyApreendido3", "Route23_Text_JennyApreendido4",
                        "Route23_Text_JennyQuerOuvir", "Route23_Text_JennyObrigada"):
             assert self._rom_text(rotulo) in msgs, (rotulo, msgs)
-        assert f"{nome} recebeu GARCHOMP!" in junto and "DARKRAI foi enviado ao PC!" in junto, junto
+        assert f"{nome} recebeu GARCHOMP!" in junto and "DARKRAI foi transferido para o PC" in junto, junto
+        assert "Caixa “" in junto, junto         # o aviso do PC diz a caixa, no padrão do jogo
+        assert info["jenny_xy"] == (4, 150), f"a fala abriu com a Jenny em {info['jenny_xy']} (ela ainda andava)"
         assert msgs.index(self._rom_text("Route23_Text_JennyApreendido3")) < msgs.index(
             self._rom_text("Route23_Text_JennyApreendido4")) < msgs.index(self._rom_text("Route23_Text_JennyQuerOuvir"))
         assert info["perguntas"] == 1 and info["dossie"] is None
@@ -2111,6 +2129,51 @@ class FamiliaScenario(CatchSaveScenario):
         assert self.nav.step("down", 2) == 2 and self.game.player_xy() == (4, 151), self.game.player_xy()
         assert self.nav.walk_to(8, 151) and self.nav.walk_to(*PORTA_FRENTE), "o jogador ficou preso na porta"
         return f"{'; '.join(feito)}; flags ligadas; tela {info['shot']}"
+
+    def _livre_da_porta(self) -> None:
+        """O jogador que acabou a cena sai de verdade: desce pela saída entre os policiais e volta."""
+        xy = self.game.player_xy()
+        assert xy in (PORTA, PORTA_FRENTE), xy
+        assert self.nav.step("down", 151 - xy[1]) == 151 - xy[1] and self.game.player_xy() == (4, 151), \
+            self.game.player_xy()
+        assert self.nav.walk_to(8, 151) and self.nav.walk_to(*PORTA_FRENTE), "o jogador ficou preso na porta"
+
+    def _cena_jenny_sim(self) -> str:
+        """Nada a entregar (os 2 capturados) e a resposta é Sim: o dossiê abre no meio da cena (capa, B fecha), a Jenny
+        volta ao posto e o jogador sai livre da porta."""
+        self._prep_fim(capturados=(3, 4), time=3)
+        self._sair_encerrada()
+        self._esperar_cena()
+        info = self._jenny_cena(quer_ouvir=True)
+        msgs = info["msgs"]
+        assert msgs[-2:] == [self._rom_text("Route23_Text_JennyCaso"), self._rom_text("Route23_Text_JennyQuerOuvir")], msgs
+        assert not any("Apreendido" in m or "recebeu" in m for m in msgs), msgs
+        assert info["jenny_xy"] == (4, 150), info["jenny_xy"]
+        assert info["dossie"] is not None and info["dossie"]["chefe"] == DOSSIE_CAPA, info["dossie"]
+        assert not self.ctl.script_active() and self.box.dossie_estado() is None
+        assert self.game.flag(self._flag("FLAG_FAMILIA_POLICIA_CENA")) and self._entregues() == (False, False)
+        assert self._object_xy(LOCALID_JENNY) == JENNY_POSTO, self._object_xy(LOCALID_JENNY)
+        assert len(self.game.party()) == 3
+        self._livre_da_porta()
+        return "Sim: dossiê aberto no meio da cena (capa) e fechado com B; a Jenny volta ao posto; o jogador sai da porta"
+
+    def _cena_jenny_escape(self) -> str:
+        """Chegando por um escape warp (Corda de Fuga, Cavar) em (4, 150): a Jenny para em (4, 151) e fala olhando para
+        cima, nunca em cima do jogador; no fim volta ao posto e o jogador sai livre."""
+        self._prep_fim(capturados=(3, 4), time=3)
+        self._warp("MAP_ROUTE23_UNUSED_HOUSE", SAIDA_1F)
+        group, num = self.consts.map("MAP_ROUTE23")
+        assert self.box.call(CMD_ESCAPE_WARP, group | num << 8, 4 | 150 << 16) == 1
+        self.ctl.wait_until(lambda: self.game.location() == (group, num), 600, "chegada pelo escape warp")
+        self._esperar_cena()
+        assert self.game.player_xy() == PORTA_FRENTE, self.game.player_xy()
+        info = self._jenny_cena(quer_ouvir=False)
+        assert info["jenny_xy"] == (4, 151), f"a Jenny abriu a fala em {info['jenny_xy']}"
+        assert info["msgs"][-1] == self._rom_text("Route23_Text_JennyObrigada"), info["msgs"]
+        assert self.game.flag(self._flag("FLAG_FAMILIA_POLICIA_CENA"))
+        assert self._object_xy(LOCALID_JENNY) == JENNY_POSTO, self._object_xy(LOCALID_JENNY)
+        self._livre_da_porta()
+        return "escape warp em (4, 150): a Jenny parou em (4, 151), não em cima do jogador; volta ao posto e ele sai livre"
 
     def _jenny_de_novo(self) -> str:
         """Falando com a Jenny depois da cena: a fala dela, nenhuma entrega repetida e a pergunta; "Sim" abre o
@@ -2167,8 +2230,9 @@ class FamiliaScenario(CatchSaveScenario):
         self._esperar_cena()
         info = self._jenny_cena()
         junto = " ".join(" ".join(info["msgs"]).split())
-        assert junto.count("foi enviado ao PC!") == 2 and "GARCHOMP foi enviado ao PC!" in junto and \
-            "DARKRAI foi enviado ao PC!" in junto and "recebeu" not in junto, junto
+        assert junto.count("foi transferido para o PC") == 2 and "GARCHOMP foi transferido para o PC" in junto and \
+            "DARKRAI foi transferido para o PC" in junto and "recebeu" not in junto, junto
+        assert junto.count("Caixa “") == 2 and "estava cheia" not in junto, junto
         assert [(m.species, m.personality) for m in self.game.party()] == antes
         garchomp, darkrai = self._no_pc("GARCHOMP"), self._no_pc("DARKRAI")
         assert len(garchomp) == 1 and len(darkrai) == 1
@@ -2180,17 +2244,26 @@ class FamiliaScenario(CatchSaveScenario):
         """Time e PC cheios: nada é entregue, as flags ENTREGUE ficam desligadas e a Jenny pede espaço (a cena acaba
         e a flag dela liga). Com 2 vagas no time e conversando de novo, a entrega acontece."""
         self._prep_fim(time=6, pc_cheio=True)
+        self.box.conq_reset(True)                   # liga as conquistas (o contador de shinies só conta com o marcador)
+        shinies = self.box.conq_contador(1)
         self._sair_encerrada()
         self._esperar_cena()
         info = self._jenny_cena()
         assert self._rom_text("Route23_Text_JennySemEspaco") in info["msgs"], info["msgs"]
-        assert not any("recebeu" in m or "enviado" in m for m in info["msgs"]), info["msgs"]
+        assert not any("recebeu" in m or "transferido" in m for m in info["msgs"]), info["msgs"]
         assert info["msgs"].count(self._rom_text("Route23_Text_JennySemEspaco")) == 1, "o laço não parou"
         assert not self._no_pc("GARCHOMP") and not self._no_pc("DARKRAI") and len(self.game.party()) == 6
         assert not any(m.species in (self._sp("GARCHOMP"), self._sp("DARKRAI")) for m in self.game.party())
         assert self._entregues() == (False, False), "a flag ligou sem entregar"
         assert self.game.flag(self._flag("FLAG_FAMILIA_POLICIA_CENA")), "a cena acabou"
         assert self._rom_text("Route23_Text_JennyObrigada") in info["msgs"]
+        # tudo cheio e conversando várias vezes: nada é dado, e o Garchomp shiny que não saiu não conta como recebido
+        for _ in range(3):
+            self._falar_com(JENNY_DE_FRENTE, "up")
+            outra = self._jenny_cena()
+            assert self._rom_text("Route23_Text_JennySemEspaco") in outra["msgs"], outra["msgs"]
+        assert self.box.conq_contador(1) == shinies, f"shiniesObtidos {shinies} -> {self.box.conq_contador(1)}"
+        assert self._entregues() == (False, False) and len(self.game.party()) == 6
         # abre 2 vagas no time e fala de novo: a entrega acontece
         assert self.box.party_size(4) == 4
         self._falar_com(JENNY_DE_FRENTE, "up")
@@ -2200,7 +2273,27 @@ class FamiliaScenario(CatchSaveScenario):
         assert info["msgs"][0] == self._rom_text("Route23_Text_JennyDeNovo")
         assert [m.species for m in self.game.party()[4:]] == [self._sp("GARCHOMP"), self._sp("DARKRAI")]
         assert self._entregues() == (True, True)
-        return "PC e time cheios: nada entregue, flags desligadas, a Jenny pede espaço; com 2 vagas, falando de novo, os 2 chegam ao time"
+        assert self.box.conq_contador(1) == shinies + 2, "os 2 recebidos de verdade contam"
+        return ("PC e time cheios: nada entregue, flags desligadas, a Jenny pede espaço; 4 conversas com tudo cheio não "
+                "somam shinies; com 2 vagas, falando de novo, os 2 chegam ao time (e contam)")
+
+    def _entrega_caixa_cheia(self) -> str:
+        """Time cheio e a caixa atual (a 1) também: o Garchomp e o Darkrai vão para a caixa 2 e o aviso diz a caixa que
+        estava cheia, no padrão do jogo."""
+        self._prep_fim(time=6)
+        for pos in range(30):
+            self.box.conq_pc_mon(0, pos, self._sp("PIDGEY"))
+        self._sair_encerrada()
+        self._esperar_cena()
+        info = self._jenny_cena()
+        junto = " ".join(" ".join(info["msgs"]).split())
+        assert junto.count("estava cheia") == 1 and junto.count("foi transferido para") == 2, junto
+        assert self._no_pc("GARCHOMP") and self._no_pc("DARKRAI")
+        boxes = [i for i in range(TOTAL_BOXES) for m in self.game.box_mons(i) if m and m.species in (
+            self._sp("GARCHOMP"), self._sp("DARKRAI"))]
+        assert boxes == [1, 1], boxes
+        assert self._entregues() == (True, True)
+        return f"caixa 1 cheia: os dois na caixa 2; aviso com a caixa cheia: {junto[junto.index('A Caixa'):][:60]!r}"
 
     def _porta_lacrada(self) -> str:
         """Com a Família encerrada o metatile da porta é o das faixas amarelas: a porta não abre (nem andando para
@@ -2305,6 +2398,9 @@ class FamiliaScenario(CatchSaveScenario):
             self.suite.run("familia/entrega_capturado", self._entrega_capturado)
             self.suite.run("familia/entrega_time_cheio", self._entrega_time_cheio)
             self.suite.run("familia/entrega_pc_cheio", self._entrega_pc_cheio)
+            self.suite.run("familia/entrega_caixa_cheia", self._entrega_caixa_cheia)
+            self.suite.run("familia/cena_jenny_sim", self._cena_jenny_sim)
+            self.suite.run("familia/cena_jenny_escape", self._cena_jenny_escape)
             self.suite.run("familia/porta_lacrada", self._porta_lacrada)
             self.suite.run("familia/policia_ambiente", self._policia_ambiente)
         except Abort:
