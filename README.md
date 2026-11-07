@@ -67,7 +67,7 @@ perder o jeito do FireRed.
 | 🧭 | **DexNav** | Os Pokémon de cada lugar, com a chance real, o que falta capturar e onde achar cada um. |
 | 🐾 | **Pokémon seguidor** | O 1º da equipe anda atrás de você no campo: os 386 e os 4 extras, com os grandes, as fêmeas e cada letra do Unown. |
 | 🏠 | **Casas e Família Sombra** | Mestre dos Golpes, pescador e sala de troféus em casas que eram vazias, e um prédio de seis andares na Rota 23 com a máfia dos Pokémon: quatro chefes shiny, a polícia que fecha o caso e o dossiê. |
-| 🐉 | **Garchomp e Darkrai** | Gible, Gabite, Garchomp e Darkrai (nº 443 a 445 e 491) como extras da Pokédex, com três golpes novos. Não contam para a Pokédex completa. |
+| 🐉 | **Garchomp e Darkrai** | Gible, Gabite, Garchomp e Darkrai (nº 443 a 445 e 491) como extras da Pokédex, com dois golpes novos e uma habilidade nova. Não contam para a Pokédex completa. |
 | 🗞️ | **Tela de novidades** | O Prof. Carvalho apresenta cada mudança em cartões ilustrados. |
 | 🧪 | **Esteira de testes** | Toda ROM é jogada no emulador e testada antes de existir. |
 
@@ -184,7 +184,8 @@ perder o jeito do FireRed.
 |---|---|
 | **Quatro extras** | **Gible** (nº 443), **Gabite** (nº 444), **Garchomp** (nº 445) e **Darkrai** (nº 491), com os dados da 4ª geração. Aparecem na lista da Pokédex e na contagem de vistos e capturados, mas **nunca são exigidos**: o diploma, a Pokédex completa, o Amuleto e o DexNav seguem pedindo só os 386. |
 | **De onde vêm** | Nenhum nasce na natureza. O Gible só sai de **ovo** da creche (com Garchomp, Gabite ou Gible, e Ditto ou parceiro de Monstro ou Dragão), evolui no nível 24 e no 48, e tem só a habilidade Véu de Areia. O Garchomp e o Darkrai vêm dos chefes da Família Sombra, capturados ou entregues pela Oficial Jenny. |
-| **Golpes novos** | **Inv. Dragão** (Dragon Rush: 100 de poder, 75% de precisão, físico, 20% de fazer o alvo recuar), **Vazio Negro** (Dark Void: dorme os dois adversários, 80% de precisão, só funciona com o Darkrai) e **Sonhos Ruins** (Bad Dreams: no fim do turno, quem dorme perde 1/8 do PS máximo). |
+| **Golpes novos** | **Inv. Dragão** (Dragon Rush: 100 de poder, 75% de precisão, físico, 20% de fazer o alvo recuar) e **Vazio Negro** (Dark Void: dorme os dois adversários, 80% de precisão, só funciona com o Darkrai). |
+| **Habilidade nova** | **Sonhos Ruins** (Bad Dreams, a do Darkrai): no fim do turno, quem dorme perde 1/8 do PS máximo. |
 | **Em todo lugar** | Resumo, equipe, batalha, creche, seguidor e tela da Pokédex já reconhecem os quatro, e um save antigo continua abrindo. |
 
 <p align="center">
@@ -370,7 +371,7 @@ perder o jeito do FireRed.
 | **Pokémon seguidor, todos** (03/11) | Os 386 seguem, com a versão shiny: os 7 grandes em 64×64, as fêmeas, cada letra do Unown e o Deoxys Ataque; o seguidor fica sempre atrás do jogador no desenho. A ROM passou a 32 MB. |
 | **Pokérus** (06/11) | O Pokérus do Rubi/Safira, que o FireRed deixava desligado: pega depois das batalhas, passa aos vizinhos, conta os dias pelo relógio da hack e dobra os EVs. |
 | **Casas e Família Sombra** (06/11) | Três casas sem uso ganham vida (Mestre dos Golpes na Rota 6, casa do pescador na Rota 19, sala de troféus na Ilha Sete) e a Rota 23 ganha o prédio da Família Sombra: capangas, gêmeos, chefes shiny, pedágio e a máfia que volta. |
-| **Família Sombra, parte 2** (07/11) | Gible, Gabite, Garchomp e Darkrai como extras da Pokédex (nº 443 a 445 e 491), três golpes novos, os chefes Mercenário e Pesadelo, a polícia e a Oficial Jenny que fecham o prédio, o dossiê em tela cheia, 46 conquistas e a correção das coordenadas de warp em 16 bits. |
+| **Família Sombra, parte 2** (07/11) | Gible, Gabite, Garchomp e Darkrai como extras da Pokédex (nº 443 a 445 e 491), dois golpes novos e a habilidade Sonhos Ruins, os chefes Mercenário e Pesadelo, a polícia e a Oficial Jenny que fecham o prédio, o dossiê em tela cheia, 46 conquistas e a correção das coordenadas de warp em 16 bits. |
 | **Esteira mais firme** (06/11) | Galeria de textos (cada fala na caixa real) e telas de referência estáveis, sem avisos falsos pelo sorteio. |
 
 ## Esteira de testes

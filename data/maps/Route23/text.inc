@@ -76,13 +76,13 @@ Route23_Text_JennyCaso::
 
 Route23_Text_JennyApreendido3::
     .string "Oficial Jenny: A polícia apreendeu\n"
-    .string "este GARCHOMP, o do Mercenário.\p"
+    .string "este GARCHOMP, O MERCENÁRIO.\p"
     .string "O contrato dele acabou e ele não\n"
     .string "tem mais dono. Fica com você.$"
 
 Route23_Text_JennyApreendido4::
     .string "Oficial Jenny: A polícia apreendeu\n"
-    .string "este DARKRAI, o Pesadelo.\p"
+    .string "este DARKRAI, O PESADELO.\p"
     .string "Ninguém o reclamou e ele não tem\n"
     .string "mais dono. Fica com você.$"
 

@@ -1687,7 +1687,7 @@ class FamiliaScenario(CatchSaveScenario):
 
     def _captura_marca(self) -> str:
         """Master Ball no Mercenário: o chefe cai capturado e só o bit 3 liga. O Pesadelo vencido sem captura: bit 4
-        desligado, ENCERRADA e a queda não gravada."""
+        desligado, ENCERRADA e a queda gravada no meio-dia do relógio (todo chefe grava a queda, ENCERRADA inclusive)."""
         self._restore("familia_mercenario")
         master = self.consts.item("ITEM_MASTER_BALL")
         assert self.box.call(CMD_GIVE_ITEM, master, 1) == 1
@@ -1702,6 +1702,7 @@ class FamiliaScenario(CatchSaveScenario):
         for i in range(4):
             self.box.set_party_move(0, i, self.moves["MOVE_SUPERPOWER"])
         self.box.familia_set(4, ESTADO_ATIVA)
+        self._set_half_day(QUEDA_FIM)
         self.box.familia_chefe()
         self.driver.wait_battle_start()
         assert self.driver.fight_to_end() == "win", "perdeu para o Pesadelo"
@@ -1709,7 +1710,7 @@ class FamiliaScenario(CatchSaveScenario):
         self.ctl.wait_overworld_idle(900)
         got = self.box.familia_chefe_caiu()
         assert got == (4, ESTADO_ENCERRADA, (False, False, False, False)), got
-        assert self.box.familia_estado()[2] == 0, "ENCERRADA gravou a queda"
+        assert self.box.familia_estado()[2] == QUEDA_FIM, "a queda do Pesadelo não foi gravada"
         assert self.game.flag(self._flag("FLAG_FAMILIA_ROSA_4"))
         return f"{capturado}; Pesadelo vencido sem captura: {got}"
 
