@@ -108,7 +108,8 @@ STATIC_ASSERT(DEPOIS_TEXTO_Y + (DOSSIE_DEPOIS_LINHAS - 1) * DOSSIE_LINHA_PX + 14
 #define TAG_ROSA     0x5E16
 #define TAG_PAL_FOTO 0x5E10   // a foto e o clipe dividem a paleta
 
-#define LINHA_BYTES 120       // uma linha da lore com os códigos de cor
+#define LINHA_BYTES 120       // uma linha da lore com os códigos de cor; mais longa seria cortada, e o resto do texto
+                              // também (a checagem de largura limita a linha a ~40 bytes, bem abaixo disto)
 
 struct Dossie
 {
@@ -251,6 +252,12 @@ static void CB2_Dossie_Montar(void)
     SetVBlankHBlankCallbacksToNull();
     ClearScheduledBgCopiesToVram();
     sDossie = AllocZeroed(sizeof(*sDossie));
+    if (sDossie == NULL)
+    {
+        // sem memória: volta ao campo e o script continua (como conquistas_tela.c)
+        SetMainCallback2(CB2_ReturnToFieldContinueScriptPlayMapMusic);
+        return;
+    }
     sDossie->ajudaAntes = gHelpSystemEnabled;
     gHelpSystemEnabled = FALSE;
     ResetSpriteData();
@@ -294,7 +301,9 @@ static void Task_Dossie_Init(u8 taskId)
         Dossie_MostrarPagina();
         break;
     case 3:
-        PlayBGM(DOSSIE_MUSICA);
+        // PlayNewMapMusic (e não PlayBGM): grava a música atual, e na volta Overworld_PlaySpecialMapMusic vê que ela
+        // difere da do mapa e toca a do mapa de novo
+        PlayNewMapMusic(DOSSIE_MUSICA);
         BeginNormalPaletteFade(PALETTES_ALL, 0, 16, 0, RGB_BLACK);
         SetVBlankCallback(VBlankCB_Dossie);
         break;
@@ -364,6 +373,11 @@ static void Dossie_IniciarTela(void)
     DmaClear32(3, (void *)OAM, OAM_SIZE);
     DmaClear16(3, (void *)PLTT, PLTT_SIZE);
     SetGpuReg(REG_OFFSET_DISPCNT, 0);
+    SetGpuReg(REG_OFFSET_BLDCNT, 0);        // nada de mistura ou janela herdada do campo (névoa, efeitos)
+    SetGpuReg(REG_OFFSET_BLDALPHA, 0);
+    SetGpuReg(REG_OFFSET_BLDY, 0);
+    SetGpuReg(REG_OFFSET_WININ, 0);
+    SetGpuReg(REG_OFFSET_WINOUT, 0);
     ResetBgsAndClearDma3BusyFlags(0);
     InitBgsFromTemplates(0, sBgTemplates, ARRAY_COUNT(sBgTemplates));
     ChangeBgX(BG_TEXTO, 0, BG_COORD_SET);
@@ -502,7 +516,6 @@ static void Dossie_MostrarPagina(void)
     bool8 ficha = fundo == FUNDO_FICHA;
 
     CpuCopy16(&sPasta_Tilemap[fundo * FUNDO_ENTRADAS], sDossie->tilemapBuffer, FUNDO_ENTRADAS * 2);
-    CopyBgTilemapBufferToVram(BG_FUNDO);
     FillWindowPixelBuffer(WIN_TELA, PIXEL_FILL(0));
 
     sDossie->carimbo = ficha ? Dossie_CarimboDoChefe(p->chefe) : CARIMBO_NENHUM;
@@ -559,6 +572,9 @@ static void Dossie_MostrarPagina(void)
         Dossie_ImprimirLinhas(p->texto, LORE_X, DEPOIS_TEXTO_Y, LORE_X, DEPOIS_TEXTO_Y + DOSSIE_LINHA_PX);
     }
     Dossie_ImprimirRodape();
+    // fundo e texto entram na fila do DMA juntos (~20,5 KB, um VBlank só): a troca de layout não mostra o fundo
+    // novo com o texto da página anterior
+    CopyBgTilemapBufferToVram(BG_FUNDO);
     CopyWindowToVram(WIN_TELA, COPYWIN_GFX);
 }
 

@@ -244,7 +244,7 @@ def carimbo_rgba(fonte, texto, k, angulo, semente, tinta=VERMELHO):
     if k == 2:
         w, h = fonte.largura(texto) * 2 + 12, 32
     else:
-        w, h = fonte.largura(texto) + 8, 17
+        w, h = fonte.largura(texto) + 10, 17   # 3 px de folga de cada lado entre a moldura de dentro e o texto
     im = Image.new("RGBA", (w, h), (0, 0, 0, 0))
     d = ImageDraw.Draw(im)
     cor = tinta + (255,)
@@ -264,7 +264,7 @@ def carimbo_rgba(fonte, texto, k, angulo, semente, tinta=VERMELHO):
         falhar(0.13)
     else:
         falhar(0.10)
-        fonte.escrever(px, 4, 0, texto, cor, None, 1, (w, h))
+        fonte.escrever(px, 5, 0, texto, cor, None, 1, (w, h))
     if k == 2:
         return im.rotate(angulo, resample=Image.NEAREST, expand=True)
     # Em 1x a rotação come os traços de 1 px das letras: a inclinação vira um cisalhamento vertical (cada coluna

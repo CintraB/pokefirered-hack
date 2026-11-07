@@ -76,8 +76,8 @@ static const u8 sDossieTexto_Mercenario2[] = _(
     "Não perguntava o motivo,\n"
     "só o preço. Nunca beijou a mão de\n"
     "ninguém: não era família, era contrato.\n"
-    "Uma oferta dele não se recusava; se\n"
-    "pagava, adiantado.");
+    "Uma oferta dele não se recusava:\n"
+    "pagava-se adiantado.");
 static const u8 sDossieTexto_Mercenario3[] = _(
     "Usava uma rosa azul,\n"
     "colhida na neve de onde veio.\n"

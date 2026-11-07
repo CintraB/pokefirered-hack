@@ -239,6 +239,9 @@ DOSSIE_TEXTOS_H = REPO_ROOT / "src" / "data" / "dossie_textos.h"
 DOSSIE_CAPA, DOSSIE_DEPOIS = 0, 5
 CARIMBO_NENHUM, CARIMBO_DERROTADO, CARIMBO_CAPTURADO = 0, 1, 2
 DOSSIE_PRONTO_TIMEOUT = 300
+DOSSIE_MUSICA = re.search(r"#define DOSSIE_MUSICA (MUS_\w+)",
+                          (REPO_ROOT / "src" / "dossie.c").read_text(encoding="utf-8")).group(1)
+DOSSIE_MUSICA_ASSENTA = 30            # quadros depois de fechar até conferir a música do campo
 DOSSIE_TECLA = dict(hold=6, release=12)   # a troca de página leva mais de 1 quadro (texto da janela de 30x20)
 
 
@@ -344,6 +347,9 @@ class FamiliaScenario(CatchSaveScenario):
         return sum(1 for i in range(MAX_SPRITES)
                    if self.emu.read_u16(base + i * SPRITE_SIZE + SPRITE_IN_USE) & 1
                    and self._sprite_callback(i) == TRAINER_SLIDE)
+
+    def _bgm_header(self) -> int:
+        return self.emu.read_u32(self._sym("gMPlayInfo_BGM"))
 
     def _bgm_is(self, song: str) -> bool:
         header = self.emu.read_u32(self._sym("gMPlayInfo_BGM"))
@@ -1854,8 +1860,12 @@ class FamiliaScenario(CatchSaveScenario):
         script continua); de novo, B na 3ª página fecha."""
         chefes = dossie_chefes()
         self._restore("familia_base")
+        self._settle("antes do dossiê")
+        musica_do_mapa = self._bgm_header()
+        assert not self._bgm_is(DOSSIE_MUSICA), "o mapa de teste já toca a música do dossiê"
         e = self._dossie_abrir("navegação")
         assert (e["pagina"], e["total"], e["chefe"]) == (0, len(chefes), DOSSIE_CAPA), e
+        assert self._bgm_is(DOSSIE_MUSICA), "o dossiê não tocou a música dele"
         shots = [self._shot("dossie_capa")]
         assert self._dossie_tecla(KEY_RIGHT)["pagina"] == 1
         assert self._dossie_tecla(KEY_LEFT)["pagina"] == 0
@@ -1872,13 +1882,17 @@ class FamiliaScenario(CatchSaveScenario):
         self.emu.press(KEY_A, **DOSSIE_TECLA)
         self._dossie_fechou("A na última página")
         assert not self.ctl.script_active(), "o script do dossiê não terminou"
+        self.emu.frames(DOSSIE_MUSICA_ASSENTA)
+        assert self._bgm_header() == musica_do_mapa and not self._bgm_is(DOSSIE_MUSICA), (
+            "a música do dossiê continuou no campo depois de fechar")
         e = self._dossie_abrir("de novo")
         assert e["pagina"] == 0, e
         self._dossie_tecla(KEY_RIGHT)
         assert self._dossie_tecla(KEY_RIGHT)["pagina"] == 2
         self.emu.press(KEY_B, **DOSSIE_TECLA)
         self._dossie_fechou("B na 3ª página")
-        return f"{len(chefes)} páginas, chefes {vistos}; A na última e B na 3ª fecham; telas {shots}"
+        return (f"{len(chefes)} páginas, chefes {vistos}; {DOSSIE_MUSICA} no dossiê e a do mapa de volta no campo; "
+                f"A na última e B na 3ª fecham; telas {shots}")
 
     def _dossie_carimbos(self) -> str:
         """Rosas 1-4 ligadas e só FLAG_FAMILIA_CAPTURADO_3: DERROTADO nas fichas 1, 2 e 4, CAPTURADO na 3, nada na
