@@ -30,8 +30,11 @@ na RAM e sem itens (como `ia/dupla`); o 2º Pokémon do jogador é um Squirtle n
 - `golpes/bad_dreams_acordado`: o adversário da direita acordado não perde PS; o da esquerda, dormindo, perde;
 - `golpes/bad_dreams_desmaiado`: Darkrai com 1 PS e tempestade de areia permanente (RAM): a areia o derruba no fim do
   turno, antes das habilidades; os adversários dormindo perdem só o 1/16 da areia, sem o Bad Dreams;
-- `golpes/dark_void_so_darkrai`: Mewtwo com Dark Void → "Mas falhou!", ninguém dorme e o PP cai de 10 para 9;
-- `golpes/dragon_rush`: Garchomp nv 60 com Dragon Rush contra um Snorlax selvagem nv 50: o menu de golpes mostra
+- `golpes/dark_void_so_darkrai`: Mewtwo com Dark Void → "Mas falhou!" exatamente 1 vez (o script não roda de novo no
+  parceiro; mensagens repetidas não se fundem), ninguém dorme e o PP cai de 10 para 9;
+- `golpes/dark_void_usuario_dormindo`: o mesmo Mewtwo com sono 3 (RAM): sem "Mas falhou!", o sono anda para 2 e o
+  PP fica 10 (a checagem do usuário roda antes da falha);
+- `golpes/dragon_rush`: Garchomp nv 60 com Dragon Rush, Dragon Claw, Earthquake e Crunch (sem repetição) contra um Snorlax selvagem nv 50: o menu de golpes mostra
   "Inv. Dragão" (gMoveNames e tela `golpe_menu_garchomp`) e o golpe sai sem travar (gLastMoves).
 
 Telas em OUT/telas/<ponto>.png, comparadas com test/referencias/COMUM/ (diferença é só aviso).
@@ -44,8 +47,8 @@ Numa janela, em tempo real: `make test-watch CENARIO=especies`.
 import struct
 import sys
 
-from ..battle import (ACTION_FIGHT, ACTION_FUNC, BATTLE_MON_HP, BATTLE_MON_PP, BATTLE_MON_SIZE, MENU_TIMEOUT,
-                      MOVE_FUNC_SUFFIX, BattleDriver)
+from ..battle import (ACTION_FIGHT, ACTION_FUNC, BATTLE_MON_HP, BATTLE_MON_MOVES, BATTLE_MON_PP, BATTLE_MON_SIZE,
+                      MENU_TIMEOUT, MOVE_FUNC_SUFFIX, BattleDriver)
 from ..breeding import header_defines
 from ..breeding import BATCH, PARENT_FORMAT, PROBES_FORMAT, RECORD_SIZE, Parent, unpack_records
 from ..emu import KEY_A, KEY_B, KEY_RIGHT
@@ -85,6 +88,7 @@ SEEDS = (0x5EED0001, 0x13579BDF, 0x2468ACE0, 0x0BADF00D, 0x7F4A7C15)   # 5 tenta
 STATUS1_SLEEP_MASK, SLEEP5 = 0x07, 5
 B_WEATHER_SANDSTORM = (1 << 3) | (1 << 4)   # TEMPORARY | PERMANENT: sem duração
 DRAGON_RUSH_LEVEL, DRAGON_RUSH_WILD = 60, ("SPECIES_SNORLAX", 50)
+DRAGON_RUSH_MOVES = ("MOVE_DRAGON_RUSH", "MOVE_DRAGON_CLAW", "MOVE_EARTHQUAKE", "MOVE_CRUNCH")
 MOVE_NAME_BYTES = 13                 # MOVE_NAME_LENGTH + 1
 BATTLE_STRING_BYTES = 300            # gDisplayedStringBattle[300]
 BAD_DREAMS_TEXT = "atormentado pelo pesadelo"
@@ -162,12 +166,16 @@ class EspeciesScenario(SummaryEvolutionScenario):
             self._press(KEY_A)
             self.ctl.wait_until(lambda: not self._func(battler).endswith(MOVE_FUNC_SUFFIX), 60,
                                 f"saída do menu de golpes do Pokémon {battler}")
+        # cada mensagem impressa entra uma vez; a mesma mensagem de novo depois da caixa vazia (FlushMessageBox, a
+        # pausa de B_WAIT_TIME_SHORT do "Mas falhou!") conta outra vez: nada de fundir repetições
         seen: list[str] = []
+        last = [None]
 
         def watch() -> None:
             text = self._battle_text()
-            if text and (not seen or seen[-1] != text):
+            if text and text != last[0]:
                 seen.append(text)
+            last[0] = text
         # sem substituto para um desmaiado, só o outro Pokémon do jogador volta ao menu de ação
         result = self.driver._advance_until_menu_or_end(
             "fim do turno duplo", TURN_TIMEOUT, on_step=watch, stop=lambda: self._func(2) == ACTION_FUNC)
@@ -284,18 +292,31 @@ class EspeciesScenario(SummaryEvolutionScenario):
         pp = lambda: self.emu.read_u8(self._mon(0) + BATTLE_MON_PP)
         assert pp() == 10, f"PP do Dark Void no Mewtwo: {pp()}"
         seen = self._double_turn()
-        assert "Mas falhou!" in seen, f"sem 'Mas falhou!': {seen}"
+        assert seen.count("Mas falhou!") == 1, f"'Mas falhou!' deve sair exatamente 1 vez: {seen}"
         asleep = [self._status1(b) & STATUS1_SLEEP_MASK for b in FOES]
         assert asleep == [0, 0], f"adversários dormindo: {asleep}"
         assert pp() == 9, f"PP do Dark Void no Mewtwo depois: {pp()}"
         return f"Mewtwo: 'Mas falhou!', ninguém dorme, PP 10 → 9 (mensagens {seen})"
+
+    def _dark_void_user_asleep(self) -> str:
+        """O attackcanceler roda antes da falha: o Mewtwo dormindo só dorme (o sono anda, o PP fica)."""
+        self._double_battle("SPECIES_MEWTWO")
+        self._set_status1(0, 3)
+        seen = self._double_turn()
+        pp = self.emu.read_u8(self._mon(0) + BATTLE_MON_PP)
+        assert "Mas falhou!" not in seen, f"o Mewtwo dormindo agiu: {seen}"
+        assert self._status1(0) & STATUS1_SLEEP_MASK == 2, f"o sono não andou: status1 {self._status1(0):#x}"
+        assert pp == 10, f"PP do Dark Void caiu dormindo: {pp}"
+        return f"Mewtwo dormindo: sono 3 → 2, PP 10, sem 'Mas falhou!' (mensagens {seen})"
 
     def _dragon_rush(self) -> str:
         self.ctl.restore("golpes_base")
         self.emu.frames(12)
         garchomp, (wild, wild_level) = self._sp("SPECIES_GARCHOMP"), DRAGON_RUSH_WILD
         self.box.set_party_mon(0, garchomp, DRAGON_RUSH_LEVEL)
-        self.box.set_party_move(0, 0, self.moves["MOVE_DRAGON_RUSH"])
+        # os 4 golpes escritos: no nv 60 o Garchomp já aprendeu o Dragon Rush (nv 55), que sairia repetido no menu
+        for i, move in enumerate(DRAGON_RUSH_MOVES):
+            self.box.set_party_move(0, i, self.moves[move])
         assert self.box.party_size(1) == 1
         raw = self.emu.read(self._sym("gMoveNames") + self.moves["MOVE_DRAGON_RUSH"] * MOVE_NAME_BYTES,
                             MOVE_NAME_BYTES)
@@ -305,6 +326,8 @@ class EspeciesScenario(SummaryEvolutionScenario):
         d = self.driver = BattleDriver(self.ctl)
         d.wait_action_menu(TURN_TIMEOUT)
         assert d.battler_species_level(0) == (garchomp, DRAGON_RUSH_LEVEL)
+        moves = list(struct.unpack("<4H", self.emu.read(self._mon(0) + BATTLE_MON_MOVES, 8)))
+        assert moves == [self.moves[m] for m in DRAGON_RUSH_MOVES], f"golpes do Garchomp na batalha: {moves}"
         d._choose_action(ACTION_FIGHT)
         in_moves = lambda: d.controller_func().endswith(MOVE_FUNC_SUFFIX)
         self.ctl.wait_until(in_moves, MENU_TIMEOUT, "menu de golpes")
@@ -446,6 +469,8 @@ class EspeciesScenario(SummaryEvolutionScenario):
                                self._bad_dreams_fainted)
             self.suite.run("golpes/dark_void_so_darkrai: na mão do Mewtwo o Dark Void falha",
                            self._dark_void_only_darkrai)
+            self.suite.run("golpes/dark_void_usuario_dormindo: quem não é Darkrai e dorme só dorme",
+                           self._dark_void_user_asleep)
             self.suite.run("golpes/dragon_rush: Garchomp com Inv. Dragão no menu, o golpe sai", self._dragon_rush)
         except Abort:
             pass

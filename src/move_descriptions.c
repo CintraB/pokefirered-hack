@@ -362,7 +362,7 @@ const u8 gMoveDescription_DrainingKiss[] = _("Um beijo que drena\nPS do alvo e\n
 const u8 gMoveDescription_FairyWind[] = _("O usuário agita um\nvento de fada e\natinge o alvo.");
 const u8 gMoveDescription_DisarmingVoice[] = _("Um grito encantador\nque nunca erra\natinge todos os\noponentes.");
 const u8 gMoveDescription_DragonRush[] = _("Investida Dragão:\num ataque brutal.\nPode fazer recuar.");
-const u8 gMoveDescription_DarkVoid[] = _("Vazio Sombrio: os\noponentes dormem.\nSó o Darkrai usa.");
+const u8 gMoveDescription_DarkVoid[] = _("Vazio Negro: os\noponentes dormem.\nSó o Darkrai usa.");
 
 const u8 *const gMoveDescriptionPointers[MOVES_COUNT - 1] = {
     [MOVE_POUND         - 1] = gMoveDescription_Pound,

@@ -6218,7 +6218,11 @@ static void Cmd_various(void)
         break;
     case VARIOUS_DARK_VOID_CHECK: // POK-54: o Dark Void só funciona na mão do Darkrai
         if (gCurrentMove == MOVE_DARK_VOID && gBattleMons[gActiveBattler].species != SPECIES_DARKRAI)
+        {
+            // sem isto, MOVEEND_NEXT_TARGET roda o script de novo no parceiro e o "Mas falhou!" sai 2 vezes
+            gHitMarker |= HITMARKER_UNABLE_TO_USE_MOVE;
             gBattlescriptCurrInstr = T1_READ_PTR(gBattlescriptCurrInstr + 3);
+        }
         else
             gBattlescriptCurrInstr += 7;
         return;

@@ -285,7 +285,7 @@ BattleScript_MoveMissed::
 	goto BattleScript_MoveEnd
 
 BattleScript_EffectSleep::
-	jumpifdarkvoidfails BattleScript_ButItFailedAtkStringPpReduce  @ POK-54: Dark Void só na mão do Darkrai
+	jumpifdarkvoidfails BattleScript_DarkVoidFails  @ POK-54: Dark Void só na mão do Darkrai
 	attackcanceler
 	attackstring
 	ppreduce
@@ -300,6 +300,12 @@ BattleScript_EffectSleep::
 	setmoveeffect MOVE_EFFECT_SLEEP
 	seteffectprimary
 	goto BattleScript_MoveEnd
+
+@ POK-54: Dark Void na mão de quem não é Darkrai. O attackcanceler roda antes (sono, degelo, confusão e paralisia
+@ do usuário andam como sempre); se o usuário agir, o golpe falha uma vez só (HITMARKER_UNABLE_TO_USE_MOVE).
+BattleScript_DarkVoidFails::
+	attackcanceler
+	goto BattleScript_ButItFailedAtkStringPpReduce
 
 BattleScript_AlreadyAsleep::
 	pause B_WAIT_TIME_SHORT

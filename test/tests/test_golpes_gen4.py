@@ -22,7 +22,8 @@ ESPERADO = {
                        "MOVE_CATEGORY_STATUS"),
 }
 NOMES = {"MOVE_DRAGON_RUSH": "Inv. Dragão", "MOVE_DARK_VOID": "Vazio Negro"}
-NOMES_CHEIOS = {"MOVE_DRAGON_RUSH": "Investida Dragão", "MOVE_DARK_VOID": "Vazio Sombrio"}
+# R7: o Dark Void é "Vazio Negro" também na descrição; o Dragon Rush traz o nome cheio
+NOMES_CHEIOS = {"MOVE_DRAGON_RUSH": "Investida Dragão", "MOVE_DARK_VOID": "Vazio Negro"}
 
 
 def _ler(rel: str) -> str:
@@ -123,7 +124,10 @@ def test_dark_void_so_darkrai():
     assert "gCurrentMove == MOVE_DARK_VOID" in case
     assert "species != SPECIES_DARKRAI" in case
     assert "T1_READ_PTR(gBattlescriptCurrInstr + 3)" in case and "gBattlescriptCurrInstr += 7" in case
-    assert _script("BattleScript_EffectSleep")[0] == "jumpifdarkvoidfails BattleScript_ButItFailedAtkStringPpReduce"
+    assert _script("BattleScript_EffectSleep")[0] == "jumpifdarkvoidfails BattleScript_DarkVoidFails"
+    # a falha passa pelo attackcanceler (sono/degelo/confusão do usuário) e não roda de novo no parceiro
+    assert _script("BattleScript_DarkVoidFails") == ["attackcanceler", "goto BattleScript_ButItFailedAtkStringPpReduce"]
+    assert "gHitMarker |= HITMARKER_UNABLE_TO_USE_MOVE;" in case
 
 
 def test_bad_dreams_um_oitavo():
@@ -179,7 +183,7 @@ def test_cenario_especies_tem_os_casos_dos_golpes():
     from esteira import refs
     from esteira.scenarios import full_especies as cen
     texto = _ler("test/esteira/scenarios/full_especies.py")
-    for caso in ("dark_void_dupla", "dark_void_so_darkrai", "bad_dreams_dupla", "bad_dreams_aliado",
+    for caso in ("dark_void_dupla", "dark_void_so_darkrai", "dark_void_usuario_dormindo", "bad_dreams_dupla", "bad_dreams_aliado",
                  "bad_dreams_acordado", "bad_dreams_desmaiado", "dragon_rush"):
         assert f'"golpes/{caso}:' in texto, caso
     assert cen.SCREEN_POINTS[-2:] == ("golpe_dark_void", "golpe_menu_garchomp")
