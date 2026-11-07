@@ -169,14 +169,15 @@ SevenIsland_UnusedHouse_EventScript_TacaOuro::
 SevenIsland_UnusedHouse_EventScript_Placa::
 	goto_if_questlog EventScript_ReleaseEnd
 	lockall
-	specialvar VAR_RESULT, SalaTrofeus_Placa
+	special SalaTrofeus_Placa
 	msgbox SevenIsland_UnusedHouse_Text_PlacaConquistas
-	goto_if_eq VAR_RESULT, TRUE, SevenIsland_UnusedHouse_EventScript_PlacaRevancheSim
-	msgbox SevenIsland_UnusedHouse_Text_PlacaRevancheNao
+	specialvar VAR_RESULT, SalaTrofeus_PlacaRevanche
+	goto_if_eq VAR_RESULT, 0, SevenIsland_UnusedHouse_EventScript_PlacaRevancheNenhuma
+	msgbox SevenIsland_UnusedHouse_Text_PlacaRevanche
 	goto SevenIsland_UnusedHouse_EventScript_PlacaHall
 
-SevenIsland_UnusedHouse_EventScript_PlacaRevancheSim::
-	msgbox SevenIsland_UnusedHouse_Text_PlacaRevancheSim
+SevenIsland_UnusedHouse_EventScript_PlacaRevancheNenhuma::
+	msgbox SevenIsland_UnusedHouse_Text_PlacaRevancheNenhuma
 SevenIsland_UnusedHouse_EventScript_PlacaHall::
 	special SalaTrofeus_PlacaHall
 	msgbox SevenIsland_UnusedHouse_Text_PlacaHall
@@ -210,7 +211,13 @@ SevenIsland_UnusedHouse_EventScript_CuradorFaltaCobrador::
 SevenIsland_UnusedHouse_EventScript_CuradorTacas::
 	goto_if_eq VAR_0x8005, 0, SevenIsland_UnusedHouse_EventScript_CuradorTodasTacas
 	buffernumberstring STR_VAR_1, VAR_0x8005
+	goto_if_eq VAR_0x8005, 1, SevenIsland_UnusedHouse_EventScript_CuradorUmaTaca
 	msgbox SevenIsland_UnusedHouse_Text_CuradorTacas
+	release
+	end
+
+SevenIsland_UnusedHouse_EventScript_CuradorUmaTaca::
+	msgbox SevenIsland_UnusedHouse_Text_CuradorUmaTaca
 	release
 	end
 

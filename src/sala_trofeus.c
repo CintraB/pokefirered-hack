@@ -2,9 +2,11 @@
 #include "conquistas.h"
 #include "data/conquistas_ids.h"
 #include "constants/flags.h"
+#include "constants/vars.h"
 #include "constants/game_stat.h"
 #include "event_data.h"
 #include "overworld.h"
+#include "rematch_tier.h"
 #include "sala_trofeus.h"
 #include "script.h"
 #include "string_util.h"
@@ -37,10 +39,9 @@ u16 SalaTrofeus_Taca(void)
     return SalaTrofeus_NivelDaTaca(feitas, validas);
 }
 
-// specialvar: STR_VAR_1 = conquistas feitas, STR_VAR_2 = total válido (as ativas, todas as abas), STR_VAR_3 = batalhas
-// marcantes no diário. Devolve TRUE se a revanche no degrau máximo (Nível 100) já foi vencida: é o único degrau que o
-// jogo registra (conquista revanche_max).
-u16 SalaTrofeus_Placa(void)
+// special: STR_VAR_1 = conquistas feitas, STR_VAR_2 = total válido (as ativas, todas as abas), STR_VAR_3 = batalhas
+// marcantes no diário.
+void SalaTrofeus_Placa(void)
 {
     u8 aba, feitas, validas, totalFeitas = 0, totalValidas = 0;
     u8 evts[DIARIO_MAX];
@@ -54,7 +55,20 @@ u16 SalaTrofeus_Placa(void)
     ConvertIntToDecimalStringN(gStringVar1, totalFeitas, STR_CONV_MODE_LEFT_ALIGN, 3);
     ConvertIntToDecimalStringN(gStringVar2, totalValidas, STR_CONV_MODE_LEFT_ALIGN, 3);
     ConvertIntToDecimalStringN(gStringVar3, Diario_ListarEmOrdem(evts), STR_CONV_MODE_LEFT_ALIGN, 3);
-    return Conquistas_GetEstado(CONQ_REVANCHE_MAX) == CONQ_FEITA;
+}
+
+// specialvar: o maior degrau de revanche vencido (0 = nenhum; 1-5 = Nível 60-100) em VAR_RESULT e o rótulo em
+// STR_VAR_1. Save antigo: sem o registro, mas com a conquista do degrau máximo feita, vale o degrau máximo.
+u16 SalaTrofeus_PlacaRevanche(void)
+{
+    u8 degrau = VarGet(VAR_REVANCHE_MAIOR_DEGRAU);
+
+    if (degrau > REMATCH_TIER_MAX)
+        degrau = 0;
+    if (degrau == 0 && Conquistas_GetEstado(CONQ_REVANCHE_MAX) == CONQ_FEITA)
+        degrau = REMATCH_TIER_MAX;
+    StringCopy(gStringVar1, GetRematchTierName(degrau));
+    return degrau;
 }
 
 // special: STR_VAR_1 = vezes no Hall da Fama.

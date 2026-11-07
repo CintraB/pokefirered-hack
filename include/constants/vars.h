@@ -292,7 +292,7 @@
 #define VAR_FAMILIA_QUEDA          0x40EF // POK-51: meio-dia do relógio em que o chefe caiu
 #define VAR_KRABBY_SIZE_RECORD     0x40F0 // POK-51: recorde de tamanho do Krabby (pescador da Rota 19)
 #define VAR_DAILY_BP               0x40F1
-#define VAR_0x40F2                 0x40F2
+#define VAR_REVANCHE_MAIOR_DEGRAU  0x40F2 // POK-51: maior degrau de revanche vencido (0 = nenhum; 1-5 = Nível 60-100)
 #define VAR_0x40F3                 0x40F3
 #define VAR_0x40F4                 0x40F4
 #define VAR_0x40F5                 0x40F5

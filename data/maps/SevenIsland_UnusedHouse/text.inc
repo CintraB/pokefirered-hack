@@ -62,13 +62,13 @@ SevenIsland_UnusedHouse_Text_PlacaConquistas::
 	.string "Conquistas: {STR_VAR_1}/{STR_VAR_2}\n"
 	.string "Batalhas marcantes: {STR_VAR_3}$"
 
-SevenIsland_UnusedHouse_Text_PlacaRevancheSim::
+SevenIsland_UnusedHouse_Text_PlacaRevanche::
 	.string "Revanche mais difícil vencida:\n"
-	.string "Nível 100.$"
+	.string "{STR_VAR_1}.$"
 
-SevenIsland_UnusedHouse_Text_PlacaRevancheNao::
+SevenIsland_UnusedHouse_Text_PlacaRevancheNenhuma::
 	.string "Revanche mais difícil vencida:\n"
-	.string "nenhuma até o Nível 100.$"
+	.string "nenhuma ainda.$"
 
 SevenIsland_UnusedHouse_Text_PlacaHall::
 	.string "Vezes no Hall da Fama: {STR_VAR_1}$"
@@ -98,6 +98,10 @@ SevenIsland_UnusedHouse_Text_CuradorRosas::
 
 SevenIsland_UnusedHouse_Text_CuradorTacas::
 	.string "Faltam {STR_VAR_1} taças de ouro\n"
+	.string "nas abas das conquistas.$"
+
+SevenIsland_UnusedHouse_Text_CuradorUmaTaca::
+	.string "Falta {STR_VAR_1} taça de ouro\n"
 	.string "nas abas das conquistas.$"
 
 SevenIsland_UnusedHouse_Text_CuradorTodasTacas::

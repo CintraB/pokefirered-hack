@@ -108,7 +108,7 @@ def test_krabby_recorde_funcoes():
     valores = re.findall(r"#define VAR_\w+\s+(0x40[0-9A-Fa-f]{2})\b", VARS_H)
     assert valores.count(m.group(1)) == 1 and "VAR_0x40F0" not in VARS_H
     nomes = re.findall(r"def_special (\w+)", SPECIALS.split("gSpecialsEnd::")[0])
-    assert nomes[-6:-4] == ["GetKrabbySizeRecordInfo", "CompareKrabbySize"], nomes[-7:]  # a Task 10 vem depois
+    assert nomes[-7:-5] == ["GetKrabbySizeRecordInfo", "CompareKrabbySize"], nomes[-8:]  # a Task 10 vem depois
     # o hook de teste do tamanho entrou no bloco novo (0x130)
     assert re.search(r"TEST_CMD_SET_PARTY_PID_LOW = 0x130", (REPO_ROOT / "include" / "test_hooks.h").read_text("utf-8"))
 
@@ -270,7 +270,8 @@ def test_taca_limites():
     # só as ativas contam: o special usa Conquistas_ContarAba (válidas = ativas e não perdidas), sem número fixo
     assert "Conquistas_ContarAba" in TROFEUS_C and "44" not in TROFEUS_C and "46" not in TROFEUS_C
     nomes = re.findall(r"def_special (\w+)", SPECIALS.split("gSpecialsEnd::")[0])
-    assert nomes[-4:] == ["SalaTrofeus_Taca", "SalaTrofeus_Placa", "SalaTrofeus_PlacaHall", "SalaTrofeus_Curador"]
+    assert nomes[-5:] == ["SalaTrofeus_Taca", "SalaTrofeus_Placa", "SalaTrofeus_PlacaRevanche", "SalaTrofeus_PlacaHall",
+                          "SalaTrofeus_Curador"]
     # as 5 taças: cada uma lê a sua aba (0-4 = História, Batalha, Captura, Treino, Exploração)
     for i in range(5):
         assert f"EventScript_Taca{i + 1}::\n\tgoto_if_questlog EventScript_ReleaseEnd\n\tsetvar VAR_0x8004, {i}\n" in TROFEUS_S
@@ -365,3 +366,36 @@ def test_casa_ilha7_ligada():
     for g in ("Gentleman", "Sign"):
         corpo = GFX_INFO[GFX_INFO.index(f"gObjectEventGraphicsInfo_{g} ="):].split("};")[0]
         assert "PALSLOT_NPC_4" in corpo, g
+
+
+def test_placa_maior_revanche():
+    """A placa mostra o MAIOR degrau de revanche vencido: var própria e livre, gravada só quando o degrau novo é maior
+    (pelos dois ganchos: revanche do Vs. Seeker e Liga), rótulo do degrau; 0 = nenhuma ainda; save antigo com a
+    conquista do Nível 100 feita vale o degrau máximo."""
+    m = re.search(r"#define VAR_REVANCHE_MAIOR_DEGRAU\s+(0x40[0-9A-Fa-f]{2})\s+// POK-51", VARS_H)
+    assert m and 0x4020 <= int(m.group(1), 16) <= 0x40FF
+    valores = re.findall(r"#define VAR_\w+\s+(0x40[0-9A-Fa-f]{2})\b", VARS_H)
+    assert valores.count(m.group(1)) == 1 and "VAR_0x40F2" not in VARS_H
+    rematch = (REPO_ROOT / "src" / "rematch_tier.c").read_text(encoding="utf-8")
+    reg = rematch[rematch.index("static void RegistrarDegrauVencido"):rematch.index("void RematchTier_OnRematchWon")]
+    assert "tier > VarGet(VAR_REVANCHE_MAIOR_DEGRAU)" in reg and "VarSet(VAR_REVANCHE_MAIOR_DEGRAU, tier)" in reg
+    assert "tier >= 1 && tier <= REMATCH_TIER_MAX" in reg
+    for nome in ("OnRematchWon", "OnLeagueCleared"):
+        gancho = f"void RematchTier_{nome}(u8 tier)\n{{\n    RegistrarDegrauVencido(tier);"
+        assert gancho in rematch, gancho
+    assert "RematchTier_OnRematchWon(GetCurrentBattleRematchTier())" in (REPO_ROOT / "src/battle_setup.c").read_text("utf-8")
+    assert "RematchTier_OnLeagueCleared(GetCurrentBattleRematchTier())" in         (REPO_ROOT / "src/post_battle_event_funcs.c").read_text("utf-8")
+    fn = TROFEUS_C[TROFEUS_C.index("u16 SalaTrofeus_PlacaRevanche"):]
+    fn = fn[:fn.index("// special: STR_VAR_1 = vezes no Hall")]
+    assert "VarGet(VAR_REVANCHE_MAIOR_DEGRAU)" in fn and "degrau == 0 && Conquistas_GetEstado(CONQ_REVANCHE_MAX) == CONQ_FEITA" in fn
+    assert "GetRematchTierName(degrau)" in fn
+    assert "const u8 *GetRematchTierName(u8 tier);" in (REPO_ROOT / "include/rematch_tier.h").read_text("utf-8")
+    assert "specialvar VAR_RESULT, SalaTrofeus_PlacaRevanche" in TROFEUS_S
+    assert "Text_PlacaRevanche::" in TROFEUS_T and "{STR_VAR_1}." in TROFEUS_T and "nenhuma ainda." in TROFEUS_T
+    assert "nenhuma até o Nível 100" not in TROFEUS_T
+
+
+def test_curador_singular():
+    """"Falta 1 taça de ouro" no singular; plural nos demais."""
+    assert "goto_if_eq VAR_0x8005, 1, SevenIsland_UnusedHouse_EventScript_CuradorUmaTaca" in TROFEUS_S
+    assert "Falta {STR_VAR_1} taça de ouro" in TROFEUS_T and "Faltam {STR_VAR_1} taças de ouro" in TROFEUS_T

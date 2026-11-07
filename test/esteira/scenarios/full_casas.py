@@ -31,7 +31,7 @@ import re
 from ..breeding import header_defines
 from ..emu import KEY_A, KEY_B, KEY_DOWN, KEY_UP
 from ..game import SB1_MONEY
-from ..hooks import CMD_WARP, Mailbox
+from ..hooks import CMD_SET_VAR, CMD_WARP, Mailbox
 from ..nav import Navigator
 from . import REPO_ROOT, ScenarioContext
 from .base import YESNO_TASK, Abort
@@ -371,13 +371,26 @@ class CasasScenario(CatchSaveScenario):
         assert m and "Batalhas marcantes: " in texto and "Hall da Fama: " in texto, info["msgs"]
         ativas = sum(1 for c in json.loads((REPO_ROOT / "src/data/conquistas/conquistas.json").read_text("utf-8"))
                      ["conquistas"] if c.get("ativa", True))
-        assert int(m.group(2)) <= ativas and int(m.group(1)) <= int(m.group(2)), (m.groups(), ativas)
-        assert "Revanche mais difícil vencida" in texto, info["msgs"]
+        assert int(m.group(2)) == ativas and int(m.group(1)) <= int(m.group(2)), (m.groups(), ativas)
+        assert "Revanche mais difícil vencida" in texto and "nenhuma ainda" in texto, info["msgs"]
         self.emu.frames(10)
+        # o maior degrau vencido: Nível 90 gravado na var; depois, save antigo (var 0 + conquista do Nível 100 feita)
+        var = header_defines(REPO_ROOT, "vars.h")["VAR_REVANCHE_MAIOR_DEGRAU"]
+        assert self.box.call(CMD_SET_VAR, var, 4) == 4
+        texto = " ".join(self._examinar((10, 4))["msgs"])
+        assert "Nível 90." in texto and "nenhuma" not in texto, texto
+        assert self.box.call(CMD_SET_VAR, var, 0) == 0
+        self.box.conq_aplicar(self.consts_conq("CONQ_REVANCHE_MAX"), 0)
+        texto = " ".join(self._examinar((10, 4))["msgs"])
+        assert "Nível 100." in texto, texto
         # o curador comenta o que falta
         info = self._examinar((9, 6))
         assert "Faltam" in " ".join(info["msgs"]) or "completa" in " ".join(info["msgs"]), info["msgs"]
-        return f"placa: {m.group(1)}/{m.group(2)} conquistas (ativas na tabela: {ativas}); curador: {info['msgs'][-1][:40]!r}"
+        return (f"placa: {m.group(1)}/{m.group(2)} conquistas (ativas na tabela: {ativas}); revanche: nenhuma, Nível 90 (var), "
+                f"Nível 100 (save antigo); curador: {info['msgs'][-1][:40]!r}")
+
+    def consts_conq(self, nome: str) -> int:
+        return int(re.search(rf"#define {nome} (\d+)", (REPO_ROOT / "src/data/conquistas_ids.h").read_text("utf-8")).group(1))
 
     def _tacas(self) -> str:
         """Taças pela % de cada aba: História toda feita (ouro), Batalha 40% (bronze), Captura 8/11 (prata), Treino
