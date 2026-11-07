@@ -275,14 +275,17 @@ def test_modernas_em_subcapitulos(arvore):
     assert len(cartoes) == len(modernas["cartoes"])
 
 
-def test_imagens_do_jogo_com_fator_inteiro(site, tmp_path):
+def test_imagens_do_jogo_com_fator_inteiro(tmp_path):
     """Com uma tela e um par antes/depois ligados, a página mostra 480×320 nítido e o comparador."""
     repo = tmp_path / "repo"
-    (repo / "src/data/novidades").mkdir(parents=True)
-    shutil.copy(REPO / "src/data/novidades/cartoes.json", repo / "src/data/novidades")
+    (repo / "src/data/graphics").mkdir(parents=True)
+    shutil.copytree(REPO / "src/data/novidades", repo / "src/data/novidades")
+    shutil.copy(REPO / "src/data/item_icon_table.h", repo / "src/data")
+    shutil.copy(REPO / "src/data/graphics/items.h", repo / "src/data/graphics")
     shutil.copy(REPO / "README.md", repo)
     shutil.copytree(REPO / "site", repo / "site")
     shutil.copytree(REPO / "docs/readme", repo / "docs/readme")
+    (repo / "graphics").symlink_to(REPO / "graphics")
     caps = {c["id"]: c for c in gerar_mod.carregar_capitulos(REPO)}
     uma = caps["ritmo"]["cartoes"][0]["id"].replace("-", "/", 1)
     par = [c for c in caps["evolucoes"]["cartoes"] if c["titulo"].startswith("Haunter")][0]["id"].replace("-", "/", 1)
@@ -291,7 +294,7 @@ def test_imagens_do_jogo_com_fator_inteiro(site, tmp_path):
     (repo / "site/textos.json").write_text(json.dumps(textos), encoding="utf-8")
     gerar_mod.gerar(repo, tmp_path / "saida")
     pagina = (tmp_path / "saida/index.html").read_text(encoding="utf-8")
-    assert (tmp_path / "saida/docs/readme/evo_gengar_depois.png").is_file()
-    assert re.search(r'<img class="tela"[^>]*src="docs/readme/inicial.png"[^>]*width="480" height="320"', pagina)
+    assert (tmp_path / "saida/telas/evo_gengar_depois.png").is_file()
+    assert re.search(r'<img class="tela"[^>]*src="telas/inicial.png"[^>]*width="480" height="320"', pagina)
     assert re.search(r'<div class="ba"', pagina) and 'type="range"' in pagina
     assert pagina.count('loading="lazy"') >= 3

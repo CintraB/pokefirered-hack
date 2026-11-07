@@ -6,7 +6,8 @@
   --blur: .9px;
   --b: 3;              /* fator inteiro do mapa que cobre a tela (o JS recalcula) */
   --tela-w: 480px;     /* tela do jogo em 2x; o JS reduz para outro fator inteiro em tela estreita */
-  --sarjeta: 0px;      /* faixa livre à direita no celular, onde o pino fica à vista */
+  --sprite-k: 3;       /* sprites de espécie e item em 3x (2x em tela estreita; o JS acerta para o aparelho) */
+  --sarjeta: 0px;      /* faixa livre, do lado do lugar, no celular: é onde o pino fica à vista */
   --viagem: 1.6s cubic-bezier(.65, 0, .35, 1);
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -99,7 +100,8 @@ h1 .linha { white-space: nowrap; }
 .painel { background: var(--vidro); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
   border: 1px solid var(--borda); border-radius: 22px; }
 .cap { min-height: 100vh; padding: 22vh 6vw 34vh; display: flex; }
-.coluna { width: min(600px, 100%); display: flex; flex-direction: column; gap: 18px; }
+/* o painel deixa ao menos 260 px do lado livre: cabem o pino e a placa do lugar, também entre 801 e 1100 px */
+.coluna { width: min(600px, calc(100% - 260px)); display: flex; flex-direction: column; gap: 18px; }
 .lado-esq .coluna { margin-right: auto; }
 .lado-dir .coluna { margin-left: auto; }
 .cabeca { padding: 30px; }
@@ -152,8 +154,8 @@ h1 .linha { white-space: nowrap; }
 .ba .r-antes { left: 10px; }
 .ba .r-depois { right: 10px; }
 .ba input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: ew-resize; margin: 0; }
-.sprites { display: flex; gap: 12px; align-items: flex-end; }
-.sprite { image-rendering: pixelated; }
+.sprites { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; }
+.sprite { image-rendering: pixelated; width: calc(var(--n) * var(--sprite-k) * 1px); height: auto; }
 
 /* revelação ao rolar (só com JS; sem JS tudo aparece) */
 .js .cabeca, .js .cartao { opacity: 0; transform: translateY(48px);
@@ -195,7 +197,9 @@ h1 .linha { white-space: nowrap; }
 }
 @media (max-width: 800px) {
   :root { --sarjeta: 56px; }
-  .cap { padding: 16vh var(--sarjeta) 26vh 16px; }
+  .cap { padding: 16vh 16px 26vh; }
+  .cap.lado-dir { padding-left: var(--sarjeta); }   /* lugar a oeste: o pino fica na sarjeta da esquerda */
+  .cap.lado-esq { padding-right: var(--sarjeta); }  /* lugar a leste: o pino fica na sarjeta da direita */
   #pino { width: 36px; height: 36px; margin: -18px 0 0 -18px; border-width: 3px; }
   .coluna { width: 100%; }
   .cabeca { padding: 24px 22px; }
@@ -210,11 +214,14 @@ h1 .linha { white-space: nowrap; }
   .fim-grade { grid-template-columns: 1fr; }
   .fim-grade .painel { padding: 22px 20px; }
 }
-@media (max-width: 360px) {
-  :root { --sarjeta: 16px; }  /* tela muito estreita: a tela do jogo precisa da largura toda */
-}
 @media (max-width: 540px) {
-  :root { --tela-w: 240px; }
+  :root { --tela-w: 240px; --sprite-k: 2; }
+}
+@media (max-width: 379px) {
+  .cartao { padding: 16px; }  /* 360 px: cabem a tela de 240 px (+ borda) e a sarjeta de 56 px */
+}
+@media (max-width: 359px) {
+  :root { --sarjeta: 16px; }  /* abaixo de 360 px a tela do jogo precisa da largura toda: o pino fica atrás do painel */
 }
 
 /* ---------- sem movimento: nada de viagem de câmera, máquina de escrever nem animação contínua ---------- */

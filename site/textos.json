@@ -1,1 +1,167 @@
-{}
+{
+  "evolucoes/kadabra-evolui-por-nivel": {
+    "tela": [
+      "test/referencias/COMUM/evo_alakazam_antes.png",
+      "test/referencias/COMUM/evo_alakazam_depois.png"
+    ]
+  },
+  "evolucoes/machoke-evolui-por-nivel": {
+    "tela": [
+      "test/referencias/COMUM/evo_machamp_antes.png",
+      "test/referencias/COMUM/evo_machamp_depois.png"
+    ]
+  },
+  "evolucoes/graveler-evolui-por-nivel": {
+    "tela": [
+      "test/referencias/COMUM/evo_golem_antes.png",
+      "test/referencias/COMUM/evo_golem_depois.png"
+    ]
+  },
+  "evolucoes/haunter-evolui-por-nivel": {
+    "tela": [
+      "docs/readme/evo_gengar_antes.png",
+      "docs/readme/evo_gengar_depois.png"
+    ]
+  },
+  "evolucoes/onix-evolui-por-nivel": {
+    "tela": [
+      "test/referencias/COMUM/evo_steelix_antes.png",
+      "test/referencias/COMUM/evo_steelix_depois.png"
+    ]
+  },
+  "evolucoes/scyther-evolui-por-nivel": {
+    "tela": [
+      "test/referencias/COMUM/evo_scizor_antes.png",
+      "test/referencias/COMUM/evo_scizor_depois.png"
+    ]
+  },
+  "evolucoes/seadra-evolui-por-nivel": {
+    "tela": [
+      "test/referencias/COMUM/evo_kingdra_antes.png",
+      "test/referencias/COMUM/evo_kingdra_depois.png"
+    ]
+  },
+  "evolucoes/porygon-evolui-por-nivel": {
+    "tela": [
+      "test/referencias/COMUM/evo_porygon2_antes.png",
+      "test/referencias/COMUM/evo_porygon2_depois.png"
+    ]
+  },
+  "evolucoes/clamperl-evolui-por-nivel": {
+    "tela": [
+      "test/referencias/COMUM/evo_huntail_antes.png",
+      "test/referencias/COMUM/evo_huntail_depois.png"
+    ]
+  },
+  "evolucoes/slowpoke-evolui-por-nivel": {
+    "tela": [
+      "test/referencias/COMUM/evo_slowking_antes.png",
+      "test/referencias/COMUM/evo_slowking_depois.png"
+    ]
+  },
+  "evolucoes/poliwhirl-evolui-por-nivel": {
+    "tela": [
+      "test/referencias/COMUM/evo_politoed_antes.png",
+      "test/referencias/COMUM/evo_politoed_depois.png"
+    ]
+  },
+  "evolucoes/espeon-e-umbreon": {
+    "tela": "test/referencias/COMUM/resumo_evo_eevee.png"
+  },
+  "resumo/pagina-evolucao": {
+    "tela": "docs/readme/resumo_evolucao.png"
+  },
+  "resumo/amizade-com-coracoes": {
+    "tela": "docs/readme/resumo_amizade.png"
+  },
+  "resumo/pagina-ivs-evs": {
+    "tela": "docs/readme/resumo_ivs.png"
+  },
+  "creche/itens-de-criacao": {
+    "tela": "docs/readme/loja_quatro.png"
+  },
+  "dia_noite/relogio-e-periodos": {
+    "tela": "docs/readme/relogio.png"
+  },
+  "dia_noite/hora-e-cor-do-ceu": {
+    "tela": "docs/readme/aviso_noite.png"
+  },
+  "clima/clima-por-regiao": {
+    "tela": "docs/readme/neve.png"
+  },
+  "clima/clima-e-batalha": {
+    "tela": "docs/readme/granizo.png"
+  },
+  "dex/pokedex-nacional": {
+    "tela": "docs/readme/pokedex_nacional.png"
+  },
+  "lendarios/miticos-revelacao": {
+    "tela": "test/referencias/COMUM/novidades_miticos_revelacao.png"
+  },
+  "pos_liga/presentes-do-carvalho": {
+    "tela": "docs/readme/pos_liga_ovo.png"
+  },
+  "shiny/amuleto-brilhante": {
+    "tela": "test/referencias/BULBASAUR/pos_liga_objetivo.png"
+  },
+  "modernas/barra-de-ps-moderna": {
+    "tela": "docs/readme/batalha_rival.png"
+  },
+  "modernas/pc-portatil": {
+    "tela": "docs/readme/pc.png"
+  },
+  "modernas/viagem-pelo-mapa": {
+    "tela": "test/referencias/BULBASAUR/mapa.png"
+  },
+  "modernas/status-na-batalha": {
+    "tela": "docs/readme/status_lr.png"
+  },
+  "modernas/chefes-com-clima": {
+    "tela": "docs/readme/sol.png"
+  },
+  "modernas/clima-na-batalha": {
+    "tela": "docs/readme/chuva.png"
+  },
+  "modernas/fisico-ou-especial-por-golpe": {
+    "tela": "docs/readme/golpe_fisico.png"
+  },
+  "modernas/tipo-fada": {
+    "tela": "docs/readme/resumo_fada.png"
+  },
+  "modernas/conquistas-e-premios": {
+    "tela": "docs/readme/conquistas.png"
+  },
+  "modernas/diario-da-jornada": {
+    "tela": "docs/readme/diario.png"
+  },
+  "modernas/revanches-por-degrau": {
+    "tela": "docs/readme/revanche_lista.png"
+  },
+  "modernas/dexnav": {
+    "tela": "docs/readme/dexnav_mapa.png"
+  },
+  "modernas/pokemon-seguidor": {
+    "tela": "docs/readme/seguidor.png"
+  },
+  "modernas/pokerus": {
+    "tela": "test/referencias/COMUM/pokerus_resumo_infectado.png"
+  },
+  "modernas/mestre-dos-golpes": {
+    "tela": "test/referencias/COMUM/mestre_lista.png"
+  },
+  "modernas/casa-do-pescador": {
+    "tela": "test/referencias/COMUM/casa_rota19_exterior.png"
+  },
+  "modernas/sala-de-trofeus": {
+    "tela": "docs/readme/sala_trofeus.png"
+  },
+  "modernas/familia-sombra": {
+    "tela": "docs/readme/familia_sala_do_dom.png"
+  },
+  "modernas/pedagio-da-rota-23": {
+    "tela": "test/referencias/COMUM/familia_pedagio.png"
+  },
+  "sobre/em-portugues-do-brasil": {
+    "tela": "docs/readme/inicial.png"
+  }
+}

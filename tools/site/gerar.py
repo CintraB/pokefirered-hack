@@ -5,8 +5,12 @@ import html
 import json
 import re
 import shutil
+import sys
 import unicodedata
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import imagens  # noqa: E402  (telas e sprites; fica ao lado, o gerador também é carregado por caminho)
 
 ORDEM = ["sobre", "ritmo", "resumo", "dex", "shiny", "creche", "evolucoes",
          "modernas", "dia_noite", "clima", "lendarios", "pos_liga", "familia"]
@@ -15,6 +19,10 @@ SITE = Path("site")
 LARGURA_MAPA = 768  # site/assets/kanto_detalhe.png
 TELA = (480, 320)  # tela do GBA (240x160) em 2x
 SPRITE = 3  # sprites de espécie e item em 3x
+# Cartões do capítulo "A história da Família Sombra" (atrás do aviso de spoiler): "<tópico original>/<slug do título>".
+# Lista explícita, não uma busca no título: um cartão novo só entra aqui por decisão.
+FAMILIA = ("modernas/familia-sombra", "modernas/pedagio-da-rota-23")
+nome_da_tela = imagens.nome_da_tela
 REPOSITORIO = "https://github.com/CintraB/pokefirered-hack"
 AVISO_SPOILER = ("<summary><span class=\"aviso\">Aviso de spoiler</span> "
                  "<span>Abra para ler a história. Quem prefere descobrir jogando pode seguir rolando.</span>"
@@ -67,6 +75,8 @@ def _cartao(chave: str, c: dict, textos: dict, spoiler: bool) -> dict:
         "longo": extra.get("longo"),
         "tela": extra.get("tela"),
         "especie": c.get("speciesBefore") or c.get("speciesAfter"),
+        "especie_depois": c.get("speciesAfter") if c.get("speciesBefore") else None,
+        "sprites": [],
         "item": c.get("itemId"),
         "antes": c.get("before"),
         "depois": c.get("after"),
@@ -84,9 +94,12 @@ def carregar_capitulos(repo: Path) -> list:
     # usam o tópico ORIGINAL ("modernas/..."), mesmo aparecendo no capítulo "familia".
     cards = {tid: list(zip(chaves_do_topico(tid, t["cards"]), t["cards"]))
              for tid, t in topicos.items()}
-    sombra = [(k, c) for k, c in cards["modernas"] if "Família Sombra" in c["title"]]
-    cards["modernas"] = [(k, c) for k, c in cards["modernas"] if "Família Sombra" not in c["title"]]
-    cards["familia"] = sombra
+    por_chave = {k: (k, c) for tid in cards for k, c in cards[tid]}
+    ausentes = [k for k in FAMILIA if k not in por_chave]
+    if ausentes:
+        raise ValueError(f"FAMILIA: cartão inexistente em cartoes.json: {ausentes}")
+    cards["modernas"] = [(k, c) for k, c in cards["modernas"] if k not in FAMILIA]
+    cards["familia"] = [por_chave[k] for k in FAMILIA]
 
     titulos = {tid: t["name"] for tid, t in topicos.items()}
     titulos["familia"] = "A história da Família Sombra"
@@ -106,6 +119,23 @@ def telas_do_cartao(tela) -> list:
     if not tela:
         return []
     return [tela] if isinstance(tela, str) else list(tela)
+
+
+def ligar_imagens(repo: Path, capitulos: list) -> dict:
+    """Liga a cada cartão os sprites e o caminho publicado da tela (telas/<nome>.png).
+
+    Devolve o que falta gravar: {"telas": [caminhos de origem], "sprites": {src: sprite}}.
+    """
+    telas, sprites = [], {}
+    for cap in capitulos:
+        for c in cap["cartoes"]:
+            origem = telas_do_cartao(c["tela"])
+            telas += origem
+            publicadas = [nome_da_tela(t) for t in origem]
+            c["tela"] = None if not publicadas else publicadas[0] if len(publicadas) == 1 else publicadas
+            c["sprites"] = imagens.sprites_do_cartao(repo, c)
+            sprites.update({s["src"]: s for s in c["sprites"]})
+    return {"telas": telas, "sprites": sprites}
 
 
 def carregar_subcapitulos(repo: Path, capitulos: list) -> dict:
@@ -165,31 +195,33 @@ def md_inline(texto: str) -> str:
 
 # ---------- HTML ----------
 
-def _img(src: str, largura: int, altura: int, alt: str, classe: str) -> str:
+def _img(src: str, largura: int, altura: int, alt: str, classe: str, extra: str = "") -> str:
     e = html.escape
     return (f'<img class="{classe}" src="{e(src)}" width="{largura}" height="{altura}" alt="{e(alt)}" '
-            f'loading="lazy" decoding="async">')
+            f'loading="lazy" decoding="async"{extra}>')
 
 
 def _midia(c: dict) -> str:
+    """Sprites (espécie e item, 3x) e depois a tela do jogo: uma, ou o par antes/depois com o comparador."""
+    saida = ""
+    sprites = c.get("sprites") or []  # [{"src", "largura", "altura"}], ligados por imagens.sprites_do_cartao
+    if sprites:
+        saida += ('<figure class="midia sprites">' + "".join(
+            _img(s["src"], s["largura"] * SPRITE, s["altura"] * SPRITE, "", "sprite", f' style="--n:{s["largura"]}"')
+            for s in sprites) + "</figure>")
     telas = telas_do_cartao(c["tela"])
     if len(telas) == 1:
-        return f'<figure class="midia">{_img(telas[0], *TELA, "Tela do jogo: " + c["titulo"], "tela")}</figure>'
-    if len(telas) == 2:
-        return ('<figure class="midia"><div class="ba" style="--corte:50%">'
-                + _img(telas[0], *TELA, "Antes: " + c["titulo"], "tela antes")
-                + _img(telas[1], *TELA, "Depois: " + c["titulo"], "tela depois")
-                + '<span class="linha" aria-hidden="true"></span>'
-                  '<span class="rot r-antes" aria-hidden="true">ANTES</span>'
-                  '<span class="rot r-depois" aria-hidden="true">DEPOIS</span>'
-                  '<input type="range" min="0" max="100" value="50" '
-                  'aria-label="Arraste para comparar antes e depois"></div></figure>')
-    sprites = c.get("sprites") or []  # [{"src", "largura", "altura"}], preenchido pela ligação de imagens
-    if sprites:
-        return ('<figure class="midia sprites">' + "".join(
-            _img(s["src"], s["largura"] * SPRITE, s["altura"] * SPRITE, "", "sprite") for s in sprites)
-            + "</figure>")
-    return ""
+        saida += f'<figure class="midia">{_img(telas[0], *TELA, "Tela do jogo: " + c["titulo"], "tela")}</figure>'
+    elif len(telas) == 2:
+        saida += ('<figure class="midia"><div class="ba" style="--corte:50%">'
+                  + _img(telas[0], *TELA, "Antes: " + c["titulo"], "tela antes")
+                  + _img(telas[1], *TELA, "Depois: " + c["titulo"], "tela depois")
+                  + '<span class="linha" aria-hidden="true"></span>'
+                    '<span class="rot r-antes" aria-hidden="true">ANTES</span>'
+                    '<span class="rot r-depois" aria-hidden="true">DEPOIS</span>'
+                    '<input type="range" min="0" max="100" value="50" '
+                    'aria-label="Arraste para comparar antes e depois"></div></figure>')
+    return saida
 
 
 def _cartao_html(c: dict, nivel: int) -> str:
@@ -287,19 +319,20 @@ def gerar(repo: Path, saida: Path) -> None:
         if len(telas) > 2:
             raise ValueError(f"textos.json ({chave}): 'tela' aceita um caminho ou [antes, depois]")
         for tela in telas:
+            nome_da_tela(tela)  # só docs/readme e test/referencias (as telas aprovadas)
             if not (repo / tela).is_file():
                 raise FileNotFoundError(f"tela não encontrada ({chave}): {repo / tela}")
     capitulos = carregar_capitulos(repo)
+    origens = ligar_imagens(repo, capitulos)
     pagina = renderizar(repo, capitulos)
     if saida.exists():
         shutil.rmtree(saida)
     shutil.copytree(repo / SITE, saida, ignore=shutil.ignore_patterns(
         "lugares.json", "textos.json", "subcapitulos.json", "template.html"))
-    for extra in textos.values():
-        for tela in telas_do_cartao(extra.get("tela")):
-            destino = saida / tela
-            destino.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copy2(repo / tela, destino)
+    for tela in origens["telas"]:
+        imagens.publicar_tela(repo, tela, saida)
+    for sprite in origens["sprites"].values():
+        imagens.gravar_sprite(sprite, saida)
     (saida / "index.html").write_text(pagina, encoding="utf-8")
 
 

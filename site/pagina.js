@@ -23,11 +23,29 @@ function zoomEfetivo(zoom, estreita) {
   return estreita && z > 2 ? z - 1 : z;
 }
 
-/** Onde o lugar fica na tela (fração de largura e altura): sempre numa área que o conteúdo não cobre. */
-function focoPara(ehCapitulo, lado, estreita, vw, sarjeta) {
+/**
+ * Onde o lugar fica na tela (fração de largura e altura): sempre numa área que o conteúdo não cobre.
+ * `lado` é o lado do painel (dir: lugar a oeste). No celular o pino fica na sarjeta, do lado oposto ao painel.
+ * No desktop fica no lado livre, a 28%/72% da largura ou no meio da faixa livre, o que estiver mais perto da borda
+ * (entre 801 e 1100 px o painel ocupa mais da tela); `coluna` é {left, right} do painel, medido na página.
+ */
+function focoPara(ehCapitulo, lado, estreita, vw, sarjeta, coluna) {
   if (!ehCapitulo) return [0.5, 0.5];
-  if (estreita) return sarjeta >= 40 ? [(vw - sarjeta / 2) / vw, 0.5] : [0.5, 0.5];  // na sarjeta da direita
-  return [lado === "esq" ? 0.72 : 0.28, 0.5];  // no lado livre do painel
+  if (estreita) {
+    if (sarjeta < 40) return [0.5, 0.5];
+    return [(lado === "dir" ? sarjeta / 2 : vw - sarjeta / 2) / vw, 0.5];
+  }
+  if (lado === "esq") {
+    const meioLivre = coluna ? (coluna.right + vw) / 2 / vw : 0;
+    return [Math.max(0.72, meioLivre), 0.5];
+  }
+  const meioLivre = coluna ? coluna.left / 2 / vw : 1;
+  return [Math.min(0.28, meioLivre), 0.5];
+}
+
+/** Fator dos sprites em px CSS por pixel do sprite: inteiro em px do aparelho (3× ou 2× no celular). */
+function fatorSprite(dpr, estreita) {
+  return Math.max(1, Math.round((estreita ? 2 : 3) * dpr)) / dpr;
 }
 
 /**
@@ -66,6 +84,7 @@ function larguraTela(livre, dpr) {
 
   const semMovimento = matchMedia("(prefers-reduced-motion: reduce)");
   const celular = matchMedia("(max-width: 800px)");  // o mesmo corte do estilo.css
+  const pequena = matchMedia("(max-width: 540px)");  // idem: sprites em 2× e tela de 240 px
   const pino = document.getElementById("pino");
   const placa = document.getElementById("placa");
   const placaNome = document.getElementById("placa-nome");
@@ -83,8 +102,9 @@ function larguraTela(livre, dpr) {
   // ---------- câmera ----------
   function enquadra(parada, instantaneo) {
     const vw = innerWidth, vh = alturaTela(), estreita = celular.matches;
+    const coluna = parada.querySelector(".coluna");
     const [fx, fy] = focoPara(parada.classList.contains("cap"), parada.classList.contains("lado-esq") ? "esq" : "dir",
-      estreita, vw, numeroCss("--sarjeta"));
+      estreita, vw, numeroCss("--sarjeta"), coluna && coluna.getBoundingClientRect());
     const cam = calcularCamera({ vw, vh, dpr: devicePixelRatio || 1, x: +parada.dataset.x, y: +parada.dataset.y,
       zoom: zoomEfetivo(parada.dataset.zoom, estreita), fx, fy, blur: numeroCss("--blur") });
     if (instantaneo) raiz.classList.add("sem-transicao");
@@ -130,6 +150,7 @@ function larguraTela(livre, dpr) {
     const estilo = getComputedStyle(cartao);
     const livre = cartao.clientWidth - parseFloat(estilo.paddingLeft) - parseFloat(estilo.paddingRight) - 8;
     raiz.style.setProperty("--tela-w", `${larguraTela(livre, devicePixelRatio || 1)}px`);
+    raiz.style.setProperty("--sprite-k", fatorSprite(devicePixelRatio || 1, pequena.matches));
   }
 
   // ---------- antes × depois ----------

@@ -1,5 +1,6 @@
 import importlib.util
 import json
+import os
 import re
 import shutil
 from pathlib import Path
@@ -37,11 +38,35 @@ def test_juntar_linhas(entrada, esperado):
     assert gerar_mod.juntar_linhas(entrada) == esperado
 
 
-def test_familia_sai_de_modernas():
+def test_familia_definida_por_lista_de_slugs():
+    """O capítulo da Família é a lista explícita FAMILIA (Família Sombra e Pedágio da Rota 23), não uma busca no título."""
+    assert gerar_mod.FAMILIA == ("modernas/familia-sombra", "modernas/pedagio-da-rota-23")
     caps = {c["id"]: c for c in _caps()}
     fam = caps["familia"]["cartoes"]
-    assert fam and all("Família Sombra" in c["titulo"] and c["spoiler"] for c in fam)
-    assert not any("Família Sombra" in c["titulo"] for c in caps["modernas"]["cartoes"])
+    assert [c["id"] for c in fam] == [k.replace("/", "-") for k in gerar_mod.FAMILIA]
+    assert all(c["spoiler"] for c in fam)
+    assert {c["titulo"] for c in fam} == {"Família Sombra", "Pedágio da Rota 23"}
+    assert not {c["id"] for c in caps["modernas"]["cartoes"]} & {c["id"] for c in fam}
+    assert not any(c["spoiler"] for cap in caps.values() if cap["id"] != "familia" for c in cap["cartoes"])
+
+
+def test_familia_com_slug_inexistente_falha(monkeypatch):
+    monkeypatch.setattr(gerar_mod, "FAMILIA", ("modernas/familia-sombra", "modernas/nao-existe"))
+    with pytest.raises(ValueError, match="modernas/nao-existe"):
+        _caps()
+
+
+def test_titulo_com_familia_sombra_fora_da_lista_nao_vai_para_o_spoiler(tmp_path):
+    """Um cartão novo com "Família Sombra" no título só entra no spoiler se for posto na lista."""
+    repo = _repo_temporario(tmp_path, {})
+    arq = repo / "src/data/novidades/cartoes.json"
+    dados = json.loads(arq.read_text(encoding="utf-8"))
+    modernas = [t for t in dados["topics"] if t["id"] == "modernas"][0]
+    modernas["cards"].append({"title": "Família Sombra: bônus", "body": "Texto."})
+    arq.write_text(json.dumps(dados), encoding="utf-8")
+    caps = {c["id"]: c for c in gerar_mod.carregar_capitulos(repo)}
+    assert "Família Sombra: bônus" in {c["titulo"] for c in caps["modernas"]["cartoes"]}
+    assert "Família Sombra: bônus" not in {c["titulo"] for c in caps["familia"]["cartoes"]}
 
 
 def test_lugares_para_todos_os_capitulos():
@@ -74,10 +99,15 @@ def test_coordenadas_batem_com_a_formula_e_com_o_layout():
 
 def _repo_temporario(tmp_path, textos):
     repo = tmp_path / "repo"
-    (repo / "src/data/novidades").mkdir(parents=True)
-    shutil.copy(REPO / "src/data/novidades/cartoes.json", repo / "src/data/novidades")
+    (repo / "src/data/graphics").mkdir(parents=True)
+    shutil.copytree(REPO / "src/data/novidades", repo / "src/data/novidades")
+    shutil.copy(REPO / "src/data/item_icon_table.h", repo / "src/data")  # sprites de item
+    shutil.copy(REPO / "src/data/graphics/items.h", repo / "src/data/graphics")
     shutil.copy(REPO / "README.md", repo)  # aviso legal e créditos da página vêm do README
     shutil.copytree(REPO / "site", repo / "site")
+    for pasta in ("graphics", "docs/readme", "test/referencias"):  # sprites e telas: só leitura, por link
+        (repo / pasta).parent.mkdir(parents=True, exist_ok=True)
+        os.symlink(REPO / pasta, repo / pasta)
     (repo / "site/textos.json").write_text(json.dumps(textos), encoding="utf-8")
     return repo
 
