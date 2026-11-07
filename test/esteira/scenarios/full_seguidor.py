@@ -152,7 +152,8 @@ MOVES = {m.group(1): int(m.group(2)) for m in re.finditer(
 SCREEN_POINTS = ("seguidor_parado", "seguidor_noite", "seguidor_paleta_especial", "seguidor_cinnabar", "seguidor_grama",
                  "seguidor_shiny", "seguidor_opcoes",
                  # POK-53 (etapa 2): grande ao sul e ao norte do jogador, fêmea e Unown
-                 "seguidor_grande_sul", "seguidor_grande_norte", "seguidor_femea", "seguidor_unown")
+                 "seguidor_grande_sul", "seguidor_grande_norte", "seguidor_femea", "seguidor_unown",
+                 "seguidor_garchomp")   # POK-54, Task 4: o Garchomp shiny
 # POK-53, etapa 2 (tools/seguidores/converter.py: GRANDES, FEMEAS; include/follower.h: FOLLOWER_VARIANT_*)
 VARIANT_FEMALE, VARIANT_FORM = 1, 2
 GFX_FOLLOWER, GFX_FOLLOWER_LARGE = 153, 154    # OBJ_EVENT_GFX_FOLLOWER(_LARGE) (include/constants/event_objects.h)
@@ -507,7 +508,9 @@ class FollowerScenario(PcScenario):   # PcScenario (CatchSaveScenario + PC): dep
         report = []
         for direction, tiles in RUN_LEGS:
             samples = self._track(direction, tiles, run=True)
-            gaps = self._check_follow(samples, RUN_FRAMES_PER_TILE)
+            # no máximo 1 quadro de lag, como na perna "down" de `_anda`: o jogo perde 1 quadro conforme o sorteio da
+            # build (POK-54, Task 11: com a ROM nova o 2º passo da corrida levou 6 quadros, igual nas 2 repetições)
+            gaps = self._check_follow(samples, RUN_FRAMES_PER_TILE, lags=1)
             legs = self._check_legs(samples)
             report.append(f"{direction} {tiles} correndo: {samples[-1][1:]}, quadros/tile {gaps}, "
                           f"perna {[''.join(map(str, step)) for step in legs]}")

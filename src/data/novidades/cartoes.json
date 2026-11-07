@@ -443,13 +443,23 @@
         },
         {
           "title": "Família Sombra",
-          "body": "Com a 8ª insígnia, o prédio da Rota 23 abre:\ncapangas, gêmeos e os chefes shiny GENGAR, O\nDOM e TYRANITAR, O COBRADOR. Vencido o chefe,\na máfia volta em cerca de 3h30 de jogo.",
+          "body": "Com a 8ª insígnia, o prédio da Rota 23 abre\ncom capangas, gêmeos e 4 chefes shiny:\nGENGAR, O DOM, TYRANITAR, O COBRADOR,\nGARCHOMP, O MERCENÁRIO e DARKRAI, O\nPESADELO. A máfia volta em 3h30.",
           "itemId": "ITEM_CARD_KEY"
         },
         {
           "title": "Pedágio da Rota 23",
           "body": "Com a Família ativa, um Persian cobra ¥1.000\npara passar, nos dois sentidos. Quem não\npaga enfrenta 2 lutas seguidas. Sem chefe,\nsem pedágio.",
           "itemId": "ITEM_AMULET_COIN"
+        },
+        {
+          "title": "Família Sombra, o fim",
+          "body": "O Mercenário e o Pesadelo fecham a história.\nCom os dois vencidos, a polícia lacra o\nprédio e a Oficial Jenny, na Rota 23, entrega\nos chefes que você não capturou e conta o\ncaso num dossiê em tela cheia.",
+          "speciesBefore": "SPECIES_GARCHOMP"
+        },
+        {
+          "title": "Garchomp e Darkrai",
+          "body": "GIBLE, GABITE, GARCHOMP (nº 443 a 445) e\nDARKRAI (nº 491) entram na Pokédex, mas não\ncontam para a Pokédex completa. Gible só\nnasce de ovo. Golpes novos: Inv. Dragão,\nVazio Negro e Sonhos Ruins.",
+          "speciesBefore": "SPECIES_DARKRAI"
         }
       ]
     },

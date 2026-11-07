@@ -41,7 +41,8 @@ atalho FAMILIA_WILD, que monta o mesmo Pokémon do encontro do andar e liga BATT
   dormindo (ao acaso, passar nos 3 turnos tem 1/8 de chance).
 
 Task 5 (o prédio da Rota 23: 6 andares e a sala do Dom). As insígnias vêm do atalho SET_FLAG (Ruling R7); o atalho
-WARP só chega a y < 128, então a frente da porta (4, 150) se alcança saindo pelo tapete do 1º andar.
+WARP chega a y >= 128 (as coordenadas de warp são s16 desde 69cf7e8bd; antes truncavam em s8), mas a frente da porta
+(4, 150) se alcança saindo pelo tapete do 1º andar, que passa pela porta de verdade.
 
 - `familia/porta_trancada`: sem a 8ª insígnia a porta não abre e a placa fala do charuto (tela
   `familia_porta_trancada`); com ela, entrar na Rota 23 liga a ocupação 1 e a porta leva ao 1º andar (tela
@@ -818,7 +819,7 @@ class FamiliaScenario(CatchSaveScenario):
         return seen
 
     def _sair_do_predio(self) -> None:
-        """Pelo tapete do 1º andar até a frente da porta na Rota 23 (o atalho WARP não chega a y >= 128)."""
+        """Pelo tapete do 1º andar até a frente da porta na Rota 23 (sai pela porta de verdade, como o jogador; o atalho WARP também alcança y >= 128, em s16)."""
         self._warp("MAP_ROUTE23_UNUSED_HOUSE", SAIDA_1F)
         self.nav.go_through_warp("down")
         self._settle("saída do prédio")

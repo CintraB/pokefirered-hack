@@ -78,8 +78,8 @@ def test_conquistas_e_diario_no_fim_de_melhorias_modernas():
     """POK-44: a grade 4x3 já está cheia (12 tópicos); os dois cartões entram no fim de "Melhorias modernas",
     como os do POK-43/45, e citam o caminho (SELECT no cartão do menu START; SELECT de novo para o diário)."""
     cartoes = _topico("Melhorias modernas")["cards"]
-    assert [c["title"] for c in cartoes[-12:-10]] == ["Conquistas e prêmios", "Diário da jornada"]   # POK-42/46/47/48/50/51 depois
-    conquistas, diario = (_plano(c["body"]) for c in cartoes[-12:-10])
+    assert [c["title"] for c in cartoes[-14:-12]] == ["Conquistas e prêmios", "Diário da jornada"]   # POK-42/46/47/48/50/51/54 depois
+    conquistas, diario = (_plano(c["body"]) for c in cartoes[-14:-12])
     ativas = sum(1 for c in json.loads((REPO_ROOT / "src/data/conquistas/conquistas.json").read_text(encoding="utf-8"))
                  ["conquistas"] if c.get("ativa", True))
     assert "cartão" in conquistas and "SELECT" in conquistas and f"{ativas} conquistas" in conquistas
@@ -89,7 +89,7 @@ def test_conquistas_e_diario_no_fim_de_melhorias_modernas():
 def test_revanches_por_degrau_no_fim_de_melhorias_modernas():
     """POK-42: como os do POK-43/45 e do POK-44, o cartão entra no fim de "Melhorias modernas" (grade cheia) e cita a
     guarda da Liga, os níveis de Normal a 100 e o que vale para o Explorador VS."""
-    cartao = _topico("Melhorias modernas")["cards"][-10]   # POK-46, 47, 48, 50 e 51 depois
+    cartao = _topico("Melhorias modernas")["cards"][-12]   # POK-46, 47, 48, 50, 51 e 54 depois
     assert cartao["title"] == "Revanches por degrau" and cartao["itemId"] == "ITEM_VS_SEEKER"
     corpo = _plano(cartao["body"])
     for trecho in ("Hall da Fama", "guarda da Liga", "Normal", "Nível 100", "Elite 4", "Explorador VS", "times de 6",
@@ -100,7 +100,7 @@ def test_revanches_por_degrau_no_fim_de_melhorias_modernas():
 def test_chefes_mais_espertos_no_fim_de_melhorias_modernas():
     """POK-46: o cartão entra no fim de "Melhorias modernas" (grade cheia) e diz quem são os chefes (as revanches só do
     Nível 80 para cima) e o que mudou: troca antes do golpe super efetivo, quem entra e as curas."""
-    cartao = _topico("Melhorias modernas")["cards"][-9]   # POK-47, 48, 50 e 51 depois
+    cartao = _topico("Melhorias modernas")["cards"][-11]   # POK-47, 48, 50, 51 e 54 depois
     assert cartao["title"] == "Chefes mais espertos" and cartao["itemId"] == "ITEM_FULL_RESTORE"
     corpo = _plano(cartao["body"])
     for trecho in ("Líderes", "Elite 4", "rival", "Nível 80", "golpe super efetivo", "quem entra", "poções e curas"):
@@ -110,7 +110,7 @@ def test_chefes_mais_espertos_no_fim_de_melhorias_modernas():
 def test_dexnav_no_fim_de_melhorias_modernas():
     """POK-47: o cartão entra no fim de "Melhorias modernas" (grade cheia), com o ícone do item novo, e diz como abrir
     (menu START ou SELECT) e o que a tela tem, com os nomes do rodapé da tela ("SELECT mapas", "START busca")."""
-    cartao = _topico("Melhorias modernas")["cards"][-8]   # POK-48, 50 e 51 depois
+    cartao = _topico("Melhorias modernas")["cards"][-10]   # POK-48, 50, 51 e 54 depois
     assert cartao["title"] == "DexNav" and cartao["itemId"] == "ITEM_DEXNAV"
     corpo = _plano(cartao["body"])
     for trecho in ("menu START", "SELECT, registrando o item", "jeito de encontrar", "chance real", "níveis",
@@ -124,7 +124,7 @@ def test_seguidor_no_fim_de_melhorias_modernas():
     """POK-48/53: o cartão entra no fim de "Melhorias modernas" (grade cheia), com um dos seguidores na imagem, diz
     quem segue (os 386, com os grandes, as letras do Unown e as fêmeas), quando some e onde desligar (a linha Seguidor
     das OPÇÕES)."""
-    cartao = _topico("Melhorias modernas")["cards"][-7]   # POK-50 e 51 depois
+    cartao = _topico("Melhorias modernas")["cards"][-9]   # POK-50, 51 e 54 depois
     assert cartao["title"] == "Pokémon seguidor" and cartao["speciesBefore"] == "SPECIES_PIKACHU"
     corpo = _plano(cartao["body"])
     for trecho in ("1º da equipe", "todos os 386", "grandes como Wailord e Lugia", "letra do Unown", "fêmeas",
@@ -137,7 +137,7 @@ def test_seguidor_no_fim_de_melhorias_modernas():
 def test_pokerus_no_fim_de_melhorias_modernas():
     """POK-50: o cartão entra no fim de "Melhorias modernas" (grade cheia) e diz como pega, como passa, quanto dura
     e o que fica (os EVs em dobro), além do aviso da enfermeira."""
-    cartao = _topico("Melhorias modernas")["cards"][-6]   # POK-51 depois
+    cartao = _topico("Melhorias modernas")["cards"][-8]   # POK-51 e 54 depois
     assert cartao["title"] == "Pokérus" and cartao["itemId"] == "ITEM_HP_UP"
     corpo = _plano(cartao["body"])
     for trecho in ("Depois de uma batalha", "raro", "vizinhos", "1 a 4 dias", "EVs ficam em dobro", "enfermeira"):
@@ -147,7 +147,7 @@ def test_pokerus_no_fim_de_melhorias_modernas():
 def test_casas_e_familia_sombra_no_fim_de_melhorias_modernas():
     """POK-51: a grade já está cheia (12 tópicos); os 5 cartões das casas e da Família Sombra entram no fim de
     "Melhorias modernas", na ordem das rotas, e dizem os valores fixos do spec (preços, recorde, 3h30, pedágio)."""
-    cartoes = _topico("Melhorias modernas")["cards"][-5:]
+    cartoes = _topico("Melhorias modernas")["cards"][-7:-2]   # POK-54 depois
     assert [c["title"] for c in cartoes] == ["Mestre dos Golpes", "Casa do pescador", "Sala de troféus", "Família Sombra",
                                              "Pedágio da Rota 23"]
     mestre, pescador, sala, familia, pedagio = (_plano(c["body"]) for c in cartoes)
@@ -157,11 +157,28 @@ def test_casas_e_familia_sombra_no_fim_de_melhorias_modernas():
         assert trecho in pescador, trecho
     for trecho in ("Ilha Sete", "redomas", "5 taças", "placa"):
         assert trecho in sala, trecho
-    for trecho in ("8ª insígnia", "Rota 23", "GENGAR, O DOM", "TYRANITAR, O COBRADOR", "3h30"):
+    for trecho in ("8ª insígnia", "Rota 23", "GENGAR, O DOM", "TYRANITAR, O COBRADOR", "GARCHOMP, O MERCENÁRIO",
+                   "DARKRAI, O PESADELO", "3h30"):
         assert trecho in familia, trecho
     for trecho in ("Persian", "¥1.000", "dois sentidos", "2 lutas"):
         assert trecho in pedagio, trecho
     assert all(c.get("itemId") for c in cartoes)
+
+
+def test_familia_sombra_o_fim_e_garchomp_e_darkrai_no_fim_de_melhorias_modernas():
+    """POK-54: os dois últimos cartões de "Melhorias modernas" (grade cheia): o fim da Família Sombra (o Mercenário, o
+    Pesadelo, a polícia, a Jenny e o dossiê) e as 4 espécies novas (números 443-445 e 491, golpes novos, e que elas
+    não contam para a Pokédex completa de 386)."""
+    fim, extras = _topico("Melhorias modernas")["cards"][-2:]
+    assert (fim["title"], fim["speciesBefore"]) == ("Família Sombra, o fim", "SPECIES_GARCHOMP")
+    assert (extras["title"], extras["speciesBefore"]) == ("Garchomp e Darkrai", "SPECIES_DARKRAI")
+    corpo = _plano(fim["body"])
+    for trecho in ("Mercenário", "Pesadelo", "polícia", "Oficial Jenny", "dossiê"):
+        assert trecho in corpo, trecho
+    corpo = _plano(extras["body"])
+    for trecho in ("GIBLE", "GABITE", "GARCHOMP", "DARKRAI", "443 a 445", "491", "não contam para a Pokédex completa",
+                   "só nasce de ovo", "Inv. Dragão", "Vazio Negro", "Sonhos Ruins"):
+        assert trecho in corpo, trecho
 
 
 def test_cada_topico_tem_cartao():

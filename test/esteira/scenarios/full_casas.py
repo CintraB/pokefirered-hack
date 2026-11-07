@@ -406,12 +406,15 @@ class CasasScenario(CatchSaveScenario):
 
     def _tacas(self) -> str:
         """Taças pela % das conquistas válidas (ativas e não perdidas, `_validas_por_aba`) de cada aba: História toda
-        feita (ouro), Batalha 4 feitas (bronze, 40% das 10 de hoje), Captura 8 (prata, 8/11), Treino 2 (nada, 2/7),
+        feita (ouro), Batalha 40% das válidas (bronze; 5 das 12 de hoje), Captura 8 (prata, 8/11), Treino 2 (nada, 2/7),
         Exploração nenhuma. Os níveis esperados saem da conta de feitas × válidas; o contador do próprio jogo
         (feitas | válidas << 8) tem de bater."""
         self._restore("casas_base")
         validas_por_aba = self._validas_por_aba()
-        for i, quantas in enumerate((len(validas_por_aba[0]), 4, 8, 2, 0)):
+        # Batalha: 40% das válidas, arredondado para cima (bronze: >= 34% e < 67%); com as conquistas da Família Sombra
+        # (POK-54: 12 válidas) 4 feitas dariam 33% e nada
+        bronze = -(-len(validas_por_aba[1]) * 40 // 100)
+        for i, quantas in enumerate((len(validas_por_aba[0]), bronze, 8, 2, 0)):
             for num in validas_por_aba[i][:quantas]:
                 self.box.conq_aplicar(num, 0)
         quer = []
