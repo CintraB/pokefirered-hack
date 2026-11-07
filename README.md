@@ -81,7 +81,7 @@ perder o jeito do FireRed.
 | | |
 |---|---|
 | **Clima na batalha** | Chuva, granizo, areia e sol aparecem durante a batalha toda e somem enquanto um golpe é animado. Com Cloud Nine ou Air Lock em campo, a cena volta ao normal. |
-| **Sol forte** | A Ilha Cinnabar e o Monte Ember têm dias de sol forte, com o efeito do Emerald: a tela clareia e pulsa. Na batalha, começa com sol. |
+| **Sol forte** | A Ilha Cinnabar e o Monte Brasa têm dias de sol forte, com o efeito do Emerald: a tela clareia e pulsa. Na batalha, começa com sol. |
 | **Clima por região** | Sorteado a cada período: chuva no litoral, neve na Ilha Quatro (que vira granizo na batalha), areia nas Rotas 3 e 10, cinzas e sol forte no vulcão. |
 | **Status com L/R** | Na escolha da ação, **L** mostra os bônus e as quedas do seu Pokémon e **R** os do adversário (`Atq+2 Vel-1`…). |
 | **Chefes mais espertos** | Líderes, Elite 4 e rival preparam o terreno no 1º turno e escolhem o golpe pelo PS de cada lado. |
@@ -136,7 +136,7 @@ perder o jeito do FireRed.
 | | |
 |---|---|
 | **Mestre dos Golpes** | Uma casa nova na Rota 6 onde um tutor ensina os 15 golpes de tutor do FireRed, **quantas vezes você quiser**, por ¥3.000 cada. Escolhe o golpe, escolhe o Pokémon (só os compatíveis) e, se cancelar, não paga nada. |
-| **Casa do pescador** | Na areia da Rota 19, um pescador mede o seu **Krabby** e guarda o recorde: bateu, ganha uma Pepita (e uma Bala Rara no primeiro recorde). |
+| **Casa do pescador** | Na areia da Rota 19, um pescador mede o seu **Krabby** e guarda o recorde: bateu, ganha uma Pepita (e um Doce Raro no primeiro recorde). |
 | **Sala de troféus** | Na Ilha Sete: quatro redomas com as rosas dos chefes da Família, cinco taças (bronze, prata e ouro) uma para cada aba das conquistas e uma placa com os seus recordes. |
 | **O prédio da Rota 23** | Depois da **8ª insígnia**, a porta destranca: seis andares (capangas de chapéu nos três primeiros, em penumbra; encontros com Pokémon da Família a cada passo no 4º e no 5º, no escuro) e, no topo, o primeiro chefe, um **Gengar shiny**, "GENGAR, O DOM". |
 | **A máfia volta** | Vencido o chefe, o prédio fica vazio por cerca de 3h30 de jogo (entre 3h00 e 3h30, conforme o ponto do meio-dia em que o chefe caiu). Depois chega a ocupação seguinte, com o **Tyranitar shiny**, "TYRANITAR, O COBRADOR", e então mais dois chefes, cada um mais forte que o anterior (+6 níveis por ocupação). |
