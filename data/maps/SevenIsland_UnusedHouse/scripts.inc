@@ -1,2 +1,220 @@
 SevenIsland_UnusedHouse_MapScripts::
+	map_script MAP_SCRIPT_ON_TRANSITION, SevenIsland_UnusedHouse_OnTransition
 	.byte 0
+
+@ Sala de troféus (POK-51). As redomas e as taças são objetos de gráfico variável (OBJ_EVENT_GFX_VAR_*): a entrada no
+@ mapa escolhe o gráfico pelas flags das rosas e pela % de cada aba das conquistas. Taça "nenhuma" some com FLAG_TEMP_1..5.
+SevenIsland_UnusedHouse_OnTransition:
+	setvar VAR_OBJ_GFX_ID_0, OBJ_EVENT_GFX_REDOMA_VAZIA
+	goto_if_unset FLAG_FAMILIA_ROSA_1, SevenIsland_UnusedHouse_OnTransition_Redoma1Pronta
+	setvar VAR_OBJ_GFX_ID_0, OBJ_EVENT_GFX_REDOMA_VERMELHA
+SevenIsland_UnusedHouse_OnTransition_Redoma1Pronta:
+	setvar VAR_OBJ_GFX_ID_1, OBJ_EVENT_GFX_REDOMA_VAZIA
+	goto_if_unset FLAG_FAMILIA_ROSA_2, SevenIsland_UnusedHouse_OnTransition_Redoma2Pronta
+	setvar VAR_OBJ_GFX_ID_1, OBJ_EVENT_GFX_REDOMA_DOURADA
+SevenIsland_UnusedHouse_OnTransition_Redoma2Pronta:
+	setvar VAR_OBJ_GFX_ID_2, OBJ_EVENT_GFX_REDOMA_VAZIA
+	goto_if_unset FLAG_FAMILIA_ROSA_3, SevenIsland_UnusedHouse_OnTransition_Redoma3Pronta
+	setvar VAR_OBJ_GFX_ID_2, OBJ_EVENT_GFX_REDOMA_AZUL
+SevenIsland_UnusedHouse_OnTransition_Redoma3Pronta:
+	setvar VAR_OBJ_GFX_ID_3, OBJ_EVENT_GFX_REDOMA_VAZIA
+	goto_if_unset FLAG_FAMILIA_ROSA_4, SevenIsland_UnusedHouse_OnTransition_Redoma4Pronta
+	setvar VAR_OBJ_GFX_ID_3, OBJ_EVENT_GFX_REDOMA_NEGRA
+SevenIsland_UnusedHouse_OnTransition_Redoma4Pronta:
+	setvar VAR_0x8004, 0
+	specialvar VAR_RESULT, SalaTrofeus_Taca
+	call SevenIsland_UnusedHouse_Taca_Escolher
+	copyvar VAR_OBJ_GFX_ID_4, VAR_0x8005
+	goto_if_ne VAR_RESULT, TACA_NENHUMA, SevenIsland_UnusedHouse_OnTransition_Taca1Pronta
+	setflag FLAG_TEMP_1
+SevenIsland_UnusedHouse_OnTransition_Taca1Pronta:
+	setvar VAR_0x8004, 1
+	specialvar VAR_RESULT, SalaTrofeus_Taca
+	call SevenIsland_UnusedHouse_Taca_Escolher
+	copyvar VAR_OBJ_GFX_ID_5, VAR_0x8005
+	goto_if_ne VAR_RESULT, TACA_NENHUMA, SevenIsland_UnusedHouse_OnTransition_Taca2Pronta
+	setflag FLAG_TEMP_2
+SevenIsland_UnusedHouse_OnTransition_Taca2Pronta:
+	setvar VAR_0x8004, 2
+	specialvar VAR_RESULT, SalaTrofeus_Taca
+	call SevenIsland_UnusedHouse_Taca_Escolher
+	copyvar VAR_OBJ_GFX_ID_6, VAR_0x8005
+	goto_if_ne VAR_RESULT, TACA_NENHUMA, SevenIsland_UnusedHouse_OnTransition_Taca3Pronta
+	setflag FLAG_TEMP_3
+SevenIsland_UnusedHouse_OnTransition_Taca3Pronta:
+	setvar VAR_0x8004, 3
+	specialvar VAR_RESULT, SalaTrofeus_Taca
+	call SevenIsland_UnusedHouse_Taca_Escolher
+	copyvar VAR_OBJ_GFX_ID_7, VAR_0x8005
+	goto_if_ne VAR_RESULT, TACA_NENHUMA, SevenIsland_UnusedHouse_OnTransition_Taca4Pronta
+	setflag FLAG_TEMP_4
+SevenIsland_UnusedHouse_OnTransition_Taca4Pronta:
+	setvar VAR_0x8004, 4
+	specialvar VAR_RESULT, SalaTrofeus_Taca
+	call SevenIsland_UnusedHouse_Taca_Escolher
+	copyvar VAR_OBJ_GFX_ID_8, VAR_0x8005
+	goto_if_ne VAR_RESULT, TACA_NENHUMA, SevenIsland_UnusedHouse_OnTransition_Taca5Pronta
+	setflag FLAG_TEMP_5
+SevenIsland_UnusedHouse_OnTransition_Taca5Pronta:
+	end
+
+@ VAR_RESULT = TACA_* -> VAR_0x8005 = gráfico da taça (nenhuma usa o bronze, escondido por flag).
+SevenIsland_UnusedHouse_Taca_Escolher:
+	setvar VAR_0x8005, OBJ_EVENT_GFX_TACA_BRONZE
+	goto_if_eq VAR_RESULT, TACA_PRATA, SevenIsland_UnusedHouse_Taca_Prata
+	goto_if_eq VAR_RESULT, TACA_OURO, SevenIsland_UnusedHouse_Taca_Ouro
+	return
+
+SevenIsland_UnusedHouse_Taca_Prata:
+	setvar VAR_0x8005, OBJ_EVENT_GFX_TACA_PRATA
+	return
+
+SevenIsland_UnusedHouse_Taca_Ouro:
+	setvar VAR_0x8005, OBJ_EVENT_GFX_TACA_OURO
+	return
+
+SevenIsland_UnusedHouse_EventScript_Redoma1::
+	goto_if_questlog EventScript_ReleaseEnd
+	goto_if_set FLAG_FAMILIA_ROSA_1, SevenIsland_UnusedHouse_EventScript_Redoma1Cheia
+	msgbox SevenIsland_UnusedHouse_Text_RedomaVazia, MSGBOX_SIGN
+	end
+
+SevenIsland_UnusedHouse_EventScript_Redoma1Cheia::
+	msgbox SevenIsland_UnusedHouse_Text_Redoma1, MSGBOX_SIGN
+	end
+
+SevenIsland_UnusedHouse_EventScript_Redoma2::
+	goto_if_questlog EventScript_ReleaseEnd
+	goto_if_set FLAG_FAMILIA_ROSA_2, SevenIsland_UnusedHouse_EventScript_Redoma2Cheia
+	msgbox SevenIsland_UnusedHouse_Text_RedomaVazia, MSGBOX_SIGN
+	end
+
+SevenIsland_UnusedHouse_EventScript_Redoma2Cheia::
+	msgbox SevenIsland_UnusedHouse_Text_Redoma2, MSGBOX_SIGN
+	end
+
+SevenIsland_UnusedHouse_EventScript_Redoma3::
+	goto_if_questlog EventScript_ReleaseEnd
+	goto_if_set FLAG_FAMILIA_ROSA_3, SevenIsland_UnusedHouse_EventScript_Redoma3Cheia
+	msgbox SevenIsland_UnusedHouse_Text_RedomaVazia, MSGBOX_SIGN
+	end
+
+SevenIsland_UnusedHouse_EventScript_Redoma3Cheia::
+	msgbox SevenIsland_UnusedHouse_Text_Redoma3, MSGBOX_SIGN
+	end
+
+SevenIsland_UnusedHouse_EventScript_Redoma4::
+	goto_if_questlog EventScript_ReleaseEnd
+	goto_if_set FLAG_FAMILIA_ROSA_4, SevenIsland_UnusedHouse_EventScript_Redoma4Cheia
+	msgbox SevenIsland_UnusedHouse_Text_RedomaVazia, MSGBOX_SIGN
+	end
+
+SevenIsland_UnusedHouse_EventScript_Redoma4Cheia::
+	msgbox SevenIsland_UnusedHouse_Text_Redoma4, MSGBOX_SIGN
+	end
+
+SevenIsland_UnusedHouse_EventScript_Taca1::
+	goto_if_questlog EventScript_ReleaseEnd
+	setvar VAR_0x8004, 0
+	specialvar VAR_RESULT, SalaTrofeus_Taca
+	goto_if_eq VAR_RESULT, TACA_PRATA, SevenIsland_UnusedHouse_EventScript_TacaPrata
+	goto_if_eq VAR_RESULT, TACA_OURO, SevenIsland_UnusedHouse_EventScript_TacaOuro
+	msgbox SevenIsland_UnusedHouse_Text_TacaBronze, MSGBOX_SIGN
+	end
+
+SevenIsland_UnusedHouse_EventScript_Taca2::
+	goto_if_questlog EventScript_ReleaseEnd
+	setvar VAR_0x8004, 1
+	specialvar VAR_RESULT, SalaTrofeus_Taca
+	goto_if_eq VAR_RESULT, TACA_PRATA, SevenIsland_UnusedHouse_EventScript_TacaPrata
+	goto_if_eq VAR_RESULT, TACA_OURO, SevenIsland_UnusedHouse_EventScript_TacaOuro
+	msgbox SevenIsland_UnusedHouse_Text_TacaBronze, MSGBOX_SIGN
+	end
+
+SevenIsland_UnusedHouse_EventScript_Taca3::
+	goto_if_questlog EventScript_ReleaseEnd
+	setvar VAR_0x8004, 2
+	specialvar VAR_RESULT, SalaTrofeus_Taca
+	goto_if_eq VAR_RESULT, TACA_PRATA, SevenIsland_UnusedHouse_EventScript_TacaPrata
+	goto_if_eq VAR_RESULT, TACA_OURO, SevenIsland_UnusedHouse_EventScript_TacaOuro
+	msgbox SevenIsland_UnusedHouse_Text_TacaBronze, MSGBOX_SIGN
+	end
+
+SevenIsland_UnusedHouse_EventScript_Taca4::
+	goto_if_questlog EventScript_ReleaseEnd
+	setvar VAR_0x8004, 3
+	specialvar VAR_RESULT, SalaTrofeus_Taca
+	goto_if_eq VAR_RESULT, TACA_PRATA, SevenIsland_UnusedHouse_EventScript_TacaPrata
+	goto_if_eq VAR_RESULT, TACA_OURO, SevenIsland_UnusedHouse_EventScript_TacaOuro
+	msgbox SevenIsland_UnusedHouse_Text_TacaBronze, MSGBOX_SIGN
+	end
+
+SevenIsland_UnusedHouse_EventScript_Taca5::
+	goto_if_questlog EventScript_ReleaseEnd
+	setvar VAR_0x8004, 4
+	specialvar VAR_RESULT, SalaTrofeus_Taca
+	goto_if_eq VAR_RESULT, TACA_PRATA, SevenIsland_UnusedHouse_EventScript_TacaPrata
+	goto_if_eq VAR_RESULT, TACA_OURO, SevenIsland_UnusedHouse_EventScript_TacaOuro
+	msgbox SevenIsland_UnusedHouse_Text_TacaBronze, MSGBOX_SIGN
+	end
+
+SevenIsland_UnusedHouse_EventScript_TacaPrata::
+	msgbox SevenIsland_UnusedHouse_Text_TacaPrata, MSGBOX_SIGN
+	end
+
+SevenIsland_UnusedHouse_EventScript_TacaOuro::
+	msgbox SevenIsland_UnusedHouse_Text_TacaOuro, MSGBOX_SIGN
+	end
+
+SevenIsland_UnusedHouse_EventScript_Placa::
+	goto_if_questlog EventScript_ReleaseEnd
+	lockall
+	specialvar VAR_RESULT, SalaTrofeus_Placa
+	msgbox SevenIsland_UnusedHouse_Text_PlacaConquistas
+	goto_if_eq VAR_RESULT, TRUE, SevenIsland_UnusedHouse_EventScript_PlacaRevancheSim
+	msgbox SevenIsland_UnusedHouse_Text_PlacaRevancheNao
+	goto SevenIsland_UnusedHouse_EventScript_PlacaHall
+
+SevenIsland_UnusedHouse_EventScript_PlacaRevancheSim::
+	msgbox SevenIsland_UnusedHouse_Text_PlacaRevancheSim
+SevenIsland_UnusedHouse_EventScript_PlacaHall::
+	special SalaTrofeus_PlacaHall
+	msgbox SevenIsland_UnusedHouse_Text_PlacaHall
+	releaseall
+	end
+
+@ O curador: comenta as rosas e as taças que faltam.
+SevenIsland_UnusedHouse_EventScript_Curador::
+	goto_if_questlog EventScript_ReleaseEnd
+	lock
+	faceplayer
+	specialvar VAR_RESULT, SalaTrofeus_Curador
+	goto_if_eq VAR_RESULT, 0, SevenIsland_UnusedHouse_EventScript_CuradorSemRosas
+	goto_if_unset FLAG_FAMILIA_ROSA_1, SevenIsland_UnusedHouse_EventScript_CuradorFaltaDom
+	goto_if_unset FLAG_FAMILIA_ROSA_2, SevenIsland_UnusedHouse_EventScript_CuradorFaltaCobrador
+	msgbox SevenIsland_UnusedHouse_Text_CuradorRosas
+	goto SevenIsland_UnusedHouse_EventScript_CuradorTacas
+
+SevenIsland_UnusedHouse_EventScript_CuradorSemRosas::
+	msgbox SevenIsland_UnusedHouse_Text_CuradorSemRosas
+	goto SevenIsland_UnusedHouse_EventScript_CuradorTacas
+
+SevenIsland_UnusedHouse_EventScript_CuradorFaltaDom::
+	msgbox SevenIsland_UnusedHouse_Text_CuradorFaltaDom
+	goto SevenIsland_UnusedHouse_EventScript_CuradorTacas
+
+SevenIsland_UnusedHouse_EventScript_CuradorFaltaCobrador::
+	msgbox SevenIsland_UnusedHouse_Text_CuradorFaltaCobrador
+	goto SevenIsland_UnusedHouse_EventScript_CuradorTacas
+
+SevenIsland_UnusedHouse_EventScript_CuradorTacas::
+	goto_if_eq VAR_0x8005, 0, SevenIsland_UnusedHouse_EventScript_CuradorTodasTacas
+	buffernumberstring STR_VAR_1, VAR_0x8005
+	msgbox SevenIsland_UnusedHouse_Text_CuradorTacas
+	release
+	end
+
+SevenIsland_UnusedHouse_EventScript_CuradorTodasTacas::
+	msgbox SevenIsland_UnusedHouse_Text_CuradorTodasTacas
+	release
+	end

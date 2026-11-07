@@ -25,6 +25,9 @@ Uso, a partir de test/ (a pasta OUT precisa do captura.sav de um `rapido`/`compl
     python3 -m esteira completo --rom R --elf E --out OUT --only casas
 """
 
+import json
+import re
+
 from ..breeding import header_defines
 from ..emu import KEY_A, KEY_B, KEY_DOWN, KEY_UP
 from ..game import SB1_MONEY
@@ -51,6 +54,14 @@ PID_MEDIO, PID_GRANDE = 0x0020, 0x0080   # 16 bits baixos da personalidade: hash
 ROTA6_FRENTE_DA_PORTA = (7, 31)      # Route6: o tile abaixo da porta (7, 30)
 ROTA6_LONGE = (8, 32)                # Route6: de onde se vê a casa inteira (tela casa_rota6_exterior)
 MESTRE_FRENTE = (4, 4)               # Route6_UnusedHouse: o Mestre está em (4, 3)
+ILHA7_LONGE = (14, 5)                # SevenIsland: de onde se vê a casa nova inteira (tela casa_ilha7_exterior)
+ILHA7_FRENTE_DA_PORTA = (17, 4)      # SevenIsland: o tile abaixo da porta (17, 3)
+SALA_REDOMAS = [(2, 3), (4, 3), (6, 3), (8, 3)]   # SevenIsland_UnusedHouse
+SALA_TACAS = [(3, 6), (4, 6), (5, 6), (6, 6), (7, 6)]
+SALA_PLACA = (10, 3)
+SALA_CURADOR = (9, 5)
+OBJ_EVENT_SIZE, OBJ_EVENT_COUNT = 0x24, 16   # struct ObjectEvent / gObjectEvents[16]
+OBJ_MAP_OFFSET = 7                   # currentCoords = coordenada do mapa + 7
 SCENE_TIMEOUT = 20000
 
 
@@ -277,6 +288,130 @@ class CasasScenario(CatchSaveScenario):
         return (f"recorde médio: Pepita {n0}→{n1} + Bala Rara {c0}→{c1} (flag ligada); recorde maior: só Pepita →{n2}; "
                 f"o médio de novo: nada; exterior {exterior}")
 
+    # --- a sala de troféus -----------------------------------------------------------
+    def _objetos(self) -> dict[tuple[int, int], int]:
+        """(x, y) do mapa -> graphicsId dos objetos ativos (gObjectEvents), sem o jogador."""
+        base = self._sym("gObjectEvents")
+        out = {}
+        for i in range(OBJ_EVENT_COUNT):
+            o = base + i * OBJ_EVENT_SIZE
+            flags = self.emu.read(o, 4)
+            if not flags[0] & 1 or flags[2] & 1:     # active, isPlayer
+                continue
+            x = int.from_bytes(self.emu.read(o + 0x10, 2), "little", signed=True) - OBJ_MAP_OFFSET
+            y = int.from_bytes(self.emu.read(o + 0x12, 2), "little", signed=True) - OBJ_MAP_OFFSET
+            out[(x, y)] = self.emu.read_u8(o + 5)
+        return out
+
+    def _gfx(self, nome: str) -> int:
+        return header_defines(REPO_ROOT, "event_objects.h")[f"OBJ_EVENT_GFX_{nome}"]
+
+    def _entrar_na_sala(self, shot: str | None = None) -> None:
+        """Da Ilha Sete, pela porta de verdade, até dentro da sala (no tapete da porta)."""
+        self._warp("MAP_SEVEN_ISLAND", ILHA7_LONGE)
+        if shot:
+            self.emu.frames(180)                # o nome do lugar some da tela
+            self.measures["exterior"] = self._shot(shot)
+        assert self.nav.walk_to(*ILHA7_FRENTE_DA_PORTA), f"não chegou à porta: {self.game.player_xy()}"
+        self.nav.go_through_warp("up")
+        assert self._at("MAP_SEVEN_ISLAND_UNUSED_HOUSE"), self.game.location()
+
+    def _examinar(self, parado_em: tuple[int, int], tecla: int = KEY_UP) -> dict:
+        """Anda até `parado_em`, vira para o objeto (ele bloqueia) e aperta A; devolve a conversa."""
+        assert self.nav.walk_to(*parado_em), f"não chegou a {parado_em}: {self.game.player_xy()}"
+        self.emu.hold(tecla, 4)
+        self.ctl.wait_until(self.nav._player_still, 60, "jogador parado diante do objeto")
+        self.ctl.wait_overworld_idle()
+        self.emu.press(KEY_A, hold=2, release=8)
+        self.ctl.wait_until(self.ctl.script_active, 120, "a fala do objeto")
+        return self._cena([])
+
+    def _redomas(self, esperadas: list[str]) -> str:
+        objs = self._objetos()
+        achadas = [objs.get(xy) for xy in SALA_REDOMAS]
+        quer = [self._gfx(f"REDOMA_{n}") for n in esperadas]
+        assert achadas == quer, f"redomas {achadas}, esperava {quer} ({esperadas})"
+        taças = [objs.get(xy) for xy in SALA_TACAS]
+        validas = {self._gfx(f"TACA_{n}") for n in ("BRONZE", "PRATA", "OURO")}
+        assert all(g is None or g in validas for g in taças), f"taças {taças}"
+        assert self._gfx("GENTLEMAN") == objs.get(SALA_CURADOR) and self._gfx("SIGN") == objs.get(SALA_PLACA), objs
+        return f"redomas {esperadas}; taças {['-' if g is None else g for g in taças]}"
+
+    def _sala_vazia(self) -> str:
+        self._restore("casas_base")
+        self._entrar_na_sala("casa_ilha7_exterior")
+        self.emu.frames(30)
+        sala = self._shot("sala_trofeus_entrada")
+        quadro = self._redomas(["VAZIA"] * 4)
+        info = self._examinar((2, 4))
+        assert self._rom_text("SevenIsland_UnusedHouse_Text_RedomaVazia") in info["msgs"], info["msgs"]
+        self.emu.frames(10)
+        return f"{quadro}; redoma 1: 'Uma redoma vazia…'; exterior {self.measures['exterior']}; entrada {sala}"
+
+    def _sala_dom(self) -> str:
+        self._restore("casas_base")
+        self.box.set_flag(self.consts.flag("FLAG_FAMILIA_ROSA_1"), True)
+        self._warp("MAP_SEVEN_ISLAND_UNUSED_HOUSE", (3, 6))
+        quadro = self._redomas(["VERMELHA", "VAZIA", "VAZIA", "VAZIA"])
+        sala = self._shot("sala_trofeus")
+        info = self._examinar((2, 4))
+        texto = " ".join(info["msgs"])
+        assert texto.startswith("GENGAR, O DOM") or "GENGAR, O DOM" in info["msgs"][0], info["msgs"]
+        assert "rosa vermelha" in texto, info["msgs"]
+        info = self._examinar((4, 4))
+        assert self._rom_text("SevenIsland_UnusedHouse_Text_RedomaVazia") in info["msgs"], info["msgs"]
+        return f"{quadro}; redoma 1 mostra o Dom, a 2 segue vazia; tela {sala}"
+
+    def _placa(self) -> str:
+        self._restore("casas_base")
+        self._warp("MAP_SEVEN_ISLAND_UNUSED_HOUSE", (10, 4))
+        info = self._examinar((10, 4))
+        texto = " ".join(info["msgs"])
+        m = re.search(r"Conquistas: (\d+) ?/? ?(\d+)", texto)
+        assert m and "Batalhas marcantes: " in texto and "Hall da Fama: " in texto, info["msgs"]
+        ativas = sum(1 for c in json.loads((REPO_ROOT / "src/data/conquistas/conquistas.json").read_text("utf-8"))
+                     ["conquistas"] if c.get("ativa", True))
+        assert int(m.group(2)) <= ativas and int(m.group(1)) <= int(m.group(2)), (m.groups(), ativas)
+        assert "Revanche mais difícil vencida" in texto, info["msgs"]
+        self.emu.frames(10)
+        # o curador comenta o que falta
+        info = self._examinar((9, 6))
+        assert "Faltam" in " ".join(info["msgs"]) or "completa" in " ".join(info["msgs"]), info["msgs"]
+        return f"placa: {m.group(1)}/{m.group(2)} conquistas (ativas na tabela: {ativas}); curador: {info['msgs'][-1][:40]!r}"
+
+    def _tacas(self) -> str:
+        """Taças pela % de cada aba: História toda feita (ouro), Batalha 40% (bronze), Captura 8/11 (prata), Treino
+        2/7 (nada), Exploração nada. A expectativa vem do contador do próprio jogo (feitas | válidas << 8)."""
+        self._restore("casas_base")
+        tabela = json.loads((REPO_ROOT / "src/data/conquistas/conquistas.json").read_text("utf-8"))
+        abas = [a["id"] for a in tabela["abas"]]
+        ativas = {i: [c["num"] for c in tabela["conquistas"] if c["aba"] == a and c.get("ativa", True)]
+                  for i, a in enumerate(abas)}
+        for i, quantas in enumerate((len(ativas[0]), 4, 8, 2, 0)):
+            for num in ativas[i][:quantas]:
+                self.box.conq_aplicar(num, 0)
+        quer = []
+        for i in range(5):
+            c = self.box.conq_contador(4 + i)
+            feitas, validas = c & 0xFF, c >> 8 & 0xFF
+            assert validas == len(ativas[i]), (i, feitas, validas, len(ativas[i]))
+            nivel = 3 if feitas >= validas else 2 if feitas * 100 >= 67 * validas else 1 if feitas * 100 >= 34 * validas else 0
+            quer.append((nivel, feitas, validas))
+        assert [q[0] for q in quer] == [3, 1, 2, 0, 0], quer
+        self._warp("MAP_SEVEN_ISLAND_UNUSED_HOUSE", (5, 7))
+        objs = self._objetos()
+        achadas = [objs.get(xy) for xy in SALA_TACAS]
+        cups = [None, self._gfx("TACA_BRONZE"), self._gfx("TACA_PRATA"), self._gfx("TACA_OURO")]
+        assert achadas == [cups[q[0]] for q in quer], f"taças {achadas}"
+        tela = self._shot("sala_trofeus_tacas")
+        info = self._examinar((3, 7))
+        assert "ouro" in " ".join(info["msgs"]) and "HISTÓRIA" in " ".join(info["msgs"]), info["msgs"]
+        info = self._examinar((4, 7))
+        assert "bronze" in " ".join(info["msgs"]) and "BATALHA" in " ".join(info["msgs"]), info["msgs"]
+        info = self._examinar((5, 7))
+        assert "prata" in " ".join(info["msgs"]), info["msgs"]
+        return f"abas {quer} -> taças ouro, bronze, prata, nada, nada; textos conferidos; tela {tela}"
+
     def run(self) -> None:
         try:
             self._flow("casas: CONTINUAR com o save do modo rápido", self._start)
@@ -284,6 +419,10 @@ class CasasScenario(CatchSaveScenario):
             self.suite.run("casas/mestre_sem_dinheiro", self._sem_dinheiro)
             self.suite.run("casas/mestre_cancelar_nao_cobra", self._cancelar)
             self.suite.run("casas/pescador_recorde", self._pescador)
+            self.suite.run("casas/trofeus_vazia", self._sala_vazia)
+            self.suite.run("casas/trofeus_dom", self._sala_dom)
+            self.suite.run("casas/placa", self._placa)
+            self.suite.run("casas/trofeus_tacas", self._tacas)
         except Abort:
             pass
 

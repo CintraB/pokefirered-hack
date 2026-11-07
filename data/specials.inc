@@ -493,4 +493,9 @@ gSpecials::
 	@ Pescador da Rota 19 (POK-51)
 	def_special GetKrabbySizeRecordInfo
 	def_special CompareKrabbySize
+	@ Sala de troféus (POK-51)
+	def_special SalaTrofeus_Taca
+	def_special SalaTrofeus_Placa
+	def_special SalaTrofeus_PlacaHall
+	def_special SalaTrofeus_Curador
 gSpecialsEnd::
