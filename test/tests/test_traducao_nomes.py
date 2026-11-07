@@ -42,7 +42,9 @@ NEW_KEYS = {"src/data/text/trainer_class_names.h": {"TRAINER_CLASS_ROCKET_ADMIN"
             # golpes novos de Fada (POK-45): nome oficial do GO, abreviado como no glossário
             "src/data/text/move_names.h": {"MOVE_MOONBLAST": "Expl. Lunar", "MOVE_PLAY_ROUGH": "Jogo Duro",
                                            "MOVE_DAZZLING_GLEAM": "Clarão Desl.", "MOVE_DRAINING_KISS": "Beijo Dren.",
-                                           "MOVE_FAIRY_WIND": "Vento Fada", "MOVE_DISARMING_VOICE": "Voz Desarm."}}
+                                           "MOVE_FAIRY_WIND": "Vento Fada", "MOVE_DISARMING_VOICE": "Voz Desarm.",
+                                           # POK-54: os golpes da Gen 4 (R1)
+                                           "MOVE_DRAGON_RUSH": "Inv. Dragão", "MOVE_DARK_VOID": "Vazio Negro"}}
 BERRY_NAME_LENGTH = 6          # include/global.berry.h
 POPUP_PX = 112                 # aviso de nome do mapa: maxWidth (src/map_name_popup.c:195)
 

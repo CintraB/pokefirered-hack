@@ -14,9 +14,25 @@ Pokémon delas funciona nas telas de verdade. Sessão própria da ROM de teste a
   nv 48 vira GARCHOMP; Garchomp e Darkrai nv 100 não evoluem;
 - `especies/creche`: BREED_SETUP Garchomp + Ditto → compatível, e BREED_EGGS 8 → 8 ovos de GIBLE; Gabite +
   Charizard (Monstro) → compatível; Darkrai + Ditto → 0 (grupo Indescoberto);
-- `especies/batalha` (último: a batalha fica aberta): SET_LEAD_LOOK Garchomp shiny e START_WILD_BATTLE Darkrai nv 50.
-  No menu de ação, as espécies de gBattleMons são as duas → `especie_batalha_darkrai` (frente do Darkrai e costas
-  shiny do Garchomp).
+- `especies/batalha`: SET_LEAD_LOOK Garchomp shiny e START_WILD_BATTLE Darkrai nv 50. No menu de ação, as
+  espécies de gBattleMons são as duas → `especie_batalha_darkrai` (frente do Darkrai e costas shiny do Garchomp).
+
+Golpes e habilidade da Task 5 (cada caso volta ao savestate `golpes_base`, tirado depois do resto, com o aviso das
+conquistas em silêncio). As duplas são contra as Gêmeas Eli & Anne (START_TRAINER_BATTLE), com aiSmart forçado a 1
+na RAM e sem itens (como `ia/dupla`); o 2º Pokémon do jogador é um Squirtle nv 35 só com Growl:
+
+- `golpes/dark_void_dupla`: Darkrai nv 80 com Dark Void (SET_PARTY_MOVE). Do savestate do menu do 1º turno, até 5
+  tentativas com sementes diferentes em gRngValue (precisão 80%: as 5 falham com ~0,6%); passa na 1ª em que os dois
+  adversários ficam com STATUS1_SLEEP em gBattleMons → `golpe_dark_void` e savestate `golpes_dormindo`;
+- `golpes/bad_dreams_dupla`: de `golpes_dormindo`, os 2 adversários dormindo (sono 5 na RAM): o fim do turno tira
+  exatamente max(1, PS máximo / 8) de cada um, com 2 mensagens "… é atormentado pelo pesadelo!";
+- `golpes/bad_dreams_aliado`: o Squirtle dormindo (status na RAM) não perde PS; os adversários perdem;
+- `golpes/bad_dreams_acordado`: o adversário da direita acordado não perde PS; o da esquerda, dormindo, perde;
+- `golpes/bad_dreams_desmaiado`: Darkrai com 1 PS e tempestade de areia permanente (RAM): a areia o derruba no fim do
+  turno, antes das habilidades; os adversários dormindo perdem só o 1/16 da areia, sem o Bad Dreams;
+- `golpes/dark_void_so_darkrai`: Mewtwo com Dark Void → "Mas falhou!", ninguém dorme e o PP cai de 10 para 9;
+- `golpes/dragon_rush`: Garchomp nv 60 com Dragon Rush contra um Snorlax selvagem nv 50: o menu de golpes mostra
+  "Inv. Dragão" (gMoveNames e tela `golpe_menu_garchomp`) e o golpe sai sem travar (gLastMoves).
 
 Telas em OUT/telas/<ponto>.png, comparadas com test/referencias/COMUM/ (diferença é só aviso).
 
@@ -28,19 +44,23 @@ Numa janela, em tempo real: `make test-watch CENARIO=especies`.
 import struct
 import sys
 
-from ..battle import BattleDriver
+from ..battle import (ACTION_FIGHT, ACTION_FUNC, BATTLE_MON_HP, BATTLE_MON_PP, BATTLE_MON_SIZE, MENU_TIMEOUT,
+                      MOVE_FUNC_SUFFIX, BattleDriver)
+from ..breeding import header_defines
 from ..breeding import BATCH, PARENT_FORMAT, PROBES_FORMAT, RECORD_SIZE, Parent, unpack_records
-from ..emu import KEY_B, KEY_RIGHT
+from ..emu import KEY_A, KEY_B, KEY_RIGHT
+from ..game import POKEMON_SIZE
 from ..field_menu import STARTMENU_POKEMON
 from ..hooks import (CMD_BREED_EGGS, CMD_BREED_SETUP, CMD_START_WILD_BATTLE, EVO_MODE_NORMAL, NO_RESULT,
                      PSS_PAGE_EVOLUTION, PSS_PAGE_INFO, PSS_PAGE_IVS, PSS_PAGE_MOVES, PSS_PAGE_SKILLS, Mailbox)
-from . import ScenarioContext
+from . import REPO_ROOT, ScenarioContext
 from .base import Abort
 from .full_breeding import FRAMES_PER_EGG_LIMIT, GENDER_CODE
+from .full_ia_chefes import BS_AI_SMART, MON_MAX_HP, MON_STATUS1, PARTY_HP, TWINS
 from .full_summary_evolution import PARTY_CHOOSE_TASK, SETTLE, SummaryEvolutionScenario
 
 SCREEN_POINTS = ("especie_resumo_garchomp", "especie_resumo_darkrai", "especie_icones_equipe",
-                 "especie_batalha_darkrai")
+                 "especie_batalha_darkrai", "golpe_dark_void", "golpe_menu_garchomp")
 # o time do resumo e dos ícones: (espécie, nível); os níveis ficam abaixo dos golpes novos da Task 5
 TEAM = (("SPECIES_GIBLE", 20), ("SPECIES_GABITE", 30), ("SPECIES_GARCHOMP", 30), ("SPECIES_DARKRAI", 50))
 SUMMARY_SHOTS = {"SPECIES_GARCHOMP": "especie_resumo_garchomp", "SPECIES_DARKRAI": "especie_resumo_darkrai"}
@@ -58,6 +78,18 @@ PAIRS = ((Parent("SPECIES_GARCHOMP", "M", 0), DITTO, True),
 EGGS = 8
 LEAD = ("SPECIES_GARCHOMP", 30)
 WILD = ("SPECIES_DARKRAI", 50)
+
+# --- golpes e habilidade (Task 5) ---
+DARKRAI_LEVEL, PARTNER, PARTNER_LEVEL = 80, "SPECIES_SQUIRTLE", 35
+SEEDS = (0x5EED0001, 0x13579BDF, 0x2468ACE0, 0x0BADF00D, 0x7F4A7C15)   # 5 tentativas do Dark Void (80% em cada alvo)
+STATUS1_SLEEP_MASK, SLEEP5 = 0x07, 5
+B_WEATHER_SANDSTORM = (1 << 3) | (1 << 4)   # TEMPORARY | PERMANENT: sem duração
+DRAGON_RUSH_LEVEL, DRAGON_RUSH_WILD = 60, ("SPECIES_SNORLAX", 50)
+MOVE_NAME_BYTES = 13                 # MOVE_NAME_LENGTH + 1
+BATTLE_STRING_BYTES = 300            # gDisplayedStringBattle[300]
+BAD_DREAMS_TEXT = "atormentado pelo pesadelo"
+TURN_TIMEOUT = 6000
+FOES = (1, 3)                        # posições dos adversários em dupla
 
 
 class EspeciesScenario(SummaryEvolutionScenario):
@@ -77,9 +109,220 @@ class EspeciesScenario(SummaryEvolutionScenario):
                              "volta ao menu START", tries=6, wait=120)
         self.menu.close_start_menu()
 
+    # --- batalha (golpes da Task 5) -------------------------------------------------
+    def _sym(self, name: str) -> int:
+        return self.game.syms.addr(name)
+
+    def _mon(self, battler: int) -> int:
+        return self._sym("gBattleMons") + battler * BATTLE_MON_SIZE
+
+    def _hp(self, battler: int) -> int:
+        return self.emu.read_u16(self._mon(battler) + BATTLE_MON_HP)
+
+    def _max_hp(self, battler: int) -> int:
+        return self.emu.read_u16(self._mon(battler) + MON_MAX_HP)
+
+    def _status1(self, battler: int) -> int:
+        return self.emu.read_u32(self._mon(battler) + MON_STATUS1)
+
+    def _set_status1(self, battler: int, status1: int) -> None:
+        self.emu.write(self._mon(battler) + MON_STATUS1, struct.pack("<I", status1))
+
+    def _set_hp(self, battler: int, hp: int) -> None:
+        """PS em gBattleMons e no time do jogador (batalhador do jogador: 0 ou 2)."""
+        self.emu.write(self._mon(battler) + BATTLE_MON_HP, struct.pack("<H", hp))
+        slot = self.emu.read_u16(self._sym("gBattlerPartyIndexes") + 2 * battler)
+        self.emu.write(self._sym("gPlayerParty") + slot * POKEMON_SIZE + PARTY_HP, struct.pack("<H", hp))
+
+    def _func(self, battler: int) -> str:
+        ptr = self.emu.read_u32(self._sym("gBattlerControllerFuncs") + 4 * battler)
+        return self.game.syms.name_at(ptr & ~1) or ""
+
+    def _battle_text(self) -> str:
+        raw = self.emu.read(self._sym("gDisplayedStringBattle"), BATTLE_STRING_BYTES)
+        return self.game.charmap.decode(raw.split(b"\xff")[0])
+
+    def _double_turn(self) -> list[str]:
+        """Um turno de dupla: os dois Pokémon do jogador escolhem LUTAR e o golpe 0 (Dark Void e Growl miram os dois
+        adversários, sem tela de alvo). Devolve as mensagens de batalha vistas (sem repetição seguida)."""
+        for battler in (0, 2):
+            self.ctl.wait_until(lambda: self._func(battler) == ACTION_FUNC, TURN_TIMEOUT,
+                                f"menu de ação do Pokémon {battler}")
+            self.emu.frames(4)
+            cursor = self.emu.read_u8(self._sym("gActionSelectionCursor") + battler)
+            assert cursor == ACTION_FIGHT, f"cursor de ação do Pokémon {battler} em {cursor}"
+            self._press(KEY_A)
+            self.ctl.wait_until(lambda: self._func(battler) != ACTION_FUNC, MENU_TIMEOUT,
+                                f"saída do menu de ação do Pokémon {battler}")
+            self.emu.frames(4)
+            if not self._func(battler).endswith(MOVE_FUNC_SUFFIX):
+                continue
+            cursor = self.emu.read_u8(self._sym("gMoveSelectionCursor") + battler)
+            assert cursor == 0, f"cursor de golpe do Pokémon {battler} em {cursor}"
+            self._press(KEY_A)
+            self.ctl.wait_until(lambda: not self._func(battler).endswith(MOVE_FUNC_SUFFIX), 60,
+                                f"saída do menu de golpes do Pokémon {battler}")
+        seen: list[str] = []
+
+        def watch() -> None:
+            text = self._battle_text()
+            if text and (not seen or seen[-1] != text):
+                seen.append(text)
+        # sem substituto para um desmaiado, só o outro Pokémon do jogador volta ao menu de ação
+        result = self.driver._advance_until_menu_or_end(
+            "fim do turno duplo", TURN_TIMEOUT, on_step=watch, stop=lambda: self._func(2) == ACTION_FUNC)
+        assert result in ("menu", "stop"), f"a batalha acabou no turno ({result}); mensagens {seen}"
+        self.emu.frames(10)
+        return seen
+
+    def _double_battle(self, lead: str) -> None:
+        """Do savestate `golpes_base`: `lead` nv 80 com Dark Void + Squirtle nv 35 com Growl contra as Gêmeas."""
+        self.ctl.restore("golpes_base")
+        self.emu.frames(12)
+        self.box.set_party_mon(0, self._sp(lead), DARKRAI_LEVEL)
+        self.box.set_party_move(0, 0, self.moves["MOVE_DARK_VOID"])
+        self.box.set_party_mon(1, self._sp(PARTNER), PARTNER_LEVEL)
+        self.box.set_party_move(1, 0, self.moves["MOVE_GROWL"])
+        assert self.box.party_size(2) == 2
+        self.box.start_trainer_battle(self.consts._eval(TWINS))
+        self.driver = BattleDriver(self.ctl)
+        self.driver.wait_action_menu(TURN_TIMEOUT)
+        self.emu.frames(10)
+        assert self.driver.battle_type_flags() & 1, "a batalha das Gêmeas não é dupla"
+        self.emu.write(self.emu.read_u32(self._sym("gBattleStruct")) + BS_AI_SMART, b"\x01")   # como em ia/dupla
+        assert self.box.ai_smart_state()[0]
+        self.box.set_trainer_items()
+        assert self.driver.battler_species_level(0) == (self._sp(lead), DARKRAI_LEVEL)
+
+    def _bad_dreams_count(self, seen: list[str]) -> int:
+        return sum(BAD_DREAMS_TEXT in t.replace("\n", " ") for t in seen)
+
+    def _dark_void_double(self) -> str:
+        self._double_battle("SPECIES_DARKRAI")
+        self.ctl.checkpoint("golpes_dark_void_menu")
+        tries = []
+        for i, seed in enumerate(SEEDS):
+            if i:
+                self.ctl.restore("golpes_dark_void_menu")
+                self.emu.frames(4)
+            self.emu.write(self._sym("gRngValue"), struct.pack("<I", seed))
+            self._double_turn()
+            asleep = [bool(self._status1(b) & STATUS1_SLEEP_MASK) for b in FOES]
+            tries.append(asleep)
+            if all(asleep):
+                path = self._shot("golpe_dark_void")
+                self._pause_to_read()
+                self.ctl.checkpoint("golpes_dormindo")
+                return f"tentativa {i + 1}: os dois adversários dormem (tentativas {tries}; tela {path})"
+        raise AssertionError(f"em {len(SEEDS)} tentativas os dois nunca dormiram juntos: {tries}")
+
+    def _from_asleep(self) -> None:
+        """Menu do 2º turno com os dois adversários dormindo (sono 5: não acordam neste turno)."""
+        self.ctl.restore("golpes_dormindo")
+        self.emu.frames(4)
+        for b in FOES:
+            self._set_status1(b, SLEEP5)
+
+    @staticmethod
+    def _eighth(max_hp: int) -> int:
+        return max(1, max_hp // 8)
+
+    def _bad_dreams_double(self) -> str:
+        self._from_asleep()
+        before = {b: (self._hp(b), self._max_hp(b)) for b in FOES}
+        seen = self._double_turn()
+        got = {b: before[b][0] - self._hp(b) for b in FOES}
+        want = {b: self._eighth(before[b][1]) for b in FOES}
+        assert got == want, f"PS perdido {got}, esperado {want} (antes {before}); mensagens {seen}"
+        assert self._bad_dreams_count(seen) == 2, f"mensagens do Bad Dreams: {seen}"
+        return f"cada adversário perdeu max(1, PS/8): {got} (PS máximo {[before[b][1] for b in FOES]})"
+
+    def _bad_dreams_ally(self) -> str:
+        self._from_asleep()
+        self._set_status1(2, SLEEP5)
+        ally = self._hp(2)
+        before = {b: self._hp(b) for b in FOES}
+        seen = self._double_turn()
+        assert self._status1(2) & STATUS1_SLEEP_MASK, "o Squirtle acordou (o teste não vale)"
+        assert self._hp(2) == ally, f"o aliado dormindo perdeu PS: {ally} → {self._hp(2)}; mensagens {seen}"
+        lost = {b: before[b] - self._hp(b) for b in FOES}
+        assert all(v > 0 for v in lost.values()), f"contraprova: os adversários não perderam PS {lost}"
+        assert self._bad_dreams_count(seen) == 2, f"mensagens do Bad Dreams: {seen}"
+        return f"Squirtle dormindo ficou com {ally} PS; adversários perderam {lost}"
+
+    def _bad_dreams_awake(self) -> str:
+        self._from_asleep()
+        self._set_status1(3, 0)
+        # o Dark Void do turno poria o acordado para dormir de novo: o Darkrai fica sem agir (congelado, sem degelo
+        # no turno: o sorteio de 20% é refeito com a semente fixa e conferido abaixo)
+        self.emu.write(self._sym("gRngValue"), struct.pack("<I", SEEDS[0]))
+        self._set_status1(0, 1 << 5)
+        before = {b: self._hp(b) for b in FOES}
+        seen = self._double_turn()
+        assert self._status1(0) & (1 << 5), f"o Darkrai descongelou e agiu (o teste não vale): {seen}"
+        assert not self._status1(3) & STATUS1_SLEEP_MASK, f"o adversário da direita dormiu: {seen}"
+        assert self._hp(3) == before[3], f"adversário acordado perdeu PS: {before[3]} → {self._hp(3)}; {seen}"
+        assert before[1] - self._hp(1) == self._eighth(self._max_hp(1)), "contraprova: o que dorme não perdeu 1/8"
+        assert self._bad_dreams_count(seen) == 1, f"mensagens do Bad Dreams: {seen}"
+        return f"acordado: {before[3]} → {self._hp(3)} PS; dormindo: {before[1]} → {self._hp(1)}"
+
+    def _bad_dreams_fainted(self) -> str:
+        self._from_asleep()
+        self._set_hp(0, 1)
+        self.emu.write(self._sym("gBattleWeather"), struct.pack("<H", B_WEATHER_SANDSTORM))
+        before = {b: (self._hp(b), self._max_hp(b)) for b in FOES}
+        seen = self._double_turn()
+        assert self._hp(0) == 0, f"o Darkrai não desmaiou: {self._hp(0)} PS; {seen}"
+        got = {b: before[b][0] - self._hp(b) for b in FOES}
+        want = {b: max(1, before[b][1] // 16) for b in FOES}
+        assert got == want, f"PS perdido {got}, esperado só a areia {want}; {seen}"
+        assert self._bad_dreams_count(seen) == 0, f"Bad Dreams depois do desmaio: {seen}"
+        return f"Darkrai caiu na areia; adversários perderam só a areia {got}"
+
+    def _dark_void_only_darkrai(self) -> str:
+        self._double_battle("SPECIES_MEWTWO")
+        pp = lambda: self.emu.read_u8(self._mon(0) + BATTLE_MON_PP)
+        assert pp() == 10, f"PP do Dark Void no Mewtwo: {pp()}"
+        seen = self._double_turn()
+        assert "Mas falhou!" in seen, f"sem 'Mas falhou!': {seen}"
+        asleep = [self._status1(b) & STATUS1_SLEEP_MASK for b in FOES]
+        assert asleep == [0, 0], f"adversários dormindo: {asleep}"
+        assert pp() == 9, f"PP do Dark Void no Mewtwo depois: {pp()}"
+        return f"Mewtwo: 'Mas falhou!', ninguém dorme, PP 10 → 9 (mensagens {seen})"
+
+    def _dragon_rush(self) -> str:
+        self.ctl.restore("golpes_base")
+        self.emu.frames(12)
+        garchomp, (wild, wild_level) = self._sp("SPECIES_GARCHOMP"), DRAGON_RUSH_WILD
+        self.box.set_party_mon(0, garchomp, DRAGON_RUSH_LEVEL)
+        self.box.set_party_move(0, 0, self.moves["MOVE_DRAGON_RUSH"])
+        assert self.box.party_size(1) == 1
+        raw = self.emu.read(self._sym("gMoveNames") + self.moves["MOVE_DRAGON_RUSH"] * MOVE_NAME_BYTES,
+                            MOVE_NAME_BYTES)
+        name = self.game.charmap.decode(raw.split(b"\xff")[0])
+        assert name == "Inv. Dragão", f"nome do golpe na ROM: {name!r}"
+        assert self.box.call(CMD_START_WILD_BATTLE, self._sp(wild), wild_level) == 1, "START_WILD_BATTLE"
+        d = self.driver = BattleDriver(self.ctl)
+        d.wait_action_menu(TURN_TIMEOUT)
+        assert d.battler_species_level(0) == (garchomp, DRAGON_RUSH_LEVEL)
+        d._choose_action(ACTION_FIGHT)
+        in_moves = lambda: d.controller_func().endswith(MOVE_FUNC_SUFFIX)
+        self.ctl.wait_until(in_moves, MENU_TIMEOUT, "menu de golpes")
+        self.emu.frames(SETTLE * 2)
+        path = self._shot("golpe_menu_garchomp")
+        self._pause_to_read()
+        d._select_grid("gMoveSelectionCursor", 0, "golpe")
+        self._press(KEY_A)
+        self.ctl.wait_until(lambda: not in_moves(), 60, "saída do menu de golpes")
+        result = d._advance_until_menu_or_end("fim do turno do Dragon Rush", TURN_TIMEOUT)
+        last = self.emu.read_u16(self._sym("gLastMoves"))
+        assert last == self.moves["MOVE_DRAGON_RUSH"], f"último golpe do Garchomp: {last}"
+        return f"menu com '{name}' (tela {path}); Dragon Rush usado, o turno terminou em '{result}'"
+
     # --- passos --------------------------------------------------------------------
     def _start(self) -> str:
         self.box = Mailbox(self.ctl)
+        self.moves = header_defines(REPO_ROOT, "moves.h")
         self._title_to_continue("tela de título da build de teste", shot="especies_continue")
         assert self.game.party(), "save sem Pokémon no time"
         for slot, (species, level) in enumerate(TEAM):
@@ -167,6 +410,8 @@ class EspeciesScenario(SummaryEvolutionScenario):
         return "; ".join(out)
 
     def _battle(self) -> str:
+        self.box.conq_silencio(True)          # R6: o aviso das conquistas pausaria o campo nos casos golpes/*
+        self.ctl.checkpoint("golpes_base")    # campo, antes da batalha: ponto de partida dos casos golpes/*
         lead = self.box.set_lead_look(self._sp(LEAD[0]), LEAD[1], shiny=True)
         assert lead["especie"] == self._sp(LEAD[0]) and lead["shiny"], f"SET_LEAD_LOOK: {lead}"
         species, level = WILD
@@ -189,7 +434,19 @@ class EspeciesScenario(SummaryEvolutionScenario):
             self._flow("especies/icones: o menu da equipe com as 4", self._icons)
             self.suite.run("especies/evolucao: Gible no 24 e Gabite no 48", self._evolution)
             self.suite.run("especies/creche: o Gible nasce do ovo; o Darkrai não cruza", self._daycare)
-            self._flow("especies/batalha: Darkrai selvagem contra o Garchomp shiny", self._battle)
+            self.suite.run("especies/batalha: Darkrai selvagem contra o Garchomp shiny", self._battle)
+            if self.suite.run("golpes/dark_void_dupla: o Darkrai põe os dois adversários para dormir",
+                              self._dark_void_double).status != "falha":
+                self.suite.run("golpes/bad_dreams_dupla: o fim do turno tira 1/8 de cada adversário dormindo",
+                               self._bad_dreams_double)
+                self.suite.run("golpes/bad_dreams_aliado: aliado dormindo não perde PS", self._bad_dreams_ally)
+                self.suite.run("golpes/bad_dreams_acordado: adversário acordado não perde PS",
+                               self._bad_dreams_awake)
+                self.suite.run("golpes/bad_dreams_desmaiado: Darkrai desmaiado no turno não fere ninguém",
+                               self._bad_dreams_fainted)
+            self.suite.run("golpes/dark_void_so_darkrai: na mão do Mewtwo o Dark Void falha",
+                           self._dark_void_only_darkrai)
+            self.suite.run("golpes/dragon_rush: Garchomp com Inv. Dragão no menu, o golpe sai", self._dragon_rush)
         except Abort:
             pass
 

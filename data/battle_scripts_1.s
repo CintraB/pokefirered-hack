@@ -285,6 +285,7 @@ BattleScript_MoveMissed::
 	goto BattleScript_MoveEnd
 
 BattleScript_EffectSleep::
+	jumpifdarkvoidfails BattleScript_ButItFailedAtkStringPpReduce  @ POK-54: Dark Void só na mão do Darkrai
 	attackcanceler
 	attackstring
 	ppreduce
@@ -3948,6 +3949,20 @@ BattleScript_RainDishActivates::
 	orword gHitMarker, HITMARKER_IGNORE_SUBSTITUTE
 	healthbarupdate BS_ATTACKER
 	datahpupdate BS_ATTACKER
+	end3
+
+@ POK-54, Bad Dreams: AbilityBattleEffects (fim do turno) já pôs o 1º adversário dormindo em gBattlerTarget, com
+@ 1/8 do PS máximo em gBattleMoveDamage; jumpifbaddreamsnexttarget passa ao seguinte, se houver.
+BattleScript_BadDreamsActivates::
+	printstring STRINGID_BADDREAMS
+	waitmessage B_WAIT_TIME_LONG
+	orword gHitMarker, HITMARKER_IGNORE_SUBSTITUTE | HITMARKER_PASSIVE_DAMAGE
+	healthbarupdate BS_TARGET
+	datahpupdate BS_TARGET
+	tryfaintmon BS_TARGET
+	jumpifbaddreamsnexttarget BattleScript_BadDreamsActivates
+	checkteamslost BattleScript_BadDreamsEnd
+BattleScript_BadDreamsEnd::
 	end3
 
 BattleScript_SandstreamActivates::

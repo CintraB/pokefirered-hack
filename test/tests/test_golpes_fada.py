@@ -105,8 +105,8 @@ def test_animacoes():
     texto = _ler("data/battle_anim_scripts.s")
     tabela = re.search(r"gBattleAnims_Moves::\n(.*?)\n\n", texto, re.S).group(1)
     alvos = re.findall(r"^\t\.4byte (\w+)", tabela, re.M)
-    assert len(alvos) == 361
-    assert alvos[-6:] == [n.replace("MOVE_", "Move_") for n in NOVOS]
+    assert len(alvos) == 363                             # + Dragon Rush e Dark Void no fim (POK-54)
+    assert alvos[355:361] == [n.replace("MOVE_", "Move_") for n in NOVOS]
     for n in NOVOS:
         assert re.search(rf"^{n.replace('MOVE_', 'Move_')}:\n", texto, re.M), n
 

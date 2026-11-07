@@ -13,6 +13,8 @@ GEN6 = json.loads((REPO_ROOT / "tools" / "gen6" / "gen6.json").read_text(encodin
 BATTLE_MOVES = (REPO_ROOT / "src" / "data" / "battle_moves.h").read_text(encoding="utf-8")
 POKEMON_H = (REPO_ROOT / "include" / "pokemon.h").read_text(encoding="utf-8")
 CATEGORIAS = {"PHYSICAL", "SPECIAL", "STATUS"}
+# POK-54: os golpes da Gen 4 depois do snapshot da Gen 6 (que cobre 1..360), com a categoria da Platinum
+EXTRAS_POK54 = {"MOVE_DRAGON_RUSH": "PHYSICAL", "MOVE_DARK_VOID": "STATUS"}
 
 
 def _entradas() -> dict[str, str]:
@@ -36,13 +38,14 @@ def test_snapshot_completo():
 
 def test_categoria_de_cada_golpe():
     entradas = _entradas()
-    assert len(entradas) == len(GEN6["categories"]) + 1          # MOVE_NONE + 1..MOVES_COUNT-1
+    categorias = GEN6["categories"] | EXTRAS_POK54
+    assert len(entradas) == len(categorias) + 1 == 363          # MOVE_NONE + 1..MOVES_COUNT-1 (362 golpes)
     errados = {}
     for nome, corpo in entradas.items():
         if nome == "MOVE_NONE":
             continue
         achado = re.findall(r"\.category = (MOVE_CATEGORY_\w+),", corpo)
-        esperado = f"MOVE_CATEGORY_{GEN6['categories'][nome]}"
+        esperado = f"MOVE_CATEGORY_{categorias[nome]}"
         if achado != [esperado]:
             errados[nome] = (achado, esperado)
     assert errados == {}
