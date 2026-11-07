@@ -471,16 +471,16 @@ def converter_icone(nome, fontes=CACHE, retoques=None, repo=REPO):
 # Pegada
 # =====================================================================================================================
 def converter_pegada(nome, fontes=CACHE):
-    """16x16, 1 bit: 1 = pegada (pixel opaco e escuro da fonte)."""
+    """16x16, 1 bit, na convenção do jogo: fundo branco (1) e pegada preta (0, pixel opaco e escuro da fonte)."""
     im = Image.open(Path(fontes) / "pegadas" / f"{ESPECIES[nome]}.png").convert("RGBA")
     if im.size != (16, 16):
         raise ValueError(f"{nome}: pegada {im.size}, esperado 16x16")
     px = im.load()
-    out = Image.new("1", (16, 16), 0)
+    out = Image.new("1", (16, 16), 1)
     for y in range(16):
         for x in range(16):
             r, g, b, a = px[x, y]
-            out.putpixel((x, y), 1 if a >= 128 and lum((r, g, b)) < 128 else 0)
+            out.putpixel((x, y), 0 if a >= 128 and lum((r, g, b)) < 128 else 1)
     return out
 
 
@@ -771,7 +771,7 @@ def folha(saida, raiz=REPO):
         n = json.loads((raiz / COORD_JSON).read_text())[nome]["icone_paleta"]
         pal_ic = ler_jasc(raiz / ICON_PALS / f"icon_palette_{n}.pal")
         icone = recolorir(pasta / "icon.png", pal_ic)
-        pegada = Image.open(pasta / "footprint.png").convert("L").point(lambda v: 0 if v else 255).convert("RGBA")
+        pegada = Image.open(pasta / "footprint.png").convert("RGBA")  # como o jogo: 0 = preto, 1 = branco
         linhas.append([recolorir(pasta / "front.png", normal), recolorir(pasta / "back.png", normal),
                        recolorir(pasta / "front.png", shiny), recolorir(pasta / "back.png", shiny),
                        icone.crop((0, 0, 32, 32)), icone.crop((0, 32, 32, 64)), pegada])

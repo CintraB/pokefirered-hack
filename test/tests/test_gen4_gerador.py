@@ -192,7 +192,26 @@ def test_pegada(nome):
     im = Image.open(MON / nome / "footprint.png")
     assert im.size == (16, 16)
     assert im.mode == "1", f"{nome}: pegada tem de ser 1 bit"
-    assert 0 < sum(1 for v in im.convert("L").tobytes() if v) < 256, f"{nome}: pegada vazia ou cheia"
+    pegada = sum(1 for v in im.convert("L").tobytes() if v == 0)
+    assert 0 < pegada < 256, f"{nome}: pegada vazia ou cheia"
+
+
+@pytest.mark.parametrize("nome", NOMES)
+def test_pegada_na_convencao_do_jogo(nome):
+    # as pegadas do jogo têm fundo branco (1) e pé preto (0); o canto (0, 0) é fundo em todas
+    for referencia in ("bagon", "salamence", "gengar"):
+        ref = Image.open(MON / referencia / "footprint.png")
+        assert ref.mode == "1" and ref.getpixel((0, 0)) == 255, referencia
+    im = Image.open(MON / nome / "footprint.png")
+    assert im.getpixel((0, 0)) == 255, f"{nome}: fundo da pegada com a cor trocada"
+    if (CACHE / "pegadas").is_dir():
+        # o pé (pixel opaco e escuro da fonte) é exatamente o conjunto dos pixels pretos
+        g = _gerador()
+        fonte = Image.open(CACHE / "pegadas" / f"{g.ESPECIES[nome]}.png").convert("RGBA")
+        pe = {(x, y) for y in range(16) for x in range(16)
+              if fonte.getpixel((x, y))[3] >= 128 and g.lum(fonte.getpixel((x, y))) < 128}
+        pretos = {(x, y) for y in range(16) for x in range(16) if im.getpixel((x, y)) == 0}
+        assert pretos == pe, f"{nome}: pegada invertida ou diferente da fonte"
 
 
 def test_gritos():
@@ -220,8 +239,12 @@ def test_trocas_documentadas():
             for golpe in dados["especies"][nome][chave]:
                 assert golpe in existentes, f"{nome}.{chave}: {golpe}"
     for gen4, jogo in trocas.items():
-        assert "MOVE_" + gen4.upper().replace("-", "_") not in existentes, f"troca de {gen4}, que já existe"
         assert jogo in existentes or jogo in novos, f"troca {gen4} -> {jogo}"
+        if jogo in novos:
+            # golpe novo deste plano: vale antes e depois de a Task 2 criá-lo no moves.h
+            assert jogo == "MOVE_" + gen4.upper().replace("-", "_"), f"troca {gen4} -> {jogo}"
+            continue
+        assert "MOVE_" + gen4.upper().replace("-", "_") not in existentes, f"troca de {gen4}, que já existe"
     if not (CACHE / "csv").is_dir():
         return
     g = _gerador()
