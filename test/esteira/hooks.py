@@ -570,7 +570,6 @@ CMD_DEX_COMPLETA = 0x142  # arg0 = número nacional interno (0 = nenhum), só le
 CMD_FAMILIA_CHEFE_CAIU = 0x143  # -> ocupação | estado << 8 | (FLAG_FAMILIA_CAPTURADO_n no bit n - 1) << 16: FamiliaSombra_ChefeCaiu (gBattleOutcome decide a captura)
 CMD_DOSSIE_ABRIR = 0x144   # -> 1: o dossiê pelo special Dossie_Abrir num script de campo (0xFFFFFFFF = special fora de gSpecials)
 CMD_DOSSIE_ESTADO = 0x145  # -> página | total << 8 | chefe da página << 16 | carimbo << 24 | pronta << 31 (0xFFFFFFFF = fechada)
-CMD_ESCAPE_WARP = 0x146    # arg0 = grupo | mapa << 8, arg1 = x | y << 16 (16 bits: y >= 128 vale) -> 1: warp pelo escape warp (Corda de Fuga, Cavar)
 
 # --- Hack 6: breeding genético (enum à parte em include/test_hooks.h, a partir de 0x60; ------
 # o uso fica em esteira/breeding.py e scenarios/full_breeding.py / full_egg.py)

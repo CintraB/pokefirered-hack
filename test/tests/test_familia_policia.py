@@ -487,8 +487,17 @@ def test_jenny_nunca_pisa_no_jogador():
     assert "call_if_eq VAR_TEMP_5, 150, Route23_EventScript_JennyVoltaDeFora" in cena
 
 
-def test_atalho_escape_warp_no_cabecalho():
-    h = (REPO_ROOT / "include/test_hooks.h").read_text(encoding="utf-8")
-    assert re.search(r"TEST_CMD_ESCAPE_WARP,\s*// = 0x146:", h)
-    c = (REPO_ROOT / "src/test_hooks.c").read_text(encoding="utf-8")
-    assert "case TEST_CMD_ESCAPE_WARP:" in c and "gSaveBlock1Ptr->escapeWarp.y = xy >> 16;" in c
+def test_escape_warp_com_coordenadas_de_16_bits():
+    """A Corda de Fuga e o Cavar gravam o escape warp (x, y) do prédio da Rota 23 (y = 150, acima de 127): os parâmetros de
+    coordenada das funções de warp são s16, como o struct WarpData; com s8 o y virava -106 e o jogador ia para o meio do mapa."""
+    h = (REPO_ROOT / "include/overworld.h").read_text(encoding="utf-8")
+    c = (REPO_ROOT / "src/overworld.c").read_text(encoding="utf-8")
+    for nome in ("SetWarpDestination", "SetDynamicWarpWithCoords", "SetFixedDiveWarp", "SetFixedHoleWarp", "SetEscapeWarp"):
+        assert re.search(rf"void {nome}\([^)]*s16 x, s16 y\);", h), nome
+        assert re.search(rf"void {nome}\([^)]*s16 x, s16 y\)\n\{{", c), nome
+    assert re.search(r"static void SetWarpData\([^)]*s16 x, s16 y\)", c)
+    assert re.search(r"static void SetContinueGameWarp\([^)]*s16 x, s16 y\)", c)
+    assert not re.search(r"Set\w*Warp\w*\([^)]*s8 x, s8 y\)", c + h)
+    glob = (REPO_ROOT / "include/global.h").read_text(encoding="utf-8")
+    assert re.search(r"struct WarpData\s*\{[^}]*s16 x, y;", glob)
+    assert "TEST_CMD_ESCAPE_WARP" not in (REPO_ROOT / "include/test_hooks.h").read_text(encoding="utf-8")

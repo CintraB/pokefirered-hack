@@ -63,13 +63,13 @@ void IncrementGameStat(u8 index);
 void SetObjEventTemplateCoords(u8, s16, s16);
 void SetObjEventTemplateMovementType(u8, u8);
 
-void SetWarpDestination(s8 mapGroup, s8 mapNum, s8 warpId, s8 x, s8 y);
+void SetWarpDestination(s8 mapGroup, s8 mapNum, s8 warpId, s16 x, s16 y);
 
 void SetDynamicWarp(s32 unused, s8 mapGroup, s8 mapNum, s8 warpId);
-void SetDynamicWarpWithCoords(s32 unused, s8 mapGroup, s8 mapNum, s8 warpId, s8 x, s8 y);
-void SetFixedDiveWarp(s8 mapGroup, s8 mapNum, s8 warpId, s8 x, s8 y);
-void SetFixedHoleWarp(s8 mapGroup, s8 mapNum, s8 warpId, s8 x, s8 y);
-void SetEscapeWarp(s8 mapGroup, s8 mapNum, s8 warpId, s8 x, s8 y);
+void SetDynamicWarpWithCoords(s32 unused, s8 mapGroup, s8 mapNum, s8 warpId, s16 x, s16 y);
+void SetFixedDiveWarp(s8 mapGroup, s8 mapNum, s8 warpId, s16 x, s16 y);
+void SetFixedHoleWarp(s8 mapGroup, s8 mapNum, s8 warpId, s16 x, s16 y);
+void SetEscapeWarp(s8 mapGroup, s8 mapNum, s8 warpId, s16 x, s16 y);
 void Overworld_SetHealLocationWarp(u8);
 void SetWarpDestinationToEscapeWarp(void);
 void SetWarpDestinationToLastHealLocation(void);

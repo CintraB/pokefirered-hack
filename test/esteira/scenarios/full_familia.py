@@ -152,7 +152,8 @@ Rodada de correção 1 (revisão da Task 10):
 - `familia/entrega_caixa_cheia`: a caixa atual cheia: os dois vão para a caixa 2 e o aviso diz a caixa que estava cheia;
 - `familia/cena_jenny_sim`: nada a entregar e a resposta é Sim: o dossiê abre no meio da cena, a Jenny volta ao posto e
   o jogador sai livre da porta;
-- `familia/cena_jenny_escape`: chegada por escape warp (atalho ESCAPE_WARP) em (4, 150): a Jenny para em (4, 151);
+- `familia/cena_jenny_corda`: Corda de Fuga de verdade (bolsa) de dentro do prédio: o escape warp (4, 150) chega certo
+  (y >= 128) e a Jenny para em (4, 151);
 - as 3 cenas conferem onde a Jenny está quando a 1ª fala abre (ela já terminou de andar);
 - `familia/continue_rota23_*` conferem que a polícia não aparece no CONTINUAR sem a Família encerrada.
 
@@ -170,11 +171,12 @@ from ..breeding import header_defines
 from ..game import POKEMON_SIZE, SB1_MONEY, mon_checksum_ok
 from .. import conquistas as cq
 from ..emu import KEY_A, KEY_B, KEY_DOWN, KEY_LEFT, KEY_R, KEY_RIGHT, KEY_UP
-from ..hooks import CMD_ESCAPE_WARP, CMD_GIVE_ITEM, CMD_SET_VAR, CMD_START_WILD_BATTLE, CMD_WARP, Mailbox
+from ..hooks import CMD_GIVE_ITEM, CMD_SET_VAR, CMD_START_WILD_BATTLE, CMD_WARP, Mailbox
 from ..nav import Navigator
 from . import REPO_ROOT, ScenarioContext
 from .base import YESNO_TASK, Abort
 from .full_casas import SALA_REDOMAS
+from ..field_menu import STARTMENU_BAG
 from .quick_catch_save import CatchSaveScenario
 
 ESTADO_FECHADO = 0                   # FAMILIA_ESTADO_FECHADO (include/constants/familia_sombra.h)
@@ -218,7 +220,7 @@ AI_TURNS = 3
 # Task 5: o prédio (posições de tools/familia_sombra/predio.json e dos map.json)
 PORTA_FRENTE = (4, 150)              # Rota 23: o tile na frente da porta do prédio (porta em (4, 149))
 PORTA = (4, 149)
-ROTA23_SUL = (10, 126)               # Rota 23: um tile livre ao sul (o atalho WARP só aceita y < 128)
+ROTA23_SUL = (10, 126)               # Rota 23: um tile livre ao sul
 SAIDA_1F = (7, 11)                   # 1º andar: o tapete da saída
 ANTES_DA_ESCADA = (10, 3)            # andares 1-5: o tile à esquerda do warp da escada para cima (11, 3)
 SAIDA_ESCADA_6F = (4, 3)             # 6º andar: onde a escada deixa o jogador; um passo para baixo é o gatilho (4, 4)
@@ -281,6 +283,7 @@ LOCALIDS_POLICIA = (LOCALID_JENNY, LOCALID_POLICIAL_1, LOCALID_POLICIAL_2, LOCAL
 LOCALIDS_CAPANGAS_1F = {1, 2, 3}     # os 3 capangas do 1º andar (os 3 primeiros objetos de Route23_UnusedHouse)
 QUEDA_FIM = 40                       # meio-dia do relógio em que o Pesadelo caiu nos casos do fechamento
 TOTAL_BOXES = 14                     # TOTAL_BOXES_COUNT
+SB1_ESCAPE_WARP = 0x24               # SaveBlock1.escapeWarp (struct WarpData: grupo, mapa, warp, pad, x s16, y s16)
 
 
 def dossie_chefes() -> list[int]:
@@ -2157,23 +2160,53 @@ class FamiliaScenario(CatchSaveScenario):
         self._livre_da_porta()
         return "Sim: dossiê aberto no meio da cena (capa) e fechado com B; a Jenny volta ao posto; o jogador sai da porta"
 
-    def _cena_jenny_escape(self) -> str:
-        """Chegando por um escape warp (Corda de Fuga, Cavar) em (4, 150): a Jenny para em (4, 151) e fala olhando para
-        cima, nunca em cima do jogador; no fim volta ao posto e o jogador sai livre."""
-        self._prep_fim(capturados=(3, 4), time=3)
-        self._warp("MAP_ROUTE23_UNUSED_HOUSE", SAIDA_1F)
+    def _usar_corda_de_fuga(self) -> None:
+        """START > BOLSA > Corda de Fuga > USAR, de verdade, e conduz a mensagem e o warp até a Rota 23."""
+        self.menu.open_start_menu()
+        self.menu.choose(STARTMENU_BAG)
+        self.menu.bag.wait_ready()
+        self.menu.bag.select(self.consts.item("ITEM_ESCAPE_ROPE"))
+        self.menu.bag.use_selected()
         group, num = self.consts.map("MAP_ROUTE23")
-        assert self.box.call(CMD_ESCAPE_WARP, group | num << 8, 4 | 150 << 16) == 1
-        self.ctl.wait_until(lambda: self.game.location() == (group, num), 600, "chegada pelo escape warp")
+        gastos = 0
+        while self.game.location() != (group, num):
+            if gastos > 3000:
+                raise self.ctl.timeout_error("Corda de Fuga até a Rota 23")
+            self.emu.press(KEY_A, hold=2, release=18)
+            gastos += 20
+
+    def _cena_jenny_corda(self) -> str:
+        """Corda de Fuga de verdade, de dentro do prédio (1º andar), com a Família já encerrada: o escape warp gravado ao
+        entrar pela porta ((4, 149), y >= 128) leva o jogador para (4, 150), à frente dela; a Jenny para em (4, 151) e
+        fala olhando para cima, nunca em cima dele; no fim volta ao posto e o jogador sai livre. (Antes os parâmetros de
+        SetEscapeWarp eram s8: y = 150 virava -106 e a Corda deixava o jogador no meio da Rota 23.)"""
+        self._restore("familia_base")
+        self.box.set_flag(self._flag("FLAG_BADGE08_GET"), True)
+        self.box.familia_set(1, ESTADO_ATIVA)
+        self._sair_do_predio()                          # a porta real (ainda aberta): (4, 150), de frente para ela
+        self.nav.go_through_warp("up")                  # entrar grava o escape warp (UpdateEscapeWarp)
+        assert self._at("MAP_ROUTE23_UNUSED_HOUSE"), self.game.location()
+        escape = self.emu.read(self.emu.read_u32(self._sym("gSaveBlock1Ptr")) + SB1_ESCAPE_WARP, 8)
+        assert (escape[0], escape[1]) == self.consts.map("MAP_ROUTE23"), escape.hex()
+        x, y = int.from_bytes(escape[4:6], "little", signed=True), int.from_bytes(escape[6:8], "little", signed=True)
+        assert (x, y) == PORTA_FRENTE, f"escape warp gravado em {(x, y)}: as coordenadas ainda truncam em 8 bits"
+        # a Família termina por dentro: o prédio fecha e a Jenny chega
+        self.box.familia_set(4, ESTADO_ENCERRADA, QUEDA_FIM)
+        self._flags_do_fim(capturados=(3, 4))
+        self._time_com(3)
+        assert self.box.call(CMD_GIVE_ITEM, self.consts.item("ITEM_ESCAPE_ROPE"), 1) == 1
+        self._usar_corda_de_fuga()
         self._esperar_cena()
-        assert self.game.player_xy() == PORTA_FRENTE, self.game.player_xy()
+        assert self.game.player_xy() == PORTA_FRENTE, f"a Corda deixou o jogador em {self.game.player_xy()}"
+        assert self.game.bag_quantity(self.consts.item("ITEM_ESCAPE_ROPE")) == 0, "a corda não foi gasta"
         info = self._jenny_cena(quer_ouvir=False)
         assert info["jenny_xy"] == (4, 151), f"a Jenny abriu a fala em {info['jenny_xy']}"
         assert info["msgs"][-1] == self._rom_text("Route23_Text_JennyObrigada"), info["msgs"]
         assert self.game.flag(self._flag("FLAG_FAMILIA_POLICIA_CENA"))
         assert self._object_xy(LOCALID_JENNY) == JENNY_POSTO, self._object_xy(LOCALID_JENNY)
         self._livre_da_porta()
-        return "escape warp em (4, 150): a Jenny parou em (4, 151), não em cima do jogador; volta ao posto e ele sai livre"
+        return ("Corda de Fuga pela bolsa: escape warp (4, 150) gravado, o jogador chega em (4, 150); a Jenny parou em "
+                "(4, 151), voltou ao posto e ele saiu livre")
 
     def _jenny_de_novo(self) -> str:
         """Falando com a Jenny depois da cena: a fala dela, nenhuma entrega repetida e a pergunta; "Sim" abre o
@@ -2400,7 +2433,7 @@ class FamiliaScenario(CatchSaveScenario):
             self.suite.run("familia/entrega_pc_cheio", self._entrega_pc_cheio)
             self.suite.run("familia/entrega_caixa_cheia", self._entrega_caixa_cheia)
             self.suite.run("familia/cena_jenny_sim", self._cena_jenny_sim)
-            self.suite.run("familia/cena_jenny_escape", self._cena_jenny_escape)
+            self.suite.run("familia/cena_jenny_corda", self._cena_jenny_corda)
             self.suite.run("familia/porta_lacrada", self._porta_lacrada)
             self.suite.run("familia/policia_ambiente", self._policia_ambiente)
         except Abort:

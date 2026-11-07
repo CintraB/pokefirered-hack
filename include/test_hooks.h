@@ -235,7 +235,6 @@ enum
     TEST_CMD_FAMILIA_CHEFE_CAIU, // = 0x143: calls the special FamiliaSombra_ChefeCaiu (the boss of the current occupation fell; gBattleOutcome decides captured or just beaten; ignored unless the boss is active); result = occupation (VAR_FAMILIA_OCUPACAO) | state (VAR_FAMILIA_ESTADO) << 8 | (FLAG_FAMILIA_CAPTURADO_n of occupation n at bit n - 1) << 16
     TEST_CMD_DOSSIE_ABRIR,       // = 0x144: field script in gTestText: lockall, fadescreen FADE_TO_BLACK, special Dossie_Abrir, waitstate, releaseall; result = 1 (0xFFFFFFFF = special not in gSpecials)
     TEST_CMD_DOSSIE_ESTADO,      // = 0x145: result = Dossie_TestEstado(): page (0-based) | total << 8 | boss of the page (0 cover, 1-4, 5 epilogue) << 16 | stamp (0 none, 1 beaten, 2 captured) << 24 | ready for input << 31 (0xFFFFFFFF = screen closed)
-    TEST_CMD_ESCAPE_WARP,        // = 0x146: arg0 = map group | map num << 8, arg1 = x | y << 16 (16 bits: y can be >= 128, unlike TEST_CMD_WARP): writes the escape warp and warps to it, like the Escape Rope and Dig; result = 1
 };
 // --- end of POK-54 --------------------------------------------------------------------------
 
