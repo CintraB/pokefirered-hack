@@ -134,7 +134,7 @@ const struct FollowerSpecies *Follower_GetSpeciesInfo(u16 species)
     const struct FollowerSpecies *info;
     u16 dex;
 
-    if (species == SPECIES_NONE || species >= NUM_SPECIES) // NUM_SPECIES = SPECIES_EGG
+    if (species == SPECIES_NONE || species == SPECIES_EGG || species >= NUM_SPECIES)
         return NULL;
     dex = SpeciesToNationalPokedexNum(species);
     if (dex == 0 || dex > FOLLOWER_SPECIES_COUNT)

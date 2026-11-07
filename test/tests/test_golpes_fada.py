@@ -63,7 +63,7 @@ def _campo(corpo: str, nome: str) -> str:
 def test_constantes():
     k = _constantes_dos_golpes()
     assert [k[n] for n in NOVOS] == list(range(355, 361))
-    assert k["MOVES_COUNT"] == 361
+    assert k["MOVES_COUNT"] == 363  # + Dragon Rush e Dark Void no fim (POK-54)
 
 
 def test_dados_gen6():

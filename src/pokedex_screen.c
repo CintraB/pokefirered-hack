@@ -1399,7 +1399,7 @@ static u16 DexScreen_CountMonsInOrderedList(u8 orderIdx)
         }
         break;
     case DEX_ORDER_ATOZ:
-        for (i = 0; i < NUM_SPECIES - 1; i++)
+        for (i = 0; i < NELEMS(gPokedexOrder_Alphabetical); i++)
         {
             ndex_num = gPokedexOrder_Alphabetical[i];
             if (ndex_num <= max_n)
@@ -1416,7 +1416,7 @@ static u16 DexScreen_CountMonsInOrderedList(u8 orderIdx)
         }
         break;
     case DEX_ORDER_TYPE:
-        for (i = 0; i < NUM_SPECIES - 1; i++)
+        for (i = 0; i < NELEMS(gPokedexOrder_Type); i++)
         {
             ndex_num = SpeciesToNationalPokedexNum(gPokedexOrder_Type[i]);
             if (ndex_num <= max_n)
@@ -2228,6 +2228,10 @@ s8 DexScreen_GetSetPokedexFlag(u16 nationalDexNo, u8 caseId, bool8 indexIsSpecie
 
     if (indexIsSpecies)
         nationalDexNo = SpeciesToNationalPokedexNum(nationalDexNo);
+
+    // Sem número na Dex (o Ovo, as letras do Unown) ou além dos bytes do save: nada a ler nem a gravar (POK-54)
+    if (nationalDexNo == 0 || nationalDexNo > DEX_FLAGS_NO * 8)
+        return FALSE;
 
     nationalDexNo--;
     index = nationalDexNo / 8;

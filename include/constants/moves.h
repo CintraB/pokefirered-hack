@@ -362,8 +362,11 @@
 #define MOVE_DRAINING_KISS 358
 #define MOVE_FAIRY_WIND 359
 #define MOVE_DISARMING_VOICE 360
+// POK-54: Gible/Garchomp e Darkrai
+#define MOVE_DRAGON_RUSH 361
+#define MOVE_DARK_VOID 362
 
-#define MOVES_COUNT 361
+#define MOVES_COUNT 363
 
 // Used for checks for moves affected by Disable, Mimic, etc.
 #define MOVE_UNAVAILABLE 0xFFFF

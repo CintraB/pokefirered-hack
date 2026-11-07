@@ -3964,7 +3964,7 @@ void GetSpeciesName(u8 *name, u16 species)
     // Hmm? FRLG has < while Ruby/Emerald has <=
     for (i = 0; i < POKEMON_NAME_LENGTH; i++)
     {
-        if (species > NUM_SPECIES)
+        if (species >= NUM_SPECIES)
             name[i] = gSpeciesNames[0][i];
         else
             name[i] = gSpeciesNames[species][i];
@@ -6088,7 +6088,7 @@ const u32 *GetMonSpritePalFromSpeciesAndPersonality(u16 species, u32 otId, u32 p
 {
     u32 shinyValue;
 
-    if (species > SPECIES_EGG)
+    if (species >= NUM_SPECIES)
         return gMonPaletteTable[0].data;
 
     shinyValue = GET_SHINY_VALUE(otId, personality);
