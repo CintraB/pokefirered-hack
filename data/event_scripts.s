@@ -763,6 +763,7 @@ gStdScriptsEnd::
 	.include "data/maps/Route5_PokemonDayCare/text.inc"
 	.include "data/maps/Route5_SouthEntrance/text.inc"
 	.include "data/maps/Route6_NorthEntrance/text.inc"
+	.include "data/maps/Route6_UnusedHouse/text.inc"
 	.include "data/maps/Route7_EastEntrance/text.inc"
 	.include "data/maps/Route8_WestEntrance/text.inc"
 	.include "data/maps/Route10_PokemonCenter_1F/text.inc"

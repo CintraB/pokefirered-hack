@@ -85,7 +85,7 @@ def test_special_no_fim_e_script():
     specials = _ler(SPECIALS)
     # no fim, depois de todos os da base; a Task 7 acrescentou o da tela logo depois e o POK-42 o da Liga
     nomes = [n for n in re.findall(r"def_special (\w+)", specials.split("gSpecialsEnd::")[0])
-             if not n.startswith("FamiliaSombra_")]  # POK-51 vem depois
+             if not n.startswith(("FamiliaSombra_", "MestreGolpes_"))]  # POK-51 vem depois
     finais = nomes[nomes.index("Conquistas_MostrarAviso"):]
     assert finais == ["Conquistas_MostrarAviso", "Conquistas_AbrirTelaDoScript", "ShouldUseLeagueRematchTeams",
                       "BufferRematchTierName", "ShowRematchTierMenu"], finais

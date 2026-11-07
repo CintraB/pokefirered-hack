@@ -45,7 +45,8 @@ def test_special_registrado_no_fim_da_tabela():
     linhas = [l.strip() for l in SPECIALS.read_text(encoding="utf-8").splitlines()]
     assert "def_special OpenNovidadesScreen" in linhas
     fim = linhas.index("gSpecialsEnd::")
-    defs = [l for l in linhas[:fim] if l.startswith("def_special") and "FamiliaSombra_" not in l]  # POK-51 vem depois
+    defs = [l for l in linhas[:fim] if l.startswith("def_special") and "FamiliaSombra_" not in l
+            and "MestreGolpes_" not in l]  # POK-51 vem depois
     # no fim: os números dos specials anteriores (usados pelos scripts já montados) não mudam
     assert defs[defs.index("def_special OpenNovidadesScreen") + 1:] == [
         "def_special GetRepelToReuse", "def_special UseRepelFromField",   # POK-31, depois dele

@@ -83,6 +83,7 @@ from esteira.scenarios.full_seguidor import run_full_seguidor  # POK-48
 from esteira.scenarios.full_pokerus import run_full_pokerus  # POK-50
 from esteira.scenarios.full_galeria import run_full_galeria  # POK-29
 from esteira.scenarios.full_familia import run_full_familia  # POK-51
+from esteira.scenarios.full_casas import run_full_casas  # POK-51
 from esteira.scenarios.full_forest_brock import run_full_forest_brock
 from esteira.scenarios.full_master import run_full_master
 from esteira.scenarios.full_pc import run_full_pc
@@ -201,6 +202,7 @@ FULL_SCENARIOS: list[ScenarioSpec] = [
     ScenarioSpec("pokerus", run_full_pokerus, rom=TEST, save_from="captura"),  # POK-50
     ScenarioSpec("galeria", run_full_galeria, rom=TEST, save_from="captura"),  # POK-29
     ScenarioSpec("familia", run_full_familia, rom=TEST, save_from="captura"),  # POK-51
+    ScenarioSpec("casas", run_full_casas, rom=TEST, save_from="captura"),  # POK-51
     ScenarioSpec("novidades_inicial", run_full_novidades_first_offer, needs="abertura"),
 ]
 # Cenários do modo completo que o `assistir --cenario` mostra numa janela (ROM de teste, a
