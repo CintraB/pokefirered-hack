@@ -523,9 +523,10 @@ def test_cenario_do_diario():
     pontos = refs.CONQUISTAS_TELA_POINTS
     assert pontos[:3] == ("conquistas_historia", "conquistas_batalha", "cartao_dica"), pontos
     assert set(pontos[3:]) == set(fotos), pontos
-    # depois deles, só os das revanches (POK-42), os do DexNav (POK-47) e os do seguidor (POK-48)
+    # depois deles, só os das revanches (POK-42), os do DexNav (POK-47), os do seguidor (POK-48), os do Pokérus (POK-50) e os do POK-51
     fim = (len(refs.SHARED_POINTS) - len(refs.REVANCHES_POINTS) - len(refs.DEXNAV_POINTS)
-           - len(refs.SEGUIDOR_POINTS) - len(refs.POKERUS_POINTS))
+           - len(refs.SEGUIDOR_POINTS) - len(refs.POKERUS_POINTS) - len(refs.FAMILIA_POINTS)
+           - len(refs.CASAS_POINTS))
     assert refs.SHARED_POINTS[fim - len(pontos):fim] == pontos
 
 

@@ -399,3 +399,20 @@ def test_curador_singular():
     """"Falta 1 taça de ouro" no singular; plural nos demais."""
     assert "goto_if_eq VAR_0x8005, 1, SevenIsland_UnusedHouse_EventScript_CuradorUmaTaca" in TROFEUS_S
     assert "Falta {STR_VAR_1} taça de ouro" in TROFEUS_T and "Faltam {STR_VAR_1} taças de ouro" in TROFEUS_T
+
+
+def test_telas_da_familia_e_das_casas_no_fim_de_shared_points():
+    """POK-51, Task 11: as telas dos cenários `familia` e `casas` entram no fim de SHARED_POINTS (referências em
+    COMUM/), e os dois cenários podem ser vistos no `test-watch`."""
+    from esteira import refs
+    from esteira.__main__ import WATCH_FULL_SCENARIOS
+    from esteira.scenarios import full_casas, full_familia
+    assert refs.FAMILIA_POINTS == full_familia.SCREEN_POINTS and refs.CASAS_POINTS == full_casas.SCREEN_POINTS
+    fim = refs.SHARED_POINTS[-len(refs.FAMILIA_POINTS) - len(refs.CASAS_POINTS):]
+    assert fim == refs.FAMILIA_POINTS + refs.CASAS_POINTS
+    assert len(set(refs.SHARED_POINTS)) == len(refs.SHARED_POINTS)
+    for pontos, arquivo in ((refs.FAMILIA_POINTS, "full_familia.py"), (refs.CASAS_POINTS, "full_casas.py")):
+        texto = (REPO_ROOT / "test" / "esteira" / "scenarios" / arquivo).read_text(encoding="utf-8")
+        for ponto in pontos:   # além da própria tupla, o cenário grava a tela com esse nome
+            assert texto.count(f'"{ponto}"') >= 2, ponto
+    assert {"familia", "casas"} <= set(WATCH_FULL_SCENARIOS)

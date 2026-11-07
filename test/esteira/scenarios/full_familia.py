@@ -108,6 +108,11 @@ WILD_MON_CALLBACKS = {"SpriteCB_EnemyMon", "SpriteCB_MoveWildMonToRight", "Sprit
                       "SpriteCallbackDummy_2"}
 TRAINER_SLIDE = "SpriteCB_TrainerSlideIn"
 STRING_BYTES = 300                   # gDisplayedStringBattle[300]
+# Telas que o cenário grava em OUT/telas/ e que entram na comparação com as referências (esteira/refs.py)
+SCREEN_POINTS = ("familia_capanga_batalha", "familia_filme_batalha", "familia_chefe_batalha", "familia_gemeos_batalha",
+                 "familia_rosa", "familia_porta_trancada", "familia_rota23_predio", "familia_pedagio",
+                 "familia_andar_1", "familia_andar_4", "familia_sala_do_dom",
+                 "familia_conquistas_batalha")   # `familia_diario_dom` é gravada mas fica fora: traz o TEMPO de jogo (00:08 x 00:09)
 SONG_SIZE = 8                        # struct Song (header, ms, me)
 BATTLE_MON_SIZE, BATTLE_MON_ITEM = 0x58, 0x2E   # struct BattlePokemon (include/pokemon.h)
 PLAYER_LEVEL = 60

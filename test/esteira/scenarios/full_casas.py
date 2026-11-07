@@ -63,6 +63,10 @@ SALA_CURADOR = (9, 5)
 OBJ_EVENT_SIZE, OBJ_EVENT_COUNT = 0x24, 16   # struct ObjectEvent / gObjectEvents[16]
 OBJ_MAP_OFFSET = 7                   # currentCoords = coordenada do mapa + 7
 SCENE_TIMEOUT = 20000
+CONQ_PERDIDA = 2                     # CONQ_PERDIDA (include/constants/conquistas.h)
+# Telas que o cenário grava em OUT/telas/ e que entram na comparação com as referências (esteira/refs.py)
+SCREEN_POINTS = ("casa_rota6_exterior", "mestre_lista", "casa_rota19_exterior", "casa_ilha7_exterior",
+                 "sala_trofeus_entrada", "sala_trofeus", "sala_trofeus_tacas")
 
 
 class CasasScenario(CatchSaveScenario):
@@ -369,8 +373,7 @@ class CasasScenario(CatchSaveScenario):
         texto = " ".join(info["msgs"])
         m = re.search(r"Conquistas: (\d+) ?/? ?(\d+)", texto)
         assert m and "Batalhas marcantes: " in texto and "Hall da Fama: " in texto, info["msgs"]
-        ativas = sum(1 for c in json.loads((REPO_ROOT / "src/data/conquistas/conquistas.json").read_text("utf-8"))
-                     ["conquistas"] if c.get("ativa", True))
+        ativas = sum(len(nums) for nums in self._validas_por_aba().values())
         assert int(m.group(2)) == ativas and int(m.group(1)) <= int(m.group(2)), (m.groups(), ativas)
         assert "Revanche mais difícil vencida" in texto and "nenhuma ainda" in texto, info["msgs"]
         self.emu.frames(10)
@@ -386,8 +389,17 @@ class CasasScenario(CatchSaveScenario):
         # o curador comenta o que falta
         info = self._examinar((9, 6))
         assert "Faltam" in " ".join(info["msgs"]) or "completa" in " ".join(info["msgs"]), info["msgs"]
-        return (f"placa: {m.group(1)}/{m.group(2)} conquistas (ativas na tabela: {ativas}); revanche: nenhuma, Nível 90 (var), "
+        return (f"placa: {m.group(1)}/{m.group(2)} conquistas (válidas: {ativas}); revanche: nenhuma, Nível 90 (var), "
                 f"Nível 100 (save antigo); curador: {info['msgs'][-1][:40]!r}")
+
+    def _validas_por_aba(self) -> dict[int, list[int]]:
+        """Os `num` das conquistas ativas e não perdidas de cada aba, no save de agora. Depende do save: o rival
+        perdido na captura (conforme o inicial) ou o líder com um Pokémon só já deixam uma conquista PERDIDA."""
+        tabela = json.loads((REPO_ROOT / "src/data/conquistas/conquistas.json").read_text("utf-8"))
+        abas = [a["id"] for a in tabela["abas"]]
+        return {i: [c["num"] for c in tabela["conquistas"] if c["aba"] == a and c.get("ativa", True)
+                    and self.box.conq_estado(c["num"])[0] != CONQ_PERDIDA]
+                for i, a in enumerate(abas)}
 
     def consts_conq(self, nome: str) -> int:
         return int(re.search(rf"#define {nome} (\d+)", (REPO_ROOT / "src/data/conquistas_ids.h").read_text("utf-8")).group(1))
@@ -396,10 +408,7 @@ class CasasScenario(CatchSaveScenario):
         """Taças pela % de cada aba: História toda feita (ouro), Batalha 40% (bronze), Captura 8/11 (prata), Treino
         2/7 (nada), Exploração nada. A expectativa vem do contador do próprio jogo (feitas | válidas << 8)."""
         self._restore("casas_base")
-        tabela = json.loads((REPO_ROOT / "src/data/conquistas/conquistas.json").read_text("utf-8"))
-        abas = [a["id"] for a in tabela["abas"]]
-        ativas = {i: [c["num"] for c in tabela["conquistas"] if c["aba"] == a and c.get("ativa", True)]
-                  for i, a in enumerate(abas)}
+        ativas = self._validas_por_aba()
         for i, quantas in enumerate((len(ativas[0]), 4, 8, 2, 0)):
             for num in ativas[i][:quantas]:
                 self.box.conq_aplicar(num, 0)

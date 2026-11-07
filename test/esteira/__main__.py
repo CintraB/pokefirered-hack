@@ -224,6 +224,7 @@ WATCH_FULL_SCENARIOS = ("evolucoes", "resumo_evolucao", "resumo_ivs", "ovo",
                         "dexnav",  # POK-47
                         "seguidor",  # POK-48
                         "pokerus",  # POK-50
+                        "familia", "casas",  # POK-51
                         "galeria")  # POK-29
 
 

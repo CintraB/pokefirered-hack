@@ -186,7 +186,8 @@ def test_cenario_fisico_fada_registrado_com_as_telas():
     # (depois deles, só os da tela de conquistas do POK-44
     # e os das revanches do POK-42, do DexNav do POK-47 e do seguidor do POK-48)
     fim = (len(refs.SHARED_POINTS) - len(refs.CONQUISTAS_TELA_POINTS) - len(refs.REVANCHES_POINTS)
-           - len(refs.DEXNAV_POINTS) - len(refs.SEGUIDOR_POINTS) - len(refs.POKERUS_POINTS))
+           - len(refs.DEXNAV_POINTS) - len(refs.SEGUIDOR_POINTS) - len(refs.POKERUS_POINTS) - len(refs.FAMILIA_POINTS)
+           - len(refs.CASAS_POINTS))
     assert refs.SHARED_POINTS[fim - len(cen.SCREEN_POINTS):fim] == cen.SCREEN_POINTS
     texto = (REPO_ROOT / "test" / "esteira" / "scenarios" / "full_fisico_fada.py").read_text(encoding="utf-8")
     for caso in ("categoria/soco_de_fogo_fisico", "categoria/thick_fat", "fada/tabela", "fada/especie",
