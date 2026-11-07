@@ -79,11 +79,21 @@ Task 7 (conquistas e diário). O estado das conquistas vem de conq_reset(True) (
 - `familia/gengar_fora_nao_conta`: um Gengar selvagem comum (nv 62) vencido não grava a entrada do Dom nem a conquista;
 - `familia/pedagio_forca` também confere "Pagar ou lutar": pendente antes das 2 lutas, feita depois.
 
+Ajustes do Cintra (depois das telas da v67):
+
+- `familia/rosa_bolsa_cheia`: o bolso de itens-chave cheio (30 itens pelo atalho GIVE_ITEM), o Dom vencido:
+  FLAG_FAMILIA_ROSA_1 ligada (a redoma da Sala de Troféus acende por ela), a Rosa Vermelha fora da bolsa e a fala
+  "…foi enviada direto à Sala de Troféus da Ilha Sete!";
+- `familia/continue_rota23_ativa`, `_sem_chefe`, `_fechado`: salvar parado na Rota 23 (lado sul do pedágio), resetar e
+  CONTINUAR (só o ON_LOAD roda): mapa, layout e tile iguais, porta trancada só antes da 8ª insígnia e o Persian
+  visível exatamente quando o pedágio está armado (VAR_TEMP_3). Telas `familia_continue_rota23_*` só gravadas.
+
 Uso, a partir de test/ (a pasta OUT precisa do captura.sav de um `rapido`/`completo`):
     python3 -m esteira completo --rom R --elf E --out OUT --only familia
 """
 
 import importlib.util
+import json
 import re
 
 from ..battle import ACTION_FIGHT, MENU_TIMEOUT, MOVE_FUNC_SUFFIX, BattleDriver
@@ -168,6 +178,15 @@ PEDAGIO_SUL = (14, 148)              # um passo antes do gatilho do lado sul (14
 PEDAGIO_NORTE = (14, 144)            # um passo antes do gatilho do lado norte (14, 145)
 PEDAGIO = 1000
 VR_1F_LIVRE = (11, 19)               # Victory Road 1F: tile livre ao lado do warp de volta à Rota 23
+# Ajustes do Cintra: CONTINUAR parado na Rota 23 e a rosa com o bolso de itens-chave cheio
+PREDIO_JSON = REPO_ROOT / "tools" / "familia_sombra" / "predio.json"
+ITEMS_JSON = REPO_ROOT / "src" / "data" / "items.json"
+SB1_VARS, VARS_START = 0x1000, 0x4000  # SaveBlock1.vars (include/global.h)
+VAR_TEMP_3 = 0x4003                  # o pedágio armado (Route23_EventScript_ArmarPedagio)
+MAP_HEADER_LAYOUT_ID = 0x12          # struct MapHeader.mapLayoutId
+BACKUP_LAYOUT_WIDTH, BACKUP_LAYOUT_MAP = 0, 8   # VMap, struct BackupMapLayout (Xsize, map)
+OBJECT_EVENT_FLAGS_1, INVISIBLE_BIT = 1, 1 << 5   # ObjectEvent: o bit 13 (invisible) é o bit 5 do 2º byte
+KEY_ITEMS_POCKET, BAG_KEYITEMS_COUNT = 1, 30     # índice em SB1_BAG_POCKETS; include/constants/global.h
 
 
 def _noir_tool():
@@ -1241,6 +1260,111 @@ class FamiliaScenario(CatchSaveScenario):
                 break
         return steps
 
+    # --- Ajustes do Cintra: a rosa com o bolso de itens-chave cheio ----------------------------------
+    def _encher_itens_chave(self) -> int:
+        """Enche o bolso de itens-chave (BAG_KEYITEMS_COUNT slots) com itens-chave que não são rosas."""
+        itens = [i["itemId"] for i in json.loads(ITEMS_JSON.read_text(encoding="utf-8"))["items"]
+                 if i.get("pocket") == "POCKET_KEY_ITEMS" and not i["itemId"].startswith("ITEM_ROSA_")]
+        for nome in itens:
+            if len(self.game.bag_pocket(KEY_ITEMS_POCKET)) >= BAG_KEYITEMS_COUNT:
+                break
+            self.box.call(CMD_GIVE_ITEM, self.consts.item(nome), 1)
+        cheio = len(self.game.bag_pocket(KEY_ITEMS_POCKET))
+        assert cheio == BAG_KEYITEMS_COUNT, f"bolso de itens-chave com {cheio} slots"
+        return cheio
+
+    def _rosa_bolsa_cheia(self) -> str:
+        """Bolso de itens-chave cheio: o Dom vencido liga FLAG_FAMILIA_ROSA_1 (a redoma da Sala de Troféus acende por
+        ela), a rosa NÃO entra na bolsa e a fala diz que ela foi direto para a Sala de Troféus da Ilha Sete."""
+        self._to_scene((("MEWTWO", 100), ("SNORLAX", 100)), True)
+        for i in range(4):
+            self.box.set_party_move(0, i, self.moves["MOVE_PSYCHIC"])
+        slots = self._encher_itens_chave()
+        self._gatilho()
+        self._scene(self.game.in_battle, "começo da batalha do chefe")
+        assert self.driver.fight_to_end() == "win", "perdeu para o Dom"
+        msgs = self._scene(self.ctl.overworld_idle, "a rosa com a bolsa cheia")
+        rosa = self.consts.item("ITEM_ROSA_VERMELHA")
+        assert self.game.flag(self._flag("FLAG_FAMILIA_ROSA_1")), "a flag da rosa não ligou"
+        assert self.game.bag_quantity(rosa) == 0, f"Rosa Vermelha na bolsa: {self.game.bag_quantity(rosa)}"
+        assert len(self.game.bag_pocket(KEY_ITEMS_POCKET)) == BAG_KEYITEMS_COUNT
+        want = self._rom_text("Route23_FamiliaSombra_6F_Text_BolsaCheiaRosaVermelha")
+        assert want in msgs, f"sem a fala da Sala de Troféus; mensagens {msgs}"
+        assert self.box.familia_estado()[:2] == (1, ESTADO_SEM_CHEFE), self.box.familia_estado()
+        return f"bolso com {slots} itens-chave: FLAG_FAMILIA_ROSA_1 ligada, rosa fora da bolsa, fala {want[:40]!r}…"
+
+    # --- Ajustes do Cintra: CONTINUAR parado na Rota 23 --------------------------------------------------
+    def _var(self, var: int) -> int:
+        return self.emu.read_u16(self.emu.read_u32(self._sym("gSaveBlock1Ptr")) + SB1_VARS + (var - VARS_START) * 2)
+
+    def _metatile(self, x: int, y: int) -> int:
+        base = self._sym("VMap")                     # struct BackupMapLayout (src/fieldmap.c)
+        width = self.emu.read_u32(base + BACKUP_LAYOUT_WIDTH)
+        grid = self.emu.read_u32(base + BACKUP_LAYOUT_MAP)
+        return self.emu.read_u16(grid + 2 * ((y + MAP_OFFSET) * width + x + MAP_OFFSET)) & 0x3FF
+
+    def _object_visible(self, local: int) -> bool:
+        base = self._sym("gObjectEvents")
+        for i in range(OBJECT_EVENTS_COUNT):
+            addr = base + i * OBJECT_EVENT_SIZE
+            if self.emu.read_u8(addr) & 1 and self.emu.read_u8(addr + OBJECT_EVENT_LOCAL_ID) == local:
+                return not self.emu.read_u8(addr + OBJECT_EVENT_FLAGS_1) & INVISIBLE_BIT
+        return False
+
+    def _rota23_agora(self) -> dict:
+        predio = json.loads(PREDIO_JSON.read_text(encoding="utf-8"))["indigo_plateau"]
+        porta = self._metatile(*PORTA)
+        assert porta in (predio["porta_trancada"], predio["porta_aberta"]), f"metatile da porta {porta:#x}"
+        layouts = header_defines(REPO_ROOT, "layouts.h")
+        return {
+            "mapa": self.game.location(), "xy": self.game.player_xy(),
+            "layout": self.emu.read_u16(self._sym("gMapHeader") + MAP_HEADER_LAYOUT_ID) == layouts["LAYOUT_ROUTE23"],
+            "porta_trancada": porta == predio["porta_trancada"],
+            "persian": self._object_visible(LOCALID_COBRADOR),
+            "pedagio_armado": self._var(VAR_TEMP_3) == 1,
+            "estado": self.box.familia_estado()[:2],
+        }
+
+    def _continue_rota23(self, ocupacao: int, estado: int, insignia: bool) -> str:
+        """O estado (`ocupacao`, `estado`, 8ª insígnia), a saída do prédio até o lado sul do pedágio, salvar parado na
+        Rota 23, resetar e CONTINUAR (só o ON_LOAD roda): o mesmo mapa e layout, o jogador no mesmo tile, a porta
+        trancada só antes da insígnia e o Persian visível exatamente quando o pedágio está armado."""
+        self._restore("familia_base")
+        self.box.set_flag(self._flag("FLAG_BADGE08_GET"), insignia)
+        self.box.set_flag(self._flag("FLAG_FAMILIA_PEDAGIO_PAGO"), False)
+        self.box.call(CMD_SET_VAR, VAR_MAP_SCENE_ROUTE23, 0)      # sem a cena dos guardas das insígnias
+        self.box.call(CMD_SET_VAR, REPEL_VAR, 999)
+        self.box.familia_set(ocupacao, estado, self._half_day())
+        self._sair_do_predio()
+        assert self.nav.walk_to(*PEDAGIO_SUL), f"não chegou perto do pedágio: {self.game.player_xy()}"
+        self.ctl.wait_overworld_idle(300)
+        antes = self._rota23_agora()
+        assert self.menu.save_game() == 1, "save"
+        self.emu.flush_save()
+        self.emu.reset()
+        nome = {ESTADO_FECHADO: "fechado", ESTADO_ATIVA: "ativa", ESTADO_SEM_CHEFE: "sem_chefe"}[estado]
+        self._title_to_continue("tela de título depois do reset", shot=f"familia_continue_rota23_{nome}")
+        self.box.conq_silencio(True)
+        self.emu.frames(30)
+        depois = self._rota23_agora()
+        assert depois == antes, f"antes do save {antes}, depois do CONTINUAR {depois}"
+        assert depois["mapa"] == self.consts.map("MAP_ROUTE23") and depois["layout"], depois
+        assert depois["xy"] == PEDAGIO_SUL, depois
+        assert depois["porta_trancada"] == (estado == ESTADO_FECHADO), depois
+        assert depois["persian"] == depois["pedagio_armado"] == (estado == ESTADO_ATIVA), depois
+        return (f"CONTINUAR em {depois['xy']}: layout LAYOUT_ROUTE23, porta "
+                f"{'trancada' if depois['porta_trancada'] else 'aberta'}, Persian "
+                f"{'visível e pedágio armado' if depois['persian'] else 'ausente e pedágio desarmado'}")
+
+    def _continue_ativa(self) -> str:
+        return self._continue_rota23(1, ESTADO_ATIVA, True)
+
+    def _continue_sem_chefe(self) -> str:
+        return self._continue_rota23(1, ESTADO_SEM_CHEFE, True)
+
+    def _continue_fechado(self) -> str:
+        return self._continue_rota23(0, ESTADO_FECHADO, False)
+
     def run(self) -> None:
         try:
             self._flow("familia: CONTINUAR com o save do modo rápido", self._start)
@@ -1273,6 +1397,10 @@ class FamiliaScenario(CatchSaveScenario):
             self.suite.run("familia/pedagio_forca", self._pedagio_forca)
             self.suite.run("familia/pedagio_volta", self._pedagio_volta)
             self.suite.run("familia/pedagio_sem_chefe", self._pedagio_sem_chefe)
+            self.suite.run("familia/rosa_bolsa_cheia", self._rosa_bolsa_cheia)
+            self.suite.run("familia/continue_rota23_ativa", self._continue_ativa)
+            self.suite.run("familia/continue_rota23_sem_chefe", self._continue_sem_chefe)
+            self.suite.run("familia/continue_rota23_fechado", self._continue_fechado)
         except Abort:
             pass
 
