@@ -13,6 +13,22 @@ Route23_FamiliaSombra_6F_Text_Cobrador::
     .string "Você deve à Família desde o\n"
     .string "primeiro degrau. Rapazes!$"
 
+Route23_FamiliaSombra_6F_Text_Mercenario::
+    .string "GARCHOMP, O MERCENÁRIO: Não sou da\n"
+    .string "Família. Sou contrato.\p"
+    .string "Vim de Sinnoh e não perguntei o\n"
+    .string "motivo. Só o preço.\p"
+    .string "Meus Gligar cuidam de você\n"
+    .string "primeiro. Está no contrato.$"
+
+Route23_FamiliaSombra_6F_Text_Pesadelo::
+    .string "DARKRAI, O PESADELO: Você chegou\n"
+    .string "aqui acordado. Que raro.\p"
+    .string "Neste prédio, quem dorme acorda\n"
+    .string "devendo.\p"
+    .string "Os Dusclops guardam a porta entre\n"
+    .string "o sono e a vigília. Passe por eles.$"
+
 Route23_FamiliaSombra_6F_Text_DomSemGemeos::
     .string "GENGAR, O DOM: Voltou à minha mesa.\n"
     .string "Teimoso. Eu respeito isso.\p"
@@ -24,6 +40,18 @@ Route23_FamiliaSombra_6F_Text_CobradorSemGemeos::
     .string "costas já pagaram a parte deles.\p"
     .string "Agora a sua dívida é comigo.$"
 
+Route23_FamiliaSombra_6F_Text_MercenarioSemGemeos::
+    .string "GARCHOMP, O MERCENÁRIO: Meus Gligar\n"
+    .string "cumpriram a parte deles.\p"
+    .string "Agora só falta a minha. Sem\n"
+    .string "rancor: é trabalho.$"
+
+Route23_FamiliaSombra_6F_Text_PesadeloSemGemeos::
+    .string "DARKRAI, O PESADELO: A porta dos\n"
+    .string "Dusclops se abriu.\p"
+    .string "Agora só restamos eu e o seu\n"
+    .string "sono.$"
+
 Route23_FamiliaSombra_6F_Text_GemeosMachamp::
     .string "Os gêmeos Machamp, ex-carregadores\n"
     .string "do porto, estalam os quatro punhos.$"
@@ -31,6 +59,16 @@ Route23_FamiliaSombra_6F_Text_GemeosMachamp::
 Route23_FamiliaSombra_6F_Text_GemeosRhydon::
     .string "Os gêmeos Rhydon não dizem nada.\n"
     .string "Só batem os chifres no chão.$"
+
+Route23_FamiliaSombra_6F_Text_GemeosGligar::
+    .string "Os gêmeos Gligar, vindos das\n"
+    .string "cavernas de Sinnoh, giram no ar\l"
+    .string "sem fazer um ruído.$"
+
+Route23_FamiliaSombra_6F_Text_GemeosDusclops::
+    .string "Os gêmeos Dusclops vigiam a porta\n"
+    .string "entre o sono e a vigília. Nenhum\l"
+    .string "dos dois pisca.$"
 
 Route23_FamiliaSombra_6F_Text_GemeosDerrota::
     .string "Os gêmeos recuam e abrem\n"
@@ -50,6 +88,18 @@ Route23_FamiliaSombra_6F_Text_DesafioCobrador::
     .string "TYRANITAR, O COBRADOR: Chega de\n"
     .string "intermediários. Eu mesmo cobro.$"
 
+Route23_FamiliaSombra_6F_Text_DesafioMercenario::
+    .string "GARCHOMP, O MERCENÁRIO: Os Gligar\n"
+    .string "já eram. Agora o contrato é meu.\p"
+    .string "Se você ganhar, a rosa azul, que\n"
+    .string "colhi na neve, é sua.$"
+
+Route23_FamiliaSombra_6F_Text_DesafioPesadelo::
+    .string "DARKRAI, O PESADELO: Ninguém passou\n"
+    .string "pelos Dusclops acordado.\p"
+    .string "Feche os olhos. Se você vencer,\n"
+    .string "a rosa negra é sua.$"
+
 Route23_FamiliaSombra_6F_Text_FugaDom::
     .string "GENGAR, O DOM: Quem foge hoje\n"
     .string "volta devendo amanhã.$"
@@ -57,6 +107,16 @@ Route23_FamiliaSombra_6F_Text_FugaDom::
 Route23_FamiliaSombra_6F_Text_FugaCobrador::
     .string "TYRANITAR, O COBRADOR: A dívida\n"
     .string "continua. Agora com juros.$"
+
+Route23_FamiliaSombra_6F_Text_FugaMercenario::
+    .string "GARCHOMP, O MERCENÁRIO: Fugir não\n"
+    .string "cancela o contrato.\p"
+    .string "Eu espero. Sou pago para isso.$"
+
+Route23_FamiliaSombra_6F_Text_FugaPesadelo::
+    .string "DARKRAI, O PESADELO: Pode acordar\n"
+    .string "e ir embora.\p"
+    .string "Mas o pesadelo volta toda noite.$"
 
 Route23_FamiliaSombra_6F_Text_RosaDom::
     .string "GENGAR, O DOM, deixou cair a rosa\n"
@@ -66,8 +126,13 @@ Route23_FamiliaSombra_6F_Text_RosaCobrador::
     .string "TYRANITAR, O COBRADOR, deixou\n"
     .string "cair a rosa dourada…$"
 
-Route23_FamiliaSombra_6F_Text_RosaChefe::
-    .string "O chefe deixou cair a rosa…$"
+Route23_FamiliaSombra_6F_Text_RosaMercenario::
+    .string "GARCHOMP, O MERCENÁRIO, deixou\n"
+    .string "cair a rosa azul, colhida na neve…$"
+
+Route23_FamiliaSombra_6F_Text_RosaPesadelo::
+    .string "DARKRAI, O PESADELO, se desfez como\n"
+    .string "um sonho e deixou a rosa negra…$"
 
 Route23_FamiliaSombra_6F_Text_BolsaCheiaRosaVermelha::
     .string "Sua bolsa de itens-chave está\n"
@@ -104,6 +169,18 @@ Route23_FamiliaSombra_6F_Text_Bilhete2::
     .string "que ele perdoou estão riscadas…\p"
     .string "e escritas de novo, em dourado.$"
 
+Route23_FamiliaSombra_6F_Text_Bilhete3::
+    .string "O livro-caixa tem uma coluna nova:\n"
+    .string "“Serviços de GARCHOMP, O\l"
+    .string "MERCENÁRIO. Preço fixo.\p"
+    .string "Sem favor. Sem dívida.”$"
+
+Route23_FamiliaSombra_6F_Text_Bilhete4::
+    .string "As páginas do livro-caixa estão\n"
+    .string "em branco e frias. No pé:\p"
+    .string "“Quem dorme aqui acorda devendo\n"
+    .string "a DARKRAI, O PESADELO.”$"
+
 Route23_FamiliaSombra_6F_Text_BilheteReforcos::
     .string "Um bilhete na mesa vazia:\n"
     .string "“O Dom caiu. Em alguns dias,\p"
@@ -115,3 +192,10 @@ Route23_FamiliaSombra_6F_Text_BilheteDeFora::
     .string "Um bilhete na mesa vazia:\n"
     .string "“Dizem que a Família mandou\p"
     .string "buscar alguém de fora…”$"
+
+Route23_FamiliaSombra_6F_Text_BilheteSombra::
+    .string "Um bilhete velho na mesa vazia:\n"
+    .string "“Os livros mais antigos falam de\p"
+    .string "uma sombra por trás do Dom.\n"
+    .string "Nunca subiu as escadas.\l"
+    .string "Governa pelos sonhos.”$"

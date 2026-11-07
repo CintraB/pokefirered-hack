@@ -110,6 +110,15 @@ POK-54, Task 7 (ocupações 3 e 4: o motor). O chefe cai pelo atalho FAMILIA_CHE
 - `familia/conquistas_parte2`: um Garchomp selvagem comum não grava nada; o Mercenário vencido marca a conquista 44 e a
   entrada "O Mercenário" (DERROTOU); o Pesadelo capturado marca a 45 e "O Pesadelo" (CAPTURADO).
 
+POK-54, Task 8 (ocupações 3 e 4: o prédio, as falas e os retratos):
+
+- `familia/sala_mercenario` e `familia/sala_pesadelo`: subindo ao 6º andar na ocupação 3 (4), Garchomp (Darkrai) shiny de
+  chapéu, os 2 Gligar (Dusclops) e o retrato dele no quadro. Telas `familia_sala_mercenario` e `familia_sala_pesadelo`;
+- `familia/rosa_azul`: a cena inteira da ocupação 3 (gêmeos Gligar, Mercenário vencido): ITEM_ROSA_AZUL na bolsa;
+- `familia/rosa_negra_bolsa_cheia`: ocupação 4 com o bolso de itens-chave cheio: a rosa não entra, FLAG_FAMILIA_ROSA_4
+  fica ligada e o estado vira ENCERRADA;
+- `familia/redomas_completas`: com as 4 rosas a Sala de Troféus acende as 4 redomas. Tela `sala_trofeus_completa`.
+
 Uso, a partir de test/ (a pasta OUT precisa do captura.sav de um `rapido`/`completo`):
     python3 -m esteira completo --rom R --elf E --out OUT --only familia
 """
@@ -128,6 +137,7 @@ from ..hooks import CMD_GIVE_ITEM, CMD_SET_VAR, CMD_START_WILD_BATTLE, CMD_WARP,
 from ..nav import Navigator
 from . import REPO_ROOT, ScenarioContext
 from .base import YESNO_TASK, Abort
+from .full_casas import SALA_REDOMAS
 from .quick_catch_save import CatchSaveScenario
 
 ESTADO_FECHADO = 0                   # FAMILIA_ESTADO_FECHADO (include/constants/familia_sombra.h)
@@ -145,6 +155,7 @@ STRING_BYTES = 300                   # gDisplayedStringBattle[300]
 # Telas que o cenário grava em OUT/telas/ e que entram na comparação com as referências (esteira/refs.py)
 SCREEN_POINTS = ("familia_capanga_batalha", "familia_filme_batalha", "familia_chefe_batalha", "familia_gemeos_batalha",
                  "familia_chefe_mercenario", "familia_chefe_pesadelo",   # POK-54, Task 7
+                 "familia_sala_mercenario", "familia_sala_pesadelo", "sala_trofeus_completa",   # POK-54, Task 8
                  "familia_rosa", "familia_porta_trancada", "familia_rota23_predio", "familia_pedagio",
                  "familia_andar_1", "familia_andar_4", "familia_sala_do_dom",
                  "familia_conquistas_batalha")   # `familia_diario_dom` é gravada mas fica fora: traz o TEMPO de jogo (00:08 x 00:09)
@@ -1086,9 +1097,11 @@ class FamiliaScenario(CatchSaveScenario):
                         self.emu.read_u16(addr + OBJECT_EVENT_XY + 2) - MAP_OFFSET)
         raise AssertionError(f"objeto {local} não está no mapa")
 
-    def _to_scene(self, party: tuple[tuple[str, int], ...], gemeos_vencidos: bool) -> None:
-        """Na sala do Dom, um passo antes do gatilho (o tile da saída da escada), com o time `party`."""
+    def _to_scene(self, party: tuple[tuple[str, int], ...], gemeos_vencidos: bool, ocupacao: int = 1) -> None:
+        """Na sala do chefe da `ocupacao`, um passo antes do gatilho (o tile da saída da escada), com o time `party`."""
         self._restore("familia_base")
+        if ocupacao != 1:
+            self.box.familia_set(ocupacao, ESTADO_ATIVA)
         for slot, (species, level) in enumerate(party):
             self.box.set_party_mon(slot, self._sp(species), level)
         self.box.party_size(len(party))
@@ -1410,7 +1423,8 @@ class FamiliaScenario(CatchSaveScenario):
 
     # --- O quadro da sala do Dom: o retrato do chefe da ocupação ------------------------------------------
     def _quadro(self) -> str:
-        """Qual quadro está na parede da sala (os 6 metatiles de (7..9, 1..2) em VMap): "dom", "cobrador", "vazio"."""
+        """Qual quadro está na parede da sala (os 6 metatiles de (7..9, 1..2) em VMap): "dom", "cobrador", "mercenario"
+        ou "pesadelo"."""
         q = json.loads(PREDIO_JSON.read_text(encoding="utf-8"))["quadro"]
         agora = [[self._metatile(q["x"] + dx, q["y"] + dy) for dx in range(3)] for dy in range(2)]
         achados = [nome for nome, ids in q["metatiles"].items() if ids == agora]
@@ -1435,8 +1449,8 @@ class FamiliaScenario(CatchSaveScenario):
 
     def _quadro_cobrador(self) -> str:
         """Ocupação 2 pelo atalho FAMILIA_SET: subindo pela escada do 5º andar, o retrato é o do Cobrador (tela
-        `familia_quadro_cobrador`, só gravada); sem chefe fica o do último chefe; a ocupação 3 (parte 2) mostra a
-        tela vazia."""
+        `familia_quadro_cobrador`, só gravada); sem chefe fica o do último chefe; as ocupações 3 e 4 trazem o
+        retrato do Mercenário e o do Pesadelo."""
         self._restore("familia_base")
         self.box.set_party_mon(0, self._sp("MEWTWO"), 100)
         self.box.call(CMD_SET_VAR, REPEL_VAR, 999)
@@ -1455,11 +1469,14 @@ class FamiliaScenario(CatchSaveScenario):
         self.box.familia_set(3, ESTADO_ATIVA)
         self._warp("MAP_ROUTE23_FAMILIA_SOMBRA_6F", SAIDA_ESCADA_6F)
         visto["ocupação 3"] = self._quadro()
+        self.box.familia_set(4, ESTADO_ATIVA)
+        self._warp("MAP_ROUTE23_FAMILIA_SOMBRA_6F", SAIDA_ESCADA_6F)
+        visto["ocupação 4"] = self._quadro()
         self.box.familia_set(1, ESTADO_SEM_CHEFE, self._half_day())
         self._warp("MAP_ROUTE23_FAMILIA_SOMBRA_6F", SAIDA_ESCADA_6F)
         visto["sem chefe (depois da 1)"] = self._quadro()
-        assert visto == {"ocupação 2": "cobrador", "sem chefe (depois da 2)": "cobrador", "ocupação 3": "vazio",
-                         "sem chefe (depois da 1)": "dom"}, visto
+        assert visto == {"ocupação 2": "cobrador", "sem chefe (depois da 2)": "cobrador", "ocupação 3": "mercenario",
+                         "ocupação 4": "pesadelo", "sem chefe (depois da 1)": "dom"}, visto
         return f"quadros {visto}; tela {shot}"
 
     # --- POK-54, Task 7: ocupações 3 e 4 (o Mercenário e o Pesadelo), a captura registrada e o fim da Família --------
@@ -1681,6 +1698,116 @@ class FamiliaScenario(CatchSaveScenario):
         return ("Garchomp selvagem sem registro; Mercenário vencido: conquista 44 feita e diário DERROTOU; Pesadelo "
                 "capturado: conquista 45 feita, diário CAPTURADO e ENCERRADA")
 
+    # --- POK-54, Task 8: a sala do Mercenário e do Pesadelo, as rosas azul e negra, as 4 redomas --------------------
+    def _sala_do_chefe(self, ocupacao: int, chefe: str, gemeos: str, quadro: str, tela: str) -> str:
+        """Ocupação `ocupacao` pelo atalho FAMILIA_SET, subindo pela escada do 5º andar: o chefe shiny de chapéu na
+        poltrona, os dois gêmeos de chapéu um de cada lado, o retrato dele no quadro e o resto da sala igual ao layout."""
+        self._restore("familia_base")
+        self.box.set_party_mon(0, self._sp("MEWTWO"), 100)
+        self.box.call(CMD_SET_VAR, REPEL_VAR, 999)
+        self.box.familia_set(ocupacao, ESTADO_ATIVA)
+        self._warp("MAP_ROUTE23_FAMILIA_SOMBRA_5F", ANTES_DA_ESCADA)
+        self.nav.go_through_warp("right")
+        self._settle("6º andar")
+        assert self._at("MAP_ROUTE23_FAMILIA_SOMBRA_6F"), self.game.location()
+        self.emu.frames(30)
+        shot = self._shot(tela)
+        assert self._quadro() == quadro, f"o quadro é {self._quadro()}, esperava {quadro}"
+        chefe_gfx = [self._object_gfx(local) for local in (1, 2, 3)]
+        want = [self.gfx[f"OBJ_EVENT_GFX_{n}"] for n in (chefe, gemeos, gemeos)]
+        assert chefe_gfx == want, f"chefe e gêmeos {chefe_gfx}, esperava {want} ({chefe}, 2x {gemeos})"
+        self._sala_igual_ao_layout()
+        return f"{chefe} de chapéu, 2x {gemeos}, retrato {quadro} no quadro; tela {shot}"
+
+    def _sala_mercenario(self) -> str:
+        return self._sala_do_chefe(3, "FAMILIA_GARCHOMP_SHINY", "FAMILIA_GLIGAR", "mercenario", "familia_sala_mercenario")
+
+    def _sala_pesadelo(self) -> str:
+        return self._sala_do_chefe(4, "FAMILIA_DARKRAI_SHINY", "FAMILIA_DUSCLOPS", "pesadelo", "familia_sala_pesadelo")
+
+    def _fala_vista(self, msgs: list[str], simbolo: str) -> None:
+        """A fala `simbolo` do texto da sala passou pelo campo (a 1ª linha dela abre alguma mensagem vista)."""
+        primeira = self._rom_text(f"Route23_FamiliaSombra_6F_Text_{simbolo}").split("\n")[0]
+        assert any(m.startswith(primeira) for m in msgs), f"sem a fala {simbolo} ({primeira!r}); mensagens {msgs}"
+
+    def _rosa_azul(self) -> str:
+        """A cena inteira da ocupação 3: o Mercenário fala, os gêmeos Gligar (dupla vencida), ele fala de novo e é
+        vencido: a Rosa Azul vai para a bolsa com FLAG_FAMILIA_ROSA_3, a queda conta e a sala esvazia."""
+        self._to_scene((("MEWTWO", 100), ("SNORLAX", 100)), False, 3)
+        self._set_half_day(QUEDA_ROSA)
+        for slot in (0, 1):
+            for i in range(4):
+                self.box.set_party_move(slot, i, self.moves["MOVE_PSYCHIC"])
+        self._gatilho()
+        msgs = self._scene(self.game.in_battle, "começo da dupla")
+        assert self.driver.battle_type_flags() & 1, "os gêmeos Gligar não lutaram em dupla"
+        self._fala_vista(msgs, "Mercenario")
+        assert self.driver.fight_to_end() == "win", "perdeu para os gêmeos Gligar"
+        msgs += self._scene(self.game.in_battle, "começo da batalha do Mercenário")
+        assert self.driver.battle_type_flags() & BATTLE_TYPE_FAMILIA_CHEFE
+        assert self.game.flag(self._flag("FLAG_FAMILIA_GEMEOS_VENCIDOS")), "gêmeos vencidos sem a flag"
+        self._fala_vista(msgs, "DesafioMercenario")
+        assert self.driver.fight_to_end() == "win", "perdeu para o Mercenário"
+        half = self._half_day()
+        assert half == QUEDA_ROSA, half
+        msgs = self._scene(self.ctl.overworld_idle, "a rosa azul", shot=("Rosa Azul", "familia_rosa_azul"))
+        rosa = self.consts.item("ITEM_ROSA_AZUL")
+        assert self.game.bag_quantity(rosa) == 1, f"Rosa Azul na bolsa: {self.game.bag_quantity(rosa)}"
+        assert self.game.flag(self._flag("FLAG_FAMILIA_ROSA_3"))
+        assert not self.game.flag(self._flag("FLAG_FAMILIA_ROSA_4"))
+        assert self.box.familia_estado() == (3, ESTADO_SEM_CHEFE, half), self.box.familia_estado()
+        assert self._active_objects() == [], self._active_objects()
+        drop = self._rom_text("Route23_FamiliaSombra_6F_Text_RosaMercenario")
+        assert drop in msgs, msgs
+        assert "GARCHOMP, O MERCENÁRIO" in drop
+        return f"gêmeos Gligar e Mercenário vencidos; {drop!r}; Rosa Azul na bolsa; SEM_CHEFE na queda {half}"
+
+    def _rosa_negra_bolsa_cheia(self) -> str:
+        """Ocupação 4 com o bolso de itens-chave cheio: o Pesadelo vencido liga FLAG_FAMILIA_ROSA_4 (a redoma acende por
+        ela), a rosa NÃO entra na bolsa, a fala manda a rosa para a Sala de Troféus e a Família fica ENCERRADA."""
+        self._to_scene((("MEWTWO", 100), ("SNORLAX", 100)), True, 4)
+        for i in range(4):
+            self.box.set_party_move(0, i, self.moves["MOVE_SUPERPOWER"])
+        slots = self._encher_itens_chave()
+        self._gatilho()
+        msgs = self._scene(self.game.in_battle, "começo da batalha do Pesadelo")
+        self._fala_vista(msgs, "PesadeloSemGemeos")
+        assert self.driver.fight_to_end() == "win", "perdeu para o Pesadelo"
+        msgs = self._scene(self.ctl.overworld_idle, "a rosa negra com a bolsa cheia")
+        rosa = self.consts.item("ITEM_ROSA_NEGRA")
+        assert self.game.flag(self._flag("FLAG_FAMILIA_ROSA_4")), "a flag da rosa negra não ligou"
+        assert self.game.bag_quantity(rosa) == 0, f"Rosa Negra na bolsa: {self.game.bag_quantity(rosa)}"
+        assert len(self.game.bag_pocket(KEY_ITEMS_POCKET)) == BAG_KEYITEMS_COUNT
+        want = self._rom_text("Route23_FamiliaSombra_6F_Text_BolsaCheiaRosaNegra")
+        assert want in msgs, f"sem a fala da Sala de Troféus; mensagens {msgs}"
+        assert self._rom_text("Route23_FamiliaSombra_6F_Text_RosaPesadelo") in msgs, msgs
+        assert self.box.familia_estado()[:2] == (4, ESTADO_ENCERRADA), self.box.familia_estado()
+        return (f"bolso com {slots} itens-chave: FLAG_FAMILIA_ROSA_4 ligada, rosa fora da bolsa, fala {want[:40]!r}…; "
+                "ENCERRADA")
+
+    def _redomas_completas(self) -> str:
+        """Com as 4 flags de rosa, a Sala de Troféus acende as 4 redomas (vermelha, dourada, azul e negra), cada uma no
+        seu lugar. A tela `sala_trofeus_completa` fica gravada."""
+        self._restore("familia_base")
+        for n in range(1, 5):
+            self.box.set_flag(self._flag(f"FLAG_FAMILIA_ROSA_{n}"), True)
+        self._warp("MAP_SEVEN_ISLAND_UNUSED_HOUSE", (3, 6))
+        self.emu.frames(30)
+        base = self._sym("gObjectEvents")
+        objs = {}
+        for i in range(OBJECT_EVENTS_COUNT):
+            addr = base + i * OBJECT_EVENT_SIZE
+            if self.emu.read_u8(addr) & 1 and not self.emu.read_u8(addr + 2) & 1:       # active, não é o jogador
+                xy = (self.emu.read_u16(addr + OBJECT_EVENT_XY) - MAP_OFFSET,
+                      self.emu.read_u16(addr + OBJECT_EVENT_XY + 2) - MAP_OFFSET)
+                objs[xy] = self.emu.read_u8(addr + OBJECT_EVENT_GFX)
+        cores = ("VERMELHA", "DOURADA", "AZUL", "NEGRA")
+        achadas = [objs.get(xy) for xy in SALA_REDOMAS]
+        want = [self.gfx[f"OBJ_EVENT_GFX_REDOMA_{c}"] for c in cores]
+        assert achadas == want, f"redomas {achadas}, esperava {want} ({cores})"
+        shot = self._shot("sala_trofeus_completa")
+        return f"as 4 redomas acesas {list(cores)} em {SALA_REDOMAS}; tela {shot}"
+
     def run(self) -> None:
         try:
             self._flow("familia: CONTINUAR com o save do modo rápido", self._start)
@@ -1724,6 +1851,11 @@ class FamiliaScenario(CatchSaveScenario):
             self.suite.run("familia/chefe_pesadelo", self._chefe_pesadelo)
             self.suite.run("familia/captura_marca", self._captura_marca)
             self.suite.run("familia/conquistas_parte2", self._conquistas_parte2)
+            self.suite.run("familia/sala_mercenario", self._sala_mercenario)
+            self.suite.run("familia/sala_pesadelo", self._sala_pesadelo)
+            self.suite.run("familia/rosa_azul", self._rosa_azul)
+            self.suite.run("familia/rosa_negra_bolsa_cheia", self._rosa_negra_bolsa_cheia)
+            self.suite.run("familia/redomas_completas", self._redomas_completas)
         except Abort:
             pass
 

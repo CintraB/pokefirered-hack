@@ -8,15 +8,15 @@ Route23_FamiliaSombra_6F_MapScripts::
 	.byte 0
 
 @ O quadro atrás do chefe (7..9, 1..2) é o retrato em preto e branco do chefe da ocupação (VAR_FAMILIA_OCUPACAO).
-@ Sem chefe (entre ocupações) a variável continua com a última: fica o retrato do último chefe. As ocupações 3 e 4
-@ (parte 2) ainda não têm sprite: tela vazia. Para dar retrato a elas, acrescentar o sprite em QUADROS
-@ (tools/familia_sombra/predio.py), os rótulos em metatile_labels.h e um call_if_eq aqui.
+@ Sem chefe (entre ocupações) a variável continua com a última: fica o retrato do último chefe. Os 4 chefes têm retrato
+@ (QUADROS em tools/familia_sombra/predio.py, rótulos em metatile_labels.h); o layout já traz o do Dom.
 Route23_FamiliaSombra_6F_OnLoad::
 	special FamiliaSombra_GetOcupacao
 	copyvar VAR_0x8008, VAR_RESULT
 	call_if_eq VAR_0x8008, 1, Route23_FamiliaSombra_6F_EventScript_QuadroDom
 	call_if_eq VAR_0x8008, 2, Route23_FamiliaSombra_6F_EventScript_QuadroCobrador
-	call_if_ge VAR_0x8008, 3, Route23_FamiliaSombra_6F_EventScript_QuadroVazio
+	call_if_eq VAR_0x8008, 3, Route23_FamiliaSombra_6F_EventScript_QuadroMercenario
+	call_if_eq VAR_0x8008, 4, Route23_FamiliaSombra_6F_EventScript_QuadroPesadelo
 	end
 
 Route23_FamiliaSombra_6F_EventScript_QuadroDom::
@@ -37,13 +37,22 @@ Route23_FamiliaSombra_6F_EventScript_QuadroCobrador::
 	setmetatile 9, 2, METATILE_FamiliaSombra_QuadroCobrador_2_1, TRUE
 	return
 
-Route23_FamiliaSombra_6F_EventScript_QuadroVazio::
-	setmetatile 7, 1, METATILE_FamiliaSombra_QuadroVazio_0_0, TRUE
-	setmetatile 8, 1, METATILE_FamiliaSombra_QuadroVazio_1_0, TRUE
-	setmetatile 9, 1, METATILE_FamiliaSombra_QuadroVazio_2_0, TRUE
-	setmetatile 7, 2, METATILE_FamiliaSombra_QuadroVazio_0_1, TRUE
-	setmetatile 8, 2, METATILE_FamiliaSombra_QuadroVazio_1_1, TRUE
-	setmetatile 9, 2, METATILE_FamiliaSombra_QuadroVazio_2_1, TRUE
+Route23_FamiliaSombra_6F_EventScript_QuadroMercenario::
+	setmetatile 7, 1, METATILE_FamiliaSombra_QuadroMercenario_0_0, TRUE
+	setmetatile 8, 1, METATILE_FamiliaSombra_QuadroMercenario_1_0, TRUE
+	setmetatile 9, 1, METATILE_FamiliaSombra_QuadroMercenario_2_0, TRUE
+	setmetatile 7, 2, METATILE_FamiliaSombra_QuadroMercenario_0_1, TRUE
+	setmetatile 8, 2, METATILE_FamiliaSombra_QuadroMercenario_1_1, TRUE
+	setmetatile 9, 2, METATILE_FamiliaSombra_QuadroMercenario_2_1, TRUE
+	return
+
+Route23_FamiliaSombra_6F_EventScript_QuadroPesadelo::
+	setmetatile 7, 1, METATILE_FamiliaSombra_QuadroPesadelo_0_0, TRUE
+	setmetatile 8, 1, METATILE_FamiliaSombra_QuadroPesadelo_1_0, TRUE
+	setmetatile 9, 1, METATILE_FamiliaSombra_QuadroPesadelo_2_0, TRUE
+	setmetatile 7, 2, METATILE_FamiliaSombra_QuadroPesadelo_0_1, TRUE
+	setmetatile 8, 2, METATILE_FamiliaSombra_QuadroPesadelo_1_1, TRUE
+	setmetatile 9, 2, METATILE_FamiliaSombra_QuadroPesadelo_2_1, TRUE
 	return
 
 Route23_FamiliaSombra_6F_OnTransition::
@@ -65,13 +74,17 @@ Route23_FamiliaSombra_6F_EventScript_Cena::
 	playbgm MUS_ENCOUNTER_ROCKET, 0
 	special FamiliaSombra_GetOcupacao
 	copyvar VAR_0x8008, VAR_RESULT
+	call_if_eq VAR_0x8008, 1, Route23_FamiliaSombra_6F_EventScript_FalaDom
 	call_if_eq VAR_0x8008, 2, Route23_FamiliaSombra_6F_EventScript_FalaCobrador
-	call_if_ne VAR_0x8008, 2, Route23_FamiliaSombra_6F_EventScript_FalaDom
+	call_if_eq VAR_0x8008, 3, Route23_FamiliaSombra_6F_EventScript_FalaMercenario
+	call_if_eq VAR_0x8008, 4, Route23_FamiliaSombra_6F_EventScript_FalaPesadelo
 	goto_if_set FLAG_FAMILIA_GEMEOS_VENCIDOS, Route23_FamiliaSombra_6F_EventScript_Chefe
 	@ time de 1 Pokémon: a dupla é recusada pelo trainerbattle; a música de encontro do chefe não pode ficar presa
 	special HasEnoughMonsForDoubleBattle
 	call_if_ne VAR_RESULT, PLAYER_HAS_TWO_USABLE_MONS, Route23_FamiliaSombra_6F_EventScript_RestaurarMusica
 	goto_if_eq VAR_0x8008, 2, Route23_FamiliaSombra_6F_EventScript_GemeosRhydon
+	goto_if_eq VAR_0x8008, 3, Route23_FamiliaSombra_6F_EventScript_GemeosGligar
+	goto_if_eq VAR_0x8008, 4, Route23_FamiliaSombra_6F_EventScript_GemeosDusclops
 	@ com o id do gêmeo A: a dupla vira para o jogador e marca o objeto certo (a cena também vem dos gatilhos)
 	trainerbattle TRAINER_BATTLE_CONTINUE_SCRIPT_DOUBLE, TRAINER_FAMILIA_GEMEOS, LOCALID_FAMILIA_6F_GEMEO_A, Route23_FamiliaSombra_6F_Text_GemeosMachamp, Route23_FamiliaSombra_6F_Text_GemeosDerrota, Route23_FamiliaSombra_6F_Text_SoEmDupla, Route23_FamiliaSombra_6F_EventScript_GemeosVencidos
 	end
@@ -80,11 +93,19 @@ Route23_FamiliaSombra_6F_EventScript_GemeosRhydon::
 	trainerbattle TRAINER_BATTLE_CONTINUE_SCRIPT_DOUBLE, TRAINER_FAMILIA_GEMEOS, LOCALID_FAMILIA_6F_GEMEO_A, Route23_FamiliaSombra_6F_Text_GemeosRhydon, Route23_FamiliaSombra_6F_Text_GemeosDerrota, Route23_FamiliaSombra_6F_Text_SoEmDupla, Route23_FamiliaSombra_6F_EventScript_GemeosVencidos
 	end
 
+Route23_FamiliaSombra_6F_EventScript_GemeosGligar::
+	trainerbattle TRAINER_BATTLE_CONTINUE_SCRIPT_DOUBLE, TRAINER_FAMILIA_GEMEOS, LOCALID_FAMILIA_6F_GEMEO_A, Route23_FamiliaSombra_6F_Text_GemeosGligar, Route23_FamiliaSombra_6F_Text_GemeosDerrota, Route23_FamiliaSombra_6F_Text_SoEmDupla, Route23_FamiliaSombra_6F_EventScript_GemeosVencidos
+	end
+
+Route23_FamiliaSombra_6F_EventScript_GemeosDusclops::
+	trainerbattle TRAINER_BATTLE_CONTINUE_SCRIPT_DOUBLE, TRAINER_FAMILIA_GEMEOS, LOCALID_FAMILIA_6F_GEMEO_A, Route23_FamiliaSombra_6F_Text_GemeosDusclops, Route23_FamiliaSombra_6F_Text_GemeosDerrota, Route23_FamiliaSombra_6F_Text_SoEmDupla, Route23_FamiliaSombra_6F_EventScript_GemeosVencidos
+	end
+
 Route23_FamiliaSombra_6F_EventScript_RestaurarMusica::
 	fadedefaultbgm
 	return
 
-@ Com os gêmeos já vencidos (voltou depois de perder ou fugir do chefe) ninguém mais "quer trocar uma palavra".
+@ Com os gêmeos já vencidos (voltou depois de perder ou fugir do chefe) ninguém mais manda os guarda-costas falarem.
 Route23_FamiliaSombra_6F_EventScript_FalaDom::
 	goto_if_set FLAG_FAMILIA_GEMEOS_VENCIDOS, Route23_FamiliaSombra_6F_EventScript_FalaDomSemGemeos
 	msgbox Route23_FamiliaSombra_6F_Text_Dom
@@ -103,6 +124,24 @@ Route23_FamiliaSombra_6F_EventScript_FalaCobradorSemGemeos::
 	msgbox Route23_FamiliaSombra_6F_Text_CobradorSemGemeos
 	return
 
+Route23_FamiliaSombra_6F_EventScript_FalaMercenario::
+	goto_if_set FLAG_FAMILIA_GEMEOS_VENCIDOS, Route23_FamiliaSombra_6F_EventScript_FalaMercenarioSemGemeos
+	msgbox Route23_FamiliaSombra_6F_Text_Mercenario
+	return
+
+Route23_FamiliaSombra_6F_EventScript_FalaMercenarioSemGemeos::
+	msgbox Route23_FamiliaSombra_6F_Text_MercenarioSemGemeos
+	return
+
+Route23_FamiliaSombra_6F_EventScript_FalaPesadelo::
+	goto_if_set FLAG_FAMILIA_GEMEOS_VENCIDOS, Route23_FamiliaSombra_6F_EventScript_FalaPesadeloSemGemeos
+	msgbox Route23_FamiliaSombra_6F_Text_Pesadelo
+	return
+
+Route23_FamiliaSombra_6F_EventScript_FalaPesadeloSemGemeos::
+	msgbox Route23_FamiliaSombra_6F_Text_PesadeloSemGemeos
+	return
+
 @ Os gêmeos vencidos não voltam nesta ocupação (FamiliaSombra_Repovoar os traz de volta na próxima).
 Route23_FamiliaSombra_6F_EventScript_GemeosVencidos::
 	lockall
@@ -115,8 +154,10 @@ Route23_FamiliaSombra_6F_EventScript_GemeosVencidos::
 Route23_FamiliaSombra_6F_EventScript_Chefe::
 	special FamiliaSombra_GetOcupacao
 	copyvar VAR_0x8008, VAR_RESULT
+	call_if_eq VAR_0x8008, 1, Route23_FamiliaSombra_6F_EventScript_DesafioDom
 	call_if_eq VAR_0x8008, 2, Route23_FamiliaSombra_6F_EventScript_DesafioCobrador
-	call_if_ne VAR_0x8008, 2, Route23_FamiliaSombra_6F_EventScript_DesafioDom
+	call_if_eq VAR_0x8008, 3, Route23_FamiliaSombra_6F_EventScript_DesafioMercenario
+	call_if_eq VAR_0x8008, 4, Route23_FamiliaSombra_6F_EventScript_DesafioPesadelo
 	special QuestLog_CutRecording
 	special FamiliaSombra_IniciarChefe
 	waitstate
@@ -125,8 +166,10 @@ Route23_FamiliaSombra_6F_EventScript_Chefe::
 	specialvar VAR_RESULT, GetBattleOutcome
 	goto_if_eq VAR_RESULT, B_OUTCOME_WON, Route23_FamiliaSombra_6F_EventScript_ChefeCaiu
 	goto_if_eq VAR_RESULT, B_OUTCOME_CAUGHT, Route23_FamiliaSombra_6F_EventScript_ChefeCaiu
+	call_if_eq VAR_0x8008, 1, Route23_FamiliaSombra_6F_EventScript_FugaDom
 	call_if_eq VAR_0x8008, 2, Route23_FamiliaSombra_6F_EventScript_FugaCobrador
-	call_if_ne VAR_0x8008, 2, Route23_FamiliaSombra_6F_EventScript_FugaDom
+	call_if_eq VAR_0x8008, 3, Route23_FamiliaSombra_6F_EventScript_FugaMercenario
+	call_if_eq VAR_0x8008, 4, Route23_FamiliaSombra_6F_EventScript_FugaPesadelo
 	releaseall
 	end
 
@@ -138,12 +181,28 @@ Route23_FamiliaSombra_6F_EventScript_DesafioCobrador::
 	msgbox Route23_FamiliaSombra_6F_Text_DesafioCobrador
 	return
 
+Route23_FamiliaSombra_6F_EventScript_DesafioMercenario::
+	msgbox Route23_FamiliaSombra_6F_Text_DesafioMercenario
+	return
+
+Route23_FamiliaSombra_6F_EventScript_DesafioPesadelo::
+	msgbox Route23_FamiliaSombra_6F_Text_DesafioPesadelo
+	return
+
 Route23_FamiliaSombra_6F_EventScript_FugaDom::
 	msgbox Route23_FamiliaSombra_6F_Text_FugaDom
 	return
 
 Route23_FamiliaSombra_6F_EventScript_FugaCobrador::
 	msgbox Route23_FamiliaSombra_6F_Text_FugaCobrador
+	return
+
+Route23_FamiliaSombra_6F_EventScript_FugaMercenario::
+	msgbox Route23_FamiliaSombra_6F_Text_FugaMercenario
+	return
+
+Route23_FamiliaSombra_6F_EventScript_FugaPesadelo::
+	msgbox Route23_FamiliaSombra_6F_Text_FugaPesadelo
 	return
 
 @ Vencido ou capturado: a queda conta o período sem chefe, a rosa da ocupação vai para a bolsa e a sala esvazia.
@@ -182,9 +241,8 @@ Route23_FamiliaSombra_6F_EventScript_RosaDouradaParaSala::
 	releaseall
 	end
 
-@ Parte 2 (ocupações 3 e 4, desligadas por FAMILIA_OCUPACOES_ATIVAS).
 Route23_FamiliaSombra_6F_EventScript_RosaAzul::
-	msgbox Route23_FamiliaSombra_6F_Text_RosaChefe
+	msgbox Route23_FamiliaSombra_6F_Text_RosaMercenario
 	checkitemspace ITEM_ROSA_AZUL
 	goto_if_eq VAR_RESULT, FALSE, Route23_FamiliaSombra_6F_EventScript_RosaAzulParaSala
 	giveitem ITEM_ROSA_AZUL
@@ -197,7 +255,7 @@ Route23_FamiliaSombra_6F_EventScript_RosaAzulParaSala::
 	end
 
 Route23_FamiliaSombra_6F_EventScript_RosaNegra::
-	msgbox Route23_FamiliaSombra_6F_Text_RosaChefe
+	msgbox Route23_FamiliaSombra_6F_Text_RosaPesadelo
 	checkitemspace ITEM_ROSA_NEGRA
 	goto_if_eq VAR_RESULT, FALSE, Route23_FamiliaSombra_6F_EventScript_RosaNegraParaSala
 	giveitem ITEM_ROSA_NEGRA
@@ -209,14 +267,16 @@ Route23_FamiliaSombra_6F_EventScript_RosaNegraParaSala::
 	releaseall
 	end
 
-@ O bilhete da mesa: o livro-caixa do chefe ativo; sem chefe, o aviso da próxima ocupação (ou, depois da última da
-@ parte 1, a Família foi buscar alguém de fora).
+@ O bilhete da mesa: o livro-caixa do chefe ativo; sem chefe, o aviso da próxima ocupação (depois da 1, o Cobrador; depois
+@ da 2, o de fora; depois da 3, a sombra por trás do Dom). Depois da 4 a Família acabou: o estado ENCERRADA é da Task 10.
 Route23_FamiliaSombra_6F_EventScript_Bilhete::
 	lockall
 	special FamiliaSombra_GetEstado
 	goto_if_ne VAR_RESULT, FAMILIA_ESTADO_ATIVA, Route23_FamiliaSombra_6F_EventScript_BilheteSemChefe
 	special FamiliaSombra_GetOcupacao
 	goto_if_eq VAR_RESULT, 2, Route23_FamiliaSombra_6F_EventScript_Bilhete2
+	goto_if_eq VAR_RESULT, 3, Route23_FamiliaSombra_6F_EventScript_Bilhete3
+	goto_if_eq VAR_RESULT, 4, Route23_FamiliaSombra_6F_EventScript_Bilhete4
 	msgbox Route23_FamiliaSombra_6F_Text_Bilhete1
 	releaseall
 	end
@@ -226,14 +286,30 @@ Route23_FamiliaSombra_6F_EventScript_Bilhete2::
 	releaseall
 	end
 
+Route23_FamiliaSombra_6F_EventScript_Bilhete3::
+	msgbox Route23_FamiliaSombra_6F_Text_Bilhete3
+	releaseall
+	end
+
+Route23_FamiliaSombra_6F_EventScript_Bilhete4::
+	msgbox Route23_FamiliaSombra_6F_Text_Bilhete4
+	releaseall
+	end
+
 Route23_FamiliaSombra_6F_EventScript_BilheteSemChefe::
 	special FamiliaSombra_GetOcupacao
-	goto_if_ge VAR_RESULT, FAMILIA_OCUPACOES_ATIVAS, Route23_FamiliaSombra_6F_EventScript_BilheteDeFora
+	goto_if_eq VAR_RESULT, 2, Route23_FamiliaSombra_6F_EventScript_BilheteDeFora
+	goto_if_ge VAR_RESULT, 3, Route23_FamiliaSombra_6F_EventScript_BilheteSombra
 	msgbox Route23_FamiliaSombra_6F_Text_BilheteReforcos
 	releaseall
 	end
 
 Route23_FamiliaSombra_6F_EventScript_BilheteDeFora::
 	msgbox Route23_FamiliaSombra_6F_Text_BilheteDeFora
+	releaseall
+	end
+
+Route23_FamiliaSombra_6F_EventScript_BilheteSombra::
+	msgbox Route23_FamiliaSombra_6F_Text_BilheteSombra
 	releaseall
 	end

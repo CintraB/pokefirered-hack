@@ -16,11 +16,23 @@ Route23_FamiliaSombra_5F_EventScript_Bilhete::
 	lockall
 	special FamiliaSombra_GetOcupacao
 	goto_if_eq VAR_RESULT, 2, Route23_FamiliaSombra_5F_EventScript_Bilhete2
+	goto_if_eq VAR_RESULT, 3, Route23_FamiliaSombra_5F_EventScript_Bilhete3
+	goto_if_eq VAR_RESULT, 4, Route23_FamiliaSombra_5F_EventScript_Bilhete4
 	msgbox Route23_FamiliaSombra_5F_Text_Bilhete1
 	releaseall
 	end
 
 Route23_FamiliaSombra_5F_EventScript_Bilhete2::
 	msgbox Route23_FamiliaSombra_5F_Text_Bilhete2
+	releaseall
+	end
+
+Route23_FamiliaSombra_5F_EventScript_Bilhete3::
+	msgbox Route23_FamiliaSombra_5F_Text_Bilhete3
+	releaseall
+	end
+
+Route23_FamiliaSombra_5F_EventScript_Bilhete4::
+	msgbox Route23_FamiliaSombra_5F_Text_Bilhete4
 	releaseall
 	end

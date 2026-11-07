@@ -91,10 +91,22 @@ SevenIsland_UnusedHouse_Text_CuradorFaltaCobrador::
 	.string "Cobrador. Quem toma a cadeira do\l"
 	.string "Dom costuma estar esperando.$"
 
-SevenIsland_UnusedHouse_Text_CuradorRosas::
+SevenIsland_UnusedHouse_Text_CuradorFaltaMercenario::
 	.string "As duas rosas de Kanto brilham!\p"
-	.string "As outras redomas seguem vazias.\n"
-	.string "Quem sabe um dia alguém as encha.$"
+	.string "Falta a azul, de GARCHOMP, O\n"
+	.string "MERCENÁRIO. A Família mandou\l"
+	.string "buscar alguém de fora, na Rota 23.$"
+
+SevenIsland_UnusedHouse_Text_CuradorFaltaPesadelo::
+	.string "Três rosas, três redomas cheias!\p"
+	.string "Falta a negra, de DARKRAI, O\n"
+	.string "PESADELO. Dizem que ele só\l"
+	.string "aparece quando todos caem.$"
+
+SevenIsland_UnusedHouse_Text_CuradorRosas::
+	.string "As quatro rosas estão aqui, uma\n"
+	.string "em cada redoma. A Família Sombra\l"
+	.string "acabou, e a sala conta a história.$"
 
 SevenIsland_UnusedHouse_Text_CuradorTacas::
 	.string "Faltam {STR_VAR_1} taças de ouro\n"

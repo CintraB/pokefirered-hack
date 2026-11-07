@@ -425,18 +425,25 @@ def desenhar_sala(src):
 
 
 # O retrato de cada chefe: o sprite do mapa com chapéu (tools/familia_sombra/gerar.py), quadro único 32x40. A chave é o
-# nome do metatile ("quadro_<nome>"); None = a tela vazia (escura), usada pelas ocupações da parte 2 até ganharem
-# sprite: para elas basta acrescentar "nome": "<sprite>" aqui e o metatile no script do 6º andar.
-QUADROS = {"dom": "gengar_shiny", "cobrador": "tyranitar_shiny", "vazio": None}
+# nome do metatile ("quadro_<nome>"); None = a tela vazia (escura), para um chefe que ainda não tem sprite. Os 4 chefes
+# têm retrato: o layout traz o Dom e o ON_LOAD do 6º andar troca pelo da ocupação (QuadroDom/Cobrador/Mercenario/Pesadelo).
+QUADROS = {"dom": "gengar_shiny", "cobrador": "tyranitar_shiny", "mercenario": "garchomp_shiny",
+           "pesadelo": "darkrai_shiny"}
+# Os limiares de luminância (preto abaixo de `a`, cinza médio abaixo de `b`, cinza claro dali em diante). O padrão serve
+# ao Gengar e ao Tyranitar (os mesmos bytes de antes). Garchomp e Darkrai são azul-escuros: no padrão a pele cai toda no
+# cinza médio, igual ao fundo da tela, e sobra só o contorno; aqui a pele escura vira preto e a clara vira cinza claro.
+LIMIAR_PADRAO = (64, 120)
+LIMIARES_RETRATO = {"garchomp_shiny": (50, 75), "darkrai_shiny": (58, 80)}
 QUADRO_TELA = (7, 5, 40, 26)        # a tela do retrato dentro do quadro 48x32 (x0, y0, x1, y1, inclusive)
 SPRITES_FAMILIA = Path("graphics/object_events/pics/familia")
 PALETAS_SPRITES_FAMILIA = Path("graphics/object_events/palettes/familia")
 
 
-def _tom(cor):
-    """Cor do sprite → um dos 3 tons do retrato, pela luminância."""
+def _tom(cor, sprite):
+    """Cor do sprite → um dos 3 tons do retrato, pela luminância e pelos limiares do sprite (LIMIARES_RETRATO)."""
+    a, b = LIMIARES_RETRATO.get(sprite, LIMIAR_PADRAO)
     lum = 0.299 * cor[0] + 0.587 * cor[1] + 0.114 * cor[2]
-    return K if lum < 64 else CINZA_MEDIO if lum < 120 else CINZA_CLARO
+    return K if lum < a else CINZA_MEDIO if lum < b else CINZA_CLARO
 
 
 def desenhar_quadro(src, sprite):
@@ -477,7 +484,7 @@ def desenhar_quadro(src, sprite):
         for x in range(bx0, bx1):
             c = px[x, y] & 15
             if c:
-                im.putpixel((x + dx, y + dy), _tom(pal[c]))
+                im.putpixel((x + dx, y + dy), _tom(pal[c], sprite))
     return im
 
 

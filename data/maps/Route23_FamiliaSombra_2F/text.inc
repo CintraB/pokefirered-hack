@@ -12,3 +12,16 @@ Route23_FamiliaSombra_2F_Text_Bilhete2::
     .string "No pé da folha:\n"
     .string "“TYRANITAR, O COBRADOR, não\l"
     .string "perdoa. Nem esquece.”$"
+
+Route23_FamiliaSombra_2F_Text_Bilhete3::
+    .string "Um contrato de papel grosso:\n"
+    .string "“Serviços de GARCHOMP, O\l"
+    .string "MERCENÁRIO.\p"
+    .string "Pago adiantado. Sem perguntas,\n"
+    .string "sem família, sem gratidão.”$"
+
+Route23_FamiliaSombra_2F_Text_Bilhete4::
+    .string "Uma carta que cheira a sono:\n"
+    .string "“Todos que dormiram nesta casa\p"
+    .string "acordaram devendo. A dívida é de\n"
+    .string "DARKRAI, O PESADELO.”$"

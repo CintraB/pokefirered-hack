@@ -1,8 +1,8 @@
 {
   "_comentario": "Gerado por tools/familia_sombra/predio.py. Não editar.",
   "familia_sombra": {
-    "ladrilhos": 243,
-    "metatiles": 126
+    "ladrilhos": 256,
+    "metatiles": 132
   },
   "indigo_plateau": {
     "ladrilhos": 316,
@@ -55,7 +55,7 @@
           749
         ]
       ],
-      "vazio": [
+      "mercenario": [
         [
           756,
           758,
@@ -65,6 +65,18 @@
           757,
           759,
           761
+        ]
+      ],
+      "pesadelo": [
+        [
+          762,
+          764,
+          766
+        ],
+        [
+          763,
+          765,
+          767
         ]
       ]
     }
