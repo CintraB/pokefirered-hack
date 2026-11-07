@@ -66,6 +66,12 @@ class Constants:
     def species(self, name: str) -> int:
         return self._lookup("SPECIES_", name)
 
+    def value(self, name: str) -> int:
+        """Qualquer #define pelo nome exato (ex.: 'NUM_SPECIES')."""
+        if name not in self._defines:
+            raise KeyError(name)
+        return self._eval(name)
+
     def species_name(self, species_id: int) -> str:
         """Nome da constante (ex.: 'SPECIES_BULBASAUR'); a primeira definida para o id."""
         if self._species_names is None:

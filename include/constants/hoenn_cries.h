@@ -138,6 +138,11 @@ enum
     CRY_JIRACHI = 385,
     CRY_DEOXYS = 386,
     CRY_CHIMECHO = 387,
+    // POK-54
+    CRY_GIBLE = 388,
+    CRY_GABITE = 389,
+    CRY_GARCHOMP = 390,
+    CRY_DARKRAI = 391,
 };
 
 #endif

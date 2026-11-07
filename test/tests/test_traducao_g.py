@@ -272,7 +272,8 @@ def test_toda_mensagem_de_batalha_foi_traduzida():
            "gText_FamiliaCapangaQuerLutar", "gText_FamiliaGemeosQueremLutar", "gText_FamiliaDesviaBola",
            # POK-51: o chefe se apresenta com o título (um por ocupação)
            "gText_FamiliaChefeDom", "gText_FamiliaChefeCobrador", "gText_FamiliaChefeMercenario",
-           "gText_FamiliaChefePesadelo"}
+           "gText_FamiliaChefePesadelo",
+           "sText_BadDreams"}       # POK-54: a habilidade Bad Dreams do Darkrai
     assert set(now) == {renamed.get(label, label) for label in base} | new, "rótulos mudaram"
     same = [label for label, text in base.items()
             if re.search(r"[A-Za-z]{2}", _letters(text)) and now[renamed.get(label, label)] == text

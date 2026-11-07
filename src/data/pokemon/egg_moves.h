@@ -1312,5 +1312,18 @@ const u16 gEggMoves[] = {
               MOVE_HYPNOSIS,
               MOVE_DREAM_EATER),
 
+    // POK-54: Platinum + HGSS (tools/gen4/gen4.json)
+    egg_moves(GIBLE,
+              MOVE_BODY_SLAM,
+              MOVE_THRASH,
+              MOVE_DOUBLE_EDGE,
+              MOVE_SCARY_FACE,
+              MOVE_OUTRAGE,
+              MOVE_DRAGON_BREATH,
+              MOVE_METAL_CLAW,
+              MOVE_TWISTER,
+              MOVE_SAND_TOMB,
+              MOVE_MUD_SHOT),
+
     EGG_MOVES_TERMINATOR
 };

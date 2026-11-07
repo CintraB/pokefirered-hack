@@ -13,6 +13,9 @@ GEN6 = json.loads((REPO_ROOT / "tools" / "gen6" / "gen6.json").read_text(encodin
 BATTLE_MOVES = (REPO_ROOT / "src" / "data" / "battle_moves.h").read_text(encoding="utf-8")
 POKEMON_H = (REPO_ROOT / "include" / "pokemon.h").read_text(encoding="utf-8")
 CATEGORIAS = {"PHYSICAL", "SPECIAL", "STATUS"}
+# POK-54: os golpes da Gen 4 depois do snapshot da Gen 6 (que cobre 1..360), com a categoria da Platinum
+EXTRAS_POK54 = {"MOVE_DRAGON_RUSH": "PHYSICAL", "MOVE_DARK_VOID": "STATUS", "MOVE_FIRE_FANG": "PHYSICAL",
+                "MOVE_OMINOUS_WIND": "SPECIAL", "MOVE_NASTY_PLOT": "STATUS", "MOVE_DARK_PULSE": "SPECIAL"}
 
 
 def _entradas() -> dict[str, str]:
@@ -36,13 +39,14 @@ def test_snapshot_completo():
 
 def test_categoria_de_cada_golpe():
     entradas = _entradas()
-    assert len(entradas) == len(GEN6["categories"]) + 1          # MOVE_NONE + 1..MOVES_COUNT-1
+    categorias = GEN6["categories"] | EXTRAS_POK54
+    assert len(entradas) == len(categorias) + 1 == 367          # MOVE_NONE + 1..MOVES_COUNT-1 (366 golpes)
     errados = {}
     for nome, corpo in entradas.items():
         if nome == "MOVE_NONE":
             continue
         achado = re.findall(r"\.category = (MOVE_CATEGORY_\w+),", corpo)
-        esperado = f"MOVE_CATEGORY_{GEN6['categories'][nome]}"
+        esperado = f"MOVE_CATEGORY_{categorias[nome]}"
         if achado != [esperado]:
             errados[nome] = (achado, esperado)
     assert errados == {}
@@ -187,7 +191,7 @@ def test_cenario_fisico_fada_registrado_com_as_telas():
     # e os das revanches do POK-42, do DexNav do POK-47 e do seguidor do POK-48)
     fim = (len(refs.SHARED_POINTS) - len(refs.CONQUISTAS_TELA_POINTS) - len(refs.REVANCHES_POINTS)
            - len(refs.DEXNAV_POINTS) - len(refs.SEGUIDOR_POINTS) - len(refs.POKERUS_POINTS) - len(refs.FAMILIA_POINTS)
-           - len(refs.CASAS_POINTS))
+           - len(refs.CASAS_POINTS) - len(refs.ESPECIES_POINTS))   # e os do POK-54
     assert refs.SHARED_POINTS[fim - len(cen.SCREEN_POINTS):fim] == cen.SCREEN_POINTS
     texto = (REPO_ROOT / "test" / "esteira" / "scenarios" / "full_fisico_fada.py").read_text(encoding="utf-8")
     for caso in ("categoria/soco_de_fogo_fisico", "categoria/thick_fat", "fada/tabela", "fada/especie",

@@ -1011,6 +1011,7 @@ static void HallOfFame_PrintMonInfo(struct HallofFameMon* currMon, u8 unused1, u
         dexNumber = SpeciesToPokedexNum(currMon->species);
         if (dexNumber != 0xFFFF)
         {
+            dexNumber = NationalDexNumToDisplayed(dexNumber);
             text[0] = (dexNumber / 100) + CHAR_0;
             text[1] = ((dexNumber %= 100) / 10) + CHAR_0;
             text[2] = (dexNumber % 10) + CHAR_0;

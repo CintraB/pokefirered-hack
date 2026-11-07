@@ -10,3 +10,14 @@ Route23_FamiliaSombra_4F_Text_Bilhete2::
     .string "“Proteção paga. Pode subir para\p"
     .string "a Liga em paz.”\n"
     .string "No verso, em vermelho: “Por ora.”$"
+
+Route23_FamiliaSombra_4F_Text_Bilhete3::
+    .string "Um recibo de passagem de Sinnoh:\n"
+    .string "“GARCHOMP, O MERCENÁRIO. A\l"
+    .string "Família quebrou a própria regra.”$"
+
+Route23_FamiliaSombra_4F_Text_Bilhete4::
+    .string "Um bilhete no escuro:\n"
+    .string "“Por que este andar não tem luz?\p"
+    .string "Para você não ver o sonho de\n"
+    .string "DARKRAI, O PESADELO.”$"

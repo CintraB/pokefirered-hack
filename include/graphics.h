@@ -2430,6 +2430,31 @@ extern const u8 gMonIcon_UnownExclamationMark[];
 extern const u32 gMonFrontPic_UnownQuestionMark[];
 extern const u32 gMonBackPic_UnownQuestionMark[];
 extern const u8 gMonIcon_UnownQuestionMark[];
+// POK-54
+extern const u32 gMonFrontPic_Gible[];
+extern const u32 gMonPalette_Gible[];
+extern const u32 gMonBackPic_Gible[];
+extern const u32 gMonShinyPalette_Gible[];
+extern const u8 gMonIcon_Gible[];
+extern const u8 gMonFootprint_Gible[];
+extern const u32 gMonFrontPic_Gabite[];
+extern const u32 gMonPalette_Gabite[];
+extern const u32 gMonBackPic_Gabite[];
+extern const u32 gMonShinyPalette_Gabite[];
+extern const u8 gMonIcon_Gabite[];
+extern const u8 gMonFootprint_Gabite[];
+extern const u32 gMonFrontPic_Garchomp[];
+extern const u32 gMonPalette_Garchomp[];
+extern const u32 gMonBackPic_Garchomp[];
+extern const u32 gMonShinyPalette_Garchomp[];
+extern const u8 gMonIcon_Garchomp[];
+extern const u8 gMonFootprint_Garchomp[];
+extern const u32 gMonFrontPic_Darkrai[];
+extern const u32 gMonPalette_Darkrai[];
+extern const u32 gMonBackPic_Darkrai[];
+extern const u32 gMonShinyPalette_Darkrai[];
+extern const u8 gMonIcon_Darkrai[];
+extern const u8 gMonFootprint_Darkrai[];
 
 extern const u32 gMonFrontPic_CircledQuestionMark[];
 extern const u32 gMonBackPic_CircledQuestionMark[];
@@ -4457,6 +4482,11 @@ extern const u8 gMonIcon_Unown_Y[];
 extern const u8 gMonIcon_Unown_Z[];
 extern const u8 gMonIcon_Unown_ExclamationMark[];
 extern const u8 gMonIcon_Unown_QuestionMark[];
+// POK-54
+extern const u8 gMonIcon_Gible[];
+extern const u8 gMonIcon_Gabite[];
+extern const u8 gMonIcon_Garchomp[];
+extern const u8 gMonIcon_Darkrai[];
 extern const u8 gMonIcon_QuestionMark[];
 
 // trade

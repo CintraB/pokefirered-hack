@@ -610,9 +610,8 @@
       "aba": "batalha",
       "nome": "Vencer o Mercenário",
       "tipo": "EVENTO",
-      "condicao": "Parte 2: derrotar ou capturar o Mercenário (inativa até lá)",
+      "condicao": "Derrotar ou capturar o Garchomp, o Mercenário, no 6º andar do prédio da Rota 23",
       "param": "CONQ_EVT_FAMILIA_MERCENARIO",
-      "ativa": false,
       "premios": [
         {"item": "ITEM_PP_MAX", "qtd": 3}
       ]
@@ -623,9 +622,8 @@
       "aba": "batalha",
       "nome": "Derrubar a Família Sombra",
       "tipo": "EVENTO",
-      "condicao": "Parte 2: derrotar ou capturar os 4 chefes da Família Sombra (inativa até lá)",
+      "condicao": "Derrotar ou capturar os 4 chefes da Família Sombra, no prédio da Rota 23",
       "param": "CONQ_EVT_FAMILIA_TODA",
-      "ativa": false,
       "premios": [
         {"item": "ITEM_MASTER_BALL", "qtd": 1}
       ]
@@ -950,20 +948,20 @@
     {
       "id": "familia_mercenario",
       "nome": "O Mercenário",
-      "local": "Prédio da Rota 23",
+      "local": "Garchomp, Rota 23",
       "tipo": "chefe",
       "lider": false,
       "rival": false,
-      "especie": "SPECIES_NONE"
+      "especie": "SPECIES_GARCHOMP"
     },
     {
       "id": "familia_pesadelo",
       "nome": "O Pesadelo",
-      "local": "Prédio da Rota 23",
+      "local": "Darkrai, Rota 23",
       "tipo": "chefe",
       "lider": false,
       "rival": false,
-      "especie": "SPECIES_NONE"
+      "especie": "SPECIES_DARKRAI"
     }
   ]
 }

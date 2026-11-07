@@ -33,3 +33,17 @@ Route23_UnusedHouse_Text_Bilhete2::
     .string "TYRANITAR, O COBRADOR.\n"
     .string "Quem deve, paga. Quem não deve,\l"
     .string "vai dever.”$"
+
+Route23_UnusedHouse_Text_Bilhete3::
+    .string "Mais um bilhete, em letra miúda:\n"
+    .string "“Regra nova: contrato é contrato.\p"
+    .string "GARCHOMP, O MERCENÁRIO, veio de\n"
+    .string "Sinnoh. Não é família: cobra\l"
+    .string "adiantado.”$"
+
+Route23_UnusedHouse_Text_Bilhete4::
+    .string "Um bilhete amarelado, mais velho\n"
+    .string "que as regras da casa:\p"
+    .string "“Nunca tome partido contra a\n"
+    .string "Família. Nem contra DARKRAI, O\l"
+    .string "PESADELO.”$"

@@ -60,3 +60,63 @@ Route23_Text_PedagioJaPagou::
     .string "O Persian ronrona e ajeita o\n"
     .string "chapéu. Você já pagou a proteção.$"
 
+
+@ POK-54: a porta lacrada e a polícia na Rota 23 (Família encerrada).
+Route23_Text_PortaFamiliaLacrada::
+    .string "A porta está lacrada pela polícia.$"
+
+Route23_Text_JennyCaso::
+    .string "Oficial Jenny: Um momento!\p"
+    .string "Aqui é a polícia. Este prédio era\n"
+    .string "a sede da FAMÍLIA SOMBRA.\p"
+    .string "O último chefe caiu e a quadrilha\n"
+    .string "se desfez. Lacramos tudo.\p"
+    .string "Pelo que apuramos, foi você que\n"
+    .string "derrubou a Família. Obrigada!$"
+
+Route23_Text_JennyApreendido3::
+    .string "Oficial Jenny: A polícia apreendeu\n"
+    .string "este GARCHOMP, O MERCENÁRIO.\p"
+    .string "O contrato dele acabou e ele não\n"
+    .string "tem mais dono. Fica com você.$"
+
+Route23_Text_JennyApreendido4::
+    .string "Oficial Jenny: A polícia apreendeu\n"
+    .string "este DARKRAI, O PESADELO.\p"
+    .string "Ninguém o reclamou e ele não tem\n"
+    .string "mais dono. Fica com você.$"
+
+Route23_Text_JennyRecebeu::
+    .string "{PLAYER} recebeu {STR_VAR_1}!$"
+
+Route23_Text_JennySemEspaco::
+    .string "Oficial Jenny: Time e PC cheios!\n"
+    .string "Abra espaço e fale comigo de novo.\l"
+    .string "Eu guardo o Pokémon até lá.$"
+
+Route23_Text_JennyQuerOuvir::
+    .string "Oficial Jenny: Quer ouvir a história\n"
+    .string "completa do caso?$"
+
+Route23_Text_JennyObrigada::
+    .string "Oficial Jenny: Tudo bem. Se mudar\n"
+    .string "de ideia, é só falar comigo.$"
+
+Route23_Text_JennyDeNovo::
+    .string "Oficial Jenny: Olá de novo! O caso\n"
+    .string "da FAMÍLIA SOMBRA está encerrado.$"
+
+Route23_Text_Policial1::
+    .string "Policial: O prédio está lacrado.\n"
+    .string "Daqui, ninguém entra.$"
+
+Route23_Text_Policial2::
+    .string "Policial: Dizem que um treinador\n"
+    .string "derrubou a Família sozinho.$"
+
+Route23_Text_Growlithe::
+    .string "Growlithe: Au!$"
+
+Route23_Text_Arcanine::
+    .string "Arcanine: Au! Au!$"
+

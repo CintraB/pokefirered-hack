@@ -25,7 +25,11 @@ DEX = "src/data/pokemon/pokedex_text_fr.h"
 DEX_RANGES = [
     ("gDummyPokedexText", "gSunkernPokedexText"),     # F1
     ("gSunfloraPokedexText", "gDeoxysPokedexText"),   # F2
+    ("gGiblePokedexText", "gDarkraiPokedexText"),     # POK-54: traduzidos da Platinum, sem base inglesa
 ]
+# POK-54: entradas novas, sem categoria inglesa no commit base da tradução (Tubarão, Caverna, Mach e Breu
+# vêm do spec da Família Sombra, parte 2)
+EXTRAS_POK54 = {"NATIONAL_DEX_GIBLE", "NATIONAL_DEX_GABITE", "NATIONAL_DEX_GARCHOMP", "NATIONAL_DEX_DARKRAI"}
 
 BS_N = chr(92) + "n"                                  # a quebra `\n` como aparece no fonte
 # A janela tem 240 px, mas a moldura do fundo ocupa as colunas 1-2 e 237-238 (captura I2 do Wailord) e o
@@ -68,7 +72,7 @@ def entries():
 
 def test_arquivo_inteiro_foi_extraido(entries):
     labels = _labels()
-    assert len(labels) == 192 + 195                              # F1: Dummy + 191 espécies; F2: Sunflora..Deoxys
+    assert len(labels) == 192 + 195 + 4                          # F1: Dummy + 191 espécies; F2: Sunflora..Deoxys; POK-54
     assert labels == re.findall(r"^const u8 (g\w+PokedexText)\[\]", _source(), re.M)   # as faixas cobrem o arquivo todo
     assert {e.label for e in entries} == set(labels) - SPECIAL
 
@@ -291,8 +295,8 @@ def _flat(text: str) -> str:
 
 def test_golpes_e_habilidades_cobertos_por_inteiro():
     moves, abilities = _move_descriptions(), _ability_descriptions()
-    assert len(moves) == 360                           # 354 + os 6 de Fada (POK-45)
-    assert len(abilities) == 78                       # 77 habilidades + "sem habilidade"
+    assert len(moves) == 366                           # 354 + os 6 de Fada (POK-45) + os 6 da Gen 4 (POK-54)
+    assert len(abilities) == 79                       # 77 habilidades + "sem habilidade" + Bad Dreams (POK-54)
     pointers = re.findall(r"\[MOVE_\w+\s*-\s*1\]\s*=\s*(gMoveDescription_\w+)", _read(MOVES_C))
     assert sorted(pointers) == sorted(moves)          # nenhum golpe sem descrição
 
@@ -305,7 +309,7 @@ def f3_entries():
 
 
 def test_f3_entradas_foram_extraidas(f3_entries):
-    assert len(f3_entries) == 360 + 78
+    assert len(f3_entries) == 366 + 79
 
 
 def test_f3_nenhum_ingles_sobrando(f3_entries):
@@ -499,7 +503,7 @@ def f4_entries():
 
 def test_f4_todas_as_categorias_extraidas(f4_entries):
     entries = _dex_entries()
-    assert len(entries) == 387                                     # NONE + 386 espécies
+    assert len(entries) == 391                                     # NONE + 386 espécies + 4 do POK-54
     assert len(f4_entries) == len(entries)
 
 
@@ -618,6 +622,7 @@ def test_f4_toda_categoria_esta_no_glossario():
     terms = json.loads((REPO_ROOT / "test" / "esteira" / "glossario.json").read_text(encoding="utf-8"))["termos"]
     interface = {(t["en"], t["pt"]) for t in terms if t["categoria"] == "interface"}
     english, pt = _english_categories(), _dex_entries()
+    pt = {k: v for k, v in pt.items() if k not in EXTRAS_POK54}
     assert set(english) == set(pt)
     pairs = {(english[k], pt[k]["category"]) for k in pt}
     assert sorted(pairs - interface) == []

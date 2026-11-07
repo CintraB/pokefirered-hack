@@ -9,9 +9,9 @@ a Pokédex inteira obtível e uma esteira de testes automática no emulador.**
 ![Idioma](https://img.shields.io/badge/idioma-PT--BR-009c3b?style=flat-square)
 ![Base](https://img.shields.io/badge/base-pret%2Fpokefirered-e3350d?style=flat-square)
 ![Linguagem](https://img.shields.io/badge/C-agbcc-555555?style=flat-square)
-![Testes](https://img.shields.io/badge/pytest-5096%20testes-2ea44f?style=flat-square)
-![Esteira](https://img.shields.io/badge/esteira-624%20checagens-2ea44f?style=flat-square)
-![Versão](https://img.shields.io/badge/ROM-v70-informational?style=flat-square)
+![Testes](https://img.shields.io/badge/pytest-5301%20testes-2ea44f?style=flat-square)
+![Esteira](https://img.shields.io/badge/esteira-648%20checagens-2ea44f?style=flat-square)
+![Versão](https://img.shields.io/badge/ROM-v72-informational?style=flat-square)
 
 <img src="docs/readme/inicial.png" width="240" alt="Escolha do inicial em português">
 <img src="docs/readme/chuva.png" width="240" alt="Batalha com chuva contínua">
@@ -62,11 +62,12 @@ perder o jeito do FireRed.
 | 🧚 | **Tipos e golpes modernos** | Físico ou especial por golpe e o tipo Fada, como em Pokémon X e Y. |
 | 📖 | **Pokédex completa** | Exclusivos do LeafGreen, os dois fósseis, lendários e míticos obtíveis. |
 | 🛠️ | **Melhorias modernas** | Exp. Share para todos, PC Portátil, HMs sem ensinar, status com L/R… |
-| 🏆 | **Conquistas e diário** | 44 conquistas com prêmio na bolsa e o diário das batalhas marcantes, no Cartão de Treinador. |
+| 🏆 | **Conquistas e diário** | 46 conquistas com prêmio na bolsa e o diário das batalhas marcantes, no Cartão de Treinador. |
 | 🔝 | **Revanches por degrau** | Depois do Hall da Fama, a Elite 4 e as revanches do Explorador VS sobem até o nível 100. |
 | 🧭 | **DexNav** | Os Pokémon de cada lugar, com a chance real, o que falta capturar e onde achar cada um. |
-| 🐾 | **Pokémon seguidor** | O 1º da equipe anda atrás de você no campo: os 386, com os grandes, as fêmeas e cada letra do Unown. |
-| 🏠 | **Casas e Família Sombra** | Mestre dos Golpes, pescador e sala de troféus em casas que eram vazias, e um prédio de seis andares na Rota 23 com a máfia dos Pokémon. |
+| 🐾 | **Pokémon seguidor** | O 1º da equipe anda atrás de você no campo: os 386 e os 4 extras, com os grandes, as fêmeas e cada letra do Unown. |
+| 🏠 | **Casas e Família Sombra** | Mestre dos Golpes, pescador e sala de troféus em casas que eram vazias, e um prédio de seis andares na Rota 23 com a máfia dos Pokémon: chefes shiny que voltam mais fortes, um caso a fechar e o dossiê. |
+| 🐉 | **Garchomp e Darkrai** | Gible, Gabite, Garchomp e Darkrai (nº 443 a 445 e 491) como extras da Pokédex, com seis golpes novos e uma habilidade nova. Não contam para a Pokédex completa. |
 | 🗞️ | **Tela de novidades** | O Prof. Carvalho apresenta cada mudança em cartões ilustrados. |
 | 🧪 | **Esteira de testes** | Toda ROM é jogada no emulador e testada antes de existir. |
 
@@ -115,7 +116,7 @@ perder o jeito do FireRed.
 
 | | |
 |---|---|
-| **Conquistas** | 44 conquistas em 5 abas (História, Batalha, Captura, Treino e Exploração): as 8 insígnias, Elite 4 e Campeão, treinadores vencidos de 10 em 10, shinies, lendários, Pokédex, nível 100, ovo perfeito, ₽999.999, horas de jogo… Cada linha mostra ✓ ou o progresso (`87/100`), e o rodapé, o total da aba. |
+| **Conquistas** | 46 conquistas em 5 abas (História, Batalha, Captura, Treino e Exploração): as 8 insígnias, Elite 4 e Campeão, treinadores vencidos de 10 em 10, shinies, lendários, Pokédex, nível 100, ovo perfeito, ₽999.999, horas de jogo… Cada linha mostra ✓ ou o progresso (`87/100`), e o rodapé, o total da aba. |
 | **Prêmio na hora** | Ao conquistar, o jogo pausa com um aviso animado e a fanfarra, e o prêmio cai na bolsa (bolsa cheia: no PC). Prêmios maiores para as conquistas mais difíceis, até a Master Ball. |
 | **Save antigo reconhecido** | Na primeira vez que um save de antes abre nesta versão, o jogo confere o que já foi feito e entrega tudo num aviso só. O que não dá mais para provar (vencer um líder com um Pokémon só, vencer o rival em todas) fica riscado e fora do total. |
 | **Diário da jornada** | A primeira vitória contra cada líder, o rival, a Elite 4 e o Campeão, e cada lendário capturado ou derrotado: tempo de jogo, turnos, time usado e o MVP (quem mais nocauteou). |
@@ -128,6 +129,7 @@ perder o jeito do FireRed.
 </p>
 </details>
 
+<a id="casas-familia-sombra"></a>
 <details open>
 <summary><b>🏠 Casas e Família Sombra</b></summary>
 
@@ -136,8 +138,11 @@ perder o jeito do FireRed.
 | **Mestre dos Golpes** | Uma casa nova na Rota 6 onde um tutor ensina os 15 golpes de tutor do FireRed, **quantas vezes você quiser**, por ¥3.000 cada. Escolhe o golpe, escolhe o Pokémon (só os compatíveis) e, se cancelar, não paga nada. |
 | **Casa do pescador** | Na areia da Rota 19, um pescador mede o seu **Krabby** e guarda o recorde: bateu, ganha uma Pepita (e uma Bala Rara no primeiro recorde). |
 | **Sala de troféus** | Na Ilha Sete: quatro redomas com as rosas dos chefes da Família, cinco taças (bronze, prata e ouro) uma para cada aba das conquistas e uma placa com os seus recordes. |
-| **O prédio da Rota 23** | Depois da **8ª insígnia**, a porta destranca: seis andares de capangas de chapéu (os três primeiros em penumbra e o 4º e o 5º no escuro, com encontros andando) e, no topo, o chefe, um **Gengar shiny**, "GENGAR, O DOM". |
-| **A máfia volta** | Vencido o chefe, o prédio fica vazio por cerca de 3h30 de jogo (entre 3h00 e 3h30, conforme o ponto do meio-dia em que o chefe caiu). Depois chega a ocupação seguinte, com o **Tyranitar shiny**, "TYRANITAR, O COBRADOR", mais forte (+6 níveis por ocupação). |
+| **O prédio da Rota 23** | Depois da **8ª insígnia**, a porta destranca: seis andares (capangas de chapéu nos três primeiros, em penumbra; encontros com Pokémon da Família a cada passo no 4º e no 5º, no escuro) e, no topo, o primeiro chefe, um **Gengar shiny**, "GENGAR, O DOM". |
+| **A máfia volta** | Vencido o chefe, o prédio fica vazio por cerca de 3h30 de jogo (entre 3h00 e 3h30, conforme o ponto do meio-dia em que o chefe caiu). Depois chega a ocupação seguinte, com o **Tyranitar shiny**, "TYRANITAR, O COBRADOR", e então mais dois chefes, cada um mais forte que o anterior (+6 níveis por ocupação). |
+| **O Mercenário e o Pesadelo** | A 3ª ocupação traz o **Garchomp shiny** (nível 74), "GARCHOMP, O MERCENÁRIO", com Inv. Dragão, e a 4ª o **Darkrai shiny** (nível 80), "DARKRAI, O PESADELO": Vazio Negro para dormir a dupla, Devora-sonho e Pesadelo. Cada um luta ao som de um lendário. O Darkrai é a luta mais difícil da hack. |
+| **Um caso a fechar** | A Família não dura para sempre, e o desfecho está na [história](#historia-familia-sombra), com spoilers. Os chefes que você derrotar sem capturar não se perdem: alguém os entrega depois, já sem dono (no time ou, sem vaga, no PC; sem lugar nenhum, pede espaço e oferece de novo) e pergunta se você quer ouvir a história completa. |
+| **O dossiê do caso** | Em tela cheia, com a pasta de papel pardo e uma foto de cada chefe, com o carimbo **CAPTURADO** ou **DERROTADO** conforme o seu histórico. Quem entrega os chefes abre o dossiê, e ele fica disponível sempre que você falar com essa pessoa. |
 | **Pedágio** | Enquanto a Família manda, um Persian de chapéu cobra ¥1.000 para passar pela Rota 23, nos dois sentidos. Quem recusa enfrenta duas lutas seguidas para passar à força. |
 | **Cara de filme antigo** | Capangas e gêmeos entram em batalha com cores frias e escurecidas; os chefes aparecem com as cores shiny. Cada chefe vencido dá uma rosa (acende a redoma na sala de troféus), uma conquista e uma batalha no diário. |
 
@@ -145,6 +150,46 @@ perder o jeito do FireRed.
 <img src="docs/readme/familia_filme.png" width="240" alt="Batalha contra um capanga da Família Sombra, com cores de filme antigo">
 <img src="docs/readme/familia_sala_do_dom.png" width="240" alt="A sala do Dom, no 6º andar">
 <img src="docs/readme/sala_trofeus.png" width="240" alt="A sala de troféus da Ilha Sete">
+<img src="docs/readme/familia_pesadelo.png" width="240" alt="Darkrai, o Pesadelo, contra um Mewtwo nível 60">
+<img src="docs/readme/dossie_mercenario.png" width="240" alt="O dossiê do caso, na ficha do Mercenário, com o carimbo CAPTURADO">
+</p>
+
+> 📖 Quer saber quem é a Família e como o caso termina? A [história da Família Sombra](#historia-familia-sombra) está logo abaixo, com spoilers.
+</details>
+
+<a id="historia-familia-sombra"></a>
+<details>
+<summary><b>📖 A história da Família Sombra</b> (spoilers: só abra depois de jogar, ou se não se importar)</summary>
+
+> [!WARNING]
+> Esta seção conta o enredo inteiro, até o fim. Os detalhes de jogo (andares, pedágio, rosas, chefes) estão em [Casas e Família Sombra](#casas-familia-sombra).
+
+**A Família.** Quando a Equipe Rocket caiu, muitos Pokémon foram deixados para trás, nos porões do Cassino, na Silph e na Torre de Lavender. Um Gengar achou os abandonados um por um e os reuniu num prédio esquecido da Rota 23. "Agora somos família", diz uma carta do 2º andar. Nascia a Família Sombra, e ele virou **GENGAR, O DOM**: ouvia pedidos, concedia favores e cobrava lealdade, com uma rosa vermelha na lapela, presente de uma menina de Lavender cujo Pokémon ele salvou da Torre.
+
+**O prédio e o pedágio.** Com a 8ª insígnia, a porta destranca e você sobe seis andares. Nos três primeiros, em penumbra, capangas de chapéu preto fecham o cerco assim que o veem; no 4º e no 5º, no escuro, não há capangas à vista: os encontros andam com você, e Pokémon da Família surgem a cada passo. Ninguém tira um membro da Família: as Poké Bolas são desviadas. Bilhetes pelo caminho, mais dinheiro e pérolas, contam o resto. No 6º andar, o Dom espera atrás da mesa, entre os gêmeos Machamp que revistam quem chega até ele. Lá fora, um Persian de chapéu cobra ¥1.000 de quem passa pela Rota 23, nos dois sentidos: é a "proteção" da Família. Quem recusa enfrenta duas lutas para passar à força.
+
+**Os quatro chefes.** Derrubado o Dom, o prédio fica vazio por cerca de 3h30 de jogo, sem pedágio. Depois chegam os reforços e um novo chefe, e a Família fica mais forte a cada vez. **TYRANITAR, O COBRADOR**, do Monte Prateado, vem com dois Rhydon que não falam, só batem: troca a rosa vermelha por uma dourada, da cor do pedágio, e a Família fica mais rica e mais cruel. Com Kanto perdido, a Família quebra a própria regra e manda buscar alguém de fora. **GARCHOMP, O MERCENÁRIO**, vem de Sinnoh com dois Gligar, não pergunta o motivo, só o preço, e usa uma rosa azul colhida na neve de onde veio. Não é família, é contrato. Por último, nos bilhetes mais antigos, aparece a sombra por trás do Dom, o padrinho do padrinho: **DARKRAI, O PESADELO**, que nunca subiu as escadas porque governava pelos sonhos. Quem dormia no prédio acordava devendo. Dois Dusclops vigiam a porta dele, e a rosa dele é negra. Cada chefe é um Pokémon shiny e pode ser capturado, e cada um que cai deixa a sua rosa com você, que acende a redoma dele na sala de troféus da Ilha Sete.
+
+**A queda.** Com o Pesadelo, a Família Sombra termina: derrotado ou capturado, a máfia não volta, e o prédio fecha para sempre. Quando você sai pela porta, a polícia já está lá: faixas amarelas cruzadas, dois policiais, um Growlithe e um Arcanine. A **Oficial Jenny** vem ao seu encontro: o último chefe caiu, a quadrilha se desfez e a polícia lacrou tudo. "Pelo que apuramos, foi você que derrubou a Família."
+
+**O que sobra.** A polícia apreendeu o Garchomp do Mercenário e o Darkrai do Pesadelo, que não têm mais dono, e a Jenny entrega a você os que você não capturou, no time ou no PC (sem lugar, ela guarda o Pokémon até você abrir espaço). Depois pergunta se você quer ouvir a história completa do caso. Dizendo que sim, abre-se o **dossiê**: uma pasta de papel pardo com a ficha de cada chefe, a foto em preto e branco, a cor da rosa e o carimbo **CAPTURADO** ou **DERROTADO**, conforme o que você fez. No fim, o "Depois do caso": os Pokémon da Família foram para o Centro de Reabilitação de Celadon, muitos ganharam treinadores novos e uma casa de verdade, e a rosa vermelha do Dom voltou para a menina de Lavender, que a guarda num vaso perto da janela. A Jenny não sai da porta: falando com ela de novo, o dossiê pode ser relido quando você quiser.
+
+**De onde vem o Gible.** O Gible não existe na natureza. Ele só nasce de ovo: deixe um Garchomp (o do Mercenário, por exemplo), um Gabite ou um Gible na creche, com um Ditto ou um parceiro compatível. O Gible evolui para Gabite no nível 24 e para Garchomp no 48. O Darkrai, não: é lendário e não cruza.
+</details>
+
+<details open>
+<summary><b>🐉 Garchomp e Darkrai</b></summary>
+
+| | |
+|---|---|
+| **Quatro extras** | **Gible** (nº 443), **Gabite** (nº 444), **Garchomp** (nº 445) e **Darkrai** (nº 491), com os dados da 4ª geração. Aparecem na lista da Pokédex e na contagem de vistos e capturados, mas **nunca são exigidos**: o diploma, a Pokédex completa, o Amuleto e o DexNav seguem pedindo só os 386. |
+| **De onde vêm** | Nenhum nasce na natureza. O Gible só sai de **ovo** da creche (com Garchomp, Gabite ou Gible, e Ditto ou parceiro de Monstro ou Dragão), evolui no nível 24 e no 48, e tem só a habilidade Véu de Areia. O Garchomp e o Darkrai vêm dos chefes da Família Sombra: capturados na luta ou entregues depois, já sem dono. |
+| **Golpes novos** | Seis, com os dados da 4ª geração: **Inv. Dragão** (Dragon Rush: 100 de poder, 75% de precisão, físico, 20% de fazer o alvo recuar), **Vazio Negro** (Dark Void: dorme os dois adversários, 80% de precisão, só funciona com o Darkrai), **Presa Ígnea** (Fire Fang: 65 de poder, 95% de precisão, físico, 10% de queimar e, em separado, 10% de recuar), **Vento Agouro** (Ominous Wind: 60 de poder, especial, 10% de subir todos os atributos de quem usa), **Trama Vil** (Nasty Plot: sobe o Atq. Esp. de quem usa em 2 estágios) e **Pulso Negro** (Dark Pulse: 80 de poder, especial, 20% de recuar). |
+| **Habilidade nova** | **Sonhos Ruins** (Bad Dreams, a do Darkrai): no fim do turno, quem dorme perde 1/8 do PS máximo. |
+| **Em todo lugar** | Resumo, equipe, batalha, creche, seguidor e tela da Pokédex já reconhecem os quatro, e um save antigo continua abrindo. |
+
+<p align="center">
+<img src="docs/readme/dex_extras.png" width="240" alt="A lista da Pokédex com Gible, Gabite, Garchomp e Darkrai depois do Deoxys">
 </p>
 </details>
 
@@ -157,7 +202,7 @@ perder o jeito do FireRed.
 | **Para quem vale** | Elite 4, Campeão e todas as revanches do **Explorador VS**. O primeiro combate de cada treinador não muda. |
 | **Times mais fortes** | 6 Pokémon em volta do nível escolhido (o ás um pouco acima), espécies evoluídas e mais fortes do tema de cada classe, inclusive de Johto e Hoenn, com item segurado e IVs que sobem com o degrau (até 31). A Elite 4 e o Campeão têm times feitos à mão para cada degrau. |
 | **IA dos chefes** | Do Nível 80 para cima, as revanches do Explorador VS usam a IA dos líderes e da Elite 4. |
-| **Conquistas** | Vencer uma revanche no Nível 100 e a Liga no Nível 100 são duas das 44 conquistas. |
+| **Conquistas** | Vencer uma revanche no Nível 100 e a Liga no Nível 100 são duas das 46 conquistas. |
 
 <p align="center">
 <img src="docs/readme/revanche_lista.png" width="240" alt="A guarda da Liga com a lista de níveis">
@@ -185,7 +230,7 @@ perder o jeito do FireRed.
 
 | | |
 |---|---|
-| **Quem segue** | O 1º da equipe, qualquer um dos 386 (sprites de HeartGold/SoulSilver, com a versão shiny). Desmaiado ou Ovo: ninguém segue. |
+| **Quem segue** | O 1º da equipe, qualquer um dos 386 e os 4 extras (sprites de HeartGold/SoulSilver, com a versão shiny). Desmaiado ou Ovo: ninguém segue. |
 | **Grandes, fêmeas e Unown** | Os 7 grandes (Steelix, Wailord, Lugia, Ho-Oh, Groudon, Kyogre e Rayquaza) andam num quadro de 64×64. As 6 espécies com sprite próprio de fêmea (Venusaur, Pikachu, Meganium, Wobbuffet, Steelix e Heracross) mostram a fêmea. O Unown aparece com a letra dele (A a Z, **!** e **?**) e o Deoxys na Forma Ataque, a do FireRed. |
 | **No campo** | Anda e corre no mesmo ritmo do jogador, pula ledges junto, atravessa portas e bordas de mapa, entra na grama alta e mexe as patas parado. Fica sempre atrás do jogador no desenho, até ao sul dele. Não bloqueia nada: voltar para o tile dele troca os dois de lugar, NPCs passam por ele e o **A** nele não faz nada. Pega o tom do dia e da noite e o clima. |
 | **Some e volta** | Some na bicicleta, no Surf, no Voar, na Corda de Fuga, no Cavar, no Teleporte e no Doce Aroma, e volta logo depois, atrás de você. Trocar o 1º (menu da equipe, PC, troca, evolução, cura no Centro) troca o seguidor. |
@@ -299,6 +344,7 @@ perder o jeito do FireRed.
 | <img src="docs/readme/neve.png" width="240" alt="Neve na Ilha Quatro"><br>Neve na Ilha Quatro | <img src="docs/readme/novidades_cartao.png" width="240" alt="Cartão de novidade"><br>Cartão de novidade | <img src="docs/readme/loja_quatro.png" width="240" alt="Loja da Ilha Quatro"><br>Itens de criação |
 | <img src="docs/readme/pc.png" width="240" alt="PC"><br>PC | <img src="docs/readme/inicial.png" width="240" alt="Escolha do inicial"><br>Escolha do inicial | <img src="docs/readme/sol.png" width="240" alt="Sol na batalha"><br>Sol na batalha |
 | <img src="docs/readme/resumo_fada.png" width="240" alt="Gardevoir Psíquico e Fada"><br>Gardevoir agora é **Fada** | <img src="docs/readme/golpe_fisico.png" width="240" alt="M. Esmagador físico"><br>Categoria do golpe: **FÍSICO** | <img src="docs/readme/golpe_fada.png" width="240" alt="Expl. Lunar"><br>Golpe novo: **Expl. Lunar** |
+| <img src="docs/readme/familia_pesadelo.png" width="240" alt="Darkrai contra Mewtwo"><br>**Darkrai, o Pesadelo**, contra um Mewtwo nível 60 | <img src="docs/readme/dossie_mercenario.png" width="240" alt="Dossiê, ficha do Mercenário"><br>O dossiê do caso | <img src="docs/readme/dex_extras.png" width="240" alt="Pokédex com os 4 extras"><br>Os 4 extras na Pokédex |
 
 ## Linha do tempo
 
@@ -325,6 +371,7 @@ perder o jeito do FireRed.
 | **Pokémon seguidor, todos** (03/11) | Os 386 seguem, com a versão shiny: os 7 grandes em 64×64, as fêmeas, cada letra do Unown e o Deoxys Ataque; o seguidor fica sempre atrás do jogador no desenho. A ROM passou a 32 MB. |
 | **Pokérus** (06/11) | O Pokérus do Rubi/Safira, que o FireRed deixava desligado: pega depois das batalhas, passa aos vizinhos, conta os dias pelo relógio da hack e dobra os EVs. |
 | **Casas e Família Sombra** (06/11) | Três casas sem uso ganham vida (Mestre dos Golpes na Rota 6, casa do pescador na Rota 19, sala de troféus na Ilha Sete) e a Rota 23 ganha o prédio da Família Sombra: capangas, gêmeos, chefes shiny, pedágio e a máfia que volta. |
+| **Família Sombra, parte 2** (07/11) | Gible, Gabite, Garchomp e Darkrai como extras da Pokédex (nº 443 a 445 e 491), seis golpes novos e a habilidade Sonhos Ruins, os chefes Mercenário e Pesadelo, o desfecho do caso (história recolhida acima, com spoilers), o dossiê em tela cheia, 46 conquistas e a correção das coordenadas de warp em 16 bits. |
 | **Esteira mais firme** (06/11) | Galeria de textos (cada fala na caixa real) e telas de referência estáveis, sem avisos falsos pelo sorteio. |
 
 ## Esteira de testes
@@ -355,7 +402,7 @@ flowchart LR
   pior caso dos nomes variáveis, numa página HTML para revisar a tradução de olho. Não reprova nada.
 - **Telas estáveis**: a tela da captura sai sempre com o mesmo Pokémon (um Pidgey), e as telas são
   conferidas pelo relógio do disco, para o sorteio não gerar avisos falsos.
-- **5096 testes em pytest** cobrem a própria esteira e as regras de cada hack.
+- **5301 testes em pytest** cobrem a própria esteira e as regras de cada hack.
 
 <details>
 <summary>Comandos (WSL)</summary>
@@ -397,7 +444,8 @@ O manual completo está em [`test/README.md`](test/README.md).
 | `src/data/novidades/cartoes.json` | Cartões da tela de novidades |
 | `src/field_move_rules.c` | HMs sem ensinar |
 | `src/follower.c`, `tools/seguidores/` | Pokémon seguidor e o conversor dos sprites |
-| `src/familia_sombra.c`, `src/mestre_golpes.c`, `src/sala_trofeus.c` | Família Sombra (estado, ocupações, pedágio), Mestre dos Golpes e sala de troféus |
+| `src/familia_sombra.c`, `src/mestre_golpes.c`, `src/sala_trofeus.c` | Família Sombra (estado, ocupações, pedágio, entrega dos chefes), Mestre dos Golpes e sala de troféus |
+| `src/dossie.c`, `src/data/dossie_textos.h`, `tools/familia_sombra/dossie.py` | O dossiê do caso em tela cheia e a geração das fotos e da pasta |
 | `test/esteira/` | A esteira de testes (Python + mGBA) |
 | `test/referencias/` | Telas aprovadas, por inicial |
 | `roms/` | ROMs testadas e versionadas |

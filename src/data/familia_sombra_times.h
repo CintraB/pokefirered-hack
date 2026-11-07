@@ -56,7 +56,7 @@ static const struct FamiliaMembro sFamiliaCapangas[FAMILIA_OCUPACOES_TOTAL][FAMI
         MEMBRO(SABLEYE,    60, LEFTOVERS,     SHADOW_BALL,  FAINT_ATTACK, KNOCK_OFF,    CONFUSE_RAY),
         MEMBRO(SHIFTRY,    60, SITRUS_BERRY,  GIGA_DRAIN,   FAINT_ATTACK, EXTRASENSORY, SWORDS_DANCE),
     },
-    // Ocupação 3: o Mercenário // parte 2 troca (plantel provisório gen 1-3, com sprite de chapéu)
+    // Ocupação 3: o Mercenário (terra e dragão)
     {
         MEMBRO(GOLEM,      62, HARD_STONE,    EARTHQUAKE,   ROCK_SLIDE,   EXPLOSION,    BRICK_BREAK),
         MEMBRO(WEEZING,    62, LEFTOVERS,     SLUDGE_BOMB,  THUNDERBOLT,  FLAMETHROWER, WILL_O_WISP),
@@ -68,7 +68,7 @@ static const struct FamiliaMembro sFamiliaCapangas[FAMILIA_OCUPACOES_TOTAL][FAMI
         MEMBRO(SABLEYE,    66, LEFTOVERS,     SHADOW_BALL,  FAINT_ATTACK, KNOCK_OFF,    CONFUSE_RAY),
         MEMBRO(SNEASEL,    66, QUICK_CLAW,    SLASH,        FAINT_ATTACK, ICE_BEAM,     QUICK_ATTACK),
     },
-    // Ocupação 4: o Pesadelo // parte 2 troca (plantel provisório gen 1-3, com sprite de chapéu)
+    // Ocupação 4: o Pesadelo (fantasma e sombrio)
     {
         MEMBRO(MISDREAVUS, 68, SPELL_TAG,     SHADOW_BALL,  PSYCHIC,      THUNDERBOLT,  PAIN_SPLIT),
         MEMBRO(SABLEYE,    68, LEFTOVERS,     SHADOW_BALL,  FAINT_ATTACK, KNOCK_OFF,    CONFUSE_RAY),
@@ -126,7 +126,7 @@ static const struct FamiliaMembro sFamiliaPlantel[FAMILIA_OCUPACOES_TOTAL][FAMIL
         MEMBRO(HOUNDOOM,  0, BLACK_GLASSES, FLAMETHROWER, CRUNCH,       SOLAR_BEAM,   SUNNY_DAY),
         MEMBRO(ABSOL,     0, SCOPE_LENS,    SWORDS_DANCE, BITE,         SLASH,        SHADOW_BALL),
     },
-    // Ocupação 3: o Mercenário // parte 2 troca
+    // Ocupação 3: o Mercenário
     {
         MEMBRO(GOLEM,     0, HARD_STONE,    EARTHQUAKE,   ROCK_SLIDE,   EXPLOSION,    BRICK_BREAK),
         MEMBRO(CROBAT,    0, SHARP_BEAK,    AERIAL_ACE,   SLUDGE_BOMB,  SHADOW_BALL,  CONFUSE_RAY),
@@ -135,7 +135,7 @@ static const struct FamiliaMembro sFamiliaPlantel[FAMILIA_OCUPACOES_TOTAL][FAMIL
         MEMBRO(CRAWDAUNT, 0, SCOPE_LENS,    CRABHAMMER,   CRUNCH,       ICE_BEAM,     SWORDS_DANCE),
         MEMBRO(SHIFTRY,   0, MIRACLE_SEED,  GIGA_DRAIN,   FAINT_ATTACK, EXTRASENSORY, FAKE_OUT),
     },
-    // Ocupação 4: o Pesadelo // parte 2 troca
+    // Ocupação 4: o Pesadelo
     {
         MEMBRO(HAUNTER,    0, SPELL_TAG,    SHADOW_BALL,  THUNDERBOLT,  HYPNOSIS,     DREAM_EATER),
         MEMBRO(BANETTE,    0, SPELL_TAG,    SHADOW_BALL,  KNOCK_OFF,    THUNDERBOLT,  WILL_O_WISP),
@@ -157,10 +157,14 @@ static const struct FamiliaMembro sFamiliaChefes[FAMILIA_OCUPACOES_TOTAL] =
     // TYRANITAR, O COBRADOR: Dança do Dragão prepara o ataque e a velocidade; Deslize de Pedra e Mastigar com o
     // bônus do tipo, Terremoto para Aço e Fogo. Restos o mantêm de pé enquanto se prepara (a areia não o fere).
     MEMBRO(TYRANITAR, 68, LEFTOVERS,    ROCK_SLIDE,   CRUNCH,       EARTHQUAKE,   DRAGON_DANCE),
-    // O Mercenário (terra/dragão) // parte 2 troca (Garchomp é gen 4): Flygon provisório, golpes de terra e dragão.
-    MEMBRO(FLYGON,    74, SOFT_SAND,    EARTHQUAKE,   DRAGON_CLAW,  ROCK_SLIDE,   FIRE_BLAST),
-    // O Pesadelo (fantasma/psíquico) // parte 2 troca (Darkrai é gen 4): Hypno provisório, o sono e o sonho.
-    MEMBRO(HYPNO,     80, TWISTED_SPOON, PSYCHIC,     HYPNOSIS,     DREAM_EATER,  SHADOW_BALL),
+    // GARCHOMP, O MERCENÁRIO: Inv. Dragão e Terremoto são os golpes fortes do tipo (os dois com o bônus de tipo),
+    // Mordida cobre Fantasma e Psíquico, e Dança da Espada dobra o ataque. Fruta Lum cura o primeiro estado
+    // ruim (sono, paralisia, veneno...), para ninguém atrasar o Garchomp.
+    MEMBRO(GARCHOMP,  74, LUM_BERRY,    DRAGON_RUSH,  EARTHQUAKE,   CRUNCH,       SWORDS_DANCE),
+    // DARKRAI, O PESADELO: Vazio Negro dorme os dois adversários (só o Darkrai o usa) e o combo se fecha: Pesadelo
+    // e Sonhos Ruins (a habilidade) cobram do que dorme, Comedor de Sonhos devolve a vida (a IA só o usa com o alvo
+    // dormindo), Mordida é o golpe de tipo sombrio. Restos o mantêm de pé.
+    MEMBRO(DARKRAI,   80, LEFTOVERS,    DARK_VOID,    DREAM_EATER,  CRUNCH,       NIGHTMARE),
 };
 
 #undef MEMBRO

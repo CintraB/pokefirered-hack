@@ -162,7 +162,7 @@
 #define OBJ_EVENT_GFX_FOLLOWER_LARGE 154
 
 // <familia-sombra gfx: gerado por tools/familia_sombra/gerar.py>
-// POK-51: sprites do mapa da Família Sombra (chapéu), redomas e taças da sala de troféus
+// POK-51/POK-54: sprites do mapa da Família Sombra (chapéu), redomas e taças da sala de troféus
 #define OBJ_EVENT_GFX_FAMILIA_HAUNTER 155
 #define OBJ_EVENT_GFX_FAMILIA_MISDREAVUS 156
 #define OBJ_EVENT_GFX_FAMILIA_SABLEYE 157
@@ -194,8 +194,15 @@
 #define OBJ_EVENT_GFX_TACA_BRONZE 183
 #define OBJ_EVENT_GFX_TACA_PRATA 184
 #define OBJ_EVENT_GFX_TACA_OURO 185
+#define OBJ_EVENT_GFX_FAMILIA_GLIGAR 186
+#define OBJ_EVENT_GFX_FAMILIA_DUSCLOPS 187
+#define OBJ_EVENT_GFX_FAMILIA_GARCHOMP_SHINY 188
+#define OBJ_EVENT_GFX_FAMILIA_DARKRAI_SHINY 189
+#define OBJ_EVENT_GFX_POLICIA_GROWLITHE 190
+#define OBJ_EVENT_GFX_POLICIA_ARCANINE 191
+#define OBJ_EVENT_GFX_OFICIAL_JENNY 192
 
-#define NUM_OBJ_EVENT_GFX     186
+#define NUM_OBJ_EVENT_GFX     193
 // </familia-sombra gfx>
 
 // These are dynamic object gfx ids.

@@ -10,6 +10,7 @@ bool8 FamiliaSombra_ChefeAtivo(void);
 void FamiliaSombra_Atualizar(void);
 void FamiliaSombra_Repovoar(void);
 void FamiliaSombra_ChefeCaiu(void);
+bool8 FamiliaSombra_ChefeCapturado(u8 ocupacao);
 bool8 FamiliaSombra_NoPredio(void);
 
 // Batalhas (Task 3)
@@ -25,6 +26,8 @@ u8 FamiliaSombra_NivelSelvagem(void);
 void FamiliaSombra_CriarSelvagem(u8 level);
 void FamiliaSombra_PaletaNoir(u16 *pal, u16 count);
 const u8 *FamiliaSombra_TextoDoChefe(void);
+void FamiliaSombra_CriarChefe(struct Pokemon *mon, u8 ocupacao, bool8 comItem);
+u16 FamiliaSombra_MusicaDoChefe(void);
 #if TESTBUILD
 extern bool8 gTestFamiliaAndarEscuro;
 #endif
@@ -36,5 +39,8 @@ void FamiliaSombra_SortearPedagio(void);
 void FamiliaSombra_PedagioVencido(void);
 void FamiliaSombra_IniciarChefe(void);
 void FamiliaSombra_PrepararAndar(void);
+// O fechamento (Task 10): os chefes apreendidos que a Oficial Jenny entrega
+void FamiliaSombra_ApreendidoPendente(void);
+void FamiliaSombra_EntregarApreendido(void);
 
 #endif // GUARD_FAMILIA_SOMBRA_H

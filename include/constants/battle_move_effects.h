@@ -215,5 +215,7 @@
 #define EFFECT_CALM_MIND 211
 #define EFFECT_DRAGON_DANCE 212
 #define EFFECT_CAMOUFLAGE 213
+// POK-54: Fire Fang (queimar e recuar, cada um com a sua chance)
+#define EFFECT_BURN_FLINCH_HIT 214
 
 #endif  // GUARD_CONSTANTS_BATTLE_MOVE_EFFECTS_H

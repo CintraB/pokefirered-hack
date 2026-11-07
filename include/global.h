@@ -132,7 +132,9 @@ extern u8 gStringVar4[];
 
 #define ROUND_BITS_TO_BYTES(numBits) DIV_ROUND_UP(numBits, 8)
 
-#define DEX_FLAGS_NO ROUND_BITS_TO_BYTES(NUM_SPECIES)
+// Bytes da Pokédex no save (416 bits). Literal de propósito: as espécies novas do POK-54 ficam depois do Ovo e
+// NUM_SPECIES cresceu, mas o save block não muda de tamanho. A Pokédex é indexada pelo número nacional.
+#define DEX_FLAGS_NO 52
 #define NUM_FLAG_BYTES ROUND_BITS_TO_BYTES(FLAGS_COUNT)
 #define NUM_ADDITIONAL_PHRASE_BYTES ROUND_BITS_TO_BYTES(NUM_ADDITIONAL_PHRASES)
 
@@ -146,6 +148,8 @@ extern u8 gStringVar4[];
 // This produces an error at compile-time if expr is zero.
 // It looks like file.c:line: size of array `id' is negative
 #define STATIC_ASSERT(expr, id) typedef char id[(expr) ? 1 : -1];
+
+STATIC_ASSERT(NATIONAL_DEX_TOTAL <= DEX_FLAGS_NO * 8, PokedexCabeNosBytesDoSave);
 
 struct Coords8
 {

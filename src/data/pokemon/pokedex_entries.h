@@ -5030,4 +5030,57 @@ const struct PokedexEntry gPokedexEntries[] =
         .trainerScale = 337,
         .trainerOffset = 2,
     },
+
+    // POK-54: escala e deslocamento copiados de Bagon, Shelgon, Salamence e Dusclops
+    [NATIONAL_DEX_GIBLE] =
+    {
+        .categoryName = _("Tubarão"),
+        .height = 7,
+        .weight = 205,
+        .description = gGiblePokedexText,
+        .unusedDescription = gGiblePokedexTextUnused,
+        .pokemonScale = 448,
+        .pokemonOffset = 17,
+        .trainerScale = 256,
+        .trainerOffset = -2,
+    },
+
+    [NATIONAL_DEX_GABITE] =
+    {
+        .categoryName = _("Caverna"),
+        .height = 14,
+        .weight = 560,
+        .description = gGabitePokedexText,
+        .unusedDescription = gGabitePokedexTextUnused,
+        .pokemonScale = 311,
+        .pokemonOffset = 10,
+        .trainerScale = 256,
+        .trainerOffset = -2,
+    },
+
+    [NATIONAL_DEX_GARCHOMP] =
+    {
+        .categoryName = _("Mach"),
+        .height = 19,
+        .weight = 950,
+        .description = gGarchompPokedexText,
+        .unusedDescription = gGarchompPokedexTextUnused,
+        .pokemonScale = 272,
+        .pokemonOffset = 2,
+        .trainerScale = 307,
+        .trainerOffset = 0,
+    },
+
+    [NATIONAL_DEX_DARKRAI] =
+    {
+        .categoryName = _("Breu"),
+        .height = 15,
+        .weight = 505,
+        .description = gDarkraiPokedexText,
+        .unusedDescription = gDarkraiPokedexTextUnused,
+        .pokemonScale = 256,
+        .pokemonOffset = 2,
+        .trainerScale = 299,
+        .trainerOffset = 2,
+    },
 };

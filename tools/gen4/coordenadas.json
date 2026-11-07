@@ -1,0 +1,22 @@
+{
+  "gible": {
+    "front": [48, 56, 4],
+    "back": [64, 56, 6],
+    "icone_paleta": 0
+  },
+  "gabite": {
+    "front": [64, 64, 4],
+    "back": [64, 64, 6],
+    "icone_paleta": 2
+  },
+  "garchomp": {
+    "front": [56, 64, 4],
+    "back": [64, 56, 6],
+    "icone_paleta": 2
+  },
+  "darkrai": {
+    "front": [64, 56, 4],
+    "back": [64, 64, 6],
+    "icone_paleta": 0
+  }
+}

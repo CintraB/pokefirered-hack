@@ -89,6 +89,8 @@
 #define VARIOUS_RETURN_OPPONENT_MON2            10
 #define VARIOUS_CHECK_POKEFLUTE                 11
 #define VARIOUS_WAIT_FANFARE                    12
+#define VARIOUS_DARK_VOID_CHECK                 13  // POK-54: salta se o Dark Void não está na mão do Darkrai
+#define VARIOUS_BAD_DREAMS_NEXT_TARGET          14  // POK-54: próximo adversário dormindo; salta se houver
 
 // Cmd_manipulatedmg
 #define DMG_CHANGE_SIGN            0

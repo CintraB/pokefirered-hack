@@ -37,22 +37,33 @@ RULES_MK = REPO_ROOT / "spritesheet_rules.mk"
 ESPECIES = ["haunter", "misdreavus", "sableye", "banette", "houndour", "houndoom", "murkrow", "sneasel", "crobat",
             "muk", "weezing", "arbok", "mightyena", "absol", "cacturne", "shiftry", "crawdaunt", "golem", "persian",
             "machamp", "rhydon"]
-SPRITES = ESPECIES + ["gengar_shiny", "tyranitar_shiny"]
+PARTE2 = ["gligar", "dusclops"]                      # POK-54: chapéus novos, ids 186 e 187
+CHEFES_PARTE2 = ["garchomp_shiny", "darkrai_shiny"]  # POK-54: ids 188 e 189
+SPRITES_PARTE1 = ESPECIES + ["gengar_shiny", "tyranitar_shiny"]
+SPRITES = SPRITES_PARTE1 + PARTE2 + CHEFES_PARTE2
 REDOMAS = ["vazia", "vermelha", "dourada", "azul", "negra"]
 TACAS = ["bronze", "prata", "ouro"]
 ROSAS = {"vermelha": 87, "dourada": 88, "azul": 89, "negra": 90}
-GFX_IDS = (
-    [f"OBJ_EVENT_GFX_FAMILIA_{e.upper()}" for e in SPRITES]
+# a ordem dos ids: parte 1 (sprites, redomas, taças) e, no fim, a parte 2
+GFX_IDS_PARTE1 = (
+    [f"OBJ_EVENT_GFX_FAMILIA_{e.upper()}" for e in SPRITES_PARTE1]
     + [f"OBJ_EVENT_GFX_REDOMA_{r.upper()}" for r in REDOMAS]
     + [f"OBJ_EVENT_GFX_TACA_{t.upper()}" for t in TACAS]
 )
-ARQUIVO_DO_GFX = dict(zip(GFX_IDS, SPRITES + [f"redoma_{r}" for r in REDOMAS] + [f"taca_{t}" for t in TACAS]))
+GFX_IDS_PARTE2 = [f"OBJ_EVENT_GFX_FAMILIA_{e.upper()}" for e in PARTE2 + CHEFES_PARTE2]
+# POK-54, Task 10 (o fechamento): a polícia da porta da Rota 23, ids 190 a 192 (no fim)
+FECHAMENTO = ["policia_growlithe", "policia_arcanine", "oficial_jenny"]
+GFX_IDS_FECHAMENTO = [f"OBJ_EVENT_GFX_{e.upper()}" for e in FECHAMENTO]
+GFX_IDS = GFX_IDS_PARTE1 + GFX_IDS_PARTE2 + GFX_IDS_FECHAMENTO
+ARQUIVO_DO_GFX = dict(zip(GFX_IDS, SPRITES_PARTE1 + [f"redoma_{r}" for r in REDOMAS] + [f"taca_{t}" for t in TACAS]
+                          + PARTE2 + CHEFES_PARTE2 + FECHAMENTO))
 SLOTS = {"PALSLOT_NPC_1", "PALSLOT_NPC_2", "PALSLOT_NPC_3", "PALSLOT_NPC_4"}
-TAMANHO = {"sprite": (32, 40), "redoma": (32, 32), "taca": (16, 32)}
+TAMANHO = {"sprite": (32, 40), "redoma": (32, 32), "taca": (16, 32), "policia": (32, 32), "npc": (160, 32)}
 
 
 def _tipo(arquivo):
-    return "redoma" if arquivo.startswith("redoma_") else "taca" if arquivo.startswith("taca_") else "sprite"
+    return ("redoma" if arquivo.startswith("redoma_") else "taca" if arquivo.startswith("taca_")
+            else "policia" if arquivo.startswith("policia_") else "npc" if arquivo == "oficial_jenny" else "sprite")
 
 
 def _pal(caminho):
@@ -88,7 +99,7 @@ def test_gerador_confere():
 
 def test_ajustes_so_de_especies_conhecidas():
     ajustes = json.loads((REPO_ROOT / "tools" / "familia_sombra" / "ajustes.json").read_text(encoding="utf-8"))
-    conhecidas = set(ESPECIES) | {"gengar", "tyranitar"}
+    conhecidas = set(ESPECIES) | {"gengar", "tyranitar"} | set(PARTE2) | {"garchomp", "darkrai"}
     assert set(ajustes) <= conhecidas
     for dx, dy in ajustes.values():
         assert -4 <= dx <= 4 and 0 <= dy <= 10
@@ -214,6 +225,58 @@ def test_slots_equilibrados_para_o_plantel():
 
 
 # ---------- registros em C ----------
+def test_chapeus_parte2():
+    """POK-54: Gligar, Dusclops, Garchomp e Darkrai shiny de chapéu: 32x40, até 15 cores e fundo transparente. O
+    Garchomp e o Darkrai passam de 18 e 16 cores para 15 pela reduzir_cores do gerador."""
+    for arquivo in PARTE2 + CHEFES_PARTE2:
+        largura, altura, profundidade, tipo = _bits_do_png(PICS / f"{arquivo}.png")
+        assert (largura, altura, profundidade, tipo) == (32, 40, 4, 3), arquivo
+        im = Image.open(PICS / f"{arquivo}.png")
+        usados = set(im.tobytes())
+        assert 0 in usados and im.getpixel((0, 0)) == 0 and im.getpixel((31, 0)) == 0, arquivo
+        assert 1 <= len(usados - {0}) <= 15 and max(usados) <= 15, arquivo
+    for arquivo, antes in (("garchomp_shiny", 18), ("darkrai_shiny", 16)):
+        sprite = Image.open(PICS / f"{arquivo}.png")
+        assert len(set(sprite.tobytes()) - {0}) == 15, (arquivo, antes)
+    # o ajuste do chapéu dos dois chefes (0, 4), como na prévia
+    ajustes = json.loads((REPO_ROOT / "tools" / "familia_sombra" / "ajustes.json").read_text(encoding="utf-8"))
+    assert ajustes["garchomp"] == [0, 4] and ajustes["darkrai"] == [0, 4]
+
+
+def test_ids_gfx_no_fim():
+    """O id vai para o save: a parte 1 (155..185) fica igual à base e a parte 2 entra no fim (186..189), depois o
+    fechamento (190..192, a polícia da porta)."""
+    c = _constantes()
+    for i, gfx in enumerate(GFX_IDS_PARTE1):
+        assert c[gfx] == 155 + i, gfx
+    assert [c[g] for g in GFX_IDS_PARTE2] == [186, 187, 188, 189]
+    assert c["OBJ_EVENT_GFX_FAMILIA_GLIGAR"] == 186 and c["OBJ_EVENT_GFX_FAMILIA_DUSCLOPS"] == 187
+    assert c["OBJ_EVENT_GFX_FAMILIA_GARCHOMP_SHINY"] == 188 and c["OBJ_EVENT_GFX_FAMILIA_DARKRAI_SHINY"] == 189
+    assert [c[g] for g in GFX_IDS_FECHAMENTO] == [190, 191, 192]
+    assert re.search(r"#define NUM_OBJ_EVENT_GFX\s+193\b", EVENT_OBJECTS_H.read_text(encoding="utf-8"))
+    # a base (v70) está congelada em ids_do_save_184573748.json: nada dela mudou de número
+    base = json.loads((REPO_ROOT / "test" / "tests" / "dados" / "ids_do_save_184573748.json").read_text(
+        encoding="utf-8"))["familias"]["OBJ_EVENT_GFX_"]
+    assert base["OBJ_EVENT_GFX_FAMILIA_MACHAMP"] == 174
+    for nome, valor in base.items():
+        if valor < 240:
+            assert c[nome] == valor, nome
+
+
+def test_slots_salas_parte2():
+    """POK-54: as duas salas novas do prédio da Rota 23 não repetem slot (cada paleta de um slot só, por sala)."""
+    dados = json.loads(SLOTS_JSON.read_text(encoding="utf-8"))
+    salas = {"sala_do_mercenario": ["OBJ_EVENT_GFX_FAMILIA_GARCHOMP_SHINY", "OBJ_EVENT_GFX_FAMILIA_GLIGAR"],
+             "sala_do_pesadelo": ["OBJ_EVENT_GFX_FAMILIA_DARKRAI_SHINY", "OBJ_EVENT_GFX_FAMILIA_DUSCLOPS"]}
+    for sala, membros in salas.items():
+        assert sorted(dados["grupos"][sala]) == sorted(membros), sala
+        slots = [dados["slots"][g] for g in membros]
+        assert len(set(slots)) == len(slots), (sala, slots)
+        assert set(slots) <= SLOTS
+    # a parte 1 não mudou de slot por causa da parte 2
+    assert dados["slots"]["OBJ_EVENT_GFX_FAMILIA_GENGAR_SHINY"] == "PALSLOT_NPC_1"
+
+
 def test_ids_dos_graficos_seguem_o_follower():
     c = _constantes()
     assert c["OBJ_EVENT_GFX_FOLLOWER_LARGE"] == 154
@@ -240,14 +303,18 @@ def test_graphics_info_e_ponteiros():
         assert slot in SLOTS, nome
         tag = re.search(r"\.paletteTag = (OBJ_EVENT_PAL_TAG_FAMILIA_\w+),", corpo)
         assert tag, nome
-        assert "sAnimTable_Standard" in corpo and ".tracks = TRACKS_NONE" in corpo
+        assert "sAnimTable_Standard" in corpo
+        # a Jenny é NPC de verdade (pega pegadas como o policial); o resto não deixa rastro
+        assert (".tracks = TRACKS_FOOT" if nome == "OficialJenny" else ".tracks = TRACKS_NONE") in corpo
 
 
 def test_tamanhos_do_graphics_info():
     gfx = GFX_H.read_text(encoding="utf-8")
     campos = {"sprite": ("640", "32", "40", "gObjectEventBaseOam_32x32", "gObjectEventSpriteOamTables_32x40"),
               "redoma": ("512", "32", "32", "gObjectEventBaseOam_32x32", "gObjectEventSpriteOamTables_32x32"),
-              "taca": ("256", "16", "32", "gObjectEventBaseOam_16x32", "gObjectEventSpriteOamTables_16x32")}
+              "taca": ("256", "16", "32", "gObjectEventBaseOam_16x32", "gObjectEventSpriteOamTables_16x32"),
+              "policia": ("512", "32", "32", "gObjectEventBaseOam_32x32", "gObjectEventSpriteOamTables_32x32"),
+              "npc": ("256", "16", "32", "gObjectEventBaseOam_16x32", "gObjectEventSpriteOamTables_16x32")}
     for gfx_id, arquivo in ARQUIVO_DO_GFX.items():
         ponteiro = (REPO_ROOT / "src" / "data" / "object_events" / "familia_gfx_ponteiros.h").read_text(encoding="utf-8")
         nome = re.search(rf"\[{gfx_id}\]\s*=\s*&gObjectEventGraphicsInfo_Familia_(\w+),", ponteiro).group(1)
@@ -255,9 +322,13 @@ def test_tamanhos_do_graphics_info():
         tam, w, h, oam, tabelas = campos[_tipo(arquivo)]
         assert f".size = {tam}," in corpo and f".width = {w}," in corpo and f".height = {h}," in corpo, arquivo
         assert f"&{oam}," in corpo and f"{tabelas}," in corpo, arquivo
-        # um quadro só, repetido: 10 entradas (a sAnimTable_Standard vai até o quadro 9)
+        # um quadro só, repetido: 10 entradas (a sAnimTable_Standard vai até o quadro 9); a Jenny tem os 10 quadros
         tab = re.search(rf"sFamiliaPicTable_{nome}\[\] = \{{(.*?)\n\}};", gfx, re.S).group(1)
-        assert tab.count(f"sFamiliaPic_{nome}") == 10 and tab.count(", 0)") == 10
+        assert tab.count(f"sFamiliaPic_{nome}") == 10
+        if _tipo(arquivo) == "npc":
+            assert re.findall(r", (\d)\)", tab) == list("0123456789")
+        else:
+            assert tab.count(", 0)") == 10
         assert f"pics/familia/{arquivo}.4bpp" in gfx
 
 
@@ -331,7 +402,7 @@ def test_regras_do_make_para_os_tamanhos():
 def test_persian_e_o_plantel_da_parte_1():
     c = _constantes()
     assert "OBJ_EVENT_GFX_FAMILIA_PERSIAN" in c
-    assert len([k for k in c if k.startswith("OBJ_EVENT_GFX_FAMILIA_")]) == 23
+    assert len([k for k in c if k.startswith("OBJ_EVENT_GFX_FAMILIA_")]) == 23 + len(PARTE2 + CHEFES_PARTE2)  # POK-54: +4
     assert {k for k in c if k.startswith("OBJ_EVENT_GFX_REDOMA_")} == {f"OBJ_EVENT_GFX_REDOMA_{r.upper()}" for r in REDOMAS}
     assert {k for k in c if k.startswith("OBJ_EVENT_GFX_TACA_")} == {f"OBJ_EVENT_GFX_TACA_{t.upper()}" for t in TACAS}
 

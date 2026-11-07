@@ -107,7 +107,8 @@ def test_krabby_recorde_funcoes():
     assert m and 0x4020 <= int(m.group(1), 16) <= 0x40FF
     valores = re.findall(r"#define VAR_\w+\s+(0x40[0-9A-Fa-f]{2})\b", VARS_H)
     assert valores.count(m.group(1)) == 1 and "VAR_0x40F0" not in VARS_H
-    nomes = re.findall(r"def_special (\w+)", SPECIALS.split("gSpecialsEnd::")[0])
+    nomes = [n for n in re.findall(r"def_special (\w+)", SPECIALS.split("gSpecialsEnd::")[0])
+             if not n.startswith(("Dossie_", "FamiliaSombra_Apreendido", "FamiliaSombra_Entregar"))]  # POK-54 vem depois
     assert nomes[-7:-5] == ["GetKrabbySizeRecordInfo", "CompareKrabbySize"], nomes[-8:]  # a Task 10 vem depois
     # o hook de teste do tamanho entrou no bloco novo (0x130)
     assert re.search(r"TEST_CMD_SET_PARTY_PID_LOW = 0x130", (REPO_ROOT / "include" / "test_hooks.h").read_text("utf-8"))
@@ -269,7 +270,8 @@ def test_taca_limites():
     assert _nivel_taca(0, 0) == 0
     # só as ativas contam: o special usa Conquistas_ContarAba (válidas = ativas e não perdidas), sem número fixo
     assert "Conquistas_ContarAba" in TROFEUS_C and "44" not in TROFEUS_C and "46" not in TROFEUS_C
-    nomes = re.findall(r"def_special (\w+)", SPECIALS.split("gSpecialsEnd::")[0])
+    nomes = [n for n in re.findall(r"def_special (\w+)", SPECIALS.split("gSpecialsEnd::")[0])
+             if not n.startswith(("Dossie_", "FamiliaSombra_Apreendido", "FamiliaSombra_Entregar"))]  # POK-54 vem depois
     assert nomes[-5:] == ["SalaTrofeus_Taca", "SalaTrofeus_Placa", "SalaTrofeus_PlacaRevanche", "SalaTrofeus_PlacaHall",
                           "SalaTrofeus_Curador"]
     # as 5 taças: cada uma lê a sua aba (0-4 = História, Batalha, Captura, Treino, Exploração)
@@ -408,8 +410,9 @@ def test_telas_da_familia_e_das_casas_no_fim_de_shared_points():
     from esteira.__main__ import WATCH_FULL_SCENARIOS
     from esteira.scenarios import full_casas, full_familia
     assert refs.FAMILIA_POINTS == full_familia.SCREEN_POINTS and refs.CASAS_POINTS == full_casas.SCREEN_POINTS
-    fim = refs.SHARED_POINTS[-len(refs.FAMILIA_POINTS) - len(refs.CASAS_POINTS):]
-    assert fim == refs.FAMILIA_POINTS + refs.CASAS_POINTS
+    # depois deles, só os do POK-54
+    fim = refs.SHARED_POINTS[-len(refs.FAMILIA_POINTS) - len(refs.CASAS_POINTS) - len(refs.ESPECIES_POINTS):]
+    assert fim == refs.FAMILIA_POINTS + refs.CASAS_POINTS + refs.ESPECIES_POINTS
     assert len(set(refs.SHARED_POINTS)) == len(refs.SHARED_POINTS)
     for pontos, arquivo in ((refs.FAMILIA_POINTS, "full_familia.py"), (refs.CASAS_POINTS, "full_casas.py")):
         texto = (REPO_ROOT / "test" / "esteira" / "scenarios" / arquivo).read_text(encoding="utf-8")

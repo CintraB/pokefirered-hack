@@ -1514,6 +1514,68 @@ static u32 SetPartyPidLow(u32 slot, u32 low)
     return species;
 }
 
+// POK-54: Dex of the 4 extras. result = internal national number | number printed on the screens << 16
+// (0 for a species without a Dex entry).
+static u32 DexInfo(u32 species)
+{
+    u16 dex;
+
+    if (species >= NUM_SPECIES)
+        return 0xFFFFFFFF;
+    dex = SpeciesToNationalPokedexNum(species);
+    return dex | (u32)NationalDexNumToDisplayed(dex) << 16;
+}
+
+// POK-54: arg0 = internal national number (1..DEX_FLAGS_NO * 8), mode 0 = clear (seen, caught and both anticheat
+// copies), 1 = seen, 2 = seen and caught. result = the Dex counts: caught up to 386 | caught with the extras << 16.
+static u32 DexMarcar(u32 dex, u32 mode)
+{
+    u8 index, mask;
+
+    if (dex == 0 || dex > DEX_FLAGS_NO * 8 || mode > 2)
+        return 0xFFFFFFFF;
+    index = (dex - 1) / 8;
+    mask = 1 << ((dex - 1) % 8);
+    if (mode == 0)
+    {
+        gSaveBlock2Ptr->pokedex.seen[index] &= ~mask;
+        gSaveBlock2Ptr->pokedex.owned[index] &= ~mask;
+        gSaveBlock1Ptr->seen1[index] &= ~mask;
+        gSaveBlock1Ptr->seen2[index] &= ~mask;
+    }
+    else
+    {
+        GetSetPokedexFlag(dex, FLAG_SET_SEEN);
+        if (mode == 2)
+            GetSetPokedexFlag(dex, FLAG_SET_CAUGHT);
+    }
+    return GetNationalPokedexCount(FLAG_GET_CAUGHT) | (u32)GetNationalPokedexCountWithExtras(FLAG_GET_CAUGHT) << 16;
+}
+
+// POK-54: read-only look at the 386 rule: result = HasAllMons() | HasAllKantoMonsWithMew() << 1, plus caught and seen of
+// the internal national number `dex` (bits 2 and 3; 0 for dex 0 or out of range).
+static u32 DexCompleta(u32 dex)
+{
+    u32 result = HasAllMons() | (u32)HasAllKantoMonsWithMew() << 1;
+
+    if (dex != 0 && dex <= DEX_FLAGS_NO * 8)
+        result |= (u32)(GetSetPokedexFlag(dex, FLAG_GET_CAUGHT) != 0) << 2 | (u32)(GetSetPokedexFlag(dex, FLAG_GET_SEEN) != 0) << 3;
+    return result;
+}
+
+// POK-54: the boss of the current occupation fell (the special of the 6th floor script); result = occupation | state << 8
+// | the 4 captured flags (occupation n at bit n - 1) << 16.
+static u32 FamiliaChefeCaiu(void)
+{
+    u32 capturados = 0;
+    u8 n;
+
+    FamiliaSombra_ChefeCaiu();
+    for (n = 1; n <= FAMILIA_OCUPACOES_TOTAL; n++)
+        capturados |= (u32)(FamiliaSombra_ChefeCapturado(n) != 0) << (n - 1);
+    return (u32)(VarGet(VAR_FAMILIA_OCUPACAO) & 0xFF) | (u32)(VarGet(VAR_FAMILIA_ESTADO) & 0xFF) << 8 | capturados << 16;
+}
+
 static u32 FamiliaSet(u32 estado, u32 queda)
 {
     VarSet(VAR_FAMILIA_OCUPACAO, estado & 0xFF);
@@ -1580,6 +1642,34 @@ static u32 FamiliaChefe(void)
     return 1;
 }
 // --- end of POK-51 --------------------------------------------------------------------------
+
+// --- POK-54, Task 9: o dossiê da Família Sombra, pelo special de verdade num script de campo ---------------------
+#include "dossie.h"
+
+static u32 DossieAbrir(void)
+{
+    u32 special;
+
+    for (special = 0; &gSpecials[special] < gSpecialsEnd; special++)
+    {
+        if ((void *)gSpecials[special] == (void *)Dossie_Abrir)
+            break;
+    }
+    if (&gSpecials[special] >= gSpecialsEnd)
+        return 0xFFFFFFFF;
+    gTestText[0] = 0x69;            // lockall
+    gTestText[1] = 0x97;            // fadescreen FADE_TO_BLACK
+    gTestText[2] = 1;
+    gTestText[3] = 0x25;            // special Dossie_Abrir
+    gTestText[4] = special & 0xFF;
+    gTestText[5] = special >> 8;
+    gTestText[6] = 0x27;            // waitstate
+    gTestText[7] = 0x6B;            // releaseall
+    gTestText[8] = 0x02;            // end
+    ScriptContext_SetupScript(gTestText);
+    return 1;
+}
+// --- end of POK-54, Task 9 ----------------------------------------------------------------------
 
 void TestHooks_Run(void)
 {
@@ -1746,6 +1836,13 @@ void TestHooks_Run(void)
     case TEST_CMD_FAMILIA_PASSOS:   result = TestFamiliaPassos(gTestMailbox.arg0); break;
     // POK-51 casas
     case TEST_CMD_SET_PARTY_PID_LOW: result = SetPartyPidLow(gTestMailbox.arg0, gTestMailbox.arg1); break;
+    // POK-54
+    case TEST_CMD_DEX_INFO:         result = DexInfo(gTestMailbox.arg0); break;
+    case TEST_CMD_DEX_MARCAR:       result = DexMarcar(gTestMailbox.arg0, gTestMailbox.arg1); break;
+    case TEST_CMD_DEX_COMPLETA:     result = DexCompleta(gTestMailbox.arg0); break;
+    case TEST_CMD_FAMILIA_CHEFE_CAIU: result = FamiliaChefeCaiu(); break;
+    case TEST_CMD_DOSSIE_ABRIR:     result = DossieAbrir(); break;
+    case TEST_CMD_DOSSIE_ESTADO:    result = Dossie_TestEstado(); break;
     // POK-29
     case TEST_CMD_SHOW_FIELD_TEXT:  result = ShowFieldText(gTestMailbox.arg0, gTestMailbox.arg1); break;
     default:

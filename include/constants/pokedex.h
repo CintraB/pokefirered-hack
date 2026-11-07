@@ -393,7 +393,12 @@ enum {
     NATIONAL_DEX_RAYQUAZA,
     NATIONAL_DEX_JIRACHI,
     NATIONAL_DEX_DEOXYS,
-    // Old Unown
+    // Extras do POK-54: listados e contados na tela da Pokédex, nunca exigidos (a Dex completa são os 386)
+    NATIONAL_DEX_GIBLE,
+    NATIONAL_DEX_GABITE,
+    NATIONAL_DEX_GARCHOMP,
+    NATIONAL_DEX_DARKRAI,
+    // Old Unown (nunca marcados no save: andaram +4 para os extras)
     NATIONAL_DEX_OLD_UNOWN_B,
     NATIONAL_DEX_OLD_UNOWN_C,
     NATIONAL_DEX_OLD_UNOWN_D,
@@ -424,6 +429,8 @@ enum {
 #define KANTO_DEX_COUNT     NATIONAL_DEX_MEW
 #define JOHTO_DEX_COUNT     NATIONAL_DEX_CELEBI
 #define NATIONAL_DEX_COUNT  NATIONAL_DEX_DEOXYS
+#define NATIONAL_DEX_EXTRAS_COUNT 4
+#define NATIONAL_DEX_TOTAL  (NATIONAL_DEX_COUNT + NATIONAL_DEX_EXTRAS_COUNT)
 
 // Hoenn Pokedex order
 enum {

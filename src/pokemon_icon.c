@@ -465,7 +465,12 @@ const u8 *const gMonIconTable[] = {
     [SPECIES_UNOWN_Y]     = gMonIcon_UnownY,
     [SPECIES_UNOWN_Z]     = gMonIcon_UnownZ,
     [SPECIES_UNOWN_EMARK] = gMonIcon_UnownExclamationMark,
-    [SPECIES_UNOWN_QMARK] = gMonIcon_UnownQuestionMark
+    [SPECIES_UNOWN_QMARK] = gMonIcon_UnownQuestionMark,
+    // POK-54
+    [SPECIES_GIBLE]       = gMonIcon_Gible,
+    [SPECIES_GABITE]      = gMonIcon_Gabite,
+    [SPECIES_GARCHOMP]    = gMonIcon_Garchomp,
+    [SPECIES_DARKRAI]     = gMonIcon_Darkrai,
 };
 
 const u8 gMonIconPaletteIndices[] = {
@@ -908,7 +913,12 @@ const u8 gMonIconPaletteIndices[] = {
     [SPECIES_UNOWN_Y]     = 0,
     [SPECIES_UNOWN_Z]     = 0,
     [SPECIES_UNOWN_EMARK] = 0,
-    [SPECIES_UNOWN_QMARK] = 0
+    [SPECIES_UNOWN_QMARK] = 0,
+    // POK-54: tools/gen4/coordenadas.json
+    [SPECIES_GIBLE]       = 0,
+    [SPECIES_GABITE]      = 2,
+    [SPECIES_GARCHOMP]    = 2,
+    [SPECIES_DARKRAI]     = 0,
 };
 
 const struct SpritePalette gMonIconPaletteTable[] = {
@@ -1022,7 +1032,7 @@ u8 CreateMonIcon(u16 species, SpriteCallback callback, s16 x, s16 y, u8 subprior
             .paletteTag = POKE_ICON_BASE_PAL_TAG + gMonIconPaletteIndices[species],
         };
 
-    if (species > NUM_SPECIES)
+    if (species >= NUM_SPECIES)
         iconTemplate.paletteTag = POKE_ICON_BASE_PAL_TAG;
 
     spriteId = CreateMonIconSprite(&iconTemplate, x, y, subpriority);
@@ -1068,7 +1078,7 @@ u16 GetIconSpecies(u16 species, u32 personality)
     }
     else
     {
-        if (species > NUM_SPECIES)
+        if (species >= NUM_SPECIES)
             result = SPECIES_NONE;
         else
             result = species;
@@ -1099,7 +1109,9 @@ u16 MailSpeciesToIconSpecies(u16 species)
     }
     else
     {
-        if (species > (SPECIES_UNOWN_B - 1))
+        // As letras do Unown não vêm direto (a letra vem codificada à parte); o Ovo passa: a foto do cartão de
+        // treinador guarda MON_DATA_SPECIES_OR_EGG e mostra o ícone do Ovo. As espécies novas (POK-54) também passam.
+        if (species >= SPECIES_UNOWN_B && species <= SPECIES_UNOWN_QMARK)
             species = SPECIES_NONE;
         return GetIconSpecies(species, 0);
     }
@@ -1133,7 +1145,7 @@ void LoadMonIconPalettes(void)
 void SafeLoadMonIconPalette(u16 species)
 {
     u8 palIndex;
-    if (species > NUM_SPECIES)
+    if (species >= NUM_SPECIES)
         species = SPECIES_NONE;
     palIndex = gMonIconPaletteIndices[species];
     if (IndexOfSpritePaletteTag(gMonIconPaletteTable[palIndex].tag) == 0xFF)
@@ -1158,7 +1170,7 @@ void FreeMonIconPalettes(void)
 void SafeFreeMonIconPalette(u16 species)
 {
     u8 palIndex;
-    if (species > NUM_SPECIES)
+    if (species >= NUM_SPECIES)
         species = SPECIES_NONE;
     palIndex = gMonIconPaletteIndices[species];
     FreeSpritePaletteByTag(gMonIconPaletteTable[palIndex].tag);
@@ -1191,14 +1203,14 @@ void LoadMonIconPalettesAt(u16 offset)
 
 const u16 *GetValidMonIconPalettePtr(u16 species)
 {
-    if (species > NUM_SPECIES)
+    if (species >= NUM_SPECIES)
         species = SPECIES_NONE;
     return gMonIconPaletteTable[gMonIconPaletteIndices[species]].data;
 }
 
 u8 GetValidMonIconPalIndex(u16 species)
 {
-    if (species > NUM_SPECIES)
+    if (species >= NUM_SPECIES)
         species = SPECIES_NONE;
     return gMonIconPaletteIndices[species];
 }

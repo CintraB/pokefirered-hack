@@ -2709,3 +2709,32 @@ const u8 gDeoxysPokedexText[] = _(
     "cellular structure.");
 
 const u8 gDeoxysPokedexTextUnused[] = _("");
+
+// POK-54: traduzidos da Platinum (o mesmo texto na FireRed e na LeafGreen)
+const u8 gGiblePokedexText[] = _(
+    "Espreita em cavernas e salta sobre presas\n"
+    "e inimigos que passam. A força da mordida\n"
+    "às vezes lasca os próprios dentes.");
+
+const u8 gGiblePokedexTextUnused[] = _("");
+
+const u8 gGabitePokedexText[] = _(
+    "Ao cavar para aumentar o ninho, costuma\n"
+    "desenterrar pedras preciosas, que depois\n"
+    "guarda no próprio ninho.");
+
+const u8 gGabitePokedexTextUnused[] = _("");
+
+const u8 gGarchompPokedexText[] = _(
+    "Ao encolher o corpo e abrir as asas, fica\n"
+    "parecido com um avião a jato. Voa na\n"
+    "velocidade do som.");
+
+const u8 gGarchompPokedexTextUnused[] = _("");
+
+const u8 gDarkraiPokedexText[] = _(
+    "Expulsa pessoas e Pokémon do seu\n"
+    "território fazendo-os cair num sono\n"
+    "profundo e cheio de pesadelos.");
+
+const u8 gDarkraiPokedexTextUnused[] = _("");

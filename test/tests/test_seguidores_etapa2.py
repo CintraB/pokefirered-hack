@@ -1,4 +1,4 @@
-"""Seguidores, etapa 2 (POK-53), Task 2: tabela dos 386, folhas 64x64, fêmeas, letras do Unown e Deoxys Ataque.
+"""Seguidores, etapa 2 (POK-53), Task 2: tabela dos 390 (386 + as 4 do POK-54), folhas 64x64, fêmeas, letras do Unown e Deoxys Ataque.
 
 Estáticos sobre o que está no Git (header gerado `src/data/object_events/follower_species.h`, PNGs e .pal em
 `graphics/object_events/{pics,palettes}/seguidores/`). Os que comparam com o pacote Veekun (fora do Git) pulam com
@@ -26,6 +26,8 @@ SPRITESHEET_MK = REPO_ROOT / "spritesheet_rules.mk"
 
 GRANDES = {208, 249, 250, 321, 382, 383, 384}
 FEMEAS = {3, 25, 154, 202, 208, 214}
+# POK-54: depois do Deoxys, o número interno da tabela (387..390) -> o arquivo do Veekun (dex nacional real)
+EXTRAS = {387: ("GIBLE", 443), 388: ("GABITE", 444), 389: ("GARCHOMP", 445), 390: ("DARKRAI", 491)}
 LETRAS_UNOWN = [chr(c) for c in range(ord("a"), ord("z") + 1)] + ["exclamation", "question"]
 DIRECOES = ["down", "up", "left", "right"]
 # pixels opacos só no shiny (cor ausente no normal): o conversor os deixa transparentes nos dois (SO_NO_SHINY)
@@ -141,14 +143,36 @@ def confere_folha(entrada, origem, femea=False, rotulo="", dex=None):
         assert obtido == esperado, f"{rotulo} {'shiny' if shiny else 'normal'}: folha diferente do Veekun ({origem})"
 
 
-def test_tabela_tem_386_em_ordem_da_dex():
-    assert re.search(r"#define FOLLOWER_SPECIES_COUNT\s+386\b", FOLLOWER_H.read_text(encoding="utf-8"))
+def test_tabela_tem_390_em_ordem_da_dex():
+    assert re.search(r"#define FOLLOWER_SPECIES_COUNT\s+390\b", FOLLOWER_H.read_text(encoding="utf-8"))
     nomes = nomes_dex()
     ents = entradas_principais()
-    assert [d for d, _ in ents] == list(range(1, 387))
+    assert [d for d, _ in ents] == list(range(1, 391))
     for dex, c in ents:
         assert c["species"] == f"SPECIES_{nomes[dex]}", dex
         assert arquivo_da_folha(c["images"]).is_file(), dex
+
+
+def test_seguidor_das_extras():
+    """POK-54: as entradas 387..390 são Gible, Gabite, Garchomp e Darkrai, 32x32 e sem fêmea nem forma."""
+    ents = dict(entradas_principais())
+    for dex, (nome, _) in EXTRAS.items():
+        c = ents[dex]
+        assert c["species"] == f"SPECIES_{nome}", dex
+        assert c["large"] == "FALSE", nome
+        assert c["female"] == "NULL" and c["forms"] == "NULL" and c["formCount"] == "0", nome
+        assert arquivo_da_folha(c["images"]).name == f"{nome.lower()}.png"
+        assert Image.open(arquivo_da_folha(c["images"])).size == (256, 32), nome
+        assert arquivo_da_paleta(c["palette"]).name == f"{nome.lower()}.pal"
+        assert arquivo_da_paleta(c["shinyPalette"]).name == f"{nome.lower()}_shiny.pal"
+
+
+@tem_veekun
+def test_extras_batem_com_o_veekun():
+    """Os arquivos do pacote são os da Pokédex real (443, 444, 445, 491), não o número interno."""
+    ents = dict(entradas_principais())
+    for dex, (nome, arquivo) in EXTRAS.items():
+        confere_folha(ents[dex], str(arquivo), rotulo=nome, dex=dex)
 
 
 def test_struct_e_busca_o1():
@@ -244,7 +268,8 @@ def test_todas_as_folhas_batem_com_o_veekun():
     for dex, c in entradas_principais():
         if dex in (201, 386):
             continue  # Unown base = letra A (abaixo); Deoxys = Ataque (teste próprio)
-        confere_folha(c, str(dex), rotulo=f"#{dex}", dex=dex)
+        arquivo = EXTRAS[dex][1] if dex in EXTRAS else dex
+        confere_folha(c, str(arquivo), rotulo=f"#{dex}", dex=dex)
     unown = dict(entradas_principais())[201]
     confere_folha(unown, "201-a", rotulo="unown base")
 
@@ -252,7 +277,7 @@ def test_todas_as_folhas_batem_com_o_veekun():
 def test_paletas_e_pngs_validos():
     pasta = GRAPHICS / "pics" / "seguidores"
     pngs = sorted(pasta.rglob("*.png"))
-    assert len(pngs) == 386 - 1 + 6 + 28  # Unown base reaproveita a folha da letra A
+    assert len(pngs) == 390 - 1 + 6 + 28  # Unown base reaproveita a folha da letra A
     for png in pngs:
         dados = png.read_bytes()
         assert dados[24] == 4 and dados[25] == 3, f"{png}: não é PNG indexado de 4 bits"

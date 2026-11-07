@@ -705,6 +705,14 @@ void SampleResortGorgeousMonAndReward(void)
     StringCopy(gStringVar1, gSpeciesNames[VarGet(VAR_RESORT_GORGEOUS_REQUESTED_MON)]);
 }
 
+// O sorteio vai até NUM_SPECIES - 1 e passa pelo Ovo e pelas letras do Unown, que não têm número na Dex (POK-54)
+static bool8 ResortGorgeousMonSeen(u16 species)
+{
+    u16 dex = SpeciesToNationalPokedexNum(species);
+
+    return dex != 0 && GetSetPokedexFlag(dex, FLAG_GET_SEEN) == TRUE;
+}
+
 static u16 SampleResortGorgeousMon(void)
 {
     u16 i;
@@ -712,10 +720,10 @@ static u16 SampleResortGorgeousMon(void)
     for (i = 0; i < 100; i++)
     {
         species = (Random() % (NUM_SPECIES - 1)) + 1;
-        if (GetSetPokedexFlag(SpeciesToNationalPokedexNum(species), 0) == TRUE)
+        if (ResortGorgeousMonSeen(species))
             return species;
     }
-    while (GetSetPokedexFlag(SpeciesToNationalPokedexNum(species), 0) != TRUE)
+    while (!ResortGorgeousMonSeen(species))
     {
         if (species == SPECIES_BULBASAUR)
             species = NUM_SPECIES - 1;
