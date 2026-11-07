@@ -12,6 +12,7 @@ a Pokédex inteira obtível e uma esteira de testes automática no emulador.**
 ![Testes](https://img.shields.io/badge/pytest-5301%20testes-2ea44f?style=flat-square)
 ![Esteira](https://img.shields.io/badge/esteira-648%20checagens-2ea44f?style=flat-square)
 ![Versão](https://img.shields.io/badge/ROM-v72-informational?style=flat-square)
+[![Página do Professor](https://img.shields.io/badge/p%C3%A1gina-do%20Professor-e3350d?style=flat-square)](https://cintrab.github.io/pokefirered-hack/)
 
 <img src="docs/readme/inicial.png" width="240" alt="Escolha do inicial em português">
 <img src="docs/readme/chuva.png" width="240" alt="Batalha com chuva contínua">
@@ -40,6 +41,8 @@ Uma hack pessoal de **Pokémon FireRed**, feita sobre a decompilação da
 [pret](https://github.com/pret/pokefirered) (versão do Nintendo Switch Online, `pokefirered_switch.gba`).
 O jogo inteiro foi traduzido para o português do Brasil e ganhou recursos dos jogos mais novos, sem
 perder o jeito do FireRed.
+
+**Veja a hack sem baixar nada:** [Página do Professor](https://cintrab.github.io/pokefirered-hack/), com as novidades, as telas e o mapa.
 
 > [!IMPORTANT]
 > **Projeto de fã, pessoal e sem fins lucrativos.** Não tem afiliação nem endosso da Nintendo,
