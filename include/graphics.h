@@ -3297,6 +3297,15 @@ extern const u32 gItemIconPalette_PowderJar[];
 extern const u32 gItemIcon_Gem[];
 extern const u32 gItemIconPalette_Ruby[];
 extern const u32 gItemIconPalette_Sapphire[];
+// POK-51: rosas dos chefes da Família Sombra
+extern const u32 gItemIcon_RosaVermelha[];
+extern const u32 gItemIconPalette_RosaVermelha[];
+extern const u32 gItemIcon_RosaDourada[];
+extern const u32 gItemIconPalette_RosaDourada[];
+extern const u32 gItemIcon_RosaAzul[];
+extern const u32 gItemIconPalette_RosaAzul[];
+extern const u32 gItemIcon_RosaNegra[];
+extern const u32 gItemIconPalette_RosaNegra[];
 extern const u32 gItemIcon_ReturnToFieldArrow[];
 extern const u32 gItemIconPalette_ReturnToFieldArrow[];
 

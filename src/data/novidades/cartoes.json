@@ -393,7 +393,7 @@
         },
         {
           "title": "Conquistas e prêmios",
-          "body": "No menu START, abra o seu cartão e aperte\nSELECT: são 41 conquistas em 5 abas. Cada\numa dá um prêmio, que cai na bolsa com um\naviso e a fanfarra. Um save antigo recebe de\numa vez o que já tinha feito.",
+          "body": "No menu START, abra o seu cartão e aperte\nSELECT: são 44 conquistas em 5 abas. Cada\numa dá um prêmio, que cai na bolsa com um\naviso e a fanfarra. Um save antigo recebe de\numa vez o que já tinha feito.",
           "itemId": "ITEM_NUGGET"
         },
         {
@@ -425,6 +425,31 @@
           "title": "Pokérus",
           "body": "Depois de uma batalha, um Pokémon pode pegar\no Pokérus (é raro!). Ele passa aos vizinhos\nda equipe e se cura em 1 a 4 dias do relógio,\nmas os EVs ficam em dobro para sempre. A\nenfermeira do Centro avisa quando aparece.",
           "itemId": "ITEM_HP_UP"
+        },
+        {
+          "title": "Mestre dos Golpes",
+          "body": "Na Rota 6, uma casa nova abriga o Mestre dos\nGolpes. Ele ensina 15 golpes de tutor,\nquantas vezes quiser, por ¥3.000 cada golpe.\nCancelar não cobra nada.",
+          "itemId": "ITEM_TM_CASE"
+        },
+        {
+          "title": "Casa do pescador",
+          "body": "Na casa de praia da Rota 19, o pescador mede\no seu Krabby. Bateu o recorde? Ganha uma\nPepita, e o primeiro recorde vale também uma\nBala Rara.",
+          "itemId": "ITEM_SUPER_ROD"
+        },
+        {
+          "title": "Sala de troféus",
+          "body": "Na Ilha Sete, uma sala guarda as rosas dos\nchefes em redomas, 5 taças que mostram o seu\navanço nas conquistas e uma placa de\nrecordes.",
+          "itemId": "ITEM_BIG_PEARL"
+        },
+        {
+          "title": "Família Sombra",
+          "body": "Com a 8ª insígnia, o prédio da Rota 23 abre:\ncapangas, gêmeos e os chefes shiny GENGAR, O\nDOM e TYRANITAR, O COBRADOR. Vencido o chefe,\na máfia volta em cerca de 3h30 de jogo.",
+          "itemId": "ITEM_CARD_KEY"
+        },
+        {
+          "title": "Pedágio da Rota 23",
+          "body": "Com a Família ativa, um Persian cobra ¥1.000\npara passar, nos dois sentidos. Quem não\npaga enfrenta 2 lutas seguidas. Sem chefe,\nsem pedágio.",
+          "itemId": "ITEM_AMULET_COIN"
         }
       ]
     },

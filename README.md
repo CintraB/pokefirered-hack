@@ -9,9 +9,9 @@ a Pokédex inteira obtível e uma esteira de testes automática no emulador.**
 ![Idioma](https://img.shields.io/badge/idioma-PT--BR-009c3b?style=flat-square)
 ![Base](https://img.shields.io/badge/base-pret%2Fpokefirered-e3350d?style=flat-square)
 ![Linguagem](https://img.shields.io/badge/C-agbcc-555555?style=flat-square)
-![Testes](https://img.shields.io/badge/pytest-4910%20testes-2ea44f?style=flat-square)
-![Esteira](https://img.shields.io/badge/esteira-560%20checagens-2ea44f?style=flat-square)
-![Versão](https://img.shields.io/badge/ROM-v65-informational?style=flat-square)
+![Testes](https://img.shields.io/badge/pytest-5096%20testes-2ea44f?style=flat-square)
+![Esteira](https://img.shields.io/badge/esteira-624%20checagens-2ea44f?style=flat-square)
+![Versão](https://img.shields.io/badge/ROM-v70-informational?style=flat-square)
 
 <img src="docs/readme/inicial.png" width="240" alt="Escolha do inicial em português">
 <img src="docs/readme/chuva.png" width="240" alt="Batalha com chuva contínua">
@@ -59,10 +59,11 @@ perder o jeito do FireRed.
 | 🧚 | **Tipos e golpes modernos** | Físico ou especial por golpe e o tipo Fada, como em Pokémon X e Y. |
 | 📖 | **Pokédex completa** | Exclusivos do LeafGreen, os dois fósseis, lendários e míticos obtíveis. |
 | 🛠️ | **Melhorias modernas** | Exp. Share para todos, PC Portátil, HMs sem ensinar, status com L/R… |
-| 🏆 | **Conquistas e diário** | 41 conquistas com prêmio na bolsa e o diário das batalhas marcantes, no Cartão de Treinador. |
+| 🏆 | **Conquistas e diário** | 44 conquistas com prêmio na bolsa e o diário das batalhas marcantes, no Cartão de Treinador. |
 | 🔝 | **Revanches por degrau** | Depois do Hall da Fama, a Elite 4 e as revanches do Explorador VS sobem até o nível 100. |
 | 🧭 | **DexNav** | Os Pokémon de cada lugar, com a chance real, o que falta capturar e onde achar cada um. |
 | 🐾 | **Pokémon seguidor** | O 1º da equipe anda atrás de você no campo: os 386, com os grandes, as fêmeas e cada letra do Unown. |
+| 🏠 | **Casas e Família Sombra** | Mestre dos Golpes, pescador e sala de troféus em casas que eram vazias, e um prédio de seis andares na Rota 23 com a máfia dos Pokémon. |
 | 🗞️ | **Tela de novidades** | O Prof. Carvalho apresenta cada mudança em cartões ilustrados. |
 | 🧪 | **Esteira de testes** | Toda ROM é jogada no emulador e testada antes de existir. |
 
@@ -111,7 +112,7 @@ perder o jeito do FireRed.
 
 | | |
 |---|---|
-| **Conquistas** | 41 conquistas em 5 abas (História, Batalha, Captura, Treino e Exploração): as 8 insígnias, Elite 4 e Campeão, treinadores vencidos de 10 em 10, shinies, lendários, Pokédex, nível 100, ovo perfeito, ₽999.999, horas de jogo… Cada linha mostra ✓ ou o progresso (`87/100`), e o rodapé, o total da aba. |
+| **Conquistas** | 44 conquistas em 5 abas (História, Batalha, Captura, Treino e Exploração): as 8 insígnias, Elite 4 e Campeão, treinadores vencidos de 10 em 10, shinies, lendários, Pokédex, nível 100, ovo perfeito, ₽999.999, horas de jogo… Cada linha mostra ✓ ou o progresso (`87/100`), e o rodapé, o total da aba. |
 | **Prêmio na hora** | Ao conquistar, o jogo pausa com um aviso animado e a fanfarra, e o prêmio cai na bolsa (bolsa cheia: no PC). Prêmios maiores para as conquistas mais difíceis, até a Master Ball. |
 | **Save antigo reconhecido** | Na primeira vez que um save de antes abre nesta versão, o jogo confere o que já foi feito e entrega tudo num aviso só. O que não dá mais para provar (vencer um líder com um Pokémon só, vencer o rival em todas) fica riscado e fora do total. |
 | **Diário da jornada** | A primeira vitória contra cada líder, o rival, a Elite 4 e o Campeão, e cada lendário capturado ou derrotado: tempo de jogo, turnos, time usado e o MVP (quem mais nocauteou). |
@@ -125,6 +126,26 @@ perder o jeito do FireRed.
 </details>
 
 <details open>
+<summary><b>🏠 Casas e Família Sombra</b></summary>
+
+| | |
+|---|---|
+| **Mestre dos Golpes** | Uma casa nova na Rota 6 onde um tutor ensina os 15 golpes de tutor do FireRed, **quantas vezes você quiser**, por ¥3.000 cada. Escolhe o golpe, escolhe o Pokémon (só os compatíveis) e, se cancelar, não paga nada. |
+| **Casa do pescador** | Na areia da Rota 19, um pescador mede o seu **Krabby** e guarda o recorde: bateu, ganha uma Pepita (e uma Bala Rara no primeiro recorde). |
+| **Sala de troféus** | Na Ilha Sete: quatro redomas com as rosas dos chefes da Família, cinco taças (bronze, prata e ouro) uma para cada aba das conquistas e uma placa com os seus recordes. |
+| **O prédio da Rota 23** | Depois da **8ª insígnia**, a porta destranca: seis andares de capangas de chapéu (os três primeiros em penumbra e o 4º e o 5º no escuro, com encontros andando) e, no topo, o chefe, um **Gengar shiny**, "GENGAR, O DOM". |
+| **A máfia volta** | Vencido o chefe, o prédio fica vazio por cerca de 3h30 de jogo (entre 3h00 e 3h30, conforme o ponto do meio-dia em que o chefe caiu). Depois chega a ocupação seguinte, com o **Tyranitar shiny**, "TYRANITAR, O COBRADOR", mais forte (+6 níveis por ocupação). |
+| **Pedágio** | Enquanto a Família manda, um Persian de chapéu cobra ¥1.000 para passar pela Rota 23, nos dois sentidos. Quem recusa enfrenta duas lutas seguidas para passar à força. |
+| **Cara de filme antigo** | Capangas e gêmeos entram em batalha com cores frias e escurecidas; os chefes aparecem com as cores shiny. Cada chefe vencido dá uma rosa (acende a redoma na sala de troféus), uma conquista e uma batalha no diário. |
+
+<p align="center">
+<img src="docs/readme/familia_filme.png" width="240" alt="Batalha contra um capanga da Família Sombra, com cores de filme antigo">
+<img src="docs/readme/familia_sala_do_dom.png" width="240" alt="A sala do Dom, no 6º andar">
+<img src="docs/readme/sala_trofeus.png" width="240" alt="A sala de troféus da Ilha Sete">
+</p>
+</details>
+
+<details open>
 <summary><b>🔝 Revanches por degrau</b></summary>
 
 | | |
@@ -133,7 +154,7 @@ perder o jeito do FireRed.
 | **Para quem vale** | Elite 4, Campeão e todas as revanches do **Explorador VS**. O primeiro combate de cada treinador não muda. |
 | **Times mais fortes** | 6 Pokémon em volta do nível escolhido (o ás um pouco acima), espécies evoluídas e mais fortes do tema de cada classe, inclusive de Johto e Hoenn, com item segurado e IVs que sobem com o degrau (até 31). A Elite 4 e o Campeão têm times feitos à mão para cada degrau. |
 | **IA dos chefes** | Do Nível 80 para cima, as revanches do Explorador VS usam a IA dos líderes e da Elite 4. |
-| **Conquistas** | Vencer uma revanche no Nível 100 e a Liga no Nível 100 são duas das 41 conquistas. |
+| **Conquistas** | Vencer uma revanche no Nível 100 e a Liga no Nível 100 são duas das 44 conquistas. |
 
 <p align="center">
 <img src="docs/readme/revanche_lista.png" width="240" alt="A guarda da Liga com a lista de níveis">
@@ -300,6 +321,7 @@ perder o jeito do FireRed.
 | **Bugs do original** (03/11) | As 47 correções de bugs do FireRed que a decompilação deixava desligadas, agora ligadas. |
 | **Pokémon seguidor, todos** (03/11) | Os 386 seguem, com a versão shiny: os 7 grandes em 64×64, as fêmeas, cada letra do Unown e o Deoxys Ataque; o seguidor fica sempre atrás do jogador no desenho. A ROM passou a 32 MB. |
 | **Pokérus** (06/11) | O Pokérus do Rubi/Safira, que o FireRed deixava desligado: pega depois das batalhas, passa aos vizinhos, conta os dias pelo relógio da hack e dobra os EVs. |
+| **Casas e Família Sombra** (06/11) | Três casas sem uso ganham vida (Mestre dos Golpes na Rota 6, casa do pescador na Rota 19, sala de troféus na Ilha Sete) e a Rota 23 ganha o prédio da Família Sombra: capangas, gêmeos, chefes shiny, pedágio e a máfia que volta. |
 | **Esteira mais firme** (06/11) | Galeria de textos (cada fala na caixa real) e telas de referência estáveis, sem avisos falsos pelo sorteio. |
 
 ## Esteira de testes
@@ -330,7 +352,7 @@ flowchart LR
   pior caso dos nomes variáveis, numa página HTML para revisar a tradução de olho. Não reprova nada.
 - **Telas estáveis**: a tela da captura sai sempre com o mesmo Pokémon (um Pidgey), e as telas são
   conferidas pelo relógio do disco, para o sorteio não gerar avisos falsos.
-- **4910 testes em pytest** cobrem a própria esteira e as regras de cada hack.
+- **5096 testes em pytest** cobrem a própria esteira e as regras de cada hack.
 
 <details>
 <summary>Comandos (WSL)</summary>
@@ -372,6 +394,7 @@ O manual completo está em [`test/README.md`](test/README.md).
 | `src/data/novidades/cartoes.json` | Cartões da tela de novidades |
 | `src/field_move_rules.c` | HMs sem ensinar |
 | `src/follower.c`, `tools/seguidores/` | Pokémon seguidor e o conversor dos sprites |
+| `src/familia_sombra.c`, `src/mestre_golpes.c`, `src/sala_trofeus.c` | Família Sombra (estado, ocupações, pedágio), Mestre dos Golpes e sala de troféus |
 | `test/esteira/` | A esteira de testes (Python + mGBA) |
 | `test/referencias/` | Telas aprovadas, por inicial |
 | `roms/` | ROMs testadas e versionadas |

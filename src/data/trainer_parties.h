@@ -10870,3 +10870,34 @@ static const struct TrainerMonNoItemDefaultMoves sParty_CueBallPaxton[] = {
         .species = SPECIES_MUK,
     },
 };
+
+// POK-51: Família Sombra. Só dão o tamanho do time e o nível da transição: o time de verdade (espécie, item e golpes
+// por ocupação) sai de FamiliaSombra_CriarTime (src/data/familia_sombra_times.h).
+static const struct TrainerMonNoItemDefaultMoves sParty_FamiliaCapanga[] = {
+    {
+        .iv = 255,
+        .lvl = 52,
+        .species = SPECIES_HAUNTER,
+    },
+};
+
+static const struct TrainerMonNoItemDefaultMoves sParty_FamiliaGemeos[] = {
+    {
+        .iv = 255,
+        .lvl = 60,
+        .species = SPECIES_MACHAMP,
+    },
+    {
+        .iv = 255,
+        .lvl = 60,
+        .species = SPECIES_MACHAMP,
+    },
+};
+
+static const struct TrainerMonNoItemDefaultMoves sParty_FamiliaPedagio[] = {
+    {
+        .iv = 255,
+        .lvl = 57,
+        .species = SPECIES_HAUNTER,
+    },
+};

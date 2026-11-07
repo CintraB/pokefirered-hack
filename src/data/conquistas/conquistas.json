@@ -567,6 +567,68 @@
         {"item": "ITEM_PP_UP", "qtd": 1},
         {"item": "ITEM_MASTER_BALL", "qtd": 1}
       ]
+    },
+    {
+      "num": 41,
+      "id": "familia_dom",
+      "aba": "batalha",
+      "nome": "Vencer o Dom",
+      "tipo": "EVENTO",
+      "condicao": "Derrotar ou capturar o Gengar, o Dom, no 6º andar do prédio da Rota 23",
+      "param": "CONQ_EVT_FAMILIA_DOM",
+      "premios": [
+        {"item": "ITEM_PP_MAX", "qtd": 1}
+      ]
+    },
+    {
+      "num": 42,
+      "id": "familia_cobrador",
+      "aba": "batalha",
+      "nome": "Vencer o Cobrador",
+      "tipo": "EVENTO",
+      "condicao": "Derrotar ou capturar o Tyranitar, o Cobrador, no 6º andar do prédio da Rota 23",
+      "param": "CONQ_EVT_FAMILIA_COBRADOR",
+      "premios": [
+        {"item": "ITEM_PP_MAX", "qtd": 2}
+      ]
+    },
+    {
+      "num": 43,
+      "id": "familia_pedagio",
+      "aba": "batalha",
+      "nome": "Pagar ou lutar",
+      "tipo": "EVENTO",
+      "condicao": "Passar o pedágio da Rota 23 à força, vencendo as 2 lutas",
+      "param": "CONQ_EVT_FAMILIA_PEDAGIO_FORCA",
+      "premios": [
+        {"item": "ITEM_PP_MAX", "qtd": 1}
+      ]
+    },
+    {
+      "num": 44,
+      "id": "familia_mercenario",
+      "aba": "batalha",
+      "nome": "Vencer o Mercenário",
+      "tipo": "EVENTO",
+      "condicao": "Parte 2: derrotar ou capturar o Mercenário (inativa até lá)",
+      "param": "CONQ_EVT_FAMILIA_MERCENARIO",
+      "ativa": false,
+      "premios": [
+        {"item": "ITEM_PP_MAX", "qtd": 3}
+      ]
+    },
+    {
+      "num": 45,
+      "id": "familia_toda",
+      "aba": "batalha",
+      "nome": "Derrubar a Família Sombra",
+      "tipo": "EVENTO",
+      "condicao": "Parte 2: derrotar ou capturar os 4 chefes da Família Sombra (inativa até lá)",
+      "param": "CONQ_EVT_FAMILIA_TODA",
+      "ativa": false,
+      "premios": [
+        {"item": "ITEM_MASTER_BALL", "qtd": 1}
+      ]
     }
   ],
   "diario": [
@@ -866,6 +928,42 @@
       "lider": false,
       "rival": false,
       "especie": "SPECIES_DEOXYS"
+    },
+    {
+      "id": "familia_dom",
+      "nome": "O Dom",
+      "local": "Gengar, Rota 23",
+      "tipo": "chefe",
+      "lider": false,
+      "rival": false,
+      "especie": "SPECIES_GENGAR"
+    },
+    {
+      "id": "familia_cobrador",
+      "nome": "O Cobrador",
+      "local": "Tyranitar, Rota 23",
+      "tipo": "chefe",
+      "lider": false,
+      "rival": false,
+      "especie": "SPECIES_TYRANITAR"
+    },
+    {
+      "id": "familia_mercenario",
+      "nome": "O Mercenário",
+      "local": "Prédio da Rota 23",
+      "tipo": "chefe",
+      "lider": false,
+      "rival": false,
+      "especie": "SPECIES_NONE"
+    },
+    {
+      "id": "familia_pesadelo",
+      "nome": "O Pesadelo",
+      "local": "Prédio da Rota 23",
+      "tipo": "chefe",
+      "lider": false,
+      "rival": false,
+      "especie": "SPECIES_NONE"
     }
   ]
 }

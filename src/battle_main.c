@@ -17,6 +17,7 @@
 #include "decompress.h"
 #include "event_data.h"
 #include "evolution_scene.h"
+#include "familia_sombra.h"
 #include "graphics.h"
 #include "help_system.h"
 #include "item.h"
@@ -482,6 +483,7 @@ const struct TrainerMoney gTrainerMoneyTable[] =
     {TRAINER_CLASS_TEAM_ROCKET, 8},
     {TRAINER_CLASS_ROCKET_ADMIN, 8},
     {TRAINER_CLASS_ROCKET_ADMIN_F, 8},
+    {TRAINER_CLASS_FAMILIA_SOMBRA, 0}, // POK-51: sem prêmio por luta (o dinheiro está nos andares)
     {TRAINER_CLASS_LASS, 4},
     {TRAINER_CLASS_BEAUTY, 18},
     {TRAINER_CLASS_BLACK_BELT, 6},
@@ -1579,6 +1581,14 @@ static u8 CreateNPCTrainerParty(struct Pokemon *party, u16 trainerNum)
             return tierPartySize;
         }
 
+        // POK-51: os capangas da Família Sombra montam o time da ocupação atual.
+        tierPartySize = FamiliaSombra_CriarTime(party, trainerNum);
+        if (tierPartySize != 0)
+        {
+            gBattleTypeFlags |= gTrainers[trainerNum].doubleBattle;
+            return tierPartySize;
+        }
+
         ZeroEnemyPartyMons();
         for (i = 0; i < gTrainers[trainerNum].partySize; i++)
         {
@@ -2594,10 +2604,13 @@ static void BattleIntroDrawTrainersOrMonsSprites(void)
 {
     u8 *ptr;
     s32 i;
+    bool8 familia;
 
     if (gBattleControllerExecFlags)
         return;
 
+    // POK-51: na batalha da Família não há humano: o Pokémon do oponente aparece direto, como selvagem, sem bola.
+    familia = FamiliaSombra_EhBatalhaDaFamilia();
     for (gActiveBattler = 0; gActiveBattler < gBattlersCount; gActiveBattler++)
     {
         if ((gBattleTypeFlags & BATTLE_TYPE_SAFARI)
@@ -2631,7 +2644,7 @@ static void BattleIntroDrawTrainersOrMonsSprites(void)
             MarkBattlerForControllerExec(gActiveBattler);
         }
 
-        if (gBattleTypeFlags & BATTLE_TYPE_TRAINER)
+        if ((gBattleTypeFlags & BATTLE_TYPE_TRAINER) && !familia)
         {
             if (GetBattlerPosition(gActiveBattler) == B_POSITION_OPPONENT_LEFT)
             {
@@ -2689,7 +2702,8 @@ static void BattleIntroDrawPartySummaryScreens(void)
     if (gBattleControllerExecFlags)
         return;
 
-    if (gBattleTypeFlags & BATTLE_TYPE_TRAINER)
+    // POK-51: a Família segue o caminho do selvagem (sem resumo das bolas e sem envio do oponente).
+    if ((gBattleTypeFlags & BATTLE_TYPE_TRAINER) && !FamiliaSombra_EhBatalhaDaFamilia())
     {
         for (i = 0; i < PARTY_SIZE; i++)
         {
@@ -3790,6 +3804,11 @@ static void HandleEndTurn_BattleWon(void)
         case TRAINER_CLASS_LEADER:
         case TRAINER_CLASS_CHAMPION:
             PlayBGM(MUS_VICTORY_GYM_LEADER);
+            break;
+        case TRAINER_CLASS_FAMILIA_SOMBRA:
+            // POK-51: sem humano para entrar na tela e sem prêmio em dinheiro.
+            gBattlescriptCurrInstr = BattleScript_FamiliaBattleWon;
+            PlayBGM(MUS_VICTORY_TRAINER);
             break;
         case TRAINER_CLASS_BOSS:
         case TRAINER_CLASS_TEAM_ROCKET:

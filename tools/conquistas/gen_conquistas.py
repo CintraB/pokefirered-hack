@@ -26,7 +26,7 @@ IDENT = re.compile(r"[a-z][a-z0-9_]*")
 CONST_HEADERS = ("flags", "game_stat", "species", "items", "opponents", "conquistas")
 TIPOS = ("FLAG", "FLAGS_TODAS", "DEX_TODOS", "DEX_KANTO", "DEX_NACIONAL", "NIVEL", "AMIZADE_MAX",
          "GAME_STAT", "DINHEIRO", "HORAS", "VITORIAS", "SHINIES", "EVENTO")
-TIPOS_DIARIO = ("treinador", "lendario")
+TIPOS_DIARIO = ("treinador", "lendario", "chefe")
 CONQ_MAX = 64
 CONQ_MAX_DEGRAUS = 8
 DIARIO_MAX = 48
@@ -141,7 +141,7 @@ def validar(data: dict) -> None:
         _texto(e.get("local"), f"{did}: local")
         if e.get("tipo") not in TIPOS_DIARIO:
             raise ValueError(f"{did}: tipo '{e.get('tipo')}' desconhecido")
-        if e["tipo"] == "lendario":
+        if e["tipo"] in ("lendario", "chefe"):
             _constante(e.get("especie"), f"{did}: especie", "SPECIES_")
         else:
             if not e.get("treinadores"):
@@ -262,10 +262,10 @@ def render_tabela(data: dict) -> str:
         out += [f"    [DIARIO_EVT_{did.upper()}] =", "    {",
                 f"        .nome = sDiarioNome_{did},",
                 f"        .local = sDiarioLocal_{did},",
-                f"        .tipo = DIARIO_TIPO_{'TREINADOR' if e['tipo'] == 'treinador' else 'LENDARIO'},",
+                f"        .tipo = DIARIO_TIPO_{e['tipo'].upper()},",
                 f"        .lider = {'TRUE' if e.get('lider') else 'FALSE'},",
                 f"        .rival = {'TRUE' if e.get('rival') else 'FALSE'},"]
-        if e["tipo"] == "lendario":
+        if e["tipo"] in ("lendario", "chefe"):
             out.append(f"        .especie = {e['especie']},")
         else:
             out.append(f"        .treinadores = sDiarioTreinadores_{did},")
@@ -322,7 +322,7 @@ def render_tabela_md(data: dict) -> str:
             nome = c["nome"]
             marca = ""
             if not c.get("ativa", True):
-                marca = " _(inativa: POK-42)_"
+                marca = " _(inativa)_"
             elif c.get("perdivel"):
                 marca = " _(pode ser perdida)_"
             out.append(f"| {nome}{marca} | {c['condicao']} | {_premios_por_degrau(c, nomes)} |")

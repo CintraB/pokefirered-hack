@@ -55,7 +55,20 @@ _LABEL = re.compile(r"^([A-Za-z_][A-Za-z0-9_]*)::", re.M)
 # rótulos que os hacks acrescentaram depois da base da tradução (não são rótulos renomeados)
 ROTULOS_DOS_HACKS = {"PokemonLeague_HallOfFame_Text_OakTickets",     # Hack 8: Carvalho entrega os bilhetes
                      "PokemonMansion_B1F_Text_DiaryMewHint",          # Hack 8: pista do Mew
-                     "PokemonMansion_B1F_Text_Mew"}                   # Hack 8: grito do Mew
+                     "PokemonMansion_B1F_Text_Mew",                   # Hack 8: grito do Mew
+                     "Route23_Text_PortaFamiliaTrancada",             # POK-51: porta do prédio da Família
+                     "Route23_Text_PedagioCobra",
+                     "Route23_Text_PedagioPagar",
+                     "Route23_Text_PedagioPago",
+                     "Route23_Text_PedagioRecusou",
+                     "Route23_Text_PedagioSemDinheiro",
+                     "Route23_Text_PedagioEscolha",
+                     "Route23_Text_PedagioVoltar",
+                     "Route23_Text_PedagioForca",
+                     "Route23_Text_PedagioDerrota1",
+                     "Route23_Text_PedagioDerrota2",
+                     "Route23_Text_PedagioLivre",
+                     "Route23_Text_PedagioJaPagou"}             # POK-51: pedágio do Persian
 
 
 @lru_cache(maxsize=None)
@@ -266,7 +279,7 @@ def _inc_label_text(rel, label):
 
 
 def test_b2c_derrota_do_brock_cabe_em_gdisplayedstringbattle():
-    """A fala do Treinador é copiada inteira para gDisplayedStringBattle[300] (src/battle_main.c:123):
+    """A fala do Treinador é copiada inteira para gDisplayedStringBattle[300] (src/battle_main.c:128):
     {PLAYER} expande para 7 letras, {PAUSE_UNTIL_PRESS} entra no fim e há o terminador. A do Brock
     tinha 366 bytes (o inglês, 377, já estourava); agora precisa caber de verdade, com folga."""
     size = int(re.search(r"gDisplayedStringBattle\[(\d+)\]", (REPO_ROOT / "src/battle_main.c").read_text(

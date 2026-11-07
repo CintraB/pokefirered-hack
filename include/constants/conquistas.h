@@ -54,9 +54,15 @@
 #define CONQ_EVT_ELITE4             7
 #define CONQ_EVT_REVANCHE_MAX       8   // POK-42: RematchTier_OnRematchWon (src/rematch_tier.c)
 #define CONQ_EVT_E4_DEGRAU100       9   // POK-42: RematchTier_OnLeagueCleared (src/rematch_tier.c)
+#define CONQ_EVT_FAMILIA_DOM            10  // POK-51: FamiliaSombra_ChefeCaiu (ocupação 1)
+#define CONQ_EVT_FAMILIA_COBRADOR       11  // POK-51: FamiliaSombra_ChefeCaiu (ocupação 2)
+#define CONQ_EVT_FAMILIA_PEDAGIO_FORCA  12  // POK-51: FamiliaSombra_PedagioVencido
+#define CONQ_EVT_FAMILIA_MERCENARIO     13  // POK-51, parte 2 (conquista inativa)
+#define CONQ_EVT_FAMILIA_TODA           14  // POK-51, parte 2 (conquista inativa)
 
 // Tipos de evento do diário (struct DiarioEvento.tipo).
 #define DIARIO_TIPO_TREINADOR  0
 #define DIARIO_TIPO_LENDARIO   1
+#define DIARIO_TIPO_CHEFE      2   // POK-51: chefe da Família Sombra (só conta se FamiliaSombra_EhChefe())
 
 #endif // GUARD_CONSTANTS_CONQUISTAS_H

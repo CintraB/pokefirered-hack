@@ -95,7 +95,11 @@ def _item_descriptions(source: str) -> dict[str, str]:
 # slots vazios ("????????") que os hacks ocuparam depois da base da tradução: "slot:id da base" -> "slot:id novo"
 ITENS_NOVOS_DOS_HACKS = {61: ("ITEM_PORTABLE_PC", "POCKET_KEY_ITEMS"),   # POK-36: PC Portátil
                          62: ("ITEM_INCUBATOR", "POCKET_KEY_ITEMS"),     # POK-37: Incubadora
-                         72: ("ITEM_DEXNAV", "POCKET_KEY_ITEMS")}        # POK-47: DexNav
+                         72: ("ITEM_DEXNAV", "POCKET_KEY_ITEMS"),        # POK-47: DexNav
+                         87: ("ITEM_ROSA_VERMELHA", "POCKET_KEY_ITEMS"),  # POK-51: as 4 rosas da Família Sombra
+                         88: ("ITEM_ROSA_DOURADA", "POCKET_KEY_ITEMS"),
+                         89: ("ITEM_ROSA_AZUL", "POCKET_KEY_ITEMS"),
+                         90: ("ITEM_ROSA_NEGRA", "POCKET_KEY_ITEMS")}
 _SLOT_DOS_HACKS = {f"{i}:ITEM_NONE": f"{i}:{item}" for i, (item, _) in ITENS_NOVOS_DOS_HACKS.items()}
 
 
@@ -263,7 +267,12 @@ def test_toda_mensagem_de_batalha_foi_traduzida():
     base, now = _need_battle_base(), _battle_now()
     renamed = {"sText_BerrySuffix": "sText_BerryPrefix"}   # "Fruta " + nome (ordem PT-BR)
     new = {"sText_TeamGainedExp",   # POK-34: "O resto da equipe também ganhou PE!" (Exp. Share fixo)
-           "gText_AFairyMove"}      # POK-45: "golpe Fada" (tipo novo)
+           "gText_AFairyMove",      # POK-45: "golpe Fada" (tipo novo)
+           # POK-51: a Família Sombra (abertura sem humano e a bola desviada)
+           "gText_FamiliaCapangaQuerLutar", "gText_FamiliaGemeosQueremLutar", "gText_FamiliaDesviaBola",
+           # POK-51: o chefe se apresenta com o título (um por ocupação)
+           "gText_FamiliaChefeDom", "gText_FamiliaChefeCobrador", "gText_FamiliaChefeMercenario",
+           "gText_FamiliaChefePesadelo"}
     assert set(now) == {renamed.get(label, label) for label in base} | new, "rótulos mudaram"
     same = [label for label, text in base.items()
             if re.search(r"[A-Za-z]{2}", _letters(text)) and now[renamed.get(label, label)] == text

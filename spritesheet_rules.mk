@@ -6,6 +6,17 @@ FLDEFFGFXDIR := graphics/field_effects/pics
 $(OBJEVENTGFXDIR)/seguidores/grandes/%.4bpp: $(OBJEVENTGFXDIR)/seguidores/grandes/%.png
 	$(GFX) $< $@ -mwidth 8 -mheight 8
 
+# POK-51: gráficos do mapa da Família Sombra, gerados por tools/familia_sombra/gerar.py (1 quadro cada): sprites com
+# chapéu 32x40, redomas 32x32 e taças 16x32. As duas últimas têm radical mais curto, então o make as escolhe primeiro.
+$(OBJEVENTGFXDIR)/familia/%.4bpp: $(OBJEVENTGFXDIR)/familia/%.png
+	$(GFX) $< $@ -mwidth 4 -mheight 5
+
+$(OBJEVENTGFXDIR)/familia/redoma_%.4bpp: $(OBJEVENTGFXDIR)/familia/redoma_%.png
+	$(GFX) $< $@ -mwidth 4 -mheight 4
+
+$(OBJEVENTGFXDIR)/familia/taca_%.4bpp: $(OBJEVENTGFXDIR)/familia/taca_%.png
+	$(GFX) $< $@ -mwidth 2 -mheight 4
+
 # POK-48: folhas dos Pokémon seguidores (256x32, 8 quadros 32x32), geradas por tools/seguidores/converter.py
 $(OBJEVENTGFXDIR)/seguidores/%.4bpp: $(OBJEVENTGFXDIR)/seguidores/%.png
 	$(GFX) $< $@ -mwidth 4 -mheight 4

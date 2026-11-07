@@ -303,4 +303,28 @@
 #define METATILE_RSCave_CrackedFloor                     0x22F
 #define METATILE_RSCave_CrackedFloor_Hole                0x206
 
+// gTileset_IndigoPlateau (POK-51: a porta do prédio da Família Sombra, tools/familia_sombra/predio.py)
+#define METATILE_IndigoPlateau_FamiliaPortaTrancada  0x348
+
+// gTileset_FamiliaSombra (POK-51: o quadro 3x2 da sala do Dom, um retrato por chefe; _<coluna>_<linha>.
+// Gerados por tools/familia_sombra/predio.py, ids em predio.json "quadro"; o teste test_quadro_* confere.)
+#define METATILE_FamiliaSombra_QuadroCobrador_0_0    0x2E8
+#define METATILE_FamiliaSombra_QuadroCobrador_1_0    0x2EA
+#define METATILE_FamiliaSombra_QuadroCobrador_2_0    0x2EC
+#define METATILE_FamiliaSombra_QuadroCobrador_0_1    0x2E9
+#define METATILE_FamiliaSombra_QuadroCobrador_1_1    0x2EB
+#define METATILE_FamiliaSombra_QuadroCobrador_2_1    0x2ED
+#define METATILE_FamiliaSombra_QuadroDom_0_0         0x2EE
+#define METATILE_FamiliaSombra_QuadroDom_1_0         0x2F0
+#define METATILE_FamiliaSombra_QuadroDom_2_0         0x2F2
+#define METATILE_FamiliaSombra_QuadroDom_0_1         0x2EF
+#define METATILE_FamiliaSombra_QuadroDom_1_1         0x2F1
+#define METATILE_FamiliaSombra_QuadroDom_2_1         0x2F3
+#define METATILE_FamiliaSombra_QuadroVazio_0_0       0x2F4
+#define METATILE_FamiliaSombra_QuadroVazio_1_0       0x2F6
+#define METATILE_FamiliaSombra_QuadroVazio_2_0       0x2F8
+#define METATILE_FamiliaSombra_QuadroVazio_0_1       0x2F5
+#define METATILE_FamiliaSombra_QuadroVazio_1_1       0x2F7
+#define METATILE_FamiliaSombra_QuadroVazio_2_1       0x2F9
+
 #endif // GUARD_METATILE_LABELS_H

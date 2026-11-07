@@ -138,6 +138,7 @@ void NewGameInitData(void)
     ClearPlayerLinkBattleRecords();
     InitHeracrossSizeRecord();
     InitMagikarpSizeRecord();
+    InitKrabbySizeRecord(); // POK-51
     EnableNationalPokedex_RSE();
     gPlayerPartyCount = 0;
     ZeroPlayerPartyMons();

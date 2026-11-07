@@ -56,7 +56,8 @@ struct Conquista
     const struct ConquistaPremio *premios;
 };
 
-// `treinadores` (TRAINER_*, termina em 0xFFFF) para o tipo TREINADOR; `especie` para o tipo LENDARIO.
+// `treinadores` (TRAINER_*, termina em 0xFFFF) para o tipo TREINADOR; `especie` para o tipo LENDARIO e para o CHEFE
+// (POK-51: só grava quando FamiliaSombra_EhChefe(); SPECIES_NONE = reservado, nunca grava).
 struct DiarioEvento
 {
     const u8 *nome;

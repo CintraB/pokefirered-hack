@@ -289,6 +289,7 @@
 #define TRAINER_CLASS_PAINTER             106
 #define TRAINER_CLASS_ROCKET_ADMIN        107   // added: Team Rocket Admin (male pic), "Executivo"; keeps TEAM_ROCKET behaviour
 #define TRAINER_CLASS_ROCKET_ADMIN_F      108   // added: Team Rocket Admin (female pic), "Executiva"
+#define TRAINER_CLASS_FAMILIA_SOMBRA      109   // POK-51: capangas da Família Sombra, "Capanga"; sem humano na batalha
 
 #define FACILITY_CLASS_AQUA_LEADER_ARCHIE     0
 #define FACILITY_CLASS_AQUA_GRUNT_M           1

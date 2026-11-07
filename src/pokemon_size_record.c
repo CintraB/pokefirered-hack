@@ -190,6 +190,25 @@ void CompareMagikarpSize(void)
     gSpecialVar_Result = CompareMonSize(SPECIES_MAGIKARP, sizeRecord);
 }
 
+void InitKrabbySizeRecord(void) // POK-51
+{
+    VarSet(VAR_KRABBY_SIZE_RECORD, DEFAULT_MAX_SIZE);
+}
+
+void GetKrabbySizeRecordInfo(void) // POK-51
+{
+    u16 *sizeRecord = GetVarPointer(VAR_KRABBY_SIZE_RECORD);
+
+    GetMonSizeRecordInfo(SPECIES_KRABBY, sizeRecord);
+}
+
+void CompareKrabbySize(void) // POK-51
+{
+    u16 *sizeRecord = GetVarPointer(VAR_KRABBY_SIZE_RECORD);
+
+    gSpecialVar_Result = CompareMonSize(SPECIES_KRABBY, sizeRecord);
+}
+
 void GiveGiftRibbonToParty(u8 index, u8 ribbonId)
 {
     s32 i;

@@ -480,4 +480,23 @@ gSpecials::
 	def_special ShouldUseLeagueRematchTeams
 	def_special BufferRematchTierName
 	def_special ShowRematchTierMenu
+	@ Família Sombra (POK-51)
+	def_special FamiliaSombra_Atualizar
+	def_special FamiliaSombra_ChefeCaiu
+	def_special FamiliaSombra_GetEstado
+	def_special FamiliaSombra_GetOcupacao
+	def_special FamiliaSombra_SortearPedagio
+	def_special FamiliaSombra_IniciarChefe
+	def_special FamiliaSombra_PrepararAndar
+	def_special FamiliaSombra_PedagioVencido
+	def_special MestreGolpes_EscolherGolpe
+	@ Pescador da Rota 19 (POK-51)
+	def_special GetKrabbySizeRecordInfo
+	def_special CompareKrabbySize
+	@ Sala de troféus (POK-51)
+	def_special SalaTrofeus_Taca
+	def_special SalaTrofeus_Placa
+	def_special SalaTrofeus_PlacaRevanche
+	def_special SalaTrofeus_PlacaHall
+	def_special SalaTrofeus_Curador
 gSpecialsEnd::

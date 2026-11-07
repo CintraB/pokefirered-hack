@@ -508,6 +508,12 @@ static const struct MenuAction sMultichoiceList_RematchTier[] = {
     { gText_RematchTier_100 }
 };
 
+// POK-51: o pedágio da Rota 23 (0 = voltar depois, 1 = passar à força)
+static const struct MenuAction sMultichoiceList_Pedagio[] = {
+    { gText_PedagioVoltarDepois },
+    { gText_PedagioPassarAForca }
+};
+
 static const struct MenuAction sMultichoiceList_Exit[] = {
     { gOtherText_Exit }
 };
@@ -579,6 +585,7 @@ static const struct MultichoiceListStruct sMultichoiceLists[] = {
     [MULTICHOICE_JOIN_OR_LEAD]                               = MULTICHOICE(sMultichoiceList_JoinOrLead),
     [MULTICHOICE_TRAINER_TOWER_MODE]                         = MULTICHOICE(sMultichoiceList_TrainerTowerMode),
     [MULTICHOICE_REMATCH_TIER]                               = MULTICHOICE(sMultichoiceList_RematchTier),
+    [MULTICHOICE_PEDAGIO]                                    = MULTICHOICE(sMultichoiceList_Pedagio),
 };
 
 // From Cool to Berries goes unused

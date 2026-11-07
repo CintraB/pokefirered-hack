@@ -8,6 +8,7 @@
 #include "pokemon_icon.h"
 #include "mail.h"
 #include "event_data.h"
+#include "familia_sombra.h"
 #include "strings.h"
 #include "pokemon_special_anim.h"
 #include "pokemon_storage_system.h"
@@ -2626,6 +2627,11 @@ void SetMoveEffect(bool8 primary, u8 certain)
                             | BATTLE_TYPE_LINK))
                         && gTrainerBattleOpponent_A != TRAINER_SECRET_BASE)
                     {
+                        gBattlescriptCurrInstr++;
+                    }
+                    else if (FamiliaSombra_ItemProtegido())
+                    {
+                        // POK-51: Ladrão e Cobiça não tiram o item da Família (falham como item que não sai).
                         gBattlescriptCurrInstr++;
                     }
                     else if (!(gBattleTypeFlags &
@@ -8824,7 +8830,9 @@ static void Cmd_trysethelpinghand(void)
 static void Cmd_tryswapitems(void)
 {
     // opponent can't swap items with player in regular battles
-    if (gBattleTypeFlags & BATTLE_TYPE_TRAINER_TOWER
+    // POK-51: nem o jogador troca itens com a Família (Truque falha)
+    if (FamiliaSombra_ItemProtegido()
+        || gBattleTypeFlags & BATTLE_TYPE_TRAINER_TOWER
         || (GetBattlerSide(gBattlerAttacker) == B_SIDE_OPPONENT
             && !(gBattleTypeFlags & (BATTLE_TYPE_LINK
                                   | BATTLE_TYPE_BATTLE_TOWER
@@ -9496,7 +9504,14 @@ static void Cmd_handleballthrow(void)
     gActiveBattler = gBattlerAttacker;
     gBattlerTarget = gBattlerAttacker ^ BIT_SIDE;
 
-    if (gBattleTypeFlags & BATTLE_TYPE_GHOST)
+    if (FamiliaSombra_EhBatalhaDaFamilia())
+    {
+        // POK-51: ninguém tira um membro da Família; a bola passa direto e volta para a bolsa.
+        BtlController_EmitBallThrowAnim(BUFFER_A, BALL_GHOST_DODGE);
+        MarkBattlerForControllerExec(gActiveBattler);
+        gBattlescriptCurrInstr = BattleScript_FamiliaBallDodge;
+    }
+    else if (gBattleTypeFlags & BATTLE_TYPE_GHOST)
     {
         BtlController_EmitBallThrowAnim(BUFFER_A, BALL_GHOST_DODGE);
         MarkBattlerForControllerExec(gActiveBattler);

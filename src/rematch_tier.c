@@ -156,14 +156,23 @@ u32 RematchTier_GetAiFlags(void)
 }
 
 // Ganchos das conquistas do POK-44 (a regra de marcar fica em src/conquistas.c).
+// Guarda o maior degrau vencido (revanche do Vs. Seeker ou Liga), para a placa da sala de troféus (POK-51).
+static void RegistrarDegrauVencido(u8 tier)
+{
+    if (tier >= 1 && tier <= REMATCH_TIER_MAX && tier > VarGet(VAR_REVANCHE_MAIOR_DEGRAU))
+        VarSet(VAR_REVANCHE_MAIOR_DEGRAU, tier);
+}
+
 void RematchTier_OnRematchWon(u8 tier)
 {
+    RegistrarDegrauVencido(tier);
     if (tier == REMATCH_TIER_MAX)
         Conquistas_Evento(CONQ_EVT_REVANCHE_MAX);
 }
 
 void RematchTier_OnLeagueCleared(u8 tier)
 {
+    RegistrarDegrauVencido(tier);
     if (tier == REMATCH_TIER_MAX)
         Conquistas_Evento(CONQ_EVT_E4_DEGRAU100);
 }
@@ -179,6 +188,11 @@ static const u8 *const sRematchTierNames[] = {
 };
 
 STATIC_ASSERT(NELEMS(sRematchTierNames) == REMATCH_TIER_MAX + 1, RematchTierNamesCobreOsDegraus);
+
+const u8 *GetRematchTierName(u8 tier)
+{
+    return sRematchTierNames[tier > REMATCH_TIER_MAX ? 0 : tier];
+}
 
 void BufferRematchTierName(void)
 {

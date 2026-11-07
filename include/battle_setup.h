@@ -12,6 +12,8 @@ void StartSouthernIslandBattle(void);
 void StartLegendaryBattle(void);
 void StartGroudonKyogreBattle(void);
 void StartRegiBattle(void);
+void StartFamiliaWildBattle(void);   // POK-51
+void StartFamiliaChefeBattle(void);  // POK-51
 u8 BattleSetup_GetTerrainId(void);
 u8 BattleSetup_GetBattleTowerBattleTransition(void);
 const u8 *BattleSetup_ConfigureTrainerBattle(const u8 *data);

@@ -1,0 +1,38 @@
+@ POK-51: o 3º andar do prédio da Família Sombra.
+Route23_FamiliaSombra_3F_MapScripts::
+	map_script MAP_SCRIPT_ON_TRANSITION, Route23_FamiliaSombra_3F_OnTransition
+	.byte 0
+
+Route23_FamiliaSombra_3F_OnTransition::
+	setvar VAR_0x8004, 3
+	special FamiliaSombra_PrepararAndar
+	end
+
+Route23_FamiliaSombra_3F_EventScript_Capanga7::
+	trainerbattle_single TRAINER_FAMILIA_CAPANGA_7, FamiliaSombra_Text_CapangaIntro, FamiliaSombra_Text_CapangaDerrota, FamiliaSombra_EventScript_CapangaVencido
+	end
+
+Route23_FamiliaSombra_3F_EventScript_Capanga8::
+	trainerbattle_single TRAINER_FAMILIA_CAPANGA_8, FamiliaSombra_Text_CapangaIntro, FamiliaSombra_Text_CapangaDerrota, FamiliaSombra_EventScript_CapangaVencido
+	end
+
+Route23_FamiliaSombra_3F_EventScript_Capanga9::
+	trainerbattle_single TRAINER_FAMILIA_CAPANGA_9, FamiliaSombra_Text_CapangaIntro, FamiliaSombra_Text_CapangaDerrota, FamiliaSombra_EventScript_CapangaVencido
+	end
+
+Route23_FamiliaSombra_3F_EventScript_PerolaGrande::
+	finditem ITEM_BIG_PEARL
+	end
+
+Route23_FamiliaSombra_3F_EventScript_Bilhete::
+	lockall
+	special FamiliaSombra_GetOcupacao
+	goto_if_eq VAR_RESULT, 2, Route23_FamiliaSombra_3F_EventScript_Bilhete2
+	msgbox Route23_FamiliaSombra_3F_Text_Bilhete1
+	releaseall
+	end
+
+Route23_FamiliaSombra_3F_EventScript_Bilhete2::
+	msgbox Route23_FamiliaSombra_3F_Text_Bilhete2
+	releaseall
+	end

@@ -64,7 +64,7 @@ $(TILESETGFXDIR)/secondary/vermilion_city/tiles.4bpp: %.4bpp: %.png
 	$(GFX) $< $@ -num_tiles 140 -Wnum_tiles
 
 $(TILESETGFXDIR)/secondary/indigo_plateau/tiles.4bpp: %.4bpp: %.png
-	$(GFX) $< $@ -num_tiles 247 -Wnum_tiles
+	$(GFX) $< $@ -num_tiles 316 -Wnum_tiles
 
 $(TILESETGFXDIR)/secondary/cave/tiles.4bpp: %.4bpp: %.png
 	$(GFX) $< $@ -num_tiles 256 -Wnum_tiles
@@ -200,3 +200,7 @@ $(TILESETGFXDIR)/secondary/sevii_islands_123/tiles.4bpp: %.4bpp: %.png
 
 $(TILESETGFXDIR)/secondary/island_harbor/tiles.4bpp: %.4bpp: %.png
 	$(GFX) $< $@ -num_tiles 165 -Wnum_tiles
+
+# POK-51: o prédio da Família Sombra (tools/familia_sombra/predio.py)
+$(TILESETGFXDIR)/secondary/familia_sombra/tiles.4bpp: %.4bpp: %.png
+	$(GFX) $< $@ -num_tiles 243 -Wnum_tiles

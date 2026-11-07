@@ -72,11 +72,17 @@ def test_linha_unica_por_treinador(g):
 
 
 def test_trainers_intocados():
-    # só o conteúdo: no /mnt/c (drvfs) o WSL vê todo arquivo como rwxrwxrwx e, com core.fileMode=true,
-    # o git acusaria "mode change 100644 => 100755" conforme quem mexeu por último no índice (POK-30)
-    r = subprocess.run(["git", "-c", "core.fileMode=false", "diff", "--quiet", BASE_SHA, "--", "src/data/trainer_parties.h",
-                        "src/data/trainers.h"], cwd=REPO_ROOT)
-    assert r.returncode == 0
+    # só o conteúdo (POK-30: no /mnt/c o modo dos arquivos não vale). O POK-51 só acrescentou, no fim de cada
+    # arquivo, o bloco "// POK-51: Família Sombra" (os 12 treinadores-slot e os times de formalidade deles);
+    # tirando esse bloco, os dois arquivos são os da base.
+    for rel in ("src/data/trainer_parties.h", "src/data/trainers.h"):
+        base = subprocess.run(["git", "show", f"{BASE_SHA}:{rel}"], cwd=REPO_ROOT, capture_output=True,
+                              check=True).stdout.decode("utf-8")
+        now = (REPO_ROOT / rel).read_text(encoding="utf-8")
+        inicio = re.search(r"\n\n?(    )?// POK-51: Família Sombra", now)
+        assert inicio, rel
+        fim = "};\n" if rel.endswith("trainers.h") else ""
+        assert now[:inicio.start()] + "\n" + fim == base, rel
 
 
 def test_primeiro_combate_nao_muda():
@@ -223,4 +229,4 @@ def test_conquistas_do_degrau_ativas():
     for cid, evt in (("revanche_max", "CONQ_EVT_REVANCHE_MAX"), ("e4_degrau100", "CONQ_EVT_E4_DEGRAU100")):
         assert c[cid]["ativa"] is True and c[cid]["param"] == evt, cid
         assert "inativa" not in c[cid]["condicao"], cid
-    assert sum(1 for x in dados["conquistas"] if x.get("ativa", True)) == 41
+    assert sum(1 for x in dados["conquistas"] if x.get("ativa", True)) == 44   # 41 + 3 da Família Sombra (POK-51)

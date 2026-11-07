@@ -2,6 +2,7 @@
 #include "conquistas.h"
 #include "battle.h"
 #include "event_data.h"
+#include "familia_sombra.h"
 #include "pokemon.h"
 #include "constants/battle.h"
 #include "data/conquistas_ids.h"
@@ -39,13 +40,16 @@ static u8 EventoDoTreinador(u16 treinador)
     return NENHUM_EVENTO;
 }
 
+// Selvagem comum: tipo LENDARIO; o chefe da Família (BATTLE_TYPE_FAMILIA_CHEFE): tipo CHEFE. Um Gengar selvagem
+// qualquer nunca cai no evento do Dom, e o chefe nunca cai num evento de lendário.
 static u8 EventoDoLendario(u16 especie)
 {
     u8 evt;
+    u8 tipo = FamiliaSombra_EhChefe() ? DIARIO_TIPO_CHEFE : DIARIO_TIPO_LENDARIO;
 
     for (evt = 0; evt < DIARIO_EVT_COUNT; evt++)
     {
-        if (gDiarioEventos[evt].tipo == DIARIO_TIPO_LENDARIO && gDiarioEventos[evt].especie == especie)
+        if (gDiarioEventos[evt].tipo == tipo && gDiarioEventos[evt].especie == especie)
             return evt;
     }
     return NENHUM_EVENTO;
@@ -95,7 +99,7 @@ static void Registrar(u8 evt, u8 resultado)
     e->tamanhoTime = n;
     e->mvpNocautes = maisNocautes;
     // ordem 0 = slot vazio: o proximaOrdem 0 de um diário recém-zerado (jogo novo ou varredura) conta como 1.
-    // 33 eventos + no máximo 14 trocas de lendário: o teto de 255 nunca chega (fica nele para não voltar a 0).
+    // 37 eventos + no máximo 14 trocas de lendário: o teto de 255 nunca chega (fica nele para não voltar a 0).
     if (sDiario->proximaOrdem == 0)
         sDiario->proximaOrdem = 1;
     e->ordem = sDiario->proximaOrdem;

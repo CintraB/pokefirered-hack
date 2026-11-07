@@ -1,0 +1,212 @@
+{
+  "_comentario": "Gerado por tools/familia_sombra/predio.py. Não editar.",
+  "familia_sombra": {
+    "ladrilhos": 243,
+    "metatiles": 126
+  },
+  "indigo_plateau": {
+    "ladrilhos": 316,
+    "porta_trancada": 840,
+    "porta_aberta": 61
+  },
+  "rota23": {
+    "porta": [
+      4,
+      149
+    ],
+    "predio": [
+      2,
+      144,
+      4,
+      6
+    ]
+  },
+  "quadro": {
+    "x": 7,
+    "y": 1,
+    "tela": [
+      7,
+      5,
+      40,
+      26
+    ],
+    "metatiles": {
+      "dom": [
+        [
+          750,
+          752,
+          754
+        ],
+        [
+          751,
+          753,
+          755
+        ]
+      ],
+      "cobrador": [
+        [
+          744,
+          746,
+          748
+        ],
+        [
+          745,
+          747,
+          749
+        ]
+      ],
+      "vazio": [
+        [
+          756,
+          758,
+          760
+        ],
+        [
+          757,
+          759,
+          761
+        ]
+      ]
+    }
+  },
+  "andares": {
+    "1": {
+      "largura": 15,
+      "altura": 13,
+      "saida": [
+        7,
+        11
+      ],
+      "sobe": [
+        11,
+        3
+      ],
+      "bilhete": [
+        3,
+        6
+      ]
+    },
+    "2": {
+      "largura": 15,
+      "altura": 13,
+      "desce": [
+        3,
+        3
+      ],
+      "sobe": [
+        11,
+        3
+      ],
+      "bilhete": [
+        7,
+        10
+      ]
+    },
+    "3": {
+      "largura": 15,
+      "altura": 13,
+      "desce": [
+        3,
+        3
+      ],
+      "sobe": [
+        11,
+        3
+      ],
+      "bilhete": [
+        2,
+        9
+      ]
+    },
+    "4": {
+      "largura": 15,
+      "altura": 13,
+      "desce": [
+        3,
+        3
+      ],
+      "sobe": [
+        11,
+        3
+      ],
+      "bilhete": [
+        8,
+        10
+      ]
+    },
+    "5": {
+      "largura": 15,
+      "altura": 13,
+      "desce": [
+        3,
+        3
+      ],
+      "sobe": [
+        11,
+        3
+      ],
+      "bilhete": [
+        11,
+        10
+      ]
+    },
+    "6": {
+      "largura": 13,
+      "altura": 13,
+      "desce": [
+        3,
+        3
+      ],
+      "chefe": [
+        8,
+        3
+      ],
+      "gemeos": [
+        [
+          6,
+          3
+        ],
+        [
+          10,
+          3
+        ]
+      ],
+      "bilhete": [
+        7,
+        5
+      ],
+      "gatilhos": [
+        [
+          3,
+          4
+        ],
+        [
+          4,
+          4
+        ],
+        [
+          5,
+          3
+        ]
+      ],
+      "vasos": [
+        [
+          6,
+          4
+        ],
+        [
+          10,
+          4
+        ],
+        [
+          1,
+          10
+        ],
+        [
+          10,
+          10
+        ]
+      ]
+    }
+  }
+}

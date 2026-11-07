@@ -1,6 +1,12 @@
 VictoryRoad_2F_MapScripts::
+	map_script MAP_SCRIPT_ON_TRANSITION, VictoryRoad_2F_OnTransition
 	map_script MAP_SCRIPT_ON_LOAD, VictoryRoad_2F_OnLoad
 	.byte 0
+
+@ POK-51: a Rota 23 também dá na 2F (warp 18,28): sair por ela zera o "já pagou" do pedágio.
+VictoryRoad_2F_OnTransition::
+	clearflag FLAG_FAMILIA_PEDAGIO_PAGO
+	end
 
 VictoryRoad_2F_OnLoad::
 	call_if_ne VAR_MAP_SCENE_VICTORY_ROAD_2F_BOULDER1, 100, VictoryRoad_2F_EventScript_SetRockBarrier1

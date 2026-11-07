@@ -10,6 +10,7 @@
 #include "constants/battle_ai.h"
 #include "constants/battle_move_effects.h"
 #include "constants/moves.h"
+#include "familia_sombra.h"
 
 #define AI_ACTION_DONE          0x0001
 #define AI_ACTION_FLEE          0x0002
@@ -332,6 +333,12 @@ void BattleAI_SetupAIData(void)
 
     // Choose proper trainer ai scripts.
     // Fire Red, why all the returns?!?
+    if (FamiliaSombra_EhChefe())
+    {
+        // POK-51: o chefe da Família é encontro capturável, mas luta com a IA dos chefes.
+        AI_THINKING_STRUCT->aiFlags = FAMILIA_AI_CHEFE;
+        return;
+    }
     if (gBattleTypeFlags & BATTLE_TYPE_SAFARI)
     {
         AI_THINKING_STRUCT->aiFlags = AI_SCRIPT_SAFARI;

@@ -16,6 +16,7 @@
 #include "battle_ai_script_commands.h"
 #include "battle_ai_switch_items.h"
 #include "trainer_tower.h"
+#include "familia_sombra.h"
 #include "constants/battle_anim.h"
 #include "constants/moves.h"
 #include "constants/songs.h"
@@ -1152,6 +1153,12 @@ static void OpponentHandleTrainerSlide(void)
 {
     u32 trainerPicId;
 
+    if (FamiliaSombra_EhBatalhaDaFamilia())
+    {
+        // POK-51: a Família não tem humano para entrar na tela.
+        OpponentBufferExecCompleted();
+        return;
+    }
     if (gTrainerBattleOpponent_A == TRAINER_SECRET_BASE)
         trainerPicId = GetSecretBaseTrainerPicIndex();
     else if (gBattleTypeFlags & BATTLE_TYPE_BATTLE_TOWER)
@@ -1352,7 +1359,9 @@ static void OpponentHandleChooseMove(void)
     u8 chosenMoveId;
     struct ChooseMoveStruct *moveInfo = (struct ChooseMoveStruct *)(&gBattleBufferA[gActiveBattler][4]);
 
-    if (gBattleTypeFlags & (BATTLE_TYPE_TRAINER | BATTLE_TYPE_FIRST_BATTLE | BATTLE_TYPE_SAFARI | BATTLE_TYPE_ROAMER))
+    // POK-51: o chefe da Família também escolhe pela IA (os outros selvagens, ao acaso).
+    if (gBattleTypeFlags & (BATTLE_TYPE_TRAINER | BATTLE_TYPE_FIRST_BATTLE | BATTLE_TYPE_SAFARI | BATTLE_TYPE_ROAMER)
+     || FamiliaSombra_EhChefe())
     {
 
         BattleAI_SetupAIData();

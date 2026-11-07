@@ -129,6 +129,13 @@ BattleScript_GhostBallDodge::
 	waitmessage B_WAIT_TIME_LONG
 	finishaction
 
+@ POK-51: o capanga da Família Sombra desvia a bola (a bola não é gasta; ver BattleUseFunc_PokeBallEtc).
+BattleScript_FamiliaBallDodge::
+	waitmessage B_WAIT_TIME_LONG
+	printstring STRINGID_FAMILIADESVIABOLA
+	waitmessage B_WAIT_TIME_LONG
+	finishaction
+
 BattleScript_PlayerUseItem::
 	moveendcase 15
 	end

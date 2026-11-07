@@ -13,6 +13,7 @@ VictoryRoad_1F_EventScript_SetRockBarrier::
 	return
 
 VictoryRoad_1F_OnTransition::
+	clearflag FLAG_FAMILIA_PEDAGIO_PAGO @ POK-51: sair da Rota 23 zera o "já pagou" do pedágio
 	setworldmapflag FLAG_WORLD_MAP_VICTORY_ROAD_1F
 	end
 

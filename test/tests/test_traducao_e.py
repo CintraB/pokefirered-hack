@@ -631,7 +631,7 @@ def test_e2_nenhuma_caixa_de_dialogo_com_mais_de_2_linhas_visiveis():
 
 
 # Texto de batalha (Cara Pokémon, src/battle_controller_pokedude.c) e mensagens de caixa (battle_message.c)
-# vão para gDisplayedStringBattle[300] (src/battle_main.c:123)
+# vão para gDisplayedStringBattle[300] (src/battle_main.c:128)
 BATTLE_STRING_BUFFER = 300
 
 

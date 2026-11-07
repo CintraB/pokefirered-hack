@@ -72,6 +72,7 @@ static void MakeObjectTemplateFromObjectEventTemplate(const struct ObjectEventTe
 static void GetObjectEventMovingCameraOffset(s16 *, s16 *);
 static const struct ObjectEventTemplate *GetObjectEventTemplateByLocalIdAndMap(u8, u8, u8);
 static void LoadObjectEventPalette(u16);
+static void LoadFamiliaObjectPalette(const struct ObjectEventGraphicsInfo *);
 static void RemoveObjectEventIfOutsideView(struct ObjectEvent *);
 static void SpawnObjectEventOnReturnToField(u8 objectEventId, s16 x, s16 y);
 static void SetPlayerAvatarObjectEventIdAndObjectId(u8, u8);
@@ -482,6 +483,7 @@ static const u8 gInitialMovementTypeFacingDirections[MOVEMENT_TYPES_COUNT] = {
 #include "data/object_events/object_event_subsprites.h"
 #include "data/object_events/follower_species.h"
 #include "data/object_events/object_event_graphics_info.h"
+#include "data/object_events/familia_gfx.h" // POK-51
 
 static const struct SpritePalette sObjectEventSpritePalettes[] = {
     {gObjectEventPal_NpcBlue,                 OBJ_EVENT_PAL_TAG_NPC_BLUE},
@@ -503,6 +505,7 @@ static const struct SpritePalette sObjectEventSpritePalettes[] = {
     {gObjectEventPal_SSAnne,                  OBJ_EVENT_PAL_TAG_SS_ANNE},
     {gObjectEventPal_Seagallop,               OBJ_EVENT_PAL_TAG_SEAGALLOP},
     {gFieldEffectPal_SmallSparkle,            OBJ_EVENT_PAL_TAG_SMALL_SPARKLE},
+#include "data/object_events/familia_gfx_paletas.h" // POK-51
     {},
 };
 
@@ -1576,6 +1579,8 @@ static u8 TrySetupObjectEventSprite(const struct ObjectEventTemplate *objectEven
         LoadPlayerObjectReflectionPalette(graphicsInfo->paletteTag, graphicsInfo->paletteSlot);
     else if (graphicsInfo->paletteSlot == PALSLOT_NPC_SPECIAL)
         LoadSpecialObjectReflectionPalette(graphicsInfo->paletteTag, graphicsInfo->paletteSlot);
+    else
+        LoadFamiliaObjectPalette(graphicsInfo); // POK-51
 
 
     if (objectEvent->movementType == MOVEMENT_TYPE_INVISIBLE)
@@ -1918,6 +1923,8 @@ static void SpawnObjectEventOnReturnToField(u8 objectEventId, s16 x, s16 y)
     // recarregaria então o slot 10 com ela). Nenhum objeto do jogo original usa o slot 11.
     if (graphicsInfo->paletteSlot == PALSLOT_NPC_SPECIAL)
         LoadSpecialObjectReflectionPalette(graphicsInfo->paletteTag, graphicsInfo->paletteSlot);
+    else
+        LoadFamiliaObjectPalette(graphicsInfo); // POK-51: ResumeMap regravou os slots de NPC com as paletas comuns
 
     *(u16 *)&spriteTemplate.paletteTag = TAG_NONE;
     spriteId = CreateSprite(&spriteTemplate, 0, 0, 0);
@@ -1987,7 +1994,9 @@ void ObjectEventSetGraphicsId(struct ObjectEvent *objectEvent, u8 graphicsId)
 
     if (graphicsInfo->paletteSlot == PALSLOT_NPC_SPECIAL)
         LoadSpecialObjectReflectionPalette(graphicsInfo->paletteTag, graphicsInfo->paletteSlot);
-    
+    else
+        LoadFamiliaObjectPalette(graphicsInfo); // POK-51
+
     var = sprite->images->size / TILE_SIZE_4BPP;
     if (!sprite->usingSheet)
     {
@@ -2195,6 +2204,16 @@ void PatchObjectPalette(u16 paletteTag, u8 paletteSlot)
 
     LoadPalette(sObjectEventSpritePalettes[paletteIndex].data, OBJ_PLTT_ID(paletteSlot), PLTT_SIZE_4BPP);
     ApplyGlobalFieldPaletteTint(paletteSlot);
+}
+
+// POK-51: os gráficos da Família Sombra (chapéu, redomas, taças) têm paleta própria (tag >= OBJ_EVENT_PAL_TAG_FAMILIA_FIRST)
+// no slot PALSLOT_NPC_1..4 que o gerador fixou (tools/familia_sombra/slots.json). InitObjectEventPalettes só grava
+// as 4 paletas comuns de NPC nesses slots; esta grava a da família por cima quando o objeto aparece ou troca de gráfico.
+static void LoadFamiliaObjectPalette(const struct ObjectEventGraphicsInfo *graphicsInfo)
+{
+    if (graphicsInfo->paletteSlot >= PALSLOT_NPC_1 && graphicsInfo->paletteSlot <= PALSLOT_NPC_4
+     && graphicsInfo->paletteTag >= OBJ_EVENT_PAL_TAG_FAMILIA_FIRST && graphicsInfo->paletteTag < OBJ_EVENT_PAL_TAG_NONE)
+        PatchObjectPalette(graphicsInfo->paletteTag, graphicsInfo->paletteSlot);
 }
 
 void PatchObjectPaletteRange(const u16 *paletteTags, u8 minSlot, u8 maxSlot)
@@ -9553,6 +9572,7 @@ static void DoRippleFieldEffect(struct ObjectEvent *objectEvent, struct Sprite *
 void ReloadObjectEventPalettes(void)
 {
     const struct ObjectEventGraphicsInfo *graphicsInfo;
+    u8 i;
 
     PatchObjectPaletteRange(gObjectPaletteTagSets[sCurrentReflectionType], 0, sCurrentReflectionType == 1 ? 6 : 10);
     if (gObjectEvents[gPlayerAvatar.objectEventId].active)
@@ -9564,4 +9584,9 @@ void ReloadObjectEventPalettes(void)
     if (sCurrentSpecialObjectPaletteTag != OBJ_EVENT_PAL_TAG_NONE && sCurrentSpecialObjectPaletteTag != 0)
         LoadSpecialObjectReflectionPalette(sCurrentSpecialObjectPaletteTag, PALSLOT_NPC_SPECIAL);
     Follower_ReloadPalette(); // POK-48
+    for (i = 0; i < OBJECT_EVENTS_COUNT; i++) // POK-51: o retint regravou os slots de NPC com as paletas comuns
+    {
+        if (gObjectEvents[i].active)
+            LoadFamiliaObjectPalette(GetObjectEventGraphicsInfo(gObjectEvents[i].graphicsId));
+    }
 }

@@ -16,6 +16,7 @@
 #include "battle_controllers.h"
 #include "graphics.h"
 #include "battle_ai_switch_items.h"
+#include "familia_sombra.h"
 #include "constants/moves.h"
 #include "constants/items.h"
 #include "constants/trainers.h"
@@ -467,6 +468,23 @@ static const u8 sText_Trainer1UsedItem[] = _("{B_TRAINER1_CLASS} {B_TRAINER1_NAM
 static const u8 sText_TrainerBlockedBall[] = _("O Treinador bloqueou a Bola!");
 static const u8 sText_DontBeAThief[] = _("Roubar é feio!");
 static const u8 sText_ItDodgedBall[] = _("Ele se esquivou da Bola!\nEste Pokémon não pode ser pego!");
+
+// POK-51: Família Sombra (abertura da luta e a bola desviada; a bola não é gasta).
+const u8 gText_FamiliaCapangaQuerLutar[] = _("Um capanga da Família Sombra\nquer lutar!\p");
+const u8 gText_FamiliaGemeosQueremLutar[] = _("Os gêmeos guarda-costas\nquerem lutar!\p");
+const u8 gText_FamiliaDesviaBola[] = _("O capanga desvia a Poké Bola!\nNinguém tira um membro da Família.");
+// O chefe se apresenta com o título em destaque (spec §8), um por ocupação; 3 e 4 são da parte 2.
+const u8 gText_FamiliaChefeDom[] = _("GENGAR, O DOM,\nquer acertar as contas!\p");
+const u8 gText_FamiliaChefeCobrador[] = _("TYRANITAR, O COBRADOR,\nquer acertar as contas!\p");
+const u8 gText_FamiliaChefeMercenario[] = _("GARCHOMP, O MERCENÁRIO,\nquer acertar as contas!\p");
+const u8 gText_FamiliaChefePesadelo[] = _("DARKRAI, O PESADELO,\nquer acertar as contas!\p");
+const u8 *const gText_FamiliaChefeQuerAcertar[FAMILIA_OCUPACOES_TOTAL] =
+{
+    gText_FamiliaChefeDom,
+    gText_FamiliaChefeCobrador,
+    gText_FamiliaChefeMercenario,
+    gText_FamiliaChefePesadelo,
+};
 static const u8 sText_YouMissedPkmn[] = _("Você errou o Pokémon!");
 static const u8 sText_PkmnBrokeFree[] = _("Ah, não!\nO Pokémon escapou!");
 static const u8 sText_ItAppearedCaught[] = _("Ahh!\nParecia que tinha pegado!");
@@ -891,6 +909,7 @@ const u8 *const gBattleStringsTable[BATTLESTRINGS_COUNT - BATTLESTRINGS_TABLE_ST
     [STRINGID_TRAINER1MON2COMEBACK - BATTLESTRINGS_TABLE_START]          = sText_Trainer1RecallPkmn2,
     [STRINGID_TRAINER1MON1AND2COMEBACK - BATTLESTRINGS_TABLE_START]      = sText_Trainer1RecallBoth,
     [STRINGID_TEAMGAINEDEXP - BATTLESTRINGS_TABLE_START]                 = sText_TeamGainedExp,
+    [STRINGID_FAMILIADESVIABOLA - BATTLESTRINGS_TABLE_START]             = gText_FamiliaDesviaBola,
 };
 
 const u16 gMissStringIds[] =
@@ -1568,6 +1587,14 @@ void BufferStringBattle(u16 stringId)
                         stringPtr = sText_LinkTrainerWantsToBattle;
                 }
             }
+            else if (FamiliaSombra_EhBatalhaDaFamilia())
+            {
+                // POK-51: sem humano; quem se apresenta é o capanga (ou os gêmeos, na dupla).
+                if (gTrainerBattleOpponent_A == TRAINER_FAMILIA_GEMEOS)
+                    stringPtr = gText_FamiliaGemeosQueremLutar;
+                else
+                    stringPtr = gText_FamiliaCapangaQuerLutar;
+            }
             else
             {
                 stringPtr = sText_Trainer1WantsToBattle;
@@ -1575,13 +1602,20 @@ void BufferStringBattle(u16 stringId)
         }
         else
         {
-            if (gBattleTypeFlags & BATTLE_TYPE_GHOST)
+            if (gBattleTypeFlags & BATTLE_TYPE_FAMILIA)
+            {
+                // POK-51: o encontro dos andares 4-5 também é um capanga da Família.
+                stringPtr = gText_FamiliaCapangaQuerLutar;
+            }
+            else if (gBattleTypeFlags & BATTLE_TYPE_GHOST)
             {
                 if (gBattleTypeFlags & BATTLE_TYPE_GHOST_UNVEILED)
                     stringPtr = sText_TheGhostAppeared;
                 else
                     stringPtr = sText_GhostAppearedCantId;
             }
+            else if (FamiliaSombra_EhChefe()) // POK-51: o chefe da Família, com o título
+                stringPtr = FamiliaSombra_TextoDoChefe();
             else if (gBattleTypeFlags & BATTLE_TYPE_LEGENDARY)
                 stringPtr = sText_WildPkmnAppeared2;
             else if (gBattleTypeFlags & BATTLE_TYPE_DOUBLE) // interesting, looks like they had something planned for wild double battles

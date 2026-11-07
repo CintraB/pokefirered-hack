@@ -40,6 +40,8 @@ void RematchTier_OnLeagueCleared(u8 tier);
 // Special das salas da Liga: TRUE = usar os ids _2/REMATCH (depois das Sevii, ou com degrau >= 1). Com degrau
 // >= 1, RematchTier_CreateParty troca o time desses ids pelo da tabela sLeagueTierParties.
 bool8 ShouldUseLeagueRematchTeams(void);
+// O rótulo do degrau (0 = Normal ... 5 = Nível 100); fora da faixa, o Normal.
+const u8 *GetRematchTierName(u8 tier);
 // Special da guarda da Liga: põe em gStringVar1 o rótulo do degrau atual (Normal, Nível 60 ... Nível 100).
 void BufferRematchTierName(void);
 // Special da guarda da Liga: abre a lista dos 6 degraus com o cursor no degrau atual (o script segue com waitstate).

@@ -746,3 +746,15 @@ const struct Tileset gTileset_HallOfFame =
     .callback = NULL,
 };
 
+
+// POK-51: o prédio da Família Sombra (Rota 23), andares 1 a 6 (tools/familia_sombra/predio.py)
+const struct Tileset gTileset_FamiliaSombra =
+{
+    .isCompressed = TRUE,
+    .isSecondary = TRUE,
+    .tiles = gTilesetTiles_FamiliaSombra,
+    .palettes = gTilesetPalettes_FamiliaSombra,
+    .metatiles = gMetatiles_FamiliaSombra,
+    .metatileAttributes = gMetatileAttributes_FamiliaSombra,
+    .callback = NULL,
+};

@@ -189,6 +189,31 @@
 #define FLAG_HIDE_MISC_KANTO_ROCKETS                       0x0AD
 #define FLAG_HIDE_SAFFRON_CITY_POKECENTER_SABRINA_JOURNALS 0x0AE
 
+// POK-51: Família Sombra (prédio da Rota 23)
+#define FLAG_FAMILIA_ITEM_1_1                  0x4BD // POK-51: item/maleta do chão do andar 1, repõe a cada ocupação
+#define FLAG_FAMILIA_ITEM_1_2                  0x4BE // POK-51
+#define FLAG_FAMILIA_ITEM_1_3                  0x4BF // POK-51
+#define FLAG_FAMILIA_ITEM_2_1                  0x4C0 // POK-51: item/maleta do chão do andar 2, repõe a cada ocupação
+#define FLAG_FAMILIA_ITEM_2_2                  0x4C1 // POK-51
+#define FLAG_FAMILIA_ITEM_2_3                  0x4C2 // POK-51
+#define FLAG_FAMILIA_ITEM_3_1                  0x4C3 // POK-51: item/maleta do chão do andar 3, repõe a cada ocupação
+#define FLAG_FAMILIA_ITEM_3_2                  0x4C4 // POK-51
+#define FLAG_FAMILIA_ITEM_3_3                  0x4C5 // POK-51
+#define FLAG_FAMILIA_ITEM_4_1                  0x4C6 // POK-51: item/maleta do chão do andar 4, repõe a cada ocupação
+#define FLAG_FAMILIA_ITEM_4_2                  0x4C7 // POK-51
+#define FLAG_FAMILIA_ITEM_4_3                  0x4C8 // POK-51
+#define FLAG_FAMILIA_ITEM_5_1                  0x4C9 // POK-51: item/maleta do chão do andar 5, repõe a cada ocupação
+#define FLAG_FAMILIA_ITEM_5_2                  0x4CA // POK-51
+#define FLAG_FAMILIA_ITEM_5_3                  0x4CB // POK-51
+#define FLAG_FAMILIA_ITENS_PRIMEIRA            FLAG_FAMILIA_ITEM_1_1 // POK-51
+#define FLAG_FAMILIA_ITENS_ULTIMA              FLAG_FAMILIA_ITEM_5_3 // POK-51
+#define FLAG_FAMILIA_PEDAGIO_PAGO              0x4CC // POK-51: pedágio já pago nesta passagem
+#define FLAG_FAMILIA_GEMEOS_VENCIDOS           0x4CD // POK-51: gêmeos do 5º andar vencidos nesta ocupação
+#define FLAG_FAMILIA_ROSA_1                    0x4CE // POK-51: rosa do chefe 1 obtida (nunca limpa)
+#define FLAG_FAMILIA_ROSA_2                    0x4CF // POK-51
+#define FLAG_FAMILIA_ROSA_3                    0x4D0 // POK-51
+#define FLAG_FAMILIA_ROSA_4                    0x4D1 // POK-51
+
 // Unused?
 #define FLAG_0x0AF               0x0AF
 #define FLAG_0x0B0               0x0B0
@@ -1225,7 +1250,7 @@
 #define FLAG_GOT_SHINY_CHARM            0x4A7
 #define FLAG_GOT_RARE_EGG               0x4A8
 #define FLAG_POKERUS_EXPLAINED          0x4A9 // POK-50: the nurse explained the Pokérus (once)
-#define FLAG_UNUSED_0x4AA               0x4AA // Unused Flag
+#define FLAG_PESCADOR_PRIMEIRO_RECORDE  0x4AA // POK-51: o pescador da Rota 19 já deu a Bala Rara do primeiro recorde
 #define FLAG_UNUSED_0x4AB               0x4AB // Unused Flag
 #define FLAG_UNUSED_0x4AC               0x4AC // Unused Flag
 #define FLAG_UNUSED_0x4AD               0x4AD // Unused Flag
@@ -1248,27 +1273,6 @@
 #define FLAG_DEFEATED_CHAMP           0x4BC
 
 // Unused?
-#define FLAG_0x4BD               0x4BD
-#define FLAG_0x4BE               0x4BE
-#define FLAG_0x4BF               0x4BF
-#define FLAG_0x4C0               0x4C0
-#define FLAG_0x4C1               0x4C1
-#define FLAG_0x4C2               0x4C2
-#define FLAG_0x4C3               0x4C3
-#define FLAG_0x4C4               0x4C4
-#define FLAG_0x4C5               0x4C5
-#define FLAG_0x4C6               0x4C6
-#define FLAG_0x4C7               0x4C7
-#define FLAG_0x4C8               0x4C8
-#define FLAG_0x4C9               0x4C9
-#define FLAG_0x4CA               0x4CA
-#define FLAG_0x4CB               0x4CB
-#define FLAG_0x4CC               0x4CC
-#define FLAG_0x4CD               0x4CD
-#define FLAG_0x4CE               0x4CE
-#define FLAG_0x4CF               0x4CF
-#define FLAG_0x4D0               0x4D0
-#define FLAG_0x4D1               0x4D1
 #define FLAG_0x4D2               0x4D2
 #define FLAG_0x4D3               0x4D3
 #define FLAG_0x4D4               0x4D4

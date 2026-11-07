@@ -21,6 +21,7 @@
 // POK-47 (DexNav)
 #include "dexnav.h"
 #include "field_specials.h"
+#include "familia_sombra.h"
 
 #define MAX_ENCOUNTER_RATE 1600
 
@@ -48,6 +49,8 @@ static void ApplyCleanseTagEncounterRateMod(u32 *rate);
 static bool8 IsLeadMonHoldingCleanseTag(void);
 static u16 WildEncounterRandom(void);
 static void AddToWildEncounterRateBuff(u8 encouterRate);
+static bool8 FamiliaWildEncounter(u32 currMetatileAttrs);
+static bool8 TryStartFamiliaEncounter(bool8 checkRepel);
 
 #include "data/wild_encounters.h"
 #include "data/wild_encounters_time.h"
@@ -589,6 +592,10 @@ bool8 SweetScentWildEncounter(void)
     u16 headerId;
 
     PlayerGetDestCoords(&x, &y);
+    // POK-51: nos andares 4-5 da Família Sombra o Doce Aroma chama um capanga (sem chefe, ninguém).
+    if (FamiliaSombra_EhAndarEscuro())
+        return MapGridGetMetatileAttributeAt(x, y, METATILE_ATTRIBUTE_ENCOUNTER_TYPE) == TILE_ENCOUNTER_LAND
+            && TryStartFamiliaEncounter(FALSE);
     headerId = GetCurrentMapWildMonHeaderId();
     if (headerId != HEADER_NONE)
     {
@@ -885,6 +892,9 @@ static bool8 HandleWildEncounterCooldown(u32 currMetatileAttrs)
 
 bool8 TryStandardWildEncounter(u32 currMetatileAttrs)
 {
+    // POK-51: os andares 4-5 da Família Sombra têm encontro próprio, sem tabela do mapa (nem cooldown pela tabela)
+    if (FamiliaSombra_EhAndarEscuro())
+        return FamiliaWildEncounter(currMetatileAttrs);
     if (!HandleWildEncounterCooldown(currMetatileAttrs))
     {
         sWildEncounterData.prevMetatileBehavior = ExtractMetatileAttribute(currMetatileAttrs, METATILE_ATTRIBUTE_BEHAVIOR);
@@ -902,6 +912,56 @@ bool8 TryStandardWildEncounter(u32 currMetatileAttrs)
         sWildEncounterData.prevMetatileBehavior = ExtractMetatileAttribute(currMetatileAttrs, METATILE_ATTRIBUTE_BEHAVIOR);
         return FALSE;
     }
+}
+
+// POK-51: o encontro dos andares 4-5 da Família Sombra. Esses mapas NÃO têm entrada em wild_encounters.json: a taxa
+// e o cooldown são próprios, e o encontro só acontece em metatile com encounter type TILE_ENCOUNTER_LAND (piso de
+// caverna/mato). Só com chefe ativo (no período sem chefe o andar fica vazio), sem andarilho. O Pokémon é um membro
+// do plantel da ocupação (FamiliaSombra_CriarSelvagem: item e golpes do plantel) e a batalha é a da Família
+// (StartFamiliaWildBattle liga BATTLE_TYPE_FAMILIA); nenhum outro caminho do andar começa uma batalha marcada.
+#define FAMILIA_TAXA_ENCONTRO  10  // a taxa de uma caverna comum
+#define FAMILIA_PASSOS_MINIMOS 7   // o cooldown de uma tabela de terra com taxa 10 (GetMapBaseEncounterCooldown)
+#define FAMILIA_CHANCE_CEDO    5   // % de encontro antes do cooldown acabar (HandleWildEncounterCooldown)
+
+static bool8 TryStartFamiliaEncounter(bool8 checkRepel)
+{
+    u8 level;
+
+    if (!FamiliaSombra_ChefeAtivo())
+        return FALSE;
+    level = FamiliaSombra_NivelSelvagem();
+    if (checkRepel && !IsWildLevelAllowedByRepel(level))
+        return FALSE;
+    FamiliaSombra_CriarSelvagem(level);
+    StartFamiliaWildBattle();
+    return TRUE;
+}
+
+static bool8 FamiliaWildEncounter(u32 currMetatileAttrs)
+{
+    u16 previous = sWildEncounterData.prevMetatileBehavior;
+    u16 behavior = ExtractMetatileAttribute(currMetatileAttrs, METATILE_ATTRIBUTE_BEHAVIOR);
+
+    sWildEncounterData.prevMetatileBehavior = behavior;
+    if (sWildEncountersDisabled == TRUE || !FamiliaSombra_ChefeAtivo()
+     || ExtractMetatileAttribute(currMetatileAttrs, METATILE_ATTRIBUTE_ENCOUNTER_TYPE) != TILE_ENCOUNTER_LAND)
+        return FALSE;
+    if (sWildEncounterData.stepsSinceLastEncounter < FAMILIA_PASSOS_MINIMOS)
+    {
+        sWildEncounterData.stepsSinceLastEncounter++;
+        if (Random() % 100 >= FAMILIA_CHANCE_CEDO)
+            return FALSE;
+    }
+    if (previous != behavior && !DoGlobalWildEncounterDiceRoll())
+        return FALSE;
+    if (DoWildEncounterRateTest(FAMILIA_TAXA_ENCONTRO, FALSE) != TRUE || !TryStartFamiliaEncounter(TRUE))
+    {
+        AddToWildEncounterRateBuff(FAMILIA_TAXA_ENCONTRO);
+        return FALSE;
+    }
+    sWildEncounterData.encounterRateBuff = 0;
+    sWildEncounterData.stepsSinceLastEncounter = 0;
+    return TRUE;
 }
 
 static void AddToWildEncounterRateBuff(u8 encounterRate)
@@ -1182,6 +1242,24 @@ u32 TestLandSpecies(u8 mapGroup, u8 mapNum, u8 slot, u8 period)
 // and LeafGreen slots included), optionally starting the battle like a real encounter.
 // result = species | level << 16 of gEnemyParty[0] (0xFFFFFFFF = no table of that kind here)
 #if TESTBUILD
+// POK-51: até `steps` chamadas de TryStandardWildEncounter (o caminho de cada passo) num metatile de terra, com
+// FamiliaSombra_EhAndarEscuro forçado; result = passos dados | 1 << 16 se a batalha começou
+u32 TestFamiliaPassos(u32 steps)
+{
+    u32 attrs = TILE_ENCOUNTER_LAND << 24;    // METATILE_ATTRIBUTE_ENCOUNTER_TYPE (bits 24-26), comportamento 0
+    u32 i;
+
+    gTestFamiliaAndarEscuro = TRUE;
+    ResetEncounterRateModifiers();
+    for (i = 1; i <= steps; i++)
+    {
+        if (TryStandardWildEncounter(attrs))
+            break;
+    }
+    gTestFamiliaAndarEscuro = FALSE;
+    return i > steps ? steps : (i | 1 << 16);
+}
+
 u32 TestRollWild(u8 area, u8 rod, bool8 startBattle)
 {
     u16 headerId = GetCurrentMapWildMonHeaderId();

@@ -13,6 +13,7 @@ void CompareLotadSize(void);
 
 void InitHeracrossSizeRecord(void);
 void InitMagikarpSizeRecord(void);
+void InitKrabbySizeRecord(void); // POK-51
 
 void GiveGiftRibbonToParty(u8 index, u8 ribbonId);
 

@@ -1,4 +1,5 @@
 #include "global.h"
+#include "familia_sombra.h"
 #include "gflib.h"
 #include "bg_regs.h"
 #include "cable_club.h"
@@ -963,6 +964,11 @@ static void SetDefaultFlashLevel(void)
 {
     if (!gMapHeader.cave)
         gSaveBlock1Ptr->flashLevel = 0;
+    else if (FamiliaSombra_EhAndarEscuro()) // POK-51: andares 4-5 da Família, sempre no escuro (sem Flash)
+    {
+        FlagClear(FLAG_SYS_FLASH_ACTIVE);
+        gSaveBlock1Ptr->flashLevel = gMaxFlashLevel;
+    }
     else if (FlagGet(FLAG_SYS_FLASH_ACTIVE))
         gSaveBlock1Ptr->flashLevel = 0;
     else if (CanUseFieldMove(MOVE_FLASH)) // POK-38: a caverna escura já acende sozinha

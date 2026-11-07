@@ -475,7 +475,7 @@ def test_graphics_info_large_e_64x64():
     consts = EVENT_OBJECTS_H.read_text(encoding="utf-8")
     assert re.search(r"#define OBJ_EVENT_GFX_FOLLOWER\s+153\b", consts)
     assert re.search(r"#define OBJ_EVENT_GFX_FOLLOWER_LARGE\s+154\b", consts)
-    assert re.search(r"#define NUM_OBJ_EVENT_GFX\s+155\b", consts)
+    assert re.search(r"#define NUM_OBJ_EVENT_GFX\s+\d+\b", consts)  # POK-51 sobe o total (test_familia_graficos)
     pequeno, grande = _bloco_gfx("Follower"), _bloco_gfx("FollowerLarge")
     assert (grande["width"], grande["height"], grande["size"]) == ("64", "64", "2048")
     assert grande["oam"] == "&gObjectEventBaseOam_64x64"

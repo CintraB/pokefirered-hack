@@ -148,7 +148,8 @@ def test_special_do_rotulo():
     tabela = re.search(r"sRematchTierNames\[\] = \{\n(.*?)\n\};", fonte, re.S)
     assert tabela and re.findall(r"(gText_RematchTier_\w+)", tabela.group(1)) == list(ROTULOS)
     specials = _ler(REPO_ROOT / "data" / "specials.inc")
-    nomes = re.findall(r"def_special (\w+)", specials.split("gSpecialsEnd::")[0])
+    nomes = [n for n in re.findall(r"def_special (\w+)", specials.split("gSpecialsEnd::")[0])
+             if not n.startswith(("FamiliaSombra_", "MestreGolpes_", "GetKrabby", "CompareKrabby", "SalaTrofeus_"))]  # POK-51 vem depois
     assert nomes[-3:] == ["ShouldUseLeagueRematchTeams", "BufferRematchTierName", "ShowRematchTierMenu"], nomes[-4:]
 
 

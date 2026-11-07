@@ -88,10 +88,10 @@
 #define ITEM_MAX_REPEL 84
 #define ITEM_ESCAPE_ROPE 85
 #define ITEM_REPEL 86
-#define ITEM_057 87
-#define ITEM_058 88
-#define ITEM_059 89
-#define ITEM_05A 90
+#define ITEM_ROSA_VERMELHA 87 // POK-51
+#define ITEM_ROSA_DOURADA 88 // POK-51
+#define ITEM_ROSA_AZUL 89 // POK-51
+#define ITEM_ROSA_NEGRA 90 // POK-51
 #define ITEM_05B 91
 #define ITEM_05C 92
 #define ITEM_SUN_STONE 93

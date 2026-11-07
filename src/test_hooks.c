@@ -38,6 +38,7 @@ extern u32 TestRollWild(u8 area, u8 rod, bool8 startBattle); // Hack 8
 // POK-47
 #include "dexnav.h"
 #include "follower.h"
+#include "familia_sombra.h"
 
 STATIC_ASSERT(TEST_TEXT_SIZE >= SUMMARY_PAGE_TEXT_SIZE, TestTextHoldsASummaryPage);
 
@@ -1485,6 +1486,101 @@ static u32 ShowFieldText(u32 text, u32 glyph)
 // --- end of POK-29 --------------------------------------------------------------------------
 
 
+// --- POK-51: Família Sombra -----------------------------------------------------------------
+static u32 FamiliaEstado(void)
+{
+    return (u32)(VarGet(VAR_FAMILIA_OCUPACAO) & 0xFF) | (u32)(VarGet(VAR_FAMILIA_ESTADO) & 0xFF) << 8
+         | (u32)(VarGet(VAR_FAMILIA_QUEDA) & 0xFFFF) << 16;
+}
+
+// POK-51 (Krabby record of the Route 19 fisherman): rebuilds gPlayerParty[slot] with the same species and level
+// but personality = (old high 16 bits) | low. The low 16 bits are all the size hash depends on (IVs are fixed).
+static u32 SetPartyPidLow(u32 slot, u32 low)
+{
+    struct Pokemon *mon;
+    u16 species;
+    u8 level;
+    u32 personality;
+
+    if (slot >= PARTY_SIZE)
+        return 0xFFFFFFFF;
+    mon = &gPlayerParty[slot];
+    species = GetMonData(mon, MON_DATA_SPECIES);
+    if (species == SPECIES_NONE)
+        return 0xFFFFFFFF;
+    level = GetMonData(mon, MON_DATA_LEVEL);
+    personality = (GetMonData(mon, MON_DATA_PERSONALITY) & 0xFFFF0000) | (low & 0xFFFF);
+    CreateMon(mon, species, level, TEST_MON_FIXED_IV, TRUE, personality, OT_ID_PLAYER_ID, 0);
+    return species;
+}
+
+static u32 FamiliaSet(u32 estado, u32 queda)
+{
+    VarSet(VAR_FAMILIA_OCUPACAO, estado & 0xFF);
+    VarSet(VAR_FAMILIA_ESTADO, estado >> 8 & 0xFF);
+    VarSet(VAR_FAMILIA_QUEDA, queda);
+    return 1;
+}
+
+static u32 FamiliaGemeos(void)
+{
+    u8 *s = gTestText;
+    u32 texto = (u32)&gTestText[TEST_TRAINER_DEFEAT_TEXT];
+    s32 i;
+
+    FlagClear(TRAINER_FLAGS_START + TRAINER_FAMILIA_GEMEOS);   // ClearTrainerFlag (battle_setup.h colide com este arquivo)
+    gTestText[TEST_TRAINER_DEFEAT_TEXT] = CHAR_ELLIPSIS;
+    gTestText[TEST_TRAINER_DEFEAT_TEXT + 1] = EOS;
+    gSpecialVar_LastTalked = 0;
+    *s++ = 0x69;                                // lockall
+    *s++ = 0x5C;                                // trainerbattle
+    *s++ = TRAINER_BATTLE_DOUBLE;
+    *s++ = TRAINER_FAMILIA_GEMEOS & 0xFF;
+    *s++ = TRAINER_FAMILIA_GEMEOS >> 8;
+    *s++ = 0;                                   // local id
+    *s++ = 0;
+    for (i = 0; i < 3; i++)                     // intro, defeat and not-enough-mons text
+    {
+        *s++ = texto & 0xFF;
+        *s++ = (texto >> 8) & 0xFF;
+        *s++ = (texto >> 16) & 0xFF;
+        *s++ = texto >> 24;
+    }
+    *s++ = 0x6B;                                // releaseall
+    *s++ = 0x02;                                // end
+    ScriptContext_SetupScript(gTestText);
+    return 1;
+}
+
+extern void StartFamiliaWildBattle(void);      // src/battle_setup.c (battle_setup.h colide com este arquivo)
+extern u32 TestFamiliaPassos(u32 steps);       // src/wild_encounter.c
+
+static u32 FamiliaWild(void)
+{
+    FamiliaSombra_CriarSelvagem(FamiliaSombra_NivelSelvagem());
+    StartFamiliaWildBattle();
+    return GetMonData(&gEnemyParty[0], MON_DATA_SPECIES) | GetMonData(&gEnemyParty[0], MON_DATA_LEVEL) << 16;
+}
+
+static u32 FamiliaChefe(void)
+{
+    u8 *s = gTestText;
+    u32 func = (u32)FamiliaSombra_IniciarChefe;
+
+    *s++ = 0x69;                                // lockall
+    *s++ = 0x23;                                // callnative (o mesmo que special FamiliaSombra_IniciarChefe)
+    *s++ = func & 0xFF;
+    *s++ = (func >> 8) & 0xFF;
+    *s++ = (func >> 16) & 0xFF;
+    *s++ = func >> 24;
+    *s++ = 0x27;                                // waitstate
+    *s++ = 0x6B;                                // releaseall
+    *s++ = 0x02;                                // end
+    ScriptContext_SetupScript(gTestText);
+    return 1;
+}
+// --- end of POK-51 --------------------------------------------------------------------------
+
 void TestHooks_Run(void)
 {
     u32 result = 0;
@@ -1641,6 +1737,15 @@ void TestHooks_Run(void)
     case TEST_CMD_POKERUS_SET:      result = PokerusSet(gTestMailbox.arg0, gTestMailbox.arg1); break;
     case TEST_CMD_POKERUS_STATE:    result = PokerusState(); break;
     case TEST_CMD_POKERUS_RUN:      result = PokerusRun(gTestMailbox.arg0, gTestMailbox.arg1); break;
+    // POK-51
+    case TEST_CMD_FAMILIA_ESTADO:   result = FamiliaEstado(); break;
+    case TEST_CMD_FAMILIA_SET:      result = FamiliaSet(gTestMailbox.arg0, gTestMailbox.arg1); break;
+    case TEST_CMD_FAMILIA_GEMEOS:   result = FamiliaGemeos(); break;
+    case TEST_CMD_FAMILIA_WILD:     result = FamiliaWild(); break;
+    case TEST_CMD_FAMILIA_CHEFE:    result = FamiliaChefe(); break;
+    case TEST_CMD_FAMILIA_PASSOS:   result = TestFamiliaPassos(gTestMailbox.arg0); break;
+    // POK-51 casas
+    case TEST_CMD_SET_PARTY_PID_LOW: result = SetPartyPidLow(gTestMailbox.arg0, gTestMailbox.arg1); break;
     // POK-29
     case TEST_CMD_SHOW_FIELD_TEXT:  result = ShowFieldText(gTestMailbox.arg0, gTestMailbox.arg1); break;
     default:
