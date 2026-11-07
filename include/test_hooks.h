@@ -226,6 +226,15 @@ enum
 };
 // --- end of POK-51 casas -------------------------------------------------------------------
 
+// --- POK-54: Pokédex dos 4 extras ------------------------------------------------------------
+enum
+{
+    TEST_CMD_DEX_INFO = 0x140, // arg0 = species; result = internal national Dex number | the number printed on the screens << 16 (0xFFFFFFFF = species out of range)
+    TEST_CMD_DEX_MARCAR,       // arg0 = internal national Dex number (1..416), arg1 = 0 clears / 1 seen / 2 seen and caught; result = GetNationalPokedexCount(FLAG_GET_CAUGHT) | GetNationalPokedexCountWithExtras(FLAG_GET_CAUGHT) << 16 (0xFFFFFFFF = bad args)
+    TEST_CMD_DEX_COMPLETA,     // arg0 = internal national Dex number (0 = none); read-only; result = HasAllMons() | HasAllKantoMonsWithMew() << 1 | caught(arg0) << 2 | seen(arg0) << 3
+};
+// --- end of POK-54 --------------------------------------------------------------------------
+
 extern struct TestMailbox gTestMailbox;
 extern u8 gTestText[TEST_TEXT_SIZE];
 

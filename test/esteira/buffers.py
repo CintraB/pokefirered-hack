@@ -1504,7 +1504,7 @@ DECLARED: list[Declared] = [
     Declared("src/pokedex_screen.c", "DexScreen_PrintCategoryPageNumbers", r".*",
              BufRef("buffer", "src/pokedex_screen.c", "DexScreen_PrintCategoryPageNumbers"),
              (Text("gText_Page"), Fixed(5, "NN/NN")),
-             why="página da Pokédex: buffer[30] = gText_Page + página/total (src/pokedex_screen.c:2363-2367)"),
+             why="página da Pokédex: buffer[30] = gText_Page + página/total (src/pokedex_screen.c:2358-2362)"),
     Declared("src/pokemon.c", "GetBoxMonData3", r"gText_EggNickname",
              BufRef("apelido", size="POKEMON_NAME_LENGTH + 1",
                     site="include/constants/global.h:63 (buffer de apelido de quem pede MON_DATA_NICKNAME)"),

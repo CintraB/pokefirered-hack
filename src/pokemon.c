@@ -5303,6 +5303,24 @@ u16 SpeciesToNationalPokedexNum(u16 species)
     return sSpeciesToNationalPokedexNum[species - 1];
 }
 
+// POK-54: the 4 extras sit right after Deoxys internally (387-390, so the Dex bits and the lists stay compact), but
+// are printed with their real Gen 4 numbers: Gible #443, Gabite #444, Garchomp #445 and Darkrai #491.
+static const u16 sExtraDexDisplayedNumbers[NATIONAL_DEX_EXTRAS_COUNT] =
+{
+    [NATIONAL_DEX_GIBLE - NATIONAL_DEX_COUNT - 1] = 443,
+    [NATIONAL_DEX_GABITE - NATIONAL_DEX_COUNT - 1] = 444,
+    [NATIONAL_DEX_GARCHOMP - NATIONAL_DEX_COUNT - 1] = 445,
+    [NATIONAL_DEX_DARKRAI - NATIONAL_DEX_COUNT - 1] = 491,
+};
+
+// Every Dex number that is printed (list, page, summary, Hall of Fame) goes through here.
+u16 NationalDexNumToDisplayed(u16 nationalNum)
+{
+    if (nationalNum > NATIONAL_DEX_COUNT && nationalNum <= NATIONAL_DEX_TOTAL)
+        return sExtraDexDisplayedNumbers[nationalNum - NATIONAL_DEX_COUNT - 1];
+    return nationalNum;
+}
+
 static u16 SpeciesToHoennPokedexNum(u16 species)
 {
     if (!species)

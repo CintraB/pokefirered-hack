@@ -186,6 +186,7 @@ def test_cenario_especies_tem_os_casos_dos_golpes():
     for caso in ("dark_void_dupla", "dark_void_so_darkrai", "dark_void_usuario_dormindo", "bad_dreams_dupla", "bad_dreams_aliado",
                  "bad_dreams_acordado", "bad_dreams_desmaiado", "dragon_rush"):
         assert f'"golpes/{caso}:' in texto, caso
-    assert cen.SCREEN_POINTS[-2:] == ("golpe_dark_void", "golpe_menu_garchomp")
-    assert refs.SHARED_POINTS[-2:] == cen.SCREEN_POINTS[-2:]
+    # as telas dos golpes vêm antes das da Pokédex dos extras (Task 6, 3 pontos no fim)
+    assert cen.SCREEN_POINTS[-5:-3] == ("golpe_dark_void", "golpe_menu_garchomp")
+    assert refs.SHARED_POINTS[-len(cen.SCREEN_POINTS):] == cen.SCREEN_POINTS
     assert len(cen.SEEDS) == 5                                  # Dark Void: até 5 tentativas
