@@ -9,9 +9,9 @@ a Pokédex inteira obtível e uma esteira de testes automática no emulador.**
 ![Idioma](https://img.shields.io/badge/idioma-PT--BR-009c3b?style=flat-square)
 ![Base](https://img.shields.io/badge/base-pret%2Fpokefirered-e3350d?style=flat-square)
 ![Linguagem](https://img.shields.io/badge/C-agbcc-555555?style=flat-square)
-![Testes](https://img.shields.io/badge/pytest-5084%20testes-2ea44f?style=flat-square)
-![Esteira](https://img.shields.io/badge/esteira-619%20checagens-2ea44f?style=flat-square)
-![Versão](https://img.shields.io/badge/ROM-v66-informational?style=flat-square)
+![Testes](https://img.shields.io/badge/pytest-5096%20testes-2ea44f?style=flat-square)
+![Esteira](https://img.shields.io/badge/esteira-624%20checagens-2ea44f?style=flat-square)
+![Versão](https://img.shields.io/badge/ROM-v70-informational?style=flat-square)
 
 <img src="docs/readme/inicial.png" width="240" alt="Escolha do inicial em português">
 <img src="docs/readme/chuva.png" width="240" alt="Batalha com chuva contínua">
@@ -352,7 +352,7 @@ flowchart LR
   pior caso dos nomes variáveis, numa página HTML para revisar a tradução de olho. Não reprova nada.
 - **Telas estáveis**: a tela da captura sai sempre com o mesmo Pokémon (um Pidgey), e as telas são
   conferidas pelo relógio do disco, para o sorteio não gerar avisos falsos.
-- **5084 testes em pytest** cobrem a própria esteira e as regras de cada hack.
+- **5096 testes em pytest** cobrem a própria esteira e as regras de cada hack.
 
 <details>
 <summary>Comandos (WSL)</summary>
