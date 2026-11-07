@@ -6,11 +6,12 @@
   --blur: .9px;
   --b: 3;              /* fator inteiro do mapa que cobre a tela (o JS recalcula) */
   --tela-w: 480px;     /* tela do jogo em 2x; o JS reduz para outro fator inteiro em tela estreita */
+  --sarjeta: 0px;      /* faixa livre à direita no celular, onde o pino fica à vista */
   --viagem: 1.6s cubic-bezier(.65, 0, .35, 1);
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html { scroll-behavior: smooth; background: var(--bg); }
-body { background: var(--bg); color: var(--ink); font-family: Inter, system-ui, sans-serif; overflow-x: clip; }
+body { background: var(--bg); color: var(--ink); font-family: Inter, system-ui, sans-serif; }
 a { color: var(--gold); }
 img { image-rendering: pixelated; }
 .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
@@ -34,11 +35,13 @@ img { image-rendering: pixelated; }
 @keyframes pulso { 70% { box-shadow: 0 0 0 40px #ffcb0500; } 100% { box-shadow: 0 0 0 0 #ffcb0500; } }
 #veu { position: fixed; inset: 0; z-index: 1; pointer-events: none; opacity: .17;
   background: radial-gradient(ellipse at center, #0b0b1400 0%, #0b0b14cc 75%), linear-gradient(#0b0b1466, #0b0b1499); }
-.sem-transicao #camada, .sem-transicao #pino { transition: none !important; }
+.sem-transicao #camada, .sem-transicao #pino, .sem-transicao #placa { transition: none !important; }
 main, .rodape { position: relative; z-index: 2; }
 
 /* ---------- placa do lugar (como o nome do mapa que aparece no jogo) e trilha dos capítulos ---------- */
-#placa { position: fixed; left: 18px; top: 18px; z-index: 6; pointer-events: none;
+/* no desktop a placa fica no alto do lado livre (acima do pino), nunca sobre o painel */
+#placa { position: fixed; left: var(--placa-x, 50%); translate: -50% 0; top: 18px; z-index: 6; pointer-events: none;
+  transition: left var(--viagem);
   font: 11px/1 "Press Start 2P", monospace; letter-spacing: .04em; text-transform: uppercase; color: #fff;
   background: var(--vidro); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
   border: 1px solid var(--borda); border-left: 4px solid var(--gold); border-radius: 10px; padding: 12px 16px; }
@@ -131,7 +134,7 @@ h1 .linha { white-space: nowrap; }
 .troca .para { font: 700 15px Inter, sans-serif; color: var(--muted); padding: 0; }
 
 /* imagens do jogo: tamanho exato em fator inteiro, nunca esticadas */
-.midia { margin-top: 18px; }
+.midia { margin-top: 18px; overflow-x: auto; }
 .tela { display: block; box-sizing: content-box; width: var(--tela-w); height: auto; aspect-ratio: 3 / 2;
   image-rendering: pixelated; border: 4px solid #ffffff22; border-radius: 10px; box-shadow: 0 24px 50px #000c; }
 .ba { position: relative; box-sizing: content-box; width: var(--tela-w); aspect-ratio: 3 / 2; overflow: hidden;
@@ -191,7 +194,9 @@ h1 .linha { white-space: nowrap; }
   #trilha { display: none; }
 }
 @media (max-width: 800px) {
-  .cap { padding: 16vh 16px 26vh; }
+  :root { --sarjeta: 56px; }
+  .cap { padding: 16vh var(--sarjeta) 26vh 16px; }
+  #pino { width: 36px; height: 36px; margin: -18px 0 0 -18px; border-width: 3px; }
   .coluna { width: 100%; }
   .cabeca { padding: 24px 22px; }
   .cartao { padding: 20px; }
@@ -200,10 +205,13 @@ h1 .linha { white-space: nowrap; }
   .selo { font-size: 10px; letter-spacing: .06em; }
   h1 { font-size: 18px; }
   .caixa { font-size: 11px; padding: 16px 18px 30px; min-height: 120px; }
-  #placa { left: 12px; top: 12px; font-size: 9px; padding: 10px 12px; }
+  #placa { left: 12px; translate: none; top: 12px; font-size: 9px; padding: 10px 12px; }
   .rodape { padding: 20vh 16px 8vh; }
   .fim-grade { grid-template-columns: 1fr; }
   .fim-grade .painel { padding: 22px 20px; }
+}
+@media (max-width: 360px) {
+  :root { --sarjeta: 16px; }  /* tela muito estreita: a tela do jogo precisa da largura toda */
 }
 @media (max-width: 540px) {
   :root { --tela-w: 240px; }

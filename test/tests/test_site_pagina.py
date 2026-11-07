@@ -187,22 +187,68 @@ def _bloco_media(css, consulta):
         i += 1
 
 
+def _regras(css):
+    """[(seletores, {propriedade: valor})] das regras sem chaves aninhadas (dentro ou fora de @media)."""
+    regras = []
+    for sel, corpo in re.findall(r"([^{}]+)\{([^{}]*)\}", css):
+        sel = re.sub(r"/\*.*?\*/", "", sel, flags=re.S).strip()
+        decl = {}
+        for item in corpo.split(";"):
+            if ":" in item:
+                k, v = item.split(":", 1)
+                decl[k.strip()] = re.sub(r"\s+", " ", v.strip())
+        regras.append(({x.strip() for x in sel.split(",")}, decl))
+    return regras
+
+
+def _sem_media(css):
+    """O CSS sem os blocos @media (só as regras de base)."""
+    saida, i = [], 0
+    for m in re.finditer(r"@media[^{]*\{", css):
+        if m.start() < i:
+            continue
+        saida.append(css[i:m.start()])
+        i = m.end() - 1 + len(_bloco_media(css[m.start():], "@media"))  # depois do "}" que fecha o bloco
+    return "".join(saida) + css[i:]
+
+
 def test_reduced_motion(site):
     css = (site / "estilo.css").read_text(encoding="utf-8")
-    bloco = _bloco_media(css, "@media (prefers-reduced-motion: reduce)")
-    assert re.search(r"transition\s*:\s*none", bloco)
-    assert re.search(r"animation\s*:\s*none", bloco)
+    regras = _regras(_bloco_media(css, "@media (prefers-reduced-motion: reduce)"))
+    tudo = [d for sel, d in regras if {"*", "*::before", "*::after"} <= sel]
+    assert tudo, "falta a regra para *, *::before e *::after"
+    assert tudo[0].get("transition") == "none !important"
+    assert tudo[0].get("animation") == "none !important"
+    paineis = [d for sel, d in regras if {".js .cabeca", ".js .cartao"} <= sel]
+    assert paineis and paineis[0].get("opacity") == "1" and paineis[0].get("transform") == "none"
     js = (site / "pagina.js").read_text(encoding="utf-8")
-    assert "prefers-reduced-motion: reduce" in js  # a máquina de escrever e a câmera consultam a preferência
+    assert 'matchMedia("(prefers-reduced-motion: reduce)")' in js
+    assert re.search(r"if \(semMovimento\.matches\) \{ termina\(\); return; \}", js)  # sem máquina de escrever
+    assert 'semMovimento.addEventListener("change"' in js
+    # o comportamento de verdade é conferido no Chrome em test_site_navegador.py::test_pagina_sem_movimento
 
 
 def test_valores_do_mapa(site):
     css = (site / "estilo.css").read_text(encoding="utf-8")
-    assert re.search(r"--blur\s*:\s*\.9px", css) or re.search(r"--blur\s*:\s*0\.9px", css)
-    veu = css[css.index("#veu"):]
-    veu = veu[:veu.index("}")]
-    assert re.search(r"opacity\s*:\s*0?\.17\b", veu)
-    assert css.count("image-rendering: pixelated") + css.count("image-rendering:pixelated") >= 1
+    base = _regras(_sem_media(css))
+    raiz = [d for sel, d in base if ":root" in sel and "--blur" in d]
+    assert raiz and raiz[0]["--blur"] in (".9px", "0.9px")
+    kanto = [d for sel, d in base if "#kanto" in sel]
+    assert kanto and re.search(r"blur\(var\(--blur\)\)", kanto[0].get("filter", ""))
+    assert kanto[0].get("image-rendering") == "pixelated"
+    veu = [d for sel, d in base if "#veu" in sel]
+    assert veu and veu[0].get("opacity") in (".17", "0.17")
+
+
+def test_conteudo_visivel_sem_js(site, pagina):
+    """O texto só é escondido para a revelação depois que o pagina.js inicia (classe js posta por ele)."""
+    assert 'classList.add("js")' not in pagina
+    js = (site / "pagina.js").read_text(encoding="utf-8")
+    assert 'raiz.classList.add("js")' in js
+    css = (site / "estilo.css").read_text(encoding="utf-8")
+    for sel, d in _regras(css):
+        if d.get("opacity") == "0" and sel & {".cabeca", ".cartao", ".js .cabeca", ".js .cartao"}:
+            assert all(s.startswith(".js ") for s in sel), sel
 
 
 def test_professor_rgba(site):
