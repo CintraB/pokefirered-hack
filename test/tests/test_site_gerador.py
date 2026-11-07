@@ -39,13 +39,18 @@ def test_juntar_linhas(entrada, esperado):
 
 
 def test_familia_definida_por_lista_de_slugs():
-    """O capítulo da Família é a lista explícita FAMILIA (Família Sombra e Pedágio da Rota 23), não uma busca no título."""
-    assert gerar_mod.FAMILIA == ("modernas/familia-sombra", "modernas/pedagio-da-rota-23")
+    """O capítulo da Família é a lista explícita FAMILIA, não uma busca no título.
+
+    Entram a Família Sombra, o Pedágio da Rota 23, o fim da história e Garchomp e Darkrai (revela os chefes).
+    """
+    assert gerar_mod.FAMILIA == ("modernas/familia-sombra", "modernas/pedagio-da-rota-23",
+                                 "modernas/familia-sombra-o-fim", "modernas/garchomp-e-darkrai")
     caps = {c["id"]: c for c in _caps()}
     fam = caps["familia"]["cartoes"]
     assert [c["id"] for c in fam] == [k.replace("/", "-") for k in gerar_mod.FAMILIA]
     assert all(c["spoiler"] for c in fam)
-    assert {c["titulo"] for c in fam} == {"Família Sombra", "Pedágio da Rota 23"}
+    assert {c["titulo"] for c in fam} == {"Família Sombra", "Pedágio da Rota 23", "Família Sombra, o fim",
+                                          "Garchomp e Darkrai"}
     assert not {c["id"] for c in caps["modernas"]["cartoes"]} & {c["id"] for c in fam}
     assert not any(c["spoiler"] for cap in caps.values() if cap["id"] != "familia" for c in cap["cartoes"])
 

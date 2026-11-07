@@ -62,7 +62,7 @@ porymap.*.cfg
 prefabs.json
 .vscode/*.*
 *.js
-!site/**/*.js
+!/site/*.js
 *.sym
 build-cmake-*/
 .cache/

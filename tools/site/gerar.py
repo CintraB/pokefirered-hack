@@ -21,7 +21,9 @@ TELA = (480, 320)  # tela do GBA (240x160) em 2x
 SPRITE = 3  # sprites de espécie e item em 3x
 # Cartões do capítulo "A história da Família Sombra" (atrás do aviso de spoiler): "<tópico original>/<slug do título>".
 # Lista explícita, não uma busca no título: um cartão novo só entra aqui por decisão.
-FAMILIA = ("modernas/familia-sombra", "modernas/pedagio-da-rota-23")
+# "Garchomp e Darkrai" entra porque revela quem são os dois últimos chefes.
+FAMILIA = ("modernas/familia-sombra", "modernas/pedagio-da-rota-23",
+           "modernas/familia-sombra-o-fim", "modernas/garchomp-e-darkrai")
 nome_da_tela = imagens.nome_da_tela
 REPOSITORIO = "https://github.com/CintraB/pokefirered-hack"
 AVISO_SPOILER = ("<summary><span class=\"aviso\">Aviso de spoiler</span> "
@@ -122,8 +124,9 @@ def telas_do_cartao(tela) -> list:
 
 
 def ligar_imagens(repo: Path, capitulos: list) -> dict:
-    """Liga a cada cartão os sprites e o caminho publicado da tela (telas/<nome>.png).
+    """Liga a cada cartão o caminho publicado da tela (telas/<nome>.png) ou, se ele não tem tela, os sprites.
 
+    A tela já mostra o Pokémon ou o item (nas evoluções, o antes e o depois): sprite junto seria repetição.
     Devolve o que falta gravar: {"telas": [caminhos de origem], "sprites": {src: sprite}}.
     """
     telas, sprites = [], {}
@@ -131,9 +134,9 @@ def ligar_imagens(repo: Path, capitulos: list) -> dict:
         for c in cap["cartoes"]:
             origem = telas_do_cartao(c["tela"])
             telas += origem
-            publicadas = [nome_da_tela(t) for t in origem]
+            publicadas = [nome_da_tela(t, repo) for t in origem]
             c["tela"] = None if not publicadas else publicadas[0] if len(publicadas) == 1 else publicadas
-            c["sprites"] = imagens.sprites_do_cartao(repo, c)
+            c["sprites"] = [] if publicadas else imagens.sprites_do_cartao(repo, c)
             sprites.update({s["src"]: s for s in c["sprites"]})
     return {"telas": telas, "sprites": sprites}
 
@@ -202,14 +205,14 @@ def _img(src: str, largura: int, altura: int, alt: str, classe: str, extra: str 
 
 
 def _midia(c: dict) -> str:
-    """Sprites (espécie e item, 3x) e depois a tela do jogo: uma, ou o par antes/depois com o comparador."""
+    """A tela do jogo (uma, ou o par antes/depois com o comparador); sem tela, os sprites (espécie e item, 3x)."""
     saida = ""
+    telas = telas_do_cartao(c["tela"])
     sprites = c.get("sprites") or []  # [{"src", "largura", "altura"}], ligados por imagens.sprites_do_cartao
-    if sprites:
+    if sprites and not telas:
         saida += ('<figure class="midia sprites">' + "".join(
             _img(s["src"], s["largura"] * SPRITE, s["altura"] * SPRITE, "", "sprite", f' style="--n:{s["largura"]}"')
             for s in sprites) + "</figure>")
-    telas = telas_do_cartao(c["tela"])
     if len(telas) == 1:
         saida += f'<figure class="midia">{_img(telas[0], *TELA, "Tela do jogo: " + c["titulo"], "tela")}</figure>'
     elif len(telas) == 2:
@@ -319,7 +322,7 @@ def gerar(repo: Path, saida: Path) -> None:
         if len(telas) > 2:
             raise ValueError(f"textos.json ({chave}): 'tela' aceita um caminho ou [antes, depois]")
         for tela in telas:
-            nome_da_tela(tela)  # só docs/readme e test/referencias (as telas aprovadas)
+            nome_da_tela(tela, repo)  # só docs/readme e test/referencias (as telas aprovadas)
             if not (repo / tela).is_file():
                 raise FileNotFoundError(f"tela não encontrada ({chave}): {repo / tela}")
     capitulos = carregar_capitulos(repo)

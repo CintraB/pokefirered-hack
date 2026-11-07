@@ -12,24 +12,31 @@ from pathlib import Path
 import numpy as np
 from PIL import Image
 
-ORIGENS_TELA = (("docs", "readme"), ("test", "referencias"))
+RAIZ = Path(__file__).resolve().parents[2]
+# Origem aprovada -> prefixo do nome publicado (as de test/referencias não colidem com as de docs/readme).
+ORIGENS_TELA = {"docs/readme": (), "test/referencias": ("ref",)}
 
 
-def nome_da_tela(tela: str) -> str:
-    """Caminho publicado da tela: telas/<nome>.png. As de test/referencias levam o prefixo ref_<pasta>_."""
-    partes = Path(tela).parts
-    if partes[:2] == ORIGENS_TELA[0]:
-        resto = partes[2:]
-    elif partes[:2] == ORIGENS_TELA[1]:
-        resto = ("ref",) + partes[2:]
-    else:
-        raise ValueError(f"tela fora de docs/readme e test/referencias (as únicas aprovadas): {tela}")
-    return "telas/" + "_".join(resto).lower()
+def nome_da_tela(tela: str, repo: Path = RAIZ) -> str:
+    """Caminho publicado da tela: telas/<nome>.png. As de test/referencias levam o prefixo ref_<pasta>_.
+
+    O caminho é resolvido de verdade (Path.resolve, que desfaz ".." e links): o que sair de docs/readme
+    ou de test/referencias é recusado.
+    """
+    real = (Path(repo) / tela).resolve()
+    for origem, prefixo in ORIGENS_TELA.items():
+        try:
+            resto = real.relative_to((Path(repo) / origem).resolve()).parts
+        except ValueError:
+            continue
+        if resto:
+            return "telas/" + "_".join(prefixo + resto).lower()
+    raise ValueError(f"tela fora de docs/readme e test/referencias (as únicas aprovadas): {tela}")
 
 
 def publicar_tela(repo: Path, tela: str, saida: Path) -> str:
     """Copia a tela sem perda, otimizada, para <saida>/telas/ e devolve o caminho publicado."""
-    destino = nome_da_tela(tela)
+    destino = nome_da_tela(tela, repo)
     origem = Path(repo) / tela
     if not origem.is_file():
         raise FileNotFoundError(f"tela não encontrada: {origem}")

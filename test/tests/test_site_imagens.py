@@ -74,33 +74,41 @@ def _telas_do_textos():
 
 
 def test_todo_cartao_tem_imagem_ou_texto(pagina):
-    """Cada cartão tem o texto; e todo cartão com espécie, item ou tela em textos.json também mostra a imagem."""
+    """Cada cartão tem o texto. Com tela em textos.json, mostra a tela e nenhum sprite (não repete o que a tela
+    já mostra, como nas evoluções); sem tela, mostra o sprite da espécie ou do item, se tiver."""
     com_tela = _telas_do_textos()
     assert len(com_tela) >= 20
     for cid, c in _cartoes().items():
         corpo = _artigo(pagina, cid)
         assert c["texto"], cid
         assert re.search(r"<p>[^<]+</p>", corpo), cid  # texto real, nunca texto em imagem
-        if c["especie"] or c["item"]:
-            assert 'class="sprite"' in corpo, (cid, "sem sprite")
         if cid in com_tela:
             assert 'class="tela' in corpo, (cid, "sem tela")
-        if not (c["especie"] or c["item"] or cid in com_tela):
+            assert 'class="sprite"' not in corpo and "midia sprites" not in corpo, (cid, "sprite junto da tela")
+        elif c["especie"] or c["item"]:
+            assert 'class="sprite"' in corpo, (cid, "sem sprite")
+        else:
             assert "<img" not in corpo, (cid, "só texto: sem figura vazia")
 
 
+def test_sprite_de_cartao_com_tela_nao_e_gravado(site):
+    """Os sprites dos cartões com tela não vão para o site (Haunter e Gengar só aparecem no comparador)."""
+    assert not (site / "sprites/haunter.png").exists()
+    assert not (site / "sprites/gengar.png").exists()
+
+
 def test_sprite_especie(site, pagina):
-    """Haunter → Gengar: dois PNG RGBA 64×64, índice 0 transparente e cores do normal.pal."""
-    corpo = _artigo(pagina, "evolucoes-haunter-evolui-por-nivel")
+    """Feebas → Milotic (cartão sem tela): dois PNG RGBA 64×64, índice 0 transparente e cores do normal.pal."""
+    corpo = _artigo(pagina, "evolucoes-feebas-e-a-escama-prisma")
     srcs = re.findall(r'<img class="sprite"[^>]*src="([^"]+)"', corpo)
-    assert srcs == ["sprites/haunter.png", "sprites/gengar.png"]
-    for nome in ("haunter", "gengar"):
+    assert srcs == ["sprites/feebas.png", "sprites/milotic.png"]
+    for nome in ("feebas", "milotic"):
         png = Image.open(site / f"sprites/{nome}.png")
         assert png.mode == "RGBA" and png.size == (64, 64)
         original = Image.open(REPO / f"graphics/pokemon/{nome}/front.png")
         paleta = _lista_pal(REPO / f"graphics/pokemon/{nome}/normal.pal")
         _confere(np.array(original), np.array(png), paleta)
-    assert Image.open(site / "sprites/haunter.png").getpixel((0, 0))[3] == 0  # canto: fundo transparente
+    assert Image.open(site / "sprites/feebas.png").getpixel((0, 0))[3] == 0  # canto: fundo transparente
 
 
 def test_sprite_item(site, pagina):
@@ -161,6 +169,25 @@ def _repo_temporario(tmp_path, textos):
     return repo
 
 
+@pytest.mark.parametrize("tela", [
+    "docs/readme/../../graphics/pokemon/haunter/front.png",
+    "test/referencias/../tests/dados/x.png",
+    "docs/readme/../readme_falso/x.png",
+    "/etc/passwd",
+    "docs/readmex/x.png",
+])
+def test_nome_da_tela_recusa_caminho_que_sai_das_origens(tela):
+    """O caminho é resolvido de verdade (Path.resolve): ".." que sai de docs/readme ou test/referencias é recusado."""
+    with pytest.raises(ValueError, match="docs/readme.*test/referencias"):
+        _carregar_imagens().nome_da_tela(tela)
+
+
+def test_nome_da_tela_aceita_caminho_que_volta_para_a_origem():
+    imagens = _carregar_imagens()
+    assert imagens.nome_da_tela("docs/readme/../readme/sol.png") == "telas/sol.png"
+    assert imagens.nome_da_tela("test/referencias/COMUM/dossie_capa.png") == "telas/ref_comum_dossie_capa.png"
+
+
 def test_tela_de_origem_nao_aprovada_falha(tmp_path):
     repo = _repo_temporario(tmp_path, {"ritmo/texto-instantaneo": {"tela": "graphics/pokemon/haunter/front.png"}})
     with pytest.raises(ValueError, match="docs/readme.*test/referencias"):
@@ -187,6 +214,24 @@ def test_ligacoes_pelo_titulo(pagina):
     assert 'src="telas/evo_gengar_antes.png"' in _artigo(pagina, "evolucoes-haunter-evolui-por-nivel")
     assert 'src="telas/ref_comum_familia_pedagio.png"' in _artigo(pagina, "modernas-pedagio-da-rota-23")
     assert re.search(r'src="telas/(ref_comum_)?familia_', _artigo(pagina, "modernas-familia-sombra"))
+    assert 'src="telas/ref_comum_dossie_capa.png"' in _artigo(pagina, "modernas-familia-sombra-o-fim")
+    assert 'src="telas/ref_comum_dex_garchomp.png"' in _artigo(pagina, "modernas-garchomp-e-darkrai")
+
+
+def test_chefes_com_clima_sem_batalha_generica(pagina):
+    """Não há tela aprovada de chefe com clima: o cartão fica com o sprite do item (MT11), não com a batalha
+    genérica Pikachu×Magikarp do sol.png."""
+    corpo = _artigo(pagina, "modernas-chefes-com-clima")
+    assert 'class="tela' not in corpo
+    assert 'src="sprites/item_tm11.png"' in corpo
+
+
+def test_tela_da_familia_sem_faixa_preta(site, pagina):
+    """A tela do cartão Família Sombra não tem a faixa preta de fora do mapa (as salas do Dom ficam na borda)."""
+    src = re.search(r'<img class="tela"[^>]*src="([^"]+)"', _artigo(pagina, "modernas-familia-sombra")).group(1)
+    tela = np.array(Image.open(site / src).convert("RGB")).astype(int)
+    quarto_esquerdo = tela[:, : tela.shape[1] // 4]
+    assert (quarto_esquerdo.sum(axis=2) < 30).mean() < 0.5, src  # menos da metade quase preta
 
 
 def _primeira_carga(pagina):
@@ -215,7 +260,7 @@ def test_imagens_sem_lazy_so_na_abertura(pagina):
 
 def test_sprites_em_fator_inteiro_e_com_texto_alternativo(pagina):
     sprites = re.findall(r'<img class="sprite"[^>]*>', pagina)
-    assert len(sprites) > 40
+    assert len(sprites) > 15
     for img in sprites:
         largura, altura = map(int, re.search(r'width="(\d+)" height="(\d+)"', img).groups())
         assert largura % 3 == 0 and altura % 3 == 0, img  # 3× do tamanho original
