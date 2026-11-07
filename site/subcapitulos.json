@@ -1,0 +1,46 @@
+{
+  "modernas": [
+    {
+      "id": "batalha",
+      "titulo": "Nas batalhas",
+      "cartoes": [
+        "modernas/chefes-mais-espertos",
+        "modernas/chefes-mais-espertos-2",
+        "modernas/chefes-com-clima",
+        "modernas/clima-na-batalha",
+        "modernas/status-na-batalha",
+        "modernas/barra-de-ps-moderna",
+        "modernas/fisico-ou-especial-por-golpe",
+        "modernas/tipo-fada",
+        "modernas/pe-ao-capturar",
+        "modernas/pe-para-a-equipe-toda"
+      ]
+    },
+    {
+      "id": "jornada",
+      "titulo": "Na jornada",
+      "cartoes": [
+        "modernas/repelente-automatico",
+        "modernas/pc-portatil",
+        "modernas/hms-sem-ensinar",
+        "modernas/viagem-pelo-mapa",
+        "modernas/dexnav",
+        "modernas/pokemon-seguidor",
+        "modernas/incubadora",
+        "modernas/pokerus"
+      ]
+    },
+    {
+      "id": "desafios",
+      "titulo": "Conquistas e lugares novos",
+      "cartoes": [
+        "modernas/conquistas-e-premios",
+        "modernas/diario-da-jornada",
+        "modernas/revanches-por-degrau",
+        "modernas/mestre-dos-golpes",
+        "modernas/casa-do-pescador",
+        "modernas/sala-de-trofeus"
+      ]
+    }
+  ]
+}

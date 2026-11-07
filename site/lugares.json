@@ -1,0 +1,86 @@
+{
+  "abertura": {
+    "nome": "Região de Kanto",
+    "x": 384,
+    "y": 288,
+    "zoom": 1
+  },
+  "sobre": {
+    "nome": "Pallet",
+    "x": 176,
+    "y": 432,
+    "zoom": 3
+  },
+  "ritmo": {
+    "nome": "Rota 1",
+    "x": 176,
+    "y": 368,
+    "zoom": 2
+  },
+  "resumo": {
+    "nome": "Viridian",
+    "x": 176,
+    "y": 336,
+    "zoom": 3
+  },
+  "dex": {
+    "nome": "Pewter",
+    "x": 176,
+    "y": 208,
+    "zoom": 3
+  },
+  "shiny": {
+    "nome": "Cerulean",
+    "x": 496,
+    "y": 176,
+    "zoom": 3
+  },
+  "creche": {
+    "nome": "Rota 5",
+    "x": 496,
+    "y": 208,
+    "zoom": 2
+  },
+  "evolucoes": {
+    "nome": "Celadon",
+    "x": 400,
+    "y": 272,
+    "zoom": 3
+  },
+  "modernas": {
+    "nome": "Saffron",
+    "x": 496,
+    "y": 272,
+    "zoom": 3
+  },
+  "dia_noite": {
+    "nome": "Lavender",
+    "x": 624,
+    "y": 272,
+    "zoom": 3
+  },
+  "clima": {
+    "nome": "Vermilion",
+    "x": 496,
+    "y": 368,
+    "zoom": 3
+  },
+  "lendarios": {
+    "nome": "Cinnabar",
+    "x": 176,
+    "y": 528,
+    "zoom": 3
+  },
+  "pos_liga": {
+    "nome": "Planalto Índigo",
+    "x": 112,
+    "y": 176,
+    "zoom": 3
+  },
+  "familia": {
+    "nome": "Rota 23",
+    "x": 112,
+    "y": 240,
+    "zoom": 2
+  }
+}

@@ -1,0 +1,301 @@
+{
+  "evolucoes/kadabra-evolui-por-nivel": {
+    "longo": "Kadabra era o Pokémon mais famoso por exigir uma troca para evoluir. Nesta versão, basta treinar: ao chegar ao nível 37, ele evolui para Alakazam, como qualquer Pokémon que evolui por nível. Não precisa de item, de cabo nem de outro jogador. Se não quiser a evolução naquela hora, aperte B durante a animação, como sempre. Um Abra capturado cedo vira Kadabra no nível 16 e, com um pouco de paciência, chega a Alakazam sem sair de Kanto. A página Evolução, no resumo, já mostra a regra nova.",
+    "tela": [
+      "test/referencias/COMUM/evo_alakazam_antes.png",
+      "test/referencias/COMUM/evo_alakazam_depois.png"
+    ]
+  },
+  "evolucoes/machoke-evolui-por-nivel": {
+    "longo": "O Machoke também deixou a troca para trás. Ao chegar ao nível 37, ele evolui para Machamp sozinho, com os seus quatro braços, sem item e sem precisar de outro jogo. O Machop vira Machoke no nível 28, então o caminho todo é feito só com treino. Quer segurar a evolução para aprender um golpe antes? Aperte B durante a animação e ele tenta de novo no próximo nível. Um Machamp é um ótimo parceiro para a Força e para as batalhas contra os Pokémon de tipo Normal e Pedra.",
+    "tela": [
+      "test/referencias/COMUM/evo_machamp_antes.png",
+      "test/referencias/COMUM/evo_machamp_depois.png"
+    ]
+  },
+  "evolucoes/graveler-evolui-por-nivel": {
+    "longo": "Graveler, o Pokémon pedra que rola montanha abaixo, agora evolui para Golem ao chegar ao nível 37, sem troca. Geodude vira Graveler no nível 25. O Geodude vive na grama do Monte Lua e do Túnel de Pedra; o Graveler aparece quando você usa o Esmaga Pedra no Túnel de Pedra e no Monte Brasa, e também na Estrada da Vitória. Com um Golem no time, você tem uma defesa de Pedra e Terra muito resistente para a Liga. Como nas outras evoluções, apertar B durante a animação adia a mudança, e ela volta a ser tentada a cada nível novo.",
+    "tela": [
+      "test/referencias/COMUM/evo_golem_antes.png",
+      "test/referencias/COMUM/evo_golem_depois.png"
+    ]
+  },
+  "evolucoes/haunter-evolui-por-nivel": {
+    "longo": "Haunter, o fantasma brincalhão, agora evolui para Gengar ao chegar ao nível 37, sem troca. Gastly vira Haunter no nível 25, e os dois aparecem nos andares de cima da Torre Pokémon de Lavender. Como o Gengar é forte no Atq. Esp. e no tipo Fantasma, ele chega cedo para fazer diferença na jornada. Na tela, você vê o antes e o depois da evolução. Se preferir esperar, aperte B durante a animação.",
+    "tela": [
+      "docs/readme/evo_gengar_antes.png",
+      "docs/readme/evo_gengar_depois.png"
+    ]
+  },
+  "evolucoes/onix-evolui-por-nivel": {
+    "longo": "Para virar Steelix, o Onix precisava ser trocado segurando o Revestimento Metálico, e o item sumia na troca. Agora basta ele segurar o item ao subir de nível, a partir do nível 37. Se ele já passou do 37, entregue o item e a evolução acontece no próximo nível. E o melhor: o item não é gasto, fica com o Steelix, e você pode passá-lo depois para um Scyther. O Revestimento Metálico custa ¥2.100 no 4º andar da Loja de Celadon.",
+    "tela": [
+      "test/referencias/COMUM/evo_steelix_antes.png",
+      "test/referencias/COMUM/evo_steelix_depois.png"
+    ]
+  },
+  "evolucoes/scyther-evolui-por-nivel": {
+    "longo": "O Scyther, aquele Pokémon de foices que aparece na Zona de Safári, agora vira Scizor sem troca: basta segurar o Revestimento Metálico ao subir de nível, a partir do nível 37. O item não é gasto, então um único Revestimento serve para o Scizor e para o Steelix do Onix, um depois do outro. O Scizor ganha o tipo Aço, que resiste a muita coisa. Você compra o item por ¥2.100 no 4º andar da Loja de Celadon.",
+    "tela": [
+      "test/referencias/COMUM/evo_scizor_antes.png",
+      "test/referencias/COMUM/evo_scizor_depois.png"
+    ]
+  },
+  "evolucoes/seadra-evolui-por-nivel": {
+    "longo": "O Seadra precisava de uma troca segurando a Escama de Dragão para virar Kingdra. Agora basta ele segurar a Escama ao subir de nível, a partir do nível 37, e o item fica com ele depois. O Horsea vira Seadra no nível 32, então a linha toda se completa com treino. O Kingdra, de Água e Dragão, tem poucas fraquezas e é um bom reforço para a reta final. A Escama de Dragão custa ¥2.100 no 4º andar da Loja de Celadon.",
+    "tela": [
+      "test/referencias/COMUM/evo_kingdra_antes.png",
+      "test/referencias/COMUM/evo_kingdra_depois.png"
+    ]
+  },
+  "evolucoes/porygon-evolui-por-nivel": {
+    "longo": "O Porygon, o Pokémon feito de dados que você ganha na Troca de Prêmios do Cassino Rocket, em Celadon, agora vira Porygon2 sem troca. Basta segurar a Melhora ao subir de nível, a partir do nível 37. O item não é gasto e fica com ele depois. O Porygon2 é mais forte e mais resistente que o Porygon em quase tudo. A Melhora custa ¥2.100 no 4º andar da Loja de Celadon, a mesma loja que vende os outros itens de evolução.",
+    "tela": [
+      "test/referencias/COMUM/evo_porygon2_antes.png",
+      "test/referencias/COMUM/evo_porygon2_depois.png"
+    ]
+  },
+  "evolucoes/clamperl-evolui-por-nivel": {
+    "longo": "O Clamperl tem dois caminhos, e agora os dois saem sem troca. A partir do nível 37, se ele subir de nível segurando o Dente Abissal, vira Huntail; se segurar a Escama Abissal, vira Gorebyss. O item não é gasto, então você pode guardá-lo para outro Clamperl e ter os dois. Os dois itens custam ¥2.100 cada no 4º andar da Loja de Celadon. A página Evolução, no resumo, mostra os dois caminhos, um embaixo do outro.",
+    "tela": [
+      "test/referencias/COMUM/evo_huntail_antes.png",
+      "test/referencias/COMUM/evo_huntail_depois.png"
+    ]
+  },
+  "evolucoes/slowpoke-evolui-por-nivel": {
+    "longo": "O Slowpoke sempre virou Slowbro no nível 37, e isso continua. A novidade é o Slowking, que antes pedia uma troca com a Pedra do Rei. Agora, se o Slowpoke segurar a Pedra do Rei ao chegar ao nível 37 ou depois, ele vira Slowking; sem a pedra, vira Slowbro, como sempre. A pedra não é gasta. Um detalhe: o Slowpoke era exclusivo do LeafGreen, mas agora aparece no seu FireRed também. A Pedra do Rei custa ¥2.100 no 4º andar da Loja de Celadon.",
+    "tela": [
+      "test/referencias/COMUM/evo_slowking_antes.png",
+      "test/referencias/COMUM/evo_slowking_depois.png"
+    ]
+  },
+  "evolucoes/poliwhirl-evolui-por-nivel": {
+    "longo": "O Poliwhirl também tem dois caminhos. Com a Pedra d'Água ele vira Poliwrath, como sempre. E agora, segurando a Pedra do Rei ao subir de nível, a partir do nível 37, ele vira Politoed, que antes exigia uma troca. A Pedra do Rei não é gasta. O Poliwag vira Poliwhirl no nível 25, então escolha com calma qual dos dois você quer. As duas pedras estão à venda no 4º andar da Loja de Celadon.",
+    "tela": [
+      "test/referencias/COMUM/evo_politoed_antes.png",
+      "test/referencias/COMUM/evo_politoed_depois.png"
+    ]
+  },
+  "evolucoes/espeon-e-umbreon": {
+    "longo": "O FireRed original não tem relógio, então Espeon e Umbreon não podiam nascer de um Eevee seu. Agora o relógio do jogo resolve isso. Quando a amizade do Eevee chegar a 220 ou mais, ele evolui ao subir de nível: de manhã ou à tarde vira Espeon; no entardecer ou à noite, Umbreon. Confira a amizade na página Evolução: a marca (220+) avisa que ele está pronto. E as pedras continuam valendo para Jolteon, Vaporeon e Flareon, então você pode ter a família inteira.",
+    "tela": "test/referencias/COMUM/resumo_evo_eevee.png"
+  },
+  "resumo/pagina-evolucao": {
+    "longo": "No resumo do Pokémon, depois de Dados, Atributos e Golpes, há uma página nova: Evolução. Ela diz, com todas as letras, como aquele Pokémon evolui: em que nível, com qual pedra, segurando qual item, por troca ou por amizade, e em que horário, quando a hora conta. Se ele tem mais de um caminho, como o Eevee, todos aparecem. Se não evolui, a página avisa. No FireRed original você precisava de um guia para saber essas coisas. A última linha da página mostra a amizade do Pokémon, que é o assunto do próximo cartão.",
+    "tela": "docs/readme/resumo_evolucao.png"
+  },
+  "resumo/amizade-com-coracoes": {
+    "longo": "A amizade sempre existiu, mas o FireRed original nunca a mostrava. Agora a última linha da página Evolução traz de 0 a 6 corações, o número exato (de 0 a 255) e uma frase, de Odeia você até Ama você!. Quando o número chega a 220, aparece a marca (220+): é a amizade que basta para quem evolui por amizade, como Pichu, Golbat, Chansey e Eevee. A amizade sobe aos poucos quando você anda com o Pokémon na equipe e quando ele sobe de nível; desmaiar em batalha faz cair. Volte à página de vez em quando para acompanhar.",
+    "tela": "docs/readme/resumo_amizade.png"
+  },
+  "resumo/pagina-ivs-evs": {
+    "longo": "Os IVs são o talento de nascença do Pokémon, de 0 a 31 em cada atributo, e os EVs são o treino que ele acumula nas batalhas. O original escondia os dois. A página IVs/EVs, depois de Evolução, dá uma nota a cada IV: Perfeito (31), Excelente (26 a 30), Muito bom (16 a 25), Bom (1 a 15) e Fraco (0). Mostra também o total em %, com uma nota geral, os EVs de cada atributo com o total, até 510, e o tipo e o poder do Poder Oculto daquele Pokémon. É a página que você vai querer abrir na Creche, para escolher os pais certos.",
+    "tela": "docs/readme/resumo_ivs.png"
+  },
+  "creche/itens-de-criacao": {
+    "longo": "A loja da Ilha Quatro, a mesma ilha da Creche Pokémon, vende tudo o que um criador precisa. A Pedra Eterna (¥7.000), segurada por um dos pais, passa a natureza dele em 70% das vezes. O Nó do Destino (¥10.000) deixa a média dos IVs mais justa e, quando o ovo puxa um dos pais, puxa o de IV maior. E os seis itens de Poder (¥8.000 cada) passam o IV do seu atributo em 90% das vezes: Peso Potente para PS, Bracelete Potente para Ataque, Cinto Potente para Defesa, Lente Potente para Atq. Esp., Faixa Potente para Def. Esp. e Tornozeleira Potente para Velocidade. Em batalha, eles também dão 8 EVs extras no seu atributo.",
+    "tela": "docs/readme/loja_quatro.png"
+  },
+  "dia_noite/relogio-e-periodos": {
+    "longo": "O FireRed original não tem relógio. Esta hack tem o seu próprio, que anda enquanto você joga: cada minuto do jogo dura 150 quadros, e um dia inteiro passa em uma hora real de jogo. O dia tem quatro períodos: manhã, das 04h às 10h; tarde, das 10h às 17h; entardecer, das 17h às 20h; e noite, das 20h às 04h. Um jogo novo começa às 08h. Como o relógio só anda com o jogo ligado, nada muda enquanto o console está desligado.",
+    "tela": "docs/readme/relogio.png"
+  },
+  "dia_noite/hora-e-cor-do-ceu": {
+    "longo": "A hora atual aparece no menu START, então você sempre sabe em que período está. A cor do mundo muda com o período: a manhã tem um tom dourado, a tarde mostra as cores de sempre, o entardecer fica alaranjado e a noite fica azulada. Na última hora antes de um período novo, a cor muda minuto a minuto, sem saltos. Quando o período vira, um aviso na tela conta a novidade. Fique atento: alguns Pokémon e evoluções dependem da hora.",
+    "tela": "docs/readme/aviso_noite.png"
+  },
+  "clima/clima-por-regiao": {
+    "longo": "Kanto agora tem clima. Cada região sorteia o seu a cada período do dia: chuva e trovoada no litoral, como Vermilion, Cerulean e as Rotas 24 e 25; até aguaceiro no mar aberto das Rotas 19, 20 e 21; neve na Ilha Quatro, em 60% dos períodos; tempestade de areia nas Rotas 3 e 10, mais provável à tarde; e cinzas e sol forte na Ilha Cinnabar e no Monte Brasa, onde o sol forte nunca aparece à noite. No resto de Kanto, às vezes há neblina ou chuva. O primeiro dia de um jogo novo é sempre de céu limpo.",
+    "tela": "docs/readme/neve.png"
+  },
+  "clima/clima-e-batalha": {
+    "longo": "Dentro de casas, prédios e cavernas, o tempo fica sempre seco: o clima só aparece ao ar livre. Na batalha, o clima do mapa entra em campo: a chuva, a tempestade de areia e o sol forte continuam na luta, e a neve da Ilha Quatro vira granizo! Isso muda tudo: a chuva reforça os golpes de Água, o sol reforça os de Fogo, e a areia e o granizo ferem a cada turno quem não resiste a eles. As cinzas do vulcão ficam só na paisagem. Antes de uma luta importante, olhe para o céu.",
+    "tela": "docs/readme/granizo.png"
+  },
+  "dex/pokedex-nacional": {
+    "longo": "Pokémon de outras regiões têm aparecido em Kanto, e a sua Pokédex já vem pronta para eles: desde o começo da jornada, ela mostra a lista Nacional, com os 386 Pokémon. No FireRed original, a lista Nacional só chegava depois da Liga Pokémon, de uma visita à Ilha Um e de 60 espécies capturadas, e até lá a Pokédex mostrava só os 151 de Kanto. Essa conversa comigo continua acontecendo, nas mesmas condições, agora com os presentes que eu guardo para você. E, para saber onde achar cada Pokémon que você já viu, o DexNav mostra o lugar, o jeito e o horário.",
+    "tela": "docs/readme/pokedex_nacional.png"
+  },
+  "lendarios/miticos-revelacao": {
+    "longo": "Aqui está a resposta. O Mew aparece no porão da Mansão Pokémon, na Ilha Cinnabar, depois que você captura o Mewtwo. O Celebi espera no fundo do Bosque das Frutas, na Ilha Três, de manhã, depois das Ilhas Sevii. O Jirachi é um brilho nas Ruínas de Tanoby, à noite e com céu limpo, depois que você captura o Deoxys. Os três estão no nível 30. Se você derrotar algum deles, ele volta na próxima entrada no Hall da Fama.",
+    "tela": "test/referencias/COMUM/novidades_miticos_revelacao.png"
+  },
+  "pos_liga/presentes-do-carvalho": {
+    "longo": "Depois da Liga Pokémon, quando você já tiver ido à Ilha Um e capturado 60 espécies, eu vou ao seu encontro na porta da sua casa, em Pallet, e levamos a conversa para o laboratório. Lá eu lhe dou um Ovo raro, sorteado entre Larvitar, Bagon e Beldum, e ¥45.000 para as suas viagens. A cada nova vitória na Liga, guardo mais um Ovo, até os três; é só falar comigo. Se você estiver sem espaço, eu guardo o Ovo até a próxima conversa. E deixo um desafio final: capture os 151 de Kanto e ganhe o Amuleto Brilhante.",
+    "tela": "docs/readme/pos_liga_ovo.png"
+  },
+  "shiny/amuleto-brilhante": {
+    "longo": "Este é o prêmio dos colecionadores. Capture os 151 Pokémon de Kanto, o Mew incluído, e venha mostrar a Pokédex para mim no laboratório, em Pallet. Tem de ser em pessoa: pelo PC eu só dou a nota. Eu lhe entrego o Amuleto Brilhante, que vai para os Itens-chave e funciona só de estar na bolsa. Com ele, o jogo sorteia a personalidade de cada Pokémon novo mais vezes, e a chance de brilhantes dobra outra vez: de 1 em 4.096 para cerca de 1 em 2.048. Se só faltar o Mew, eu aviso. No FireRed original esse amuleto não existia.",
+    "tela": "test/referencias/BULBASAUR/pos_liga_objetivo.png"
+  },
+  "modernas/barra-de-ps-moderna": {
+    "longo": "A barra de PS da batalha ficou mais clara de ler. No FireRed original, ela mudava de cor aos saltos: verde acima de 50% do PS, amarela até 20% e vermelha abaixo disso. Agora a cor muda aos poucos, do verde para o amarelo, perto da metade, e do amarelo para o vermelho, perto do fim. Assim você percebe o perigo antes. A barra também desce rápido mesmo quando o Pokémon tem muito PS, sem aquela espera longa nos Pokémon grandes.",
+    "tela": "docs/readme/batalha_rival.png"
+  },
+  "modernas/pc-portatil": {
+    "longo": "O PC Portátil já vem nos seus Itens-chave, desde o começo. Ele abre o PC de qualquer lugar, para você trocar Pokémon da equipe, guardar itens ou organizar as caixas, sem voltar a um Centro Pokémon. Só não funciona dentro dos ginásios e da Liga Pokémon, para que essas batalhas continuem um desafio de verdade. Registre-o no SELECT, pela bolsa, e ele abre com um botão só. São as mesmas caixas do PC de sempre, então nada se perde no caminho.",
+    "tela": "docs/readme/pc.png"
+  },
+  "modernas/viagem-pelo-mapa": {
+    "longo": "Voar ficou ainda mais fácil. Com o Voar liberado, ou seja, com a insígnia, a MO na bolsa e um Pokémon da equipe que possa aprendê-lo, o Mapa da Cidade passa a levar você direto a uma cidade já visitada. Abra o Mapa da Cidade ao ar livre, escolha a cidade e pronto; em lugar fechado ele abre o mapa de sempre. É o mesmo destino do Voar, só que sem passar pelo menu da equipe. O Pokémon nem precisa saber o golpe.",
+    "tela": "test/referencias/BULBASAUR/mapa.png"
+  },
+  "modernas/status-na-batalha": {
+    "longo": "Quantas vezes você não lembrou se o adversário já tinha usado Dança Espada duas vezes? Agora, na escolha da ação, aperte L para ver os bônus e as quedas de atributo do seu Pokémon e R para ver os do adversário, por exemplo Atq+2 ou Vel-1. Qualquer outro botão fecha a janela. Com isso, você decide melhor a hora de trocar de Pokémon ou de apostar num golpe de status. No FireRed original não havia como ver essas mudanças.",
+    "tela": "docs/readme/status_lr.png"
+  },
+  "modernas/chefes-com-clima": {
+    "longo": "Dois líderes de ginásio ganharam times pensados para o clima. A Misty, de Cerulean, abre a luta com Dança Chuva: o Staryu e o Goldeen chamam a chuva, que reforça os golpes de Água, e o Starmie aproveita com Trovão. O Blaine, da Ilha Cinnabar, abre com Dia de Sol: Ninetales, Exeggutor e Arcanine aquecem o campo para os golpes de Fogo e para o Raio Solar. A IA agora usa o clima quando o time ganha com ele. Leve um Pokémon que possa mudar o clima, ou que aguente bem a chuva e o sol."
+  },
+  "modernas/clima-na-batalha": {
+    "longo": "No FireRed original, o clima da batalha aparecia só numa animação curta no fim de cada turno. Agora chuva, granizo, areia e sol aparecem na tela durante a batalha toda e somem enquanto um golpe é animado, para não atrapalhar a cena. Com Nas Nuvens ou Trava Aérea em campo, a cena volta ao normal. E a Ilha Cinnabar e o Monte Brasa ganharam dias de sol forte, com a tela clareando e pulsando como no Emerald; a batalha lá começa com sol.",
+    "tela": "docs/readme/chuva.png"
+  },
+  "modernas/fisico-ou-especial-por-golpe": {
+    "longo": "No FireRed original, o tipo decidia tudo: golpes de Fogo usavam sempre o Atq. Esp., mesmo um soco. Agora cada golpe é Físico, Especial ou de Estado, como desde a 4ª geração. O Soco de Fogo usa o Ataque, e o Hitmonchan finalmente bate com força. A queimadura, que corta o dano, e habilidades como a Gordura Espessa também seguem a categoria do golpe. No resumo, o detalhe do golpe mostra FÍSICO, ESPEC. ou ESTADO ao lado do PODER. Vale a pena rever os golpes do seu time.",
+    "tela": "docs/readme/golpe_fisico.png"
+  },
+  "modernas/tipo-fada": {
+    "longo": "O tipo Fada chegou com a tabela de tipos de Pokémon X e Y. Ele é forte contra Dragão, Lutador e Sombrio e é imune a Dragão. 18 espécies viraram Fada, como Clefairy, Jigglypuff, Togepi, Marill, Ralts e Mawile, e os golpes Encantar, Beijo Doce e Luar também. Há seis golpes novos de Fada, com os dados de X e Y: Expl. Lunar, Jogo Duro, Clarão Desl., Beijo Dren., Vento Fada e Voz Desarm. Outra mudança: o tipo Aço não resiste mais a Fantasma e Sombrio.",
+    "tela": "docs/readme/resumo_fada.png"
+  },
+  "modernas/conquistas-e-premios": {
+    "longo": "Sua jornada agora tem metas. No menu START, abra o seu Cartão de Treinador e aperte SELECT: são 46 conquistas em 5 abas, História, Batalha, Captura, Treino e Exploração. L e R trocam de aba, e cada linha mostra se já foi feita ou quanto falta. Ao conquistar uma, o jogo pausa com um aviso e a fanfarra, e o prêmio cai na bolsa; com a bolsa cheia, vai para o PC. As mais difíceis dão prêmios maiores, até a Bola Mestra. Um save antigo recebe de uma vez o que você já tinha feito.",
+    "tela": "docs/readme/conquistas.png"
+  },
+  "modernas/diario-da-jornada": {
+    "longo": "Na tela de conquistas, aperte SELECT para abrir o diário da sua jornada. Ele guarda as batalhas marcantes: a 1ª vitória contra cada líder de ginásio, contra o rival, a Elite Quatro e o Campeão, e cada lendário capturado ou derrotado. Para cada uma, o diário anota o tempo de jogo, o número de turnos, o time que você usou e o MVP, o Pokémon que mais nocauteou. É como um álbum das suas melhores lutas.",
+    "tela": "docs/readme/diario.png"
+  },
+  "modernas/revanches-por-degrau": {
+    "longo": "Depois do Hall da Fama, a guarda na porta da Elite Quatro, no Platô Índigo, pergunta a cada visita o nível das batalhas: Normal, o jogo de sempre, ou Nível 60, 70, 80, 90 e 100. Vale para a Elite Quatro, para o Campeão e para as revanches do Explorador VS. Os times passam a ter 6 Pokémon em volta do nível escolhido, mais evoluídos, com item segurado e IVs que sobem com o degrau, até 31. Do Nível 80 para cima, as revanches usam a IA dos chefes. Vencer no Nível 100 vale conquistas.",
+    "tela": "docs/readme/revanche_lista.png"
+  },
+  "modernas/dexnav": {
+    "longo": "O DexNav fica no menu START, logo abaixo da Pokédex, e também como item-chave, que você pode registrar no SELECT. Ele mostra os Pokémon do lugar em abas, por jeito de encontrar: Grama, Surfar, Varas e Pedra. Para cada um, a chance de verdade de aparecer agora, os níveis e se você já o capturou ou viu. O SELECT abre os 124 mapas com encontro, com o seu progresso em cada um, e o START busca onde achar um Pokémon que você já viu, com o horário em que ele aparece.",
+    "tela": "docs/readme/dexnav_mapa.png"
+  },
+  "modernas/pokemon-seguidor": {
+    "longo": "O 1º Pokémon da sua equipe agora anda atrás de você no campo. Vale para os 386 e para os 4 extras: os 7 grandes, como Steelix, Wailord e Lugia, andam num quadro maior, as fêmeas com desenho próprio aparecem como fêmeas, e o Unown mostra a sua letra. Ele anda e corre no seu ritmo, pula as saliências junto e nunca bloqueia o caminho. Some na Bicicleta, no Surfar e no Voar e volta logo depois. Em Opções, a linha Seguidor liga e desliga.",
+    "tela": "docs/readme/seguidor.png"
+  },
+  "modernas/pokerus": {
+    "longo": "O Pokérus existia no código do FireRed, mas estava desligado, porque o jogo não tinha relógio. Agora ele voltou. Depois de uma batalha, há uma chance muito rara, de 3 em 65.536, de um Pokémon da equipe pegar o vírus. Ele passa para os vizinhos na equipe e se cura em 1 a 4 dias do relógio do jogo, mas os EVs que o Pokémon ganha ficam em dobro para sempre. A enfermeira do Centro Pokémon avisa da primeira vez. Um detalhe: no PC, os dias não contam.",
+    "tela": "test/referencias/COMUM/pokerus_resumo_infectado.png"
+  },
+  "modernas/mestre-dos-golpes": {
+    "longo": "A casa vazia da Rota 6 agora tem morador: o Mestre dos Golpes. Ele ensina os 15 golpes de tutor do FireRed, como Megassoco, Dança Espada, Contragolpe, Metrônomo e Substituto, por ¥3.000 cada. No original, cada tutor ensinava o golpe uma vez só; com o Mestre, você aprende quantas vezes quiser, para quantos Pokémon quiser. Escolha o golpe, depois o Pokémon, e só os compatíveis aparecem. Se cancelar, não paga nada.",
+    "tela": "test/referencias/COMUM/mestre_lista.png"
+  },
+  "modernas/casa-do-pescador": {
+    "longo": "A casa de praia da Rota 19, que era vazia, agora tem um pescador apaixonado por Krabby. Mostre a ele um Krabby da sua equipe e ele mede o tamanho. Bateu o recorde? Você ganha uma Pepita, e o primeiro recorde vale também um Doce Raro. É a mesma brincadeira que o irmão do Mestre da Pesca faz com o Magikarp na Rota 12, só que com o Krabby. Cada Krabby tem um tamanho diferente, então vale capturar alguns.",
+    "tela": "test/referencias/COMUM/casa_rota19_exterior.png"
+  },
+  "modernas/sala-de-trofeus": {
+    "longo": "Na Ilha Sete, uma sala nova guarda os seus troféus. Há cinco taças, uma para cada aba das conquistas, que passam de bronze para prata e ouro conforme o seu avanço. Uma placa guarda os seus recordes. E algumas redomas esperam pelos troféus de uma aventura secreta na Rota 23: elas se acendem à medida que você avança nela. É um bom lugar para parar e ver o quanto você já fez.",
+    "tela": "docs/readme/sala_trofeus.png"
+  },
+  "modernas/familia-sombra": {
+    "longo": "Quando a Equipe Rocket caiu, muitos Pokémon foram abandonados. Um Gengar os reuniu num prédio da Rota 23, e assim nasceu a Família Sombra. Com a 8ª insígnia, a porta destranca e você sobe seis andares: capangas de chapéu na penumbra dos três primeiros, encontros a cada passo no escuro do 4º e do 5º, e, no topo, GENGAR, O DOM, no nível 62. Cada chefe é shiny, tem IVs máximos e pode ser capturado. Vencido o chefe, a máfia volta entre 3h00 e 3h30 de jogo depois, 6 níveis mais forte, com TYRANITAR, O COBRADOR, depois GARCHOMP, O MERCENÁRIO, e DARKRAI, O PESADELO.",
+    "tela": "docs/readme/familia_filme.png"
+  },
+  "modernas/pedagio-da-rota-23": {
+    "longo": "Enquanto a Família manda na Rota 23, um Persian de chapéu cobra ¥1.000 de quem passa por ali, nos dois sentidos. É a tal proteção da Família. Você pode pagar e seguir viagem, ou recusar e passar à força, enfrentando duas lutas seguidas contra Pokémon da Família. Elas começam nos níveis 56 e 58 e sobem 6 níveis a cada nova ocupação do prédio. Quando o chefe cai, o pedágio some junto, até a máfia voltar.",
+    "tela": "test/referencias/COMUM/familia_pedagio.png"
+  },
+  "sobre/em-portugues-do-brasil": {
+    "longo": "Bem-vindo! Tudo o que você lê no jogo está em português do Brasil: as falas, os menus, os nomes dos golpes, dos itens e dos lugares, as entradas da Pokédex e até o sistema de ajuda. Os nomes seguem um glossário próprio, inspirado no Pokémon GO e no jogo de cartas, para que o mesmo golpe ou item tenha sempre o mesmo nome do começo ao fim. E cada janela foi medida: quando um nome não cabia, ele ganhou uma abreviação com ponto, como Revest. Metal na bolsa. Os nomes dos Pokémon continuam os de sempre, e eu continuo sendo o Prof. Carvalho.",
+    "tela": "docs/readme/inicial.png"
+  },
+  "modernas/familia-sombra-o-fim": {
+    "longo": "O Mercenário e o Pesadelo fecham a história. Derrotado ou capturado o DARKRAI, O PESADELO, a Família não volta mais. Ao sair do prédio, você encontra a polícia, com faixas amarelas, dois policiais, um Growlithe e um Arcanine. A Oficial Jenny conta que a quadrilha se desfez e entrega os chefes que você não capturou, já sem dono. Depois, pergunta se você quer ouvir a história completa e, se você quiser, abre o dossiê do caso em tela cheia: uma ficha para cada chefe, com foto e o carimbo CAPTURADO ou DERROTADO. No fim, a rosa vermelha do Dom volta para uma menina de Lavender.",
+    "tela": "test/referencias/COMUM/dossie_capa.png"
+  },
+  "modernas/garchomp-e-darkrai": {
+    "longo": "Quatro Pokémon da 4ª geração chegaram como extras: Gible, Gabite e Garchomp (nº 443 a 445) e Darkrai (nº 491). Eles aparecem na Pokédex, mas não contam para a Pokédex completa. O Garchomp e o Darkrai vêm dos chefes da Família Sombra, nos níveis 74 e 80. O Gible só nasce de ovo: deixe um Garchomp na Creche com um Ditto. Ele evolui nos níveis 24 e 48. Chegaram seis golpes, como Inv. Dragão, com 100 de poder, e Vazio Negro, que faz dormir os dois adversários, e a habilidade Sonhos Ruins: quem dorme perde 1/8 do PS máximo no fim de cada turno.",
+    "tela": "test/referencias/COMUM/dex_garchomp.png"
+  },
+  "sobre/save-em-qualquer-emulador": {
+    "longo": "Esta hack nasceu da versão do FireRed lançada no Nintendo Switch Online. Essa versão conta com chamadas especiais que só o emulador do Switch entende: num emulador comum de GBA, o jogo nunca gravava o save, e a tela de nomes recusava qualquer nome que você digitasse. Isso foi corrigido logo na primeira mudança da hack. Agora o save é gravado na memória do cartucho, do mesmo jeito que no jogo original, e funciona em qualquer emulador de GBA. E um save de uma versão anterior da hack continua abrindo nas versões novas. Escolha o emulador que preferir e boa jornada!"
+  },
+  "sobre/bugs-do-original-corrigidos": {
+    "longo": "Até o FireRed original tinha os seus deslizes. A equipe que reconstruiu o código-fonte do jogo anotou cada erro conhecido e deixou a correção pronta, e esta hack liga todas elas. Os cães lendários passam a vir com os IVs certos, a Daisy fala com a cor de texto certa, a carinha do Cassino aparece direito e falhas raras de tela, de som e de memória não travam mais o jogo. São detalhes que quase ninguém nota numa jornada comum, mas que deixam tudo mais firme. E, como cada versão é jogada pela esteira de testes antes de existir, um erro novo dificilmente passa."
+  },
+  "ritmo/andar-e-correr-mais-rapido": {
+    "longo": "Kanto continua do mesmo tamanho, mas você chega mais depressa a cada canto. Andando, você atravessa um quadrado do mapa em 11 quadros, contra 16 no FireRed original; correndo com o Tênis de Corrida, em 5, contra 8. Na prática, cerca de uma vez e meia mais rápido. Isso só vale quando é você quem aperta o direcional: nas cenas da história, quando o jogo conduz os personagens, o passo continua o de sempre, para nada parecer apressado. Em 10 quadrados andando, a diferença já é de quase um segundo."
+  },
+  "ritmo/texto-instantaneo": {
+    "longo": "Na velocidade de texto Rápida, as falas aparecem inteiras de uma vez, em vez de letra por letra. E ela virou o padrão: todo jogo novo já começa assim. Se você gosta de ver o texto correr como antes, abra Opções no menu START e escolha Média ou Lenta na linha Vel. texto; nelas tudo funciona como no FireRed original. Para quem já conhece a história, isso poupa um bom tempo em cada conversa, placa e batalha. Você ainda aperta A para seguir, então nenhuma fala passa sem você ler."
+  },
+  "ritmo/batalhas-mais-ageis": {
+    "longo": "As batalhas ficaram mais ligeiras sem perder nada do que acontece nelas. As pausas entre uma mensagem e outra caíram de 64, 48 e 32 quadros para 43, 32 e 21, cerca de uma vez e meia mais rápidas. As barras de PS e de PE seguem o mesmo ritmo: em vez de um passo por quadro, dão três a cada dois quadros. Você continua vendo cada golpe, cada barra descendo e cada nível subindo, só que sem tanta espera. Se quiser ir ainda mais rápido, a linha Animação, em Opções, desliga as animações dos golpes, como no original."
+  },
+  "dex/pokemon-do-leafgreen": {
+    "longo": "Antes, completar a Pokédex exigia trocar com alguém que tivesse o LeafGreen. Agora os exclusivos daquela versão aparecem no seu FireRed, nos mesmos lugares em que apareceriam lá. Onde um encontro do LeafGreen tem um exclusivo, o jogo sorteia meio a meio entre a versão do FireRed e a do LeafGreen, com as espécies e os níveis de cada uma. Assim você encontra Vulpix, Sandshrew, Bellsprout, Slowpoke, Staryu, Magmar, Pinsir, Misdreavus, Sneasel e outros, sem perder os do FireRed. O DexNav já mostra essas chances de verdade em cada mapa."
+  },
+  "dex/iniciais-na-zona-de-safari": {
+    "longo": "Se você escolheu um inicial, ficou sem os outros dois. Agora a Zona de Safári, na Cidade de Fuchsia, guarda os três, raros: Bulbasaur no Leste, no nível 22, Charmander no Norte, no nível 23, e Squirtle no Oeste, surfando, entre os níveis 30 e 35. Cada um tem 4% de chance por encontro na sua área. Leve bastante Bola Safári e paciência, porque no Safári eles podem fugir. Com os três, você também consegue os seus Venusaur, Charizard e Blastoise sem precisar trocar com ninguém."
+  },
+  "dex/caverna-mutante": {
+    "longo": "A Caverna Mutante, na Ilha Seis, sempre teve um mistério. No FireRed original, só aparecia Zubat; os outros Pokémon dela dependiam de um evento especial. Agora a caverna muda de morador a cada dia do relógio do jogo, num ciclo de 9: Zubat, Mareep, Pineco, Houndour, Teddiursa, Aipom, Shuckle, Stantler e Smeargle. Como um dia do jogo dura uma hora real de jogo, basta jogar um pouco e voltar para ver quem apareceu. Depois da primeira visita, o DexNav mostra o morador do dia mesmo de longe."
+  },
+  "dex/os-dois-fosseis": {
+    "longo": "No Monte Lua, depois de vencer o Miguel, você tinha de escolher entre o Fóssil Domo e o Fóssil Hélice, e ele levava o outro embora. Agora os dois ficam com você: pegue um e o Miguel mesmo sugere que pegue o outro também. Leve-os ao Laboratório Pokémon da Ilha Cinnabar, que revive um fóssil de cada vez: o Domo vira Kabuto e o Hélice vira Omanyte. Entregue um, busque o Pokémon revivido e depois entregue o outro. Assim Kabutops e Omastar entram juntos na sua Pokédex."
+  },
+  "shiny/shiny-mais-comum": {
+    "longo": "Os Pokémon brilhantes, de cores diferentes, ficaram duas vezes mais fáceis de encontrar: a chance passou de 1 em 8.192 para cerca de 1 em 4.096. Vale para os Pokémon selvagens e para os ovos da Creche Pokémon. Um detalhe curioso: a regra que decide quem é brilhante não mudou. O jogo apenas sorteia a personalidade do Pokémon mais uma vez quando o primeiro sorteio não sai brilhante. Por isso os Pokémon que você já tinha no save continuam exatamente com as mesmas cores. Fique de olho no brilho quando a batalha começar!"
+  },
+  "creche/heranca-de-ivs": {
+    "longo": "No FireRed original, o ovo copiava 3 IVs ao acaso dos pais e sorteava o resto do zero. Agora cada atributo segue a genética: em geral o ovo fica com a média dos IVs dos pais, arredondada para cima, com 3 pontos de variação para mais ou para menos. Em cerca de um quarto das vezes ele puxa um dos pais só, com 2 pontos de variação, e em 5% acontece uma mutação, um valor novo de 0 a 31. Ou seja, pais fortes dão filhos fortes, geração após geração. Com o Nó do Destino e os itens de Poder, você controla ainda mais o resultado. Confira tudo na página IVs/EVs."
+  },
+  "creche/natureza-e-golpes": {
+    "longo": "A natureza do ovo agora vem dos pais. Em geral, o atributo que ela favorece vem da natureza de um dos pais, e o que ela atrapalha vem da de um deles, escolhido ao acaso. Em 10% das vezes há uma mutação, e a natureza sai qualquer uma. Com a Pedra Eterna, um dos pais passa a sua natureza inteira em 70% das vezes; no FireRed original essa função da pedra existia no código, mas estava desligada. Os golpes de ovo também passaram a vir dos dois pais: cada golpe de ovo que o pai conhece passa com 60% de chance, e cada um da mãe, com 40%. Antes, só o pai passava."
+  },
+  "evolucoes/itens-a-venda-em-celadon": {
+    "longo": "O 4º andar da Loja de Celadon sempre vendeu as pedras de evolução. Agora ele também vende os itens que antes eram usados nas trocas: Pedra do Rei, Revestimento Metálico, Escama de Dragão, Melhora, Dente Abissal e Escama Abissal, por ¥2.100 cada, e a Pedra Solar, por ¥5.000. Com eles, cada evolução que pedia troca com item se resolve com o item segurado a partir do nível 37. Kadabra, Machoke, Graveler e Haunter nem precisam de item: evoluem sozinhos no nível 37. Como o item não é gasto, comprar um só costuma bastar para vários Pokémon."
+  },
+  "evolucoes/pedra-solar-a-venda": {
+    "longo": "A Pedra Solar agora está à venda no 4º andar da Loja de Celadon, por ¥5.000. Use-a como as outras pedras, direto da bolsa: o Gloom vira Bellossom, e o Sunkern vira Sunflora. O Gloom também pode virar Vileplume com a Pedra Folha, então escolha com calma. Um detalhe do dia e da noite: o Sunkern aparece só na grama da Rota 24, à tarde, e às vezes no entardecer, quando o encontro sorteia a tabela da tarde; de manhã e à noite, nunca. O DexNav mostra onde e em que horário ele aparece."
+  },
+  "evolucoes/feebas-e-a-escama-prisma": {
+    "longo": "No original, o Feebas nem aparecia em Kanto, e o Milotic dependia de uma beleza que não dava para treinar no FireRed. Agora ficou simples. Pesque o Feebas com a Supervara na Ilha Quatro, entre os níveis 15 e 25. Depois compre a Escama Prisma na loja da Ilha Quatro, por ¥7.000, e deixe o Feebas segurá-la. Na próxima vez que ele subir de nível, em qualquer nível, vira Milotic. A Escama não é gasta."
+  },
+  "modernas/repelente-automatico": {
+    "longo": "Quando o efeito do Repelente acaba, o jogo pergunta se você quer usar outro da bolsa, sem precisar abrir menu nenhum. Ele oferece primeiro o mesmo tipo que você usou da última vez; se esse acabou, oferece outro que houver. O Repelente dura 100 passos, o Superrepelente 200 e o Repelente Máximo 250. Diga sim e siga em frente; diga não e os Pokémon selvagens voltam a aparecer. É ótimo para atravessar cavernas longas sem tanta interrupção."
+  },
+  "modernas/pe-ao-capturar": {
+    "longo": "No FireRed original, capturar um Pokémon não rendia nada para o seu time, e muita gente preferia derrotar em vez de capturar. Agora a captura dá PE à equipe como se o Pokémon tivesse sido derrotado. Quem lutou recebe a sua parte, o resto da equipe recebe a dele, e as barras de PE andam logo depois da captura. Assim, completar a Pokédex e treinar o time andam juntos. A música da captura toca normalmente, sem ser trocada pela da vitória."
+  },
+  "modernas/pe-para-a-equipe-toda": {
+    "longo": "Agora a experiência é dividida como nos jogos mais novos, sem precisar de item. Quem lutou recebe os PE inteiros, sem dividir com os colegas, e todo o resto da equipe recebe metade. Não precisa mais trocar de Pokémon no meio da luta só para treinar um mais fraco. Por isso, o assistente do Prof. Carvalho na Rota 15, que pede 50 Pokémon capturados, agora dá o Ovo da Sorte em vez do Compartilhador de Exp.: o Pokémon que o segura ganha 50% a mais de PE."
+  },
+  "modernas/chefes-mais-espertos": {
+    "ancora": "preparam o terreno",
+    "longo": "Os líderes de ginásio, a Elite Quatro e o seu rival agora lutam com mais estratégia. No 1º turno, eles preferem preparar o terreno, com golpes que aumentam os próprios atributos, baixam os do seu Pokémon ou causam paralisia e veneno, em vez de atacar sem pensar. E escolhem o golpe olhando o PS dos dois lados: quando você está por um fio, eles buscam o nocaute; quando estão em perigo, mudam de plano. Os treinadores comuns continuam lutando como sempre. Monte um time equilibrado e pense um turno à frente."
+  },
+  "modernas/chefes-mais-espertos-2": {
+    "ancora": "revanches do Nível 80",
+    "longo": "Os chefes ganharam mais um nível de esperteza. Líderes, Elite Quatro, rival e as revanches do Nível 80 para cima trocam de Pokémon antes de levar o seu golpe super efetivo. Eles lembram dos golpes que você já mostrou na luta, até 4 por Pokémon, além dos tipos dele. Escolhem melhor quem entra e usam poções e curas de estado na hora certa, sem repetir uma cura que você acabou de desfazer. Os treinadores comuns não mudam. Variar os golpes ajuda a confundir a leitura deles."
+  },
+  "modernas/incubadora": {
+    "longo": "O dono da Creche Pokémon da Ilha Quatro dá a você a Incubadora na primeira conversa. Basta ela estar na bolsa para os Ovos chocarem 2 vezes mais rápido. E, como nos jogos mais novos, um Pokémon com a habilidade Corpo Chama ou Armadura de Magma na equipe dobra de novo: os Ovos chocam até 4 vezes mais rápido. O Slugma e o Magcargo, do Monte Brasa, sempre têm uma das duas. Com os itens de criação da loja da Ilha Quatro, a ilha virou o lugar ideal para criar Pokémon."
+  },
+  "modernas/hms-sem-ensinar": {
+    "longo": "Não precisa mais gastar um espaço de golpe com Cortar ou Força. Se você tem a insígnia que libera o golpe e a MO na bolsa, basta um Pokémon da equipe que possa aprendê-lo. Chegue à árvore, à pedra ou à água e use como sempre: o Pokémon compatível faz o trabalho. Com o Clarão liberado, as cavernas escuras, como o Túnel de Pedra, já ficam iluminadas ao entrar. Assim cada Pokémon pode levar quatro golpes de batalha de verdade."
+  },
+  "dia_noite/encontros-por-horario": {
+    "longo": "Na grama e nas cavernas de 35 mapas, os Pokémon selvagens mudam com a hora, usando as tabelas de HeartGold e SoulSilver. À noite aparecem Hoothoot, Noctowl e Quagsire, que só saem nesse horário, e, nesses mapas, também Gastly, Murkrow, Houndour, Oddish e Wooper. Já o Sunkern só aparece na Rota 24, à tarde. Na Floresta de Viridian, por exemplo, os Caterpie da manhã dão lugar aos Hoothoot à noite. No entardecer, cada encontro sorteia entre os da tarde e os da noite. O DexNav mostra quem aparece agora e quem só vem em outro horário."
+  },
+  "lendarios/bilhetes-do-carvalho": {
+    "longo": "Na sua primeira vez no Hall da Fama, eu estarei lá para dar os parabéns e entregar dois bilhetes. O Bilhete Místico leva à Rocha Umbigo, onde vivem Lugia e Ho-Oh, no nível 70. O Bilhete Aurora leva à Ilha do Nascimento, onde está Deoxys, no nível 30. Quando você já viajar para as Ilhas Sevii com o Passe 7 Cores, mostre-os ao marinheiro do Porto de Vermilion, e a balsa Seagallop leva você lá. No FireRed original, esses bilhetes só chegavam por eventos especiais da Nintendo. Agora fazem parte da sua jornada."
+  },
+  "lendarios/caes-em-sequencia": {
+    "longo": "No FireRed original, só um dos cães lendários corria por Kanto, o que dependia do seu inicial, e os outros dois ficavam de fora. Agora os três aparecem, um depois do outro. O primeiro continua sendo o do seu inicial: Entei para Bulbasaur, Suicune para Charmander e Raikou para Squirtle. Quando você captura ou derrota o que está correndo, o próximo começa, no nível 50, até os três. Um cão derrotado só volta quando for o único que falta."
+  },
+  "lendarios/segunda-chance": {
+    "longo": "Errar faz parte de toda jornada. Se você derrotar um lendário, ou fugir dele, ele não some para sempre: volta na próxima vez que você entrar no Hall da Fama. Vale para Lugia, Ho-Oh, Deoxys, Mew, Celebi, Jirachi e também para o Mewtwo, que no original sumia de vez. Assim, você nunca perde a chance de completar a Pokédex. Capturado, ele fica com você, claro."
+  },
+  "lendarios/miticos-pistas": {
+    "longo": "Três Pokémon míticos estão escondidos pelo mundo: Mew, Celebi e Jirachi. No FireRed original, os três só vinham de eventos. Agora cada um tem o seu lugar, a sua hora e uma condição. Para encontrá-los, leia com atenção os diários, as placas e as inscrições pelo caminho: elas dão as pistas. Se preferir descobrir sozinho, pare por aqui. Se quiser a resposta, o próximo cartão revela tudo."
+  }
+}
