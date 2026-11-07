@@ -1099,8 +1099,9 @@ u16 MailSpeciesToIconSpecies(u16 species)
     }
     else
     {
-        // o Ovo e as letras do Unown não vão para o correio (a letra vem codificada à parte)
-        if (species >= SPECIES_EGG && species <= SPECIES_UNOWN_QMARK)
+        // As letras do Unown não vêm direto (a letra vem codificada à parte); o Ovo passa: a foto do cartão de
+        // treinador guarda MON_DATA_SPECIES_OR_EGG e mostra o ícone do Ovo. As espécies novas (POK-54) também passam.
+        if (species >= SPECIES_UNOWN_B && species <= SPECIES_UNOWN_QMARK)
             species = SPECIES_NONE;
         return GetIconSpecies(species, 0);
     }

@@ -11,7 +11,7 @@ import re
 from esteira.constants import Constants
 from esteira.scenarios import REPO_ROOT
 
-SRC = REPO_ROOT / "src"
+FONTES = [REPO_ROOT / "src", REPO_ROOT / "include"]
 
 
 def _ler(rel: str) -> str:
@@ -20,7 +20,7 @@ def _ler(rel: str) -> str:
 
 def _fontes_c() -> dict[str, str]:
     return {p.relative_to(REPO_ROOT).as_posix(): p.read_text("utf-8", errors="replace")
-            for p in sorted(SRC.rglob("*.[ch]"))}
+            for raiz in FONTES for p in sorted(raiz.rglob("*.[ch]"))}
 
 
 def _ocorrencias(padrao: str) -> list[str]:
@@ -58,8 +58,10 @@ def test_unown_e_ovo_fora_de_num_species():
 
 
 def test_sem_maior_que_num_species():
-    """`> NUM_SPECIES` deixava passar o 444 (fora das tabelas); `> SPECIES_EGG` jogava fora as espécies novas."""
+    """Em src/ e include/: `> NUM_SPECIES` deixava passar o 444 (fora das tabelas); `> SPECIES_EGG` jogava fora as
+    espécies novas."""
     assert _ocorrencias(r">\s*NUM_SPECIES\b") == []
+    assert _ocorrencias(r"<=\s*NUM_SPECIES\b") == []  # o mesmo erro escrito ao contrário
     assert _ocorrencias(r">\s*SPECIES_EGG\b") == []
     assert _ocorrencias(r">\s*\(?\s*SPECIES_UNOWN_B\s*-\s*1\s*\)?") == []
 
@@ -97,3 +99,38 @@ def test_resort_gorgeous_sem_dex_zero():
     corpo = _funcao(texto, "static u16 SampleResortGorgeousMon(void)")
     assert "GetSetPokedexFlag" not in corpo
     assert corpo.count("ResortGorgeousMonSeen(species)") == 2  # no sorteio e na busca para trás
+
+
+def _ramo_nao_unown_do_correio() -> str:
+    """A condição do `else` de MailSpeciesToIconSpecies, traduzida para Python."""
+    corpo = _funcao(_ler("src/pokemon_icon.c"), "u16 MailSpeciesToIconSpecies(u16 species)")
+    senao = corpo[corpo.index("else"):]
+    cond = re.search(r"if \((.*?)\)\s*species = SPECIES_NONE;", senao, re.S)
+    assert cond, "MailSpeciesToIconSpecies mudou de forma: atualize este teste"
+    return cond.group(1).replace("&&", " and ").replace("||", " or ")
+
+
+def test_icone_do_correio_e_do_cartao_igual_ao_de_antes():
+    """MailSpeciesToIconSpecies também alimenta a foto do cartão de treinador (MON_DATA_SPECIES_OR_EGG): o Ovo
+    tem de continuar com o ícone do Ovo e as letras do Unown viram NONE, como antes do POK-54. As espécies novas
+    (440-443) passam; o resto acima de NUM_SPECIES cai no NONE do GetIconSpecies."""
+    k = Constants.load(str(REPO_ROOT), ["species.h"])
+    cond = _ramo_nao_unown_do_correio()
+    nomes = set(re.findall(r"\b[A-Z_][A-Z0-9_]*\b", cond)) - {"species"}
+    valores = {n: k._eval(n) for n in nomes}
+    num_species = k._eval("NUM_SPECIES")
+
+    def icone(especie: int) -> int:  # o ramo de fora do Unown, com o GetIconSpecies no fim
+        if eval(cond, {"__builtins__": {}}, {**valores, "species": especie}):
+            especie = 0
+        return 0 if especie >= num_species else especie
+
+    def icone_antigo(especie: int) -> int:  # 184573748: species > (SPECIES_UNOWN_B - 1); NUM_SPECIES = 412
+        especie = 0 if especie > 412 else especie
+        return 0 if especie > 412 else especie
+
+    egg = k.species("SPECIES_EGG")
+    assert icone(egg) == egg == 412, "o Ovo sumiria da foto do cartão de treinador"
+    for especie in [0, 1, 25, 201, 410, 411, 412, *range(413, 440), 444, 500, 29999]:
+        assert icone(especie) == icone_antigo(especie), especie
+    assert [icone(k.species(n)) for n in ("GIBLE", "GABITE", "GARCHOMP", "DARKRAI")] == [440, 441, 442, 443]
