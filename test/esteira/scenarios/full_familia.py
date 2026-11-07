@@ -119,6 +119,14 @@ POK-54, Task 8 (ocupações 3 e 4: o prédio, as falas e os retratos):
   fica ligada e o estado vira ENCERRADA;
 - `familia/redomas_completas`: com as 4 rosas a Sala de Troféus acende as 4 redomas. Tela `sala_trofeus_completa`.
 
+POK-54, Task 9 (o dossiê do caso, src/dossie.c, aberto pelo atalho DOSSIE_ABRIR = o special num script de campo):
+
+- `dossie/navegacao`: abre na capa; → avança, ← volta, ← na capa não muda; A até o fim passa por todas as páginas na
+  ordem de sDossiePaginas; → na última não sai dela; A na última fecha e o jogo volta ao campo com o script terminado.
+  Aberto de novo, B na 3ª página fecha. Telas `dossie_capa` e `dossie_depois`;
+- `dossie/carimbos`: as 4 rosas e só FLAG_FAMILIA_CAPTURADO_3: DERROTADO nas fichas 1, 2 e 4, CAPTURADO na 3, nenhum na
+  capa e no Depois. Telas `dossie_ficha_dom` (DERROTADO) e `dossie_ficha_mercenario_capturado`.
+
 Uso, a partir de test/ (a pasta OUT precisa do captura.sav de um `rapido`/`completo`):
     python3 -m esteira completo --rom R --elf E --out OUT --only familia
 """
@@ -132,7 +140,7 @@ from ..battle import (ACTION_FIGHT, B_OUTCOME_CAUGHT, MENU_TIMEOUT, MOVE_FUNC_SU
 from ..breeding import header_defines
 from ..game import POKEMON_SIZE, SB1_MONEY, mon_checksum_ok
 from .. import conquistas as cq
-from ..emu import KEY_A, KEY_B, KEY_DOWN, KEY_R, KEY_UP
+from ..emu import KEY_A, KEY_B, KEY_DOWN, KEY_LEFT, KEY_R, KEY_RIGHT, KEY_UP
 from ..hooks import CMD_GIVE_ITEM, CMD_SET_VAR, CMD_START_WILD_BATTLE, CMD_WARP, Mailbox
 from ..nav import Navigator
 from . import REPO_ROOT, ScenarioContext
@@ -156,6 +164,7 @@ STRING_BYTES = 300                   # gDisplayedStringBattle[300]
 SCREEN_POINTS = ("familia_capanga_batalha", "familia_filme_batalha", "familia_chefe_batalha", "familia_gemeos_batalha",
                  "familia_chefe_mercenario", "familia_chefe_pesadelo",   # POK-54, Task 7
                  "familia_sala_mercenario", "familia_sala_pesadelo", "sala_trofeus_completa",   # POK-54, Task 8
+                 "dossie_capa", "dossie_ficha_dom", "dossie_ficha_mercenario_capturado", "dossie_depois",   # POK-54, Task 9
                  "familia_rosa", "familia_porta_trancada", "familia_rota23_predio", "familia_pedagio",
                  "familia_andar_1", "familia_andar_4", "familia_sala_do_dom",
                  "familia_conquistas_batalha")   # `familia_diario_dom` é gravada mas fica fora: traz o TEMPO de jogo (00:08 x 00:09)
@@ -225,6 +234,19 @@ OBJECT_EVENT_FLAGS_1, INVISIBLE_BIT = 1, 1 << 5   # ObjectEvent: o bit 13 (invis
 KEY_ITEMS_POCKET = 1                 # índice do bolso de itens-chave em SB1_BAG_POCKETS
 BAG_KEYITEMS_COUNT = header_defines(REPO_ROOT, "global.h")["BAG_KEYITEMS_COUNT"]   # include/constants/global.h
 FRENTE_DA_MESA = (8, 6)              # 6º andar: na frente da coluna do meio da mesa (balcão de 2 tiles até o chefe)
+# Task 9: o dossiê (src/dossie.c): ordem das páginas lida de src/data/dossie_textos.h
+DOSSIE_TEXTOS_H = REPO_ROOT / "src" / "data" / "dossie_textos.h"
+DOSSIE_CAPA, DOSSIE_DEPOIS = 0, 5
+CARIMBO_NENHUM, CARIMBO_DERROTADO, CARIMBO_CAPTURADO = 0, 1, 2
+DOSSIE_PRONTO_TIMEOUT = 300
+DOSSIE_TECLA = dict(hold=6, release=12)   # a troca de página leva mais de 1 quadro (texto da janela de 30x20)
+
+
+def dossie_chefes() -> list[int]:
+    """O chefe de cada página do dossiê, na ordem de sDossiePaginas (0 capa, 1-4, 5 depois)."""
+    corpo = re.search(r"sDossiePaginas\[\] = \{(.*?)\n\};", DOSSIE_TEXTOS_H.read_text(encoding="utf-8"), re.S).group(1)
+    nomes = {"DOSSIE_CAPA": DOSSIE_CAPA, "DOSSIE_DEPOIS": DOSSIE_DEPOIS}
+    return [nomes[c] if c in nomes else int(c) for c in re.findall(r"\{(\w+), \d+, \d+,", corpo)]
 
 
 def _noir_tool():
@@ -1808,6 +1830,82 @@ class FamiliaScenario(CatchSaveScenario):
         shot = self._shot("sala_trofeus_completa")
         return f"as 4 redomas acesas {list(cores)} em {SALA_REDOMAS}; tela {shot}"
 
+    # --- POK-54, Task 9: o dossiê do caso -------------------------------------------------------------------------
+    def _dossie_abrir(self, what: str) -> dict:
+        """Abre o dossiê pelo special de verdade (script de campo) e espera a tela pronta para o input."""
+        self._settle(f"antes do dossiê: {what}")
+        self.box.dossie_abrir()
+        self.ctl.wait_until(lambda: (e := self.box.dossie_estado()) is not None and e["pronta"],
+                            DOSSIE_PRONTO_TIMEOUT, f"dossiê pronto: {what}")
+        self.emu.frames(4)
+        return self.box.dossie_estado()
+
+    def _dossie_tecla(self, key: int) -> dict | None:
+        self.emu.press(key, **DOSSIE_TECLA)
+        return self.box.dossie_estado()
+
+    def _dossie_fechou(self, what: str) -> None:
+        self.ctl.wait_until(lambda: self.box.dossie_estado() is None, DOSSIE_PRONTO_TIMEOUT, f"dossiê fechado: {what}")
+        self.ctl.wait_overworld_idle(600)
+        self.ctl.wait_until(lambda: not self._fade_active(), 300, f"campo de volta: {what}")
+
+    def _dossie_navegacao(self) -> str:
+        """→ avança, ← volta, ← na capa não muda, A até o fim e A na última página fecha (o jogo volta ao campo e o
+        script continua); de novo, B na 3ª página fecha."""
+        chefes = dossie_chefes()
+        self._restore("familia_base")
+        e = self._dossie_abrir("navegação")
+        assert (e["pagina"], e["total"], e["chefe"]) == (0, len(chefes), DOSSIE_CAPA), e
+        shots = [self._shot("dossie_capa")]
+        assert self._dossie_tecla(KEY_RIGHT)["pagina"] == 1
+        assert self._dossie_tecla(KEY_LEFT)["pagina"] == 0
+        assert self._dossie_tecla(KEY_LEFT)["pagina"] == 0, "← na capa mudou a página"
+        vistos = [DOSSIE_CAPA]
+        for pagina in range(1, len(chefes)):
+            e = self._dossie_tecla(KEY_A)
+            assert e is not None and e["pagina"] == pagina, (pagina, e)
+            vistos.append(e["chefe"])
+        assert vistos == chefes, (vistos, chefes)
+        self.emu.frames(4)
+        shots.append(self._shot("dossie_depois"))
+        assert self._dossie_tecla(KEY_RIGHT)["pagina"] == len(chefes) - 1, "→ na última página saiu dela"
+        self.emu.press(KEY_A, **DOSSIE_TECLA)
+        self._dossie_fechou("A na última página")
+        assert not self.ctl.script_active(), "o script do dossiê não terminou"
+        e = self._dossie_abrir("de novo")
+        assert e["pagina"] == 0, e
+        self._dossie_tecla(KEY_RIGHT)
+        assert self._dossie_tecla(KEY_RIGHT)["pagina"] == 2
+        self.emu.press(KEY_B, **DOSSIE_TECLA)
+        self._dossie_fechou("B na 3ª página")
+        return f"{len(chefes)} páginas, chefes {vistos}; A na última e B na 3ª fecham; telas {shots}"
+
+    def _dossie_carimbos(self) -> str:
+        """Rosas 1-4 ligadas e só FLAG_FAMILIA_CAPTURADO_3: DERROTADO nas fichas 1, 2 e 4, CAPTURADO na 3, nada na
+        capa e no Depois."""
+        chefes = dossie_chefes()
+        self._restore("familia_base")
+        for n in range(1, 5):
+            self.box.set_flag(self._flag(f"FLAG_FAMILIA_ROSA_{n}"), True)
+            self.box.set_flag(self._flag(f"FLAG_FAMILIA_CAPTURADO_{n}"), n == 3)
+        want = {DOSSIE_CAPA: CARIMBO_NENHUM, 1: CARIMBO_DERROTADO, 2: CARIMBO_DERROTADO, 3: CARIMBO_CAPTURADO,
+                4: CARIMBO_DERROTADO, DOSSIE_DEPOIS: CARIMBO_NENHUM}
+        e = self._dossie_abrir("carimbos")
+        vistos, shots = [], []
+        for pagina, chefe in enumerate(chefes):
+            if pagina:
+                e = self._dossie_tecla(KEY_RIGHT)
+            assert (e["pagina"], e["chefe"]) == (pagina, chefe), (pagina, e)
+            assert e["carimbo"] == want[chefe], f"página {pagina} (chefe {chefe}): carimbo {e['carimbo']}"
+            vistos.append(e["carimbo"])
+            primeira = chefe not in chefes[:pagina]
+            if primeira and chefe in (1, 3):
+                self.emu.frames(4)
+                shots.append(self._shot("dossie_ficha_dom" if chefe == 1 else "dossie_ficha_mercenario_capturado"))
+        self.emu.press(KEY_B, **DOSSIE_TECLA)
+        self._dossie_fechou("carimbos")
+        return f"carimbos por página {vistos}; telas {shots}"
+
     def run(self) -> None:
         try:
             self._flow("familia: CONTINUAR com o save do modo rápido", self._start)
@@ -1856,6 +1954,8 @@ class FamiliaScenario(CatchSaveScenario):
             self.suite.run("familia/rosa_azul", self._rosa_azul)
             self.suite.run("familia/rosa_negra_bolsa_cheia", self._rosa_negra_bolsa_cheia)
             self.suite.run("familia/redomas_completas", self._redomas_completas)
+            self.suite.run("dossie/navegacao", self._dossie_navegacao)
+            self.suite.run("dossie/carimbos", self._dossie_carimbos)
         except Abort:
             pass
 

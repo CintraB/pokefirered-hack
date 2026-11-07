@@ -1643,6 +1643,34 @@ static u32 FamiliaChefe(void)
 }
 // --- end of POK-51 --------------------------------------------------------------------------
 
+// --- POK-54, Task 9: o dossiê da Família Sombra, pelo special de verdade num script de campo ---------------------
+#include "dossie.h"
+
+static u32 DossieAbrir(void)
+{
+    u32 special;
+
+    for (special = 0; &gSpecials[special] < gSpecialsEnd; special++)
+    {
+        if ((void *)gSpecials[special] == (void *)Dossie_Abrir)
+            break;
+    }
+    if (&gSpecials[special] >= gSpecialsEnd)
+        return 0xFFFFFFFF;
+    gTestText[0] = 0x69;            // lockall
+    gTestText[1] = 0x97;            // fadescreen FADE_TO_BLACK
+    gTestText[2] = 1;
+    gTestText[3] = 0x25;            // special Dossie_Abrir
+    gTestText[4] = special & 0xFF;
+    gTestText[5] = special >> 8;
+    gTestText[6] = 0x27;            // waitstate
+    gTestText[7] = 0x6B;            // releaseall
+    gTestText[8] = 0x02;            // end
+    ScriptContext_SetupScript(gTestText);
+    return 1;
+}
+// --- end of POK-54, Task 9 ----------------------------------------------------------------------
+
 void TestHooks_Run(void)
 {
     u32 result = 0;
@@ -1813,6 +1841,8 @@ void TestHooks_Run(void)
     case TEST_CMD_DEX_MARCAR:       result = DexMarcar(gTestMailbox.arg0, gTestMailbox.arg1); break;
     case TEST_CMD_DEX_COMPLETA:     result = DexCompleta(gTestMailbox.arg0); break;
     case TEST_CMD_FAMILIA_CHEFE_CAIU: result = FamiliaChefeCaiu(); break;
+    case TEST_CMD_DOSSIE_ABRIR:     result = DossieAbrir(); break;
+    case TEST_CMD_DOSSIE_ESTADO:    result = Dossie_TestEstado(); break;
     // POK-29
     case TEST_CMD_SHOW_FIELD_TEXT:  result = ShowFieldText(gTestMailbox.arg0, gTestMailbox.arg1); break;
     default:

@@ -499,4 +499,5 @@ gSpecials::
 	def_special SalaTrofeus_PlacaRevanche
 	def_special SalaTrofeus_PlacaHall
 	def_special SalaTrofeus_Curador
+	def_special Dossie_Abrir
 gSpecialsEnd::

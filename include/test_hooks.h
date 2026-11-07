@@ -233,6 +233,8 @@ enum
     TEST_CMD_DEX_MARCAR,       // arg0 = internal national Dex number (1..416), arg1 = 0 clears / 1 seen / 2 seen and caught; result = GetNationalPokedexCount(FLAG_GET_CAUGHT) | GetNationalPokedexCountWithExtras(FLAG_GET_CAUGHT) << 16 (0xFFFFFFFF = bad args)
     TEST_CMD_DEX_COMPLETA,     // arg0 = internal national Dex number (0 = none); read-only; result = HasAllMons() | HasAllKantoMonsWithMew() << 1 | caught(arg0) << 2 | seen(arg0) << 3
     TEST_CMD_FAMILIA_CHEFE_CAIU, // = 0x143: calls the special FamiliaSombra_ChefeCaiu (the boss of the current occupation fell; gBattleOutcome decides captured or just beaten; ignored unless the boss is active); result = occupation (VAR_FAMILIA_OCUPACAO) | state (VAR_FAMILIA_ESTADO) << 8 | (FLAG_FAMILIA_CAPTURADO_n of occupation n at bit n - 1) << 16
+    TEST_CMD_DOSSIE_ABRIR,       // = 0x144: field script in gTestText: lockall, fadescreen FADE_TO_BLACK, special Dossie_Abrir, waitstate, releaseall; result = 1 (0xFFFFFFFF = special not in gSpecials)
+    TEST_CMD_DOSSIE_ESTADO,      // = 0x145: result = Dossie_TestEstado(): page (0-based) | total << 8 | boss of the page (0 cover, 1-4, 5 epilogue) << 16 | stamp (0 none, 1 beaten, 2 captured) << 24 | ready for input << 31 (0xFFFFFFFF = screen closed)
 };
 // --- end of POK-54 --------------------------------------------------------------------------
 

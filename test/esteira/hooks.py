@@ -533,6 +533,20 @@ class Mailbox:
         result = self.call(CMD_FAMILIA_CHEFE_CAIU)
         return result & 0xFF, result >> 8 & 0xFF, tuple(bool(result >> (16 + n) & 1) for n in range(4))
 
+    def dossie_abrir(self) -> None:
+        """Abre o dossiê da Família Sombra pelo special Dossie_Abrir num script de campo (com fadescreen e waitstate)."""
+        result = self.call(CMD_DOSSIE_ABRIR)
+        assert result == 1, f"DOSSIE_ABRIR recusado: {result:#x}"
+
+    def dossie_estado(self) -> dict | None:
+        """Estado do dossiê aberto: {pagina (0-based), total, chefe (0 capa, 1-4, 5 depois), carimbo (0 nenhum,
+        1 derrotado, 2 capturado), pronta}; None com a tela fechada."""
+        result = self.call(CMD_DOSSIE_ESTADO)
+        if result == 0xFFFFFFFF:
+            return None
+        return {"pagina": result & 0xFF, "total": result >> 8 & 0xFF, "chefe": result >> 16 & 0xFF,
+                "carimbo": result >> 24 & 0x7F, "pronta": bool(result >> 31)}
+
     def familia_chefe(self) -> None:
         """Começa a batalha contra o chefe da ocupação pelo special FamiliaSombra_IniciarChefe num script de campo."""
         result = self.call(CMD_FAMILIA_CHEFE)
@@ -554,6 +568,8 @@ CMD_DEX_INFO = 0x140    # arg0 = espécie -> número nacional interno | número 
 CMD_DEX_MARCAR = 0x141  # arg0 = número nacional interno, arg1 = 0 limpa / 1 visto / 2 visto e capturado -> capturados (386) | com os extras << 16
 CMD_DEX_COMPLETA = 0x142  # arg0 = número nacional interno (0 = nenhum), só leitura -> HasAllMons | HasAllKantoMonsWithMew << 1 | capturado(arg0) << 2 | visto(arg0) << 3
 CMD_FAMILIA_CHEFE_CAIU = 0x143  # -> ocupação | estado << 8 | (FLAG_FAMILIA_CAPTURADO_n no bit n - 1) << 16: FamiliaSombra_ChefeCaiu (gBattleOutcome decide a captura)
+CMD_DOSSIE_ABRIR = 0x144   # -> 1: o dossiê pelo special Dossie_Abrir num script de campo (0xFFFFFFFF = special fora de gSpecials)
+CMD_DOSSIE_ESTADO = 0x145  # -> página | total << 8 | chefe da página << 16 | carimbo << 24 | pronta << 31 (0xFFFFFFFF = fechada)
 
 # --- Hack 6: breeding genético (enum à parte em include/test_hooks.h, a partir de 0x60; ------
 # o uso fica em esteira/breeding.py e scenarios/full_breeding.py / full_egg.py)

@@ -1645,6 +1645,11 @@ DECLARED: list[Declared] = [
              why="detalhe do diário montado em gStringVar4[1000]: nome (até 11 bytes) + gText_Diario_Separador + local (até "
                  "25 bytes), e gText_Diario_TempoTurnos com \"hh:mm\" (até 8 bytes) e turnos (3); as larguras são medidas em "
                  "test/tests/test_conquistas_tela.py::test_larguras_diario"),
+    # POK-54, Task 9
+    Declared("src/dossie.c", "Dossie_ImprimirFolha", r"sDossieFolha_Prefixo", None,
+             why="\"FOLHA 1/3\" do dossiê num texto[16] local: sDossieFolha_Prefixo (6 bytes) + parte e partes de 1 "
+                 "algarismo cada + barra + EOS = 10 bytes; a largura montada (\"FOLHA 3/3\" <= DOSSIE_FOLHA_PX) é medida em "
+                 "test/tests/test_dossie.py::test_textos_cabem"),
     # POK-47, Task 3
     Declared("src/dexnav.c", "JuntarRodape", r".*", BufRef("gStringVar4"),
              why="rodapé do DexNav montado por partes em gStringVar4[1000] (DesenharRodape passa gStringVar4): no "

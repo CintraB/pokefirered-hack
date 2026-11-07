@@ -216,6 +216,47 @@ def _conquistas_rules(repo: Path) -> list[Rule]:
     ]
 
 
+def _dossie_rules(repo: Path) -> list[Rule]:
+    """Janelas do dossiê da Família Sombra (POK-54, Task 9), com as medidas de include/dossie.h (`DOSSIE_*`): a tela
+    (src/dossie.c) imprime nelas. FONT_NORMAL, só `\\n`. A 1ª linha da lore de cada ficha é mais estreita
+    (DOSSIE_LORE_TOPO_PX, ao lado da foto): a regra mede todas na largura de baixo e test/tests/test_dossie.py
+    confere a 1ª."""
+    try:
+        header = (repo / "include" / "dossie.h").read_text(encoding="utf-8")
+    except OSError:
+        return []
+    c: dict[str, int] = {}
+    at: dict[str, str] = {}   # constante -> "include/dossie.h:<linha>"
+    for m in re.finditer(r"^#define DOSSIE_(\w+)\s+(\d+)\b", header, re.M):
+        c[m.group(1)] = int(m.group(2))
+        at[m.group(1)] = f"include/dossie.h:{header.count(chr(10), 0, m.start()) + 1}"
+    nomes = ("LORE_PX", "LORE_LINHAS", "DEPOIS_LINHAS", "TITULO_PX", "CABECALHO_PX", "ROSA_PX", "ABA_PX",
+             "FOLHA_PX", "CAPA_ROTA_PX", "RODAPE_PX")
+    if any(n not in c for n in nomes):
+        return []
+    rel = "src/data/dossie_textos.h"
+    where = "dossiê da Família Sombra (src/dossie.c): "
+
+    def regra(prefixo: str, medida: str, o_que: str, linhas: str | None = None) -> Rule:
+        n = c[linhas] if linhas else 1
+        fonte = at[medida] + (f", {at[linhas]}" if linhas else "")
+        return Rule(rel, prefixo, c[medida], where + f"{o_que}, FONT_NORMAL, {n} linha(s) (DOSSIE_{medida}, {fonte})",
+                    lines=n)
+
+    return [
+        regra("sDossieTexto_Depois", "LORE_PX", "texto da página Depois, na largura toda", "DEPOIS_LINHAS"),
+        regra("sDossieTexto_", "LORE_PX", "lore da ficha (a 1ª linha, ao lado da foto, é medida em test_dossie.py)",
+              "LORE_LINHAS"),
+        regra("sDossieTitulo_", "TITULO_PX", "título no marca-texto"),
+        regra("sDossieGemeos_", "CABECALHO_PX", "linha dos gêmeos no cabeçalho da ficha"),
+        regra("sDossieRosa_", "ROSA_PX", "linha da rosa, depois do desenho da rosa"),
+        regra("sDossieAba_", "ABA_PX", "texto da aba da pasta"),
+        regra("sDossieFolha_", "FOLHA_PX", "\"FOLHA \" + \"1/3\" no fim da aba da ficha"),
+        regra("sDossieCapa_Rota", "CAPA_ROTA_PX", "\"ROTA 23\" na caixa branca da capa"),
+        regra("sDossieCapa_", "RODAPE_PX", "rodapé da capa, antes do \"N/T\""),
+    ]
+
+
 WIDTH_RULES: list[Rule] = [
     Rule("data/maps/*/text.inc", None, DIALOG_WIDTH_PX, _DIALOG, box_lines=DIALOG_BOX_LINES),
     *[Rule(f"data/text/{name}.inc", None, DIALOG_WIDTH_PX, _DIALOG + "; usado só via msgbox/message",
@@ -405,6 +446,7 @@ WIDTH_RULES: list[Rule] = [
     Rule("src/data/text/*.h", None, None, "tabela de texto sem janela própria conhecida"),
     *_novidades_rules(Path(__file__).resolve().parents[2]),
     *_conquistas_rules(Path(__file__).resolve().parents[2]),
+    *_dossie_rules(Path(__file__).resolve().parents[2]),   # POK-54, Task 9
     # -- batalha (dona: frente G) --
     *[Rule("src/battle_message.c", label, DIALOG_WIDTH_PX,
            _OAK_OLD_MAN + "; impresso em src/battle_controller_oak_old_man.c:652-844") for label in _OAK_TUTORIAL],
