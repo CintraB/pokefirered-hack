@@ -3,7 +3,9 @@
 import argparse
 import html
 import json
+import re
 import shutil
+import unicodedata
 from pathlib import Path
 
 ORDEM = ["sobre", "ritmo", "resumo", "dex", "shiny", "creche", "evolucoes",
@@ -21,21 +23,38 @@ def juntar_linhas(body: str) -> str:
             continue
         if not saida:
             saida = linha
-        elif saida.endswith("-"):
+        elif re.search(r"[^\W\d_]-$", saida):  # só "palavra-" cola; "algo -" mantém o espaço
             saida += linha
         else:
             saida += " " + linha
     return saida
 
 
+def slug(titulo: str) -> str:
+    """Slug estável do título: sem acento, minúsculas, não alfanuméricos viram hífen."""
+    base = unicodedata.normalize("NFKD", titulo)
+    base = "".join(ch for ch in base if not unicodedata.combining(ch)).lower()
+    return re.sub(r"[^a-z0-9]+", "-", base).strip("-")
+
+
+def chaves_do_topico(topico: str, cartoes: list) -> list:
+    """Chave de cada cartão ("<tópico>/<slug>"); título repetido no tópico ganha -2, -3..."""
+    vistos, chaves = {}, []
+    for c in cartoes:
+        base = slug(c["title"])
+        vistos[base] = vistos.get(base, 0) + 1
+        chaves.append(f"{topico}/{base}" + (f"-{vistos[base]}" if vistos[base] > 1 else ""))
+    return chaves
+
+
 def _ler_json(caminho: Path):
     return json.loads(caminho.read_text(encoding="utf-8"))
 
 
-def _cartao(topico: str, indice: int, c: dict, textos: dict, spoiler: bool) -> dict:
-    extra = textos.get(f"{topico}/{indice}", {})
+def _cartao(chave: str, c: dict, textos: dict, spoiler: bool) -> dict:
+    extra = textos.get(chave, {})
     return {
-        "id": f"{topico}-{indice}",
+        "id": chave.replace("/", "-"),
         "titulo": c["title"],
         "texto": juntar_linhas(c["body"]),
         "longo": extra.get("longo"),
@@ -54,22 +73,23 @@ def carregar_capitulos(repo: Path) -> list:
     lugares = _ler_json(repo / SITE / "lugares.json")
     textos = _ler_json(repo / SITE / "textos.json")
     topicos = {t["id"]: t for t in dados["topics"]}
-    # Os índices do textos.json são os do cartoes.json (antes de tirar a Família Sombra).
-    cards = {tid: list(enumerate(t["cards"])) for tid, t in topicos.items()}
-    sombra = [(i, c) for i, c in cards["modernas"] if "Família Sombra" in c["title"]]
-    cards["modernas"] = [(i, c) for i, c in cards["modernas"] if "Família Sombra" not in c["title"]]
+    # Chave do textos.json: "<tópico>/<slug do título>". Os cartões da Família Sombra
+    # usam o tópico ORIGINAL ("modernas/..."), mesmo aparecendo no capítulo "familia".
+    cards = {tid: list(zip(chaves_do_topico(tid, t["cards"]), t["cards"]))
+             for tid, t in topicos.items()}
+    sombra = [(k, c) for k, c in cards["modernas"] if "Família Sombra" in c["title"]]
+    cards["modernas"] = [(k, c) for k, c in cards["modernas"] if "Família Sombra" not in c["title"]]
     cards["familia"] = sombra
 
     titulos = {tid: t["name"] for tid, t in topicos.items()}
     titulos["familia"] = "A história da Família Sombra"
     capitulos = []
     for tid in ORDEM:
-        origem = "modernas" if tid == "familia" else tid
         capitulos.append({
             "id": tid,
             "titulo": titulos[tid],
             "lugar": lugares[tid],
-            "cartoes": [_cartao(origem, i, c, textos, tid == "familia") for i, c in cards[tid]],
+            "cartoes": [_cartao(k, c, textos, tid == "familia") for k, c in cards[tid]],
         })
     return capitulos
 
@@ -96,6 +116,12 @@ def _renderizar(capitulos: list) -> str:
 def gerar(repo: Path, saida: Path) -> None:
     repo, saida = Path(repo), Path(saida)
     textos = _ler_json(repo / SITE / "textos.json")
+    validas = set()
+    for t in _ler_json(repo / CARTOES)["topics"]:
+        validas |= set(chaves_do_topico(t["id"], t["cards"]))
+    for chave in textos:
+        if chave not in validas:
+            raise ValueError(f"textos.json: chave sem cartão correspondente: {chave}")
     for chave, extra in textos.items():
         tela = extra.get("tela")
         if tela and not (repo / tela).is_file():
@@ -103,7 +129,8 @@ def gerar(repo: Path, saida: Path) -> None:
     capitulos = carregar_capitulos(repo)
     if saida.exists():
         shutil.rmtree(saida)
-    shutil.copytree(repo / SITE, saida)
+    shutil.copytree(repo / SITE, saida, ignore=shutil.ignore_patterns(
+        "lugares.json", "textos.json", "template.html"))
     for extra in textos.values():
         if extra.get("tela"):
             destino = saida / extra["tela"]
@@ -112,7 +139,6 @@ def gerar(repo: Path, saida: Path) -> None:
     modelo = (repo / SITE / "template.html").read_text(encoding="utf-8")
     (saida / "index.html").write_text(
         modelo.replace("{{CAPITULOS}}", _renderizar(capitulos)), encoding="utf-8")
-    (saida / "template.html").unlink()
 
 
 def main():
