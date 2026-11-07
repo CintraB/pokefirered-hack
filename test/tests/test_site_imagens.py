@@ -165,6 +165,8 @@ def _repo_temporario(tmp_path, textos):
     for pasta in ("graphics", "docs/readme", "test/referencias"):
         (repo / pasta).parent.mkdir(parents=True, exist_ok=True)
         os.symlink(REPO / pasta, repo / pasta)
+    reais = json.loads((REPO / "site/textos.json").read_text(encoding="utf-8"))
+    textos = {**{k: {"ancora": v["ancora"]} for k, v in reais.items() if "ancora" in v}, **textos}  # títulos repetidos
     (repo / "site/textos.json").write_text(json.dumps(textos), encoding="utf-8")
     return repo
 

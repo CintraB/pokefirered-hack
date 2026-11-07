@@ -2,6 +2,7 @@
 import importlib.util
 import json
 import re
+import warnings
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[2]
@@ -18,9 +19,15 @@ def _cartoes():
     return [c for cap in gerar_mod.carregar_capitulos(REPO) for c in cap["cartoes"]]
 
 
-def test_todo_cartao_tem_texto_longo():
+def test_cartao_sem_texto_longo_so_avisa(tmp_path):
+    """Cartão sem texto longo não reprova (spec §3: cai no body): o gerador avisa com a lista deles."""
     sem = [c["id"] for c in _cartoes() if not (c["longo"] or "").strip()]
-    assert not sem, sem
+    if sem:
+        warnings.warn(f"cartões sem texto longo: {sem}")
+    with warnings.catch_warnings(record=True) as avisos:
+        warnings.simplefilter("always")
+        gerar_mod.gerar(REPO, tmp_path / "_saida")
+    assert bool([a for a in avisos if "sem texto longo" in str(a.message)]) == bool(sem)
 
 
 def test_textos_sem_ingles_comum():
@@ -32,7 +39,9 @@ def test_textos_sem_ingles_comum():
 
 def test_tamanho():
     for c in _cartoes():
-        n = len(c["longo"] or "")
+        if not c["longo"]:
+            continue  # sem texto: só o aviso do gerador
+        n = len(c["longo"])
         assert MINIMO <= n <= MAXIMO, (c["id"], n)
 
 

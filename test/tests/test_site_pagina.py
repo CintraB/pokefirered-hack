@@ -133,7 +133,10 @@ def test_aviso_legal_e_creditos(arvore):
     assert len(rodape) == 1
     texto = _normal(rodape[0].texto_total())
     aviso = _bullets_readme("Aviso legal")
-    assert len(aviso) == 6
+    assert len(aviso) >= 4  # os itens-chave abaixo, não a contagem exata
+    juntos = _normal(" ".join(aviso)).lower()
+    for chave in ("sem fins lucrativos", "nintendo", "nenhuma rom é distribuída", "pret", "pedido de remoção"):
+        assert chave in juntos, chave
     for frase in aviso + _bullets_readme("Créditos"):
         assert frase in texto, frase
     for nome in ("pret", "PokeAPI", "Veekun"):
@@ -275,6 +278,7 @@ def test_modernas_em_subcapitulos(arvore):
     assert len(cartoes) == len(modernas["cartoes"])
 
 
+@pytest.mark.filterwarnings("ignore:.*sem texto longo")
 def test_imagens_do_jogo_com_fator_inteiro(tmp_path):
     """Com uma tela e um par antes/depois ligados, a página mostra 480×320 nítido e o comparador."""
     repo = tmp_path / "repo"
@@ -291,6 +295,8 @@ def test_imagens_do_jogo_com_fator_inteiro(tmp_path):
     par = [c for c in caps["evolucoes"]["cartoes"] if c["titulo"].startswith("Haunter")][0]["id"].replace("-", "/", 1)
     textos = {uma: {"tela": "docs/readme/inicial.png"},
               par: {"tela": ["docs/readme/evo_gengar_antes.png", "docs/readme/evo_gengar_depois.png"]}}
+    reais = json.loads((REPO / "site/textos.json").read_text(encoding="utf-8"))
+    textos.update({k: {"ancora": v["ancora"]} for k, v in reais.items() if "ancora" in v})  # títulos repetidos
     (repo / "site/textos.json").write_text(json.dumps(textos), encoding="utf-8")
     gerar_mod.gerar(repo, tmp_path / "saida")
     pagina = (tmp_path / "saida/index.html").read_text(encoding="utf-8")

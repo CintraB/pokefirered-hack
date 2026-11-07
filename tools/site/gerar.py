@@ -6,7 +6,9 @@ import json
 import re
 import shutil
 import sys
+import tempfile
 import unicodedata
+import warnings
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -64,6 +66,41 @@ def chaves_do_topico(topico: str, cartoes: list) -> list:
     return chaves
 
 
+def validar_titulos_repetidos(topicos: list, textos: dict) -> None:
+    """Título repetido num tópico: a chave "-2" depende da ORDEM dos cartões e quebraria em silêncio.
+
+    Cada cartão do grupo repetido precisa de entrada no textos.json com "ancora": um trecho do body
+    (linhas juntas) que o cartão daquela chave tem de conter. Se a ordem mudar, o gerador falha.
+    """
+    for t in topicos:
+        chaves = chaves_do_topico(t["id"], t["cards"])
+        bases = [slug(c["title"]) for c in t["cards"]]
+        for chave, base, c in zip(chaves, bases, t["cards"]):
+            if bases.count(base) < 2:
+                continue
+            ancora = textos.get(chave, {}).get("ancora")
+            if not ancora:
+                raise ValueError(f"título repetido em '{t['id']}' ({c['title']!r}): a chave {chave} precisa de "
+                                 f"entrada no textos.json com \"ancora\" (trecho do body desse cartão)")
+            if ancora not in juntar_linhas(c["body"]):
+                raise ValueError(f"textos.json ({chave}): a âncora {ancora!r} não está no cartão dessa chave; "
+                                 f"a ordem dos cartões de título repetido mudou?")
+
+
+def pasta_de_saida_segura(repo: Path, saida: Path) -> None:
+    """Recusa apagar uma saída que seja site/, a raiz do repo ou esteja fora do repo (exceto _site e temporárias)."""
+    repo, saida = Path(repo).resolve(), Path(saida).resolve()
+    if saida == repo or saida == repo / SITE or repo / SITE in saida.parents:
+        raise ValueError(f"saída recusada ({saida}): é a raiz do repositório ou a pasta site/")
+    if saida == repo / "_site":
+        return
+    if repo in saida.parents:
+        raise ValueError(f"saída recusada ({saida}): dentro do repositório só _site é aceita")
+    if tempfile.gettempdir() and Path(tempfile.gettempdir()).resolve() in saida.parents:
+        return
+    raise ValueError(f"saída recusada ({saida}): fora do repositório e fora da pasta temporária")
+
+
 def _ler_json(caminho: Path):
     return json.loads(caminho.read_text(encoding="utf-8"))
 
@@ -92,6 +129,9 @@ def carregar_capitulos(repo: Path) -> list:
     lugares = _ler_json(repo / SITE / "lugares.json")
     textos = _ler_json(repo / SITE / "textos.json")
     topicos = {t["id"]: t for t in dados["topics"]}
+    sem_capitulo = [tid for tid in topicos if tid not in ORDEM or tid not in lugares]
+    if sem_capitulo:
+        raise ValueError(f"cartoes.json: tópico sem capítulo (ORDEM do gerador ou lugares.json): {sem_capitulo}")
     # Chave do textos.json: "<tópico>/<slug do título>". Os cartões da Família Sombra
     # usam o tópico ORIGINAL ("modernas/..."), mesmo aparecendo no capítulo "familia".
     cards = {tid: list(zip(chaves_do_topico(tid, t["cards"]), t["cards"]))
@@ -325,7 +365,12 @@ def gerar(repo: Path, saida: Path) -> None:
             nome_da_tela(tela, repo)  # só docs/readme e test/referencias (as telas aprovadas)
             if not (repo / tela).is_file():
                 raise FileNotFoundError(f"tela não encontrada ({chave}): {repo / tela}")
+    validar_titulos_repetidos(_ler_json(repo / CARTOES)["topics"], textos)
+    pasta_de_saida_segura(repo, saida)
     capitulos = carregar_capitulos(repo)
+    sem_longo = [c["id"] for cap in capitulos for c in cap["cartoes"] if not (c["longo"] or "").strip()]
+    if sem_longo:  # o cartão cai no body (spec §3): aviso, não erro
+        warnings.warn(f"{len(sem_longo)} cartões sem texto longo do Professor: {sem_longo}")
     origens = ligar_imagens(repo, capitulos)
     pagina = renderizar(repo, capitulos)
     if saida.exists():

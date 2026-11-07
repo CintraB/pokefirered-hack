@@ -270,9 +270,11 @@
     "longo": "Agora a experiência é dividida como nos jogos mais novos, sem precisar de item. Quem lutou recebe os PE inteiros, sem dividir com os colegas, e todo o resto da equipe recebe metade. Não precisa mais trocar de Pokémon no meio da luta só para treinar um mais fraco. Por isso, o assistente do Prof. Carvalho na Rota 15, que pede 50 Pokémon capturados, agora dá o Ovo da Sorte em vez do Compartilhador de Exp.: o Pokémon que o segura ganha 50% a mais de PE."
   },
   "modernas/chefes-mais-espertos": {
+    "ancora": "preparam o terreno",
     "longo": "Os líderes de ginásio, a Elite Quatro e o seu rival agora lutam com mais estratégia. No 1º turno, eles preferem preparar o terreno, com golpes que aumentam os próprios atributos, baixam os do seu Pokémon ou causam paralisia e veneno, em vez de atacar sem pensar. E escolhem o golpe olhando o PS dos dois lados: quando você está por um fio, eles buscam o nocaute; quando estão em perigo, mudam de plano. Os treinadores comuns continuam lutando como sempre. Monte um time equilibrado e pense um turno à frente."
   },
   "modernas/chefes-mais-espertos-2": {
+    "ancora": "revanches do Nível 80",
     "longo": "Os chefes ganharam mais um nível de esperteza. Líderes, Elite Quatro, rival e as revanches do Nível 80 para cima trocam de Pokémon antes de levar o seu golpe super efetivo. Eles lembram dos golpes que você já mostrou na luta, até 4 por Pokémon, além dos tipos dele. Escolhem melhor quem entra e usam poções e curas de estado na hora certa, sem repetir uma cura que você acabou de desfazer. Os treinadores comuns não mudam. Variar os golpes ajuda a confundir a leitura deles."
   },
   "modernas/incubadora": {

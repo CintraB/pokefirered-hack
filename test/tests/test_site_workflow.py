@@ -1,4 +1,5 @@
 """Workflow de publicação da Página do Professor no GitHub Pages."""
+import re
 from pathlib import Path
 
 import yaml
@@ -23,8 +24,10 @@ def test_workflow_dispara_na_hack_switch():
 
 def test_workflow_usa_pages():
     texto, dados, _ = _carrega()
-    assert dados["permissions"]["pages"] == "write"
-    assert dados["permissions"]["id-token"] == "write"
+    # Privilégio mínimo: o topo só lê; pages/id-token só no job que publica.
+    assert dados["permissions"] == {"contents": "read"}
+    assert dados["jobs"]["deploy"]["permissions"] == {"pages": "write", "id-token": "write"}
+    assert "permissions" not in dados["jobs"]["build"]
     assert dados["concurrency"]["group"] == "pages"
     assert dados["concurrency"]["cancel-in-progress"] is False
     for uso in ("actions/checkout@v4", "actions/setup-python@v5",
@@ -38,9 +41,18 @@ def test_workflow_usa_pages():
 
 
 def test_workflow_nao_compila_rom():
-    texto, _, _ = _carrega()
-    assert "make" not in texto
+    texto, dados, _ = _carrega()
+    passos = [p for job in dados["jobs"].values() for p in job.get("steps", []) if "run" in p]
+    assert passos
+    for passo in passos:
+        assert not re.search(r"(^|[\s;&|])make(\s|$)", passo["run"]), passo["run"]
     assert "agbcc" not in texto
+
+
+def test_workflow_instala_o_requirements():
+    _, dados, _ = _carrega()
+    comandos = [p["run"] for p in dados["jobs"]["build"]["steps"] if "run" in p]
+    assert "pip install -r tools/site/requirements.txt" in comandos
 
 
 def test_workflow_da_pret_intacto():

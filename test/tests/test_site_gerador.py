@@ -113,7 +113,12 @@ def _repo_temporario(tmp_path, textos):
     for pasta in ("graphics", "docs/readme", "test/referencias"):  # sprites e telas: só leitura, por link
         (repo / pasta).parent.mkdir(parents=True, exist_ok=True)
         os.symlink(REPO / pasta, repo / pasta)
-    (repo / "site/textos.json").write_text(json.dumps(textos), encoding="utf-8")
+    # âncoras dos títulos repetidos ficam sempre: sem elas o gerador recusa o repositório
+    reais = json.loads((REPO / "site/textos.json").read_text(encoding="utf-8"))
+    base = {k: {"ancora": v["ancora"]} for k, v in reais.items() if "ancora" in v}
+    for k, v in textos.items():
+        base[k] = {**base.get(k, {}), **v}
+    (repo / "site/textos.json").write_text(json.dumps(base), encoding="utf-8")
     return repo
 
 
@@ -145,6 +150,7 @@ def test_chave_de_texto_sem_cartao_falha(tmp_path):
         gerar_mod.gerar(repo, tmp_path / "saida")
 
 
+@pytest.mark.filterwarnings("ignore:.*sem texto longo")
 def test_saida_nao_publica_json_de_trabalho(tmp_path):
     repo = _repo_temporario(tmp_path, {})
     gerar_mod.gerar(repo, tmp_path / "saida")
@@ -158,3 +164,71 @@ def test_tela_inexistente_falha(tmp_path):
     repo = _repo_temporario(tmp_path, {chave: {"tela": "docs/readme/nao_existe.png"}})
     with pytest.raises(FileNotFoundError, match="tela não encontrada.*nao_existe.png"):
         gerar_mod.gerar(repo, tmp_path / "saida")
+
+
+# ---------- saída segura, tópicos sem capítulo, títulos repetidos ----------
+
+@pytest.mark.parametrize("rel", ["", "site", "site/dentro", "docs", "src/data"])
+def test_saida_perigosa_dentro_do_repo_e_recusada(tmp_path, rel):
+    repo = _repo_temporario(tmp_path, {})
+    alvo = repo / rel if rel else repo
+    with pytest.raises(ValueError, match="saída recusada"):
+        gerar_mod.gerar(repo, alvo)
+    assert (repo / "site/template.html").exists()  # nada foi apagado
+
+
+def test_saida_fora_do_repo_e_recusada(tmp_path):
+    repo = _repo_temporario(tmp_path, {})
+    with pytest.raises(ValueError, match="saída recusada"):
+        gerar_mod.pasta_de_saida_segura(repo, Path.home() / "qualquer-coisa")
+
+
+def test_saida_underscore_site_e_temporaria_sao_aceitas(tmp_path):
+    repo = _repo_temporario(tmp_path, {})
+    gerar_mod.pasta_de_saida_segura(repo, repo / "_site")
+    gerar_mod.pasta_de_saida_segura(repo, tmp_path / "saida")
+
+
+def test_topico_sem_capitulo_falha(tmp_path):
+    repo = _repo_temporario(tmp_path, {})
+    arq = repo / "site/lugares.json"
+    lugares = json.loads(arq.read_text(encoding="utf-8"))
+    del lugares["ritmo"]
+    arq.write_text(json.dumps(lugares), encoding="utf-8")
+    with pytest.raises(ValueError, match="tópico sem capítulo.*ritmo"):
+        gerar_mod.carregar_capitulos(repo)
+
+
+def test_topico_fora_da_ordem_falha(tmp_path, monkeypatch):
+    repo = _repo_temporario(tmp_path, {})
+    monkeypatch.setattr(gerar_mod, "ORDEM", [i for i in gerar_mod.ORDEM if i != "clima"])
+    with pytest.raises(ValueError, match="tópico sem capítulo.*clima"):
+        gerar_mod.carregar_capitulos(repo)
+
+
+def test_titulo_repetido_sem_ancora_falha(tmp_path):
+    repo = _repo_temporario(tmp_path, {})
+    arq = repo / "site/textos.json"
+    textos = json.loads(arq.read_text(encoding="utf-8"))
+    del textos["modernas/chefes-mais-espertos-2"]
+    arq.write_text(json.dumps(textos), encoding="utf-8")
+    with pytest.raises(ValueError, match="título repetido.*chefes-mais-espertos-2.*ancora"):
+        gerar_mod.gerar(repo, tmp_path / "saida")
+
+
+def test_titulo_repetido_com_ordem_trocada_falha(tmp_path):
+    repo = _repo_temporario(tmp_path, {})
+    arq = repo / "src/data/novidades/cartoes.json"
+    dados = json.loads(arq.read_text(encoding="utf-8"))
+    cards = [t for t in dados["topics"] if t["id"] == "modernas"][0]["cards"]
+    i = [n for n, c in enumerate(cards) if c["title"] == "Chefes mais espertos"]
+    cards[i[0]], cards[i[1]] = cards[i[1]], cards[i[0]]
+    arq.write_text(json.dumps(dados), encoding="utf-8")
+    with pytest.raises(ValueError, match="âncora.*não está no cartão"):
+        gerar_mod.gerar(repo, tmp_path / "saida")
+
+
+def test_titulos_repetidos_reais_tem_ancora():
+    textos = json.loads((REPO / "site/textos.json").read_text(encoding="utf-8"))
+    dados = json.loads((REPO / "src/data/novidades/cartoes.json").read_text(encoding="utf-8"))
+    gerar_mod.validar_titulos_repetidos(dados["topics"], textos)
