@@ -70,6 +70,15 @@ escrita direta no save (como full_egg) e a Rota 23 sem guardas (VAR_MAP_SCENE_RO
   depois empurra um passo para o norte; pagando, passa);
 - `familia/pedagio_sem_chefe`: sem chefe não há cobrador e o corredor fica livre.
 
+Task 7 (conquistas e diário). O estado das conquistas vem de conq_reset(True) (jogo novo) e o aviso fica em silêncio:
+
+- `familia/conquista_dom`: com o jogo já zerado (FLAG_SYS_GAME_CLEAR), a cena do 6º andar até vencer o Dom (gêmeos já
+  vencidos): "Vencer o Dom" passa de pendente a feita e as outras 4 seguem pendentes; o diário ganha a entrada
+  "O Dom" (Gengar, derrotado, o time e os turnos); telas `familia_conquistas_batalha` (aba Batalha rolada até o fim)
+  e `familia_diario_dom` (o diário com a entrada);
+- `familia/gengar_fora_nao_conta`: um Gengar selvagem comum (nv 62) vencido não grava a entrada do Dom nem a conquista;
+- `familia/pedagio_forca` também confere "Pagar ou lutar": pendente antes das 2 lutas, feita depois.
+
 Uso, a partir de test/ (a pasta OUT precisa do captura.sav de um `rapido`/`completo`):
     python3 -m esteira completo --rom R --elf E --out OUT --only familia
 """
@@ -80,8 +89,9 @@ import re
 from ..battle import ACTION_FIGHT, MENU_TIMEOUT, MOVE_FUNC_SUFFIX, BattleDriver
 from ..breeding import header_defines
 from ..game import POKEMON_SIZE, SB1_MONEY, mon_checksum_ok
-from ..emu import KEY_A, KEY_B, KEY_DOWN, KEY_UP
-from ..hooks import CMD_GIVE_ITEM, CMD_SET_VAR, CMD_WARP, Mailbox
+from .. import conquistas as cq
+from ..emu import KEY_A, KEY_B, KEY_DOWN, KEY_R, KEY_UP
+from ..hooks import CMD_GIVE_ITEM, CMD_SET_VAR, CMD_START_WILD_BATTLE, CMD_WARP, Mailbox
 from ..nav import Navigator
 from . import REPO_ROOT, ScenarioContext
 from .base import YESNO_TASK, Abort
@@ -138,6 +148,13 @@ PALETTE_FADE_ACTIVE = 7              # byte de gPaletteFade com o bit `active` (
 OBJECT_EVENTS_COUNT, OBJECT_EVENT_SIZE, OBJECT_EVENT_LOCAL_ID, OBJECT_EVENT_GFX = 16, 0x24, 8, 5
 FOG_CALLBACK = "FogHorizontalSpriteCallback"
 LOCALID_PLAYER, LOCALID_FOLLOWER = 0xFF, 0xFE
+# Task 7: estados das conquistas (include/constants/conquistas.h), o resultado do diário e a tela de conquistas
+CONQ_PENDENTE, CONQ_FEITA = 0, 1
+DIARIO_DERROTOU = 3
+CONQ_BATALHA_ABA = 1
+TELA_PRONTA_TIMEOUT = 300
+TELA_ASSENTA = 20
+DESCE_ATE_O_FIM = 12                 # apertos de Baixo: a aba Batalha tem 10 linhas ativas
 # Task 6: o pedágio
 LOCALID_COBRADOR = 8                 # 8º objeto de Route23 (os 7 guardas vêm antes; o teste estático confere)
 VAR_MAP_SCENE_ROUTE23 = 0x405F
@@ -893,6 +910,8 @@ class FamiliaScenario(CatchSaveScenario):
         self._pedagio_prep()
         self._restore("pedagio_sul")
         self._set_money(500)
+        self.box.conq_reset(True)
+        assert self._conq("familia_pedagio") == CONQ_PENDENTE
         self.ctl.checkpoint("pedagio_pobre")
         self._pedagio_gatilho("pedagio_pobre")
         info = self._pedagio_cena(forca=True)
@@ -905,7 +924,9 @@ class FamiliaScenario(CatchSaveScenario):
         assert self._rom_text("Route23_Text_PedagioLivre") in info["msgs"], info["msgs"]
         assert self.nav.step("left") == 1 and self.nav.step("up", 3) == 3 and self.nav.interrupted is None
         nomes = [self.consts.species_name(sp) for sp in info["especies"]]
-        return f"2 lutas seguidas ({nomes}), dinheiro intacto, passagem paga e livre"
+        assert self._conq("familia_pedagio") == CONQ_FEITA, "Pagar ou lutar não ficou feita"
+        assert self._conq("familia_dom") == CONQ_PENDENTE
+        return f"2 lutas seguidas ({nomes}), dinheiro intacto, passagem paga e livre; Pagar ou lutar feita"
 
     def _pedagio_volta(self) -> str:
         self._pedagio_prep()
@@ -1099,6 +1120,80 @@ class FamiliaScenario(CatchSaveScenario):
         assert drop in msgs, msgs
         return f"gêmeos e Dom vencidos; {drop!r}; Rosa Vermelha na bolsa; SEM_CHEFE na queda {half}"
 
+    # --- Task 7: conquistas e diário -------------------------------------------------------------------
+    def _conq(self, cid: str) -> int:
+        return self.box.conq_estado(cq.num(cid))[0]
+
+    def _tela_pronta(self, what: str) -> tuple[int, int, int, bool]:
+        self.ctl.wait_until(lambda: (s := self.box.conq_tela()) is not None and s[3], TELA_PRONTA_TIMEOUT, what)
+        self.emu.frames(TELA_ASSENTA)
+        return self.box.conq_tela()
+
+    def _fechar_tela(self) -> None:
+        self.ctl.press_until(KEY_B, lambda: self.box.conq_tela() is None, "B fecha a tela de conquistas",
+                             tries=3, wait=60)
+        self.ctl.wait_overworld_idle(600)
+
+    def _conquista_dom(self) -> str:
+        """O jogo já zerado e o Dom vencido pela cena de verdade: a conquista e a entrada do diário (com o título)."""
+        self._to_scene((("MEWTWO", 100), ("SNORLAX", 100)), True)
+        self.box.conq_reset(True)
+        self.box.set_flag(self._flag("FLAG_SYS_GAME_CLEAR"), True)   # a sala é do pós-jogo: o diário não depende do Hall
+        for i in range(4):
+            self.box.set_party_move(0, i, self.moves["MOVE_PSYCHIC"])
+        assert [self._conq(c) for c in ("familia_dom", "familia_cobrador", "familia_pedagio")] == [CONQ_PENDENTE] * 3
+        assert self.box.diario_entrada(cq.evento("familia_dom")) is None
+        self._gatilho()
+        self._scene(self.game.in_battle, "começo da batalha do chefe")
+        assert self.driver.battle_type_flags() & BATTLE_TYPE_FAMILIA_CHEFE
+        assert self._conq("familia_dom") == CONQ_PENDENTE, "feita antes de vencer"
+        assert self.driver.fight_to_end() == "win", "perdeu para o Dom"
+        self._scene(self.ctl.overworld_idle, "a rosa")
+        assert self._conq("familia_dom") == CONQ_FEITA, "Vencer o Dom não ficou feita"
+        outras = [self._conq(c) for c in ("familia_cobrador", "familia_pedagio", "familia_mercenario", "familia_toda")]
+        assert outras == [CONQ_PENDENTE] * 4, outras
+        e = self.box.diario_entrada(cq.evento("familia_dom"))
+        assert e is not None, "o Dom vencido e o diário vazio"
+        assert e["resultado"] == DIARIO_DERROTOU and e["turnos"] >= 1, e
+        assert e["time"] == [(self._sp("MEWTWO"), 100), (self._sp("SNORLAX"), 100)], e
+        assert self.box.diario_entrada(cq.evento("familia_cobrador")) is None
+        titulo = cq.dados()["diario"][cq.evento("familia_dom")]
+        assert titulo["nome"] == "O Dom" and titulo["especie"] == "SPECIES_GENGAR", titulo
+        # a tela de conquistas, na aba Batalha rolada até o fim, e o diário com a entrada
+        self.box.open_conquistas()
+        self._tela_pronta("tela de conquistas")
+        self.ctl.press_until(KEY_R, lambda: self.box.conq_tela()[1] == CONQ_BATALHA_ABA, "R: aba Batalha",
+                             tries=3, wait=10)
+        for _ in range(DESCE_ATE_O_FIM):
+            self.emu.press(KEY_DOWN, hold=2, release=6)
+        self.emu.frames(TELA_ASSENTA)
+        shot_conq = self._shot("familia_conquistas_batalha")
+        self._fechar_tela()
+        self.box.open_conquistas(True)
+        self._tela_pronta("tela do diário")
+        shot_diario = self._shot("familia_diario_dom")
+        self._fechar_tela()
+        return (f"Dom vencido com o jogo zerado: Vencer o Dom feita, as outras 4 pendentes; diário: {titulo['nome']!r} "
+                f"derrotado em {e['turnos']} turnos, time {len(e['time'])}; telas {shot_conq} e {shot_diario}")
+
+    def _gengar_fora(self) -> str:
+        """Um Gengar selvagem comum (fora da sala do Dom, sem BATTLE_TYPE_FAMILIA_CHEFE) não grava nada."""
+        self._restore("familia_base")
+        self.box.conq_reset(True)
+        self.box.set_flag(self._flag("FLAG_SYS_GAME_CLEAR"), True)
+        self.box.set_party_mon(0, self._sp("MEWTWO"), 100)
+        for i in range(4):
+            self.box.set_party_move(0, i, self.moves["MOVE_PSYCHIC"])
+        assert self.box.call(CMD_START_WILD_BATTLE, self._sp("GENGAR"), 62) == 1, "START_WILD_BATTLE"
+        self.driver.wait_battle_start()
+        assert not self.driver.battle_type_flags() & BATTLE_TYPE_FAMILIA_CHEFE
+        assert self.driver.fight_to_end() == "win", "perdeu para o Gengar selvagem"
+        self.ctl.wait_until(lambda: not self.game.in_battle(), 900, "volta ao campo")
+        self.ctl.wait_overworld_idle(900)
+        assert self.box.diario_entrada(cq.evento("familia_dom")) is None, "o Gengar selvagem entrou como o Dom"
+        assert self._conq("familia_dom") == CONQ_PENDENTE
+        return "Gengar selvagem nv 62 vencido: sem entrada do Dom no diário e a conquista pendente"
+
     def _encontro_andar4(self) -> str:
         """Passos de verdade no 4º andar com chefe ativo: sai um capanga do plantel (BATTLE_TYPE_FAMILIA)."""
         self._restore("familia_base")
@@ -1166,6 +1261,8 @@ class FamiliaScenario(CatchSaveScenario):
             self.suite.run("familia/gemeos_um_pokemon", self._gemeos_um)
             self.suite.run("familia/chefe_fuga", self._chefe_fuga)
             self.suite.run("familia/rosa", self._rosa)
+            self.suite.run("familia/conquista_dom", self._conquista_dom)
+            self.suite.run("familia/gengar_fora_nao_conta", self._gengar_fora)
             self.suite.run("familia/pedagio_paga", self._pedagio_paga)
             self.suite.run("familia/pedagio_sem_dinheiro", self._pedagio_sem_dinheiro)
             self.suite.run("familia/pedagio_forca", self._pedagio_forca)

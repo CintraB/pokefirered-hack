@@ -2,6 +2,7 @@
 #include "battle.h"
 #include "battle_message.h"
 #include "battle_setup.h"
+#include "conquistas.h"
 #include "day_night.h"
 #include "event_data.h"
 #include "field_specials.h"
@@ -101,6 +102,13 @@ void FamiliaSombra_ChefeCaiu(void)
     VarSet(VAR_FAMILIA_ESTADO, FAMILIA_ESTADO_SEM_CHEFE);
     if (ocupacao >= 1 && ocupacao <= FAMILIA_OCUPACOES_TOTAL)
         FlagSet(sRosas[ocupacao - 1]);
+    // POK-51: "Vencer o Dom" / "Vencer o Cobrador" (o Mercenário é da parte 2: a conquista fica inativa)
+    if (ocupacao == 1)
+        Conquistas_Evento(CONQ_EVT_FAMILIA_DOM);
+    else if (ocupacao == 2)
+        Conquistas_Evento(CONQ_EVT_FAMILIA_COBRADOR);
+    else if (ocupacao == 3)
+        Conquistas_Evento(CONQ_EVT_FAMILIA_MERCENARIO);
 }
 
 // Os 6 andares do prédio (o térreo é o antigo Route23_UnusedHouse).
@@ -243,6 +251,7 @@ void FamiliaSombra_SortearPedagio(void)
 void FamiliaSombra_PedagioVencido(void)
 {
     FlagSet(FLAG_FAMILIA_PEDAGIO_PAGO);
+    Conquistas_Evento(CONQ_EVT_FAMILIA_PEDAGIO_FORCA); // "Pagar ou lutar"
 }
 
 // ---- Andares 4-5, efeito de filme e o chefe (Task 4) ----------------------------------------------------------

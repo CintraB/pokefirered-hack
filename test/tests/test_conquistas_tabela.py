@@ -35,7 +35,8 @@ IDS_DO_SPEC = (
        "primeira_captura", "shinies", "aves", "caes", "mewtwo", "lugia_hooh", "miticos", "kanto_151", "dex_obtivel",
        "poke_ball_dificil", "fosseis",
        "nivel_50", "nivel_100", "primeiro_ovo", "ovo_shiny", "ovo_6ivs", "amizade_max", "espeon_umbreon",
-       "cidades", "passos", "dinheiro", "horas"])
+       "cidades", "passos", "dinheiro", "horas",
+       "familia_dom", "familia_cobrador", "familia_pedagio", "familia_mercenario", "familia_toda"])
 TIPOS = ("FLAG", "FLAGS_TODAS", "DEX_TODOS", "DEX_KANTO", "DEX_NACIONAL", "NIVEL", "AMIZADE_MAX", "GAME_STAT",
          "DINHEIRO", "HORAS", "VITORIAS", "SHINIES", "EVENTO")
 
@@ -142,7 +143,7 @@ def test_cobre_o_spec():
     c = _conquistas()
     assert set(IDS_DO_SPEC) <= set(c)
     assert len(c) == len(IDS_DO_SPEC)
-    assert {i for i, x in c.items() if x.get("ativa") is False} == set()   # o POK-42 ligou as duas do degrau
+    assert {i for i, x in c.items() if x.get("ativa") is False} == {"familia_mercenario", "familia_toda"}   # parte 2 do POK-51
     assert {i for i, x in c.items() if x.get("perdivel")} == {"lider_um_pokemon", "rival_todas"}
     assert c["dex_obtivel"]["param"] == 245
     assert "contar_dex" in _dados()["_comentario"]
@@ -168,7 +169,7 @@ def test_premios_do_plano():
 
 def test_diario():
     d = _dados()["diario"]
-    assert len(d) == 33
+    assert len(d) == 37
     assert sum(1 for e in d if e["lider"]) == 8
     assert sum(1 for e in d if e["rival"]) == 8
     assert "campeao" in {e["id"] for e in d if e["rival"]}
@@ -215,9 +216,9 @@ def test_ids_gerados(tmp_path):
     ids, tabela = _gerar(tmp_path)
     for c in _dados()["conquistas"]:
         assert f"#define CONQ_{c['id'].upper()} {c['num']}\n" in ids
-    assert "#define CONQ_COUNT 41\n" in ids
+    assert "#define CONQ_COUNT 46\n" in ids
     assert "#define CONQ_ABAS_COUNT 5\n" in ids and "#define CONQ_ABA_EXPLORACAO 4\n" in ids
-    assert "#define DIARIO_EVT_BROCK 0\n" in ids and "#define DIARIO_EVT_COUNT 33\n" in ids
+    assert "#define DIARIO_EVT_BROCK 0\n" in ids and "#define DIARIO_EVT_COUNT 37\n" in ids
     assert "{STR_VAR_1}" in tabela and "{N}" not in tabela      # o {N} do JSON vira o placeholder do jogo
     assert ".slotDegrau = 0xFF," in tabela and ".ativa = TRUE," in tabela and ".perdivel = TRUE," in tabela
     assert "sConqPremios_treinadores[] =" in tabela

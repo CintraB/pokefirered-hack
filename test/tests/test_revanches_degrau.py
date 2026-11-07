@@ -229,4 +229,4 @@ def test_conquistas_do_degrau_ativas():
     for cid, evt in (("revanche_max", "CONQ_EVT_REVANCHE_MAX"), ("e4_degrau100", "CONQ_EVT_E4_DEGRAU100")):
         assert c[cid]["ativa"] is True and c[cid]["param"] == evt, cid
         assert "inativa" not in c[cid]["condicao"], cid
-    assert sum(1 for x in dados["conquistas"] if x.get("ativa", True)) == 41
+    assert sum(1 for x in dados["conquistas"] if x.get("ativa", True)) == 44   # 41 + 3 da Família Sombra (POK-51)

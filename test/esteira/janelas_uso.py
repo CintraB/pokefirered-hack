@@ -103,7 +103,7 @@ VAR_CONTENTS: list[VarContent] = [
     VarContent("src/strings.c", "gText_Coins", "STR_VAR_1", 4,
                "moedas: ConvertIntToDecimalStringN(gStringVar1, coinAmount, ..., 4) (src/coins.c:54, :72)", digits=True),
     *(VarContent("src/strings.c", "gText_ConqTela_Rodape", var, 2,
-                 "rodapé da tela de conquistas: feitas e válidas da aba com 2 algarismos (CONQ_COUNT = 41) "
+                 "rodapé da tela de conquistas: feitas e válidas da aba com 2 algarismos (CONQ_COUNT = 46) "
                  "(src/conquistas_tela.c:777-778)", digits=True)
       for var in ("STR_VAR_2", "STR_VAR_3")),
     # DexNav (POK-47): quantas espécies da aba só aparecem em outro período (até DEXNAV_MAX_ENTRIES = 32)
