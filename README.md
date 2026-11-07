@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🔥 Pokémon FireRed — PT-BR (hack Cintra)
+# 🔥 Pokémon FireRed — PT-BR (by Cintra)
 
 **FireRed em português do Brasil, com qualidade de vida dos jogos atuais, dia e noite, clima,<br>
 a Pokédex inteira obtível e uma esteira de testes automática no emulador.**
@@ -32,6 +32,7 @@ a Pokédex inteira obtível e uma esteira de testes automática no emulador.**
 - [Como compilar](#como-compilar)
 - [Onde fica cada coisa](#onde-fica-cada-coisa)
 - [Créditos](#créditos)
+- [Aviso legal](#aviso-legal)
 
 ## O que é
 
@@ -40,9 +41,11 @@ Uma hack pessoal de **Pokémon FireRed**, feita sobre a decompilação da
 O jogo inteiro foi traduzido para o português do Brasil e ganhou recursos dos jogos mais novos, sem
 perder o jeito do FireRed.
 
-> [!NOTE]
-> Projeto feito para jogar, sem distribuição de ROM. Para compilar, você precisa da sua própria cópia
-> do jogo (veja [Como compilar](#como-compilar)).
+> [!IMPORTANT]
+> **Projeto de fã, pessoal e sem fins lucrativos.** Não tem afiliação nem endosso da Nintendo,
+> The Pokémon Company, Creatures Inc. ou GAME FREAK inc. **Nenhuma ROM é distribuída** aqui: nem
+> no repositório, nem nas releases, nem por pedido. Jogue com a sua própria cópia original do jogo.
+> Leia o [aviso legal](#aviso-legal).
 
 ## Destaques
 
@@ -451,8 +454,12 @@ O manual completo está em [`test/README.md`](test/README.md).
 - **[pret](https://github.com/pret/pokefirered)**: a decompilação do FireRed que é a base de tudo
   ([pret.github.io](https://pret.github.io/)).
 - **[pret/pokeemerald](https://github.com/pret/pokeemerald)**: as tabelas de cor do sol forte.
-- **Pokémon** é marca da Nintendo, Creatures Inc. e GAME FREAK inc. Este é um projeto de fã, sem fins
-  comerciais.
+- **[PokeAPI](https://pokeapi.co/)** ([sprites](https://github.com/PokeAPI/sprites),
+  [dados](https://github.com/PokeAPI/pokeapi) e [gritos](https://github.com/PokeAPI/cries)):
+  dados, sprites e gritos da Gen 4 do Gible, Gabite, Garchomp e Darkrai, e o levantamento da Pokédex.
+- **[Veekun](https://veekun.com/)**: sprites de campo de HeartGold/SoulSilver dos Pokémon seguidores
+  e pegadas da Gen 4.
+- **Pokémon** é marca da Nintendo, Creatures Inc. e GAME FREAK inc. Veja o [aviso legal](#aviso-legal).
 
 <details>
 <summary>ROMs que a decompilação original reproduz byte a byte</summary>
@@ -464,3 +471,22 @@ O manual completo está em [`test/README.md`](test/README.md).
 * [**pokefirered_switch.gba**](https://datomatic.no-intro.org/index.php?page=show_record&s=23&n=x550) `sha1: baa452d0b24629dd7782cfc07a8984085dde1311`
 * [**pokeleafgreen_switch.gba**](https://datomatic.no-intro.org/index.php?page=show_record&s=23&n=x551) `sha1: 62b9fc77549dbc67032eb6cbd0ea6ad3b825690f`
 </details>
+
+## Aviso legal
+
+- **Projeto de fã, pessoal e sem fins lucrativos.** Nada aqui é vendido. O projeto não aceita doações
+  e não tem anúncios, patrocínio, assinatura nem qualquer outra forma de ganho.
+- **Sem afiliação.** O projeto não tem ligação com a Nintendo, The Pokémon Company, Creatures Inc. ou
+  GAME FREAK inc., nem foi aprovado ou endossado por elas.
+- **Marcas e direitos.** Pokémon e os nomes, personagens, imagens, músicas, sons e marcas ligados a
+  ele são © e ™ da Nintendo, Creatures Inc., GAME FREAK inc. e The Pokémon Company. Aparecem aqui só
+  para estudo, preservação e diversão entre fãs, sem intenção de violar direitos.
+- **Nenhuma ROM é distribuída.** Este repositório, as releases e as issues não trazem nem trarão
+  arquivos `.gba` do jogo. Pedidos de ROM serão fechados sem resposta. Para jogar, use a sua própria
+  cópia original.
+- **O código.** A base é a decompilação da comunidade [pret](https://github.com/pret/pokefirered),
+  feita por engenharia reversa para estudo. O que esta hack acrescenta é código de fã, publicado nas
+  mesmas condições, sem garantia de nenhum tipo.
+- **Pedido de remoção.** Se você representa um titular de direitos e quer que algo seja retirado,
+  abra uma issue ou fale com o [dono do repositório](https://github.com/CintraB). O conteúdo será
+  removido prontamente.
