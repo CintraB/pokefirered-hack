@@ -7,6 +7,8 @@ Entradas (do próprio repositório, nunca as saídas):
     data/tilesets/secondary/pokemon_mansion/*        base dos andares (só os metatiles que os andares usam)
     data/tilesets/secondary/indigo_plateau/*         os primeiros INDIGO_TILES ladrilhos e INDIGO_METATILES metatiles
     data/layouts/Route23/map.bin                     a Rota 23 (só as células do prédio e da calçada mudam)
+    graphics/object_events/pics/familia/<chefe>.png (+ palettes/familia/<chefe>.pal)   o sprite com chapéu de cada
+                                                     chefe (saída de gerar.py), para o retrato do quadro (QUADROS)
 
 Saídas (versionadas, nada à mão):
     data/tilesets/secondary/familia_sombra/{tiles.png, metatiles.bin, metatile_attributes.bin, palettes/*.pal}
@@ -67,11 +69,13 @@ PAL_PISO = [  # paleta 10: piso de madeira escura, tapete, mesa, papéis, poltro
     (232, 232, 216), (168, 168, 152), (136, 96, 24), (200, 160, 48), (248, 216, 64), (120, 16, 28),
     (152, 24, 36), (208, 32, 40),
 ]
-PAL_ROSAS = [  # paleta 11: vasos com rosas e o quadro do Dom
+CINZA_MEDIO, CINZA_CLARO = (112, 112, 112), (200, 200, 200)
+PAL_ROSAS = [  # paleta 11: vasos com rosas e o quadro do chefe (os 2 cinzas do retrato, com o K, nos índices 14-15)
     (0, 0, 0), K, (24, 72, 32), (40, 120, 48), (120, 16, 28), (208, 32, 40), (136, 96, 24), (200, 160, 48),
-    (248, 216, 64), (52, 32, 22), (64, 40, 28), (84, 54, 36), (72, 40, 48), (56, 32, 40), (56, 16, 72),
-    (96, 32, 120),
+    (248, 216, 64), (52, 32, 22), (64, 40, 28), (84, 54, 36), (72, 40, 48), (56, 32, 40), CINZA_MEDIO,
+    CINZA_CLARO,
 ]
+TONS_DO_RETRATO = (K, CINZA_MEDIO, CINZA_CLARO)   # o retrato só usa estes (preto e branco de foto antiga)
 PALETAS_DECORACAO = {9: PAL_PAREDE, 10: PAL_PISO, 11: PAL_ROSAS}
 # Metatiles da decoração com comportamento próprio (o resto é MB_NORMAL): o patamar da escada da sala do Dom é o warp
 ATRIBUTOS_DECORACAO = {("d", "escada_2_0"): MB_DOWN_LEFT_STAIR_WARP}
@@ -247,7 +251,7 @@ def _parede(d, x0, x1, alto, lambri):
                 d.line((x, 8, x, 14), fill=MADEIRA_ESC)
 
 
-def desenhar_sala():
+def desenhar_sala(src):
     """Os metatiles da sala do Dom: {nome: imagem RGB}. Desenho próprio, na linha da prévia aprovada (item 5)."""
     s = {}
 
@@ -291,34 +295,9 @@ def desenhar_sala():
     d.rectangle((22, 16, 28, 18), fill=OURO)
     s["cortina"] = im
 
-    # quadro do Dom (3x2): moldura dourada, fundo roxo, o sorriso do Gengar (paleta 11)
-    P = PAL_ROSAS
-    im = Image.new("RGB", (48, 32), P[12])
-    d = ImageDraw.Draw(im)
-    for x in range(48):
-        if x % 8 == 0:
-            d.line((x, 0, x, 31), fill=P[13])
-    d.rectangle((0, 0, 47, 1), fill=P[13])
-    d.rectangle((0, 22, 47, 22), fill=P[6])
-    d.rectangle((0, 23, 47, 31), fill=P[11])
-    d.rectangle((0, 31, 47, 31), fill=P[9])
-    d.rectangle((5, 3, 42, 27), fill=P[6])
-    d.rectangle((6, 4, 41, 26), fill=P[7])
-    d.rectangle((6, 4, 41, 4), fill=P[8])
-    d.rectangle((8, 6, 39, 24), fill=P[6])
-    d.rectangle((9, 7, 38, 23), fill=P[14])
-    d.ellipse((13, 9, 34, 26), fill=P[15])                       # o Gengar
-    d.polygon([(14, 12), (12, 7), (18, 10)], fill=P[15])
-    d.polygon([(33, 12), (35, 7), (29, 10)], fill=P[15])
-    d.rectangle((17, 13, 20, 15), fill=P[5])                     # olhos vermelhos
-    d.rectangle((27, 13, 30, 15), fill=P[5])
-    d.polygon([(17, 18), (30, 18), (27, 21), (20, 21)], fill=P[8])   # o sorriso
-    d.line((23, 18, 23, 21), fill=P[14])
-    d.rectangle((12, 7, 35, 8), fill=P[1])                       # o chapéu da Família
-    d.rectangle((16, 4, 31, 7), fill=P[1])
-    d.rectangle((16, 6, 31, 6), fill=P[5])
-    d.rectangle((14, 26, 33, 26), fill=P[7])
-    s["quadro"] = im
+    # o quadro do chefe (3x2): moldura dourada e, dentro dela, o retrato em preto e branco (desenhar_quadro)
+    for nome, retrato in QUADROS.items():
+        s[f"quadro_{nome}"] = desenhar_quadro(src, retrato)
 
     # piso de madeira escura e o piso com a sombra da parede
     def piso(d, sombra):
@@ -439,6 +418,63 @@ def desenhar_sala():
 
     s["escada"] = desenhar_escada()
     return s
+
+
+# O retrato de cada chefe: o sprite do mapa com chapéu (tools/familia_sombra/gerar.py), quadro único 32x40. A chave é o
+# nome do metatile ("quadro_<nome>"); None = a tela vazia (escura), usada pelas ocupações da parte 2 até ganharem
+# sprite: para elas basta acrescentar "nome": "<sprite>" aqui e o metatile no script do 6º andar.
+QUADROS = {"dom": "gengar_shiny", "cobrador": "tyranitar_shiny", "vazio": None}
+QUADRO_TELA = (7, 5, 40, 26)        # a tela do retrato dentro do quadro 48x32 (x0, y0, x1, y1, inclusive)
+SPRITES_FAMILIA = Path("graphics/object_events/pics/familia")
+PALETAS_SPRITES_FAMILIA = Path("graphics/object_events/palettes/familia")
+
+
+def _tom(cor):
+    """Cor do sprite → um dos 3 tons do retrato, pela luminância."""
+    lum = 0.299 * cor[0] + 0.587 * cor[1] + 0.114 * cor[2]
+    return K if lum < 64 else CINZA_MEDIO if lum < 120 else CINZA_CLARO
+
+
+def desenhar_quadro(src, sprite):
+    """O quadro 48x32: a parede vinho atrás, a moldura dourada e a tela do retrato (QUADRO_TELA). O retrato é o busto do
+    sprite em 1:1 (as linhas de cima do desenho, do chapéu para baixo, até a altura da tela), centrado na largura e
+    convertido para os 3 tons de cinza. Nada passa da tela: a moldura é a mesma em todos os quadros."""
+    P = PAL_ROSAS
+    im = Image.new("RGB", (48, 32), P[12])
+    d = ImageDraw.Draw(im)
+    for x in range(0, 48, 8):
+        d.line((x, 0, x, 31), fill=P[13])
+    d.rectangle((0, 0, 47, 1), fill=P[13])
+    d.rectangle((0, 22, 47, 22), fill=P[6])
+    d.rectangle((0, 23, 47, 31), fill=P[11])
+    d.rectangle((0, 31, 47, 31), fill=P[9])
+    x0, y0, x1, y1 = QUADRO_TELA
+    d.rectangle((x0 - 4, y0 - 4, x1 + 4, y1 + 4), fill=K)              # contorno
+    d.rectangle((x0 - 3, y0 - 3, x1 + 3, y1 + 3), fill=P[7])           # ouro
+    d.line((x0 - 3, y0 - 3, x1 + 3, y0 - 3), fill=P[8])
+    d.line((x0 - 3, y0 - 3, x0 - 3, y1 + 3), fill=P[8])
+    d.line((x0 - 2, y1 + 3, x1 + 3, y1 + 3), fill=P[6])
+    d.line((x1 + 3, y0 - 2, x1 + 3, y1 + 3), fill=P[6])
+    d.rectangle((x0 - 1, y0 - 1, x1 + 1, y1 + 1), fill=P[6])           # chanfro de dentro
+    for cx, cy in ((x0 - 3, y0 - 3), (x1 + 3, y0 - 3), (x0 - 3, y1 + 3), (x1 + 3, y1 + 3)):
+        d.point((cx, cy), fill=P[8])                                    # cantos brilhando
+    if sprite is None:
+        d.rectangle((x0, y0, x1, y1), fill=K)
+        return im
+    d.rectangle((x0, y0, x1, y1), fill=CINZA_MEDIO)
+    pic = Image.open(src / SPRITES_FAMILIA / f"{sprite}.png")
+    linhas = (src / PALETAS_SPRITES_FAMILIA / f"{sprite}.pal").read_text().split()
+    pal = [tuple(map(int, linhas[3 + i * 3:6 + i * 3])) for i in range(16)]
+    px = pic.load()
+    bx0, by0, bx1, _by1 = pic.getbbox()
+    dx = x0 + (x1 - x0 + 1 - (bx1 - bx0)) // 2 - bx0
+    dy = y0 + 1 - by0                                                   # 1 linha de folga em cima do chapéu
+    for y in range(by0, min(pic.height, by0 + y1 - y0)):
+        for x in range(bx0, bx1):
+            c = px[x, y] & 15
+            if c:
+                im.putpixel((x + dx, y + dy), _tom(pal[c]))
+    return im
 
 
 def desenhar_escada():
@@ -704,8 +740,8 @@ def andares():
     desce = a.escada_sala(1)
     x0 = SALA_ESCRITORIO_X
     for dx in range(3):
-        a.put(x0 + dx, 1, ("d", f"quadro_{dx}_0"), 1)
-        a.put(x0 + dx, 2, ("d", f"quadro_{dx}_1"), 1)
+        a.put(x0 + dx, 1, ("d", f"quadro_dom_{dx}_0"), 1)      # o layout traz o Dom; o ON_LOAD troca pelo chefe
+        a.put(x0 + dx, 2, ("d", f"quadro_dom_{dx}_1"), 1)
         a.put(x0 + dx, 3, ("d", f"poltrona_{dx}_0"), 1)
         a.put(x0 + dx, 4, ("d", f"mesa_{dx}_0"), 1)
         a.put(x0 + dx, 5, ("d", f"mesa_{dx}_1"), 1)
@@ -763,7 +799,7 @@ def montar_familia(src, dst, plantas):
         atrs.append(atr_m[i])
 
     lad = Ladrilhos(novos)
-    sala = desenhar_sala()
+    sala = desenhar_sala(src)
     for nome, im in sorted(sala.items()):
         for (mx, my), ent in sorted(metatiles_de(im, PALETAS_DECORACAO, lad).items()):
             chave = ("d", nome) if im.size == (16, 16) else ("d", f"{nome}_{mx}_{my}")
@@ -874,6 +910,9 @@ def gerar(src, dst):
         "familia_sombra": {"ladrilhos": n_lad, "metatiles": n_met},
         "indigo_plateau": {"ladrilhos": n_lad_indigo, "porta_trancada": porta, "porta_aberta": METATILE_PORTA_GERAL},
         "rota23": {"porta": list(PORTA), "predio": [PREDIO_X, PREDIO_Y, 4, 6]},
+        "quadro": {"x": SALA_ESCRITORIO_X, "y": 1, "tela": list(QUADRO_TELA),
+                   "metatiles": {nome: [[ids[("d", f"quadro_{nome}_{dx}_{dy}")] for dx in range(3)] for dy in range(2)]
+                                 for nome in QUADROS}},
         "andares": {str(n): {"largura": a.w, "altura": a.h,
                              **{k: (list(v) if isinstance(v, tuple) else [list(p) for p in v]) for k, v in i.items()}}
                     for n, (a, i) in plantas.items()},

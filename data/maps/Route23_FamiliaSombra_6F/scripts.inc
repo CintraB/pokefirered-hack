@@ -4,7 +4,47 @@
 @ (capturável). Vencido ou capturado, ele deixa cair a rosa; perder ou fugir, ele continua ali.
 Route23_FamiliaSombra_6F_MapScripts::
 	map_script MAP_SCRIPT_ON_TRANSITION, Route23_FamiliaSombra_6F_OnTransition
+	map_script MAP_SCRIPT_ON_LOAD, Route23_FamiliaSombra_6F_OnLoad
 	.byte 0
+
+@ O quadro atrás do chefe (7..9, 1..2) é o retrato em preto e branco do chefe da ocupação (VAR_FAMILIA_OCUPACAO).
+@ Sem chefe (entre ocupações) a variável continua com a última: fica o retrato do último chefe. As ocupações 3 e 4
+@ (parte 2) ainda não têm sprite: tela vazia. Para dar retrato a elas, acrescentar o sprite em QUADROS
+@ (tools/familia_sombra/predio.py), os rótulos em metatile_labels.h e um call_if_eq aqui.
+Route23_FamiliaSombra_6F_OnLoad::
+	special FamiliaSombra_GetOcupacao
+	copyvar VAR_0x8008, VAR_RESULT
+	call_if_eq VAR_0x8008, 1, Route23_FamiliaSombra_6F_EventScript_QuadroDom
+	call_if_eq VAR_0x8008, 2, Route23_FamiliaSombra_6F_EventScript_QuadroCobrador
+	call_if_ge VAR_0x8008, 3, Route23_FamiliaSombra_6F_EventScript_QuadroVazio
+	end
+
+Route23_FamiliaSombra_6F_EventScript_QuadroDom::
+	setmetatile 7, 1, METATILE_FamiliaSombra_QuadroDom_0_0, TRUE
+	setmetatile 8, 1, METATILE_FamiliaSombra_QuadroDom_1_0, TRUE
+	setmetatile 9, 1, METATILE_FamiliaSombra_QuadroDom_2_0, TRUE
+	setmetatile 7, 2, METATILE_FamiliaSombra_QuadroDom_0_1, TRUE
+	setmetatile 8, 2, METATILE_FamiliaSombra_QuadroDom_1_1, TRUE
+	setmetatile 9, 2, METATILE_FamiliaSombra_QuadroDom_2_1, TRUE
+	return
+
+Route23_FamiliaSombra_6F_EventScript_QuadroCobrador::
+	setmetatile 7, 1, METATILE_FamiliaSombra_QuadroCobrador_0_0, TRUE
+	setmetatile 8, 1, METATILE_FamiliaSombra_QuadroCobrador_1_0, TRUE
+	setmetatile 9, 1, METATILE_FamiliaSombra_QuadroCobrador_2_0, TRUE
+	setmetatile 7, 2, METATILE_FamiliaSombra_QuadroCobrador_0_1, TRUE
+	setmetatile 8, 2, METATILE_FamiliaSombra_QuadroCobrador_1_1, TRUE
+	setmetatile 9, 2, METATILE_FamiliaSombra_QuadroCobrador_2_1, TRUE
+	return
+
+Route23_FamiliaSombra_6F_EventScript_QuadroVazio::
+	setmetatile 7, 1, METATILE_FamiliaSombra_QuadroVazio_0_0, TRUE
+	setmetatile 8, 1, METATILE_FamiliaSombra_QuadroVazio_1_0, TRUE
+	setmetatile 9, 1, METATILE_FamiliaSombra_QuadroVazio_2_0, TRUE
+	setmetatile 7, 2, METATILE_FamiliaSombra_QuadroVazio_0_1, TRUE
+	setmetatile 8, 2, METATILE_FamiliaSombra_QuadroVazio_1_1, TRUE
+	setmetatile 9, 2, METATILE_FamiliaSombra_QuadroVazio_2_1, TRUE
+	return
 
 Route23_FamiliaSombra_6F_OnTransition::
 	setvar VAR_0x8004, 6

@@ -88,6 +88,12 @@ Ajustes do Cintra (depois das telas da v67):
   CONTINUAR (só o ON_LOAD roda): mapa, layout e tile iguais, porta trancada só antes da 8ª insígnia e o Persian
   visível exatamente quando o pedágio está armado (VAR_TEMP_3). Telas `familia_continue_rota23_*` só gravadas.
 
+O quadro da sala do Dom (retrato do chefe em preto e branco, trocado no ON_LOAD do 6º andar):
+
+- `familia/subida` também confere o retrato do Dom na ocupação 1;
+- `familia/quadro_cobrador`: ocupação 2 (atalho FAMILIA_SET), subindo pela escada do 5º andar: o retrato do Cobrador
+  (tela `familia_quadro_cobrador`, só gravada); sem chefe fica o do último chefe; ocupação 3 = tela vazia.
+
 Uso, a partir de test/ (a pasta OUT precisa do captura.sav de um `rapido`/`completo`):
     python3 -m esteira completo --rom R --elf E --out OUT --only familia
 """
@@ -1032,7 +1038,9 @@ class FamiliaScenario(CatchSaveScenario):
         gfx = [self._object_gfx(local) for local in objs]
         want = [self.gfx[f"OBJ_EVENT_GFX_FAMILIA_{n}"] for n in ("GENGAR_SHINY", "MACHAMP", "MACHAMP")]
         assert gfx == want, f"gráficos da sala {gfx}, esperava {want}"
-        return f"andares {seen}; 6º com o Gengar shiny e os 2 Machamp; telas {shots}"
+        assert self._quadro() == "dom", f"quadro da ocupação 1: {self._quadro()}"
+        self._sala_igual_ao_layout()
+        return f"andares {seen}; 6º com o Gengar shiny, os 2 Machamp e o retrato do Dom; telas {shots}"
 
     def _capanga_ve(self) -> str:
         """O capanga 2 do 1º andar (visão 4, olhando para a esquerda) vê o jogador a 2 tiles, vem até ele e luta;
@@ -1365,6 +1373,60 @@ class FamiliaScenario(CatchSaveScenario):
     def _continue_fechado(self) -> str:
         return self._continue_rota23(0, ESTADO_FECHADO, False)
 
+    # --- O quadro da sala do Dom: o retrato do chefe da ocupação ------------------------------------------
+    def _quadro(self) -> str:
+        """Qual quadro está na parede da sala (os 6 metatiles de (7..9, 1..2) em VMap): "dom", "cobrador", "vazio"."""
+        q = json.loads(PREDIO_JSON.read_text(encoding="utf-8"))["quadro"]
+        agora = [[self._metatile(q["x"] + dx, q["y"] + dy) for dx in range(3)] for dy in range(2)]
+        achados = [nome for nome, ids in q["metatiles"].items() if ids == agora]
+        assert len(achados) == 1, f"quadro desconhecido: {agora}"
+        return achados[0]
+
+    def _sala_igual_ao_layout(self) -> None:
+        """A sala carregada (VMap) é a do map.bin do repositório, fora o quadro (que o ON_LOAD troca): pega ROM
+        compilada com layout velho e tileset novo (metatiles trocados)."""
+        raw = (REPO_ROOT / "data/layouts/Route23_FamiliaSombra_6F/map.bin").read_bytes()
+        q = json.loads(PREDIO_JSON.read_text(encoding="utf-8"))["quadro"]
+        largura = 13
+        diferentes = []
+        for i in range(len(raw) // 2):
+            x, y = i % largura, i // largura
+            if q["x"] <= x < q["x"] + 3 and q["y"] <= y < q["y"] + 2:
+                continue
+            esperado = int.from_bytes(raw[i * 2:i * 2 + 2], "little") & 0x3FF
+            if self._metatile(x, y) != esperado:
+                diferentes.append((x, y))
+        assert not diferentes, f"sala diferente do map.bin em {diferentes[:8]}"
+
+    def _quadro_cobrador(self) -> str:
+        """Ocupação 2 pelo atalho FAMILIA_SET: subindo pela escada do 5º andar, o retrato é o do Cobrador (tela
+        `familia_quadro_cobrador`, só gravada); sem chefe fica o do último chefe; a ocupação 3 (parte 2) mostra a
+        tela vazia."""
+        self._restore("familia_base")
+        self.box.set_party_mon(0, self._sp("MEWTWO"), 100)
+        self.box.call(CMD_SET_VAR, REPEL_VAR, 999)
+        self.box.familia_set(2, ESTADO_ATIVA)
+        self._warp("MAP_ROUTE23_FAMILIA_SOMBRA_5F", ANTES_DA_ESCADA)
+        self.nav.go_through_warp("right")
+        self._settle("6º andar")
+        assert self._at("MAP_ROUTE23_FAMILIA_SOMBRA_6F"), self.game.location()
+        self.emu.frames(30)
+        shot = self._shot("familia_quadro_cobrador")
+        visto = {"ocupação 2": self._quadro()}
+        assert self._object_gfx(1) == self.gfx["OBJ_EVENT_GFX_FAMILIA_TYRANITAR_SHINY"], "o chefe não é o Cobrador"
+        self.box.familia_set(2, ESTADO_SEM_CHEFE, self._half_day())
+        self._warp("MAP_ROUTE23_FAMILIA_SOMBRA_6F", SAIDA_ESCADA_6F)
+        visto["sem chefe (depois da 2)"] = self._quadro()
+        self.box.familia_set(3, ESTADO_ATIVA)
+        self._warp("MAP_ROUTE23_FAMILIA_SOMBRA_6F", SAIDA_ESCADA_6F)
+        visto["ocupação 3"] = self._quadro()
+        self.box.familia_set(1, ESTADO_SEM_CHEFE, self._half_day())
+        self._warp("MAP_ROUTE23_FAMILIA_SOMBRA_6F", SAIDA_ESCADA_6F)
+        visto["sem chefe (depois da 1)"] = self._quadro()
+        assert visto == {"ocupação 2": "cobrador", "sem chefe (depois da 2)": "cobrador", "ocupação 3": "vazio",
+                         "sem chefe (depois da 1)": "dom"}, visto
+        return f"quadros {visto}; tela {shot}"
+
     def run(self) -> None:
         try:
             self._flow("familia: CONTINUAR com o save do modo rápido", self._start)
@@ -1401,6 +1463,7 @@ class FamiliaScenario(CatchSaveScenario):
             self.suite.run("familia/continue_rota23_ativa", self._continue_ativa)
             self.suite.run("familia/continue_rota23_sem_chefe", self._continue_sem_chefe)
             self.suite.run("familia/continue_rota23_fechado", self._continue_fechado)
+            self.suite.run("familia/quadro_cobrador", self._quadro_cobrador)
         except Abort:
             pass
 

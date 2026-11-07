@@ -203,4 +203,4 @@ $(TILESETGFXDIR)/secondary/island_harbor/tiles.4bpp: %.4bpp: %.png
 
 # POK-51: o prédio da Família Sombra (tools/familia_sombra/predio.py)
 $(TILESETGFXDIR)/secondary/familia_sombra/tiles.4bpp: %.4bpp: %.png
-	$(GFX) $< $@ -num_tiles 222 -Wnum_tiles
+	$(GFX) $< $@ -num_tiles 243 -Wnum_tiles

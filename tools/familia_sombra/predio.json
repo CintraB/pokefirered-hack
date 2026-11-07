@@ -1,8 +1,8 @@
 {
   "_comentario": "Gerado por tools/familia_sombra/predio.py. Não editar.",
   "familia_sombra": {
-    "ladrilhos": 222,
-    "metatiles": 114
+    "ladrilhos": 243,
+    "metatiles": 126
   },
   "indigo_plateau": {
     "ladrilhos": 316,
@@ -20,6 +20,54 @@
       4,
       6
     ]
+  },
+  "quadro": {
+    "x": 7,
+    "y": 1,
+    "tela": [
+      7,
+      5,
+      40,
+      26
+    ],
+    "metatiles": {
+      "dom": [
+        [
+          750,
+          752,
+          754
+        ],
+        [
+          751,
+          753,
+          755
+        ]
+      ],
+      "cobrador": [
+        [
+          744,
+          746,
+          748
+        ],
+        [
+          745,
+          747,
+          749
+        ]
+      ],
+      "vazio": [
+        [
+          756,
+          758,
+          760
+        ],
+        [
+          757,
+          759,
+          761
+        ]
+      ]
+    }
   },
   "andares": {
     "1": {

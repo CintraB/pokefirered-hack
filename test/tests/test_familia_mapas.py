@@ -551,3 +551,86 @@ def test_rosa_com_bolsa_cheia_vai_para_a_sala_de_trofeus():
     assert "FlagSet(sRosas[ocupacao - 1]);" in FAMILIA_C
     redomas = (MAPS / "SevenIsland_UnusedHouse" / "scripts.inc").read_text(encoding="utf-8")
     assert all(f"FLAG_FAMILIA_ROSA_{n}" in redomas for n in range(1, 5))
+
+
+# ---------- o quadro da sala do Dom: o retrato do chefe em preto e branco ----------
+FAMILIA_TS = REPO_ROOT / "data" / "tilesets" / "secondary" / "familia_sombra"
+QUADRO = PREDIO["quadro"]
+
+
+def _quadro_rgb(nome: str) -> list[list[tuple[int, int, int]]]:
+    """O quadro `nome` (3x2 metatiles, 48x32) desenhado a partir do tileset (tiles.png + metatiles.bin + paletas), só a
+    camada de baixo (a de cima da decoração é vazia)."""
+    from PIL import Image
+
+    im = Image.open(FAMILIA_TS / "tiles.png")
+    px = im.load()
+    por_linha = im.width // 8
+    metas = (FAMILIA_TS / "metatiles.bin").read_bytes()
+    paletas = {}
+    out = [[(0, 0, 0)] * 48 for _ in range(32)]
+    for dy in range(2):
+        for dx in range(3):
+            mid = QUADRO["metatiles"][nome][dy][dx] - 640
+            ents = struct.unpack_from("<8H", metas, mid * 16)
+            for k in range(4):
+                e = ents[k]
+                t, hf, vf, pal = (e & 0x3FF) - 640, e >> 10 & 1, e >> 11 & 1, e >> 12
+                assert t >= 0 and not ents[4 + k] & 0x3FF, (nome, hex(e))   # ladrilho próprio, sem camada de cima
+                if pal not in paletas:
+                    v = list(map(int, (FAMILIA_TS / "palettes" / f"{pal:02d}.pal").read_text().split()[3:51]))
+                    paletas[pal] = [tuple(v[i * 3:i * 3 + 3]) for i in range(16)]
+                for y in range(8):
+                    for x in range(8):
+                        sx, sy = (7 - x if hf else x), (7 - y if vf else y)
+                        c = px[(t % por_linha) * 8 + sx, (t // por_linha) * 8 + sy] & 15
+                        out[dy * 16 + (k // 2) * 8 + y][dx * 16 + (k % 2) * 8 + x] = paletas[pal][c]
+    return out
+
+
+def test_quadro_metatiles_por_chefe():
+    """Os 3 quadros (Dom, Cobrador, tela vazia da parte 2) com rótulos fixos; o layout traz o Dom e o ON_LOAD do 6º
+    andar troca pelo chefe da ocupação (VAR_FAMILIA_OCUPACAO; sem chefe, fica o do último)."""
+    labels = (REPO_ROOT / "include/constants/metatile_labels.h").read_text(encoding="utf-8")
+    s = (MAPS / NOMES[6] / "scripts.inc").read_text(encoding="utf-8")
+    assert "map_script MAP_SCRIPT_ON_LOAD, Route23_FamiliaSombra_6F_OnLoad" in s
+    carga = _rotulo(s, "Route23_FamiliaSombra_6F_OnLoad")
+    assert "special FamiliaSombra_GetOcupacao" in carga
+    for nome, regra in (("Dom", "call_if_eq VAR_0x8008, 1,"), ("Cobrador", "call_if_eq VAR_0x8008, 2,"),
+                        ("Vazio", "call_if_ge VAR_0x8008, 3,")):
+        assert f"{regra} Route23_FamiliaSombra_6F_EventScript_Quadro{nome}" in carga, nome
+        corpo = _rotulo(s, f"Route23_FamiliaSombra_6F_EventScript_Quadro{nome}")
+        for dy in range(2):
+            for dx in range(3):
+                rotulo = f"METATILE_FamiliaSombra_Quadro{nome}_{dx}_{dy}"
+                mid = QUADRO["metatiles"][nome.lower()][dy][dx]
+                assert re.search(rf"#define {rotulo}\s+{mid:#x}\b", labels, re.I), rotulo
+                assert f"setmetatile {QUADRO['x'] + dx}, {QUADRO['y'] + dy}, {rotulo}, TRUE" in corpo, rotulo
+    w, cells, _attr = _grid(NOMES[6])
+    padrao = [[cells[(QUADRO["y"] + dy) * w + QUADRO["x"] + dx][0] for dx in range(3)] for dy in range(2)]
+    assert padrao == QUADRO["metatiles"]["dom"]
+    assert len({m for q in QUADRO["metatiles"].values() for linha in q for m in linha}) == 18
+
+
+def test_quadro_retrato_cinza_dentro_da_moldura():
+    """Dentro da tela só tons de cinza (foto antiga); fora dela os 3 quadros são idênticos ao da tela vazia (a moldura
+    e a parede): nada do retrato passa da moldura. O Dom e o Cobrador têm desenho (3 tons), a tela vazia é escura."""
+    x0, y0, x1, y1 = QUADRO["tela"]
+    vazio = _quadro_rgb("vazio")
+    dentro = lambda x, y: x0 <= x <= x1 and y0 <= y <= y1
+    for nome in ("dom", "cobrador"):
+        q = _quadro_rgb(nome)
+        for y in range(32):
+            for x in range(48):
+                if not dentro(x, y):
+                    assert q[y][x] == vazio[y][x], (nome, x, y)
+        tons = {q[y][x] for y in range(y0, y1 + 1) for x in range(x0, x1 + 1)}
+        assert all(max(c) - min(c) <= 8 for c in tons), (nome, tons)
+        assert len(tons) == 3, (nome, tons)
+    escuro = {vazio[y][x] for y in range(y0, y1 + 1) for x in range(x0, x1 + 1)}
+    assert len(escuro) == 1 and max(next(iter(escuro))) <= 32, escuro
+    # a moldura dourada fecha a tela nos 4 lados (o contorno de fora é escuro, o meio é ouro)
+    for x in range(x0 - 3, x1 + 4):
+        assert vazio[y0 - 3][x][0] > vazio[y0 - 3][x][2] and vazio[y1 + 3][x][0] > vazio[y1 + 3][x][2]
+    for y in range(y0 - 3, y1 + 4):
+        assert vazio[y][x0 - 3][0] > vazio[y][x0 - 3][2] and vazio[y][x1 + 3][0] > vazio[y][x1 + 3][2]
