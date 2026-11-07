@@ -97,6 +97,19 @@ O quadro da sala do Dom (retrato do chefe em preto e branco, trocado no ON_LOAD 
 - `familia/quadro_cobrador`: ocupação 2 (atalho FAMILIA_SET), subindo pela escada do 5º andar: o retrato do Cobrador
   (tela `familia_quadro_cobrador`, só gravada); sem chefe fica o do último chefe; ocupação 3 = tela vazia.
 
+POK-54, Task 7 (ocupações 3 e 4: o motor). O chefe cai pelo atalho FAMILIA_CHEFE_CAIU (o special da cena do 6º andar):
+
+- `familia/ciclo_ate_o_fim`: a queda do chefe 2 + 7 meios-dias traz a ocupação 3 (ATIVA, repovoada uma vez só); a queda do
+  3 + 7 traz a 4; a queda do 4 deixa ENCERRADA, sem gravar a queda, e +20 meios-dias depois continua ENCERRADA;
+- `familia/chefe_mercenario`: o special com a ocupação 3: "GARCHOMP, O MERCENÁRIO, ...", Garchomp shiny nv 74 com os
+  golpes e a Lum Berry da tabela, MUS_VS_LEGEND e a paleta shiny. Tela `familia_chefe_mercenario`;
+- `familia/chefe_pesadelo`: ocupação 4: Darkrai shiny nv 80, Leftovers, MUS_VS_DEOXYS. Contra um Golem nv 100 só com
+  Endurecer a IA abre com Vazio Negro e não usa Comedor de Sonhos com o Golem acordado. Tela `familia_chefe_pesadelo`;
+- `familia/captura_marca`: Master Ball no Mercenário e a queda: só a flag de captura 3 liga. O Pesadelo vencido sem
+  captura deixa a flag 4 desligada e o estado ENCERRADA;
+- `familia/conquistas_parte2`: um Garchomp selvagem comum não grava nada; o Mercenário vencido marca a conquista 44 e a
+  entrada "O Mercenário" (DERROTOU); o Pesadelo capturado marca a 45 e "O Pesadelo" (CAPTURADO).
+
 Uso, a partir de test/ (a pasta OUT precisa do captura.sav de um `rapido`/`completo`):
     python3 -m esteira completo --rom R --elf E --out OUT --only familia
 """
@@ -105,7 +118,8 @@ import importlib.util
 import json
 import re
 
-from ..battle import ACTION_FIGHT, MENU_TIMEOUT, MOVE_FUNC_SUFFIX, BattleDriver
+from ..battle import (ACTION_FIGHT, B_OUTCOME_CAUGHT, MENU_TIMEOUT, MOVE_FUNC_SUFFIX, NICKNAME_COMMAND,
+                      BattleDriver)
 from ..breeding import header_defines
 from ..game import POKEMON_SIZE, SB1_MONEY, mon_checksum_ok
 from .. import conquistas as cq
@@ -119,6 +133,7 @@ from .quick_catch_save import CatchSaveScenario
 ESTADO_FECHADO = 0                   # FAMILIA_ESTADO_FECHADO (include/constants/familia_sombra.h)
 ESTADO_ATIVA = 1                     # FAMILIA_ESTADO_ATIVA
 ESTADO_SEM_CHEFE = 2                 # FAMILIA_ESTADO_SEM_CHEFE
+ESTADO_ENCERRADA = 3                 # FAMILIA_ESTADO_ENCERRADA (POK-54: o 4º chefe caiu)
 PASSOS = 400                         # passos do caso familia/passos_andar_escuro
 SPRITE_SIZE, SPRITE_CALLBACK, SPRITE_DATA, SPRITE_IN_USE = 0x44, 0x1C, 0x2E, 0x3E   # struct Sprite
 MAX_SPRITES = 64
@@ -129,6 +144,7 @@ TRAINER_SLIDE = "SpriteCB_TrainerSlideIn"
 STRING_BYTES = 300                   # gDisplayedStringBattle[300]
 # Telas que o cenário grava em OUT/telas/ e que entram na comparação com as referências (esteira/refs.py)
 SCREEN_POINTS = ("familia_capanga_batalha", "familia_filme_batalha", "familia_chefe_batalha", "familia_gemeos_batalha",
+                 "familia_chefe_mercenario", "familia_chefe_pesadelo",   # POK-54, Task 7
                  "familia_rosa", "familia_porta_trancada", "familia_rota23_predio", "familia_pedagio",
                  "familia_andar_1", "familia_andar_4", "familia_sala_do_dom",
                  "familia_conquistas_batalha")   # `familia_diario_dom` é gravada mas fica fora: traz o TEMPO de jogo (00:08 x 00:09)
@@ -174,11 +190,11 @@ FOG_CALLBACK = "FogHorizontalSpriteCallback"
 LOCALID_PLAYER, LOCALID_FOLLOWER = 0xFF, 0xFE
 # Task 7: estados das conquistas (include/constants/conquistas.h), o resultado do diário e a tela de conquistas
 CONQ_PENDENTE, CONQ_FEITA = 0, 1
-DIARIO_DERROTOU = 3
+DIARIO_CAPTURADO, DIARIO_DERROTOU = 2, 3
 CONQ_BATALHA_ABA = 1
 TELA_PRONTA_TIMEOUT = 300
 TELA_ASSENTA = 20
-DESCE_ATE_O_FIM = 12                 # apertos de Baixo: a aba Batalha tem 10 linhas ativas
+DESCE_ATE_O_FIM = 14                 # apertos de Baixo: a aba Batalha tem 12 linhas ativas
 # Task 6: o pedágio
 LOCALID_COBRADOR = 8                 # 8º objeto de Route23 (os 7 guardas vêm antes; o teste estático confere)
 VAR_MAP_SCENE_ROUTE23 = 0x405F
@@ -763,7 +779,8 @@ class FamiliaScenario(CatchSaveScenario):
 
     def _ciclo(self) -> str:
         """O ciclo pelo relógio: save antigo com a 8ª insígnia entra = ocupação 1; queda + 6 meios-dias = ainda sem
-        chefe; +7 = ocupação 2 com itens e treinadores de volta (uma vez só); a 2ª queda + 7 = continua sem chefe."""
+        chefe; +7 = ocupação 2 com itens e treinadores de volta (uma vez só). As ocupações 3 e 4 e o fim da Família ficam
+        em familia/ciclo_ate_o_fim (POK-54)."""
         self._restore("familia_base")
         log = []
         self.box.set_flag(self._flag("FLAG_BADGE08_GET"), True)
@@ -792,15 +809,6 @@ class FamiliaScenario(CatchSaveScenario):
         assert self.box.familia_estado()[:2] == (2, ESTADO_ATIVA)
         assert all(self._repovoaveis().values()), f"repovoou de novo: {self._repovoaveis()}"
         log.append("entrar de novo não repovoa outra vez")
-        queda2 = queda + 9
-        self._set_half_day(queda2)
-        self.box.familia_set(2, ESTADO_SEM_CHEFE, queda2)
-        self._set_half_day(queda2 + 7)
-        self._warp("MAP_ROUTE23", ROTA23_SUL)
-        self._warp("MAP_ROUTE23_UNUSED_HOUSE", SAIDA_1F)
-        assert self.box.familia_estado() == (2, ESTADO_SEM_CHEFE, queda2), self.box.familia_estado()
-        assert self._active_objects() == [], f"objetos no 1º andar sem chefe: {self._active_objects()}"
-        log.append("2ª queda + 7: continua sem chefe (FAMILIA_OCUPACOES_ATIVAS 2), andar vazio")
         return "; ".join(log)
 
     # --- o pedágio (Task 6) -----------------------------------------------------------
@@ -1454,6 +1462,225 @@ class FamiliaScenario(CatchSaveScenario):
                          "sem chefe (depois da 1)": "dom"}, visto
         return f"quadros {visto}; tela {shot}"
 
+    # --- POK-54, Task 7: ocupações 3 e 4 (o Mercenário e o Pesadelo), a captura registrada e o fim da Família --------
+    def _queda(self, ocupacao: int, estado_seguinte: int, half: int, queda_antes: int = 0) -> tuple[int, int, tuple]:
+        """O chefe da `ocupacao` (ATIVA, com `queda_antes` na var da queda) cai pelo special de verdade (atalho
+        FAMILIA_CHEFE_CAIU), no meio-dia `half`."""
+        self._set_half_day(half)
+        self.box.familia_set(ocupacao, ESTADO_ATIVA, queda_antes)
+        got = self.box.familia_chefe_caiu()
+        assert got[:2] == (ocupacao, estado_seguinte), got
+        return got
+
+    def _virar_de_ocupacao(self, half: int, ocupacao: int) -> None:
+        """Espera o retorno da máfia (`half` já é o meio-dia da queda + 7) entrando na Rota 23 (o on_transition roda
+        FamiliaSombra_Atualizar) e confere a ocupação que chegou, ATIVA, com tudo de volta; depois entra e sai de novo
+        para provar que o repovoamento é uma vez só."""
+        self._set_half_day(half)
+        self._warp("MAP_ROUTE23", ROTA23_SUL)
+        assert self.box.familia_estado()[:2] == (ocupacao, ESTADO_ATIVA), self.box.familia_estado()
+        assert not any(self._repovoaveis().values()), f"não repovoou: {self._repovoaveis()}"
+        self._mark_repovoaveis()            # o jogador vence o capanga e pega o item
+        self._warp("MAP_ROUTE23_UNUSED_HOUSE", SAIDA_1F)
+        self._warp("MAP_ROUTE23", ROTA23_SUL)
+        assert self.box.familia_estado()[:2] == (ocupacao, ESTADO_ATIVA), self.box.familia_estado()
+        assert all(self._repovoaveis().values()), f"repovoou de novo: {self._repovoaveis()}"
+
+    def _ciclo_ate_o_fim(self) -> str:
+        """O ciclo inteiro pelo relógio, de verdade: a queda do chefe 2 + 7 meios-dias traz o Mercenário, uma vez só;
+        a queda do 3 + 7 traz o Pesadelo; a queda do 4 fecha a Família (ENCERRADA, sem queda gravada) e nem 20
+        meios-dias depois a máfia volta."""
+        self._restore("familia_base")
+        log = []
+        queda2 = 20
+        self._queda(2, ESTADO_SEM_CHEFE, queda2)
+        assert self.box.familia_estado() == (2, ESTADO_SEM_CHEFE, queda2), self.box.familia_estado()
+        self._set_half_day(queda2 + 6)
+        self._warp("MAP_ROUTE23", ROTA23_SUL)
+        assert self.box.familia_estado()[:2] == (2, ESTADO_SEM_CHEFE), "voltou antes dos 7 meios-dias"
+        self._virar_de_ocupacao(queda2 + 7, 3)
+        log.append("queda 2 + 7: ocupação 3 ATIVA, uma vez só")
+        queda3 = queda2 + 9
+        self._queda(3, ESTADO_SEM_CHEFE, queda3, queda2)
+        assert self.box.familia_estado() == (3, ESTADO_SEM_CHEFE, queda3), self.box.familia_estado()
+        self._virar_de_ocupacao(queda3 + 7, 4)
+        log.append("queda 3 + 7: ocupação 4 ATIVA, uma vez só")
+        queda4 = queda3 + 9
+        self._queda(4, ESTADO_ENCERRADA, queda4, queda3)
+        # ENCERRADA não grava a queda: a var guarda a do chefe 3
+        assert self.box.familia_estado() == (4, ESTADO_ENCERRADA, queda3), self.box.familia_estado()
+        assert self.game.flag(self._flag("FLAG_FAMILIA_ROSA_4")), "a rosa negra não ligou"
+        self._set_half_day(queda4 + 20)
+        for _ in range(2):
+            self._warp("MAP_ROUTE23", ROTA23_SUL)
+            self._warp("MAP_ROUTE23_UNUSED_HOUSE", SAIDA_1F)
+        assert self.box.familia_estado() == (4, ESTADO_ENCERRADA, queda3), self.box.familia_estado()
+        assert self.box.familia_chefe_caiu()[:2] == (4, ESTADO_ENCERRADA), "chamada repetida mudou o estado"
+        log.append("queda 4: ENCERRADA sem gravar a queda; +20 meios-dias e continua ENCERRADA")
+        return "; ".join(log)
+
+    def _chefe_de(self, ocupacao: int, abertura: str, musica: str, tela: str, checkpoint: str) -> str:
+        """O chefe da `ocupacao` pelo special de verdade: abertura com o título, espécie shiny, nível, golpes e item da
+        tabela, batalha lendária de chefe, a música certa e a paleta shiny."""
+        self._restore("familia_base")
+        expected = chefe_da_tabela(ocupacao)
+        species = self._sp(expected[0])
+        self.box.familia_set(ocupacao, ESTADO_ATIVA)
+        self.box.familia_chefe()
+        seen = self._wait_intro(abertura, (1,))
+        assert self.driver.battler_species_level(1)[0] == species, seen
+        flags = self.driver.battle_type_flags()
+        assert flags & BATTLE_TYPE_FAMILIA_CHEFE and flags & BATTLE_TYPE_LEGENDARY, f"gBattleTypeFlags {flags:#x}"
+        assert not flags & (BATTLE_TYPE_FAMILIA | BATTLE_TYPE_TRAINER), f"gBattleTypeFlags {flags:#x}"
+        mon = self.game.enemy_party()[0]
+        assert mon.is_shiny, f"chefe não shiny: pid {mon.personality:#x}, OT {mon.ot_id:#x}"
+        sp, lv, item, moves = expected
+        got = (mon.species, mon.level, mon.held_item, mon.moves)
+        want = (species, lv, self.consts.item(f"ITEM_{item}"), [self.moves[f"MOVE_{m}"] for m in moves])
+        assert got == want, f"{sp}: {got}, esperava {want}"
+        assert self._bgm_is(musica), f"a música não é {musica}"
+        self.driver.wait_action_menu(INTRO_TIMEOUT)
+        self.emu.frames(10)
+        shiny = self._species_palette(species, True)
+        got_pal = self._battler_palette(1)
+        assert got_pal == shiny, f"paleta do chefe {[hex(c) for c in got_pal]}, esperava a shiny"
+        shot = self._shot(tela)
+        self.ctl.checkpoint(checkpoint)
+        return (f"{sp} nv {lv} shiny, {item}, {moves}; abertura {self._rom_text(abertura)!r}; {musica}; "
+                f"paleta shiny; tela {shot}")
+
+    def _chefe_mercenario(self) -> str:
+        return self._chefe_de(3, "gText_FamiliaChefeMercenario", "MUS_VS_LEGEND", "familia_chefe_mercenario",
+                              "familia_mercenario")
+
+    def _chefe_pesadelo(self) -> str:
+        """O Darkrai de verdade, com a música do Deoxys; depois a IA: contra um Golem nv 100 só com Endurecer ela abre
+        com Vazio Negro (o Golem dorme) e nunca usa Comedor de Sonhos com o Golem acordado."""
+        texto = self._chefe_de(4, "gText_FamiliaChefePesadelo", "MUS_VS_DEOXYS", "familia_chefe_pesadelo",
+                               "familia_pesadelo")
+        self._restore("familia_base")
+        self.box.set_party_mon(0, self._sp("GOLEM"), 100)
+        self.box.set_party_move(0, 0, self.moves["MOVE_HARDEN"])
+        self.box.familia_set(4, ESTADO_ATIVA)
+        self.box.familia_chefe()
+        dark_void, dream = self.moves["MOVE_DARK_VOID"], self.moves["MOVE_DREAM_EATER"]
+        chosen = []
+        for turn in range(1, AI_TURNS + 1):
+            self.driver.wait_action_menu(INTRO_TIMEOUT)
+            asleep = bool(self.emu.read_u32(self._sym("gBattleMons") + BATTLE_MON_STATUS1) & STATUS1_SLEEP)
+            self.emu.frames(10)
+            move, result = self._turn_reading_foe_move()
+            name = self.moves_names.get(move, str(move))
+            chosen.append(name + (" (Golem dormindo)" if asleep else ""))
+            if turn == 1:
+                assert move == dark_void, f"turno 1: {name}, esperava MOVE_DARK_VOID"
+                ai = self.emu.read_u32(self.emu.read_u32(self._sym("gBattleResources")) + AI_RESOURCES)
+                bits = self.emu.read_u8(ai + AI_LOGIC_ID)
+                assert bits == CHEFE_AI_BITS, f"IA do chefe com {bits} bits de flags, esperava {CHEFE_AI_BITS}"
+            assert not (move == dream and not asleep), f"turno {turn}: Comedor de Sonhos com o Golem acordado"
+            if result != "menu":      # o Golem pode cair no último turno (Comedor de Sonhos com ele dormindo)
+                assert turn > 1, f"turno {turn}: a batalha acabou ({result})"
+                break
+        return f"{texto} | IA do Darkrai contra o Golem: {chosen}"
+
+    def _capturar(self, ball: int, quem: str) -> None:
+        """Lança a bola `ball` no chefe em campo e leva a captura até o campo: sem apelido (B), o resto com A."""
+        d = self.driver
+        assert d.throw_ball(ball), f"a Master Ball não capturou {quem}"
+        for _ in range(4000):
+            if d._battle_over():
+                break
+            d._press(KEY_B if d._script_command() == NICKNAME_COMMAND else KEY_A)
+        assert d.outcome() == B_OUTCOME_CAUGHT, f"gBattleOutcome = {d.outcome()}"
+        self.ctl.wait_until(lambda: not self.game.in_battle(), 900, "volta ao campo")
+        self.ctl.wait_overworld_idle(900)
+
+    def _captura_marca(self) -> str:
+        """Master Ball no Mercenário: o chefe cai capturado e só o bit 3 liga. O Pesadelo vencido sem captura: bit 4
+        desligado, ENCERRADA e a queda não gravada."""
+        self._restore("familia_mercenario")
+        master = self.consts.item("ITEM_MASTER_BALL")
+        assert self.box.call(CMD_GIVE_ITEM, master, 1) == 1
+        self._capturar(master, "o Mercenário")
+        got = self.box.familia_chefe_caiu()
+        assert got == (3, ESTADO_SEM_CHEFE, (False, False, True, False)), got
+        assert self.game.flag(self._flag("FLAG_FAMILIA_ROSA_3"))
+        capturado = f"Mercenário capturado: {got}"
+        # o Pesadelo vencido sem captura: Superpoder (Lutador, 2x no tipo Sombrio) do Mewtwo mais rápido derruba num golpe
+        self._restore("familia_base")
+        self.box.set_party_mon(0, self._sp("MEWTWO"), 100)
+        for i in range(4):
+            self.box.set_party_move(0, i, self.moves["MOVE_SUPERPOWER"])
+        self.box.familia_set(4, ESTADO_ATIVA)
+        self.box.familia_chefe()
+        self.driver.wait_battle_start()
+        assert self.driver.fight_to_end() == "win", "perdeu para o Pesadelo"
+        self.ctl.wait_until(lambda: not self.game.in_battle(), 900, "volta ao campo")
+        self.ctl.wait_overworld_idle(900)
+        got = self.box.familia_chefe_caiu()
+        assert got == (4, ESTADO_ENCERRADA, (False, False, False, False)), got
+        assert self.box.familia_estado()[2] == 0, "ENCERRADA gravou a queda"
+        assert self.game.flag(self._flag("FLAG_FAMILIA_ROSA_4"))
+        return f"{capturado}; Pesadelo vencido sem captura: {got}"
+
+    def _conquistas_parte2(self) -> str:
+        """As conquistas 44 e 45 e o diário pelas lutas de verdade: um Garchomp selvagem comum não grava nada; o
+        Mercenário vencido marca "Vencer o Mercenário" e a entrada de "O Mercenário"; o Pesadelo capturado marca
+        "Derrubar a Família Sombra" e a entrada de "O Pesadelo"."""
+        self._restore("familia_base")
+        self.box.conq_reset(True)
+        self.box.set_flag(self._flag("FLAG_SYS_GAME_CLEAR"), True)
+        self.box.set_party_mon(0, self._sp("MEWTWO"), 100)
+        for i in range(4):
+            self.box.set_party_move(0, i, self.moves["MOVE_PSYCHIC"])
+        mercenario, pesadelo = cq.evento("familia_mercenario"), cq.evento("familia_pesadelo")
+        assert [self._conq(c) for c in ("familia_mercenario", "familia_toda")] == [CONQ_PENDENTE] * 2
+        # 1) o Garchomp comum (nv 74, sem o chefe) não grava nada
+        assert self.box.call(CMD_START_WILD_BATTLE, self._sp("GARCHOMP"), 74) == 1, "START_WILD_BATTLE"
+        self.driver.wait_battle_start()
+        assert not self.driver.battle_type_flags() & BATTLE_TYPE_FAMILIA_CHEFE
+        assert self.driver.fight_to_end() == "win", "perdeu para o Garchomp selvagem"
+        self.ctl.wait_until(lambda: not self.game.in_battle(), 900, "volta ao campo")
+        self.ctl.wait_overworld_idle(900)
+        assert self.box.diario_entrada(mercenario) is None, "o Garchomp selvagem entrou como o Mercenário"
+        assert self._conq("familia_mercenario") == CONQ_PENDENTE
+        # 2) o Mercenário de verdade, vencido
+        self.box.familia_set(3, ESTADO_ATIVA)
+        self.box.familia_chefe()
+        self.driver.wait_battle_start()
+        assert self.driver.battle_type_flags() & BATTLE_TYPE_FAMILIA_CHEFE
+        assert self.driver.fight_to_end() == "win", "perdeu para o Mercenário"
+        self.ctl.wait_until(lambda: not self.game.in_battle(), 900, "volta ao campo")
+        self.ctl.wait_overworld_idle(900)
+        assert self._conq("familia_mercenario") == CONQ_PENDENTE, "feita antes da queda"
+        assert self.box.familia_chefe_caiu()[:2] == (3, ESTADO_SEM_CHEFE)
+        assert self._conq("familia_mercenario") == CONQ_FEITA, "Vencer o Mercenário não ficou feita"
+        assert self._conq("familia_toda") == CONQ_PENDENTE
+        e = self.box.diario_entrada(mercenario)
+        assert e is not None and e["resultado"] == DIARIO_DERROTOU and e["turnos"] >= 1, e
+        assert e["time"] == [(self._sp("MEWTWO"), 100), (self._sp("SNORLAX"), PLAYER_LEVEL)], e
+        titulo = cq.dados()["diario"][mercenario]
+        assert titulo["nome"] == "O Mercenário" and titulo["especie"] == "SPECIES_GARCHOMP", titulo
+        assert titulo["local"] == "Garchomp, Rota 23", titulo
+        # 3) o Pesadelo de verdade, capturado
+        self.box.familia_set(4, ESTADO_ATIVA)
+        self.box.familia_chefe()
+        self.driver.wait_battle_start()
+        master = self.consts.item("ITEM_MASTER_BALL")
+        assert self.box.call(CMD_GIVE_ITEM, master, 1) == 1
+        self._capturar(master, "o Pesadelo")
+        assert self._conq("familia_toda") == CONQ_PENDENTE, "feita antes da queda"
+        assert self.box.familia_chefe_caiu() == (4, ESTADO_ENCERRADA, (False, False, False, True))
+        assert self._conq("familia_toda") == CONQ_FEITA, "Derrubar a Família Sombra não ficou feita"
+        assert self._conq("familia_mercenario") == CONQ_FEITA
+        e = self.box.diario_entrada(pesadelo)
+        assert e is not None and e["resultado"] == DIARIO_CAPTURADO, e
+        titulo = cq.dados()["diario"][pesadelo]
+        assert titulo["nome"] == "O Pesadelo" and titulo["especie"] == "SPECIES_DARKRAI", titulo
+        assert titulo["local"] == "Darkrai, Rota 23", titulo
+        return ("Garchomp selvagem sem registro; Mercenário vencido: conquista 44 feita e diário DERROTOU; Pesadelo "
+                "capturado: conquista 45 feita, diário CAPTURADO e ENCERRADA")
+
     def run(self) -> None:
         try:
             self._flow("familia: CONTINUAR com o save do modo rápido", self._start)
@@ -1492,6 +1719,11 @@ class FamiliaScenario(CatchSaveScenario):
             self.suite.run("familia/continue_rota23_sem_chefe", self._continue_sem_chefe)
             self.suite.run("familia/continue_rota23_fechado", self._continue_fechado)
             self.suite.run("familia/quadro_cobrador", self._quadro_cobrador)
+            self.suite.run("familia/ciclo_ate_o_fim", self._ciclo_ate_o_fim)
+            self.suite.run("familia/chefe_mercenario", self._chefe_mercenario)
+            self.suite.run("familia/chefe_pesadelo", self._chefe_pesadelo)
+            self.suite.run("familia/captura_marca", self._captura_marca)
+            self.suite.run("familia/conquistas_parte2", self._conquistas_parte2)
         except Abort:
             pass
 

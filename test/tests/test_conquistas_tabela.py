@@ -143,7 +143,7 @@ def test_cobre_o_spec():
     c = _conquistas()
     assert set(IDS_DO_SPEC) <= set(c)
     assert len(c) == len(IDS_DO_SPEC)
-    assert {i for i, x in c.items() if x.get("ativa") is False} == {"familia_mercenario", "familia_toda"}   # parte 2 do POK-51
+    assert {i for i, x in c.items() if x.get("ativa") is False} == set()   # POK-54: as 2 da parte 2 do POK-51 ligaram
     assert {i for i, x in c.items() if x.get("perdivel")} == {"lider_um_pokemon", "rival_todas"}
     assert c["dex_obtivel"]["param"] == 245
     assert "contar_dex" in _dados()["_comentario"]

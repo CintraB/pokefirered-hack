@@ -4,6 +4,7 @@
 #include "gflib.h"
 #include "random.h"
 #include "conquistas.h"
+#include "familia_sombra.h"
 #include "text.h"
 #include "data.h"
 #include "battle.h"
@@ -6052,8 +6053,9 @@ static u16 GetBattleBGM(void)
     // POK-51: os capangas dos andares 4-5 lutam ao som de treinador; o chefe, de lendário.
     if (gBattleTypeFlags & BATTLE_TYPE_FAMILIA)
         return MUS_VS_TRAINER;
+    // POK-54: o chefe da ocupação 4 (Darkrai) luta ao som do Deoxys; os outros, de lendário.
     if (gBattleTypeFlags & BATTLE_TYPE_FAMILIA_CHEFE)
-        return MUS_VS_LEGEND;
+        return FamiliaSombra_MusicaDoChefe();
     if (gBattleTypeFlags & BATTLE_TYPE_TRAINER)
     {
         switch (gTrainers[gTrainerBattleOpponent_A].trainerClass)

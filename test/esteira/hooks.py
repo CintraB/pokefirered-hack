@@ -527,6 +527,12 @@ class Mailbox:
         result = self.call(CMD_DEX_COMPLETA, dex)
         return tuple(bool(result >> bit & 1) for bit in range(4))
 
+    def familia_chefe_caiu(self) -> tuple[int, int, tuple[bool, bool, bool, bool]]:
+        """Chama o special FamiliaSombra_ChefeCaiu (o chefe da ocupação atual caiu; gBattleOutcome diz se foi capturado):
+        (ocupação, estado, (capturado do chefe 1, 2, 3, 4))."""
+        result = self.call(CMD_FAMILIA_CHEFE_CAIU)
+        return result & 0xFF, result >> 8 & 0xFF, tuple(bool(result >> (16 + n) & 1) for n in range(4))
+
     def familia_chefe(self) -> None:
         """Começa a batalha contra o chefe da ocupação pelo special FamiliaSombra_IniciarChefe num script de campo."""
         result = self.call(CMD_FAMILIA_CHEFE)
@@ -547,6 +553,7 @@ CMD_SET_PARTY_PID_LOW = 0x130  # arg0 = slot, arg1 = 16 bits baixos da personali
 CMD_DEX_INFO = 0x140    # arg0 = espécie -> número nacional interno | número impresso << 16 (0xFFFFFFFF = fora de NUM_SPECIES)
 CMD_DEX_MARCAR = 0x141  # arg0 = número nacional interno, arg1 = 0 limpa / 1 visto / 2 visto e capturado -> capturados (386) | com os extras << 16
 CMD_DEX_COMPLETA = 0x142  # arg0 = número nacional interno (0 = nenhum), só leitura -> HasAllMons | HasAllKantoMonsWithMew << 1 | capturado(arg0) << 2 | visto(arg0) << 3
+CMD_FAMILIA_CHEFE_CAIU = 0x143  # -> ocupação | estado << 8 | (FLAG_FAMILIA_CAPTURADO_n no bit n - 1) << 16: FamiliaSombra_ChefeCaiu (gBattleOutcome decide a captura)
 
 # --- Hack 6: breeding genético (enum à parte em include/test_hooks.h, a partir de 0x60; ------
 # o uso fica em esteira/breeding.py e scenarios/full_breeding.py / full_egg.py)

@@ -51,10 +51,18 @@ def test_conquistas_no_fim():
         "familia_dom", "familia_cobrador", "familia_mercenario", "familia_pesadelo"]
 
 
-def test_total_ativo_44():
+def test_total_ativo_46():
+    """POK-54: as 2 da parte 2 deixam de ser inativas, sem "Parte 2" na condição: 44 viram 46 ativas."""
     ativas = [c for c in DADOS["conquistas"] if c.get("ativa", True)]
-    assert len(DADOS["conquistas"]) == 46 and len(ativas) == 44
-    assert {c["id"] for c in DADOS["conquistas"] if not c.get("ativa", True)} == {"familia_mercenario", "familia_toda"}
+    assert len(DADOS["conquistas"]) == 46 and len(ativas) == 46
+    assert not [c["id"] for c in DADOS["conquistas"] if "ativa" in c and not c["ativa"]]
+    for cid in ("familia_mercenario", "familia_toda"):
+        assert "Parte 2" not in CONQ[cid]["condicao"] and "inativa" not in CONQ[cid]["condicao"], cid
+    assert "Garchomp, o Mercenário" in CONQ["familia_mercenario"]["condicao"]
+    assert "4 chefes" in CONQ["familia_toda"]["condicao"]
+    # prêmios no padrão das difíceis
+    assert CONQ["familia_mercenario"]["premios"] == [{"item": "ITEM_PP_MAX", "qtd": 3}]
+    assert CONQ["familia_toda"]["premios"] == [{"item": "ITEM_MASTER_BALL", "qtd": 1}]
     # os 3 eventos da parte 1 existem e são distintos
     evts = [CONQ[i]["param"] for i in NOVAS]
     assert len(set(evts)) == 5
@@ -68,8 +76,13 @@ def test_diario_so_no_predio():
     assert por_id["familia_dom"]["tipo"] == "chefe" and por_id["familia_dom"]["especie"] == "SPECIES_GENGAR"
     assert por_id["familia_cobrador"]["tipo"] == "chefe" and por_id["familia_cobrador"]["especie"] == "SPECIES_TYRANITAR"
     assert "SPECIES_GENGAR" not in [e.get("especie") for e in DADOS["diario"] if e["tipo"] == "lendario"]
-    # as 2 da parte 2 ficam reservadas e nunca gravam (SPECIES_NONE)
-    assert por_id["familia_mercenario"]["especie"] == por_id["familia_pesadelo"]["especie"] == "SPECIES_NONE"
+    # POK-54: o Mercenário e o Pesadelo gravam com o Garchomp e o Darkrai (também só como chefe)
+    assert por_id["familia_mercenario"]["tipo"] == por_id["familia_pesadelo"]["tipo"] == "chefe"
+    assert por_id["familia_mercenario"]["especie"] == "SPECIES_GARCHOMP"
+    assert por_id["familia_mercenario"]["local"] == "Garchomp, Rota 23" and por_id["familia_mercenario"]["nome"] == "O Mercenário"
+    assert por_id["familia_pesadelo"]["especie"] == "SPECIES_DARKRAI"
+    assert por_id["familia_pesadelo"]["local"] == "Darkrai, Rota 23" and por_id["familia_pesadelo"]["nome"] == "O Pesadelo"
+    assert not {"SPECIES_GARCHOMP", "SPECIES_DARKRAI"} & {e.get("especie") for e in DADOS["diario"] if e["tipo"] == "lendario"}
     corpo = _corpo(DIARIO_C, "EventoDoLendario")
     assert "FamiliaSombra_EhChefe() ? DIARIO_TIPO_CHEFE : DIARIO_TIPO_LENDARIO" in corpo
     assert "gDiarioEventos[evt].tipo == tipo" in corpo
@@ -77,7 +90,11 @@ def test_diario_so_no_predio():
 
 def test_ganchos_da_familia():
     caiu = _corpo(FAMILIA_C, "FamiliaSombra_ChefeCaiu")
-    assert "CONQ_EVT_FAMILIA_DOM" in caiu and "CONQ_EVT_FAMILIA_COBRADOR" in caiu
+    for evt in ("DOM", "COBRADOR", "MERCENARIO", "TODA"):
+        assert f"CONQ_EVT_FAMILIA_{evt}" in caiu, evt
+    for linha in CONST_H.splitlines():
+        if "CONQ_EVT_FAMILIA_" in linha:
+            assert "inativa" not in linha, linha
     # o guard de estado vem antes: chamada repetida não conta de novo
     assert caiu.index("FamiliaSombra_ChefeAtivo") < caiu.index("Conquistas_Evento")
     assert "CONQ_EVT_FAMILIA_PEDAGIO_FORCA" in _corpo(FAMILIA_C, "FamiliaSombra_PedagioVencido")

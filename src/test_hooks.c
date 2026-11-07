@@ -1563,6 +1563,19 @@ static u32 DexCompleta(u32 dex)
     return result;
 }
 
+// POK-54: the boss of the current occupation fell (the special of the 6th floor script); result = occupation | state << 8
+// | the 4 captured flags (occupation n at bit n - 1) << 16.
+static u32 FamiliaChefeCaiu(void)
+{
+    u32 capturados = 0;
+    u8 n;
+
+    FamiliaSombra_ChefeCaiu();
+    for (n = 1; n <= FAMILIA_OCUPACOES_TOTAL; n++)
+        capturados |= (u32)(FamiliaSombra_ChefeCapturado(n) != 0) << (n - 1);
+    return (u32)(VarGet(VAR_FAMILIA_OCUPACAO) & 0xFF) | (u32)(VarGet(VAR_FAMILIA_ESTADO) & 0xFF) << 8 | capturados << 16;
+}
+
 static u32 FamiliaSet(u32 estado, u32 queda)
 {
     VarSet(VAR_FAMILIA_OCUPACAO, estado & 0xFF);
@@ -1799,6 +1812,7 @@ void TestHooks_Run(void)
     case TEST_CMD_DEX_INFO:         result = DexInfo(gTestMailbox.arg0); break;
     case TEST_CMD_DEX_MARCAR:       result = DexMarcar(gTestMailbox.arg0, gTestMailbox.arg1); break;
     case TEST_CMD_DEX_COMPLETA:     result = DexCompleta(gTestMailbox.arg0); break;
+    case TEST_CMD_FAMILIA_CHEFE_CAIU: result = FamiliaChefeCaiu(); break;
     // POK-29
     case TEST_CMD_SHOW_FIELD_TEXT:  result = ShowFieldText(gTestMailbox.arg0, gTestMailbox.arg1); break;
     default:

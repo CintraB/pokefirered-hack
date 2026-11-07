@@ -16,6 +16,7 @@
 #include "constants/moves.h"
 #include "constants/opponents.h"
 #include "constants/rgb.h"
+#include "constants/songs.h"
 #include "constants/species.h"
 #include "constants/trainers.h"
 #include "constants/vars.h"
@@ -31,6 +32,15 @@ static const u16 sRosas[FAMILIA_OCUPACOES_TOTAL] =
     FLAG_FAMILIA_ROSA_2,
     FLAG_FAMILIA_ROSA_3,
     FLAG_FAMILIA_ROSA_4,
+};
+
+// POK-54: o chefe da ocupação foi capturado (a flag liga na queda; o dossiê da Jenny lê para o carimbo).
+static const u16 sCapturados[FAMILIA_OCUPACOES_TOTAL] =
+{
+    FLAG_FAMILIA_CAPTURADO_1,
+    FLAG_FAMILIA_CAPTURADO_2,
+    FLAG_FAMILIA_CAPTURADO_3,
+    FLAG_FAMILIA_CAPTURADO_4,
 };
 
 u16 FamiliaSombra_MeiosDiasAgora(void)
@@ -89,26 +99,50 @@ void FamiliaSombra_Atualizar(void)
             FamiliaSombra_Repovoar();
         }
         break;
+    case FAMILIA_ESTADO_ENCERRADA:   // o 4º chefe caiu: o prédio fica fechado para sempre
+        break;
     }
 }
 
+bool8 FamiliaSombra_ChefeCapturado(u8 ocupacao)
+{
+    if (ocupacao < 1 || ocupacao > FAMILIA_OCUPACOES_TOTAL)
+        return FALSE;
+    return FlagGet(sCapturados[ocupacao - 1]);
+}
+
+// Chamado quando o chefe da ocupação cai, vencido ou capturado (gBattleOutcome ainda vale: é o resultado da luta).
 void FamiliaSombra_ChefeCaiu(void)
 {
     u8 ocupacao = FamiliaSombra_Ocupacao();
 
     if (!FamiliaSombra_ChefeAtivo())   // chamada repetida não regrava a queda
         return;
-    VarSet(VAR_FAMILIA_QUEDA, FamiliaSombra_MeiosDiasAgora());
-    VarSet(VAR_FAMILIA_ESTADO, FAMILIA_ESTADO_SEM_CHEFE);
     if (ocupacao >= 1 && ocupacao <= FAMILIA_OCUPACOES_TOTAL)
+    {
         FlagSet(sRosas[ocupacao - 1]);
-    // POK-51: "Vencer o Dom" / "Vencer o Cobrador" (o Mercenário é da parte 2: a conquista fica inativa)
+        if (gBattleOutcome == B_OUTCOME_CAUGHT)
+            FlagSet(sCapturados[ocupacao - 1]);
+    }
+    if (ocupacao >= FAMILIA_OCUPACOES_ATIVAS)
+    {
+        // o último chefe caiu: sem período de espera e sem volta da máfia (ENCERRADA não grava a queda)
+        VarSet(VAR_FAMILIA_ESTADO, FAMILIA_ESTADO_ENCERRADA);
+    }
+    else
+    {
+        VarSet(VAR_FAMILIA_QUEDA, FamiliaSombra_MeiosDiasAgora());
+        VarSet(VAR_FAMILIA_ESTADO, FAMILIA_ESTADO_SEM_CHEFE);
+    }
+    // POK-51: "Vencer o Dom", "Vencer o Cobrador"; POK-54: "Vencer o Mercenário" e, com o 4º, "Derrubar a Família Sombra"
     if (ocupacao == 1)
         Conquistas_Evento(CONQ_EVT_FAMILIA_DOM);
     else if (ocupacao == 2)
         Conquistas_Evento(CONQ_EVT_FAMILIA_COBRADOR);
     else if (ocupacao == 3)
         Conquistas_Evento(CONQ_EVT_FAMILIA_MERCENARIO);
+    else if (ocupacao == 4)
+        Conquistas_Evento(CONQ_EVT_FAMILIA_TODA);
 }
 
 // Os 6 andares do prédio (o térreo é o antigo Route23_UnusedHouse).
@@ -321,24 +355,36 @@ const u8 *FamiliaSombra_TextoDoChefe(void)
     return gText_FamiliaChefeQuerAcertar[OcupacaoDasLutas() - 1];
 }
 
-// Special: o chefe da ocupação em gEnemyParty[0] e a batalha contra ele (lendária, MUS_VS_LEGEND). Sempre shiny pela
-// receita do SetLeadShiny (test_hooks.c): o jogador é o OT e a metade alta da personalidade anula o valor shiny;
-// a metade baixa sai ao acaso (natureza e gênero). IVs no máximo, golpes e item fixos de sFamiliaChefes.
-void FamiliaSombra_IniciarChefe(void)
+// O chefe da ocupação em `mon`: sempre shiny pela receita do SetLeadShiny (test_hooks.c): o jogador é o OT e a
+// metade alta da personalidade anula o valor shiny; a metade baixa sai ao acaso (natureza e gênero). IVs no máximo,
+// nível e golpes fixos de sFamiliaChefes; o item fixo só vem com `comItem` (a entrega da Jenny não leva o item).
+void FamiliaSombra_CriarChefe(struct Pokemon *mon, u8 ocupacao, bool8 comItem)
 {
-    const struct FamiliaMembro *chefe = &sFamiliaChefes[OcupacaoDasLutas() - 1];
-    struct Pokemon *mon = &gEnemyParty[0];
+    const struct FamiliaMembro *chefe = &sFamiliaChefes[ocupacao - 1];
     u32 otId = GetPlayerTrainerId();
     u16 baixa = Random();
     u32 personality;
     s32 i;
 
     personality = (((otId >> 16) ^ (otId & 0xFFFF) ^ baixa) & 0xFFFF) << 16 | baixa;
-    ZeroEnemyPartyMons();
     CreateMon(mon, chefe->species, chefe->level, MAX_PER_STAT_IVS, TRUE, personality, OT_ID_PLAYER_ID, 0);
     for (i = 0; i < MAX_MON_MOVES; i++)
         SetMonMoveSlot(mon, chefe->moves[i], i);
-    SetMonData(mon, MON_DATA_HELD_ITEM, &chefe->heldItem);
+    if (comItem)
+        SetMonData(mon, MON_DATA_HELD_ITEM, &chefe->heldItem);
+}
+
+// A música da batalha do chefe: o Darkrai (ocupação 4) luta ao som do Deoxys; os outros, de lendário.
+u16 FamiliaSombra_MusicaDoChefe(void)
+{
+    return OcupacaoDasLutas() == 4 ? MUS_VS_DEOXYS : MUS_VS_LEGEND;
+}
+
+// Special: o chefe da ocupação em gEnemyParty[0] e a batalha contra ele (lendária, FamiliaSombra_MusicaDoChefe).
+void FamiliaSombra_IniciarChefe(void)
+{
+    ZeroEnemyPartyMons();
+    FamiliaSombra_CriarChefe(&gEnemyParty[0], OcupacaoDasLutas(), TRUE);
     StartFamiliaChefeBattle();
 }
 
@@ -367,11 +413,15 @@ static const u16 sGfxDaEspecie[][2] =
     {SPECIES_GOLEM,      OBJ_EVENT_GFX_FAMILIA_GOLEM},
     {SPECIES_MACHAMP,    OBJ_EVENT_GFX_FAMILIA_MACHAMP},
     {SPECIES_RHYDON,     OBJ_EVENT_GFX_FAMILIA_RHYDON},
+    {SPECIES_GLIGAR,     OBJ_EVENT_GFX_FAMILIA_GLIGAR},
+    {SPECIES_DUSCLOPS,   OBJ_EVENT_GFX_FAMILIA_DUSCLOPS},
     {SPECIES_GENGAR,     OBJ_EVENT_GFX_FAMILIA_GENGAR_SHINY},
     {SPECIES_TYRANITAR,  OBJ_EVENT_GFX_FAMILIA_TYRANITAR_SHINY},
+    {SPECIES_GARCHOMP,   OBJ_EVENT_GFX_FAMILIA_GARCHOMP_SHINY},
+    {SPECIES_DARKRAI,    OBJ_EVENT_GFX_FAMILIA_DARKRAI_SHINY},
 };
 
-// Espécie sem gráfico de chapéu (só a parte 2: Garchomp, Gligar, Darkrai, Dusclops) cai no Gengar / Machamp.
+// Espécie sem gráfico de chapéu cai na reserva (nenhuma das tabelas usa uma: o teste confere).
 static u16 GfxDaEspecie(u16 species, u16 reserva)
 {
     s32 i;
