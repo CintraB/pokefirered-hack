@@ -27,7 +27,8 @@ def test_workflow_usa_pages():
     # Privilégio mínimo: o topo só lê; pages/id-token só no job que publica.
     assert dados["permissions"] == {"contents": "read"}
     assert dados["jobs"]["deploy"]["permissions"] == {"pages": "write", "id-token": "write"}
-    assert "permissions" not in dados["jobs"]["build"]
+    # o build só lê o repositório e a configuração do Pages (o configure-pages consulta a API)
+    assert dados["jobs"]["build"]["permissions"] == {"contents": "read", "pages": "read"}
     assert dados["concurrency"]["group"] == "pages"
     assert dados["concurrency"]["cancel-in-progress"] is False
     for uso in ("actions/checkout@v4", "actions/setup-python@v5",
