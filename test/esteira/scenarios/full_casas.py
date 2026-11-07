@@ -42,7 +42,8 @@ PRECO = 3000
 DINHEIRO = 10000
 NIVEL = 5                            # um Snorlax tão novo ainda tem golpes vagos
 TUTOR_BODY_SLAM, TUTOR_DOUBLE_EDGE = 3, 4   # TUTOR_MOVE_* (constants/party_menu.h)
-ROTA19_LONGE = (11, 13)              # Route19: de onde se vê a casa inteira (tela casa_rota19_exterior)
+ROTA19_LONGE = (14, 9)               # Route19: de onde se vê a casa e os degraus (tela casa_rota19_exterior)
+ROTA19_ANDAR = (11, 13)              # Route19: de onde se anda até a porta sem cair na visão dos nadadores
 ROTA19_FRENTE_DA_PORTA = (9, 12)     # Route19: o tile abaixo da porta (9, 11)
 PESCADOR_FRENTE = (4, 4)             # Route19_UnusedHouse: o pescador está em (4, 3)
 KRABBY_NIVEL = 20
@@ -247,6 +248,7 @@ class CasasScenario(CatchSaveScenario):
         self._warp("MAP_ROUTE19", ROTA19_LONGE)
         self.emu.frames(180)                    # o nome da rota some da tela
         exterior = self._shot("casa_rota19_exterior")
+        self._warp("MAP_ROUTE19", ROTA19_ANDAR)   # longe dos nadadores: andar daqui não dispara batalha
         assert self.nav.walk_to(*ROTA19_FRENTE_DA_PORTA), f"não chegou à porta: {self.game.player_xy()}"
         self.nav.go_through_warp("up")
         assert self._at("MAP_ROUTE19_UNUSED_HOUSE"), self.game.location()

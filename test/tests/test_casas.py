@@ -95,7 +95,7 @@ VARS_H = (REPO_ROOT / "include" / "constants" / "vars.h").read_text(encoding="ut
 def test_krabby_recorde_funcoes():
     """Init/Get/Compare do Krabby no molde do Magikarp, com var própria (livre), iniciada no novo jogo, e os dois
     specials registrados no FIM de specials.inc."""
-    for acao, magikarp in (("Init", "Magikarp"), ("Get", "Magikarp"), ("Compare", "Magikarp")):
+    for acao in ("Init", "Get", "Compare"):
         assert re.search(rf"void {acao}Krabby\w*\(void\)", SIZE_C), acao
     assert "VarSet(VAR_KRABBY_SIZE_RECORD, DEFAULT_MAX_SIZE)" in SIZE_C
     assert "GetMonSizeRecordInfo(SPECIES_KRABBY, sizeRecord)" in SIZE_C
@@ -161,19 +161,44 @@ def test_casa_rota19_ligada():
     for o in rota["object_events"]:
         assert (o["x"], o["y"]) not in casa_xy, o["script"]
     assert [o for o in rota["object_events"] if o["script"] == "Route19_EventScript_Richard"][0]["x"] == 13
-    # o caminho do norte (13..16, 0) até a beira da praia (13, 13) continua aberto: BFS por tiles livres
+    # o caminho do norte (15, 0) até a beira da praia (13, 13): grafo dirigido por tiles livres, com os degraus
+    # (MB_JUMP_*) como arestas de mão única. O pulo ignora o tile de pouso, então o pouso TEM de ser livre.
     livre = lambda x, y: 0 <= x < largura and 0 <= y < 14 and celulas[y * largura + x][1] == 0 \
         and "OCEAN" not in (comp(x, y) or "")
     ocupados = {(o["x"], o["y"]) for o in rota["object_events"]}
-    fila, visto = [(15, 0)], {(15, 0)}
-    while fila:
-        x, y = fila.pop()
+    saltos = {"MB_JUMP_EAST": (1, 0), "MB_JUMP_WEST": (-1, 0), "MB_JUMP_NORTH": (0, -1), "MB_JUMP_SOUTH": (0, 1)}
+    arestas: dict[tuple[int, int], set[tuple[int, int]]] = {}
+    for y in range(14):
+        for x in range(largura):
+            if livre(x, y) and (x, y) not in ocupados:
+                arestas.setdefault((x, y), set())
+    for (x, y) in list(arestas):
         for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
             p = (x + dx, y + dy)
-            if p not in visto and livre(*p) and p not in ocupados:
-                visto.add(p)
-                fila.append(p)
+            if p in arestas:
+                arestas[(x, y)].add(p)
+            elif 0 <= p[0] < largura and 0 <= p[1] < 14 and saltos.get(comp(*p)) == (dx, dy):
+                pouso = (x + 2 * dx, y + 2 * dy)
+                assert pouso in arestas, f"o degrau em {p} pousa em {pouso}, que está bloqueado (ficaria preso)"
+                arestas[(x, y)].add(pouso)
+
+    def alcanca(origens, grafo):
+        fila, visto = list(origens), set(origens)
+        while fila:
+            for q in grafo.get(fila.pop(), ()):
+                if q not in visto:
+                    visto.add(q)
+                    fila.append(q)
+        return visto
+
+    visto = alcanca([(15, 0)], arestas)
     assert (13, 13) in visto and (11, 13) in visto and (13, 12) not in visto, "o caminho para a praia fechou"
+    inverso: dict[tuple[int, int], set[tuple[int, int]]] = {n: set() for n in arestas}
+    for n, vizinhos in arestas.items():
+        for q in vizinhos:
+            inverso[q].add(n)
+    saida = alcanca([(15, 0), (13, 13)], inverso)
+    assert visto <= saida, f"becos sem saída (o jogador ficaria preso): {sorted(visto - saida)}"
     assert (9, 12) in visto, "a frente da porta tem de ser alcançável"
     # o pescador está no mapa interno com script próprio
     assert [o["script"] for o in casa["object_events"]] == ["Route19_UnusedHouse_EventScript_Pescador"]
