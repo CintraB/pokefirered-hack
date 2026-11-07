@@ -448,6 +448,10 @@ static const u8 *GetInteractedObjectEventScript(struct MapPosition *position, u8
 
         // Look for an object event on the other side of the counter.
         objectEventId = GetObjectEventIdByPosition(position->x + gDirectionToVectors[direction].x, position->y + gDirectionToVectors[direction].y, position->elevation);
+        // POK-51: balcão de 2 tiles de fundo (a mesa da sala do Dom): se o tile seguinte também é balcão, olha mais um.
+        if ((objectEventId == OBJECT_EVENTS_COUNT || gObjectEvents[objectEventId].localId == LOCALID_PLAYER)
+         && MetatileBehavior_IsCounter(MapGridGetMetatileBehaviorAt(position->x + gDirectionToVectors[direction].x, position->y + gDirectionToVectors[direction].y)))
+            objectEventId = GetObjectEventIdByPosition(position->x + 2 * gDirectionToVectors[direction].x, position->y + 2 * gDirectionToVectors[direction].y, position->elevation);
         if (objectEventId == OBJECT_EVENTS_COUNT || gObjectEvents[objectEventId].localId == LOCALID_PLAYER)
             return NULL;
     }

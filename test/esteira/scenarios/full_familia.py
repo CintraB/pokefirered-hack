@@ -88,6 +88,9 @@ Ajustes do Cintra (depois das telas da v67):
   CONTINUAR (só o ON_LOAD roda): mapa, layout e tile iguais, porta trancada só antes da 8ª insígnia e o Persian
   visível exatamente quando o pedágio está armado (VAR_TEMP_3). Telas `familia_continue_rota23_*` só gravadas.
 
+- `familia/chefe_balcao`: depois de fugir do chefe, da frente da mesa (8, 6) olhando para cima, o A atravessa os 2
+  tiles de balcão (MB_COUNTER na coluna do meio da mesa) e a batalha do chefe recomeça sem sair da sala.
+
 O quadro da sala do Dom (retrato do chefe em preto e branco, trocado no ON_LOAD do 6º andar):
 
 - `familia/subida` também confere o retrato do Dom na ocupação 1;
@@ -192,7 +195,9 @@ VAR_TEMP_3 = 0x4003                  # o pedágio armado (Route23_EventScript_Ar
 MAP_HEADER_LAYOUT_ID = 0x12          # struct MapHeader.mapLayoutId
 BACKUP_LAYOUT_WIDTH, BACKUP_LAYOUT_MAP = 0, 8   # VMap, struct BackupMapLayout (Xsize, map)
 OBJECT_EVENT_FLAGS_1, INVISIBLE_BIT = 1, 1 << 5   # ObjectEvent: o bit 13 (invisible) é o bit 5 do 2º byte
-KEY_ITEMS_POCKET, BAG_KEYITEMS_COUNT = 1, 30     # índice em SB1_BAG_POCKETS; include/constants/global.h
+KEY_ITEMS_POCKET = 1                 # índice do bolso de itens-chave em SB1_BAG_POCKETS
+BAG_KEYITEMS_COUNT = header_defines(REPO_ROOT, "global.h")["BAG_KEYITEMS_COUNT"]   # include/constants/global.h
+FRENTE_DA_MESA = (8, 6)              # 6º andar: na frente da coluna do meio da mesa (balcão de 2 tiles até o chefe)
 
 
 def _noir_tool():
@@ -1281,6 +1286,28 @@ class FamiliaScenario(CatchSaveScenario):
         assert cheio == BAG_KEYITEMS_COUNT, f"bolso de itens-chave com {cheio} slots"
         return cheio
 
+    def _chefe_balcao(self) -> str:
+        """Fugir do chefe e falar com ele de novo sem sair da sala: na frente da mesa, olhando para cima, o A atravessa
+        os 2 tiles de balcão da mesa e a batalha do chefe recomeça."""
+        self._to_scene((("MEWTWO", 100), ("SNORLAX", 100)), True)
+        self._gatilho()
+        self._scene(self.game.in_battle, "começo da batalha do chefe")
+        assert self.driver.run_away(), "não fugiu do chefe"
+        self._scene(self.ctl.overworld_idle, "volta da fuga")
+        assert sorted(self._active_objects()) == [1], self._active_objects()
+        assert self.nav.walk_to(*FRENTE_DA_MESA), f"não chegou à frente da mesa: {self.game.player_xy()}"
+        self.emu.press(KEY_UP, hold=4, release=12)      # vira para a mesa (o tile de cima tem colisão)
+        self.ctl.wait_overworld_idle(120)
+        assert self.game.player_xy() == FRENTE_DA_MESA, self.game.player_xy()
+        self.emu.press(KEY_A, hold=2, release=8)
+        self.ctl.wait_until(self.ctl.script_active, 60, "A na mesa abre a fala do chefe")
+        msgs = self._scene(self.game.in_battle, "a revanche pelo balcão")
+        flags = self.driver.battle_type_flags()
+        assert flags & BATTLE_TYPE_FAMILIA_CHEFE, f"gBattleTypeFlags {flags:#x}"
+        fala = self._rom_text("Route23_FamiliaSombra_6F_Text_DomSemGemeos").split("\n")[0]
+        assert any(m.startswith(fala) for m in msgs), f"sem a fala do Dom; mensagens {msgs}"
+        return f"fugiu; de {FRENTE_DA_MESA} olhando para cima, o A no balcão recomeçou a batalha do chefe"
+
     def _rosa_bolsa_cheia(self) -> str:
         """Bolso de itens-chave cheio: o Dom vencido liga FLAG_FAMILIA_ROSA_1 (a redoma da Sala de Troféus acende por
         ela), a rosa NÃO entra na bolsa e a fala diz que ela foi direto para a Sala de Troféus da Ilha Sete."""
@@ -1459,6 +1486,7 @@ class FamiliaScenario(CatchSaveScenario):
             self.suite.run("familia/pedagio_forca", self._pedagio_forca)
             self.suite.run("familia/pedagio_volta", self._pedagio_volta)
             self.suite.run("familia/pedagio_sem_chefe", self._pedagio_sem_chefe)
+            self.suite.run("familia/chefe_balcao", self._chefe_balcao)
             self.suite.run("familia/rosa_bolsa_cheia", self._rosa_bolsa_cheia)
             self.suite.run("familia/continue_rota23_ativa", self._continue_ativa)
             self.suite.run("familia/continue_rota23_sem_chefe", self._continue_sem_chefe)

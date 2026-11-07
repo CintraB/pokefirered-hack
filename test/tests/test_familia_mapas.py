@@ -634,3 +634,21 @@ def test_quadro_retrato_cinza_dentro_da_moldura():
         assert vazio[y0 - 3][x][0] > vazio[y0 - 3][x][2] and vazio[y1 + 3][x][0] > vazio[y1 + 3][x][2]
     for y in range(y0 - 3, y1 + 4):
         assert vazio[y][x0 - 3][0] > vazio[y][x0 - 3][2] and vazio[y][x1 + 3][0] > vazio[y][x1 + 3][2]
+
+
+def test_chefe_alcancavel_pelo_balcao():
+    """O chefe fica na poltrona com colisão nos 4 lados: a coluna do meio da mesa (2 de fundo) é MB_COUNTER e o motor
+    olha 2 tiles além quando os 2 são balcão; assim, depois de fugir, o A na frente da mesa recomeça a luta. O
+    livro-caixa fica em outra coluna (senão o objeto ganharia da placa e o bilhete sumiria com o chefe presente)."""
+    cx, cy = PREDIO["andares"]["6"]["chefe"]
+    w, cells, _attr = _grid(NOMES[6])
+    livres = {(i % w, i // w) for i, (_mid, col) in enumerate(cells) if col == 0}
+    assert [_behavior_at(NOMES[6], cx, cy + d) for d in (1, 2)] == ["MB_COUNTER", "MB_COUNTER"]
+    assert (cx, cy + 3) in livres and (cx, cy + 1) not in livres and (cx, cy + 2) not in livres
+    assert all((x, y) not in livres for x, y in ((cx - 1, cy), (cx + 1, cy), (cx, cy - 1)))
+    bilhete = PREDIO["andares"]["6"]["bilhete"]
+    assert bilhete[0] != cx and _behavior_at(NOMES[6], *bilhete) == "MB_NORMAL"
+    corpo = (REPO_ROOT / "src/field_control_avatar.c").read_text(encoding="utf-8")
+    corpo = corpo[corpo.index("static const u8 *GetInteractedObjectEventScript(struct MapPosition *position"):]
+    corpo = corpo[:corpo.index("\n}\n")]
+    assert "2 * gDirectionToVectors[direction].x" in corpo and corpo.count("MetatileBehavior_IsCounter") == 2

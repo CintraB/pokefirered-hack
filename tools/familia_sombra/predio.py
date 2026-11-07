@@ -48,6 +48,7 @@ METATILE_PORTA_GERAL = 0x03D  # METATILE_General_Door (porta animada do tileset 
 # Comportamentos e atributos (include/constants/metatile_behaviors.h, src/fieldmap.c: sMetatileAttrMasks)
 MB_NORMAL = 0x00
 MB_DOWN_LEFT_STAIR_WARP = 0x6F
+MB_COUNTER = 0x80
 ENCONTRO_TERRA = 1 << 24
 CAMADA_COBERTA = 1 << 29
 
@@ -78,7 +79,10 @@ PAL_ROSAS = [  # paleta 11: vasos com rosas e o quadro do chefe (os 2 cinzas do 
 TONS_DO_RETRATO = (K, CINZA_MEDIO, CINZA_CLARO)   # o retrato só usa estes (preto e branco de foto antiga)
 PALETAS_DECORACAO = {9: PAL_PAREDE, 10: PAL_PISO, 11: PAL_ROSAS}
 # Metatiles da decoração com comportamento próprio (o resto é MB_NORMAL): o patamar da escada da sala do Dom é o warp
-ATRIBUTOS_DECORACAO = {("d", "escada_2_0"): MB_DOWN_LEFT_STAIR_WARP}
+# A coluna do meio da mesa (2 de fundo) é balcão: de frente para a mesa, o A alcança o chefe na poltrona atrás dela
+# (src/field_control_avatar.c olha 2 tiles além quando os 2 são balcão). Por isso o livro-caixa fica na coluna da esquerda.
+ATRIBUTOS_DECORACAO = {("d", "escada_2_0"): MB_DOWN_LEFT_STAIR_WARP,
+                       ("d", "mesa_1_0"): MB_COUNTER, ("d", "mesa_1_1"): MB_COUNTER}
 
 
 def _5bits(cor):
@@ -755,7 +759,7 @@ def andares():
         a.put(x, y, ("d", "vaso"), 1)
     a.sombras()
     out[6] = (a, {"desce": desce, "chefe": (x0 + 1, 3), "gemeos": [(x0 - 1, 3), (x0 + 3, 3)],
-                  "bilhete": (x0 + 1, 5), "gatilhos": [(3, 4), (4, 4), (5, 3)], "vasos": vasos})
+                  "bilhete": (x0, 5), "gatilhos": [(3, 4), (4, 4), (5, 3)], "vasos": vasos})
     return out
 
 
