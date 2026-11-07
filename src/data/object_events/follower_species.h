@@ -6154,6 +6154,62 @@ static const struct SpriteFrameImage sFollowerPicTable_Deoxys[] = {
     overworld_frame(sFollowerPic_Deoxys, 4, 4, 7),
 };
 
+static const u16 sFollowerPic_Gible[] = INCBIN_U16("graphics/object_events/pics/seguidores/gible.4bpp");
+static const u16 sFollowerPal_Gible[] = INCBIN_U16("graphics/object_events/palettes/seguidores/gible.gbapal");
+static const u16 sFollowerPalShiny_Gible[] = INCBIN_U16("graphics/object_events/palettes/seguidores/gible_shiny.gbapal");
+static const struct SpriteFrameImage sFollowerPicTable_Gible[] = {
+    overworld_frame(sFollowerPic_Gible, 4, 4, 0),
+    overworld_frame(sFollowerPic_Gible, 4, 4, 1),
+    overworld_frame(sFollowerPic_Gible, 4, 4, 2),
+    overworld_frame(sFollowerPic_Gible, 4, 4, 3),
+    overworld_frame(sFollowerPic_Gible, 4, 4, 4),
+    overworld_frame(sFollowerPic_Gible, 4, 4, 5),
+    overworld_frame(sFollowerPic_Gible, 4, 4, 6),
+    overworld_frame(sFollowerPic_Gible, 4, 4, 7),
+};
+
+static const u16 sFollowerPic_Gabite[] = INCBIN_U16("graphics/object_events/pics/seguidores/gabite.4bpp");
+static const u16 sFollowerPal_Gabite[] = INCBIN_U16("graphics/object_events/palettes/seguidores/gabite.gbapal");
+static const u16 sFollowerPalShiny_Gabite[] = INCBIN_U16("graphics/object_events/palettes/seguidores/gabite_shiny.gbapal");
+static const struct SpriteFrameImage sFollowerPicTable_Gabite[] = {
+    overworld_frame(sFollowerPic_Gabite, 4, 4, 0),
+    overworld_frame(sFollowerPic_Gabite, 4, 4, 1),
+    overworld_frame(sFollowerPic_Gabite, 4, 4, 2),
+    overworld_frame(sFollowerPic_Gabite, 4, 4, 3),
+    overworld_frame(sFollowerPic_Gabite, 4, 4, 4),
+    overworld_frame(sFollowerPic_Gabite, 4, 4, 5),
+    overworld_frame(sFollowerPic_Gabite, 4, 4, 6),
+    overworld_frame(sFollowerPic_Gabite, 4, 4, 7),
+};
+
+static const u16 sFollowerPic_Garchomp[] = INCBIN_U16("graphics/object_events/pics/seguidores/garchomp.4bpp");
+static const u16 sFollowerPal_Garchomp[] = INCBIN_U16("graphics/object_events/palettes/seguidores/garchomp.gbapal");
+static const u16 sFollowerPalShiny_Garchomp[] = INCBIN_U16("graphics/object_events/palettes/seguidores/garchomp_shiny.gbapal");
+static const struct SpriteFrameImage sFollowerPicTable_Garchomp[] = {
+    overworld_frame(sFollowerPic_Garchomp, 4, 4, 0),
+    overworld_frame(sFollowerPic_Garchomp, 4, 4, 1),
+    overworld_frame(sFollowerPic_Garchomp, 4, 4, 2),
+    overworld_frame(sFollowerPic_Garchomp, 4, 4, 3),
+    overworld_frame(sFollowerPic_Garchomp, 4, 4, 4),
+    overworld_frame(sFollowerPic_Garchomp, 4, 4, 5),
+    overworld_frame(sFollowerPic_Garchomp, 4, 4, 6),
+    overworld_frame(sFollowerPic_Garchomp, 4, 4, 7),
+};
+
+static const u16 sFollowerPic_Darkrai[] = INCBIN_U16("graphics/object_events/pics/seguidores/darkrai.4bpp");
+static const u16 sFollowerPal_Darkrai[] = INCBIN_U16("graphics/object_events/palettes/seguidores/darkrai.gbapal");
+static const u16 sFollowerPalShiny_Darkrai[] = INCBIN_U16("graphics/object_events/palettes/seguidores/darkrai_shiny.gbapal");
+static const struct SpriteFrameImage sFollowerPicTable_Darkrai[] = {
+    overworld_frame(sFollowerPic_Darkrai, 4, 4, 0),
+    overworld_frame(sFollowerPic_Darkrai, 4, 4, 1),
+    overworld_frame(sFollowerPic_Darkrai, 4, 4, 2),
+    overworld_frame(sFollowerPic_Darkrai, 4, 4, 3),
+    overworld_frame(sFollowerPic_Darkrai, 4, 4, 4),
+    overworld_frame(sFollowerPic_Darkrai, 4, 4, 5),
+    overworld_frame(sFollowerPic_Darkrai, 4, 4, 6),
+    overworld_frame(sFollowerPic_Darkrai, 4, 4, 7),
+};
+
 const struct FollowerSpecies gFollowerSpecies[FOLLOWER_SPECIES_COUNT] = {
     [NATIONAL_DEX_BULBASAUR - 1] = {
         .species = SPECIES_BULBASAUR,
@@ -10012,6 +10068,46 @@ const struct FollowerSpecies gFollowerSpecies[FOLLOWER_SPECIES_COUNT] = {
         .images = sFollowerPicTable_Deoxys,
         .palette = sFollowerPal_Deoxys,
         .shinyPalette = sFollowerPalShiny_Deoxys,
+        .female = NULL,
+        .forms = NULL,
+    },
+    [NATIONAL_DEX_GIBLE - 1] = {
+        .species = SPECIES_GIBLE,
+        .large = FALSE,
+        .formCount = 0,
+        .images = sFollowerPicTable_Gible,
+        .palette = sFollowerPal_Gible,
+        .shinyPalette = sFollowerPalShiny_Gible,
+        .female = NULL,
+        .forms = NULL,
+    },
+    [NATIONAL_DEX_GABITE - 1] = {
+        .species = SPECIES_GABITE,
+        .large = FALSE,
+        .formCount = 0,
+        .images = sFollowerPicTable_Gabite,
+        .palette = sFollowerPal_Gabite,
+        .shinyPalette = sFollowerPalShiny_Gabite,
+        .female = NULL,
+        .forms = NULL,
+    },
+    [NATIONAL_DEX_GARCHOMP - 1] = {
+        .species = SPECIES_GARCHOMP,
+        .large = FALSE,
+        .formCount = 0,
+        .images = sFollowerPicTable_Garchomp,
+        .palette = sFollowerPal_Garchomp,
+        .shinyPalette = sFollowerPalShiny_Garchomp,
+        .female = NULL,
+        .forms = NULL,
+    },
+    [NATIONAL_DEX_DARKRAI - 1] = {
+        .species = SPECIES_DARKRAI,
+        .large = FALSE,
+        .formCount = 0,
+        .images = sFollowerPicTable_Darkrai,
+        .palette = sFollowerPal_Darkrai,
+        .shinyPalette = sFollowerPalShiny_Darkrai,
         .female = NULL,
         .forms = NULL,
     },

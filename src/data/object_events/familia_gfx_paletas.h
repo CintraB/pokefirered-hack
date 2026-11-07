@@ -25,3 +25,7 @@
     {gObjectEventPal_Familia_redomas_a, OBJ_EVENT_PAL_TAG_FAMILIA_REDOMAS_A},
     {gObjectEventPal_Familia_redomas_b, OBJ_EVENT_PAL_TAG_FAMILIA_REDOMAS_B},
     {gObjectEventPal_Familia_tacas, OBJ_EVENT_PAL_TAG_FAMILIA_TACAS},
+    {gObjectEventPal_Familia_gligar, OBJ_EVENT_PAL_TAG_FAMILIA_GLIGAR},
+    {gObjectEventPal_Familia_dusclops, OBJ_EVENT_PAL_TAG_FAMILIA_DUSCLOPS},
+    {gObjectEventPal_Familia_garchomp_shiny, OBJ_EVENT_PAL_TAG_FAMILIA_GARCHOMP_SHINY},
+    {gObjectEventPal_Familia_darkrai_shiny, OBJ_EVENT_PAL_TAG_FAMILIA_DARKRAI_SHINY},

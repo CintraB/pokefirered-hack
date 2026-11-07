@@ -93,13 +93,13 @@ def tabela_texto():
 
 def test_12_especies():
     texto = tabela_texto()
-    # POK-53: a tabela passou a ter os 386 (indexada pela dex); as 12 da etapa 1 continuam lá, cada uma na sua posição
+    # POK-53: a tabela passou a ter os 386 (390 com o POK-54; indexada pela dex); as 12 da etapa 1 continuam lá, cada uma na sua posição
     principal = texto.split("gFollowerSpecies[FOLLOWER_SPECIES_COUNT] = {", 1)[1]
     for dex in ORDEM_DEX:
         nome = ESPECIES[dex].upper()
         assert re.search(rf"\[NATIONAL_DEX_{nome} - 1\] = \{{\n\s*\.species = SPECIES_{nome},", principal), nome
     follower_h = FOLLOWER_H.read_text(encoding="utf-8")
-    assert re.search(r"#define FOLLOWER_SPECIES_COUNT\s+386\b", follower_h)
+    assert re.search(r"#define FOLLOWER_SPECIES_COUNT\s+390\b", follower_h)
     assert "struct FollowerSpecies" in follower_h
     assert "Follower_GetSpeciesInfo" in follower_h
     # a tabela C carrega os 3 arquivos de cada espécie (folha, paleta normal e shiny), todos existentes
@@ -151,7 +151,7 @@ def test_shiny_mesmo_mapeamento():
                         assert ex[x, y][:3] == ob[x, y][:3], f"{nome} {rotulo}: cor em {x},{y}"
 
 
-@pytest.mark.slow  # POK-53: o padrão do conversor passou a ser as 386 (minutos sobre /mnt/c)
+@pytest.mark.slow  # POK-53: o padrão do conversor passou a ser as 390 (minutos sobre /mnt/c)
 @pytest.mark.skipif(os.environ.get("ESTEIRA_SKIP_SLOW") == "1", reason="ESTEIRA_SKIP_SLOW=1")
 @tem_veekun
 def test_conferir():

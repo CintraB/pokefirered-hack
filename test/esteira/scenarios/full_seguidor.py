@@ -85,6 +85,11 @@ opção Seguidor em Sim; imagens lidas em gSprites[].images, subprioridade em gS
   todos os objetos que nasceram têm sprite com o grande ocupando seus 64 tiles; a contagem de tiles ocupados vai
   para o relatório (o caso não mede a pressão de VRAM, só o que ela deixaria sem sprite).
 
+POK-54 (as 4 depois do Deoxys):
+- `seguidor/especies_novas`: GIBLE, GABITE, GARCHOMP e DARKRAI no 1º (SET_LEAD_LOOK), normal e shiny, recriados por um
+  warp: o objeto OBJ_EVENT_ID_FOLLOWER existe (1 só, 32x32, graphicsId padrão), com as imagens da própria espécie e a
+  paleta da tabela (normal ou shiny, diferentes entre si) no slot do seguidor (foto `seguidor_garchomp`, o shiny).
+
 As telas `seguidor_*` novas ficam para a aprovação do Cintra.
 
 Uso, a partir de test/ (a pasta OUT precisa do captura.sav de um `rapido`/`completo`):
@@ -1130,6 +1135,28 @@ class FollowerScenario(PcScenario):   # PcScenario (CatchSaveScenario + PC): dep
         self._behind("Treecko shiny", HOENN_SHINY)
         return f"{HOENN_SHINY} shiny: {state}, paleta sFollowerPalShiny_Treecko no slot {PALSLOT_FOLLOWER}"
 
+    def _especies_novas(self) -> str:
+        self._restore()
+        report = []
+        for species in ("GIBLE", "GABITE", "GARCHOMP", "DARKRAI"):
+            camel = species.capitalize()
+            pals = {}
+            for shiny in (False, True):
+                state = self._look(species, shiny=shiny)
+                assert state["variante"] == 0 and not state["grande"], (species, state)
+                self._check_images(f"sFollowerPicTable_{camel}", False)
+                pal = self._palette(PALSLOT_FOLLOWER)
+                nome = f"{species}{' shiny' if shiny else ''}"
+                assert pal == self._rom(f"sFollowerPal{'Shiny' if shiny else ''}_{camel}"), f"{nome}: paleta fora da tabela"
+                pals[shiny] = pal
+                self._behind(nome, species)
+                if species == "GARCHOMP" and shiny:
+                    self._shot("seguidor_garchomp")
+            assert pals[False] != pals[True], f"{species}: a paleta shiny é igual à normal"
+            report.append(species.lower())
+        return ("normal e shiny de " + ", ".join(report) + ": 1 objeto 32x32, imagens da espécie e paleta da tabela "
+                f"no slot {PALSLOT_FOLLOWER} (foto seguidor_garchomp)")
+
     def _continue_variante(self) -> str:
         self._restore()
         before = self._look("STEELIX", female=True)
@@ -1230,6 +1257,8 @@ class FollowerScenario(PcScenario):   # PcScenario (CatchSaveScenario + PC): dep
             self.suite.run("seguidor/femea: Pikachu fêmea com o sprite dela", self._femea)
             self.suite.run("seguidor/unown: letras !, A e ? do Unown", self._unown)
             self.suite.run("seguidor/hoenn_shiny: Treecko shiny com a paleta shiny do ROM", self._hoenn_shiny)
+            self.suite.run("seguidor/especies_novas: Gible, Gabite, Garchomp e Darkrai, normal e shiny",
+                           self._especies_novas)
             self.suite.run("seguidor/continue_variante: Steelix fêmea grande volta ao CONTINUAR",
                            self._continue_variante)
             self.suite.run("seguidor/grama_sul: grama do jogador cobre as pernas com o seguidor ao sul", self._grama_sul)

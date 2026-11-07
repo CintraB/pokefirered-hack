@@ -30,3 +30,7 @@
     [OBJ_EVENT_GFX_TACA_BRONZE] = &gObjectEventGraphicsInfo_Familia_TacaBronze,
     [OBJ_EVENT_GFX_TACA_PRATA] = &gObjectEventGraphicsInfo_Familia_TacaPrata,
     [OBJ_EVENT_GFX_TACA_OURO] = &gObjectEventGraphicsInfo_Familia_TacaOuro,
+    [OBJ_EVENT_GFX_FAMILIA_GLIGAR] = &gObjectEventGraphicsInfo_Familia_Gligar,
+    [OBJ_EVENT_GFX_FAMILIA_DUSCLOPS] = &gObjectEventGraphicsInfo_Familia_Dusclops,
+    [OBJ_EVENT_GFX_FAMILIA_GARCHOMP_SHINY] = &gObjectEventGraphicsInfo_Familia_GarchompShiny,
+    [OBJ_EVENT_GFX_FAMILIA_DARKRAI_SHINY] = &gObjectEventGraphicsInfo_Familia_DarkraiShiny,

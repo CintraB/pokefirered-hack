@@ -68,6 +68,9 @@ ESPECIES = ["haunter", "misdreavus", "sableye", "banette", "houndour", "houndoom
             "muk", "weezing", "arbok", "mightyena", "absol", "cacturne", "shiftry", "crawdaunt", "golem", "persian",
             "machamp", "rhydon"]
 CHEFES_SHINY = ["gengar", "tyranitar"]
+# parte 2 (POK-54): entram DEPOIS das taças, para os ids da parte 1 (155..185) não mudarem (o id vai para o save)
+PARTE2 = ["gligar", "dusclops"]
+CHEFES_SHINY_PARTE2 = ["garchomp", "darkrai"]
 REDOMAS = ["vazia", "vermelha", "dourada", "azul", "negra"]
 TACAS = ["bronze", "prata", "ouro"]
 ROSAS = ["vermelha", "dourada", "azul", "negra"]
@@ -79,6 +82,8 @@ GRUPOS = {
     "sala_do_dom": ["gengar_shiny", "machamp"],
     "sala_do_cobrador": ["tyranitar_shiny", "rhydon"],
     "sala_de_trofeus": ["redomas_a", "redomas_b", "tacas"],
+    "sala_do_mercenario": ["garchomp_shiny", "gligar"],
+    "sala_do_pesadelo": ["darkrai_shiny", "dusclops"],
 }
 SLOTS = ["PALSLOT_NPC_1", "PALSLOT_NPC_2", "PALSLOT_NPC_3", "PALSLOT_NPC_4"]
 
@@ -417,6 +422,11 @@ def lista_gfx():
         itens.append((f"redoma_{r}", f"REDOMA_{r.upper()}", f"Redoma{camel(r)}", PALETA_DA_REDOMA[r], "redoma"))
     for t in TACAS:
         itens.append((f"taca_{t}", f"TACA_{t.upper()}", f"Taca{camel(t)}", "tacas", "taca"))
+    for e in PARTE2:
+        itens.append((e, e.upper(), camel(e), e, "sprite"))
+    for e in CHEFES_SHINY_PARTE2:
+        n = f"{e}_shiny"
+        itens.append((n, n.upper(), camel(n), n, "sprite"))
     resultado = []
     for i, (arq, uid, cam, pal, tipo) in enumerate(itens):
         gid = f"OBJ_EVENT_GFX_{'FAMILIA_' if tipo == 'sprite' else ''}{uid}"
@@ -548,7 +558,7 @@ MARCA_FIM = "// </familia-sombra gfx>"
 
 def bloco_constantes(gfx):
     L = [MARCA_INI,
-         "// POK-51: sprites do mapa da Família Sombra (chapéu), redomas e taças da sala de troféus"]
+         "// POK-51/POK-54: sprites do mapa da Família Sombra (chapéu), redomas e taças da sala de troféus"]
     L += [f"#define {g['id']} {g['valor']}" for g in gfx]
     L += ["", f"#define NUM_OBJ_EVENT_GFX     {PRIMEIRO_GFX + len(gfx)}", MARCA_FIM]
     return "\n".join(L)
@@ -671,7 +681,8 @@ def folha(destino):
     y = 10
     d.text((10, y), "Sprites do mapa: sem chapéu (em cima) e com chapéu (embaixo), 4x", fill=(30, 30, 30), font=fonte)
     y += 24
-    nomes = [(e, False) for e in ESPECIES] + [(e, True) for e in CHEFES_SHINY]
+    nomes = ([(e, False) for e in ESPECIES] + [(e, True) for e in CHEFES_SHINY]
+             + [(e, False) for e in PARTE2] + [(e, True) for e in CHEFES_SHINY_PARTE2])
     x = 10
     linha = 0
     for nome, shiny in nomes:
