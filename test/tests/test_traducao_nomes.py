@@ -44,7 +44,10 @@ NEW_KEYS = {"src/data/text/trainer_class_names.h": {"TRAINER_CLASS_ROCKET_ADMIN"
                                            "MOVE_DAZZLING_GLEAM": "Clarão Desl.", "MOVE_DRAINING_KISS": "Beijo Dren.",
                                            "MOVE_FAIRY_WIND": "Vento Fada", "MOVE_DISARMING_VOICE": "Voz Desarm.",
                                            # POK-54: os golpes da Gen 4 (R1)
-                                           "MOVE_DRAGON_RUSH": "Inv. Dragão", "MOVE_DARK_VOID": "Vazio Negro"}}
+                                           "MOVE_DRAGON_RUSH": "Inv. Dragão", "MOVE_DARK_VOID": "Vazio Negro",
+                                           # POK-54, Task 12: os 4 golpes que deixaram de ser trocados
+                                           "MOVE_FIRE_FANG": "Presa Ígnea", "MOVE_OMINOUS_WIND": "Vento Agouro",
+                                           "MOVE_NASTY_PLOT": "Trama Vil", "MOVE_DARK_PULSE": "Pulso Negro"}}
 BERRY_NAME_LENGTH = 6          # include/global.berry.h
 POPUP_PX = 112                 # aviso de nome do mapa: maxWidth (src/map_name_popup.c:195)
 

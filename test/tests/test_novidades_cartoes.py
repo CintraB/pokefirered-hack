@@ -177,7 +177,7 @@ def test_familia_sombra_o_fim_e_garchomp_e_darkrai_no_fim_de_melhorias_modernas(
         assert trecho in corpo, trecho
     corpo = _plano(extras["body"])
     for trecho in ("GIBLE", "GABITE", "GARCHOMP", "DARKRAI", "443 a 445", "491", "não contam para a Pokédex completa",
-                   "só nasce de ovo", "Inv. Dragão", "Vazio Negro", "Sonhos Ruins"):
+                   "só nasce de ovo", "Seis golpes novos", "Inv. Dragão", "Pulso Negro", "habilidade Sonhos Ruins"):
         assert trecho in corpo, trecho
 
 

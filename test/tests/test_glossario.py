@@ -43,8 +43,8 @@ def test_glossary_has_every_section_of_the_approved_document():
     assert counts["golpe"] == 178
     # Task 2: os 176 golpes fora da amostra entram com fonte própria; o glossário cobre os 354,
     # e o POK-45 acrescenta os 6 golpes de Fada da Gen 6
-    # e o POK-54 acrescenta Dragon Rush e Dark Void
-    assert sum(t["categoria"] == "golpe" for t in TERMS) == 362
+    # e o POK-54 acrescenta Dragon Rush, Dark Void, Fire Fang, Ominous Wind, Nasty Plot e Dark Pulse
+    assert sum(t["categoria"] == "golpe" for t in TERMS) == 366
     assert counts["item"] >= 163          # linhas agrupadas ("BLUE / YELLOW / RED FLUTE") viram termos
     assert counts["lugar"] >= 70
     assert len(TERMS) >= 688

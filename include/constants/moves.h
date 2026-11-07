@@ -365,8 +365,12 @@
 // POK-54: Gible/Garchomp e Darkrai
 #define MOVE_DRAGON_RUSH 361
 #define MOVE_DARK_VOID 362
+#define MOVE_FIRE_FANG 363
+#define MOVE_OMINOUS_WIND 364
+#define MOVE_NASTY_PLOT 365
+#define MOVE_DARK_PULSE 366
 
-#define MOVES_COUNT 363
+#define MOVES_COUNT 367
 
 // Used for checks for moves affected by Disable, Mimic, etc.
 #define MOVE_UNAVAILABLE 0xFFFF

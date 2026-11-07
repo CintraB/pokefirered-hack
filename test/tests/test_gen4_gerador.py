@@ -232,6 +232,14 @@ def test_trocas_documentadas():
     existentes = set(re.findall(r"^#define (MOVE_\w+) \d+", MOVES_H.read_text(), re.M))
     novos = {"MOVE_DRAGON_RUSH", "MOVE_DARK_VOID"}
     trocas = dados["_trocas"]
+    # Task 12: Fire Fang, Ominous Wind, Nasty Plot e Dark Pulse existem de verdade; as 4 trocas acabaram e os
+    # golpes por nível da Platinum entram como são
+    assert sorted(trocas) == ["dark-void", "dragon-rush"], trocas
+    por_nivel = {n: dict((g, lv) for lv, g in dados["especies"][n]["nivel"]) for n in NOMES}
+    assert por_nivel["garchomp"]["MOVE_FIRE_FANG"] == 1 and "MOVE_FIRE_PUNCH" not in por_nivel["garchomp"]
+    assert [por_nivel["darkrai"][g] for g in ("MOVE_OMINOUS_WIND", "MOVE_NASTY_PLOT", "MOVE_DARK_PULSE")] == [1, 75, 93]
+    for velho in ("MOVE_ASTONISH", "MOVE_CALM_MIND", "MOVE_CRUNCH"):
+        assert velho not in por_nivel["darkrai"], velho
     for nome in NOMES:
         for nivel, golpe in dados["especies"][nome]["nivel"]:
             assert golpe in existentes or golpe in novos, f"{nome}: {golpe} (nv {nivel}) não existe no jogo"

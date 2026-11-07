@@ -14090,6 +14090,42 @@
    "categoria": "habilidade",
    "detectar": true,
    "frente": "POK-54"
+  },
+  {
+   "en": "FIRE FANG",
+   "pt": "Presa Ígnea",
+   "fonte": "criado",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "POK-54",
+   "obs": "Task 12 do POK-54: nome escolhido pelo controlador, no limite de 12 letras"
+  },
+  {
+   "en": "OMINOUS WIND",
+   "pt": "Vento Agouro",
+   "fonte": "criado",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "POK-54",
+   "obs": "Task 12 do POK-54: nome escolhido pelo controlador, no limite de 12 letras"
+  },
+  {
+   "en": "NASTY PLOT",
+   "pt": "Trama Vil",
+   "fonte": "criado",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "POK-54",
+   "obs": "Task 12 do POK-54: nome escolhido pelo controlador, no limite de 12 letras"
+  },
+  {
+   "en": "DARK PULSE",
+   "pt": "Pulso Negro",
+   "fonte": "criado",
+   "categoria": "golpe",
+   "detectar": true,
+   "frente": "POK-54",
+   "obs": "Task 12 do POK-54: nome escolhido pelo controlador, no limite de 12 letras"
   }
  ],
  "proibidos": [

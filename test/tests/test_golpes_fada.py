@@ -67,7 +67,7 @@ def _campo(corpo: str, nome: str) -> str:
 def test_constantes():
     k = _constantes_dos_golpes()
     assert [k[n] for n in NOVOS] == list(range(355, 361))
-    assert k["MOVES_COUNT"] == 363  # + Dragon Rush e Dark Void no fim (POK-54)
+    assert k["MOVES_COUNT"] == 367  # + Dragon Rush, Dark Void e os 4 golpes da Task 12 no fim (POK-54)
 
 
 def test_dados_gen6():
@@ -105,7 +105,7 @@ def test_animacoes():
     texto = _ler("data/battle_anim_scripts.s")
     tabela = re.search(r"gBattleAnims_Moves::\n(.*?)\n\n", texto, re.S).group(1)
     alvos = re.findall(r"^\t\.4byte (\w+)", tabela, re.M)
-    assert len(alvos) == 363                             # + Dragon Rush e Dark Void no fim (POK-54)
+    assert len(alvos) == 367                             # + os 6 golpes da Gen 4 no fim (POK-54)
     assert alvos[355:361] == [n.replace("MOVE_", "Move_") for n in NOVOS]
     for n in NOVOS:
         assert re.search(rf"^{n.replace('MOVE_', 'Move_')}:\n", texto, re.M), n

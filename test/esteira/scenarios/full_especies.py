@@ -37,6 +37,20 @@ na RAM e sem itens (como `ia/dupla`); o 2º Pokémon do jogador é um Squirtle n
 - `golpes/dragon_rush`: Garchomp nv 60 com Dragon Rush, Dragon Claw, Earthquake e Crunch (sem repetição) contra um Snorlax selvagem nv 50: o menu de golpes mostra
   "Inv. Dragão" (gMoveNames e tela `golpe_menu_garchomp`) e o golpe sai sem travar (gLastMoves).
 
+Os 4 golpes da Gen 4 que deixaram de ser trocados (Task 12), com o Garchomp nv 70 e Presa Ígnea, Vento Agouro, Trama
+Vil e Pulso Negro contra um Golem selvagem nv 50 (mais lento, então o recuo vale; Rocha/Terra, que o fantasma
+alcança: o Snorlax, Normal, é imune). Cada caso volta ao savestate
+`golpes_novos_acao` (menu de ação do 1º turno). Os efeitos com chance usam até 32 sementes fixas em gRngValue (como o
+Dark Void) e passam na 1ª em que o efeito sai:
+
+- `golpes/menu_novos`: gMoveNames dos 4 ids e o menu de golpes com os 4 nomes → `golpe_menu_novos`;
+- `golpes/nasty_plot`: o Atq. Esp. do usuário sobe 2 estágios (6 → 8) e o PP cai de 20 para 19;
+- `golpes/fire_fang_queima`: o alvo fica com STATUS1_BURN → `golpe_fire_fang` (o menu de ação já com a queimadura);
+- `golpes/fire_fang_recua`: "hesitou" na tela e o PP do Golem não cai (a chance de recuar é sorteada em separado da
+  de queimar);
+- `golpes/ominous_wind_atributos`: os 5 atributos do usuário sobem 1 estágio;
+- `golpes/dark_pulse_recua`: "hesitou" e o PP do Golem não cai.
+
 Pokédex dos extras e a regra dos 386 (Task 6; cada caso volta ao savestate `golpes_base`, campo com o time das 4):
 
 - `dex/numeros`: DEX_INFO: Bulbasaur 1/1, Deoxys 386/386, Gible 387/443, Gabite 388/444, Garchomp 389/445, Darkrai
@@ -88,7 +102,7 @@ from .full_summary_evolution import PARTY_CHOOSE_TASK, SCREEN_TIMEOUT, SETTLE, S
 
 SCREEN_POINTS = ("especie_resumo_garchomp", "especie_resumo_darkrai", "especie_icones_equipe",
                  "especie_batalha_darkrai", "golpe_dark_void", "golpe_menu_garchomp",
-                 "dex_lista_extras", "dex_garchomp", "dex_garchomp_area")
+                 "golpe_menu_novos", "golpe_fire_fang", "dex_lista_extras", "dex_garchomp", "dex_garchomp_area")
 # o time do resumo e dos ícones: (espécie, nível); os níveis ficam abaixo dos golpes novos da Task 5
 TEAM = (("SPECIES_GIBLE", 20), ("SPECIES_GABITE", 30), ("SPECIES_GARCHOMP", 30), ("SPECIES_DARKRAI", 50))
 SUMMARY_SHOTS = {"SPECIES_GARCHOMP": "especie_resumo_garchomp", "SPECIES_DARKRAI": "especie_resumo_darkrai"}
@@ -115,6 +129,18 @@ B_WEATHER_SANDSTORM = (1 << 3) | (1 << 4)   # TEMPORARY | PERMANENT: sem duraç�
 DRAGON_RUSH_LEVEL, DRAGON_RUSH_WILD = 60, ("SPECIES_SNORLAX", 50)
 DRAGON_RUSH_MOVES = ("MOVE_DRAGON_RUSH", "MOVE_DRAGON_CLAW", "MOVE_EARTHQUAKE", "MOVE_CRUNCH")
 MOVE_NAME_BYTES = 13                 # MOVE_NAME_LENGTH + 1
+
+# --- os 4 golpes da Gen 4 (Task 12) ---
+NOVOS_LEVEL, NOVOS_WILD = 70, ("SPECIES_GOLEM", 50)
+NOVOS_MOVES = ("MOVE_FIRE_FANG", "MOVE_OMINOUS_WIND", "MOVE_NASTY_PLOT", "MOVE_DARK_PULSE")   # slots 0..3
+NOVOS_NOMES = ("Presa Ígnea", "Vento Agouro", "Trama Vil", "Pulso Negro")
+SLOT_FIRE_FANG, SLOT_OMINOUS_WIND, SLOT_NASTY_PLOT, SLOT_DARK_PULSE = range(4)
+BATTLE_MON_STAT_STAGES = 0x18        # struct BattlePokemon.statStages[8] (s8): PS, Atq, Def, Vel, Atq. Esp., Def. Esp.
+STAGE_ATK, STAGE_SPATK, STAGE_SPDEF = 1, 4, 5
+STAGE_NEUTRAL = 6
+STATUS1_BURN = 0x10
+FLINCH_TEXT = "hesitou"
+EFFECT_SEEDS = tuple((0x9E3779B9 * (i + 1) ^ 0x5EED1000) & 0xFFFFFFFF for i in range(32))
 BATTLE_STRING_BYTES = 300            # gDisplayedStringBattle[300]
 BAD_DREAMS_TEXT = "atormentado pelo pesadelo"
 TURN_TIMEOUT = 6000
@@ -381,6 +407,132 @@ class EspeciesScenario(SummaryEvolutionScenario):
         last = self.emu.read_u16(self._sym("gLastMoves"))
         assert last == self.moves["MOVE_DRAGON_RUSH"], f"último golpe do Garchomp: {last}"
         return f"menu com '{name}' (tela {path}); Dragon Rush usado, o turno terminou em '{result}'"
+
+    # --- os 4 golpes da Gen 4 (Task 12) ---------------------------------------------
+    def _novos_restore(self) -> None:
+        self.ctl.restore("golpes_novos_acao")
+        self.emu.frames(4)
+
+    def _novos_stages(self, battler: int) -> list[int]:
+        raw = self.emu.read(self._mon(battler) + BATTLE_MON_STAT_STAGES, 8)
+        return [b - 256 if b > 127 else b for b in raw]
+
+    def _novos_pp(self, battler: int, slot: int) -> int:
+        return self.emu.read_u8(self._mon(battler) + BATTLE_MON_PP + slot)
+
+    def _novos_turn(self, slot: int, seed: int) -> list[str]:
+        """Do menu de ação do savestate `golpes_novos_acao`, com a semente `seed`: LUTAR e o golpe `slot`. Devolve as
+        mensagens vistas até o menu do turno seguinte (sem repetição seguida)."""
+        self._novos_restore()
+        self.emu.write(self._sym("gRngValue"), struct.pack("<I", seed))
+        d = self.driver
+        d._choose_action(ACTION_FIGHT)
+        in_moves = lambda: d.controller_func().endswith(MOVE_FUNC_SUFFIX)
+        self.ctl.wait_until(in_moves, MENU_TIMEOUT, "menu de golpes")
+        d._select_grid("gMoveSelectionCursor", slot, "golpe")
+        self._press(KEY_A)
+        self.ctl.wait_until(lambda: not in_moves(), 60, "saída do menu de golpes")
+        seen: list[str] = []
+
+        def watch() -> None:
+            text = self._battle_text()
+            if text and (not seen or text != seen[-1]):
+                seen.append(text)
+        result = d._advance_until_menu_or_end("fim do turno do golpe novo", TURN_TIMEOUT, on_step=watch)
+        assert result == "menu", f"a batalha acabou no turno ({result}); mensagens {seen}"
+        self.emu.frames(10)
+        return seen
+
+    def _novos_ate_sair(self, slot: int, saiu, what: str) -> tuple[str, int]:
+        """Roda o golpe `slot` com as sementes de EFFECT_SEEDS até `saiu(mensagens)` valer; devolve (resumo, tentativa)."""
+        tentativas = []
+        for i, seed in enumerate(EFFECT_SEEDS):
+            seen = self._novos_turn(slot, seed)
+            ok, detalhe = saiu(seen)
+            tentativas.append(detalhe)
+            if ok:
+                return f"tentativa {i + 1} de {len(EFFECT_SEEDS)}: {detalhe}", i + 1
+        raise AssertionError(f"{what}: em {len(EFFECT_SEEDS)} tentativas o efeito nunca saiu: {tentativas}")
+
+    def _novos_menu(self) -> str:
+        self.ctl.restore("golpes_base")
+        self.emu.frames(12)
+        garchomp, (wild, wild_level) = self._sp("SPECIES_GARCHOMP"), NOVOS_WILD
+        self.box.set_party_mon(0, garchomp, NOVOS_LEVEL)
+        for i, move in enumerate(NOVOS_MOVES):
+            self.box.set_party_move(0, i, self.moves[move])
+        assert self.box.party_size(1) == 1
+        nomes = []
+        for move in NOVOS_MOVES:
+            raw = self.emu.read(self._sym("gMoveNames") + self.moves[move] * MOVE_NAME_BYTES, MOVE_NAME_BYTES)
+            nomes.append(self.game.charmap.decode(raw.split(b"\xff")[0]))
+        assert tuple(nomes) == NOVOS_NOMES, f"nomes dos golpes na ROM: {nomes}"
+        assert self.box.call(CMD_START_WILD_BATTLE, self._sp(wild), wild_level) == 1, "START_WILD_BATTLE"
+        d = self.driver = BattleDriver(self.ctl)
+        d.wait_action_menu(TURN_TIMEOUT)
+        assert d.battler_species_level(0) == (garchomp, NOVOS_LEVEL)
+        assert d.battler_species_level(1) == (self._sp(wild), wild_level)
+        self.emu.frames(10)
+        self.ctl.checkpoint("golpes_novos_acao")
+        moves = list(struct.unpack("<4H", self.emu.read(self._mon(0) + BATTLE_MON_MOVES, 8)))
+        assert moves == [self.moves[m] for m in NOVOS_MOVES], f"golpes do Garchomp na batalha: {moves}"
+        d._choose_action(ACTION_FIGHT)
+        in_moves = lambda: d.controller_func().endswith(MOVE_FUNC_SUFFIX)
+        self.ctl.wait_until(in_moves, MENU_TIMEOUT, "menu de golpes")
+        self.emu.frames(SETTLE * 2)
+        path = self._shot("golpe_menu_novos")
+        self._pause_to_read()
+        return f"menu com {', '.join(nomes)} (tela {path})"
+
+    def _novos_nasty_plot(self) -> str:
+        self._novos_restore()
+        antes = self._novos_stages(0)
+        pp = self._novos_pp(0, SLOT_NASTY_PLOT)
+        assert antes[STAGE_SPATK] == STAGE_NEUTRAL and pp == 20, f"estágios de partida: {antes}, PP {pp}"
+        seen = self._novos_turn(SLOT_NASTY_PLOT, EFFECT_SEEDS[0])
+        depois = self._novos_stages(0)
+        assert depois[STAGE_SPATK] == STAGE_NEUTRAL + 2, f"Atq. Esp. depois: {depois} ({seen})"
+        assert [depois[i] for i in range(8) if i != STAGE_SPATK] == [antes[i] for i in range(8) if i != STAGE_SPATK], \
+            f"outro estágio mexeu: {antes} → {depois}"
+        assert self._novos_pp(0, SLOT_NASTY_PLOT) == 19, f"PP: {pp} → {self._novos_pp(0, SLOT_NASTY_PLOT)}"
+        return f"Atq. Esp. 6 → {depois[STAGE_SPATK]}, PP 20 → 19; mensagens {seen}"
+
+    def _novos_fire_fang_queima(self) -> str:
+        def saiu(seen):
+            queimou = bool(self._status1(1) & STATUS1_BURN)
+            return queimou, f"queimado={queimou}, hesitou={any(FLINCH_TEXT in t for t in seen)}"
+        resumo, _ = self._novos_ate_sair(SLOT_FIRE_FANG, saiu, "Fire Fang queimando")
+        assert self._hp(1) < self._max_hp(1), "o Fire Fang não tirou PS"
+        path = self._shot("golpe_fire_fang")
+        self._pause_to_read()
+        return f"{resumo} (tela {path})"
+
+    def _novos_recuo(self, slot: int, what: str) -> str:
+        """O golpe `slot` faz o Golem (mais lento) recuar: 'hesitou' na tela e o PP dele não cai."""
+        self._novos_restore()
+        pp_foe = [self._novos_pp(1, i) for i in range(4)]
+
+        def saiu(seen):
+            recuou = any(FLINCH_TEXT in t for t in seen)
+            return recuou, f"hesitou={recuou}"
+        resumo, _ = self._novos_ate_sair(slot, saiu, what)
+        assert [self._novos_pp(1, i) for i in range(4)] == pp_foe, "o Golem recuou mas gastou PP"
+        return f"{resumo}; PP do Golem {pp_foe} intacto"
+
+    def _novos_fire_fang_recua(self) -> str:
+        resumo = self._novos_recuo(SLOT_FIRE_FANG, "Fire Fang fazendo recuar")
+        return resumo + f"; queimado={bool(self._status1(1) & STATUS1_BURN)} (a chance de recuar é independente)"
+
+    def _novos_dark_pulse(self) -> str:
+        return self._novos_recuo(SLOT_DARK_PULSE, "Dark Pulse fazendo recuar")
+
+    def _novos_ominous_wind(self) -> str:
+        def saiu(seen):
+            stages = self._novos_stages(0)
+            subiu = all(stages[i] == STAGE_NEUTRAL + 1 for i in range(STAGE_ATK, STAGE_SPDEF + 1))
+            return subiu, f"estágios {stages[1:6]}"
+        resumo, _ = self._novos_ate_sair(SLOT_OMINOUS_WIND, saiu, "Ominous Wind subindo os atributos")
+        return resumo
 
     # --- passos --------------------------------------------------------------------
     def _start(self) -> str:
@@ -754,6 +906,14 @@ class EspeciesScenario(SummaryEvolutionScenario):
             self.suite.run("golpes/dark_void_usuario_dormindo: quem não é Darkrai e dorme só dorme",
                            self._dark_void_user_asleep)
             self.suite.run("golpes/dragon_rush: Garchomp com Inv. Dragão no menu, o golpe sai", self._dragon_rush)
+            if self.suite.run("golpes/menu_novos: Presa Ígnea, Vento Agouro, Trama Vil e Pulso Negro no menu",
+                              self._novos_menu).status != "falha":
+                self.suite.run("golpes/nasty_plot: Trama Vil sobe o Atq. Esp. em 2", self._novos_nasty_plot)
+                self.suite.run("golpes/fire_fang_queima: Presa Ígnea queima o alvo", self._novos_fire_fang_queima)
+                self.suite.run("golpes/fire_fang_recua: Presa Ígnea faz o alvo recuar", self._novos_fire_fang_recua)
+                self.suite.run("golpes/ominous_wind_atributos: Vento Agouro sobe os 5 atributos",
+                               self._novos_ominous_wind)
+                self.suite.run("golpes/dark_pulse_recua: Pulso Negro faz o alvo recuar", self._novos_dark_pulse)
             self.suite.run("dex/numeros: o número interno e o impresso das 4 e do Ovo", self._dex_numbers)
             self.suite.run("dex/lista_nacional: a lista termina em Deoxys, 443, 444, 445 e 491 e a contagem sobe 4",
                            self._dex_list)

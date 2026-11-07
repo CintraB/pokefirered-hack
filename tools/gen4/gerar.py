@@ -98,15 +98,15 @@ GRUPO_NIVEL = "platinum"
 GRUPOS_OUTROS = ["platinum", "heartgold-soulsilver"]
 GERACAO_DO_JOGO = 3  # golpes da Gen 1-3 têm o mesmo número no moves.h do jogo
 
+# Golpes da Gen 4 que não existem no FireRed original e que o jogo ganhou com o mesmo nome (MOVE_X em maiúsculas):
+# Dragon Rush e Dark Void (Task 5) e, na Task 12, Fire Fang, Ominous Wind, Nasty Plot e Dark Pulse. As 4 trocas
+# antigas (Fire Punch, Astonish, Calm Mind e Crunch) acabaram: o golpe da Platinum entra como é.
 TROCAS = {
-    "fire-fang": "MOVE_FIRE_PUNCH",
-    "ominous-wind": "MOVE_ASTONISH",
-    "nasty-plot": "MOVE_CALM_MIND",
-    "dark-pulse": "MOVE_CRUNCH",
     "dragon-rush": "MOVE_DRAGON_RUSH",
     "dark-void": "MOVE_DARK_VOID",
 }
-GOLPES_NOVOS = {"MOVE_DRAGON_RUSH", "MOVE_DARK_VOID"}  # ainda não existem no moves.h (tasks seguintes)
+GOLPES_NOVOS = {"MOVE_DRAGON_RUSH", "MOVE_DARK_VOID", "MOVE_FIRE_FANG", "MOVE_OMINOUS_WIND", "MOVE_NASTY_PLOT",
+                "MOVE_DARK_PULSE"}
 
 GRITO_RESERVA = {"gible": "bagon", "gabite": "shelgon", "garchomp": "salamence", "darkrai": "dusclops"}
 GRITO_TAXA = 10512

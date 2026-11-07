@@ -14,7 +14,8 @@ BATTLE_MOVES = (REPO_ROOT / "src" / "data" / "battle_moves.h").read_text(encodin
 POKEMON_H = (REPO_ROOT / "include" / "pokemon.h").read_text(encoding="utf-8")
 CATEGORIAS = {"PHYSICAL", "SPECIAL", "STATUS"}
 # POK-54: os golpes da Gen 4 depois do snapshot da Gen 6 (que cobre 1..360), com a categoria da Platinum
-EXTRAS_POK54 = {"MOVE_DRAGON_RUSH": "PHYSICAL", "MOVE_DARK_VOID": "STATUS"}
+EXTRAS_POK54 = {"MOVE_DRAGON_RUSH": "PHYSICAL", "MOVE_DARK_VOID": "STATUS", "MOVE_FIRE_FANG": "PHYSICAL",
+                "MOVE_OMINOUS_WIND": "SPECIAL", "MOVE_NASTY_PLOT": "STATUS", "MOVE_DARK_PULSE": "SPECIAL"}
 
 
 def _entradas() -> dict[str, str]:
@@ -39,7 +40,7 @@ def test_snapshot_completo():
 def test_categoria_de_cada_golpe():
     entradas = _entradas()
     categorias = GEN6["categories"] | EXTRAS_POK54
-    assert len(entradas) == len(categorias) + 1 == 363          # MOVE_NONE + 1..MOVES_COUNT-1 (362 golpes)
+    assert len(entradas) == len(categorias) + 1 == 367          # MOVE_NONE + 1..MOVES_COUNT-1 (366 golpes)
     errados = {}
     for nome, corpo in entradas.items():
         if nome == "MOVE_NONE":

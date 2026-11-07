@@ -295,7 +295,7 @@ def _flat(text: str) -> str:
 
 def test_golpes_e_habilidades_cobertos_por_inteiro():
     moves, abilities = _move_descriptions(), _ability_descriptions()
-    assert len(moves) == 362                           # 354 + os 6 de Fada (POK-45) + Dragon Rush e Dark Void (POK-54)
+    assert len(moves) == 366                           # 354 + os 6 de Fada (POK-45) + os 6 da Gen 4 (POK-54)
     assert len(abilities) == 79                       # 77 habilidades + "sem habilidade" + Bad Dreams (POK-54)
     pointers = re.findall(r"\[MOVE_\w+\s*-\s*1\]\s*=\s*(gMoveDescription_\w+)", _read(MOVES_C))
     assert sorted(pointers) == sorted(moves)          # nenhum golpe sem descrição
@@ -309,7 +309,7 @@ def f3_entries():
 
 
 def test_f3_entradas_foram_extraidas(f3_entries):
-    assert len(f3_entries) == 362 + 79
+    assert len(f3_entries) == 366 + 79
 
 
 def test_f3_nenhum_ingles_sobrando(f3_entries):

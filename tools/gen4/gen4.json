@@ -82,7 +82,7 @@
       "altura": 19,
       "peso": 950,
       "nivel": [
-        [1, "MOVE_FIRE_PUNCH"],
+        [1, "MOVE_FIRE_FANG"],
         [1, "MOVE_TACKLE"],
         [1, "MOVE_SAND_ATTACK"],
         [1, "MOVE_DRAGON_RAGE"],
@@ -119,7 +119,7 @@
       "altura": 15,
       "peso": 505,
       "nivel": [
-        [1, "MOVE_ASTONISH"],
+        [1, "MOVE_OMINOUS_WIND"],
         [1, "MOVE_DISABLE"],
         [11, "MOVE_QUICK_ATTACK"],
         [20, "MOVE_HYPNOSIS"],
@@ -128,9 +128,9 @@
         [47, "MOVE_DOUBLE_TEAM"],
         [57, "MOVE_HAZE"],
         [66, "MOVE_DARK_VOID"],
-        [75, "MOVE_CALM_MIND"],
+        [75, "MOVE_NASTY_PLOT"],
         [84, "MOVE_DREAM_EATER"],
-        [93, "MOVE_CRUNCH"]
+        [93, "MOVE_DARK_PULSE"]
       ],
       "mt": ["TM01_FOCUS_PUNCH", "TM04_CALM_MIND", "TM06_TOXIC", "TM10_HIDDEN_POWER", "TM11_SUNNY_DAY", "TM12_TAUNT", "TM13_ICE_BEAM", "TM14_BLIZZARD", "TM15_HYPER_BEAM", "TM17_PROTECT", "TM18_RAIN_DANCE", "TM21_FRUSTRATION", "TM24_THUNDERBOLT", "TM25_THUNDER", "TM27_RETURN", "TM29_PSYCHIC", "TM30_SHADOW_BALL", "TM31_BRICK_BREAK", "TM32_DOUBLE_TEAM", "TM34_SHOCK_WAVE", "TM36_SLUDGE_BOMB", "TM39_ROCK_TOMB", "TM40_AERIAL_ACE", "TM41_TORMENT", "TM42_FACADE", "TM43_SECRET_POWER", "TM44_REST", "TM46_THIEF", "TM49_SNATCH", "HM01_CUT", "HM04_STRENGTH", "HM05_FLASH", "HM06_ROCK_SMASH"],
       "tutor": ["MOVE_SWORDS_DANCE", "MOVE_DREAM_EATER", "MOVE_THUNDER_WAVE", "MOVE_ROCK_SLIDE", "MOVE_SUBSTITUTE"],
@@ -138,10 +138,6 @@
     }
   },
   "_trocas": {
-    "fire-fang": "MOVE_FIRE_PUNCH",
-    "ominous-wind": "MOVE_ASTONISH",
-    "nasty-plot": "MOVE_CALM_MIND",
-    "dark-pulse": "MOVE_CRUNCH",
     "dragon-rush": "MOVE_DRAGON_RUSH",
     "dark-void": "MOVE_DARK_VOID"
   },

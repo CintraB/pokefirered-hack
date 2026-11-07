@@ -363,6 +363,10 @@ const u8 gMoveDescription_FairyWind[] = _("O usuário agita um\nvento de fada e\
 const u8 gMoveDescription_DisarmingVoice[] = _("Um grito encantador\nque nunca erra\natinge todos os\noponentes.");
 const u8 gMoveDescription_DragonRush[] = _("Investida Dragão:\num ataque brutal.\nPode fazer recuar.");
 const u8 gMoveDescription_DarkVoid[] = _("Vazio Negro: os\noponentes dormem.\nSó o Darkrai usa.");
+const u8 gMoveDescription_FireFang[] = _("Mordida com presas\nem chamas. Pode\nqueimar ou fazer o\nalvo recuar.");
+const u8 gMoveDescription_OminousWind[] = _("Um vento agourento\nataca. Pode elevar\ntodos os atributos\ndo usuário.");
+const u8 gMoveDescription_NastyPlot[] = _("O usuário trama\nmaldades e aumenta\nmuito seu Atq. Esp.");
+const u8 gMoveDescription_DarkPulse[] = _("Uma onda de aura\nsombria ataca o\nalvo. Pode fazer o\nalvo recuar.");
 
 const u8 *const gMoveDescriptionPointers[MOVES_COUNT - 1] = {
     [MOVE_POUND         - 1] = gMoveDescription_Pound,
@@ -727,4 +731,8 @@ const u8 *const gMoveDescriptionPointers[MOVES_COUNT - 1] = {
     [MOVE_DISARMING_VOICE - 1] = gMoveDescription_DisarmingVoice,
     [MOVE_DRAGON_RUSH     - 1] = gMoveDescription_DragonRush,
     [MOVE_DARK_VOID       - 1] = gMoveDescription_DarkVoid,
+    [MOVE_FIRE_FANG       - 1] = gMoveDescription_FireFang,
+    [MOVE_OMINOUS_WIND    - 1] = gMoveDescription_OminousWind,
+    [MOVE_NASTY_PLOT      - 1] = gMoveDescription_NastyPlot,
+    [MOVE_DARK_PULSE      - 1] = gMoveDescription_DarkPulse,
 };

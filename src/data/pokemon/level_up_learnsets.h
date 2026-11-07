@@ -5729,8 +5729,9 @@ static const u16 sChimechoLevelUpLearnset[] = {
     LEVEL_UP_END
 };
 
-// POK-54: golpes da Gen 4 (Platinum). Os que não existem no jogo foram trocados e as trocas estão em
-// tools/gen4/gen4.json (_trocas). As repetições (Gabite e Garchomp) são da lista original, como no Salamence.
+// POK-54: golpes da Gen 4 (Platinum), a lista crua da PokeAPI. Os 6 golpes da Gen 4 que o FireRed não tinha existem
+// no jogo (Inv. Dragão, Vazio Negro, Presa Ígnea, Vento Agouro, Trama Vil e Pulso Negro), então não há troca.
+// As repetições (Gabite e Garchomp) são da lista original, como no Salamence.
 static const u16 sGibleLevelUpLearnset[] = {
     LEVEL_UP_MOVE(1, MOVE_TACKLE),
     LEVEL_UP_MOVE(3, MOVE_SAND_ATTACK),
@@ -5761,7 +5762,7 @@ static const u16 sGabiteLevelUpLearnset[] = {
 };
 
 static const u16 sGarchompLevelUpLearnset[] = {
-    LEVEL_UP_MOVE(1, MOVE_FIRE_PUNCH),
+    LEVEL_UP_MOVE(1, MOVE_FIRE_FANG),
     LEVEL_UP_MOVE(1, MOVE_TACKLE),
     LEVEL_UP_MOVE(1, MOVE_SAND_ATTACK),
     LEVEL_UP_MOVE(1, MOVE_DRAGON_RAGE),
@@ -5780,7 +5781,7 @@ static const u16 sGarchompLevelUpLearnset[] = {
 };
 
 static const u16 sDarkraiLevelUpLearnset[] = {
-    LEVEL_UP_MOVE(1, MOVE_ASTONISH),
+    LEVEL_UP_MOVE(1, MOVE_OMINOUS_WIND),
     LEVEL_UP_MOVE(1, MOVE_DISABLE),
     LEVEL_UP_MOVE(11, MOVE_QUICK_ATTACK),
     LEVEL_UP_MOVE(20, MOVE_HYPNOSIS),
@@ -5789,8 +5790,8 @@ static const u16 sDarkraiLevelUpLearnset[] = {
     LEVEL_UP_MOVE(47, MOVE_DOUBLE_TEAM),
     LEVEL_UP_MOVE(57, MOVE_HAZE),
     LEVEL_UP_MOVE(66, MOVE_DARK_VOID),
-    LEVEL_UP_MOVE(75, MOVE_CALM_MIND),
+    LEVEL_UP_MOVE(75, MOVE_NASTY_PLOT),
     LEVEL_UP_MOVE(84, MOVE_DREAM_EATER),
-    LEVEL_UP_MOVE(93, MOVE_CRUNCH),
+    LEVEL_UP_MOVE(93, MOVE_DARK_PULSE),
     LEVEL_UP_END
 };

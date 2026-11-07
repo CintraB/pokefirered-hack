@@ -4,15 +4,22 @@ Dados de batalha da Gen 4 (spec §7b.4), nomes PT-BR (R1: "Inv. Dragão" e "Vazi
 cheio, animações no fim de gBattleAnims_Moves, a trava do Dark Void (`jumpifdarkvoidfails`, 1º comando de
 BattleScript_EffectSleep) e o Bad Dreams no fim do turno (1/8 do PS máximo, mínimo 1, só no lado adversário).
 O comportamento de verdade fica no cenário `especies` (casos `golpes/*`).
+
+Task 12: Fire Fang, Ominous Wind, Nasty Plot e Dark Pulse (ids 363-366, nomes de PT-BR escolhidos pelo controlador)
+deixam de ser trocados na lista de golpes da Gen 4 e passam a existir, com os dados da Platinum.
 """
 
 import re
+
+import pytest
 
 from esteira import check_text as ct
 from esteira.reflow import line_widths
 from esteira.scenarios import REPO_ROOT
 
 NOVOS = ["MOVE_DRAGON_RUSH", "MOVE_DARK_VOID"]
+NOVOS_T12 = ["MOVE_FIRE_FANG", "MOVE_OMINOUS_WIND", "MOVE_NASTY_PLOT", "MOVE_DARK_PULSE"]
+KR, SN = "FLAG_KINGS_ROCK_AFFECTED", "FLAG_SNATCH_AFFECTED"
 P, M, C, MC = "FLAG_PROTECT_AFFECTED", "FLAG_MIRROR_MOVE_AFFECTED", "FLAG_MAKES_CONTACT", "FLAG_MAGIC_COAT_AFFECTED"
 # golpe: (efeito, poder, tipo, precisão, PP, chance, alvo, flags, categoria)
 ESPERADO = {
@@ -20,8 +27,19 @@ ESPERADO = {
                          "MOVE_CATEGORY_PHYSICAL"),
     "MOVE_DARK_VOID": ("EFFECT_SLEEP", 0, "TYPE_DARK", 80, 10, 0, "MOVE_TARGET_BOTH", {P, MC, M},
                        "MOVE_CATEGORY_STATUS"),
+    # Task 12 (Platinum): Fire Fang queima (10%) e faz recuar (10%) em sorteios separados
+    "MOVE_FIRE_FANG": ("EFFECT_BURN_FLINCH_HIT", 65, "TYPE_FIRE", 95, 15, 10, "MOVE_TARGET_SELECTED", {C, P, M},
+                       "MOVE_CATEGORY_PHYSICAL"),
+    "MOVE_OMINOUS_WIND": ("EFFECT_ALL_STATS_UP_HIT", 60, "TYPE_GHOST", 100, 5, 10, "MOVE_TARGET_SELECTED", {P, M, KR},
+                          "MOVE_CATEGORY_SPECIAL"),
+    "MOVE_NASTY_PLOT": ("EFFECT_SPECIAL_ATTACK_UP_2", 0, "TYPE_DARK", 0, 20, 0, "MOVE_TARGET_USER", {SN},
+                        "MOVE_CATEGORY_STATUS"),
+    "MOVE_DARK_PULSE": ("EFFECT_FLINCH_HIT", 80, "TYPE_DARK", 100, 15, 20, "MOVE_TARGET_SELECTED", {P, M},
+                        "MOVE_CATEGORY_SPECIAL"),
 }
 NOMES = {"MOVE_DRAGON_RUSH": "Inv. Dragão", "MOVE_DARK_VOID": "Vazio Negro"}
+NOMES_T12 = {"MOVE_FIRE_FANG": "Presa Ígnea", "MOVE_OMINOUS_WIND": "Vento Agouro", "MOVE_NASTY_PLOT": "Trama Vil",
+             "MOVE_DARK_PULSE": "Pulso Negro"}
 # R7: o Dark Void é "Vazio Negro" também na descrição; o Dragon Rush traz o nome cheio
 NOMES_CHEIOS = {"MOVE_DRAGON_RUSH": "Investida Dragão", "MOVE_DARK_VOID": "Vazio Negro"}
 
@@ -53,7 +71,10 @@ def _dados(nome: str) -> tuple:
 
 def test_constantes():
     k = _defines("include/constants/moves.h")
-    assert (k["MOVE_DRAGON_RUSH"], k["MOVE_DARK_VOID"], k["MOVES_COUNT"]) == (361, 362, 363)
+    assert (k["MOVE_DRAGON_RUSH"], k["MOVE_DARK_VOID"], k["MOVES_COUNT"]) == (361, 362, 367)
+    assert [k[n] for n in NOVOS_T12] == [363, 364, 365, 366]                  # sempre no fim: o save não muda
+    e = _defines("include/constants/battle_move_effects.h")
+    assert e["EFFECT_BURN_FLINCH_HIT"] == e["EFFECT_CAMOUFLAGE"] + 1 == 214
 
 
 def test_dados_dragon_rush():
@@ -64,10 +85,16 @@ def test_dados_dark_void():
     assert _dados("MOVE_DARK_VOID") == ESPERADO["MOVE_DARK_VOID"]
 
 
+@pytest.mark.parametrize("nome", NOVOS_T12)
+def test_dados_dos_golpes_da_task_12(nome):
+    assert _dados(nome) == ESPERADO[nome]
+
+
 def test_nomes_cabem():
     nomes = dict(re.findall(r"\[(MOVE_\w+)\]\s*=\s*_\(\"([^\"]*)\"\)", _ler("src/data/text/move_names.h")))
     assert {n: nomes.get(n) for n in NOVOS} == NOMES
-    assert all(len(v) <= 12 for v in NOMES.values())                        # MOVE_NAME_LENGTH
+    assert {n: nomes.get(n) for n in NOVOS_T12} == NOMES_T12
+    assert all(len(v) <= 12 for v in (*NOMES.values(), *NOMES_T12.values()))   # MOVE_NAME_LENGTH
 
 
 def test_descricoes_com_o_nome_cheio():
@@ -86,13 +113,63 @@ def test_descricoes_com_o_nome_cheio():
     assert ct.english_report(str(REPO_ROOT), entradas) == {}
 
 
+def test_descricoes_dos_golpes_da_task_12():
+    texto = _ler("src/move_descriptions.c")
+    ponteiros = dict(re.findall(r"\[(MOVE_\w+)\s*-\s*1\]\s*=\s*(gMoveDescription_\w+)", texto))
+    descricoes = {m.group(1): m.group(2) for m in re.finditer(
+        r"const u8 (gMoveDescription_\w+)\[\] = _\(\"((?:[^\"\\]|\\.)*)\"\);", texto)}
+    rotulos = set()
+    for nome in NOVOS_T12:
+        desc = descricoes[ponteiros[nome]]
+        assert 3 <= len(desc.split("\\n")) <= 4 and max(line_widths(desc)) <= 15 * 8 - 7, (nome, desc)
+        rotulos |= {nome, ponteiros[nome]}
+    entradas = [e for e in ct._sources(REPO_ROOT) if isinstance(e, ct._Entry) and e.label in rotulos]
+    assert len(entradas) == 8
+    assert ct.english_report(str(REPO_ROOT), entradas) == {}
+
+
+def test_fire_fang_sorteia_queimar_e_recuar_em_separado():
+    # a tabela de efeitos aponta o efeito novo na posição certa (o último, depois do Camouflage)
+    tabela = re.search(r"gBattleScriptsForMoveEffects::\n(.*?)\n\n", _ler("data/battle_scripts_1.s"), re.S).group(1)
+    alvos = re.findall(r"^\t\.4byte (\w+)", tabela, re.M)
+    assert alvos[214] == "BattleScript_EffectBurnFlinchHit" and len(alvos) == 215
+    script = _script("BattleScript_EffectBurnFlinchHit")
+    # a mesma sequência do ataque comum, com dois sorteios em seguida: queimar e depois recuar
+    i = script.index("setmoveeffect MOVE_EFFECT_BURN")
+    assert script[i:i + 5] == ["setmoveeffect MOVE_EFFECT_BURN", "seteffectwithchance",
+                               "setmoveeffect MOVE_EFFECT_FLINCH", "seteffectwithchance", "tryfaintmon BS_TARGET"]
+    assert script[:5] == ["attackcanceler", "accuracycheck BattleScript_PrintMoveMissed, ACC_CURR_MOVE",
+                          "attackstring", "ppreduce", "critcalc"]
+    assert script[-1] == "goto BattleScript_MoveEnd"
+
+
+def test_aprendizado_da_platinum_sem_trocas():
+    import json
+    dados = json.loads(_ler("tools/gen4/gen4.json"))
+    assert sorted(dados["_trocas"]) == ["dark-void", "dragon-rush"]
+    texto = _ler("src/data/pokemon/level_up_learnsets.h")
+
+    def lista(n: str) -> list[tuple[int, str]]:
+        m = re.search(rf"s{n}LevelUpLearnset\[\] = \{{(.*?)LEVEL_UP_END", texto, re.S)
+        return [(int(lv), mv) for lv, mv in re.findall(r"LEVEL_UP_MOVE\(\s*(\d+), (MOVE_\w+)\)", m.group(1))]
+    assert (1, "MOVE_FIRE_FANG") in lista("Garchomp") and (1, "MOVE_FIRE_PUNCH") not in lista("Garchomp")
+    darkrai = lista("Darkrai")
+    assert [(lv, mv) for lv, mv in darkrai if mv in NOVOS_T12] == [(1, "MOVE_OMINOUS_WIND"), (75, "MOVE_NASTY_PLOT"),
+                                                                    (93, "MOVE_DARK_PULSE")]
+    assert not {"MOVE_ASTONISH", "MOVE_CALM_MIND", "MOVE_CRUNCH"} & {mv for _, mv in darkrai}
+    # a linha do Gible não tem ovo novo: os golpes de ovo da Platinum que o jogo já tinha
+    ovos = re.search(r"egg_moves\(GIBLE,(.*?)\)", _ler("src/data/pokemon/egg_moves.h"), re.S)
+    assert not set(re.findall(r"MOVE_\w+", ovos.group(1))) & set(NOVOS_T12) if ovos else True
+
+
 def test_animacoes_no_fim():
     texto = _ler("data/battle_anim_scripts.s")
     tabela = re.search(r"gBattleAnims_Moves::\n(.*?)\n\n", texto, re.S).group(1)
     alvos = re.findall(r"^\t\.4byte (\w+)", tabela, re.M)
     assert len(alvos) == _defines("include/constants/moves.h")["MOVES_COUNT"]
-    assert alvos[-2:] == ["Move_DRAGON_RUSH", "Move_DARK_VOID"]
-    for rotulo in alvos[-2:]:
+    assert alvos[-6:] == ["Move_DRAGON_RUSH", "Move_DARK_VOID", "Move_FIRE_FANG", "Move_OMINOUS_WIND",
+                          "Move_NASTY_PLOT", "Move_DARK_PULSE"]
+    for rotulo in alvos[-6:]:
         corpo = re.search(rf"^{rotulo}:\n(.*?)^\tend$", texto, re.M | re.S)
         assert corpo, rotulo
 
@@ -176,7 +253,9 @@ def test_glossario():
     termos = json.loads(_ler("test/esteira/glossario.json"))["termos"]
     achados = {(t["en"], t["categoria"]): t["pt"] for t in termos if t.get("frente") == "POK-54"}
     assert achados == {("DRAGON RUSH", "golpe"): "Inv. Dragão", ("DARK VOID", "golpe"): "Vazio Negro",
-                       ("BAD DREAMS", "habilidade"): "Sonhos Ruins"}
+                       ("BAD DREAMS", "habilidade"): "Sonhos Ruins", ("FIRE FANG", "golpe"): "Presa Ígnea",
+                       ("OMINOUS WIND", "golpe"): "Vento Agouro", ("NASTY PLOT", "golpe"): "Trama Vil",
+                       ("DARK PULSE", "golpe"): "Pulso Negro"}
 
 
 def test_cenario_especies_tem_os_casos_dos_golpes():
@@ -186,7 +265,11 @@ def test_cenario_especies_tem_os_casos_dos_golpes():
     for caso in ("dark_void_dupla", "dark_void_so_darkrai", "dark_void_usuario_dormindo", "bad_dreams_dupla", "bad_dreams_aliado",
                  "bad_dreams_acordado", "bad_dreams_desmaiado", "dragon_rush"):
         assert f'"golpes/{caso}:' in texto, caso
+    for caso in ("menu_novos", "nasty_plot", "fire_fang_queima", "fire_fang_recua", "ominous_wind_atributos",
+                 "dark_pulse_recua"):                                    # Task 12
+        assert f'"golpes/{caso}:' in texto, caso
     # as telas dos golpes vêm antes das da Pokédex dos extras (Task 6, 3 pontos no fim)
-    assert cen.SCREEN_POINTS[-5:-3] == ("golpe_dark_void", "golpe_menu_garchomp")
+    assert cen.SCREEN_POINTS[-7:-3] == ("golpe_dark_void", "golpe_menu_garchomp", "golpe_menu_novos",
+                                        "golpe_fire_fang")
     assert refs.SHARED_POINTS[-len(cen.SCREEN_POINTS):] == cen.SCREEN_POINTS
     assert len(cen.SEEDS) == 5                                  # Dark Void: até 5 tentativas
