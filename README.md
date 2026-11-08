@@ -11,7 +11,7 @@ a Pokédex inteira obtível e uma esteira de testes automática no emulador.**
 ![Linguagem](https://img.shields.io/badge/C-agbcc-555555?style=flat-square)
 ![Testes](https://img.shields.io/badge/pytest-5443%20testes-2ea44f?style=flat-square)
 ![Esteira](https://img.shields.io/badge/esteira-705%20checagens-2ea44f?style=flat-square)
-![Versão](https://img.shields.io/badge/ROM-v73-informational?style=flat-square)
+![Versão](https://img.shields.io/badge/ROM-v75-informational?style=flat-square)
 [![Página do Professor](https://img.shields.io/badge/p%C3%A1gina-do%20Professor-e3350d?style=flat-square)](https://cintrab.github.io/pokefirered-hack/)
 
 <img src="docs/readme/inicial.png" width="240" alt="Escolha do inicial em português">
