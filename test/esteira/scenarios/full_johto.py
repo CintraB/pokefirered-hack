@@ -38,6 +38,18 @@ da equipe tem amizade 200 ou mais (`GetLeadMonFriendship` >= 5):
 - `johto/snubbull/cheio`: equipe e PC cheios: aviso e a flag NÃO liga; com uma vaga no PC, ele vem;
 - `johto/snubbull/vale`: o Vale Bicicleta continua igual (pergunta, SIM, voucher) e o Snubbull só vem na conversa seguinte.
 
+Sudowoodo do Caminho Verde (Task 5, classe `TrilhaVerde`): a "árvore estranha" no recanto (39, 10), ao norte do caminho
+da Ilha Seis, é um Sudowoodo nv 35 em batalha selvagem comum (molde do Jirachi, música de selvagem):
+
+- `johto/sudowoodo/dex`: sem a Dex Nacional fica escondido; com ela aparece em (39, 10); tela `johto_sudowoodo` (só no
+  relatório);
+- `johto/sudowoodo/passa`: com ele no lugar, o jogador anda da saída da Moita Estampada até a margem oeste (onde se
+  surfa), passando logo abaixo dele, volta e entra na Moita de novo;
+- `johto/sudowoodo/captura`: a fala, a batalha (SUDOWOODO nv 35, sem o tipo de lendário) e a Master Ball: some, não
+  volta ao reentrar nem depois do Hall;
+- `johto/sudowoodo/fuga`: fuga: some, não volta ao reentrar; o script do Hall (`CMD_CALL_SCRIPT`) o traz de volta;
+- `johto/sudowoodo/vitoria`: derrotado: o mesmo da fuga.
+
 Estatística: o jogo sorteia de verdade, então cada conferência tem um tamanho de amostra (`AMOSTRAS`) escolhido para o
 falso vermelho ficar abaixo de `FALSO_VERMELHO_MAX` (1e-6): "nenhum acerto em n sorteios" vale (1-p)^n, "menos de k
 acertos" a soma binomial, e as faixas de porcentagem são de `SIGMAS` desvios-padrão (2 em 1 bilhão cada). As contas
@@ -60,9 +72,11 @@ from functools import cache
 
 from .. import dexnav as dnv
 from ..bag import MENU_CURSOR_POS, MENU_MAX_CURSOR, MENU_MIN_CURSOR
+from ..battle import B_OUTCOME_CAUGHT, NICKNAME_COMMAND, BattleDriver
+from ..breeding import header_defines
 from ..emu import KEY_A, KEY_B, KEY_DOWN, KEY_UP
 from ..game import BOX_MON_SIZE, IN_BOX_COUNT
-from ..hooks import CMD_DEXNAV_ROLL, CMD_ROLL_WILD, CMD_WARP, NO_RESULT, TEXT_SYMBOL, Mailbox
+from ..hooks import CMD_DEXNAV_ROLL, CMD_GIVE_ITEM, CMD_ROLL_WILD, CMD_WARP, NO_RESULT, TEXT_SYMBOL, Mailbox
 from ..paralelo import run_salt, seed_label, seed_rng
 from . import REPO_ROOT, ScenarioContext
 from .base import YESNO_TASK, Abort
@@ -362,6 +376,17 @@ class JohtoScenario(CatchSaveScenario):
             self.suite.run("johto/snubbull/pc: equipe cheia, o Snubbull vai para o PC", clube.pc)
             self.suite.run("johto/snubbull/cheio: equipe e PC cheios, nada se perde e a flag não liga", clube.cheio)
             self.suite.run("johto/snubbull/vale: o Vale Bicicleta continua igual", clube.vale)
+            # Task 5: o Sudowoodo do Caminho Verde (ver TrilhaVerde)
+            trilha = TrilhaVerde(self.ctx, self.box)
+            res = self.suite.run("johto/sudowoodo/dex: a árvore estranha só aparece com a Dex Nacional", trilha.dex)
+            res.images.extend(trilha.telas)
+            if res.status == "falha":
+                raise Abort("johto/sudowoodo/dex")
+            self.suite.run("johto/sudowoodo/passa: com ele no lugar, o caminho obrigatório continua livre", trilha.passa)
+            self.suite.run("johto/sudowoodo/captura: nv 35, batalha selvagem; capturado, some para sempre",
+                           trilha.captura)
+            self.suite.run("johto/sudowoodo/fuga: com fuga, some e só volta depois do Hall", trilha.fuga)
+            self.suite.run("johto/sudowoodo/vitoria: derrotado, some e só volta depois do Hall", trilha.vitoria)
         except Abort:
             pass
 
@@ -734,6 +759,200 @@ class FaClube(PostLeagueScenario):
         assert self._ganhou(falas) and self._estado() == (1, 0, True), (falas, self._estado())
         assert self.game.bag_quantity(bike) == 1
         return "1ª conversa: pergunta, SIM, Vale Bicicleta e nada de Snubbull; a seguinte dá o Snubbull"
+
+
+TRILHA = "MAP_SIX_ISLAND_GREEN_PATH"
+SUDOWOODO_XY, DIANTE_SUDOWOODO = (39, 10), (39, 11)   # o recanto ao norte do caminho e o tile logo abaixo dele
+SAIDA_MOITA, MARGEM_OESTE, PORTA_MOITA = (46, 11), (37, 15), (46, 10)
+FALA_ARVORE, FALA_FUGIU = "árvore estranha", "saiu correndo"
+OBJ_EVENTS, OBJ_EVENT_SIZE, OBJ_MAP_OFFSET = 16, 0x24, 7       # gObjectEvents[16]; coordenadas com MAP_OFFSET
+BATTLE_TYPE_LEGENDARY, BATTLE_TYPE_WILD_SCRIPTED, BATTLE_TYPE_LEGENDARY_FRLG = 1 << 13, 1 << 17, 1 << 18
+
+
+class TrilhaVerde(PostLeagueScenario):
+    """O Sudowoodo do Caminho Verde (Task 5), na mesma sessão do cenário.
+
+    A equipe é só um Mewtwo nv 100 (foge sempre e vence num golpe). Cada caso entra no mapa pelo atalho de warp (o
+    ON_TRANSITION roda de verdade), fala com a "árvore" de baixo dela e leva a batalha selvagem até o fim; a volta pelo
+    Hall é o script da entrada no Hall (`CMD_CALL_SCRIPT`)."""
+
+    def __init__(self, ctx: ScenarioContext, box: Mailbox):
+        super().__init__(ctx)
+        self.box = box
+        self.sudowoodo = self.consts.species("SPECIES_SUDOWOODO")
+        self.gfx = header_defines(REPO_ROOT, "event_objects.h")["OBJ_EVENT_GFX_SUDOWOODO"]
+        self.driver = BattleDriver(self.ctl)
+        self.driver.move_policy = "best"
+        self.telas: list[str] = []
+
+    # --- leitura ---------------------------------------------------------------------------------------------------
+    def _no_mapa(self) -> tuple[int, int] | None:
+        """(x, y) do objeto ativo com o gráfico do Sudowoodo, ou None."""
+        base = self.game.syms.addr("gObjectEvents")
+        achados = []
+        for i in range(OBJ_EVENTS):
+            o = base + i * OBJ_EVENT_SIZE
+            if self.emu.read_u8(o) & 1 and self.emu.read_u8(o + 5) == self.gfx:
+                x, y = struct.unpack("<hh", self.emu.read(o + 0x10, 4))
+                achados.append((x - OBJ_MAP_OFFSET, y - OBJ_MAP_OFFSET))
+        assert len(achados) <= 1, achados
+        return achados[0] if achados else None
+
+    def _estado(self) -> tuple[tuple[int, int] | None, bool, bool]:
+        """(posição do objeto, FLAG_HIDE_SUDOWOODO, FLAG_SUDOWOODO_FLEW_AWAY)."""
+        return self._no_mapa(), self._flag("FLAG_HIDE_SUDOWOODO"), self._flag("FLAG_SUDOWOODO_FLEW_AWAY")
+
+    def _na_equipe(self) -> list[int]:
+        return [m.level for m in self.game.party() if m.species == self.sudowoodo]
+
+    # --- ações -----------------------------------------------------------------------------------------------------
+    def _entrar(self, xy: tuple[int, int] = DIANTE_SUDOWOODO) -> None:
+        """Entra no Caminho Verde em `xy` pelo atalho de warp (o ON_TRANSITION decide se o Sudowoodo aparece)."""
+        self._warp(TRILHA, xy)
+        self.ctl.wait_overworld_idle(600)
+        self.emu.frames(SETTLE_FRAMES)
+
+    def _voltar(self, nome: str) -> None:
+        self.ctl.restore(nome)
+        self.emu.frames(SETTLE_FRAMES)
+
+    def _vitoria(self) -> None:
+        """Uma nova entrada no Hall (o script de verdade, como em OvosElm._vitoria)."""
+        self.box.call_script(self.game.syms.addr(HALL_SCRIPT))
+        self.emu.frames(2)
+        self.ctl.wait_overworld_idle(600)
+
+    def _falar(self) -> list[str]:
+        """De baixo da árvore: olha para cima, fala e avança as falas até a batalha começar. Devolve as falas."""
+        self._entrar()
+        self.emu.hold(KEY_UP, 4)
+        self.ctl.wait_until(self.nav._player_still, 60, "jogador parado diante da árvore")
+        self._press(KEY_A)
+        self.ctl.wait_until(self.ctl.script_active, 120, "início da fala da árvore")
+        falas: list[str] = []
+        spent = 0
+        while not self.game.in_battle():
+            if spent >= SCENE_FRAMES:
+                raise self.ctl.timeout_error("fala da árvore até a batalha")
+            msg = self._message()
+            if not falas or falas[-1] != msg:
+                falas.append(msg)
+            self._press(KEY_A)
+            spent += 10
+        return falas
+
+    def _batalha(self) -> str:
+        """No menu de ação: confere espécie, nível e o tipo de batalha (selvagem comum, não a de lendário)."""
+        self.driver.wait_action_menu()
+        especie, nivel = self.driver.battler_species_level(1)
+        assert (especie, nivel) == (self.sudowoodo, 35), (self._nome(especie), nivel)
+        tipo = self.driver.battle_type_flags()
+        assert tipo & BATTLE_TYPE_WILD_SCRIPTED, f"gBattleTypeFlags {tipo:#x}"
+        assert not tipo & (BATTLE_TYPE_LEGENDARY | BATTLE_TYPE_LEGENDARY_FRLG), f"gBattleTypeFlags {tipo:#x}"
+        return f"SUDOWOODO nv {nivel}, gBattleTypeFlags {tipo:#x}"
+
+    def _nome(self, species_id: int) -> str:
+        return self.consts.species_name(species_id).removeprefix("SPECIES_")
+
+    def _ate_o_campo(self) -> list[str]:
+        """Depois da batalha: A em tudo (B no apelido do capturado) até o campo ficar livre. Devolve as falas."""
+        falas: list[str] = []
+        spent = 0
+        while not self._settled_idle():
+            if spent >= SCENE_FRAMES:
+                raise self.ctl.timeout_error("volta ao campo depois da batalha")
+            if not self.game.in_battle():
+                msg = self._message()
+                if not falas or falas[-1] != msg:
+                    falas.append(msg)
+            self._press(KEY_B if self.driver._script_command() == NICKNAME_COMMAND else KEY_A)
+            spent += 10
+        return falas
+
+    def _sumiu_ate_o_hall(self) -> str:
+        """Fuga ou derrota: sumiu e não volta ao reentrar; o Hall o traz de volta ao mesmo lugar."""
+        assert self._estado() == (None, True, True), self._estado()
+        self._entrar()
+        assert self._estado() == (None, True, True), f"voltou sem o Hall: {self._estado()}"
+        self._vitoria()
+        assert not self._flag("FLAG_SUDOWOODO_FLEW_AWAY"), "o Hall não apagou FLAG_SUDOWOODO_FLEW_AWAY"
+        self._entrar()
+        assert self._estado() == (SUDOWOODO_XY, False, False), f"depois do Hall: {self._estado()}"
+        return "sumiu, não volta ao reentrar; depois do Hall, de volta em (39, 10)"
+
+    # --- casos -----------------------------------------------------------------------------------------------------
+    def dex(self) -> str:
+        self.box.set_party_mon(0, self._sp("SPECIES_MEWTWO"), 100)
+        assert self.box.party_size(1) == 1
+        assert not self.box.set_flag(self.consts.flag("FLAG_SUDOWOODO_FLEW_AWAY"), False)
+        # sem a Dex Nacional (IsNationalPokedexEnabled pede a flag, a var e o byte mágico: basta a flag)
+        assert not self.box.set_flag(self.consts.flag("FLAG_SYS_NATIONAL_DEX"), False)
+        assert not self._nat_dex_on()
+        self._entrar()
+        assert self._estado() == (None, True, False), f"sem a Dex Nacional: {self._estado()}"
+        assert self.box.enable_national_dex()
+        self._entrar()
+        assert self._estado() == (SUDOWOODO_XY, False, False), f"com a Dex Nacional: {self._estado()}"
+        assert not self._na_equipe()
+        self.ctl.checkpoint("johto_sudowoodo_base")
+        self._entrar((41, 12))          # um pouco de lado, para a foto mostrar o recanto e o caminho
+        self.emu.frames(240)            # o aviso com o nome do mapa já saiu da tela
+        self.telas.append(self._shot("johto_sudowoodo"))
+        return "sem a Dex Nacional: escondido (flag ligada, nenhum objeto); com ela: em (39, 10)"
+
+    def passa(self) -> str:
+        """Com ele no lugar, anda da saída da Moita Estampada até a margem oeste (onde se surfa) passando logo abaixo
+        dele, volta e entra na Moita de novo: o caminho obrigatório continua livre."""
+        self._voltar("johto_sudowoodo_base")
+        self._entrar(SAIDA_MOITA)
+        assert self._no_mapa() == SUDOWOODO_XY
+        trechos = [DIANTE_SUDOWOODO, MARGEM_OESTE, SAIDA_MOITA]
+        for alvo in trechos:
+            assert self.nav.walk_to(*alvo), f"não chegou a {alvo} (está em {self.game.player_xy()})"
+            assert self._no_mapa() == SUDOWOODO_XY, "o Sudowoodo saiu do lugar"
+        destino = self.nav.go_through_warp("up")
+        moita = self.consts.map("MAP_SIX_ISLAND_PATTERN_BUSH")
+        assert self.game.location() == moita, (self.game.location(), destino)
+        return f"(46, 11) → (39, 11) → {MARGEM_OESTE} → (46, 11) → Moita Estampada, com ele em (39, 10)"
+
+    def captura(self) -> str:
+        self._voltar("johto_sudowoodo_base")
+        master = self.consts.item("ITEM_MASTER_BALL")
+        assert self.box.call(CMD_GIVE_ITEM, master, 1) == 1
+        falas = self._falar()
+        assert any(FALA_ARVORE in f for f in falas), falas
+        batalha = self._batalha()
+        assert self.driver.throw_ball(master), "a Master Ball não capturou"
+        self._ate_o_campo()
+        assert self.driver.outcome() == B_OUTCOME_CAUGHT, f"gBattleOutcome = {self.driver.outcome()}"
+        assert self._na_equipe() == [35], self.game.party()
+        assert self._estado() == (None, True, False), f"depois da captura: {self._estado()}"
+        self._entrar()
+        assert self._estado() == (None, True, False), f"reentrando: {self._estado()}"
+        self._vitoria()
+        self._entrar()
+        assert self._estado() == (None, True, False), f"capturado, voltou depois do Hall: {self._estado()}"
+        return f"{batalha}; capturado: some, não volta nem ao reentrar nem depois do Hall"
+
+    def fuga(self) -> str:
+        self._voltar("johto_sudowoodo_base")
+        falas = self._falar()
+        assert any(FALA_ARVORE in f for f in falas), falas
+        batalha = self._batalha()
+        assert self.driver.run_away(), "a fuga falhou"
+        falas = self._ate_o_campo()
+        assert any(FALA_FUGIU in f for f in falas), falas
+        assert not self._na_equipe()
+        return f"{batalha}; fuga: {self._sumiu_ate_o_hall()}"
+
+    def vitoria(self) -> str:
+        self._voltar("johto_sudowoodo_base")
+        self._falar()
+        batalha = self._batalha()
+        assert self.driver.fight_to_end() == "win", f"gBattleOutcome = {self.driver.outcome()}"
+        falas = self._ate_o_campo()
+        assert any(FALA_FUGIU in f for f in falas), falas
+        return f"{batalha}; derrotado: {self._sumiu_ate_o_hall()}"
 
 
 def run_full_johto(ctx_test: ScenarioContext) -> None:

@@ -648,17 +648,25 @@ def bloco_constantes(gfx):
     L = [MARCA_INI,
          "// POK-51/POK-54: sprites do mapa da Família Sombra (chapéu), redomas e taças da sala de troféus"]
     L += [f"#define {g['id']} {g['valor']}" for g in gfx]
-    L += ["", f"#define NUM_OBJ_EVENT_GFX     {PRIMEIRO_GFX + len(gfx)}", MARCA_FIM]
+    L += [MARCA_FIM]
     return "\n".join(L)
 
 
 def constantes_atualizadas(texto, gfx):
+    """O bloco fica entre os marcadores. O NUM_OBJ_EVENT_GFX fica fora dele, escrito à mão, porque há gráficos depois
+    da família (POK-28: OBJ_EVENT_GFX_SUDOWOODO = 193). Um gráfico novo da família pegaria o id de um deles: o
+    gerador recusa, e o novo vai à mão para depois do último (o id vai para o save, nenhum antigo muda)."""
     bloco = bloco_constantes(gfx)
     if MARCA_INI in texto:
-        return re.sub(re.escape(MARCA_INI) + r".*?" + re.escape(MARCA_FIM), lambda _: bloco, texto, flags=re.S)
-    novo, n = re.subn(r"#define NUM_OBJ_EVENT_GFX\s+\d+", lambda _: bloco, texto, count=1)
-    if n != 1:
-        raise SystemExit("NUM_OBJ_EVENT_GFX não encontrado em event_objects.h")
+        novo = re.sub(re.escape(MARCA_INI) + r".*?" + re.escape(MARCA_FIM), lambda _: bloco, texto, flags=re.S)
+    else:
+        novo, n = re.subn(r"#define NUM_OBJ_EVENT_GFX\s+\d+", lambda m: f"{bloco}\n\n{m.group(0)}", texto, count=1)
+        if n != 1:
+            raise SystemExit("NUM_OBJ_EVENT_GFX não encontrado em event_objects.h")
+    ids = [int(v) for v in re.findall(r"^#define OBJ_EVENT_GFX_\w+\s+(\d+)\b", novo, re.M) if int(v) < 240]
+    repetidos = sorted({v for v in ids if ids.count(v) > 1})
+    if repetidos:
+        raise SystemExit(f"ids de gráfico repetidos em event_objects.h: {repetidos}")
     return novo
 
 

@@ -473,6 +473,7 @@ static const u8 gInitialMovementTypeFacingDirections[MOVEMENT_TYPES_COUNT] = {
 #define OBJ_EVENT_PAL_TAG_RS_GROUDON_REFLECTION       0x111A
 #define OBJ_EVENT_PAL_TAG_RS_SUBMARINE_SHADOW         0x111B
 #define OBJ_EVENT_PAL_TAG_SMALL_SPARKLE               0x111C
+#define OBJ_EVENT_PAL_TAG_SUDOWOODO                   0x111D // POK-28: a do Sudowoodo seguidor, no slot especial
 #define OBJ_EVENT_PAL_TAG_NONE                        0x11FF
 
 #include "data/object_events/object_event_graphics_info_pointers.h"
@@ -505,6 +506,7 @@ static const struct SpritePalette sObjectEventSpritePalettes[] = {
     {gObjectEventPal_SSAnne,                  OBJ_EVENT_PAL_TAG_SS_ANNE},
     {gObjectEventPal_Seagallop,               OBJ_EVENT_PAL_TAG_SEAGALLOP},
     {gFieldEffectPal_SmallSparkle,            OBJ_EVENT_PAL_TAG_SMALL_SPARKLE},
+    {sFollowerPal_Sudowoodo,                  OBJ_EVENT_PAL_TAG_SUDOWOODO}, // POK-28
 #include "data/object_events/familia_gfx_paletas.h" // POK-51
     {},
 };

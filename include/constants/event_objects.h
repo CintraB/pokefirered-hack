@@ -201,9 +201,13 @@
 #define OBJ_EVENT_GFX_POLICIA_GROWLITHE 190
 #define OBJ_EVENT_GFX_POLICIA_ARCANINE 191
 #define OBJ_EVENT_GFX_OFICIAL_JENNY 192
-
-#define NUM_OBJ_EVENT_GFX     193
 // </familia-sombra gfx>
+
+// POK-28: a "árvore estranha" do Caminho Verde (Ilha Seis). Sem arte nova: a folha e a paleta do Sudowoodo seguidor
+// (src/data/object_events/follower_species.h), com a paleta no slot especial dos objetos (PALSLOT_NPC_SPECIAL).
+#define OBJ_EVENT_GFX_SUDOWOODO 193
+
+#define NUM_OBJ_EVENT_GFX     194
 
 // These are dynamic object gfx ids.
 // They correspond with the values of the VAR_OBJ_GFX_ID_X vars.

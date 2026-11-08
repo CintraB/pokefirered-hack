@@ -21,6 +21,7 @@ EventScript_ResetLegendaries::
 	clearflag FLAG_CELEBI_FLEW_AWAY
 	clearflag FLAG_MEW_FLEW_AWAY
 	clearflag FLAG_JIRACHI_FLEW_AWAY
+	clearflag FLAG_SUDOWOODO_FLEW_AWAY
 	return
 
 EventScript_ResetEliteFourEnd::

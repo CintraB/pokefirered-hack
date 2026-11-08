@@ -74,9 +74,11 @@ def test_gfx_policia_no_fim():
     assert (d["OBJ_EVENT_GFX_POLICIA_GROWLITHE"], d["OBJ_EVENT_GFX_POLICIA_ARCANINE"],
             d["OBJ_EVENT_GFX_OFICIAL_JENNY"]) == (190, 191, 192)
     assert d["OBJ_EVENT_GFX_FAMILIA_DARKRAI_SHINY"] == 189
-    assert d["NUM_OBJ_EVENT_GFX"] == 193
+    # POK-28: o Sudowoodo do Caminho Verde (193) vem depois da polícia
+    assert d["OBJ_EVENT_GFX_SUDOWOODO"] == 193 and d["NUM_OBJ_EVENT_GFX"] == 194
     # nenhum id estático novo antes do 190 (os de 240 em diante são os dinâmicos, OBJ_EVENT_GFX_VAR_*)
-    assert max(v for k, v in d.items() if k.startswith("OBJ_EVENT_GFX_") and v < 240) == 192
+    assert max(v for k, v in d.items()
+               if k.startswith("OBJ_EVENT_GFX_") and v < 240 and k != "OBJ_EVENT_GFX_SUDOWOODO") == 192
     ponteiros = (REPO_ROOT / "src/data/object_events/familia_gfx_ponteiros.h").read_text(encoding="utf-8").splitlines()
     assert [l.split("]")[0].split("[")[1] for l in ponteiros[-3:]] == [
         "OBJ_EVENT_GFX_POLICIA_GROWLITHE", "OBJ_EVENT_GFX_POLICIA_ARCANINE", "OBJ_EVENT_GFX_OFICIAL_JENNY"]

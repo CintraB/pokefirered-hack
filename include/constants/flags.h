@@ -1286,8 +1286,8 @@
 #define FLAG_ELM_EGG_PENDING     0x4DC // POK-28: o Carvalho guarda um ovo do Elm (vitória na Liga)
 #define FLAG_GOT_ELM_EGG         0x4DD // POK-28: o 1º ovo do Elm já foi entregue
 #define FLAG_GOT_SNUBBULL        0x4DE // POK-28: o Presidente do Fã-clube já deu o Snubbull
-#define FLAG_0x4DF               0x4DF
-#define FLAG_0x4E0               0x4E0
+#define FLAG_HIDE_SUDOWOODO      0x4DF // POK-28: a árvore estranha do Caminho Verde (escondida por padrão)
+#define FLAG_SUDOWOODO_FLEW_AWAY 0x4E0 // POK-28: derrotado ou com fuga, volta na próxima entrada no Hall
 #define FLAG_0x4E1               0x4E1
 #define FLAG_0x4E2               0x4E2
 #define FLAG_0x4E3               0x4E3
