@@ -167,7 +167,7 @@ def test_textos():
     arvore = re.sub(r"\\[nlp]", " ", "".join(re.findall(r'\.string "(.*?)"', _block(f"{P}Text_StrangeTree",
                                                                                      f"{MAPA}/text.inc")))).lower()
     assert "árvore estranha" in arvore and "mexeu" in arvore
-    assert "SUDOWOODO" in _block(f"{P}Text_SudowoodoRanOff", f"{MAPA}/text.inc")
+    assert "Sudowoodo" in _block(f"{P}Text_SudowoodoRanOff", f"{MAPA}/text.inc")
     assert not re.search(r"\b(the|tree|weird|ran)\b", texto.lower()), "texto em inglês"
 
 

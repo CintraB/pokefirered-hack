@@ -83,6 +83,6 @@ def test_textos():
         assert f"{P}Text_{rot}::" in t, rot
     # PT-BR: nada em inglês nem japonês nos textos novos
     novos = t[t.index(f"{P}Text_SnubbullOffer::"):]
-    assert "{PLAYER} recebeu um SNUBBULL" in novos
+    assert "{PLAYER} recebeu um Snubbull" in novos
     assert "gostar muito de você" in novos
     assert not re.search(r"[ぁ-んァ-ン]", novos)
