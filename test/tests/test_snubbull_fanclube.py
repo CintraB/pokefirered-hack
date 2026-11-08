@@ -34,7 +34,7 @@ def test_flag_na_faixa_livre_sem_colisao():
     assert not re.search(r"^#define FLAG_0x4DE\b", h, re.M)
     valores = [int(v, 16) for v in re.findall(r"^#define FLAG_\w+\s+(0x[0-9A-Fa-f]+)\b", h, re.M)]
     assert valores.count(0x4DE) == 1
-    assert re.search(r"^#define FLAG_0x4DF\s+0x4DF\b", h, re.M)      # a próxima continua livre
+    assert re.search(r"^#define FLAG_HIDE_SUDOWOODO\s+0x4DF\b", h, re.M)   # a seguinte foi para a Task 5
 
 
 def test_dica_e_oferta_na_conversa_pos_voucher():

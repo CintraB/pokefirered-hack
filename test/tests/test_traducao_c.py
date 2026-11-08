@@ -127,7 +127,9 @@ ROTULOS_DOS_HACKS = {"ThreeIsland_BerryForest_Text_ForestWakesWithSun",      # H
                      "SevenIsland_TanobyRuins_Text_Inscription",      # Hack 8: pista do Jirachi
                      "VermilionCity_PokemonFanClub_Text_SnubbullOffer",      # POK-28: Snubbull do Presidente
                      "VermilionCity_PokemonFanClub_Text_ReceivedSnubbullFromChairman",
-                     "VermilionCity_PokemonFanClub_Text_SnubbullHint"}
+                     "VermilionCity_PokemonFanClub_Text_SnubbullHint",
+                     "SixIsland_GreenPath_Text_StrangeTree",      # POK-28: Sudowoodo do Caminho Verde
+                     "SixIsland_GreenPath_Text_SudowoodoRanOff"}
 
 
 @pytest.fixture(scope="module")
