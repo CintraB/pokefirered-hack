@@ -180,7 +180,7 @@ def test_liga_no_c():
     specials = _ler(REPO_ROOT / "data" / "specials.inc")
     fim = [l for l in specials[:specials.index("gSpecialsEnd::")].rstrip().splitlines()
            if "FamiliaSombra_" not in l and "MestreGolpes_" not in l and "KrabbySize" not in l and "SalaTrofeus_" not in l and "POK-51" not in l
-           and "Dossie_" not in l]  # POK-51 e POK-54 vêm depois
+           and "Dossie_" not in l and "ElmEgg" not in l and "POK-28" not in l]  # POK-51, POK-54 e POK-28 vêm depois
     # os da Task 4 (BufferRematchTierName) e da onda final (ShowRematchTierMenu) vêm logo depois
     assert [l.strip() for l in fim[-3:]] == ["def_special ShouldUseLeagueRematchTeams", "def_special BufferRematchTierName",
                                            "def_special ShowRematchTierMenu"]

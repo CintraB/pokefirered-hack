@@ -253,7 +253,9 @@ def test_ids_gfx_no_fim():
     assert c["OBJ_EVENT_GFX_FAMILIA_GLIGAR"] == 186 and c["OBJ_EVENT_GFX_FAMILIA_DUSCLOPS"] == 187
     assert c["OBJ_EVENT_GFX_FAMILIA_GARCHOMP_SHINY"] == 188 and c["OBJ_EVENT_GFX_FAMILIA_DARKRAI_SHINY"] == 189
     assert [c[g] for g in GFX_IDS_FECHAMENTO] == [190, 191, 192]
-    assert re.search(r"#define NUM_OBJ_EVENT_GFX\s+193\b", EVENT_OBJECTS_H.read_text(encoding="utf-8"))
+    # POK-28: o Sudowoodo do Caminho Verde (193) entra depois do bloco da família
+    assert c["OBJ_EVENT_GFX_SUDOWOODO"] == 193
+    assert re.search(r"#define NUM_OBJ_EVENT_GFX\s+194\b", EVENT_OBJECTS_H.read_text(encoding="utf-8"))
     # a base (v70) está congelada em ids_do_save_184573748.json: nada dela mudou de número
     base = json.loads((REPO_ROOT / "test" / "tests" / "dados" / "ids_do_save_184573748.json").read_text(
         encoding="utf-8"))["familias"]["OBJ_EVENT_GFX_"]
@@ -283,8 +285,10 @@ def test_ids_dos_graficos_seguem_o_follower():
     for i, gfx in enumerate(GFX_IDS):
         assert c[gfx] == 155 + i, gfx
     texto = EVENT_OBJECTS_H.read_text(encoding="utf-8")
-    assert re.search(rf"#define NUM_OBJ_EVENT_GFX\s+{155 + len(GFX_IDS)}\b", texto)
-    assert max(c.values()) == 154 + len(GFX_IDS)
+    # POK-28: depois da família só o Sudowoodo do Caminho Verde (fora do bloco do gerador)
+    assert c["OBJ_EVENT_GFX_SUDOWOODO"] == 155 + len(GFX_IDS)
+    assert re.search(rf"#define NUM_OBJ_EVENT_GFX\s+{155 + len(GFX_IDS) + 1}\b", texto)
+    assert max(v for k, v in c.items() if k != "OBJ_EVENT_GFX_SUDOWOODO") == 154 + len(GFX_IDS)
     assert len(set(c.values())) == len(c)
 
 

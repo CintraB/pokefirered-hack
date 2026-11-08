@@ -599,6 +599,98 @@
       ]
     },
     {
+      "map": "MAP_FIVE_ISLAND_MEADOW",
+      "source": "POK-28 (Johto na natureza, manual)",
+      "morning": [
+        "SPECIES_PIDGEY",
+        "SPECIES_SENTRET",
+        "SPECIES_PIDGEOTTO",
+        "SPECIES_HOPPIP",
+        "SPECIES_SENTRET",
+        "SPECIES_MILTANK",
+        "SPECIES_HOPPIP",
+        "SPECIES_PSYDUCK",
+        "SPECIES_PIDGEOTTO",
+        "SPECIES_PERSIAN",
+        "SPECIES_PIDGEOTTO",
+        "SPECIES_PERSIAN"
+      ],
+      "day": [
+        "SPECIES_PIDGEY",
+        "SPECIES_SENTRET",
+        "SPECIES_PIDGEOTTO",
+        "SPECIES_HOPPIP",
+        "SPECIES_SENTRET",
+        "SPECIES_MILTANK",
+        "SPECIES_HOPPIP",
+        "SPECIES_PSYDUCK",
+        "SPECIES_PIDGEOTTO",
+        "SPECIES_PERSIAN",
+        "SPECIES_PIDGEOTTO",
+        "SPECIES_PERSIAN"
+      ],
+      "night": [
+        "SPECIES_PIDGEY",
+        "SPECIES_SENTRET",
+        "SPECIES_PIDGEOTTO",
+        "SPECIES_HOPPIP",
+        "SPECIES_SENTRET",
+        "SPECIES_MEOWTH",
+        "SPECIES_HOPPIP",
+        "SPECIES_PSYDUCK",
+        "SPECIES_PIDGEOTTO",
+        "SPECIES_PERSIAN",
+        "SPECIES_PIDGEOTTO",
+        "SPECIES_PERSIAN"
+      ]
+    },
+    {
+      "map": "MAP_SEVEN_ISLAND_SEVAULT_CANYON",
+      "source": "POK-28 (Johto na natureza, manual)",
+      "morning": [
+        "SPECIES_GEODUDE",
+        "SPECIES_PHANPY",
+        "SPECIES_CUBONE",
+        "SPECIES_FEAROW",
+        "SPECIES_MAROWAK",
+        "SPECIES_MEOWTH",
+        "SPECIES_ONIX",
+        "SPECIES_SKARMORY",
+        "SPECIES_LARVITAR",
+        "SPECIES_PERSIAN",
+        "SPECIES_LARVITAR",
+        "SPECIES_PERSIAN"
+      ],
+      "day": [
+        "SPECIES_GEODUDE",
+        "SPECIES_PHANPY",
+        "SPECIES_CUBONE",
+        "SPECIES_FEAROW",
+        "SPECIES_MAROWAK",
+        "SPECIES_MEOWTH",
+        "SPECIES_ONIX",
+        "SPECIES_SKARMORY",
+        "SPECIES_LARVITAR",
+        "SPECIES_PERSIAN",
+        "SPECIES_LARVITAR",
+        "SPECIES_PERSIAN"
+      ],
+      "night": [
+        "SPECIES_GEODUDE",
+        "SPECIES_PHANPY",
+        "SPECIES_CUBONE",
+        "SPECIES_FEAROW",
+        "SPECIES_MAROWAK",
+        "SPECIES_GLIGAR",
+        "SPECIES_ONIX",
+        "SPECIES_SKARMORY",
+        "SPECIES_LARVITAR",
+        "SPECIES_PERSIAN",
+        "SPECIES_LARVITAR",
+        "SPECIES_PERSIAN"
+      ]
+    },
+    {
       "map": "MAP_ROUTE1",
       "source": "HGSS R01 (HeartGold)",
       "morning": [

@@ -346,7 +346,7 @@ def test_pesos_somam_100():
 
 def test_drought_so_no_vulcao():
     """WEATHER_DROUGHT travava o jogo no FRLG; consertado no POK-16, só a região vulcão o sorteia
-    (Ilha Cinnabar e Monte Ember), e nunca à noite."""
+    (Ilha Cinnabar e Monte Brasa), e nunca à noite."""
     for region, periods in dn.REGION_WEIGHTS.items():
         for period, weights in periods.items():
             sorteia = dn.WEATHER_DROUGHT in [c for c, _ in weights]

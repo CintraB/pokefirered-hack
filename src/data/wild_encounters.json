@@ -1985,9 +1985,9 @@
                 "species": "SPECIES_VENOMOTH"
               },
               {
-                "min_level": 23,
-                "max_level": 23,
-                "species": "SPECIES_VENONAT"
+                "min_level": 25,
+                "max_level": 30,
+                "species": "SPECIES_GIRAFARIG"
               },
               {
                 "min_level": 25,
@@ -6948,9 +6948,9 @@
                 "species": "SPECIES_TENTACOOL"
               },
               {
-                "min_level": 5,
-                "max_level": 15,
-                "species": "SPECIES_HOPPIP"
+                "min_level": 30,
+                "max_level": 35,
+                "species": "SPECIES_CORSOLA"
               },
               {
                 "min_level": 35,
@@ -7146,8 +7146,8 @@
                 "species": "SPECIES_SENTRET"
               },
               {
-                "min_level": 41,
-                "max_level": 41,
+                "min_level": 30,
+                "max_level": 35,
                 "species": "SPECIES_MEOWTH"
               },
               {
@@ -8098,8 +8098,8 @@
                 "species": "SPECIES_MAROWAK"
               },
               {
-                "min_level": 43,
-                "max_level": 43,
+                "min_level": 35,
+                "max_level": 40,
                 "species": "SPECIES_MEOWTH"
               },
               {
@@ -10078,14 +10078,14 @@
                 "species": "SPECIES_HORSEA"
               },
               {
-                "min_level": 15,
-                "max_level": 25,
-                "species": "SPECIES_GYARADOS"
-              },
-              {
                 "min_level": 25,
                 "max_level": 35,
-                "species": "SPECIES_SEADRA"
+                "species": "SPECIES_CHINCHOU"
+              },
+              {
+                "min_level": 35,
+                "max_level": 40,
+                "species": "SPECIES_LANTURN"
               },
               {
                 "min_level": 25,
@@ -10167,14 +10167,14 @@
                 "species": "SPECIES_HORSEA"
               },
               {
-                "min_level": 15,
-                "max_level": 25,
-                "species": "SPECIES_GYARADOS"
-              },
-              {
                 "min_level": 25,
                 "max_level": 35,
-                "species": "SPECIES_SEADRA"
+                "species": "SPECIES_CHINCHOU"
+              },
+              {
+                "min_level": 35,
+                "max_level": 40,
+                "species": "SPECIES_LANTURN"
               },
               {
                 "min_level": 25,
@@ -10321,14 +10321,14 @@
                 "species": "SPECIES_HORSEA"
               },
               {
-                "min_level": 15,
-                "max_level": 25,
-                "species": "SPECIES_GYARADOS"
-              },
-              {
                 "min_level": 25,
                 "max_level": 35,
-                "species": "SPECIES_SEADRA"
+                "species": "SPECIES_CHINCHOU"
+              },
+              {
+                "min_level": 35,
+                "max_level": 40,
+                "species": "SPECIES_LANTURN"
               },
               {
                 "min_level": 25,
@@ -10475,14 +10475,14 @@
                 "species": "SPECIES_HORSEA"
               },
               {
-                "min_level": 15,
-                "max_level": 25,
-                "species": "SPECIES_GYARADOS"
-              },
-              {
                 "min_level": 25,
                 "max_level": 35,
-                "species": "SPECIES_SEADRA"
+                "species": "SPECIES_CHINCHOU"
+              },
+              {
+                "min_level": 35,
+                "max_level": 40,
+                "species": "SPECIES_LANTURN"
               },
               {
                 "min_level": 25,
@@ -14527,9 +14527,9 @@
                 "species": "SPECIES_VENOMOTH"
               },
               {
-                "min_level": 23,
-                "max_level": 23,
-                "species": "SPECIES_VENONAT"
+                "min_level": 25,
+                "max_level": 30,
+                "species": "SPECIES_GIRAFARIG"
               },
               {
                 "min_level": 25,
@@ -19490,9 +19490,9 @@
                 "species": "SPECIES_TENTACOOL"
               },
               {
-                "min_level": 5,
-                "max_level": 15,
-                "species": "SPECIES_HOPPIP"
+                "min_level": 30,
+                "max_level": 35,
+                "species": "SPECIES_CORSOLA"
               },
               {
                 "min_level": 35,
@@ -19688,8 +19688,8 @@
                 "species": "SPECIES_SENTRET"
               },
               {
-                "min_level": 41,
-                "max_level": 41,
+                "min_level": 30,
+                "max_level": 35,
                 "species": "SPECIES_MEOWTH"
               },
               {
@@ -20640,8 +20640,8 @@
                 "species": "SPECIES_MAROWAK"
               },
               {
-                "min_level": 43,
-                "max_level": 43,
+                "min_level": 35,
+                "max_level": 40,
                 "species": "SPECIES_MEOWTH"
               },
               {
@@ -22620,14 +22620,14 @@
                 "species": "SPECIES_KRABBY"
               },
               {
-                "min_level": 15,
-                "max_level": 25,
-                "species": "SPECIES_GYARADOS"
-              },
-              {
                 "min_level": 25,
                 "max_level": 35,
-                "species": "SPECIES_KINGLER"
+                "species": "SPECIES_CHINCHOU"
+              },
+              {
+                "min_level": 35,
+                "max_level": 40,
+                "species": "SPECIES_LANTURN"
               },
               {
                 "min_level": 25,
@@ -22709,14 +22709,14 @@
                 "species": "SPECIES_KRABBY"
               },
               {
-                "min_level": 15,
-                "max_level": 25,
-                "species": "SPECIES_GYARADOS"
-              },
-              {
                 "min_level": 25,
                 "max_level": 35,
-                "species": "SPECIES_KINGLER"
+                "species": "SPECIES_CHINCHOU"
+              },
+              {
+                "min_level": 35,
+                "max_level": 40,
+                "species": "SPECIES_LANTURN"
               },
               {
                 "min_level": 25,
@@ -22863,14 +22863,14 @@
                 "species": "SPECIES_KRABBY"
               },
               {
-                "min_level": 15,
-                "max_level": 25,
-                "species": "SPECIES_GYARADOS"
-              },
-              {
                 "min_level": 25,
                 "max_level": 35,
-                "species": "SPECIES_KINGLER"
+                "species": "SPECIES_CHINCHOU"
+              },
+              {
+                "min_level": 35,
+                "max_level": 40,
+                "species": "SPECIES_LANTURN"
               },
               {
                 "min_level": 25,
@@ -23017,14 +23017,14 @@
                 "species": "SPECIES_KRABBY"
               },
               {
-                "min_level": 15,
-                "max_level": 25,
-                "species": "SPECIES_GYARADOS"
-              },
-              {
                 "min_level": 25,
                 "max_level": 35,
-                "species": "SPECIES_KINGLER"
+                "species": "SPECIES_CHINCHOU"
+              },
+              {
+                "min_level": 35,
+                "max_level": 40,
+                "species": "SPECIES_LANTURN"
               },
               {
                 "min_level": 25,

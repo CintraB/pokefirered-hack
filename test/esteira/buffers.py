@@ -1474,6 +1474,11 @@ DECLARED: list[Declared] = [
     Declared("src/main_menu.c", "PrintBadgeCount", r".*", BufRef("strbuf", "src/main_menu.c", "PrintBadgeCount"),
              (Fixed(1, "insígnias"), Text("gTextJPDummy_Ko")),
              why="menu inicial: strbuf[30] = número + gTextJPDummy_Ko (src/main_menu.c:673-674)"),
+    Declared("src/field_specials.c", "GetElmEggChoice", r"gSpeciesNames\[.*\]", BufRef("gStringVar2"),
+             (Text("gSpeciesNames"),),
+             why="ovos do Prof. Elm (POK-28): names[n] é gStringVar1, 2 ou 3 (o array local logo acima), com o nome de "
+                 "uma espécie para o multichoice; os buffers têm 32, 20 e 20 bytes (src/string_util.c:4-6), então vale o "
+                 "menor, 20 (gStringVar2/3)"),
     Declared("src/money.c", r"PrintMoneyAmount(InMoneyBox)?", r".*", BufRef("gStringVar4"),
              (Fixed(5, "preenchimento"), Text("gText_PokedollarVar1")), expand="string",
              why="dinheiro: gStringVar4 = espaços + gText_PokedollarVar1 expandido (src/money.c:78-86, :95-103)"),

@@ -1257,7 +1257,7 @@
 #define FLAG_GOT_SHINY_CHARM            0x4A7
 #define FLAG_GOT_RARE_EGG               0x4A8
 #define FLAG_POKERUS_EXPLAINED          0x4A9 // POK-50: the nurse explained the Pokérus (once)
-#define FLAG_PESCADOR_PRIMEIRO_RECORDE  0x4AA // POK-51: o pescador da Rota 19 já deu a Bala Rara do primeiro recorde
+#define FLAG_PESCADOR_PRIMEIRO_RECORDE  0x4AA // POK-51: o pescador da Rota 19 já deu o Doce Raro do primeiro recorde
 #define FLAG_UNUSED_0x4AB               0x4AB // Unused Flag
 #define FLAG_UNUSED_0x4AC               0x4AC // Unused Flag
 #define FLAG_UNUSED_0x4AD               0x4AD // Unused Flag
@@ -1279,15 +1279,15 @@
 #define FLAG_DEFEATED_LANCE           0x4BB
 #define FLAG_DEFEATED_CHAMP           0x4BC
 
+#define FLAG_GOT_EGG_CHIKORITA   0x4D9 // POK-28: ovos do Prof. Elm (uma por espécie dada)
+#define FLAG_GOT_EGG_CYNDAQUIL   0x4DA
+#define FLAG_GOT_EGG_TOTODILE    0x4DB
+#define FLAG_ELM_EGG_PENDING     0x4DC // POK-28: o Carvalho guarda um ovo do Elm (vitória na Liga)
+#define FLAG_GOT_ELM_EGG         0x4DD // POK-28: o 1º ovo do Elm já foi entregue
+#define FLAG_GOT_SNUBBULL        0x4DE // POK-28: o Presidente do Fã-clube já deu o Snubbull
+#define FLAG_HIDE_SUDOWOODO      0x4DF // POK-28: a árvore estranha do Caminho Verde (escondida por padrão)
+#define FLAG_SUDOWOODO_FLEW_AWAY 0x4E0 // POK-28: derrotado ou com fuga, volta na próxima entrada no Hall
 // Unused?
-#define FLAG_0x4D9               0x4D9
-#define FLAG_0x4DA               0x4DA
-#define FLAG_0x4DB               0x4DB
-#define FLAG_0x4DC               0x4DC
-#define FLAG_0x4DD               0x4DD
-#define FLAG_0x4DE               0x4DE
-#define FLAG_0x4DF               0x4DF
-#define FLAG_0x4E0               0x4E0
 #define FLAG_0x4E1               0x4E1
 #define FLAG_0x4E2               0x4E2
 #define FLAG_0x4E3               0x4E3

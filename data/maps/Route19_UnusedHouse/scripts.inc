@@ -2,8 +2,8 @@ Route19_UnusedHouse_MapScripts::
 	.byte 0
 
 @ Pescador da casa de praia (POK-51): como o irmão do Mestre da Pesca da Rota 12, mas para o Krabby.
-@ Cada recorde novo rende 1 Pepita; o primeiro recorde batido também rende 1 Bala Rara
-@ (FLAG_PESCADOR_PRIMEIRO_RECORDE, ligada só depois de a Bala Rara entrar na mochila).
+@ Cada recorde novo rende 1 Pepita; o primeiro recorde batido também rende 1 Doce Raro
+@ (FLAG_PESCADOR_PRIMEIRO_RECORDE, ligada só depois de o Doce Raro entrar na mochila).
 Route19_UnusedHouse_EventScript_Pescador::
 	goto_if_questlog EventScript_ReleaseEnd
 	special QuestLog_CutRecording

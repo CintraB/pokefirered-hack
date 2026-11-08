@@ -153,7 +153,7 @@ def test_casas_e_familia_sombra_no_fim_de_melhorias_modernas():
     mestre, pescador, sala, familia, pedagio = (_plano(c["body"]) for c in cartoes)
     for trecho in ("Rota 6", "15 golpes", "quantas vezes quiser", "¥3.000"):
         assert trecho in mestre, trecho
-    for trecho in ("Rota 19", "Krabby", "Pepita", "Bala Rara"):
+    for trecho in ("Rota 19", "Krabby", "Pepita", "Doce Raro"):
         assert trecho in pescador, trecho
     for trecho in ("Ilha Sete", "redomas", "5 taças", "placa"):
         assert trecho in sala, trecho

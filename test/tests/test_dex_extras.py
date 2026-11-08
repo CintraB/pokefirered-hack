@@ -195,7 +195,7 @@ def test_cenario_especies_tem_os_casos_da_dex():
                  "extra_antes_da_nacional"):
         assert f'"dex/{caso}:' in texto, caso
     assert cen.SCREEN_POINTS[-3:] == ("dex_lista_extras", "dex_garchomp", "dex_garchomp_area")
-    assert refs.SHARED_POINTS[-3:] == cen.SCREEN_POINTS[-3:]
+    assert refs.SHARED_POINTS[-3 - len(refs.JOHTO_POINTS):-len(refs.JOHTO_POINTS)] == cen.SCREEN_POINTS[-3:]   # e os do POK-28
     # os deslocamentos da struct da tela que o cenário lê (conferidos contra os contadores no próprio cenário)
     assert (cen.PDS_STATE, cen.PDS_ORDER_ID, cen.PDS_LIST_ITEMS, cen.PDS_ORDERED_COUNT, cen.PDS_DEX_SPECIES,
             cen.PDS_SEEN_NAT, cen.PDS_OWNED_NAT) == (0x01, 0x42, 0x44, 0x48, 0x5A, 0x6A, 0x6C)

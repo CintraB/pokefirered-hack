@@ -82,6 +82,7 @@ PalletTown_ProfessorOaksLab_EventScript_NationalDexScene::
 	call_if_eq VAR_FACING, DIR_WEST, PalletTown_ProfessorOaksLab_EventScript_PlayerFaceOakWest
 	msgbox PalletTown_ProfessorOaksLab_Text_OakThanksRareEgg
 	call PalletTown_ProfessorOaksLab_EventScript_TryGiveRareEgg
+	call_if_ne VAR_RESULT, MON_CANT_GIVE, PalletTown_ProfessorOaksLab_EventScript_OakTryElmEgg
 	msgbox PalletTown_ProfessorOaksLab_Text_OakAndThisForTravels
 	addmoney 45000
 	textcolor NPC_TEXT_COLOR_NEUTRAL
@@ -139,25 +140,120 @@ PalletTown_ProfessorOaksLab_EventScript_NoRoomForRareEgg::
 	msgbox PalletTown_ProfessorOaksLab_Text_OakNoRoomForEgg
 	return
 
+@ no egg left blocks nothing: the Elm egg may still come in the same talk
 PalletTown_ProfessorOaksLab_EventScript_NoRareEggLeft::
+	setvar VAR_RESULT, MON_GIVEN_TO_PARTY
 	return
 
 @ Oak talk after the national dex scene: the 1st egg still owed (no room in the scene) or the egg left
-@ pending by a later Hall of Fame win (FLAG_RARE_EGG_PENDING)
+@ pending by a later Hall of Fame win (FLAG_RARE_EGG_PENDING); then, the same for the Elm eggs (POK-28)
 PalletTown_ProfessorOaksLab_EventScript_OakCheckRareEgg::
 	goto_if_unset FLAG_GOT_RARE_EGG, PalletTown_ProfessorOaksLab_EventScript_OakGivePendingRareEgg
 	goto_if_set FLAG_RARE_EGG_PENDING, PalletTown_ProfessorOaksLab_EventScript_OakGivePendingRareEgg
+	goto_if_unset FLAG_GOT_ELM_EGG, PalletTown_ProfessorOaksLab_EventScript_OakGivePendingElmEgg
+	goto_if_set FLAG_ELM_EGG_PENDING, PalletTown_ProfessorOaksLab_EventScript_OakGivePendingElmEgg
 	goto PalletTown_ProfessorOaksLab_EventScript_ProfOakStoryStage
 	end
 
+@ both pending: the rare egg first, then the Elm egg (skipped if the rare one found no room)
 PalletTown_ProfessorOaksLab_EventScript_OakGivePendingRareEgg::
 	call_if_set FLAG_GOT_RARE_EGG, PalletTown_ProfessorOaksLab_EventScript_OakSaysAnotherRareEgg
 	call PalletTown_ProfessorOaksLab_EventScript_TryGiveRareEgg
+	call_if_ne VAR_RESULT, MON_CANT_GIVE, PalletTown_ProfessorOaksLab_EventScript_OakTryElmEgg
 	release
 	end
 
 PalletTown_ProfessorOaksLab_EventScript_OakSaysAnotherRareEgg::
 	msgbox PalletTown_ProfessorOaksLab_Text_OakAnotherRareEgg
+	return
+
+PalletTown_ProfessorOaksLab_EventScript_OakGivePendingElmEgg::
+	call PalletTown_ProfessorOaksLab_EventScript_OakTryElmEgg
+	release
+	end
+
+@ POK-28 — ovos do Prof. Elm
+@ Subroutine: the Elm egg still owed (the 1st, with the national dex) or left pending by a later Hall of Fame win
+PalletTown_ProfessorOaksLab_EventScript_OakTryElmEgg::
+	goto_if_unset FLAG_GOT_ELM_EGG, PalletTown_ProfessorOaksLab_EventScript_OakOffersElmEgg
+	goto_if_set FLAG_ELM_EGG_PENDING, PalletTown_ProfessorOaksLab_EventScript_OakOffersAnotherElmEgg
+	return
+
+PalletTown_ProfessorOaksLab_EventScript_OakOffersElmEgg::
+	msgbox PalletTown_ProfessorOaksLab_Text_OakElmSentEggs
+	goto PalletTown_ProfessorOaksLab_EventScript_TryGiveElmEgg
+
+PalletTown_ProfessorOaksLab_EventScript_OakOffersAnotherElmEgg::
+	msgbox PalletTown_ProfessorOaksLab_Text_OakAnotherElmEgg
+	goto PalletTown_ProfessorOaksLab_EventScript_TryGiveElmEgg
+
+@ The player picks among the species not given yet (menu with 3 or 2; the last one comes straight) and gets the
+@ egg (party, else PC); with no room anywhere nothing changes and Oak offers it again next time
+PalletTown_ProfessorOaksLab_EventScript_TryGiveElmEgg::
+	specialvar VAR_RESULT, GetElmEggChoice
+	goto_if_eq VAR_RESULT, 0, PalletTown_ProfessorOaksLab_EventScript_NoElmEggLeft
+	goto_if_eq VAR_RESULT, 1, PalletTown_ProfessorOaksLab_EventScript_ElmEggOnlyOne
+	message PalletTown_ProfessorOaksLab_Text_WhichElmEgg
+	waitmessage
+	goto_if_eq VAR_RESULT, 2, PalletTown_ProfessorOaksLab_EventScript_ChooseElmEggOfTwo
+	multichoice 19, 6, MULTICHOICE_ELM_EGG_3, TRUE
+	goto PalletTown_ProfessorOaksLab_EventScript_ElmEggChosen
+
+PalletTown_ProfessorOaksLab_EventScript_ChooseElmEggOfTwo::
+	multichoice 19, 8, MULTICHOICE_ELM_EGG_2, TRUE
+	goto PalletTown_ProfessorOaksLab_EventScript_ElmEggChosen
+
+@ menu option -> species: GetElmEggChoice left them in VAR_0x8005..0x8007, in the menu order
+PalletTown_ProfessorOaksLab_EventScript_ElmEggChosen::
+	switch VAR_RESULT
+	case 1, PalletTown_ProfessorOaksLab_EventScript_ElmEggOption2
+	case 2, PalletTown_ProfessorOaksLab_EventScript_ElmEggOption3
+	copyvar VAR_0x8004, VAR_0x8005
+	goto PalletTown_ProfessorOaksLab_EventScript_GiveChosenElmEgg
+
+PalletTown_ProfessorOaksLab_EventScript_ElmEggOption2::
+	copyvar VAR_0x8004, VAR_0x8006
+	goto PalletTown_ProfessorOaksLab_EventScript_GiveChosenElmEgg
+
+PalletTown_ProfessorOaksLab_EventScript_ElmEggOption3::
+	copyvar VAR_0x8004, VAR_0x8007
+	goto PalletTown_ProfessorOaksLab_EventScript_GiveChosenElmEgg
+
+PalletTown_ProfessorOaksLab_EventScript_ElmEggOnlyOne::
+	copyvar VAR_0x8004, VAR_0x8005
+	goto PalletTown_ProfessorOaksLab_EventScript_GiveChosenElmEgg
+
+PalletTown_ProfessorOaksLab_EventScript_GiveChosenElmEgg::
+	specialvar VAR_RESULT, GiveElmEgg
+	goto_if_eq VAR_RESULT, MON_CANT_GIVE, PalletTown_ProfessorOaksLab_EventScript_NoRoomForElmEgg
+	goto_if_eq VAR_RESULT, MON_GIVEN_TO_PC, PalletTown_ProfessorOaksLab_EventScript_ElmEggSentToPC
+	special MarkElmEggDelivered
+	bufferspeciesname STR_VAR_1, VAR_0x8004
+	textcolor NPC_TEXT_COLOR_NEUTRAL
+	playfanfare MUS_LEVEL_UP
+	message PalletTown_ProfessorOaksLab_Text_ReceivedElmEgg
+	waitmessage
+	waitfanfare
+	call EventScript_RestorePrevTextColor
+	return
+
+PalletTown_ProfessorOaksLab_EventScript_ElmEggSentToPC::
+	special MarkElmEggDelivered
+	bufferspeciesname STR_VAR_1, VAR_0x8004
+	textcolor NPC_TEXT_COLOR_NEUTRAL
+	playfanfare MUS_LEVEL_UP
+	message PalletTown_ProfessorOaksLab_Text_ReceivedElmEgg
+	waitmessage
+	waitfanfare
+	msgbox PalletTown_ProfessorOaksLab_Text_RareEggSentToPC
+	call EventScript_RestorePrevTextColor
+	return
+
+PalletTown_ProfessorOaksLab_EventScript_NoRoomForElmEgg::
+	msgbox PalletTown_ProfessorOaksLab_Text_OakNoRoomForEgg
+	return
+
+PalletTown_ProfessorOaksLab_EventScript_NoElmEggLeft::
 	return
 
 PalletTown_ProfessorOaksLab_EventScript_NationalDexSceneRivalEnterNorth::

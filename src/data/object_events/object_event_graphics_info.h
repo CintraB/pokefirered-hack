@@ -2985,3 +2985,26 @@ const struct ObjectEventGraphicsInfo gObjectEventGraphicsInfo_FollowerLarge = {
     .images = FOLLOWER_DEFAULT_LARGE_IMAGES,
     .affineAnims = gDummySpriteAffineAnimTable,
 };
+
+// POK-28: o Sudowoodo do Caminho Verde ("árvore estranha"). Sem arte nova: a folha (8 quadros 32x32) e a paleta do
+// seguidor (follower_species.h, incluído antes neste mesmo .c), com as animações do seguidor. A paleta vai para o slot
+// especial (10), como o S.S. Anne e a Estrela de Jirachi: os slots de NPC 1-4 seguem com as cores comuns (a Jaclyn e os
+// NPCs dos mapas vizinhos) e o seguidor (slot 11) fica, porque a paleta não está em gSpecialObjectReflectionPaletteSets.
+const struct ObjectEventGraphicsInfo gObjectEventGraphicsInfo_Sudowoodo = {
+    .tileTag = TAG_NONE,
+    .paletteTag = OBJ_EVENT_PAL_TAG_SUDOWOODO,
+    .reflectionPaletteTag = OBJ_EVENT_PAL_TAG_NONE,
+    .size = 512,
+    .width = 32,
+    .height = 32,
+    .paletteSlot = PALSLOT_NPC_SPECIAL,
+    .shadowSize = SHADOW_SIZE_M,
+    .inanimate = FALSE,
+    .disableReflectionPaletteLoad = FALSE,
+    .tracks = TRACKS_NONE,
+    .oam = &gObjectEventBaseOam_32x32,
+    .subspriteTables = gObjectEventSpriteOamTables_32x32,
+    .anims = sAnimTable_Follower,
+    .images = sFollowerPicTable_Sudowoodo,
+    .affineAnims = gDummySpriteAffineAnimTable,
+};

@@ -7,8 +7,9 @@ O arquivo tem a forma {"tables": [...]} (o jsonproc exige objeto na raiz).
 Uso: python3 tools/hgss_encounters/convert.py --hgss <gs_enc_data.json> --repo . \
          --out src/data/wild_encounters_time.json
 
-Só a versão FireRed e só os 35 mapas do mapeamento abaixo. O nível e a taxa continuam os do
-FRLG; só a espécie muda. Espécie que exige evolução por nível acima do nível máximo do slot no
+Só a versão FireRed e só os 35 mapas do mapeamento abaixo, mais os 2 de MANUAIS (POK-28: Prado da
+Ilha Cinco e Cânion Sevault, sem fonte no HGSS), que copiam a grama do FireRed e trocam um só
+slot: 37 tabelas no total. O nível e a taxa continuam os do FRLG; só a espécie muda. Espécie que exige evolução por nível acima do nível máximo do slot no
 FRLG volta para a pré-evolução (Furret no slot nível 2-4 vira Sentret).
 """
 
@@ -23,7 +24,7 @@ PERIODS = (("morn", "morning"), ("day", "day"), ("nite", "night"))
 LEVEL_METHODS = {"EVO_LEVEL", "EVO_LEVEL_ATK_GT_DEF", "EVO_LEVEL_ATK_EQ_DEF",
                  "EVO_LEVEL_ATK_LT_DEF", "EVO_LEVEL_SILCOON", "EVO_LEVEL_CASCOON",
                  "EVO_LEVEL_NINJASK", "EVO_LEVEL_SHEDINJA"}
-# Espécies da Gen 4 (inexistentes no FRLG) -> equivalente. Hoje nenhuma aparece nos 35 mapas.
+# Espécies da Gen 4 (inexistentes no FRLG) -> equivalente. Hoje nenhuma aparece nos 37 mapas.
 GEN4_EQUIVALENTS: dict[str, str] = {}
 
 # código do mapa no HGSS -> mapas do FRLG
@@ -44,6 +45,12 @@ MAP_TABLE: dict[str, tuple[str, ...]] = {
     "D03R0102": ("MAP_CERULEAN_CAVE_2F",),
     "D03R0103": ("MAP_CERULEAN_CAVE_B1F",),
 }
+# POK-28: mapa -> (slot, espécie, períodos que a recebem). O resto da tabela é a grama do FireRed.
+MANUAIS: dict[str, tuple[int, str, tuple[str, ...]]] = {
+    "MAP_FIVE_ISLAND_MEADOW": (5, "SPECIES_MILTANK", ("morning", "day")),
+    "MAP_SEVEN_ISLAND_SEVAULT_CANYON": (5, "SPECIES_GLIGAR", ("night",)),
+}
+MANUAL_SOURCE = "POK-28 (Johto na natureza, manual)"
 FRLG_MAPS = tuple(m for maps in MAP_TABLE.values() for m in maps)
 
 _EVO_ENTRY = re.compile(r"\{\s*(EVO_\w+)\s*,\s*(\w+)\s*,\s*(SPECIES_\w+)\s*\}")
@@ -92,13 +99,29 @@ def adjust_species(species: str, max_level: int, evolutions) -> str:
 
 def frlg_land_levels(repo: Path) -> dict[str, list[int]]:
     """mapa -> max_level dos 12 slots de terra da entrada FireRed, e a ordem do JSON."""
+    return {k: [m["max_level"] for m in v] for k, v in frlg_land_mons(repo).items()}
+
+
+def frlg_land_mons(repo: Path) -> dict[str, list[dict]]:
+    """mapa -> os 12 slots de terra da entrada FireRed, na ordem do JSON."""
     data = json.loads((repo / "src/data/wild_encounters.json").read_text(encoding="utf-8"))
     out = {}
     for group in data["wild_encounter_groups"]:
         for enc in group["encounters"]:
             if "FireRed" in enc.get("base_label", "") and "land_mons" in enc:
-                out[enc["map"]] = [m["max_level"] for m in enc["land_mons"]["mons"]]
+                out[enc["map"]] = enc["land_mons"]["mons"]
     return out
+
+
+def manual_entry(frlg_map: str, mons: list[dict]) -> dict:
+    slot, species, periods = MANUAIS[frlg_map]
+    entry = {"map": frlg_map, "source": MANUAL_SOURCE}
+    for _, key in PERIODS:
+        row = [m["species"] for m in mons]
+        if key in periods:
+            row[slot] = species
+        entry[key] = row
+    return entry
 
 
 def hgss_species(value) -> str:
@@ -110,6 +133,7 @@ def convert(hgss_path: Path, repo: Path) -> list[dict]:
     valid = load_species(repo)
     evolutions = load_evolutions(repo)
     levels = frlg_land_levels(repo)
+    mons_by_map = frlg_land_mons(repo)
 
     missing_maps = [c for c in MAP_TABLE if c not in hgss]
     if missing_maps:
@@ -133,6 +157,9 @@ def convert(hgss_path: Path, repo: Path) -> list[dict]:
     result = []
     code_of = {m: c for c, maps in MAP_TABLE.items() for m in maps}
     for frlg_map in levels:                      # ordem do wild_encounters.json
+        if frlg_map in MANUAIS:
+            result.append(manual_entry(frlg_map, mons_by_map[frlg_map]))
+            continue
         code = code_of.get(frlg_map)
         if code is None:
             continue
@@ -142,8 +169,8 @@ def convert(hgss_path: Path, repo: Path) -> list[dict]:
             entry[key] = [adjust_species(s, max_levels[i], evolutions)
                           for i, s in enumerate(species)]
         result.append(entry)
-    if len(result) != len(FRLG_MAPS):
-        sys.exit(f"{len(result)} mapas gerados, esperado {len(FRLG_MAPS)}")
+    if len(result) != len(FRLG_MAPS) + len(MANUAIS):
+        sys.exit(f"{len(result)} mapas gerados, esperado {len(FRLG_MAPS) + len(MANUAIS)}")
     return result
 
 

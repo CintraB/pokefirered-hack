@@ -3,6 +3,7 @@ EventScript_SetDefeatedEliteFourFlagsVars::
 	call EventScript_ResetEliteFour
 	special Script_UpdateTrainerFanClubGameClear
 	special QueueRareEggAfterHallOfFame
+	special QueueElmEggAfterHallOfFame
 	specialvar VAR_RESULT, IsNationalPokedexEnabled
 	call_if_eq VAR_RESULT, FALSE, EventScript_SetReadyTryGiveNationalDexScene
 	call EventScript_ResetLegendaries
@@ -20,6 +21,7 @@ EventScript_ResetLegendaries::
 	clearflag FLAG_CELEBI_FLEW_AWAY
 	clearflag FLAG_MEW_FLEW_AWAY
 	clearflag FLAG_JIRACHI_FLEW_AWAY
+	clearflag FLAG_SUDOWOODO_FLEW_AWAY
 	return
 
 EventScript_ResetEliteFourEnd::

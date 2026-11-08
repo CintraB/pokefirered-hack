@@ -271,5 +271,5 @@ def test_cenario_especies_tem_os_casos_dos_golpes():
     # as telas dos golpes vêm antes das da Pokédex dos extras (Task 6, 3 pontos no fim)
     assert cen.SCREEN_POINTS[-7:-3] == ("golpe_dark_void", "golpe_menu_garchomp", "golpe_menu_novos",
                                         "golpe_fire_fang")
-    assert refs.SHARED_POINTS[-len(cen.SCREEN_POINTS):] == cen.SCREEN_POINTS
+    assert refs.SHARED_POINTS[-len(cen.SCREEN_POINTS) - len(refs.JOHTO_POINTS):-len(refs.JOHTO_POINTS)] == cen.SCREEN_POINTS   # e os do POK-28
     assert len(cen.SEEDS) == 5                                  # Dark Void: até 5 tentativas

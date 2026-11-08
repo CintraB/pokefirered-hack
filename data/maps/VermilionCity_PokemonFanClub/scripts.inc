@@ -16,6 +16,53 @@ VermilionCity_PokemonFanClub_EventScript_Chairman::
 
 VermilionCity_PokemonFanClub_EventScript_AlreadyHeardStory::
 	msgbox VermilionCity_PokemonFanClub_Text_DidntComeToSeeAboutMonsAgain
+	goto_if_set FLAG_GOT_SNUBBULL, EventScript_ReleaseEnd
+	goto_if_questlog EventScript_ReleaseEnd
+	specialvar VAR_RESULT, GetLeadMonFriendship
+	goto_if_ge VAR_RESULT, 5, VermilionCity_PokemonFanClub_EventScript_TryGiveSnubbull
+	msgbox VermilionCity_PokemonFanClub_Text_SnubbullHint
+	release
+	end
+
+@ POK-28: depois do Vale Bicicleta, o Presidente dá um Snubbull a quem tem o 1º da equipe com amizade >= 200
+VermilionCity_PokemonFanClub_EventScript_TryGiveSnubbull::
+	msgbox VermilionCity_PokemonFanClub_Text_SnubbullOffer
+	setvar VAR_TEMP_1, SPECIES_SNUBBULL
+	givemon SPECIES_SNUBBULL, 20
+	goto_if_eq VAR_RESULT, 0, VermilionCity_PokemonFanClub_EventScript_GetSnubbullParty
+	goto_if_eq VAR_RESULT, 1, VermilionCity_PokemonFanClub_EventScript_GetSnubbullPC
+	goto EventScript_NoMoreRoomForPokemon
+	end
+
+VermilionCity_PokemonFanClub_EventScript_GetSnubbullParty::
+	setflag FLAG_GOT_SNUBBULL
+	playfanfare MUS_LEVEL_UP
+	message VermilionCity_PokemonFanClub_Text_ReceivedSnubbullFromChairman
+	waitmessage
+	waitfanfare
+	bufferspeciesname STR_VAR_1, SPECIES_SNUBBULL
+	msgbox Text_GiveNicknameToThisMon, MSGBOX_YESNO
+	goto_if_eq VAR_RESULT, NO, EventScript_ReleaseEnd
+	call EventScript_GetGiftMonPartySlot
+	call EventScript_ChangePokemonNickname
+	release
+	end
+
+VermilionCity_PokemonFanClub_EventScript_GetSnubbullPC::
+	setflag FLAG_GOT_SNUBBULL
+	playfanfare MUS_LEVEL_UP
+	message VermilionCity_PokemonFanClub_Text_ReceivedSnubbullFromChairman
+	waitmessage
+	waitfanfare
+	bufferspeciesname STR_VAR_1, SPECIES_SNUBBULL
+	msgbox Text_GiveNicknameToThisMon, MSGBOX_YESNO
+	goto_if_eq VAR_RESULT, NO, VermilionCity_PokemonFanClub_EventScript_TransferSnubbullToPC
+	call EventScript_NameReceivedBoxMon
+	goto VermilionCity_PokemonFanClub_EventScript_TransferSnubbullToPC
+	end
+
+VermilionCity_PokemonFanClub_EventScript_TransferSnubbullToPC::
+	call EventScript_TransferredToPC
 	release
 	end
 

@@ -19,3 +19,11 @@ SixIsland_GreenPath_Text_RightRouteSign::
     .string "Caminho Verde\n"
     .string "Pense verde, preserve a natureza!$"
 
+SixIsland_GreenPath_Text_StrangeTree::
+    .string "É uma árvore estranha…\p"
+    .string "…Ela se mexeu!$"
+
+SixIsland_GreenPath_Text_SudowoodoRanOff::
+    .string "O Sudowoodo saiu correndo e sumiu\n"
+    .string "entre as árvores!$"
+

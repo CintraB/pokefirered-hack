@@ -34,6 +34,13 @@ u16 GetRandomRareEggSpecies(void);
 // Hack 8 — ovos raros por vitória na Liga
 void MarkRareEggDelivered(void);
 void QueueRareEggAfterHallOfFame(void);
+
+// POK-28 — ovos do Prof. Elm
+u16 GetElmEggChoice(void);
+u16 GiveElmEgg(void);
+void MarkElmEggDelivered(void);
+void QueueElmEggAfterHallOfFame(void);
+
 u16 GetRepelToReuse(void);
 void UseRepelFromField(void);
 

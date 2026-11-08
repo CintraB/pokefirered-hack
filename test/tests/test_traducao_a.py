@@ -123,7 +123,11 @@ ROTULOS_DOS_HACKS = {"PalletTown_ProfessorOaksLab_Text_OakAnotherRareEgg",      
                      "IndigoPlateau_PokemonCenter_1F_Text_AskTier",              # POK-42: a guarda da Liga pergunta o degrau
                      "IndigoPlateau_PokemonCenter_1F_Text_TierSet",
                      "IndigoPlateau_PokemonCenter_1F_Text_TierSetLeagueClosed",
-                     "IndigoPlateau_PokemonCenter_1F_Text_KeepTier"}
+                     "IndigoPlateau_PokemonCenter_1F_Text_KeepTier",
+                     "PalletTown_ProfessorOaksLab_Text_OakElmSentEggs",          # POK-28: ovos do Prof. Elm
+                     "PalletTown_ProfessorOaksLab_Text_OakAnotherElmEgg",
+                     "PalletTown_ProfessorOaksLab_Text_WhichElmEgg",
+                     "PalletTown_ProfessorOaksLab_Text_ReceivedElmEgg"}
 # rótulos da base que um hack tirou de propósito (o texto deixou de existir)
 ROTULOS_REMOVIDOS_DOS_HACKS = {"MtMoon_B2F_Text_ThenThisFossilIsMine"}           # Hack 8: o Miguel não leva mais o outro fóssil
 

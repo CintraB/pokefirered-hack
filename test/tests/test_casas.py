@@ -108,14 +108,15 @@ def test_krabby_recorde_funcoes():
     valores = re.findall(r"#define VAR_\w+\s+(0x40[0-9A-Fa-f]{2})\b", VARS_H)
     assert valores.count(m.group(1)) == 1 and "VAR_0x40F0" not in VARS_H
     nomes = [n for n in re.findall(r"def_special (\w+)", SPECIALS.split("gSpecialsEnd::")[0])
-             if not n.startswith(("Dossie_", "FamiliaSombra_Apreendido", "FamiliaSombra_Entregar"))]  # POK-54 vem depois
+             if not n.startswith(("Dossie_", "FamiliaSombra_Apreendido", "FamiliaSombra_Entregar"))  # POK-54 vem depois
+             and "ElmEgg" not in n]  # POK-28 também
     assert nomes[-7:-5] == ["GetKrabbySizeRecordInfo", "CompareKrabbySize"], nomes[-8:]  # a Task 10 vem depois
     # o hook de teste do tamanho entrou no bloco novo (0x130)
     assert re.search(r"TEST_CMD_SET_PARTY_PID_LOW = 0x130", (REPO_ROOT / "include" / "test_hooks.h").read_text("utf-8"))
 
 
 def test_premios_pescador():
-    """Recorde novo → Pepita; o primeiro recorde → também Bala Rara, com a flag só depois de a Bala Rara entrar na
+    """Recorde novo → Pepita; o primeiro recorde → também Doce Raro, com a flag só depois de o Doce Raro entrar na
     mochila; mochila cheia usa giveitem + EventScript de aviso."""
     assert PESCADOR.count("giveitem ITEM_NUGGET") == 1 and PESCADOR.count("giveitem ITEM_RARE_CANDY") == 1
     assert re.search(r"#define FLAG_PESCADOR_PRIMEIRO_RECORDE\s+0x4AA // POK-51", FLAGS_H)
@@ -271,7 +272,8 @@ def test_taca_limites():
     # só as ativas contam: o special usa Conquistas_ContarAba (válidas = ativas e não perdidas), sem número fixo
     assert "Conquistas_ContarAba" in TROFEUS_C and "44" not in TROFEUS_C and "46" not in TROFEUS_C
     nomes = [n for n in re.findall(r"def_special (\w+)", SPECIALS.split("gSpecialsEnd::")[0])
-             if not n.startswith(("Dossie_", "FamiliaSombra_Apreendido", "FamiliaSombra_Entregar"))]  # POK-54 vem depois
+             if not n.startswith(("Dossie_", "FamiliaSombra_Apreendido", "FamiliaSombra_Entregar"))  # POK-54 vem depois
+             and "ElmEgg" not in n]  # POK-28 também
     assert nomes[-5:] == ["SalaTrofeus_Taca", "SalaTrofeus_Placa", "SalaTrofeus_PlacaRevanche", "SalaTrofeus_PlacaHall",
                           "SalaTrofeus_Curador"]
     # as 5 taças: cada uma lê a sua aba (0-4 = História, Batalha, Captura, Treino, Exploração)
@@ -410,8 +412,9 @@ def test_telas_da_familia_e_das_casas_no_fim_de_shared_points():
     from esteira.__main__ import WATCH_FULL_SCENARIOS
     from esteira.scenarios import full_casas, full_familia
     assert refs.FAMILIA_POINTS == full_familia.SCREEN_POINTS and refs.CASAS_POINTS == full_casas.SCREEN_POINTS
-    # depois deles, só os do POK-54
-    fim = refs.SHARED_POINTS[-len(refs.FAMILIA_POINTS) - len(refs.CASAS_POINTS) - len(refs.ESPECIES_POINTS):]
+    # depois deles, só os do POK-54 e os do POK-28
+    fim = refs.SHARED_POINTS[-len(refs.FAMILIA_POINTS) - len(refs.CASAS_POINTS) - len(refs.ESPECIES_POINTS)
+                             - len(refs.JOHTO_POINTS):-len(refs.JOHTO_POINTS)]
     assert fim == refs.FAMILIA_POINTS + refs.CASAS_POINTS + refs.ESPECIES_POINTS
     assert len(set(refs.SHARED_POINTS)) == len(refs.SHARED_POINTS)
     for pontos, arquivo in ((refs.FAMILIA_POINTS, "full_familia.py"), (refs.CASAS_POINTS, "full_casas.py")):

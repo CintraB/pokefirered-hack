@@ -238,6 +238,13 @@ enum
 };
 // --- end of POK-54 --------------------------------------------------------------------------
 
+// --- POK-28: os 18 de Johto -------------------------------------------------------------------
+enum
+{
+    TEST_CMD_CALL_SCRIPT = 0x150, // arg0 = script address (ROM): field script in gTestText: lockall, call arg0, releaseall, end (e.g. the Hall of Fame entry, EventScript_SetDefeatedEliteFourFlagsVars); result = 1 (0xFFFFFFFF = not in the free overworld or address outside the ROM)
+};
+// --- end of POK-28 --------------------------------------------------------------------------
+
 extern struct TestMailbox gTestMailbox;
 extern u8 gTestText[TEST_TEXT_SIZE];
 
