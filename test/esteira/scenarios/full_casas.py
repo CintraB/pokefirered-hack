@@ -18,7 +18,7 @@ Krabby nv 20 cujo tamanho é escolhido pelo hook SET_PARTY_PID_LOW (IVs fixos em
 personalidade com os bytes trocados).
 
 - `casas/pescador_recorde`: entra pela porta (tela `casa_rota19_exterior`); um Krabby médio bate o recorde padrão
-  (Pepita + Bala Rara, flag do primeiro recorde ligada); um Krabby maior bate de novo (só mais uma Pepita); voltando
+  (Pepita + Doce Raro, flag do primeiro recorde ligada); um Krabby maior bate de novo (só mais uma Pepita); voltando
   ao médio, não chega ao recorde (nada é dado).
 
 Uso, a partir de test/ (a pasta OUT precisa do captura.sav de um `rapido`/`completo`):
@@ -274,7 +274,7 @@ class CasasScenario(CatchSaveScenario):
         texto = " ".join(info["msgs"])
         assert info["equipe"] >= 1 and "colossal" in texto and "presente raro" in texto, info["msgs"]
         n1, c1 = self.game.bag_quantity(nugget), self.game.bag_quantity(candy)
-        assert (n1, c1) == (n0 + 1, c0 + 1), f"Pepita {n0}→{n1}, Bala Rara {c0}→{c1}"
+        assert (n1, c1) == (n0 + 1, c0 + 1), f"Pepita {n0}→{n1}, Doce Raro {c0}→{c1}"
         assert self.game.flag(flag), "a flag do primeiro recorde não ligou"
 
         self.box.set_party_pid_low(0, PID_GRANDE)
@@ -282,14 +282,14 @@ class CasasScenario(CatchSaveScenario):
         texto = " ".join(info["msgs"])
         assert "colossal" in texto and "presente raro" not in texto, info["msgs"]
         n2, c2 = self.game.bag_quantity(nugget), self.game.bag_quantity(candy)
-        assert (n2, c2) == (n1 + 1, c1), f"o segundo recorde: Pepita {n1}→{n2}, Bala Rara {c1}→{c2}"
+        assert (n2, c2) == (n1 + 1, c1), f"o segundo recorde: Pepita {n1}→{n2}, Doce Raro {c1}→{c2}"
 
         self.box.set_party_pid_low(0, PID_MEDIO)
         info = self._pescador_conversa()
         texto = " ".join(info["msgs"])
         assert "Tente outro" in texto and "colossal" not in texto, info["msgs"]
         assert (self.game.bag_quantity(nugget), self.game.bag_quantity(candy)) == (n2, c2), "Krabby menor premiado"
-        return (f"recorde médio: Pepita {n0}→{n1} + Bala Rara {c0}→{c1} (flag ligada); recorde maior: só Pepita →{n2}; "
+        return (f"recorde médio: Pepita {n0}→{n1} + Doce Raro {c0}→{c1} (flag ligada); recorde maior: só Pepita →{n2}; "
                 f"o médio de novo: nada; exterior {exterior}")
 
     # --- a sala de troféus -----------------------------------------------------------

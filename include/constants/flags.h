@@ -1257,7 +1257,7 @@
 #define FLAG_GOT_SHINY_CHARM            0x4A7
 #define FLAG_GOT_RARE_EGG               0x4A8
 #define FLAG_POKERUS_EXPLAINED          0x4A9 // POK-50: the nurse explained the Pokérus (once)
-#define FLAG_PESCADOR_PRIMEIRO_RECORDE  0x4AA // POK-51: o pescador da Rota 19 já deu a Bala Rara do primeiro recorde
+#define FLAG_PESCADOR_PRIMEIRO_RECORDE  0x4AA // POK-51: o pescador da Rota 19 já deu o Doce Raro do primeiro recorde
 #define FLAG_UNUSED_0x4AB               0x4AB // Unused Flag
 #define FLAG_UNUSED_0x4AC               0x4AC // Unused Flag
 #define FLAG_UNUSED_0x4AD               0x4AD // Unused Flag

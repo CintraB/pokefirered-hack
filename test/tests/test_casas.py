@@ -115,7 +115,7 @@ def test_krabby_recorde_funcoes():
 
 
 def test_premios_pescador():
-    """Recorde novo → Pepita; o primeiro recorde → também Bala Rara, com a flag só depois de a Bala Rara entrar na
+    """Recorde novo → Pepita; o primeiro recorde → também Doce Raro, com a flag só depois de o Doce Raro entrar na
     mochila; mochila cheia usa giveitem + EventScript de aviso."""
     assert PESCADOR.count("giveitem ITEM_NUGGET") == 1 and PESCADOR.count("giveitem ITEM_RARE_CANDY") == 1
     assert re.search(r"#define FLAG_PESCADOR_PRIMEIRO_RECORDE\s+0x4AA // POK-51", FLAGS_H)
