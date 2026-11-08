@@ -55,9 +55,10 @@ def _function_body(text: str, signature: str) -> str:
         i += 1
 
 
-def test_35_mapas_esperados():
+def test_37_mapas_esperados():
+    """35 do HeartGold + 2 do POK-28 (Prado da Ilha Cinco e Cânion Sevault, à mão)."""
     maps = [t["map"] for t in TABLES]
-    assert len(maps) == len(set(maps)) == 35
+    assert len(maps) == len(set(maps)) == 37
     assert set(maps) == en.EXPECTED_MAPS
 
 

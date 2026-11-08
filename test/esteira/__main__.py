@@ -82,6 +82,7 @@ from esteira.scenarios.full_dexnav import run_full_dexnav  # POK-47
 from esteira.scenarios.full_seguidor import run_full_seguidor  # POK-48
 from esteira.scenarios.full_pokerus import run_full_pokerus  # POK-50
 from esteira.scenarios.full_galeria import run_full_galeria  # POK-29
+from esteira.scenarios.full_johto import run_full_johto  # POK-28
 from esteira.scenarios.full_familia import run_full_familia  # POK-51
 from esteira.scenarios.full_casas import run_full_casas  # POK-51
 from esteira.scenarios.full_especies import run_full_especies  # POK-54
@@ -205,6 +206,7 @@ FULL_SCENARIOS: list[ScenarioSpec] = [
     ScenarioSpec("familia", run_full_familia, rom=TEST, save_from="captura"),  # POK-51
     ScenarioSpec("casas", run_full_casas, rom=TEST, save_from="captura"),  # POK-51
     ScenarioSpec("especies", run_full_especies, rom=TEST, save_from="captura"),  # POK-54
+    ScenarioSpec("johto", run_full_johto, rom=TEST, save_from="captura"),  # POK-28
     ScenarioSpec("novidades_inicial", run_full_novidades_first_offer, needs="abertura"),
 ]
 # Cenários do modo completo que o `assistir --cenario` mostra numa janela (ROM de teste, a
@@ -228,7 +230,8 @@ WATCH_FULL_SCENARIOS = ("evolucoes", "resumo_evolucao", "resumo_ivs", "ovo",
                         "pokerus",  # POK-50
                         "familia", "casas",  # POK-51
                         "galeria",  # POK-29
-                        "especies")  # POK-54
+                        "especies",  # POK-54
+                        "johto")  # POK-28
 
 
 def scenarios_for(mode: str) -> list[ScenarioSpec]:
