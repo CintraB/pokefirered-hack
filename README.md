@@ -10,8 +10,8 @@ a Pokédex inteira obtível e uma esteira de testes automática no emulador.**
 ![Base](https://img.shields.io/badge/base-pret%2Fpokefirered-e3350d?style=flat-square)
 ![Linguagem](https://img.shields.io/badge/C-agbcc-555555?style=flat-square)
 ![Testes](https://img.shields.io/badge/pytest-5301%20testes-2ea44f?style=flat-square)
-![Esteira](https://img.shields.io/badge/esteira-648%20checagens-2ea44f?style=flat-square)
-![Versão](https://img.shields.io/badge/ROM-v72-informational?style=flat-square)
+![Esteira](https://img.shields.io/badge/esteira-705%20checagens-2ea44f?style=flat-square)
+![Versão](https://img.shields.io/badge/ROM-v73-informational?style=flat-square)
 [![Página do Professor](https://img.shields.io/badge/p%C3%A1gina-do%20Professor-e3350d?style=flat-square)](https://cintrab.github.io/pokefirered-hack/)
 
 <img src="docs/readme/inicial.png" width="240" alt="Escolha do inicial em português">
@@ -64,6 +64,7 @@ perder o jeito do FireRed.
 | 🌦️ | **Clima** | Chuva, neve, areia, cinzas e sol forte por região, e visíveis na batalha. |
 | 🧚 | **Tipos e golpes modernos** | Físico ou especial por golpe e o tipo Fada, como em Pokémon X e Y. |
 | 📖 | **Pokédex completa** | Exclusivos do LeafGreen, os dois fósseis, lendários e míticos obtíveis. |
+| 🌱 | **Johto em Kanto** | 18 Pokémon de Johto a mais na Pokédex obtível (de 245 para 263 dos 386): Chinchou, Corsola, Miltank e outros na natureza, os 3 Ovos do Prof. Elm, um Snubbull de presente e um Sudowoodo no Caminho Verde. |
 | 🛠️ | **Melhorias modernas** | Exp. Share para todos, PC Portátil, HMs sem ensinar, status com L/R… |
 | 🏆 | **Conquistas e diário** | 46 conquistas com prêmio na bolsa e o diário das batalhas marcantes, no Cartão de Treinador. |
 | 🔝 | **Revanches por degrau** | Depois do Hall da Fama, a Elite 4 e as revanches do Explorador VS sobem até o nível 100. |
@@ -323,6 +324,9 @@ perder o jeito do FireRed.
 - **Segunda chance**: lendário derrotado volta na próxima entrada no Hall da Fama.
 - **Míticos**: Mew, Celebi e Jirachi escondidos pelo mundo, com pistas.
 - **Presentes do Carvalho**: um ovo raro por vitória na Liga (Larvitar, Bagon, Beldum) e ¥45.000 na primeira.
+- **Encomenda do Prof. Elm**: três Ovos, de Chikorita, Cyndaquil e Totodile. Na cena da Pokédex Nacional o Carvalho deixa você escolher um; os outros chegam um por vez, a cada nova vitória na Liga.
+- **Johto na natureza**: Chinchou e Lanturn na Super Vara das Rotas 19 a 21, Corsola surfando no Recanto Esplêndido, Girafarig na Zona de Safári Oeste, Miltank de dia no Prado Ilha Cinco e Gligar à noite no Cânion Sevault.
+- **Presentes de Johto**: o Presidente do Fã-clube dá um Snubbull a quem tem o 1º da equipe com amizade 200 ou mais (depois do Vale Bicicleta), e uma árvore estranha no Caminho Verde é um Sudowoodo nível 35 (com a Pokédex Nacional).
 
 <p align="center">
 <img src="docs/readme/pokedex_nacional.png" width="240" alt="Pokédex Nacional">
@@ -375,6 +379,7 @@ perder o jeito do FireRed.
 | **Pokérus** (06/11) | O Pokérus do Rubi/Safira, que o FireRed deixava desligado: pega depois das batalhas, passa aos vizinhos, conta os dias pelo relógio da hack e dobra os EVs. |
 | **Casas e Família Sombra** (06/11) | Três casas sem uso ganham vida (Mestre dos Golpes na Rota 6, casa do pescador na Rota 19, sala de troféus na Ilha Sete) e a Rota 23 ganha o prédio da Família Sombra: capangas, gêmeos, chefes shiny, pedágio e a máfia que volta. |
 | **Família Sombra, parte 2** (07/11) | Gible, Gabite, Garchomp e Darkrai como extras da Pokédex (nº 443 a 445 e 491), seis golpes novos e a habilidade Sonhos Ruins, os chefes Mercenário e Pesadelo, o desfecho do caso (história recolhida acima, com spoilers), o dossiê em tela cheia, 46 conquistas e a correção das coordenadas de warp em 16 bits. |
+| **Johto, os 18** (08/11) | A Pokédex obtível passa de 245 para 263 dos 386: Chinchou, Lanturn, Corsola, Miltank, Girafarig e Gligar na natureza, os 3 Ovos do Prof. Elm (Chikorita, Cyndaquil e Totodile), o Snubbull do Fã-clube e o Sudowoodo do Caminho Verde. |
 | **Esteira mais firme** (06/11) | Galeria de textos (cada fala na caixa real) e telas de referência estáveis, sem avisos falsos pelo sorteio. |
 
 ## Esteira de testes

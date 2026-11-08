@@ -266,6 +266,21 @@
           "title": "Os dois fósseis",
           "body": "Agora dá para pegar os dois fósseis do\nMonte Lua: o Fóssil Domo e o Fóssil Hélice.\nO Miguel não leva mais o outro. Reviva um de\ncada vez no laboratório da Ilha Cinnabar.",
           "itemId": "ITEM_DOME_FOSSIL"
+        },
+        {
+          "title": "Encomenda do Prof. Elm",
+          "body": "O Prof. Elm, de Johto, manda ao Carvalho\ntrês Ovos: Chikorita, Cyndaquil e Totodile.\nDepois do 1º Hall da Fama, escolha um; os\noutros chegam um a cada nova vitória na Liga.",
+          "itemId": "ITEM_LUCKY_EGG"
+        },
+        {
+          "title": "Johto na natureza",
+          "body": "Chinchou e Lanturn na Super Vara das Rotas\n19 a 21, Corsola surfando no Recanto\nEsplêndido, Girafarig no Safári Oeste,\nMiltank de dia no Prado e Gligar à noite no\nCânion Sevault.",
+          "speciesBefore": "SPECIES_LANTURN"
+        },
+        {
+          "title": "Presentes de Johto",
+          "body": "O Presidente do Fã-clube dá um Snubbull a\nquem tem o 1º da equipe com muita amizade. No\nCaminho Verde, uma árvore estranha é um\nSudowoodo nv 35, depois da Dex Nacional.",
+          "speciesBefore": "SPECIES_SUDOWOODO"
         }
       ]
     },
