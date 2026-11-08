@@ -97,3 +97,25 @@ VermilionCity_PokemonFanClub_Text_ChairmanReallyAdoresHisMons::
     .string "Pokémon dele.\p"
     .string "Mas a pessoa de quem os Pokémon mais\n"
     .string "gostam é a Daisy, eu acho.$"
+
+VermilionCity_PokemonFanClub_Text_SnubbullOffer::
+    .string "Mas espere!\n"
+    .string "Olhe só para o seu Pokémon da\l"
+    .string "frente!\p"
+    .string "Ele gosta muito de você. Dá para\n"
+    .string "ver de longe!\p"
+    .string "Quem cuida assim dos Pokémon merece\n"
+    .string "um presente.\p"
+    .string "Fique com este Snubbull! Cuide bem\n"
+    .string "dele!$"
+
+VermilionCity_PokemonFanClub_Text_ReceivedSnubbullFromChairman::
+    .string "{PLAYER} recebeu um Snubbull\n"
+    .string "do Presidente!$"
+
+VermilionCity_PokemonFanClub_Text_SnubbullHint::
+    .string "Eu só entrego um dos meus Pokémon\n"
+    .string "a quem cuida muito bem dos seus.\p"
+    .string "O primeiro Pokémon da sua equipe\n"
+    .string "precisa gostar muito de você.\p"
+    .string "Volte quando ele gostar!$"

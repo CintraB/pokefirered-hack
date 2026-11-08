@@ -56,8 +56,8 @@ def test_flags_na_faixa_livre_em_ordem_sem_colisao():
     valores = re.findall(r"^#define FLAG_\w+\s+(0x[0-9A-Fa-f]+)\b", h, re.M)
     for _, valor in FLAGS:
         assert [int(v, 16) for v in valores].count(valor) == 1, hex(valor)
-    # a vizinha seguinte continua livre para as próximas tarefas
-    assert re.search(r"^#define FLAG_0x4DE\s+0x4DE\b", h, re.M)
+    # a 0x4DE (próxima depois das do Elm) não é nenhuma delas: virou FLAG_GOT_SNUBBULL na Task 4
+    assert 0x4DE not in [valor for _, valor in FLAGS]
 
 
 # --- C ---------------------------------------------------------------------------------------------------------------

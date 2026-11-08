@@ -27,6 +27,17 @@ Ovos do Prof. Elm (Task 3, classe `OvosElm`, com os atalhos e a cena do `pos_lig
 - `johto/ovos_elm/cheio`: equipe e PC cheios: aviso, nenhuma flag muda; com uma vaga, o mesmo menu e o ovo no PC;
 - `johto/ovos_elm/save_antigo`: estágio 8 sem nenhuma flag do Elm: a conversa traz a 1ª oferta com os 3.
 
+Snubbull do Fã-clube (Task 4, classe `FaClube`): o Presidente, depois do Vale Bicicleta, dá um Snubbull nv 20 se o 1º
+da equipe tem amizade 200 ou mais (`GetLeadMonFriendship` >= 5):
+
+- `johto/snubbull/sim`: amizade 255, equipe de 1: o Snubbull nv 20 entra na equipe e `FLAG_GOT_SNUBBULL` liga;
+- `johto/snubbull/limite`: 199 só ouve a dica e 200 já ganha;
+- `johto/snubbull/baixa`: amizade 100: dica, nada muda; com 255 depois, ganha (a dica não trava nada);
+- `johto/snubbull/segunda`: depois de ganhar, falar de novo não dá outro;
+- `johto/snubbull/pc`: equipe cheia, o Snubbull vai para o PC;
+- `johto/snubbull/cheio`: equipe e PC cheios: aviso e a flag NÃO liga; com uma vaga no PC, ele vem;
+- `johto/snubbull/vale`: o Vale Bicicleta continua igual (pergunta, SIM, voucher) e o Snubbull só vem na conversa seguinte.
+
 Estatística: o jogo sorteia de verdade, então cada conferência tem um tamanho de amostra (`AMOSTRAS`) escolhido para o
 falso vermelho ficar abaixo de `FALSO_VERMELHO_MAX` (1e-6): "nenhum acerto em n sorteios" vale (1-p)^n, "menos de k
 acertos" a soma binomial, e as faixas de porcentagem são de `SIGMAS` desvios-padrão (2 em 1 bilhão cada). As contas
@@ -342,6 +353,15 @@ class JohtoScenario(CatchSaveScenario):
             self.suite.run("johto/ovos_elm/cheio: equipe e PC cheios, nada se perde", ovos.cheio)
             self.suite.run("johto/ovos_elm/save_antigo: depois da Dex Nacional sem ovo do Elm, a conversa oferece",
                            ovos.save_antigo)
+            # Task 4: o Snubbull do Fã-clube (ver FaClube)
+            clube = FaClube(self.ctx, self.box)
+            self.suite.run("johto/snubbull/sim: amizade 255, o Snubbull nv 20 vem para a equipe", clube.sim)
+            self.suite.run("johto/snubbull/limite: 199 não ganha, 200 ganha", clube.limite)
+            self.suite.run("johto/snubbull/baixa: amizade 100 só ouve a dica", clube.baixa)
+            self.suite.run("johto/snubbull/segunda: depois de ganhar, não dá outro", clube.segunda)
+            self.suite.run("johto/snubbull/pc: equipe cheia, o Snubbull vai para o PC", clube.pc)
+            self.suite.run("johto/snubbull/cheio: equipe e PC cheios, nada se perde e a flag não liga", clube.cheio)
+            self.suite.run("johto/snubbull/vale: o Vale Bicicleta continua igual", clube.vale)
         except Abort:
             pass
 
@@ -568,6 +588,152 @@ class OvosElm(PostLeagueScenario):
         self._dados("TOTODILE")
         assert self._flag("FLAG_GOT_ELM_EGG") and not self._flag("FLAG_ELM_EGG_PENDING")
         return "estágio 8 sem flag do Elm: a conversa traz a 1ª oferta com os 3 e entrega o TOTODILE"
+
+
+FANCLUBE, FANCLUBE_FRENTE = "MAP_VERMILION_CITY_POKEMON_FAN_CLUB", (5, 5)   # abaixo do Presidente, em (5, 4)
+FALA_SNUBBULL, FALA_DICA = "recebeu um Snubbull", "precisa gostar muito de você"
+
+
+class FaClube(PostLeagueScenario):
+    """O Snubbull do Presidente do Fã-clube (Task 4), na mesma sessão do cenário.
+
+    Cada caso monta a equipe com o 1º na amizade pedida, leva o jogador diante do Presidente (com o Vale Bicicleta já
+    dado, salvo no caso `vale`), aperta A em tudo (a pergunta do apelido recebe B = NÃO) e confere equipe, PC,
+    flag e falas."""
+
+    def __init__(self, ctx: ScenarioContext, box: Mailbox):
+        super().__init__(ctx)
+        self.box = box
+        self.snubbull = self.consts.species("SPECIES_SNUBBULL")
+
+    # --- leitura ---------------------------------------------------------------------------------------------------
+    def _na_equipe(self) -> list[int]:
+        return [m.level for m in self.game.party() if m.species == self.snubbull]
+
+    def _no_pc(self) -> int:
+        return sum(1 for b in range(14) for m in self.game.box_mons(b) if m is not None and m.species == self.snubbull)
+
+    def _estado(self) -> tuple[int, int, bool]:
+        """(Snubbull na equipe, Snubbull no PC, FLAG_GOT_SNUBBULL)."""
+        return len(self._na_equipe()), self._no_pc(), self._flag("FLAG_GOT_SNUBBULL")
+
+    # --- ações -----------------------------------------------------------------------------------------------------
+    def _equipe(self, amizade: int, tamanho: int = 1) -> None:
+        """Equipe só de Rattata, com o 1º na `amizade` dada."""
+        for slot in range(tamanho):
+            self.box.set_party_mon(slot, self._sp("SPECIES_RATTATA"), 5, friendship=amizade if slot == 0 else 70)
+        assert self.box.party_size(tamanho) == tamanho
+
+    def _voltar(self, nome: str) -> None:
+        self.ctl.restore(nome)
+        self.emu.frames(SETTLE_FRAMES)
+
+    def _falar(self, sim_ao_vale: bool = False) -> list[str]:
+        """Diante do Presidente: fala e avança tudo. A pergunta sim/não recebe A (SIM) só se `sim_ao_vale`; no mais
+        (o apelido do Snubbull) recebe B."""
+        self._warp(FANCLUBE, FANCLUBE_FRENTE)
+        self.ctl.wait_overworld_idle(600)
+        self.emu.hold(KEY_UP, 4)
+        self.ctl.wait_until(self.nav._player_still, 60, "jogador parado diante do Presidente")
+        self._press(KEY_A)
+        self.ctl.wait_until(self.ctl.script_active, 120, "início da fala do Presidente")
+        falas: list[str] = []
+        spent = 0
+        while not self._settled_idle():
+            if spent >= SCENE_FRAMES:
+                raise self.ctl.timeout_error("conversa com o Presidente")
+            msg = self._message()
+            if not falas or falas[-1] != msg:
+                falas.append(msg)
+            self._press(KEY_A if sim_ao_vale or YESNO_TASK not in self._tasks() else KEY_B)
+            spent += 10
+        return falas
+
+    def _dica(self, falas: list[str]) -> bool:
+        return any(FALA_DICA in f for f in falas)
+
+    def _ganhou(self, falas: list[str]) -> bool:
+        return any(FALA_SNUBBULL in f for f in falas)
+
+    # --- casos -----------------------------------------------------------------------------------------------------
+    def sim(self) -> str:
+        self.box.set_flag(self.consts.flag("FLAG_GOT_BIKE_VOUCHER"), True)
+        self.box.set_flag(self.consts.flag("FLAG_GOT_SNUBBULL"), False)
+        self._equipe(255)
+        self.ctl.checkpoint("johto_fanclube_base")
+        assert self._estado() == (0, 0, False), self._estado()
+        falas = self._falar()
+        assert self._ganhou(falas) and not self._dica(falas), falas
+        assert self._na_equipe() == [20] and len(self.game.party()) == 2, self.game.party()
+        assert self._estado() == (1, 0, True), self._estado()
+        self.ctl.checkpoint("johto_fanclube_sim")
+        return "amizade 255: Snubbull nv 20 na equipe (2º), flag ligada"
+
+    def limite(self) -> str:
+        self._voltar("johto_fanclube_base")
+        self._equipe(199)
+        falas = self._falar()
+        assert self._dica(falas) and not self._ganhou(falas), falas
+        assert self._estado() == (0, 0, False), self._estado()
+        self._voltar("johto_fanclube_base")
+        self._equipe(200)
+        falas = self._falar()
+        assert self._ganhou(falas) and self._estado() == (1, 0, True), (falas, self._estado())
+        return "199 só a dica; 200 ganha o Snubbull"
+
+    def baixa(self) -> str:
+        self._voltar("johto_fanclube_base")
+        self._equipe(100)
+        falas = self._falar()
+        assert self._dica(falas) and not self._ganhou(falas), falas
+        assert self._estado() == (0, 0, False) and len(self.game.party()) == 1, self._estado()
+        self._equipe(255)    # a dica não trava nada: gostando mais, ele dá
+        falas = self._falar()
+        assert self._ganhou(falas) and self._estado() == (1, 0, True), (falas, self._estado())
+        return "amizade 100: dica, nada muda; com 255 depois, ganha"
+
+    def segunda(self) -> str:
+        self._voltar("johto_fanclube_sim")
+        falas = self._falar()
+        assert not self._ganhou(falas) and not self._dica(falas), falas
+        assert self._estado() == (1, 0, True) and len(self.game.party()) == 2, self._estado()
+        return "depois de ganhar, a conversa não dá outro (nem repete a dica)"
+
+    def pc(self) -> str:
+        self._voltar("johto_fanclube_base")
+        self._equipe(255, 6)
+        falas = self._falar()
+        assert self._ganhou(falas), falas
+        assert self._estado() == (0, 1, True) and len(self.game.party()) == 6, self._estado()
+        return "equipe cheia: o Snubbull vai para o PC, flag ligada"
+
+    def cheio(self) -> str:
+        self._voltar("johto_fanclube_base")
+        self._equipe(255, 6)
+        assert self.box.fill_pc() == 14 * IN_BOX_COUNT
+        falas = self._falar()
+        assert any("não há mais espaço" in f.lower() for f in falas), f"sem o aviso: {falas}"
+        assert not self._ganhou(falas), falas
+        assert self._estado() == (0, 0, False) and len(self.game.party()) == 6, self._estado()
+        self.emu.write(self._box_addr(0, 0), bytes(BOX_MON_SIZE))     # abre uma vaga no PC
+        falas = self._falar()
+        assert self._ganhou(falas) and self._estado() == (0, 1, True), (falas, self._estado())
+        return "sem vaga: aviso e flag desligada; com 1 vaga no PC, o Snubbull vem"
+
+    def vale(self) -> str:
+        self._voltar("johto_fanclube_base")
+        bike = self.consts.item("ITEM_BIKE_VOUCHER")
+        self.box.set_flag(self.consts.flag("FLAG_GOT_BIKE_VOUCHER"), False)
+        self._equipe(255)
+        assert self.game.bag_quantity(bike) == 0
+        falas = self._falar(sim_ao_vale=True)
+        assert any("Vale Bicicleta" in f for f in falas), falas
+        assert not self._ganhou(falas) and self._estado() == (0, 0, False), (falas, self._estado())
+        assert self.game.bag_quantity(bike) == 1 and self._flag("FLAG_GOT_BIKE_VOUCHER")
+        falas = self._falar()
+        assert self._ganhou(falas) and self._estado() == (1, 0, True), (falas, self._estado())
+        assert self.game.bag_quantity(bike) == 1
+        return "1ª conversa: pergunta, SIM, Vale Bicicleta e nada de Snubbull; a seguinte dá o Snubbull"
 
 
 def run_full_johto(ctx_test: ScenarioContext) -> None:
