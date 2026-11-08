@@ -19,18 +19,17 @@ períodos.
 
 import importlib.util
 import json
-import re
 
 import pytest
 
-from esteira.scenarios import REPO_ROOT
+from esteira.dex_fontes import fontes_selvagens
+from esteira.scenarios import REPO_ROOT, full_johto as johto
 
 WILD_JSON = REPO_ROOT / "src" / "data" / "wild_encounters.json"
 TIME_JSON = REPO_ROOT / "src" / "data" / "wild_encounters_time.json"
 GEN_SCRIPT = REPO_ROOT / "tools" / "wild_leafgreen" / "gen_swaps.py"
 GERAR = REPO_ROOT / "tools" / "dexnav" / "gerar.py"
 DEXNAV_MAPAS = REPO_ROOT / "src" / "data" / "dexnav_mapas.h"
-EVO_H = REPO_ROOT / "src" / "data" / "pokemon" / "evolution.h"
 
 VERSOES = ("FireRed", "LeafGreen")
 ROTAS_PESCA = ("Route19", "Route20", "Route21North", "Route21South")
@@ -239,60 +238,53 @@ def test_slots_novos_fora_do_header_de_troca_50_50():
                 assert _slot(rotulo, "FireRed", kind, slot) == _slot(rotulo, "LeafGreen", kind, slot), (rotulo, kind, slot)
 
 
-def _evolucoes():
-    texto = EVO_H.read_text(encoding="utf-8")
-    heads = list(re.finditer(r"\[(SPECIES_\w+)\]\s*=", texto))
-    out = []
-    for i, h in enumerate(heads):
-        trecho = texto[h.end(): heads[i + 1].start() if i + 1 < len(heads) else len(texto)]
-        for e in re.finditer(r"\{(EVO_\w+),\s*(\w+),\s*(SPECIES_\w+)\}", trecho):
-            out.append((h.group(1).removeprefix("SPECIES_"), e.group(1), e.group(3).removeprefix("SPECIES_")))
-    return out
-
-
-def _fontes():
-    """Espécies que aparecem em alguma tabela selvagem (FR ou LG) ou em alguma tabela por horário, mais as
-    evoluções por nível/amizade dessas (a mesma ideia do levantamento contar_dex_atual.py)."""
-    dados = _data()
-    achadas = set()
-    for g in dados["wild_encounter_groups"]:
-        for e in g["encounters"]:
-            for kind in ("land_mons", "water_mons", "rock_smash_mons", "fishing_mons"):
-                if kind in e:
-                    achadas |= {m["species"].removeprefix("SPECIES_") for m in e[kind]["mons"]}
-    for t in _horario().values():
-        for p in ("morning", "day", "night"):
-            achadas |= {s.removeprefix("SPECIES_") for s in t[p]}
-    evos = [x for x in _evolucoes() if x[1] not in ("EVO_TRADE", "EVO_TRADE_ITEM")]
-    mudou = True
-    while mudou:
-        mudou = False
-        for de, _, para in evos:
-            if de in achadas and para not in achadas:
-                achadas.add(para)
-                mudou = True
-    return achadas
-
-
 def test_nenhuma_especie_perdida():
-    fontes = _fontes()
+    """Toda espécie que saiu de um slot continua obtível por outra fonte selvagem (tabelas FireRed, metade LeafGreen
+    dos slots trocados, grama por horário e evoluções): `esteira.dex_fontes`, a parte "natureza" do levantamento
+    `contar_dex_atual.py`. E as 6 espécies novas passaram a ter fonte."""
+    fontes = fontes_selvagens(REPO_ROOT)
     for especie in REMOVIDAS:
-        assert especie in fontes, f"{especie} saiu de um slot e não tem mais nenhuma fonte"
-    # e as 6 novas passaram a ter
+        assert f"SPECIES_{especie}" in fontes, f"{especie} saiu de um slot e não tem mais nenhuma fonte"
     for especie in ("CHINCHOU", "LANTURN", "CORSOLA", "MILTANK", "GIRAFARIG", "GLIGAR"):
-        assert especie in fontes, especie
+        assert f"SPECIES_{especie}" in fontes, especie
 
 
-def test_cada_removida_tem_outra_fonte_no_mesmo_mapa_ou_evolucao():
-    """Seadra/Gyarados/Kingler/Hoppip/Venonat: ainda estão em alguma tabela (não só por evolução)."""
-    em_tabela = set()
-    for g in _data()["wild_encounter_groups"]:
-        for e in g["encounters"]:
-            for kind in ("land_mons", "water_mons", "rock_smash_mons", "fishing_mons"):
-                if kind in e:
-                    em_tabela |= {m["species"].removeprefix("SPECIES_") for m in e[kind]["mons"]}
+def test_removidas_seguem_em_alguma_tabela_selvagem():
+    """Mais estrito que o anterior: as removidas ainda estão numa tabela (FR ou LG que vira troca), não só por evolução."""
+    fontes = fontes_selvagens(REPO_ROOT)
     for especie in REMOVIDAS:
-        assert especie in em_tabela, especie
+        motivos = fontes[f"SPECIES_{especie}"]
+        assert any(m.startswith(("selvagem", "grama por horário", "metade LeafGreen")) for m in motivos), (especie, motivos)
+
+
+# --- cenário `johto`: sem vermelho estatístico ----------------------------------------------------------------------
+
+def test_cenario_johto_falso_vermelho_abaixo_de_1e_6():
+    """Cada conferência por sorteio do cenário (`AMOSTRAS`) tem chance de falso vermelho < 1e-6: nenhum acerto em n
+    sorteios (ou menos que o mínimo) e as faixas de porcentagem de Chinchou e Corsola."""
+    for chave, (p, n, minimo) in johto.AMOSTRAS.items():
+        assert johto.p_menos_de(minimo, p, n) < johto.FALSO_VERMELHO_MAX, (chave, johto.p_menos_de(minimo, p, n))
+        if minimo == 1:
+            assert johto.p_nenhum(p, n) == pytest.approx(johto.p_menos_de(1, p, n))
+    assert johto.p_fora_da_faixa() < johto.FALSO_VERMELHO_MAX
+    # a faixa ainda distingue a chance certa de uma errada: Chinchou 15% não passa por 4% nem por 40%
+    for chave in ("chinchou", "corsola"):
+        p, n, _ = johto.AMOSTRAS[chave]
+        tol = johto.tolerancia_pp(p, n)
+        assert tol < 100 * p / 1.5, (chave, tol)
+    # o entardecer é meio a meio (5%), não os 10% do resto do dia
+    assert johto.AMOSTRAS["miltank_entardecer"][0] == johto.AMOSTRAS["miltank_dia"][0] / 2
+    assert johto.AMOSTRAS["gligar_entardecer"][0] == johto.AMOSTRAS["gligar_noite"][0] / 2
+
+
+def test_amostras_batem_com_as_chances_do_json():
+    """As chances das `AMOSTRAS` são as dos slots (campos do JSON), não números soltos."""
+    campos = {f["type"]: f["encounter_rates"] for f in _data()["wild_encounter_groups"][0]["fields"]}
+    esperado = {"miltank_dia": campos["land_mons"][5], "gligar_noite": campos["land_mons"][5],
+                "chinchou": campos["fishing_mons"][7], "lanturn": campos["fishing_mons"][8],
+                "corsola": campos["water_mons"][1], "girafarig": campos["land_mons"][8]}
+    for chave, pct in esperado.items():
+        assert johto.AMOSTRAS[chave][0] == pytest.approx(pct / 100), chave
 
 
 # --- DexNav ---------------------------------------------------------------------------------------------------------

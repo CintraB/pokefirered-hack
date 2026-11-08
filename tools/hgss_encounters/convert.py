@@ -8,8 +8,8 @@ Uso: python3 tools/hgss_encounters/convert.py --hgss <gs_enc_data.json> --repo .
          --out src/data/wild_encounters_time.json
 
 Só a versão FireRed e só os 35 mapas do mapeamento abaixo, mais os 2 de MANUAIS (POK-28: Prado da
-Ilha Cinco e Cânion Sevault, sem fonte no HGSS), que copiam a grama do FireRed e trocam um só slot. O nível e a taxa continuam os do
-FRLG; só a espécie muda. Espécie que exige evolução por nível acima do nível máximo do slot no
+Ilha Cinco e Cânion Sevault, sem fonte no HGSS), que copiam a grama do FireRed e trocam um só
+slot: 37 tabelas no total. O nível e a taxa continuam os do FRLG; só a espécie muda. Espécie que exige evolução por nível acima do nível máximo do slot no
 FRLG volta para a pré-evolução (Furret no slot nível 2-4 vira Sentret).
 """
 
@@ -24,7 +24,7 @@ PERIODS = (("morn", "morning"), ("day", "day"), ("nite", "night"))
 LEVEL_METHODS = {"EVO_LEVEL", "EVO_LEVEL_ATK_GT_DEF", "EVO_LEVEL_ATK_EQ_DEF",
                  "EVO_LEVEL_ATK_LT_DEF", "EVO_LEVEL_SILCOON", "EVO_LEVEL_CASCOON",
                  "EVO_LEVEL_NINJASK", "EVO_LEVEL_SHEDINJA"}
-# Espécies da Gen 4 (inexistentes no FRLG) -> equivalente. Hoje nenhuma aparece nos 35 mapas.
+# Espécies da Gen 4 (inexistentes no FRLG) -> equivalente. Hoje nenhuma aparece nos 37 mapas.
 GEN4_EQUIVALENTS: dict[str, str] = {}
 
 # código do mapa no HGSS -> mapas do FRLG

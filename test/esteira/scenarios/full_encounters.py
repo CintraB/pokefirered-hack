@@ -2,7 +2,7 @@
 
 Sessão própria da ROM de teste a partir do .sav do `captura` (`save_from="captura"`):
 
-1. `encontros/hook`: para os 35 mapas x manhã/tarde/noite x 12 slots, o atalho LAND_SPECIES
+1. `encontros/hook`: para os 37 mapas x manhã/tarde/noite x 12 slots, o atalho LAND_SPECIES
    (0x74) devolve a espécie de src/data/wild_encounters_time.json;
 2. `encontros/entardecer`: num slot da Rota 1 em que tarde e noite diferem, 4000 chamadas no
    ENTARDECER dão só essas duas espécies, na proporção de 0,5 (a ±4 desvios-padrão);

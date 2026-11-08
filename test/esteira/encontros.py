@@ -1,10 +1,11 @@
 """Hack 7: encontros de grama e caverna por horário (HeartGold), só leitura de fonte.
 
 `src/data/wild_encounters_time.json` é gerado por `tools/hgss_encounters/convert.py` a partir
-do `gs_enc_data.json` do pret/pokeheartgold (não versionado). Para cada um dos 35 mapas do
-FRLG com tabela (mais 2 do POK-28, escritos à mão: Prado da Ilha Cinco e Cânion Sevault), dá as 12
-espécies de grama da manhã, da tarde e da noite; nível e taxa continuam os do FRLG
-(`wild_encounters.json`). No jogo, `GetTimeOfDayLandSpecies` (src/wild_encounter.c) escolhe a tabela pelo período; o entardecer sorteia entre tarde e noite.
+do `gs_enc_data.json` do pret/pokeheartgold (não versionado). Para cada um dos 37 mapas do
+FRLG com tabela (35 do HeartGold e 2 do POK-28, escritos à mão: Prado da Ilha Cinco e Cânion
+Sevault), dá as 12 espécies de grama da manhã, da tarde e da noite; nível e taxa continuam os do
+FRLG (`wild_encounters.json`). No jogo, `GetTimeOfDayLandSpecies` (src/wild_encounter.c) escolhe
+a tabela pelo período; o entardecer sorteia entre tarde e noite.
 """
 
 import json
