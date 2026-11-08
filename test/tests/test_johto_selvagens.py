@@ -317,3 +317,20 @@ def test_dexnav_mostra(gerar):
     safari = por("MAP_SAFARI_ZONE_WEST", gerar.LAND)
     assert safari["SPECIES_GIRAFARIG"]["chances"] == [40, 40, 40]
     assert (safari["SPECIES_GIRAFARIG"]["min"], safari["SPECIES_GIRAFARIG"]["max"]) == (25, 30)
+
+
+def test_telas_do_cenario_no_fim_de_shared_points():
+    """POK-28, Task 6: o presente do Snubbull e o Sudowoodo no recanto do Caminho Verde entram no fim de SHARED_POINTS
+    (referências em COMUM/, aprovadas depois pelo Cintra). O menu dos ovos do Elm tem a Poké Ball do outro inicial
+    na mesa, então é por inicial (KEY_POINTS, no fim)."""
+    from esteira import refs
+    assert johto.SCREEN_POINTS == ("johto_snubbull", "johto_sudowoodo")
+    assert johto.STARTER_POINTS == ("johto_ovos_elm_menu",)
+    assert refs.JOHTO_POINTS == johto.SCREEN_POINTS
+    assert refs.SHARED_POINTS[-len(johto.SCREEN_POINTS):] == johto.SCREEN_POINTS
+    assert refs.KEY_POINTS[-1:] == johto.STARTER_POINTS
+    assert not set(johto.STARTER_POINTS) & set(refs.SHARED_POINTS)
+    assert len(set(refs.SHARED_POINTS)) == len(refs.SHARED_POINTS)
+    fonte = (REPO_ROOT / "test" / "esteira" / "scenarios" / "full_johto.py").read_text(encoding="utf-8")
+    for ponto in johto.SCREEN_POINTS + johto.STARTER_POINTS:
+        assert f'"{ponto}"' in fonte.split("MAPS_DIR =")[1], f"{ponto} não é gravado pelo cenário"

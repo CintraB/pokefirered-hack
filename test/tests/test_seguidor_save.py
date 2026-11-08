@@ -98,7 +98,7 @@ def test_telas_do_cenario_no_fim_de_shared_points():
     from esteira import refs
     from esteira.scenarios import full_seguidor as cen
     fim = (len(refs.SHARED_POINTS) - len(refs.POKERUS_POINTS) - len(refs.FAMILIA_POINTS)
-           - len(refs.CASAS_POINTS) - len(refs.ESPECIES_POINTS))   # depois deles, só os do Pokérus (POK-50), do POK-51 e do POK-54
+           - len(refs.CASAS_POINTS) - len(refs.ESPECIES_POINTS) - len(refs.JOHTO_POINTS))   # depois deles, só os do Pokérus (POK-50), do POK-51 e do POK-54
     assert refs.SHARED_POINTS[fim - len(cen.SCREEN_POINTS):fim] == cen.SCREEN_POINTS
     assert len(set(refs.SHARED_POINTS)) == len(refs.SHARED_POINTS)
     texto = (REPO_ROOT / "test" / "esteira" / "scenarios" / "full_seguidor.py").read_text(encoding="utf-8")

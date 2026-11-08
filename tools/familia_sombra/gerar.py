@@ -667,6 +667,11 @@ def constantes_atualizadas(texto, gfx):
     repetidos = sorted({v for v in ids if ids.count(v) > 1})
     if repetidos:
         raise SystemExit(f"ids de gráfico repetidos em event_objects.h: {repetidos}")
+    # NUM fica fora do bloco, à mão: um id novo acima dele sairia do alcance da tabela de gráficos
+    num = re.search(r"^#define NUM_OBJ_EVENT_GFX\s+(\d+)\b", novo, re.M)
+    if not num or int(num.group(1)) <= max(ids):
+        raise SystemExit(f"NUM_OBJ_EVENT_GFX ({num and num.group(1)}) tem de ser maior que o maior id de gráfico "
+                         f"({max(ids)}) em event_objects.h")
     return novo
 
 

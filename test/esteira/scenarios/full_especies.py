@@ -140,6 +140,9 @@ STAGE_ATK, STAGE_SPATK, STAGE_SPDEF = 1, 4, 5
 STAGE_NEUTRAL = 6
 STATUS1_BURN = 0x10
 FLINCH_TEXT = "hesitou"
+# sementes para refazer a batalha quando o Golem escolhe Autodestruir/Explosão no turno (a IA sorteia ao abrir o turno,
+# antes de qualquer golpe do Garchomp; mudou o quadro em que a batalha começa, muda o sorteio)
+FOE_SEEDS = tuple((0x7F4A7C15 * (i + 1) ^ 0x60E1) & 0xFFFFFFFF for i in range(15))
 EFFECT_SEEDS = tuple((0x9E3779B9 * (i + 1) ^ 0x5EED1000) & 0xFFFFFFFF for i in range(32))
 BATTLE_STRING_BYTES = 300            # gDisplayedStringBattle[300]
 BAD_DREAMS_TEXT = "atormentado pelo pesadelo"
@@ -455,24 +458,36 @@ class EspeciesScenario(SummaryEvolutionScenario):
         raise AssertionError(f"{what}: em {len(EFFECT_SEEDS)} tentativas o efeito nunca saiu: {tentativas}")
 
     def _novos_menu(self) -> str:
-        self.ctl.restore("golpes_base")
-        self.emu.frames(12)
         garchomp, (wild, wild_level) = self._sp("SPECIES_GARCHOMP"), NOVOS_WILD
-        self.box.set_party_mon(0, garchomp, NOVOS_LEVEL)
-        for i, move in enumerate(NOVOS_MOVES):
-            self.box.set_party_move(0, i, self.moves[move])
-        assert self.box.party_size(1) == 1
         nomes = []
-        for move in NOVOS_MOVES:
-            raw = self.emu.read(self._sym("gMoveNames") + self.moves[move] * MOVE_NAME_BYTES, MOVE_NAME_BYTES)
-            nomes.append(self.game.charmap.decode(raw.split(b"\xff")[0]))
-        assert tuple(nomes) == NOVOS_NOMES, f"nomes dos golpes na ROM: {nomes}"
-        assert self.box.call(CMD_START_WILD_BATTLE, self._sp(wild), wild_level) == 1, "START_WILD_BATTLE"
-        d = self.driver = BattleDriver(self.ctl)
-        d.wait_action_menu(TURN_TIMEOUT)
-        assert d.battler_species_level(0) == (garchomp, NOVOS_LEVEL)
-        assert d.battler_species_level(1) == (self._sp(wild), wild_level)
-        self.emu.frames(10)
+        for seed in (None,) + FOE_SEEDS:
+            self.ctl.restore("golpes_base")
+            self.emu.frames(12)
+            if seed is not None:
+                self.emu.write(self._sym("gRngValue"), struct.pack("<I", seed))
+            self.box.set_party_mon(0, garchomp, NOVOS_LEVEL)
+            for i, move in enumerate(NOVOS_MOVES):
+                self.box.set_party_move(0, i, self.moves[move])
+            assert self.box.party_size(1) == 1
+            nomes = []
+            for move in NOVOS_MOVES:
+                raw = self.emu.read(self._sym("gMoveNames") + self.moves[move] * MOVE_NAME_BYTES, MOVE_NAME_BYTES)
+                nomes.append(self.game.charmap.decode(raw.split(b"\xff")[0]))
+            assert tuple(nomes) == NOVOS_NOMES, f"nomes dos golpes na ROM: {nomes}"
+            assert self.box.call(CMD_START_WILD_BATTLE, self._sp(wild), wild_level) == 1, "START_WILD_BATTLE"
+            d = self.driver = BattleDriver(self.ctl)
+            d.wait_action_menu(TURN_TIMEOUT)
+            assert d.battler_species_level(0) == (garchomp, NOVOS_LEVEL)
+            assert d.battler_species_level(1) == (self._sp(wild), wild_level)
+            self.emu.frames(10)
+            # o golpe do Golem do turno já está escolhido aqui (a IA sorteia ao abrir o turno) e o savestate o guarda:
+            # com Autodestruir/Explosão ele desmaia no turno e a batalha acaba antes do menu. Os casos abaixo medem o
+            # efeito do golpe do Garchomp, então um turno de suicídio do Golem não serve: refaz a batalha.
+            foe = self.emu.read_u16(self._sym("gChosenMoveByBattler") + 2)
+            if foe not in (self.moves["MOVE_SELF_DESTRUCT"], self.moves["MOVE_EXPLOSION"]):
+                break
+        else:
+            raise AssertionError(f"em {len(FOE_SEEDS) + 1} tentativas o Golem sempre escolheu Autodestruir/Explosão")
         self.ctl.checkpoint("golpes_novos_acao")
         moves = list(struct.unpack("<4H", self.emu.read(self._mon(0) + BATTLE_MON_MOVES, 8)))
         assert moves == [self.moves[m] for m in NOVOS_MOVES], f"golpes do Garchomp na batalha: {moves}"

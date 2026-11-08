@@ -19,7 +19,7 @@ Selvagens (Task 2):
 Ovos do Prof. Elm (Task 3, classe `OvosElm`, com os atalhos e a cena do `pos_liga`):
 
 - `johto/ovos_elm/escolha`: a cena da Dex Nacional de verdade: o ovo raro e, depois dele, o menu com os 3 nomes;
-  escolhido o CYNDAQUIL (2ª opção), é ele que vem; tela `johto_ovos_elm_menu` (só no relatório);
+  escolhido o CYNDAQUIL (2ª opção), é ele que vem; tela `johto_ovos_elm_menu` (por inicial);
 - `johto/ovos_elm/hall`: o script da entrada no Hall (`CMD_CALL_SCRIPT`) deixa os dois ovos pendentes;
 - `johto/ovos_elm/segunda`: na conversa, o raro primeiro e depois o menu só com CHIKORITA e TOTODILE; de novo, nada;
 - `johto/ovos_elm/ultimo`: com 1 restante ele vem sem menu; depois dos 3, a vitória não deixa nada pendente;
@@ -30,7 +30,8 @@ Ovos do Prof. Elm (Task 3, classe `OvosElm`, com os atalhos e a cena do `pos_lig
 Snubbull do Fã-clube (Task 4, classe `FaClube`): o Presidente, depois do Vale Bicicleta, dá um Snubbull nv 20 se o 1º
 da equipe tem amizade 200 ou mais (`GetLeadMonFriendship` >= 5):
 
-- `johto/snubbull/sim`: amizade 255, equipe de 1: o Snubbull nv 20 entra na equipe e `FLAG_GOT_SNUBBULL` liga;
+- `johto/snubbull/sim`: amizade 255, equipe de 1: o Snubbull nv 20 entra na equipe e `FLAG_GOT_SNUBBULL` liga; tela
+  `johto_snubbull` (a caixa "recebeu um Snubbull do Presidente");
 - `johto/snubbull/limite`: 199 só ouve a dica e 200 já ganha;
 - `johto/snubbull/baixa`: amizade 100: dica, nada muda; com 255 depois, ganha (a dica não trava nada);
 - `johto/snubbull/segunda`: depois de ganhar, falar de novo não dá outro;
@@ -41,8 +42,7 @@ da equipe tem amizade 200 ou mais (`GetLeadMonFriendship` >= 5):
 Sudowoodo do Caminho Verde (Task 5, classe `TrilhaVerde`): a "árvore estranha" no recanto (39, 10), ao norte do caminho
 da Ilha Seis, é um Sudowoodo nv 35 em batalha selvagem comum (molde do Jirachi, música de selvagem):
 
-- `johto/sudowoodo/dex`: sem a Dex Nacional fica escondido; com ela aparece em (39, 10); tela `johto_sudowoodo` (só no
-  relatório);
+- `johto/sudowoodo/dex`: sem a Dex Nacional fica escondido; com ela aparece em (39, 10); tela `johto_sudowoodo`;
 - `johto/sudowoodo/passa`: com ele no lugar, o jogador anda da saída da Moita Estampada até a margem oeste (onde se
   surfa), passando logo abaixo dele, volta e entra na Moita de novo;
 - `johto/sudowoodo/captura`: a fala, a batalha (SUDOWOODO nv 35, sem o tipo de lendário) e a Master Ball: some, não
@@ -84,6 +84,13 @@ from .full_post_league import (LAB, OAK_FRONT, OWNED_NEEDED, PALLET, PALLET_PLAY
                                SETTLE_FRAMES, TEXT_SEM_ESPACO, PostLeagueScenario)
 from .pc_menu import MULTICHOICE_TASK
 from .quick_catch_save import CatchSaveScenario
+
+# Telas que o cenário grava em OUT/telas/ e que entram na comparação com as referências (esteira/refs.py).
+# SCREEN_POINTS vão para o fim de SHARED_POINTS (COMUM/): o presente do Snubbull e o Sudowoodo no recanto do Caminho
+# Verde. A do menu dos ovos do Elm muda com o inicial (a Poké Ball que o Carvalho deixou na mesa é a do outro inicial
+# de cada vez), então é por inicial: STARTER_POINTS, em KEY_POINTS.
+SCREEN_POINTS = ("johto_snubbull", "johto_sudowoodo")
+STARTER_POINTS = ("johto_ovos_elm_menu",)
 
 MAPS_DIR = REPO_ROOT / "data" / "maps"
 WILD_JSON = REPO_ROOT / "src" / "data" / "wild_encounters.json"
@@ -369,7 +376,8 @@ class JohtoScenario(CatchSaveScenario):
                            ovos.save_antigo)
             # Task 4: o Snubbull do Fã-clube (ver FaClube)
             clube = FaClube(self.ctx, self.box)
-            self.suite.run("johto/snubbull/sim: amizade 255, o Snubbull nv 20 vem para a equipe", clube.sim)
+            res = self.suite.run("johto/snubbull/sim: amizade 255, o Snubbull nv 20 vem para a equipe", clube.sim)
+            res.images.extend(clube.telas)
             self.suite.run("johto/snubbull/limite: 199 não ganha, 200 ganha", clube.limite)
             self.suite.run("johto/snubbull/baixa: amizade 100 só ouve a dica", clube.baixa)
             self.suite.run("johto/snubbull/segunda: depois de ganhar, não dá outro", clube.segunda)
@@ -630,6 +638,7 @@ class FaClube(PostLeagueScenario):
         super().__init__(ctx)
         self.box = box
         self.snubbull = self.consts.species("SPECIES_SNUBBULL")
+        self.telas: list[str] = []
 
     # --- leitura ---------------------------------------------------------------------------------------------------
     def _na_equipe(self) -> list[int]:
@@ -653,9 +662,9 @@ class FaClube(PostLeagueScenario):
         self.ctl.restore(nome)
         self.emu.frames(SETTLE_FRAMES)
 
-    def _falar(self, sim_ao_vale: bool = False) -> list[str]:
+    def _falar(self, sim_ao_vale: bool = False, tela: str | None = None) -> list[str]:
         """Diante do Presidente: fala e avança tudo. A pergunta sim/não recebe A (SIM) só se `sim_ao_vale`; no mais
-        (o apelido do Snubbull) recebe B."""
+        (o apelido do Snubbull) recebe B. Com `tela`, fotografa a caixa "recebeu um Snubbull" (só para o relatório)."""
         self._warp(FANCLUBE, FANCLUBE_FRENTE)
         self.ctl.wait_overworld_idle(600)
         self.emu.hold(KEY_UP, 4)
@@ -670,6 +679,9 @@ class FaClube(PostLeagueScenario):
             msg = self._message()
             if not falas or falas[-1] != msg:
                 falas.append(msg)
+                if tela and FALA_SNUBBULL in msg and not self.telas:
+                    self.emu.frames(4)
+                    self.telas.append(self._shot(tela))
             self._press(KEY_A if sim_ao_vale or YESNO_TASK not in self._tasks() else KEY_B)
             spent += 10
         return falas
@@ -687,7 +699,7 @@ class FaClube(PostLeagueScenario):
         self._equipe(255)
         self.ctl.checkpoint("johto_fanclube_base")
         assert self._estado() == (0, 0, False), self._estado()
-        falas = self._falar()
+        falas = self._falar(tela="johto_snubbull")
         assert self._ganhou(falas) and not self._dica(falas), falas
         assert self._na_equipe() == [20] and len(self.game.party()) == 2, self.game.party()
         assert self._estado() == (1, 0, True), self._estado()

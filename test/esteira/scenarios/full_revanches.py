@@ -110,6 +110,8 @@ AI_TURNS = 3                          # turnos até o oponente escolher um golpe
 SUB_MISC, MISC_IVS_WORD = 3, 1
 NO_BATTLE_FRAMES = 300
 BATTLE_TIMEOUT = 40000
+# sementes de RNG para refazer a batalha do Campeão se o time perder (ver `_league_max`)
+CHAMPION_SEEDS = tuple((0x9E3779B9 * (i + 1) ^ 0xC4A3F1) & 0xFFFFFFFF for i in range(4))
 
 
 @cache
@@ -546,29 +548,40 @@ class RevanchesScenario(CatchSaveScenario):
                 f"({trainer_class})")
 
     def _league_max(self) -> str:
-        self._restore()
         num = cq.num("e4_degrau100")
-        self.box.conq_reset(True)                   # marcador e tudo pendente
-        assert self.box.conq_estado(num)[0] == cq.CONQ_PENDENTE, self.box.conq_estado(num)
-        self._set_tier(5)
-        ids = {self._trainer(f"TRAINER_CHAMPION_REMATCH_{v}"): v for v in CHAMPION_VARIANTS}
-        for v in CHAMPION_VARIANTS:                 # vencido, o OnResume da sala desliga a cena de entrada
-            self._flag_trainer(f"TRAINER_CHAMPION_REMATCH_{v}", False)
-        # a sala de verdade: a cena de entrada anda o jogador até o rival, a fala da revanche e a batalha
-        self._teleport(CHAMPIONS_ROOM, CHAMPION_ENTRY)
-        self.ctl.press_until(KEY_A, self.game.in_battle, "batalha do Campeão", tries=80, wait=30)
-        self.driver.wait_action_menu()
-        opponent = self._opponent()
-        assert opponent in ids, f"oponente {opponent}, esperava um TRAINER_CHAMPION_REMATCH_*"
-        variant = ids[opponent]
-        expected = self.g.time_liga("CAMPEAO", 5, variant)
-        self._settle_enemy_party()
-        got = [(self.consts.species_name(m.species), m.level, m.held_item) for m in self.game.enemy_party()]
-        want = [(sp, lvl, self.consts.item(it)) for sp, lvl, it, _ in expected]
-        assert got == want, f"Campeão ({variant}) no degrau 5: {got}, esperava {want}"
-        self.driver.move_policy = "best"
-        result = self.driver.fight_to_end(timeout=BATTLE_TIMEOUT)
-        assert self.driver.outcome() == B_OUTCOME_WON, f"a batalha do Campeão terminou em {result}"
+        # a batalha é de verdade, com crítico e acerto sorteados: uma derrota é possível mesmo com o time forte
+        # (aconteceu num save de captura de outro build). Cada tentativa refaz tudo a partir do savestate com
+        # outra semente do RNG; só a derrota em todas reprova.
+        derrotas: list[str] = []
+        for tentativa, seed in enumerate((None,) + CHAMPION_SEEDS, 1):
+            self._restore()
+            if seed is not None:
+                self.emu.write(self.game.syms.addr("gRngValue"), struct.pack("<I", seed))
+            self.box.conq_reset(True)                   # marcador e tudo pendente
+            assert self.box.conq_estado(num)[0] == cq.CONQ_PENDENTE, self.box.conq_estado(num)
+            self._set_tier(5)
+            ids = {self._trainer(f"TRAINER_CHAMPION_REMATCH_{v}"): v for v in CHAMPION_VARIANTS}
+            for v in CHAMPION_VARIANTS:                 # vencido, o OnResume da sala desliga a cena de entrada
+                self._flag_trainer(f"TRAINER_CHAMPION_REMATCH_{v}", False)
+            # a sala de verdade: a cena de entrada anda o jogador até o rival, a fala da revanche e a batalha
+            self._teleport(CHAMPIONS_ROOM, CHAMPION_ENTRY)
+            self.ctl.press_until(KEY_A, self.game.in_battle, "batalha do Campeão", tries=80, wait=30)
+            self.driver.wait_action_menu()
+            opponent = self._opponent()
+            assert opponent in ids, f"oponente {opponent}, esperava um TRAINER_CHAMPION_REMATCH_*"
+            variant = ids[opponent]
+            expected = self.g.time_liga("CAMPEAO", 5, variant)
+            self._settle_enemy_party()
+            got = [(self.consts.species_name(m.species), m.level, m.held_item) for m in self.game.enemy_party()]
+            want = [(sp, lvl, self.consts.item(it)) for sp, lvl, it, _ in expected]
+            assert got == want, f"Campeão ({variant}) no degrau 5: {got}, esperava {want}"
+            self.driver.move_policy = "best"
+            result = self.driver.fight_to_end(timeout=BATTLE_TIMEOUT)
+            if self.driver.outcome() == B_OUTCOME_WON:
+                break
+            derrotas.append(result)
+        else:
+            raise AssertionError(f"a batalha do Campeão terminou em {derrotas} nas {len(derrotas)} tentativas")
         # GetCurrentBattleRematchTier() lido da RAM, ainda na sala: o degrau da batalha chega ao Hall
         types = _battle_types()
         flags = self.driver.battle_type_flags()
@@ -586,7 +599,7 @@ class RevanchesScenario(CatchSaveScenario):
         estado = self.box.conq_estado(num)
         assert estado[0] == cq.CONQ_FEITA, f"e4_degrau100 {estado}, esperava feita"
         team = ", ".join(f"{sp.removeprefix('SPECIES_')} {lvl}" for sp, lvl, _, _ in expected)
-        return (f"degrau 5: CHAMPION_REMATCH_{variant} com liga.json ({team}) vencido ({result}); antes do Hall: "
+        return (f"degrau 5: CHAMPION_REMATCH_{variant} com liga.json ({team}) vencido ({result}, tentativa {tentativa}); antes do Hall: "
                 f"sRematchTierState 0x{state:02x}, gBattleTypeFlags 0x{flags:x} (degrau 5); EnterHallOfFame → "
                 f"e4_degrau100 (num {num}) feita {estado}")
 

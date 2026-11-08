@@ -376,7 +376,7 @@ def test_cenario_especies_registrado_e_telas_no_fim():
     assert (spec.rom, spec.save_from, spec.needs) == (TEST, "captura", None)
     assert "especies" in WATCH_FULL_SCENARIOS
     assert refs.ESPECIES_POINTS == cen.SCREEN_POINTS
-    assert refs.SHARED_POINTS[-len(cen.SCREEN_POINTS):] == cen.SCREEN_POINTS
+    assert refs.SHARED_POINTS[-len(cen.SCREEN_POINTS) - len(refs.JOHTO_POINTS):-len(refs.JOHTO_POINTS)] == cen.SCREEN_POINTS   # e os do POK-28
     texto = (REPO_ROOT / "test" / "esteira" / "scenarios" / "full_especies.py").read_text("utf-8")
     for caso in ("especies/resumo", "especies/icones", "especies/evolucao", "especies/creche", "especies/batalha"):
         assert f'"{caso}:' in texto, caso
@@ -397,3 +397,12 @@ def test_habilidade_do_darkrai_tem_nome_e_descricao():
 
 def test_hoenn_continua_sem_as_novas():
     assert not re.search(r"SPECIES_TO_HOENN\((GIBLE|GABITE|GARCHOMP|DARKRAI)\)", _ler("src/pokemon.c"))
+
+
+def test_golpes_novos_refazem_a_batalha_se_o_golem_escolhe_suicidio():
+    """POK-28, Task 6: a IA do Golem escolhe o golpe ao abrir o turno e o savestate o guarda; Autodestruir/Explosão
+    acaba a batalha antes do menu e reprova os 5 casos dos golpes novos. O menu refaz a batalha (FOE_SEEDS)."""
+    from esteira.scenarios import full_especies as cen
+    assert len(cen.FOE_SEEDS) >= 8 and len(set(cen.FOE_SEEDS)) == len(cen.FOE_SEEDS)
+    texto = (REPO_ROOT / "test" / "esteira" / "scenarios" / "full_especies.py").read_text("utf-8")
+    assert "gChosenMoveByBattler" in texto and "MOVE_SELF_DESTRUCT" in texto and "MOVE_EXPLOSION" in texto

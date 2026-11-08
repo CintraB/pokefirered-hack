@@ -412,8 +412,9 @@ def test_telas_da_familia_e_das_casas_no_fim_de_shared_points():
     from esteira.__main__ import WATCH_FULL_SCENARIOS
     from esteira.scenarios import full_casas, full_familia
     assert refs.FAMILIA_POINTS == full_familia.SCREEN_POINTS and refs.CASAS_POINTS == full_casas.SCREEN_POINTS
-    # depois deles, só os do POK-54
-    fim = refs.SHARED_POINTS[-len(refs.FAMILIA_POINTS) - len(refs.CASAS_POINTS) - len(refs.ESPECIES_POINTS):]
+    # depois deles, só os do POK-54 e os do POK-28
+    fim = refs.SHARED_POINTS[-len(refs.FAMILIA_POINTS) - len(refs.CASAS_POINTS) - len(refs.ESPECIES_POINTS)
+                             - len(refs.JOHTO_POINTS):-len(refs.JOHTO_POINTS)]
     assert fim == refs.FAMILIA_POINTS + refs.CASAS_POINTS + refs.ESPECIES_POINTS
     assert len(set(refs.SHARED_POINTS)) == len(refs.SHARED_POINTS)
     for pontos, arquivo in ((refs.FAMILIA_POINTS, "full_familia.py"), (refs.CASAS_POINTS, "full_casas.py")):

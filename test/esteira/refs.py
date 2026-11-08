@@ -26,6 +26,8 @@ from esteira.scenarios.full_pokerus import SCREEN_POINTS as POKERUS_POINTS   # P
 from esteira.scenarios.full_familia import SCREEN_POINTS as FAMILIA_POINTS   # POK-51
 from esteira.scenarios.full_casas import SCREEN_POINTS as CASAS_POINTS   # POK-51
 from esteira.scenarios.full_especies import SCREEN_POINTS as ESPECIES_POINTS   # POK-54
+from esteira.scenarios.full_johto import SCREEN_POINTS as JOHTO_POINTS   # POK-28
+from esteira.scenarios.full_johto import STARTER_POINTS as JOHTO_STARTER_POINTS   # POK-28
 from esteira.result import Result
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -42,7 +44,9 @@ STARTER_DEPENDENT_POINTS = ("relogio_menu", "relogio_aviso_noite",   # Hack 7 �
                             # POK-15: partículas e selvagem saem do sorteio, que muda com o save
                             "batalha_clima_chuva", "batalha_clima_granizo", "batalha_clima_areia", "batalha_clima_sol",
                             # POK-50: a explicação da enfermeira, com o NPC que anda no Centro ao fundo
-                            "pokerus_enfermeira")
+                            "pokerus_enfermeira",
+                            # POK-28: o menu dos ovos do Elm, com a Poké Ball do outro inicial na mesa do Carvalho
+                            *JOHTO_STARTER_POINTS)
 KEY_POINTS = (("nome", "inicial", "batalha_rival", "captura", "save_continue") + TOUR_POINTS
               + STARTER_DEPENDENT_POINTS)
 # POK-44, Task 7: a tela de conquistas (aba História e a Batalha com a perdida riscada) e o cartão com a dica do SELECT
@@ -67,7 +71,8 @@ SHARED_POINTS = (EVOLUTION_POINTS + EVOLUTION_PAGE_POINTS + SUMMARY_PAGE_POINTS 
                  + POKERUS_POINTS  # POK-50: o resumo do infectado (PKRS) e do curado (o pontinho)
                  + FAMILIA_POINTS  # POK-51: o prédio da Família Sombra (batalhas, andares, sala do Dom, pedágio, diário)
                  + CASAS_POINTS  # POK-51: o Mestre dos Golpes, o pescador e a sala de troféus
-                 + ESPECIES_POINTS)  # POK-54: Gible, Gabite, Garchomp e Darkrai (resumo, equipe e batalha)
+                 + ESPECIES_POINTS  # POK-54: Gible, Gabite, Garchomp e Darkrai (resumo, equipe e batalha)
+                 + JOHTO_POINTS)  # POK-28: o presente do Snubbull e o Sudowoodo no mapa
 DIFF_RED = (255, 0, 0)
 # O Pillow acusa PNG quebrado com OSError (UnidentifiedImageError é subclasse, "image file is
 # truncated"), SyntaxError ("broken PNG file") ou ValueError, conforme onde o arquivo está estragado.
