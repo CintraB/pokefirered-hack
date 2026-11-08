@@ -106,11 +106,11 @@ VermilionCity_PokemonFanClub_Text_SnubbullOffer::
     .string "ver de longe!\p"
     .string "Quem cuida assim dos Pokémon merece\n"
     .string "um presente.\p"
-    .string "Fique com este Snubbull! Cuide bem\n"
+    .string "Fique com este SNUBBULL! Cuide bem\n"
     .string "dele!$"
 
 VermilionCity_PokemonFanClub_Text_ReceivedSnubbullFromChairman::
-    .string "{PLAYER} recebeu um Snubbull\n"
+    .string "{PLAYER} recebeu um SNUBBULL\n"
     .string "do Presidente!$"
 
 VermilionCity_PokemonFanClub_Text_SnubbullHint::

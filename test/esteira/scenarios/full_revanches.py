@@ -549,14 +549,16 @@ class RevanchesScenario(CatchSaveScenario):
 
     def _league_max(self) -> str:
         num = cq.num("e4_degrau100")
-        # a batalha é de verdade, com crítico e acerto sorteados: uma derrota é possível mesmo com o time forte
-        # (aconteceu num save de captura de outro build). Cada tentativa refaz tudo a partir do savestate com
-        # outra semente do RNG; só a derrota em todas reprova.
+        # a batalha é de verdade, com crítico, acerto e escolha de golpe da IA sorteados: contra o Campeão no degrau 5
+        # (time de nível alto, com itens) o time de teste perde quando a sequência do RNG é ruim, e perdeu num save de
+        # captura de outro build (a causa é o sorteio, não o equilíbrio: o caso mede o degrau que chega ao Hall). Cada
+        # tentativa refaz tudo a partir do savestate com uma semente fixa do RNG, sempre semeada (a 1ª também) para o
+        # quadro da batalha, e as telas dela, não mudarem entre builds; só a derrota em todas reprova. As derrotas
+        # ficam no detalhe do caso, mesmo quando ele passa, para uma tendência de piora aparecer.
         derrotas: list[str] = []
-        for tentativa, seed in enumerate((None,) + CHAMPION_SEEDS, 1):
+        for tentativa, seed in enumerate(CHAMPION_SEEDS, 1):
             self._restore()
-            if seed is not None:
-                self.emu.write(self.game.syms.addr("gRngValue"), struct.pack("<I", seed))
+            self.emu.write(self.game.syms.addr("gRngValue"), struct.pack("<I", seed))
             self.box.conq_reset(True)                   # marcador e tudo pendente
             assert self.box.conq_estado(num)[0] == cq.CONQ_PENDENTE, self.box.conq_estado(num)
             self._set_tier(5)

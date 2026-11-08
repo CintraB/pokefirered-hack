@@ -24,6 +24,6 @@ SixIsland_GreenPath_Text_StrangeTree::
     .string "…Ela se mexeu!$"
 
 SixIsland_GreenPath_Text_SudowoodoRanOff::
-    .string "O Sudowoodo saiu correndo e sumiu\n"
+    .string "O SUDOWOODO saiu correndo e sumiu\n"
     .string "entre as árvores!$"
 

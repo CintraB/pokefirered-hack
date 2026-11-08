@@ -1279,7 +1279,6 @@
 #define FLAG_DEFEATED_LANCE           0x4BB
 #define FLAG_DEFEATED_CHAMP           0x4BC
 
-// Unused?
 #define FLAG_GOT_EGG_CHIKORITA   0x4D9 // POK-28: ovos do Prof. Elm (uma por espécie dada)
 #define FLAG_GOT_EGG_CYNDAQUIL   0x4DA
 #define FLAG_GOT_EGG_TOTODILE    0x4DB
@@ -1288,6 +1287,7 @@
 #define FLAG_GOT_SNUBBULL        0x4DE // POK-28: o Presidente do Fã-clube já deu o Snubbull
 #define FLAG_HIDE_SUDOWOODO      0x4DF // POK-28: a árvore estranha do Caminho Verde (escondida por padrão)
 #define FLAG_SUDOWOODO_FLEW_AWAY 0x4E0 // POK-28: derrotado ou com fuga, volta na próxima entrada no Hall
+// Unused?
 #define FLAG_0x4E1               0x4E1
 #define FLAG_0x4E2               0x4E2
 #define FLAG_0x4E3               0x4E3

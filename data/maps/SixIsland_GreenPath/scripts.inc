@@ -35,11 +35,14 @@ SixIsland_GreenPath_EventScript_TryRemoveSudowoodo::
 @ Batalha selvagem comum (setwildbattle + dowildbattle, como o Snorlax da Rota 12): música e transição de selvagem.
 SixIsland_GreenPath_EventScript_Sudowoodo::
 	goto_if_questlog EventScript_ReleaseEnd
-	@ Reconfere na conversa o que não depende do mapa: um save gravado aqui antes da fuga pode trazer o objeto de volta
+	@ Reconfere na conversa o que não depende do mapa (fuga, Dex Nacional, já capturado): um save gravado aqui antes da fuga pode trazer o objeto de volta
 	@ até a troca de mapa (fica mudo).
 	goto_if_set FLAG_SUDOWOODO_FLEW_AWAY, EventScript_ReleaseEnd
 	specialvar VAR_RESULT, IsNationalPokedexEnabled
 	goto_if_eq VAR_RESULT, FALSE, EventScript_ReleaseEnd
+	setvar VAR_0x8004, SPECIES_SUDOWOODO
+	specialvar VAR_RESULT, IsSpeciesCaught
+	goto_if_eq VAR_RESULT, TRUE, EventScript_ReleaseEnd
 	special QuestLog_CutRecording
 	lock
 	msgbox SixIsland_GreenPath_Text_StrangeTree

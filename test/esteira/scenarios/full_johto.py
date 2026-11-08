@@ -624,7 +624,7 @@ class OvosElm(PostLeagueScenario):
 
 
 FANCLUBE, FANCLUBE_FRENTE = "MAP_VERMILION_CITY_POKEMON_FAN_CLUB", (5, 5)   # abaixo do Presidente, em (5, 4)
-FALA_SNUBBULL, FALA_DICA = "recebeu um Snubbull", "precisa gostar muito de você"
+FALA_SNUBBULL, FALA_DICA = "recebeu um SNUBBULL", "precisa gostar muito de você"
 
 
 class FaClube(PostLeagueScenario):

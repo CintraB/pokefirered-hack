@@ -132,6 +132,8 @@ def test_conversa_e_batalha_selvagem_nv35():
     # reconfere na conversa o que não depende do mapa (objeto velho de um save gravado aqui)
     assert "goto_if_set FLAG_SUDOWOODO_FLEW_AWAY, EventScript_ReleaseEnd" in b
     assert "IsNationalPokedexEnabled" in b
+    assert b.index("IsSpeciesCaught") < b.index(f"msgbox {P}Text_StrangeTree")
+    assert "goto_if_eq VAR_RESULT, TRUE, EventScript_ReleaseEnd" in b
     assert b.index(f"msgbox {P}Text_StrangeTree") < b.index("playmoncry SPECIES_SUDOWOODO")
     assert "setwildbattle SPECIES_SUDOWOODO, 35" in b
     # batalha selvagem comum (música e transição de selvagem), como o Snorlax; não a de lendário
@@ -165,7 +167,7 @@ def test_textos():
     arvore = re.sub(r"\\[nlp]", " ", "".join(re.findall(r'\.string "(.*?)"', _block(f"{P}Text_StrangeTree",
                                                                                      f"{MAPA}/text.inc")))).lower()
     assert "árvore estranha" in arvore and "mexeu" in arvore
-    assert "Sudowoodo" in _block(f"{P}Text_SudowoodoRanOff", f"{MAPA}/text.inc")
+    assert "SUDOWOODO" in _block(f"{P}Text_SudowoodoRanOff", f"{MAPA}/text.inc")
     assert not re.search(r"\b(the|tree|weird|ran)\b", texto.lower()), "texto em inglês"
 
 

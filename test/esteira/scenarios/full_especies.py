@@ -460,11 +460,10 @@ class EspeciesScenario(SummaryEvolutionScenario):
     def _novos_menu(self) -> str:
         garchomp, (wild, wild_level) = self._sp("SPECIES_GARCHOMP"), NOVOS_WILD
         nomes = []
-        for seed in (None,) + FOE_SEEDS:
+        for tentativa, seed in enumerate(FOE_SEEDS, 1):   # sempre semeada: a tela golpe_menu_novos não muda entre builds
             self.ctl.restore("golpes_base")
             self.emu.frames(12)
-            if seed is not None:
-                self.emu.write(self._sym("gRngValue"), struct.pack("<I", seed))
+            self.emu.write(self._sym("gRngValue"), struct.pack("<I", seed))
             self.box.set_party_mon(0, garchomp, NOVOS_LEVEL)
             for i, move in enumerate(NOVOS_MOVES):
                 self.box.set_party_move(0, i, self.moves[move])
@@ -487,7 +486,7 @@ class EspeciesScenario(SummaryEvolutionScenario):
             if foe not in (self.moves["MOVE_SELF_DESTRUCT"], self.moves["MOVE_EXPLOSION"]):
                 break
         else:
-            raise AssertionError(f"em {len(FOE_SEEDS) + 1} tentativas o Golem sempre escolheu Autodestruir/Explosão")
+            raise AssertionError(f"em {len(FOE_SEEDS)} tentativas o Golem sempre escolheu Autodestruir/Explosão")
         self.ctl.checkpoint("golpes_novos_acao")
         moves = list(struct.unpack("<4H", self.emu.read(self._mon(0) + BATTLE_MON_MOVES, 8)))
         assert moves == [self.moves[m] for m in NOVOS_MOVES], f"golpes do Garchomp na batalha: {moves}"
@@ -497,7 +496,7 @@ class EspeciesScenario(SummaryEvolutionScenario):
         self.emu.frames(SETTLE * 2)
         path = self._shot("golpe_menu_novos")
         self._pause_to_read()
-        return f"menu com {', '.join(nomes)} (tela {path})"
+        return f"menu com {', '.join(nomes)} (tentativa {tentativa} de {len(FOE_SEEDS)}, semente 0x{seed:08X}; tela {path})"
 
     def _novos_nasty_plot(self) -> str:
         self._novos_restore()
