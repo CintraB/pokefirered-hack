@@ -379,6 +379,24 @@ PalletTown_ProfessorOaksLab_Text_OakAnotherRareEgg::
     .string "Carvalho: Mais uma vitória na Liga!\n"
     .string "Tenho outro Ovo raro para você.$"
 
+PalletTown_ProfessorOaksLab_Text_OakElmSentEggs::
+    .string "Carvalho: Ah, quase me esqueço!\p"
+    .string "O Prof. Elm, meu colega de Johto,\n"
+    .string "mandou três Ovos de Pokémon.\p"
+    .string "Escolha um agora. Os outros chegam\n"
+    .string "um a cada nova vitória na Liga!$"
+
+PalletTown_ProfessorOaksLab_Text_OakAnotherElmEgg::
+    .string "Carvalho: Chegou mais um Ovo\n"
+    .string "do Prof. Elm, lá de Johto!$"
+
+PalletTown_ProfessorOaksLab_Text_WhichElmEgg::
+    .string "Qual Ovo você quer?$"
+
+PalletTown_ProfessorOaksLab_Text_ReceivedElmEgg::
+    .string "{PLAYER} recebeu o Ovo\n"
+    .string "de {STR_VAR_1}!$"
+
 PalletTown_ProfessorOaksLab_Text_OakAndThisForTravels::
     .string "E isto é para as suas viagens!$"
 

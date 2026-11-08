@@ -358,7 +358,8 @@ def test_entrega_no_script():
 
 
 def test_especiais_no_fim():
-    specials = re.findall(r"^\s*def_special (\w+)", (REPO_ROOT / "data/specials.inc").read_text("utf-8"), re.M)
+    specials = [s for s in re.findall(r"^\s*def_special (\w+)", (REPO_ROOT / "data/specials.inc").read_text("utf-8"), re.M)
+                if "ElmEgg" not in s]   # os ovos do Elm (POK-28) vêm depois
     assert specials[-2:] == ["FamiliaSombra_ApreendidoPendente", "FamiliaSombra_EntregarApreendido"], specials[-4:]
     assert specials[-3] == "Dossie_Abrir"
     header = (REPO_ROOT / "include/familia_sombra.h").read_text(encoding="utf-8")

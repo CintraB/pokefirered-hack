@@ -71,6 +71,8 @@
 #define MULTICHOICE_TRAINER_TOWER_MODE                         64
 #define MULTICHOICE_REMATCH_TIER                               65 // POK-42: degrau da Liga (guarda da porta)
 #define MULTICHOICE_PEDAGIO                                    66 // POK-51: pedágio da Rota 23 (voltar depois / passar à força)
+#define MULTICHOICE_ELM_EGG_3                                  67 // POK-28: ovos do Prof. Elm, as 3 espécies (gStringVar1..3)
+#define MULTICHOICE_ELM_EGG_2                                  68 // POK-28: ovos do Prof. Elm, as 2 que faltam (gStringVar1..2)
 
 #define MULTICHOICE_NONE                                      255
 

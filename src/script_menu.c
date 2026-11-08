@@ -514,6 +514,19 @@ static const struct MenuAction sMultichoiceList_Pedagio[] = {
     { gText_PedagioPassarAForca }
 };
 
+// POK-28: os ovos do Prof. Elm. Opções montadas na hora por GetElmEggChoice (src/field_specials.c): o nome de cada
+// espécie que falta, na ordem da tabela sElmEggs
+static const struct MenuAction sMultichoiceList_ElmEgg3[] = {
+    { gStringVar1 },
+    { gStringVar2 },
+    { gStringVar3 }
+};
+
+static const struct MenuAction sMultichoiceList_ElmEgg2[] = {
+    { gStringVar1 },
+    { gStringVar2 }
+};
+
 static const struct MenuAction sMultichoiceList_Exit[] = {
     { gOtherText_Exit }
 };
@@ -586,6 +599,8 @@ static const struct MultichoiceListStruct sMultichoiceLists[] = {
     [MULTICHOICE_TRAINER_TOWER_MODE]                         = MULTICHOICE(sMultichoiceList_TrainerTowerMode),
     [MULTICHOICE_REMATCH_TIER]                               = MULTICHOICE(sMultichoiceList_RematchTier),
     [MULTICHOICE_PEDAGIO]                                    = MULTICHOICE(sMultichoiceList_Pedagio),
+    [MULTICHOICE_ELM_EGG_3]                                  = MULTICHOICE(sMultichoiceList_ElmEgg3),
+    [MULTICHOICE_ELM_EGG_2]                                  = MULTICHOICE(sMultichoiceList_ElmEgg2),
 };
 
 // From Cool to Berries goes unused

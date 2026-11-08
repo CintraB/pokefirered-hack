@@ -9,10 +9,12 @@ SET_VAR) é refeita a cada caso a partir do CONTINUAR (savestate `pos_liga_base`
 
 1. `pos_liga/equipe`: a cena roda até o fim apertando A: ovo na equipe (espécie sorteada ∈
    {LARVITAR, BAGON, BELDUM}), +¥45.000, Dex Nacional ligada, FLAG_GOT_RARE_EGG; telas
-   `pos_liga_ovo`, `pos_liga_dinheiro` e `pos_liga_objetivo`;
-2. `pos_liga/pc`: equipe cheia: o ovo vai para uma caixa do PC e a flag liga;
+   `pos_liga_ovo`, `pos_liga_dinheiro` e `pos_liga_objetivo`. Desde o POK-28 a cena também dá o
+   1º ovo do Prof. Elm logo depois do raro (o A escolhe a 1ª opção do menu, CHIKORITA): 2 ovos;
+2. `pos_liga/pc`: equipe cheia: os dois ovos vão para o PC e as flags ligam;
 3. `pos_liga/oak_guarda`: equipe cheia e PC cheio: a cena termina sem ovo e sem flag (o dinheiro
-   e a Dex Nacional vêm igual); com uma vaga aberta, falar com o Oak entrega o ovo;
+   e a Dex Nacional vêm igual) e nem oferece o do Elm; com uma vaga aberta, falar com o Oak
+   entrega o ovo raro, e o do Elm fica para depois (sem vaga de novo);
 4. `pos_liga/sorteio`: 3000 sorteios (RARE_EGG_ROLL): cada espécie a ±4σ de 1/3;
 5. `pos_liga/sem_60`: com 59 capturados de Kanto a cena não começa (Oak só elogia e vai embora).
 
@@ -38,6 +40,7 @@ VAR_BASE = 0x4000
 NATIONAL_DEX_MAGIC_VAR, NATIONAL_DEX_MAGIC_BYTE = 0x6258, 0xB9
 EGG_BIT = 0x04                     # BoxPokemon: isBadEgg:1, hasSpecies:1, isEgg:1
 RARE_EGGS = ("SPECIES_LARVITAR", "SPECIES_BAGON", "SPECIES_BELDUM")
+ELM_EGGS = ("SPECIES_CHIKORITA", "SPECIES_CYNDAQUIL", "SPECIES_TOTODILE")   # POK-28: ovos do Prof. Elm
 MONEY_GIFT = 45000
 PALLET_PLAYER = (6, 8)             # diante da porta da casa: onde o Oak vem falar com o jogador
 LAB, PALLET = "MAP_PALLET_TOWN_PROFESSOR_OAKS_LAB", "MAP_PALLET_TOWN"
@@ -117,7 +120,9 @@ class PostLeagueScenario(CatchSaveScenario):
     def _clear_egg_flags(self) -> None:
         """Estado de antes do 1º ovo (Hack 8: uma flag por espécie dada e a do ovo pendente)."""
         for name in ("FLAG_GOT_RARE_EGG", "FLAG_GOT_EGG_LARVITAR", "FLAG_GOT_EGG_BAGON",
-                     "FLAG_GOT_EGG_BELDUM", "FLAG_RARE_EGG_PENDING"):
+                     "FLAG_GOT_EGG_BELDUM", "FLAG_RARE_EGG_PENDING", "FLAG_GOT_ELM_EGG",
+                     "FLAG_GOT_EGG_CHIKORITA", "FLAG_GOT_EGG_CYNDAQUIL", "FLAG_GOT_EGG_TOTODILE",
+                     "FLAG_ELM_EGG_PENDING"):
             assert not self.box.set_flag(self.consts.flag(name), False), name
 
     def _prepare(self, owned: int) -> None:
@@ -192,14 +197,17 @@ class PostLeagueScenario(CatchSaveScenario):
         assert self.game.location() == self.consts.map(LAB), self.game.location()
         return taken
 
-    def _egg_checks(self, party_eggs: int, pc_eggs: int) -> str:
+    def _egg_checks(self, party_eggs: int, pc_eggs: int, elm: int = 0) -> str:
+        """Ovos na equipe e no PC; `elm` deles são do Prof. Elm (POK-28) e o resto, raros."""
         assert len(self._party_eggs()) == party_eggs, f"ovos na equipe: {self._party_eggs()}"
         pc = self._pc_eggs()
         assert len(pc) == pc_eggs, f"ovos no PC: {pc}"
-        allowed = {self._sp(n) for n in RARE_EGGS}
+        rare, elms = {self._sp(n) for n in RARE_EGGS}, {self._sp(n) for n in ELM_EGGS}
         species = self._party_eggs() + [s for _, _, s in pc]
-        assert all(s in allowed for s in species), (
+        assert all(s in rare | elms for s in species), (
             f"espécies {[self.consts.species_name(s) for s in species]}")
+        assert sum(s in elms for s in species) == elm, (
+            f"ovos do Elm: {[self.consts.species_name(s) for s in species]}, esperava {elm}")
         return ", ".join(self.consts.species_name(s).removeprefix("SPECIES_") for s in species)
 
     # --- passos --------------------------------------------------------------------
@@ -220,12 +228,13 @@ class PostLeagueScenario(CatchSaveScenario):
         assert not self._nat_dex_on(), "Dex Nacional já ligada antes da cena"
         shots = self._play_scene(SHOTS)
         assert sorted(shots) == sorted(n for n, _ in SHOTS.values()), f"telas tiradas: {shots}"
-        kind = self._egg_checks(1, 0)
-        assert len(self.game.party()) == party + 1, "o ovo não entrou na equipe"
+        kind = self._egg_checks(2, 0, elm=1)
+        assert len(self.game.party()) == party + 2, "os ovos não entraram na equipe"
         assert self.game.money() == money + MONEY_GIFT, (money, self.game.money())
         assert self._nat_dex_on(), f"Dex Nacional {self._nat_dex()}"
         assert self._flag("FLAG_GOT_RARE_EGG"), "FLAG_GOT_RARE_EGG desligada"
-        return (f"ovo de {kind} na equipe, dinheiro {money} -> {self.game.money()}, "
+        assert self._flag("FLAG_GOT_ELM_EGG"), "FLAG_GOT_ELM_EGG desligada"
+        return (f"ovos de {kind} na equipe, dinheiro {money} -> {self.game.money()}, "
                 f"Dex Nacional ligada; telas {shots}")
 
     def _pc(self) -> str:
@@ -234,12 +243,13 @@ class PostLeagueScenario(CatchSaveScenario):
         self._set_party(6)
         money = self.game.money()
         self._play_scene()
-        kind = self._egg_checks(0, 1)
+        kind = self._egg_checks(0, 2, elm=1)
         assert len(self.game.party()) == 6
         assert self._flag("FLAG_GOT_RARE_EGG"), "FLAG_GOT_RARE_EGG desligada"
+        assert self._flag("FLAG_GOT_ELM_EGG"), "FLAG_GOT_ELM_EGG desligada"
         assert self.game.money() == money + MONEY_GIFT
         assert self._nat_dex_on(), f"Dex Nacional {self._nat_dex()}"
-        return f"equipe cheia: ovo de {kind} na caixa {self._pc_eggs()[0][0] + 1}, flag ligada"
+        return f"equipe cheia: ovos de {kind} na caixa {self._pc_eggs()[0][0] + 1}, flags ligadas"
 
     def _oak_keeps(self) -> str:
         self._restore()
@@ -251,6 +261,7 @@ class PostLeagueScenario(CatchSaveScenario):
         assert shots == ["pos_liga_sem_espaco"], f"fala do Oak sem espaço não apareceu: {shots}"
         self._egg_checks(0, 0)
         assert not self._flag("FLAG_GOT_RARE_EGG"), "a flag ligou sem entregar o ovo"
+        assert not self._flag("FLAG_GOT_ELM_EGG"), "a flag do Elm ligou sem entregar o ovo"
         assert self.game.money() == money + MONEY_GIFT, "dinheiro não foi dado"
         assert self._nat_dex_on(), f"Dex Nacional {self._nat_dex()}"
         # abre uma vaga no PC e fala com o Oak
@@ -261,10 +272,13 @@ class PostLeagueScenario(CatchSaveScenario):
         kind = self._egg_checks(0, 1)
         assert self._flag("FLAG_GOT_RARE_EGG"), "o Oak não ligou FLAG_GOT_RARE_EGG"
         assert self.game.money() == money + MONEY_GIFT, "o Oak deu dinheiro de novo"
+        # a vaga foi para o raro: o do Elm (oferecido em seguida) ficou sem espaço, e nada mudou
+        assert not self._flag("FLAG_GOT_ELM_EGG"), "a flag do Elm ligou sem vaga para o ovo"
         self._talk(KEY_UP, "falar com o Oak de novo")
         self._egg_checks(0, 1)
+        assert not self._flag("FLAG_GOT_ELM_EGG"), "a flag do Elm ligou sem vaga para o ovo"
         return (f"sem espaço: cena termina sem ovo nem flag; com vaga no PC o Oak entrega o ovo "
-                f"de {kind} (uma vez só)")
+                f"de {kind} (uma vez só); o do Elm espera vaga")
 
     def _roll(self) -> str:
         self._clear_egg_flags()      # o sorteio ignora as espécies já dadas (Hack 8)

@@ -3,6 +3,7 @@ EventScript_SetDefeatedEliteFourFlagsVars::
 	call EventScript_ResetEliteFour
 	special Script_UpdateTrainerFanClubGameClear
 	special QueueRareEggAfterHallOfFame
+	special QueueElmEggAfterHallOfFame
 	specialvar VAR_RESULT, IsNationalPokedexEnabled
 	call_if_eq VAR_RESULT, FALSE, EventScript_SetReadyTryGiveNationalDexScene
 	call EventScript_ResetLegendaries

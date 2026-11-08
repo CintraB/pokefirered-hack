@@ -1671,6 +1671,24 @@ static u32 DossieAbrir(void)
 }
 // --- end of POK-54, Task 9 ----------------------------------------------------------------------
 
+// --- POK-28: um script do jogo (rótulo do ELF) rodado como sub-rotina de um script de campo -------
+static u32 CallScript(u32 script)
+{
+    if (!Overworld_IsRunning() || ScriptContext_IsEnabled() || script < FIELD_TEXT_ROM_START || script >= FIELD_TEXT_ROM_END)
+        return 0xFFFFFFFF;
+    gTestText[0] = 0x69;            // lockall
+    gTestText[1] = 0x04;            // call script
+    gTestText[2] = script;
+    gTestText[3] = script >> 8;
+    gTestText[4] = script >> 16;
+    gTestText[5] = script >> 24;
+    gTestText[6] = 0x6B;            // releaseall
+    gTestText[7] = 0x02;            // end
+    ScriptContext_SetupScript(gTestText);
+    return 1;
+}
+// --- end of POK-28 --------------------------------------------------------------------------------
+
 void TestHooks_Run(void)
 {
     u32 result = 0;
@@ -1843,6 +1861,7 @@ void TestHooks_Run(void)
     case TEST_CMD_FAMILIA_CHEFE_CAIU: result = FamiliaChefeCaiu(); break;
     case TEST_CMD_DOSSIE_ABRIR:     result = DossieAbrir(); break;
     case TEST_CMD_DOSSIE_ESTADO:    result = Dossie_TestEstado(); break;
+    case TEST_CMD_CALL_SCRIPT:      result = CallScript(gTestMailbox.arg0); break;
     // POK-29
     case TEST_CMD_SHOW_FIELD_TEXT:  result = ShowFieldText(gTestMailbox.arg0, gTestMailbox.arg1); break;
     default:

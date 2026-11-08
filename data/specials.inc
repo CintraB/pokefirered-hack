@@ -502,4 +502,9 @@ gSpecials::
 	def_special Dossie_Abrir
 	def_special FamiliaSombra_ApreendidoPendente
 	def_special FamiliaSombra_EntregarApreendido
+	@ Ovos do Prof. Elm (POK-28)
+	def_special GetElmEggChoice
+	def_special GiveElmEgg
+	def_special MarkElmEggDelivered
+	def_special QueueElmEggAfterHallOfFame
 gSpecialsEnd::

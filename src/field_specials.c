@@ -36,6 +36,7 @@
 #include "day_night.h"
 #include "wild_encounter.h"
 #include "field_weather.h"
+#include "script_pokemon_util.h"
 #include "constants/songs.h"
 #include "constants/items.h"
 #include "item.h"
@@ -2731,6 +2732,85 @@ void QueueRareEggAfterHallOfFame(void)
     MigrateLegacyRareEgg();
     if (FlagGet(FLAG_SYS_GAME_CLEAR) && CountRareEggsLeft() != 0)
         FlagSet(FLAG_RARE_EGG_PENDING);
+}
+
+// POK-28 — ovos do Prof. Elm: o mesmo ritmo do ovo raro, mas o jogador escolhe a espécie.
+// O 1º vem com a Dex Nacional (FLAG_GOT_ELM_EGG); depois, um por vitória na Liga (FLAG_ELM_EGG_PENDING).
+// Cada espécie dada liga a sua flag (0x4D9..0x4DB). Sem RAM nova: flags do save e as vars de script.
+static const struct {
+    u16 species;
+    u16 flag;
+} sElmEggs[] = {
+    {SPECIES_CHIKORITA, FLAG_GOT_EGG_CHIKORITA},
+    {SPECIES_CYNDAQUIL, FLAG_GOT_EGG_CYNDAQUIL},
+    {SPECIES_TOTODILE, FLAG_GOT_EGG_TOTODILE},
+};
+
+static u32 CountElmEggsLeft(void)
+{
+    u32 i, left = 0;
+
+    for (i = 0; i < NELEMS(sElmEggs); i++)
+        if (!FlagGet(sElmEggs[i].flag))
+            left++;
+    return left;
+}
+
+// specialvar VAR_RESULT, GetElmEggChoice -> quantas espécies faltam (0..3). Monta as opções dos multichoices
+// MULTICHOICE_ELM_EGG_2/3 (que leem gStringVar1..3): o nome de cada espécie que falta, na ordem da tabela, e a
+// espécie de cada opção em VAR_0x8005..0x8007.
+u16 GetElmEggChoice(void)
+{
+    u8 *const names[] = {gStringVar1, gStringVar2, gStringVar3};
+    u16 *const species[] = {&gSpecialVar_0x8005, &gSpecialVar_0x8006, &gSpecialVar_0x8007};
+    u32 i, n = 0;
+
+    for (i = 0; i < NELEMS(sElmEggs); i++)
+    {
+        if (FlagGet(sElmEggs[i].flag))
+            continue;
+        StringCopy(names[n], gSpeciesNames[sElmEggs[i].species]);
+        *species[n] = sElmEggs[i].species;
+        n++;
+    }
+    return n;
+}
+
+// specialvar VAR_RESULT, GiveElmEgg: 8004 = a espécie escolhida; o resultado do giveegg (MON_GIVEN_TO_PARTY,
+// MON_GIVEN_TO_PC ou MON_CANT_GIVE). Uma espécie fora da lista, ou já dada, não vira ovo.
+u16 GiveElmEgg(void)
+{
+    u32 i;
+
+    for (i = 0; i < NELEMS(sElmEggs); i++)
+        if (sElmEggs[i].species == gSpecialVar_0x8004 && !FlagGet(sElmEggs[i].flag))
+            return ScriptGiveEgg(gSpecialVar_0x8004);
+    return MON_CANT_GIVE;
+}
+
+// special MarkElmEggDelivered, logo depois do GiveElmEgg bem-sucedido (equipe ou PC). 8004 = a espécie entregue.
+// O 1º ovo (FLAG_GOT_ELM_EGG ainda desligada) não gasta o pendente.
+void MarkElmEggDelivered(void)
+{
+    u32 i;
+
+    for (i = 0; i < NELEMS(sElmEggs); i++)
+        if (sElmEggs[i].species == gSpecialVar_0x8004)
+            FlagSet(sElmEggs[i].flag);
+    if (!FlagGet(FLAG_GOT_ELM_EGG))
+        FlagSet(FLAG_GOT_ELM_EGG);
+    else
+        FlagClear(FLAG_ELM_EGG_PENDING);
+    if (CountElmEggsLeft() == 0)
+        FlagClear(FLAG_ELM_EGG_PENDING);
+}
+
+// special QueueElmEggAfterHallOfFame, logo depois de QueueRareEggAfterHallOfFame: a partir da 2ª vitória
+// (FLAG_SYS_GAME_CLEAR já ligada), um ovo do Elm pendente por vez, se sobrou espécie.
+void QueueElmEggAfterHallOfFame(void)
+{
+    if (FlagGet(FLAG_SYS_GAME_CLEAR) && CountElmEggsLeft() != 0)
+        FlagSet(FLAG_ELM_EGG_PENDING);
 }
 
 // Repel automático: quando o efeito acaba, EventScript_RepelWoreOff oferece o último

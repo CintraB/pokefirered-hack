@@ -538,6 +538,12 @@ class Mailbox:
         result = self.call(CMD_DOSSIE_ABRIR)
         assert result == 1, f"DOSSIE_ABRIR recusado: {result:#x}"
 
+    def call_script(self, address: int) -> None:
+        """Roda o script do jogo em `address` (rótulo do ELF) como sub-rotina de um script de campo; o chamador espera o
+        campo ficar livre."""
+        result = self.call(CMD_CALL_SCRIPT, address)
+        assert result == 1, f"CALL_SCRIPT recusado: {result:#x}"
+
     def dossie_estado(self) -> dict | None:
         """Estado do dossiê aberto: {pagina (0-based), total, chefe (0 capa, 1-4, 5 depois), carimbo (0 nenhum,
         1 derrotado, 2 capturado), pronta}; None com a tela fechada."""
@@ -570,6 +576,9 @@ CMD_DEX_COMPLETA = 0x142  # arg0 = número nacional interno (0 = nenhum), só le
 CMD_FAMILIA_CHEFE_CAIU = 0x143  # -> ocupação | estado << 8 | (FLAG_FAMILIA_CAPTURADO_n no bit n - 1) << 16: FamiliaSombra_ChefeCaiu (gBattleOutcome decide a captura)
 CMD_DOSSIE_ABRIR = 0x144   # -> 1: o dossiê pelo special Dossie_Abrir num script de campo (0xFFFFFFFF = special fora de gSpecials)
 CMD_DOSSIE_ESTADO = 0x145  # -> página | total << 8 | chefe da página << 16 | carimbo << 24 | pronta << 31 (0xFFFFFFFF = fechada)
+
+# --- POK-28: os 18 de Johto (enum à parte, a partir de 0x150) ----------------------------------------------------------
+CMD_CALL_SCRIPT = 0x150    # arg0 = endereço de um script (ROM) -> 1: lockall, call, releaseall num script de campo (0xFFFFFFFF = campo ocupado ou fora da ROM)
 
 # --- Hack 6: breeding genético (enum à parte em include/test_hooks.h, a partir de 0x60; ------
 # o uso fica em esteira/breeding.py e scenarios/full_breeding.py / full_egg.py)

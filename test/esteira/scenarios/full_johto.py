@@ -16,6 +16,17 @@ Selvagens (Task 2):
 - `johto/corsola_surf`: Resort Gorgeous, surfando: Corsola 30% (nível 30-35);
 - `johto/girafarig_safari`: Zona Safári Oeste, na grama: Girafarig 4% (nível 25-30), a qualquer hora.
 
+Ovos do Prof. Elm (Task 3, classe `OvosElm`, com os atalhos e a cena do `pos_liga`):
+
+- `johto/ovos_elm/escolha`: a cena da Dex Nacional de verdade: o ovo raro e, depois dele, o menu com os 3 nomes;
+  escolhido o CYNDAQUIL (2ª opção), é ele que vem; tela `johto_ovos_elm_menu` (só no relatório);
+- `johto/ovos_elm/hall`: o script da entrada no Hall (`CMD_CALL_SCRIPT`) deixa os dois ovos pendentes;
+- `johto/ovos_elm/segunda`: na conversa, o raro primeiro e depois o menu só com CHIKORITA e TOTODILE; de novo, nada;
+- `johto/ovos_elm/ultimo`: com 1 restante ele vem sem menu; depois dos 3, a vitória não deixa nada pendente;
+- `johto/ovos_elm/pc`: equipe cheia, o ovo vai para o PC;
+- `johto/ovos_elm/cheio`: equipe e PC cheios: aviso, nenhuma flag muda; com uma vaga, o mesmo menu e o ovo no PC;
+- `johto/ovos_elm/save_antigo`: estágio 8 sem nenhuma flag do Elm: a conversa traz a 1ª oferta com os 3.
+
 Estatística: o jogo sorteia de verdade, então cada conferência tem um tamanho de amostra (`AMOSTRAS`) escolhido para o
 falso vermelho ficar abaixo de `FALSO_VERMELHO_MAX` (1e-6): "nenhum acerto em n sorteios" vale (1-p)^n, "menos de k
 acertos" a soma binomial, e as faixas de porcentagem são de `SIGMAS` desvios-padrão (2 em 1 bilhão cada). As contas
@@ -33,13 +44,20 @@ import json
 import math
 import struct
 import sys
+from collections import Counter
 from functools import cache
 
 from .. import dexnav as dnv
+from ..bag import MENU_CURSOR_POS, MENU_MAX_CURSOR, MENU_MIN_CURSOR
+from ..emu import KEY_A, KEY_B, KEY_DOWN, KEY_UP
+from ..game import BOX_MON_SIZE, IN_BOX_COUNT
 from ..hooks import CMD_DEXNAV_ROLL, CMD_ROLL_WILD, CMD_WARP, NO_RESULT, TEXT_SYMBOL, Mailbox
 from ..paralelo import run_salt, seed_label, seed_rng
 from . import REPO_ROOT, ScenarioContext
-from .base import Abort
+from .base import YESNO_TASK, Abort
+from .full_post_league import (LAB, OAK_FRONT, OWNED_NEEDED, PALLET, PALLET_PLAYER, RARE_EGGS, SCENE_FRAMES,
+                               SETTLE_FRAMES, TEXT_SEM_ESPACO, PostLeagueScenario)
+from .pc_menu import MULTICHOICE_TASK
 from .quick_catch_save import CatchSaveScenario
 
 MAPS_DIR = REPO_ROOT / "data" / "maps"
@@ -309,8 +327,247 @@ class JohtoScenario(CatchSaveScenario):
                            self._chinchou_super_vara)
             self.suite.run("johto/corsola_surf: Resort Gorgeous", self._corsola_surf)
             self.suite.run("johto/girafarig_safari: Zona Safári Oeste", self._girafarig_safari)
+            # Task 3: os ovos do Prof. Elm (ver OvosElm)
+            ovos = OvosElm(self.ctx, self.box)
+            res = self.suite.run("johto/ovos_elm/escolha: na cena da Dex Nacional, depois do ovo raro, o CYNDAQUIL "
+                                 "escolhido entre os 3", ovos.escolha)
+            res.images.extend(ovos.telas)
+            if res.status == "falha":
+                raise Abort("johto/ovos_elm/escolha")
+            self.suite.run("johto/ovos_elm/hall: nova vitória deixa o ovo do Elm pendente", ovos.hall)
+            self.suite.run("johto/ovos_elm/segunda: o raro primeiro, depois o do Elm entre os 2 que faltam",
+                           ovos.segunda)
+            self.suite.run("johto/ovos_elm/ultimo: com 1 restante ele vem direto; depois, nada", ovos.ultimo)
+            self.suite.run("johto/ovos_elm/pc: equipe cheia, o ovo vai para o PC", ovos.pc)
+            self.suite.run("johto/ovos_elm/cheio: equipe e PC cheios, nada se perde", ovos.cheio)
+            self.suite.run("johto/ovos_elm/save_antigo: depois da Dex Nacional sem ovo do Elm, a conversa oferece",
+                           ovos.save_antigo)
         except Abort:
             pass
+
+
+ELM = ("CHIKORITA", "CYNDAQUIL", "TOTODILE")
+HALL_SCRIPT = "EventScript_SetDefeatedEliteFourFlagsVars"   # a entrada no Hall (data/scripts/hall_of_fame.inc)
+FALA_PRIMEIRA, FALA_OUTRA, FALA_RARO = "Prof. Elm, meu colega", "Chegou mais um Ovo", "outro Ovo raro"
+STRING_VAR_BYTES = 20
+
+
+class OvosElm(PostLeagueScenario):
+    """Os ovos do Prof. Elm (Task 3), na mesma sessão do cenário, com os atalhos e a cena do `pos_liga`.
+
+    A cena da Dex Nacional roda de verdade (o ovo raro e o 1º do Elm, escolhido no menu); a vitória seguinte na Liga
+    é o script da entrada no Hall (`CMD_CALL_SCRIPT`), e cada conversa com o Carvalho aperta A em tudo, escolhe no menu
+    dos ovos a espécie pedida e responde NÃO à oferta das novidades. Os ovos são contados na equipe e no PC."""
+
+    def __init__(self, ctx: ScenarioContext, box: Mailbox):
+        super().__init__(ctx)
+        self.box = box
+        self.telas: list[str] = []
+
+    # --- leitura ---------------------------------------------------------------------------------------------------
+    def _ovos(self) -> list[str]:
+        """Espécies de todos os ovos, equipe e PC."""
+        return [self._nome(s) for s in self._party_eggs() + [s for _, _, s in self._pc_eggs()]]
+
+    def _nome(self, species_id: int) -> str:
+        return self.consts.species_name(species_id).removeprefix("SPECIES_")
+
+    def _elm_flags(self) -> dict[str, bool]:
+        nomes = [f"FLAG_GOT_EGG_{n}" for n in ELM] + ["FLAG_ELM_EGG_PENDING", "FLAG_GOT_ELM_EGG"]
+        return {n.removeprefix("FLAG_"): self._flag(n) for n in nomes}
+
+    def _novos(self, antes: list[str]) -> list[str]:
+        """Ovos que apareceram desde `antes` (multiconjunto: a posição na equipe ou no PC não importa)."""
+        return sorted((Counter(self._ovos()) - Counter(antes)).elements())
+
+    def _dados(self, *especies: str) -> None:
+        """As flags de espécie do Elm ligadas são exatamente `especies`."""
+        f = self._elm_flags()
+        assert {n for n in ELM if f[f"GOT_EGG_{n}"]} == set(especies), f
+
+    def _opcoes(self, n: int) -> list[str]:
+        return [self.game.charmap.decode(self.emu.read(self.game.syms.addr(f"gStringVar{i + 1}"), STRING_VAR_BYTES))
+                for i in range(n)]
+
+    def _cursor(self, n: int) -> int:
+        """&sMenu.cursorPos (src/menu.c) do menu de n opções aberto (há outro `sMenu` estático no ELF)."""
+        found = [a for a in self.game.syms.addrs("sMenu")
+                 if self.emu.read_u8(a + MENU_MIN_CURSOR) == 0 and self.emu.read_u8(a + MENU_MAX_CURSOR) == n - 1]
+        assert len(found) == 1, f"não achei o sMenu do menu de {n} ({len(found)} candidatos)"
+        return found[0] + MENU_CURSOR_POS
+
+    # --- ações -----------------------------------------------------------------------------------------------------
+    def _escolher(self, esperadas: tuple[str, ...], escolha: str, tela: str | None) -> None:
+        """No menu dos ovos aberto: confere as opções, leva o cursor até `escolha` e aperta A."""
+        self.emu.frames(8)
+        opcoes = self._opcoes(len(esperadas))
+        assert tuple(opcoes) == esperadas, f"opções {opcoes}, esperava {esperadas}"
+        cursor, alvo = self._cursor(len(esperadas)), esperadas.index(escolha)
+        assert self.emu.read_u8(cursor) == 0, f"o menu abriu com o cursor em {self.emu.read_u8(cursor)}"
+        while self.emu.read_u8(cursor) != alvo:
+            atual = self.emu.read_u8(cursor)
+            self.ctl.press_until(KEY_DOWN, lambda c=atual: self.emu.read_u8(cursor) != c, "cursor do menu dos ovos",
+                                 tries=3, wait=20)
+        if tela:
+            self.emu.frames(4)
+            self.telas.append(self._shot(tela))
+        self.ctl.press_until(KEY_A, lambda: MULTICHOICE_TASK not in self._tasks(), f"escolha de {escolha}")
+
+    def _avancar(self, menu: tuple[str, ...] | None, escolha: str | None, until=None, tela: str | None = None,
+                 what: str = "conversa com o Carvalho") -> list[str]:
+        """A em tudo até `until()` (padrão: só o campo livre); o menu dos ovos, se abrir, tem de ser `menu` (None =
+        não pode abrir) e recebe `escolha`; a oferta das novidades recebe NÃO. Devolve as falas, na ordem."""
+        falas: list[str] = []
+        abriu, spent = False, 0
+        while not ((until is None or until()) and self._settled_idle()):
+            if spent >= SCENE_FRAMES:
+                raise self.ctl.timeout_error(what)
+            msg = self._message()
+            if not falas or falas[-1] != msg:
+                falas.append(msg)
+            tasks = self._tasks()
+            if MULTICHOICE_TASK in tasks:
+                assert menu is not None and not abriu, f"menu dos ovos inesperado: {self._opcoes(3)}"
+                abriu = True
+                self._escolher(menu, escolha, tela)
+                continue
+            self._press(KEY_B if YESNO_TASK in tasks and self._novidades_offer() else KEY_A)
+            spent += 10
+        assert abriu or menu is None, f"o menu dos ovos ({menu}) não abriu; falas {falas}"
+        return falas
+
+    def _falar(self, menu: tuple[str, ...] | None, escolha: str | None = None) -> list[str]:
+        """Diante do Carvalho (warp para o laboratório, abaixo dele): fala e avança tudo."""
+        self._warp(LAB, OAK_FRONT)
+        self.ctl.wait_overworld_idle(600)
+        self.emu.hold(KEY_UP, 4)
+        self.ctl.wait_until(self.nav._player_still, 60, "jogador parado diante do Carvalho")
+        self._press(KEY_A)
+        self.ctl.wait_until(self.ctl.script_active, 120, "início da fala do Carvalho")
+        return self._avancar(menu, escolha)
+
+    def _vitoria(self) -> None:
+        """Uma nova vitória na Liga: o script da entrada no Hall (o EnterHallOfFame não roda: a flag do jogo zerado já
+        está ligada, então para os ovos é a 2ª vitória em diante)."""
+        self.box.call_script(self.game.syms.addr(HALL_SCRIPT))
+        self.emu.frames(2)      # o script do Hall só tem specials: pode acabar no mesmo quadro
+        self.ctl.wait_overworld_idle(600)
+
+    def _voltar(self, nome: str) -> None:
+        self.ctl.restore(nome)
+        self.emu.frames(SETTLE_FRAMES)
+
+    # --- casos -----------------------------------------------------------------------------------------------------
+    def escolha(self) -> str:
+        self._prepare(OWNED_NEEDED)
+        assert not any(self._elm_flags().values()), f"flags do Elm ligadas antes da cena: {self._elm_flags()}"
+        antes = self._ovos()
+        self._warp(PALLET, PALLET_PLAYER)
+        self.ctl.wait_until(self.ctl.script_active, 600, "início da cena do Oak")
+        falas = self._avancar(ELM, "CYNDAQUIL", until=self._scene_done, tela="johto_ovos_elm_menu", what="cena pós-Liga")
+        assert self.game.location() == self.consts.map(LAB), self.game.location()
+        novos = self._novos(antes)
+        raros = [n for n in novos if f"SPECIES_{n}" in RARE_EGGS]
+        assert len(raros) == 1 and novos.count("CYNDAQUIL") == 1 and len(novos) == 2, f"ovos novos {novos}"
+        i_raro = next(i for i, f in enumerate(falas) if "recebeu o Ovo!" in f)
+        i_elm = next(i for i, f in enumerate(falas) if FALA_PRIMEIRA in f)
+        assert i_raro < i_elm, f"o do Elm veio antes do raro: {falas}"
+        assert any("recebeu o Ovo" in f and "CYNDAQUIL" in f for f in falas), falas
+        self._dados("CYNDAQUIL")
+        f = self._elm_flags()
+        assert f["GOT_ELM_EGG"] and not f["ELM_EGG_PENDING"], f
+        assert self._nat_dex_on(), f"Dex Nacional {self._nat_dex()}"
+        self.ctl.checkpoint("johto_elm_1")
+        return f"cena: ovo raro de {raros[0]}, depois o menu {list(ELM)} → CYNDAQUIL; flags {f}"
+
+    def hall(self) -> str:
+        self._voltar("johto_elm_1")
+        assert not self._flag("FLAG_ELM_EGG_PENDING"), "pendente ligado antes da vitória"
+        self._vitoria()
+        assert self._flag("FLAG_ELM_EGG_PENDING"), "a vitória não deixou o ovo do Elm pendente"
+        assert self._flag("FLAG_RARE_EGG_PENDING"), "a vitória não deixou o ovo raro pendente"
+        self.ctl.checkpoint("johto_elm_hall")
+        return "script do Hall: FLAG_ELM_EGG_PENDING e FLAG_RARE_EGG_PENDING ligadas"
+
+    def segunda(self) -> str:
+        self._voltar("johto_elm_hall")
+        antes = self._ovos()
+        falas = self._falar(("CHIKORITA", "TOTODILE"), "TOTODILE")
+        i_raro = next(i for i, f in enumerate(falas) if FALA_RARO in f)
+        i_elm = next(i for i, f in enumerate(falas) if FALA_OUTRA in f)
+        assert i_raro < i_elm, f"o do Elm veio antes do raro: {falas}"
+        novos = self._novos(antes)
+        raro = [n for n in novos if n != "TOTODILE"]
+        assert len(novos) == 2 and "TOTODILE" in novos and f"SPECIES_{raro[0]}" in RARE_EGGS, novos
+        self._dados("CYNDAQUIL", "TOTODILE")
+        assert not self._flag("FLAG_ELM_EGG_PENDING") and not self._flag("FLAG_RARE_EGG_PENDING")
+        # entregue o pendente, a próxima conversa não dá mais nada
+        self._falar(None)
+        assert len(self._novos(antes)) == 2, self._novos(antes)
+        self.ctl.checkpoint("johto_elm_2")
+        return f"conversa: ovo raro de {raro[0]}, depois o menu [CHIKORITA, TOTODILE] → TOTODILE; de novo, nada"
+
+    def ultimo(self) -> str:
+        self._voltar("johto_elm_2")
+        self._vitoria()
+        assert self._flag("FLAG_ELM_EGG_PENDING")
+        self.box.set_flag(self.consts.flag("FLAG_RARE_EGG_PENDING"), False)   # só o do Elm nesta conversa
+        antes = self._ovos()
+        falas = self._falar(None)
+        assert self._novos(antes) == ["CHIKORITA"], self._novos(antes)
+        assert any(FALA_OUTRA in f for f in falas), falas
+        self._dados(*ELM)
+        assert not self._flag("FLAG_ELM_EGG_PENDING")
+        self._vitoria()
+        assert not self._flag("FLAG_ELM_EGG_PENDING"), "pendente ligado sem espécie para dar"
+        return "com 1 restante, CHIKORITA sem menu; depois da 3ª, a vitória não deixa nada pendente"
+
+    def _so_elm_pendente(self) -> None:
+        self._voltar("johto_elm_hall")
+        self.box.set_flag(self.consts.flag("FLAG_RARE_EGG_PENDING"), False)
+        self._set_party(6)
+
+    def pc(self) -> str:
+        self._so_elm_pendente()
+        equipe, no_pc = self._party_eggs(), [s for _, _, s in self._pc_eggs()]
+        self._falar(("CHIKORITA", "TOTODILE"), "CHIKORITA")
+        assert self._party_eggs() == equipe and len(self.game.party()) == 6
+        novos = Counter(s for _, _, s in self._pc_eggs()) - Counter(no_pc)
+        assert [self._nome(s) for s in novos.elements()] == ["CHIKORITA"], self._pc_eggs()
+        self._dados("CYNDAQUIL", "CHIKORITA")
+        assert not self._flag("FLAG_ELM_EGG_PENDING")
+        return "equipe cheia: o ovo de CHIKORITA vai para o PC, flag ligada, pendente apagado"
+
+    def cheio(self) -> str:
+        self._so_elm_pendente()
+        assert self.box.fill_pc() == 14 * IN_BOX_COUNT
+        antes = self._ovos()
+        falas = self._falar(("CHIKORITA", "TOTODILE"), "TOTODILE")
+        assert any(TEXT_SEM_ESPACO in f for f in falas), f"o Carvalho não avisou da falta de espaço: {falas}"
+        assert self._ovos() == antes, self._ovos()
+        self._dados("CYNDAQUIL")
+        assert self._flag("FLAG_ELM_EGG_PENDING"), "o pendente se perdeu sem entregar o ovo"
+        # abre uma vaga no PC: a mesma oferta, com as mesmas duas opções
+        self.emu.write(self._box_addr(0, 0), bytes(BOX_MON_SIZE))
+        self._falar(("CHIKORITA", "TOTODILE"), "TOTODILE")
+        assert [self._nome(s) for _, _, s in self._pc_eggs()] == ["TOTODILE"], self._pc_eggs()
+        self._dados("CYNDAQUIL", "TOTODILE")
+        assert not self._flag("FLAG_ELM_EGG_PENDING")
+        return "sem vaga: aviso, nenhuma flag muda; com 1 vaga no PC, o mesmo menu e o TOTODILE no PC"
+
+    def save_antigo(self) -> str:
+        self._voltar("johto_elm_1")
+        # save de antes do POK-28 que já passou da Dex Nacional: ovo raro dado, nenhuma flag do Elm
+        for nome in [f"FLAG_GOT_EGG_{n}" for n in ELM] + ["FLAG_ELM_EGG_PENDING", "FLAG_GOT_ELM_EGG"]:
+            assert not self.box.set_flag(self.consts.flag(nome), False), nome
+        assert self._flag("FLAG_GOT_RARE_EGG") and not self._flag("FLAG_RARE_EGG_PENDING")
+        antes = self._ovos()
+        falas = self._falar(ELM, "TOTODILE")
+        assert any(FALA_PRIMEIRA in f for f in falas), f"a 1ª oferta não veio: {falas}"
+        assert self._novos(antes) == ["TOTODILE"], self._novos(antes)
+        self._dados("TOTODILE")
+        assert self._flag("FLAG_GOT_ELM_EGG") and not self._flag("FLAG_ELM_EGG_PENDING")
+        return "estágio 8 sem flag do Elm: a conversa traz a 1ª oferta com os 3 e entrega o TOTODILE"
 
 
 def run_full_johto(ctx_test: ScenarioContext) -> None:

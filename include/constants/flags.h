@@ -1280,11 +1280,11 @@
 #define FLAG_DEFEATED_CHAMP           0x4BC
 
 // Unused?
-#define FLAG_0x4D9               0x4D9
-#define FLAG_0x4DA               0x4DA
-#define FLAG_0x4DB               0x4DB
-#define FLAG_0x4DC               0x4DC
-#define FLAG_0x4DD               0x4DD
+#define FLAG_GOT_EGG_CHIKORITA   0x4D9 // POK-28: ovos do Prof. Elm (uma por espécie dada)
+#define FLAG_GOT_EGG_CYNDAQUIL   0x4DA
+#define FLAG_GOT_EGG_TOTODILE    0x4DB
+#define FLAG_ELM_EGG_PENDING     0x4DC // POK-28: o Carvalho guarda um ovo do Elm (vitória na Liga)
+#define FLAG_GOT_ELM_EGG         0x4DD // POK-28: o 1º ovo do Elm já foi entregue
 #define FLAG_0x4DE               0x4DE
 #define FLAG_0x4DF               0x4DF
 #define FLAG_0x4E0               0x4E0
